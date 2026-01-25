@@ -10,21 +10,31 @@ class ConnectionManager: ObservableObject {
 
     private var webSocket: URLSessionWebSocketTask?
     private var session: URLSession?
-    private var serverURL: String = ""
-    private var authToken: String = ""
+    private var savedHost: String = ""
+    private var savedPort: UInt16 = 8765
+    private var savedToken: String = ""
 
     var onOutput: ((String) -> Void)?
     var onFileChange: ((String, String?, String?) -> Void)?
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
     var onFileContent: ((String, String, String, Int64) -> Void)?
 
+    var hasCredentials: Bool {
+        !savedHost.isEmpty && !savedToken.isEmpty
+    }
+
     func connect(host: String, port: UInt16, token: String) {
-        disconnect()
+        savedHost = host
+        savedPort = port
+        savedToken = token
+        reconnect()
+    }
 
-        serverURL = "ws://\(host):\(port)"
-        authToken = token
+    func reconnect() {
+        guard hasCredentials else { return }
+        disconnect(clearCredentials: false)
 
-        guard let url = URL(string: serverURL) else {
+        guard let url = URL(string: "ws://\(savedHost):\(savedPort)") else {
             lastError = "Invalid URL"
             return
         }
@@ -39,13 +49,23 @@ class ConnectionManager: ObservableObject {
         receiveMessage()
     }
 
-    func disconnect() {
+    func reconnectIfNeeded() {
+        guard hasCredentials, !isAuthenticated else { return }
+        reconnect()
+    }
+
+    func disconnect(clearCredentials: Bool = true) {
         webSocket?.cancel(with: .goingAway, reason: nil)
         webSocket = nil
         session = nil
         isConnected = false
         isAuthenticated = false
         agentState = .idle
+
+        if clearCredentials {
+            savedHost = ""
+            savedToken = ""
+        }
     }
 
     private func receiveMessage() {
@@ -114,13 +134,12 @@ class ConnectionManager: ObservableObject {
     }
 
     private func authenticate() {
-        send(.auth(token: authToken))
+        send(.auth(token: savedToken))
     }
 
     func sendChat(_ message: String, workingDirectory: String? = nil) {
-        guard isAuthenticated else {
-            lastError = "Not authenticated"
-            return
+        if !isAuthenticated {
+            reconnectIfNeeded()
         }
         send(.chat(message: message, workingDirectory: workingDirectory))
     }
@@ -130,12 +149,12 @@ class ConnectionManager: ObservableObject {
     }
 
     func listDirectory(path: String) {
-        guard isAuthenticated else { return }
+        if !isAuthenticated { reconnectIfNeeded() }
         send(.listDirectory(path: path))
     }
 
     func getFile(path: String) {
-        guard isAuthenticated else { return }
+        if !isAuthenticated { reconnectIfNeeded() }
         send(.getFile(path: path))
     }
 

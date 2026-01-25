@@ -1,16 +1,10 @@
-//
-//  CloudeApp.swift
-//  Cloude
-//
-//  iOS app for remote Claude Code control
-//
-
 import SwiftUI
 
 @main
 struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
     @State private var showSettings = false
+    @Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -34,13 +28,17 @@ struct CloudeApp: App {
                 SettingsView(connection: connection)
             }
             .onAppear {
-                // Auto-connect if we have saved settings
-                autoConnect()
+                loadAndConnect()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    connection.reconnectIfNeeded()
+                }
             }
         }
     }
 
-    private func autoConnect() {
+    private func loadAndConnect() {
         let host = UserDefaults.standard.string(forKey: "serverHost") ?? ""
         let portString = UserDefaults.standard.string(forKey: "serverPort") ?? "8765"
         let token = KeychainHelper.get(key: "authToken") ?? ""
@@ -58,15 +56,18 @@ struct ConnectionStatus: View {
     @ObservedObject var connection: ConnectionManager
 
     var body: some View {
-        HStack(spacing: 4) {
-            Circle()
-                .fill(statusColor)
-                .frame(width: 8, height: 8)
+        Button(action: { connection.reconnectIfNeeded() }) {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 8, height: 8)
 
-            Text(statusText)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                Text(statusText)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
+        .buttonStyle(.plain)
     }
 
     private var statusColor: Color {
