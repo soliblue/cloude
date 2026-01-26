@@ -8,32 +8,47 @@ struct CloudeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                ChatView(connection: connection)
-                    .navigationTitle("Cloude")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            ConnectionStatus(connection: connection)
-                        }
+            TabView {
+                NavigationStack {
+                    ChatView(connection: connection)
+                        .navigationTitle("Chat")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar { toolbarItems }
+                }
+                .tabItem {
+                    Label("Chat", systemImage: "bubble.left.and.bubble.right")
+                }
 
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button(action: { showSettings = true }) {
-                                Image(systemName: "gear")
-                            }
-                        }
-                    }
+                NavigationStack {
+                    FileBrowserView(connection: connection)
+                        .navigationTitle("Files")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar { toolbarItems }
+                }
+                .tabItem {
+                    Label("Files", systemImage: "folder")
+                }
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView(connection: connection)
             }
-            .onAppear {
-                loadAndConnect()
-            }
+            .onAppear { loadAndConnect() }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
                     connection.reconnectIfNeeded()
                 }
+            }
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            ConnectionStatus(connection: connection)
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(action: { showSettings = true }) {
+                Image(systemName: "gear")
             }
         }
     }
@@ -61,7 +76,6 @@ struct ConnectionStatus: View {
                 Circle()
                     .fill(statusColor)
                     .frame(width: 8, height: 8)
-
                 Text(statusText)
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -75,9 +89,8 @@ struct ConnectionStatus: View {
             return connection.agentState == .running ? .orange : .green
         } else if connection.isConnected {
             return .yellow
-        } else {
-            return .red
         }
+        return .red
     }
 
     private var statusText: String {
@@ -85,8 +98,7 @@ struct ConnectionStatus: View {
             return connection.agentState == .running ? "Running" : "Connected"
         } else if connection.isConnected {
             return "Connecting..."
-        } else {
-            return "Disconnected"
         }
+        return "Disconnected"
     }
 }
