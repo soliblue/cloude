@@ -50,6 +50,39 @@ platform :mac do
     sh("xcodebuild -project ../Cloude/Cloude.xcodeproj -scheme 'Cloude Agent' -destination 'platform=macOS' -derivedDataPath ../build clean build")
     sh("open ../build/Build/Products/Debug/Cloude\\ Agent.app")
   end
+
+  desc "Build, notarize, and create DMG for Mac agent distribution"
+  lane :release_agent do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: false
+    )
+
+    build_mac_app(
+      project: "Cloude/Cloude.xcodeproj",
+      scheme: "Cloude Agent",
+      output_directory: "build/release",
+      output_name: "Cloude Agent",
+      export_method: "developer-id",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: "Q9U8224WWM"
+      }
+    )
+
+    notarize(
+      api_key: api_key,
+      package: "build/release/Cloude Agent.app",
+      bundle_id: "soli.Cloude-Agent",
+      print_log: true
+    )
+
+    sh("hdiutil create -volname 'Cloude Agent' -srcfolder '../build/release/Cloude Agent.app' -ov -format UDZO '../build/release/Cloude-Agent.dmg'")
+
+    UI.success("DMG created at build/release/Cloude-Agent.dmg")
+  end
 end
 
 desc "Deploy both: iOS to TestFlight + Mac agent locally"

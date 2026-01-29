@@ -8,7 +8,7 @@ struct ImagePreview: View {
 
     var body: some View {
         GeometryReader { geo in
-            ScrollView([.horizontal, .vertical]) {
+            ScrollView([.horizontal, .vertical], showsIndicators: false) {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -52,7 +52,7 @@ struct TextPreview: View {
     let text: String
 
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             Text(text)
                 .font(.system(.body, design: .monospaced))
                 .textSelection(.enabled)

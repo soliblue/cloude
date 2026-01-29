@@ -76,7 +76,6 @@ struct InputButtons: View {
     let agentState: AgentState
     let onPaste: () -> Void
     let onClear: () -> Void
-    let onAbort: () -> Void
     let onSend: () -> Void
 
     var body: some View {
@@ -97,20 +96,12 @@ struct InputButtons: View {
                 }
             }
 
-            if agentState == .running {
-                Button(action: onAbort) {
-                    Image(systemName: "stop.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.orange)
-                }
-            } else {
-                Button(action: onSend) {
-                    Image(systemName: "paperplane")
-                        .font(.title2)
-                        .foregroundColor(inputText.isEmpty ? .gray : .blue)
-                }
-                .disabled(inputText.isEmpty)
+            Button(action: onSend) {
+                Image(systemName: "paperplane")
+                    .font(.title2)
+                    .foregroundColor(inputText.isEmpty ? .gray : .blue)
             }
+            .disabled(inputText.isEmpty)
         }
     }
 }

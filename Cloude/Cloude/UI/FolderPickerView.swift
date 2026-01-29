@@ -33,7 +33,9 @@ struct FolderPickerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                    }
                 }
             }
         }
