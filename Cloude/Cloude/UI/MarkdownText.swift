@@ -2,8 +2,6 @@
 //  MarkdownText.swift
 //  Cloude
 //
-//  Native markdown rendering using AttributedString
-//
 
 import SwiftUI
 
@@ -11,35 +9,48 @@ struct MarkdownText: View {
     let text: String
 
     var body: some View {
-        if let attributed = try? AttributedString(markdown: text, options: markdownOptions) {
-            Text(attributed)
-                .textSelection(.enabled)
-        } else {
-            Text(text)
-                .textSelection(.enabled)
-        }
+        Text(parseMarkdown())
+            .textSelection(.enabled)
     }
 
-    private var markdownOptions: AttributedString.MarkdownParsingOptions {
-        var options = AttributedString.MarkdownParsingOptions()
-        options.interpretedSyntax = .inlineOnlyPreservingWhitespace
-        return options
-    }
-}
+    private func parseMarkdown() -> AttributedString {
+        var result = AttributedString()
+        let lines = text.components(separatedBy: "\n")
 
-struct CodeBlock: View {
-    let code: String
-    let language: String?
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            Text(code)
-                .font(.system(.caption, design: .monospaced))
-                .textSelection(.enabled)
+        for (index, line) in lines.enumerated() {
+            let parsedLine = parseLine(line)
+            result.append(parsedLine)
+            if index < lines.count - 1 {
+                result.append(AttributedString("\n"))
+            }
         }
-        .padding(12)
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(8)
+
+        return result
+    }
+
+    private func parseLine(_ line: String) -> AttributedString {
+        if line.hasPrefix("### ") {
+            var attr = AttributedString(String(line.dropFirst(4)))
+            attr.font = .headline
+            return attr
+        } else if line.hasPrefix("## ") {
+            var attr = AttributedString(String(line.dropFirst(3)))
+            attr.font = .title3.bold()
+            return attr
+        } else if line.hasPrefix("# ") {
+            var attr = AttributedString(String(line.dropFirst(2)))
+            attr.font = .title2.bold()
+            return attr
+        }
+
+        if let attributed = try? AttributedString(
+            markdown: line,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        ) {
+            return attributed
+        }
+
+        return AttributedString(line)
     }
 }
 
@@ -48,60 +59,9 @@ struct RichTextView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(parseBlocks().enumerated()), id: \.offset) { _, block in
-                switch block {
-                case .text(let content):
-                    MarkdownText(text: content)
-                case .code(let content, let language):
-                    CodeBlock(code: content, language: language)
-                }
+            ForEach(Array(MarkdownParser.parseBlocks(text).enumerated()), id: \.offset) { _, block in
+                ContentBlockView(block: block)
             }
         }
-    }
-
-    private func parseBlocks() -> [ContentBlock] {
-        var blocks: [ContentBlock] = []
-
-        // Simple code block parsing using string operations
-        var remaining = text
-        let codeBlockMarker = "```"
-
-        while let startRange = remaining.range(of: codeBlockMarker) {
-            // Text before code block
-            let before = String(remaining[..<startRange.lowerBound])
-            if !before.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                blocks.append(.text(before))
-            }
-
-            // Find end of code block
-            let afterStart = remaining[startRange.upperBound...]
-            if let endRange = afterStart.range(of: codeBlockMarker) {
-                let codeContent = String(afterStart[..<endRange.lowerBound])
-
-                // Extract language from first line
-                let lines = codeContent.components(separatedBy: "\n")
-                let language = lines.first?.trimmingCharacters(in: .whitespaces)
-                let code = lines.dropFirst().joined(separator: "\n")
-
-                blocks.append(.code(code, language?.isEmpty == false ? language : nil))
-                remaining = String(afterStart[endRange.upperBound...])
-            } else {
-                // No closing marker, treat rest as text
-                blocks.append(.text(remaining))
-                remaining = ""
-            }
-        }
-
-        // Remaining text
-        if !remaining.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            blocks.append(.text(remaining))
-        }
-
-        return blocks
-    }
-
-    private enum ContentBlock {
-        case text(String)
-        case code(String, String?)
     }
 }
