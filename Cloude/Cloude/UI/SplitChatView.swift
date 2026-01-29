@@ -22,9 +22,13 @@ struct SplitChatView: View {
                 controlBar
             }
         }
-        .onAppear { syncActivePaneToStore() }
-        .onChange(of: paneManager.activePaneId) { _, _ in syncActivePaneToStore() }
-        .onChange(of: projectStore.currentConversation?.id) { _, _ in updateActivePaneLink() }
+        .onAppear { initializeFirstPane() }
+        .onChange(of: paneManager.activePaneId) { _, _ in
+            if paneManager.panes.count == 1 { syncActivePaneToStore() }
+        }
+        .onChange(of: projectStore.currentConversation?.id) { _, _ in
+            if paneManager.panes.count == 1 { updateActivePaneLink() }
+        }
         .sheet(item: $selectingPane) { pane in
             PaneConversationPicker(
                 projectStore: projectStore,
@@ -96,6 +100,7 @@ struct SplitChatView: View {
         .padding(4)
     }
 
+    @ViewBuilder
     private func paneView(for pane: ChatPane) -> some View {
         let project = pane.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
         let conversation = project.flatMap { proj in
@@ -103,15 +108,11 @@ struct SplitChatView: View {
         }
         let isActive = pane.id == paneManager.activePaneId
 
-        return ProjectChatView(
-            connection: connection,
-            store: projectStore,
-            project: project,
-            conversation: conversation,
-            isCompact: true,
-            showHeader: true,
-            onSelectConversation: { selectingPane = pane }
-        )
+        VStack(spacing: 0) {
+            paneTypeHeader(for: pane, project: project, conversation: conversation)
+            Divider()
+            paneContent(for: pane, project: project, conversation: conversation)
+        }
         .background(Color(.systemBackground))
         .cornerRadius(8)
         .overlay(
@@ -122,9 +123,90 @@ struct SplitChatView: View {
         .onTapGesture { paneManager.setActive(pane.id) }
     }
 
+    private func paneTypeHeader(for pane: ChatPane, project: Project?, conversation: Conversation?) -> some View {
+        HStack(spacing: 8) {
+            ForEach(PaneType.allCases, id: \.self) { type in
+                Button(action: { paneManager.setPaneType(pane.id, type: type) }) {
+                    Image(systemName: type.icon)
+                        .font(.system(size: 14))
+                        .foregroundColor(pane.type == type ? .accentColor : .secondary)
+                        .padding(6)
+                        .background(pane.type == type ? Color.accentColor.opacity(0.15) : Color.clear)
+                        .cornerRadius(6)
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+            Button(action: { selectingPane = pane }) {
+                HStack(spacing: 4) {
+                    if let conv = conversation {
+                        Text(conv.name)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                        if let proj = project {
+                            Text("• \(proj.name)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("Select chat...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color(.secondarySystemBackground))
+    }
+
+    @ViewBuilder
+    private func paneContent(for pane: ChatPane, project: Project?, conversation: Conversation?) -> some View {
+        switch pane.type {
+        case .chat:
+            chatPaneContent(project: project, conversation: conversation)
+        case .files:
+            filesPaneContent(project: project)
+        case .gitChanges:
+            gitChangesPaneContent(project: project)
+        }
+    }
+
+    private func chatPaneContent(project: Project?, conversation: Conversation?) -> some View {
+        ProjectChatView(
+            connection: connection,
+            store: projectStore,
+            project: project,
+            conversation: conversation,
+            isCompact: true,
+            showHeader: false,
+            onSelectConversation: nil
+        )
+    }
+
+    private func filesPaneContent(project: Project?) -> some View {
+        FileBrowserView(
+            connection: connection,
+            rootPath: project?.rootDirectory
+        )
+    }
+
+    private func gitChangesPaneContent(project: Project?) -> some View {
+        GitChangesView(
+            connection: connection,
+            rootPath: project?.rootDirectory
+        )
+    }
+
     private var controlBar: some View {
         HStack {
-            Button(action: { paneManager.addPane() }) {
+            Button(action: addPaneWithNewChat) {
                 Label("Add Pane", systemImage: "plus.rectangle.on.rectangle")
                     .font(.caption)
             }
@@ -147,6 +229,26 @@ struct SplitChatView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(Color(.secondarySystemBackground))
+    }
+
+    private func initializeFirstPane() {
+        guard let firstPane = paneManager.panes.first,
+              firstPane.conversationId == nil,
+              let project = projectStore.currentProject,
+              let conversation = projectStore.currentConversation else { return }
+        paneManager.linkToCurrentConversation(firstPane.id, project: project, conversation: conversation)
+    }
+
+    private func addPaneWithNewChat() {
+        var project = projectStore.currentProject
+        if project == nil {
+            project = projectStore.createProject(name: "Default Project")
+        }
+        guard let proj = project else { return }
+
+        let newPaneId = paneManager.addPane()
+        let newConv = projectStore.newConversation(in: proj)
+        paneManager.linkToCurrentConversation(newPaneId, project: proj, conversation: newConv)
     }
 
     private func removeActivePane() {

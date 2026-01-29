@@ -7,11 +7,15 @@ import SwiftUI
 
 struct GitChangesView: View {
     @ObservedObject var connection: ConnectionManager
-    let repoPath: String
+    var rootPath: String?
 
     @State private var gitStatus: GitStatusInfo?
     @State private var isLoading = false
     @State private var selectedFile: GitFileStatus?
+
+    private var repoPath: String {
+        rootPath ?? "~"
+    }
 
     var body: some View {
         VStack(spacing: 0) {

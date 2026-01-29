@@ -22,15 +22,18 @@ platform :ios do
       use_automatic_signing: true,
       path: "Cloude/Cloude.xcodeproj",
       team_id: "Q9U8224WWM",
-      profile_name: "",
-      code_sign_identity: "Apple Development",
       targets: ["Cloude"]
     )
 
     build_app(
       project: "Cloude/Cloude.xcodeproj",
       scheme: "Cloude",
-      export_method: "app-store"
+      export_method: "app-store",
+      export_xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: "Q9U8224WWM"
+      }
     )
 
     upload_to_testflight(

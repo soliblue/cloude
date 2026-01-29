@@ -16,7 +16,6 @@ struct ProjectConversationsView: View {
     @State private var editingConversation: Conversation?
     @State private var newName = ""
     @State private var showSettings = false
-    @State private var showGitChanges = false
 
     private var currentProject: Project {
         store.projects.first(where: { $0.id == project.id }) ?? project
@@ -95,11 +94,6 @@ struct ProjectConversationsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 12) {
-                    if !currentProject.rootDirectory.isEmpty {
-                        Button(action: { showGitChanges = true }) {
-                            Image(systemName: "arrow.triangle.branch")
-                        }
-                    }
                     Button(action: { showSettings = true }) {
                         Image(systemName: "gearshape")
                     }
@@ -110,16 +104,6 @@ struct ProjectConversationsView: View {
                         Image(systemName: "plus")
                     }
                 }
-            }
-        }
-        .sheet(isPresented: $showGitChanges) {
-            NavigationStack {
-                GitChangesView(connection: connection, repoPath: currentProject.rootDirectory)
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Done") { showGitChanges = false }
-                        }
-                    }
             }
         }
     }

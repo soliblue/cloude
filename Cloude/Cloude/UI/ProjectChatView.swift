@@ -19,22 +19,9 @@ struct ProjectChatView: View {
     var onSelectConversation: (() -> Void)?
 
     @State private var inputText = ""
-    @State private var currentOutput = ""
-    @State private var currentToolCalls: [ToolCall] = []
-    @State private var currentRunStats: (durationMs: Int, costUsd: Double)?
     @State private var scrollProxy: ScrollViewProxy?
     @State private var hasClipboardContent = false
-    @State private var streamingToolCallsExpanded = false
-
-    init(connection: ConnectionManager, store: ProjectStore, project: Project? = nil, conversation: Conversation? = nil, isCompact: Bool = false, showHeader: Bool = false, onSelectConversation: (() -> Void)? = nil) {
-        self.connection = connection
-        self.store = store
-        self.project = project
-        self.conversation = conversation
-        self.isCompact = isCompact
-        self.showHeader = showHeader
-        self.onSelectConversation = onSelectConversation
-    }
+    @State private var lastCompletedOutput: String = ""
 
     private var effectiveProject: Project? {
         project ?? store.currentProject
@@ -48,7 +35,19 @@ struct ProjectChatView: View {
         effectiveConversation?.messages ?? []
     }
 
+    private var convOutput: ConversationOutput? {
+        guard let convId = effectiveConversation?.id else { return nil }
+        return connection.output(for: convId)
+    }
+
+    private var isThisConversationRunning: Bool {
+        guard let convId = effectiveConversation?.id else { return false }
+        return connection.runningConversationId == convId
+    }
+
     var body: some View {
+        let output = convOutput
+
         VStack(spacing: 0) {
             if showHeader {
                 PaneHeaderView(
@@ -60,27 +59,27 @@ struct ProjectChatView: View {
             }
             ProjectChatMessageList(
                 messages: messages,
-                currentOutput: currentOutput,
-                currentToolCalls: currentToolCalls,
-                currentRunStats: isCompact ? nil : currentRunStats,
+                currentOutput: output?.text ?? "",
+                currentToolCalls: output?.toolCalls ?? [],
+                currentRunStats: isCompact ? nil : output?.runStats,
                 scrollProxy: $scrollProxy,
-                streamingToolCallsExpanded: $streamingToolCallsExpanded,
-                agentState: connection.agentState
+                agentState: isThisConversationRunning ? .running : .idle
             )
             Divider()
             ProjectChatInputArea(
                 inputText: $inputText,
                 hasClipboardContent: hasClipboardContent,
-                agentState: connection.agentState,
+                agentState: isThisConversationRunning ? .running : .idle,
                 isConnected: connection.isAuthenticated,
                 isCompact: isCompact,
                 onSend: sendMessage,
                 onAbort: { connection.abort() }
             )
         }
-        .onAppear { setupCallbacks() }
-        .onChange(of: connection.agentState) { _, newState in
-            handleStateChange(newState)
+        .onChange(of: connection.agentState) { oldState, newState in
+            if oldState == .running && newState == .idle {
+                handleCompletion()
+            }
         }
         .onAppear { checkClipboard() }
         .onReceive(NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)) { _ in
@@ -91,50 +90,35 @@ struct ProjectChatView: View {
         }
     }
 
-    private func setupCallbacks() {
-        connection.onOutput = { text in
-            currentOutput += text
-        }
-        connection.onToolCall = { name, input, toolId, parentToolId in
-            currentToolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId))
-        }
-        connection.onSessionId = { [store, project, conversation] sessionId in
-            let proj = project ?? store.currentProject
-            let conv = conversation ?? store.currentConversation
-            if let proj = proj, let conv = conv {
-                store.updateSessionId(conv, in: proj, sessionId: sessionId)
-            }
-        }
-        connection.onRunStats = { durationMs, costUsd in
-            currentRunStats = (durationMs, costUsd)
-        }
-    }
+    private func handleCompletion() {
+        guard let convId = effectiveConversation?.id else { return }
+        guard let output = convOutput else { return }
+        guard !output.text.isEmpty else { return }
+        guard output.text != lastCompletedOutput else { return }
+        guard output.isRunning == false else { return }
 
-    private func handleStateChange(_ newState: AgentState) {
-        if newState == .running {
-            currentRunStats = nil
-            streamingToolCallsExpanded = false
-        }
-
-        guard newState == .idle, !currentOutput.isEmpty else { return }
+        lastCompletedOutput = output.text
 
         if scenePhase != .active {
-            NotificationManager.showCompletionNotification(preview: currentOutput)
+            NotificationManager.showCompletionNotification(preview: output.text)
         }
 
-        if let proj = effectiveProject, let conv = effectiveConversation {
+        if let proj = effectiveProject, var conv = effectiveConversation {
+            if let newSessionId = output.newSessionId {
+                store.updateSessionId(conv, in: proj, sessionId: newSessionId)
+                conv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
+            }
+
             let message = ChatMessage(
                 isUser: false,
-                text: currentOutput.trimmingCharacters(in: .whitespacesAndNewlines),
-                toolCalls: currentToolCalls,
-                durationMs: currentRunStats?.durationMs,
-                costUsd: currentRunStats?.costUsd
+                text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                toolCalls: output.toolCalls,
+                durationMs: output.runStats?.durationMs,
+                costUsd: output.runStats?.costUsd
             )
             store.addMessage(message, to: conv, in: proj)
+            output.reset()
         }
-        currentOutput = ""
-        currentToolCalls = []
-        currentRunStats = nil
     }
 
     private func sendMessage() {
@@ -158,7 +142,7 @@ struct ProjectChatView: View {
 
         let isNewSession = conv.sessionId == nil
         let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
-        connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession)
+        connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id)
         inputText = ""
     }
 

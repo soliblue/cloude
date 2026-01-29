@@ -1,6 +1,23 @@
 import Foundation
 import Combine
 
+class ConversationOutput: ObservableObject {
+    weak var parent: ConnectionManager?
+
+    @Published var text: String = "" { didSet { parent?.objectWillChange.send() } }
+    @Published var toolCalls: [ToolCall] = [] { didSet { parent?.objectWillChange.send() } }
+    @Published var runStats: (durationMs: Int, costUsd: Double)? { didSet { parent?.objectWillChange.send() } }
+    @Published var isRunning: Bool = false { didSet { parent?.objectWillChange.send() } }
+    @Published var newSessionId: String? { didSet { parent?.objectWillChange.send() } }
+
+    func reset() {
+        text = ""
+        toolCalls = []
+        runStats = nil
+        newSessionId = nil
+    }
+}
+
 @MainActor
 class ConnectionManager: ObservableObject {
     @Published var isConnected = false
@@ -14,17 +31,24 @@ class ConnectionManager: ObservableObject {
     private var savedPort: UInt16 = 8765
     private var savedToken: String = ""
 
-    var onOutput: ((String) -> Void)?
-    var onFileChange: ((String, String?, String?) -> Void)?
+    var runningConversationId: UUID?
+    var conversationOutputs: [UUID: ConversationOutput] = [:]
+
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
     var onFileContent: ((String, String, String, Int64) -> Void)?
-    var onSessionId: ((String) -> Void)?
     var onMissedResponse: ((String, String, Date) -> Void)?
-    var onToolCall: ((String, String?, String, String?) -> Void)?  // name, input, toolId, parentToolId
-    var onRunStats: ((Int, Double) -> Void)?
     var onGitStatus: ((GitStatusInfo) -> Void)?
     var onGitDiff: ((String, String) -> Void)?
-    var onGitCommit: ((Bool, String?) -> Void)?
+
+    func output(for conversationId: UUID) -> ConversationOutput {
+        if let existing = conversationOutputs[conversationId] {
+            return existing
+        }
+        let new = ConversationOutput()
+        new.parent = self
+        conversationOutputs[conversationId] = new
+        return new
+    }
 
     var hasCredentials: Bool {
         !savedHost.isEmpty && !savedToken.isEmpty

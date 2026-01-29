@@ -8,13 +8,37 @@
 import Foundation
 import Combine
 
+enum PaneType: String, CaseIterable {
+    case chat
+    case files
+    case gitChanges
+
+    var icon: String {
+        switch self {
+        case .chat: return "bubble.left.and.bubble.right"
+        case .files: return "folder"
+        case .gitChanges: return "arrow.triangle.branch"
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .chat: return "Chat"
+        case .files: return "Files"
+        case .gitChanges: return "Changes"
+        }
+    }
+}
+
 struct ChatPane: Identifiable {
     let id: UUID
+    var type: PaneType
     var conversationId: UUID?
     var projectId: UUID?
 
-    init(id: UUID = UUID(), conversationId: UUID? = nil, projectId: UUID? = nil) {
+    init(id: UUID = UUID(), type: PaneType = .chat, conversationId: UUID? = nil, projectId: UUID? = nil) {
         self.id = id
+        self.type = type
         self.conversationId = conversationId
         self.projectId = projectId
     }
@@ -41,11 +65,13 @@ class PaneManager: ObservableObject {
         panes.count > 1
     }
 
-    func addPane() {
-        guard canAddPane else { return }
+    @discardableResult
+    func addPane() -> UUID {
         let pane = ChatPane()
+        guard canAddPane else { return pane.id }
         panes.append(pane)
         activePaneId = pane.id
+        return pane.id
     }
 
     func removePane(_ id: UUID) {
@@ -69,5 +95,10 @@ class PaneManager: ObservableObject {
 
     func linkToCurrentConversation(_ paneId: UUID, project: Project?, conversation: Conversation?) {
         updatePane(paneId, conversationId: conversation?.id, projectId: project?.id)
+    }
+
+    func setPaneType(_ paneId: UUID, type: PaneType) {
+        guard let index = panes.firstIndex(where: { $0.id == paneId }) else { return }
+        panes[index].type = type
     }
 }

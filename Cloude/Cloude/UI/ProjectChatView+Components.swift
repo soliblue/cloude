@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct PaneHeaderView: View {
     let project: Project?
@@ -49,27 +50,36 @@ struct ProjectChatMessageList: View {
     let currentToolCalls: [ToolCall]
     let currentRunStats: (durationMs: Int, costUsd: Double)?
     @Binding var scrollProxy: ScrollViewProxy?
-    @Binding var streamingToolCallsExpanded: Bool
     let agentState: AgentState
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(messages) { message in
-                        MessageBubble(message: message)
-                            .id(message.id)
-                    }
+        GeometryReader { geometry in
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        ForEach(messages) { message in
+                            MessageBubble(message: message)
+                                .id(message.id)
+                        }
 
-                    if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil {
-                        streamingView
+                        if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil {
+                            streamingView
+                        }
+
+                        Spacer()
+                            .frame(height: geometry.size.height - 100)
+                            .id("bottomSpacer")
                     }
                 }
-            }
-            .onAppear { scrollProxy = proxy }
-            .onChange(of: agentState) { old, new in
-                if old == .idle && new == .running {
-                    scrollToBottom()
+                .scrollDismissesKeyboard(.interactively)
+                .onTapGesture {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+                .onAppear { scrollProxy = proxy }
+                .onChange(of: agentState) { old, new in
+                    if old == .idle && new == .running {
+                        scrollToBottom()
+                    }
                 }
             }
         }
@@ -78,7 +88,7 @@ struct ProjectChatMessageList: View {
     private var streamingView: some View {
         VStack(alignment: .leading, spacing: 0) {
             if !currentToolCalls.isEmpty {
-                ToolCallsSection(toolCalls: currentToolCalls, isExpanded: $streamingToolCallsExpanded)
+                ToolCallsSection(toolCalls: currentToolCalls)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
             }
@@ -99,7 +109,7 @@ struct ProjectChatMessageList: View {
             if !currentOutput.isEmpty {
                 scrollProxy?.scrollTo("streaming", anchor: .bottom)
             } else if let last = messages.last {
-                scrollProxy?.scrollTo(last.id, anchor: .bottom)
+                scrollProxy?.scrollTo(last.id, anchor: .top)
             }
         }
     }
@@ -129,11 +139,26 @@ struct ProjectChatInputArea: View {
                 .onSubmit { onSend() }
 
             if isCompact {
-                Button(action: onSend) {
-                    Image(systemName: "paperplane")
-                        .foregroundColor(inputText.isEmpty ? .secondary : .accentColor)
+                HStack(spacing: 8) {
+                    if hasClipboardContent && inputText.isEmpty {
+                        Button(action: pasteFromClipboard) {
+                            Image(systemName: "clipboard")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    if agentState == .running {
+                        Button(action: onAbort) {
+                            Image(systemName: "stop.circle.fill")
+                                .foregroundColor(.orange)
+                        }
+                    } else {
+                        Button(action: onSend) {
+                            Image(systemName: "paperplane")
+                                .foregroundColor(inputText.isEmpty ? .secondary : .accentColor)
+                        }
+                        .disabled(inputText.isEmpty)
+                    }
                 }
-                .disabled(inputText.isEmpty || agentState == .running)
             } else {
                 InputButtons(
                     inputText: $inputText,
