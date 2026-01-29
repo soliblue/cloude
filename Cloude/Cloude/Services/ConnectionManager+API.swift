@@ -11,13 +11,22 @@ extension ConnectionManager {
 
         switch message {
         case .output(let text):
-            onOutput?(text)
+            if let convId = runningConversationId {
+                output(for: convId).text += text
+            }
 
-        case .fileChange(let path, let diff, let content):
-            onFileChange?(path, diff, content)
+        case .fileChange:
+            break
 
         case .status(let state):
             agentState = state
+            if let convId = runningConversationId {
+                let out = output(for: convId)
+                out.isRunning = (state == .running)
+                if state == .idle {
+                    runningConversationId = nil
+                }
+            }
 
         case .authRequired:
             authenticate()
@@ -41,7 +50,9 @@ extension ConnectionManager {
             onFileContent?(path, data, mimeType, size)
 
         case .sessionId(let id):
-            onSessionId?(id)
+            if let convId = runningConversationId {
+                output(for: convId).newSessionId = id
+            }
 
         case .missedResponse(let sessionId, let text, let completedAt):
             onMissedResponse?(sessionId, text, completedAt)
@@ -50,10 +61,14 @@ extension ConnectionManager {
             break
 
         case .toolCall(let name, let input, let toolId, let parentToolId):
-            onToolCall?(name, input, toolId, parentToolId)
+            if let convId = runningConversationId {
+                output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId))
+            }
 
         case .runStats(let durationMs, let costUsd):
-            onRunStats?(durationMs, costUsd)
+            if let convId = runningConversationId {
+                output(for: convId).runStats = (durationMs, costUsd)
+            }
 
         case .gitStatusResult(let status):
             onGitStatus?(status)
@@ -61,14 +76,19 @@ extension ConnectionManager {
         case .gitDiffResult(let path, let diff):
             onGitDiff?(path, diff)
 
-        case .gitCommitResult(let success, let message):
-            onGitCommit?(success, message)
+        case .gitCommitResult:
+            break
         }
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true) {
+    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil) {
         if !isAuthenticated {
             reconnectIfNeeded()
+        }
+        if let convId = conversationId {
+            runningConversationId = convId
+            output(for: convId).reset()
+            output(for: convId).isRunning = true
         }
         send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession))
     }

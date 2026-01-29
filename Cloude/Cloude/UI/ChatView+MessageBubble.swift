@@ -9,23 +9,27 @@ import UIKit
 struct MessageBubble: View {
     let message: ChatMessage
     @State private var showTimestamp = false
-    @State private var showToolCalls = false
     @State private var showCopiedToast = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if !message.isUser && !message.toolCalls.isEmpty {
-                ToolCallsSection(toolCalls: message.toolCalls, isExpanded: $showToolCalls)
+                ToolCallsSection(toolCalls: message.toolCalls)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
             }
 
             HStack(alignment: .top, spacing: 10) {
                 if showTimestamp {
-                    Text(message.timestamp, style: .time)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .transition(.move(edge: .leading).combined(with: .opacity))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(message.timestamp, style: .time)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        if !message.isUser, let durationMs = message.durationMs, let costUsd = message.costUsd {
+                            RunStatsView(durationMs: durationMs, costUsd: costUsd)
+                        }
+                    }
+                    .transition(.move(edge: .leading).combined(with: .opacity))
                 }
 
                 Group {
@@ -76,11 +80,6 @@ struct MessageBubble: View {
                 }
             }
 
-            if !message.isUser, let durationMs = message.durationMs, let costUsd = message.costUsd {
-                RunStatsView(durationMs: durationMs, costUsd: costUsd)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 8)
-            }
         }
     }
 }
