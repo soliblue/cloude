@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Critical Warning
+
+**NEVER kill/stop the Cloude Agent process** - The user connects to Claude Code through the Cloude Agent. Killing it disconnects them and they lose the ability to communicate with you. If asked to restart or rebuild the agent, launch the new one BEFORE or WITHOUT killing the old one.
+
 ## Multi-Agent Workflow
 
 Multiple Claude agents may work on this project simultaneously. Follow these rules:
@@ -47,6 +51,9 @@ source .env && fastlane ios beta_local
 # Mac agent only (build + launch)
 source .env && fastlane mac build_agent
 
+# Mac agent release (notarized DMG for distribution)
+source .env && fastlane mac release_agent
+
 # Build iOS for connected iPhone (without TestFlight)
 xcodebuild -project Cloude/Cloude.xcodeproj -scheme Cloude -destination 'platform=iOS,name=My iPhone' build
 
@@ -58,13 +65,43 @@ Open `Cloude/Cloude.xcodeproj` in Xcode to run on device.
 
 ## Deployment Setup
 
+### First-Time Setup Checklist
+
+1. **Create App in App Store Connect**
+   - Go to App Store Connect > My Apps > + > New App
+   - Bundle ID: `soli.Cloude`
+   - SKU: `cloude-ios`
+   - Platform: iOS
+
+2. **Register App ID in Developer Portal**
+   - Go to Certificates, Identifiers & Profiles > Identifiers
+   - Create identifier with bundle ID `soli.Cloude`
+   - Enable capabilities: App Groups, Push Notifications, Siri, Time Sensitive Notifications, Associated Domains, iCloud (with CloudKit)
+
+3. **Set up `.env` file** (gitignored)
+   ```
+   APP_STORE_CONNECT_API_KEY_ID=<key_id>
+   APP_STORE_CONNECT_API_ISSUER_ID=<issuer_id>
+   APP_STORE_CONNECT_API_KEY_CONTENT="-----BEGIN PRIVATE KEY-----
+   <key_content>
+   -----END PRIVATE KEY-----"
+   ```
+   API key from: App Store Connect > Users and Access > Keys
+
+4. **App Icon Requirements**
+   - Must NOT have alpha/transparency (App Store rejects it)
+   - To remove alpha: `sips -s format jpeg AppIcon.png --out temp.jpg && sips -s format png temp.jpg --out AppIcon.png`
+
+5. **Info.plist Settings**
+   - `ITSAppUsesNonExemptEncryption = NO` - skips encryption compliance modal
+
 ### App Store Connect
 - **iOS App Bundle ID**: `soli.Cloude`
 - **Mac Agent Bundle ID**: `soli.Cloude-Agent`
 - **Team ID**: `Q9U8224WWM`
 - **SKU**: `cloude-ios`
 
-### iOS App Capabilities (enabled in App Store Connect)
+### iOS App Capabilities
 - App Groups (`group.soli.Cloude`)
 - Push Notifications
 - Siri
@@ -72,23 +109,20 @@ Open `Cloude/Cloude.xcodeproj` in Xcode to run on device.
 - Associated Domains
 - iCloud (with CloudKit)
 
-### Fastlane Configuration
-Located in `fastlane/Fastfile` with three lanes:
-- `fastlane deploy` - builds both Mac agent and iOS, uploads iOS to TestFlight
-- `fastlane ios beta_local` - iOS to TestFlight only
-- `fastlane mac build_agent` - builds and launches Mac agent locally
+### Fastlane Lanes
+Located in `fastlane/Fastfile`.
 
-### Environment Variables (`.env`)
-Required for deployment:
-```
-APP_STORE_CONNECT_API_KEY_ID=<key_id>
-APP_STORE_CONNECT_API_ISSUER_ID=<issuer_id>
-APP_STORE_CONNECT_API_KEY_CONTENT="-----BEGIN PRIVATE KEY-----
-<key_content>
------END PRIVATE KEY-----"
-```
+**IMPORTANT**: Always prefix with `source .env &&` to load API credentials!
 
-The `.env` file is gitignored. API key is from App Store Connect > Users and Access > Keys.
+| Command | Description |
+|---------|-------------|
+| `source .env && fastlane deploy` | Build Mac agent + iOS to TestFlight |
+| `source .env && fastlane ios beta_local` | iOS to TestFlight only |
+| `source .env && fastlane mac build_agent` | Mac agent local dev build |
+| `source .env && fastlane mac release_agent` | Mac agent notarized DMG |
+
+### Mac Agent Distribution
+The Mac agent cannot go on the Mac App Store (requires sandboxing which breaks CLI spawning). Instead, use `fastlane mac release_agent` to create a notarized DMG for direct distribution.
 
 ## Project Structure
 
