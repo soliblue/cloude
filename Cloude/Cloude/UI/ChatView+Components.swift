@@ -67,6 +67,7 @@ struct RunStatsView: View {
 
 struct ToolCallsSection: View {
     let toolCalls: [ToolCall]
+    @State private var expandedToolId: String?
 
     private var topLevelCalls: [ToolCall] {
         toolCalls.filter { $0.parentToolId == nil }
@@ -77,65 +78,32 @@ struct ToolCallsSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            ForEach(Array(topLevelCalls.enumerated()), id: \.offset) { _, toolCall in
-                ExpandableToolCall(
-                    toolCall: toolCall,
-                    children: children(of: toolCall.toolId)
-                )
-            }
-        }
-    }
-}
-
-struct ExpandableToolCall: View {
-    let toolCall: ToolCall
-    let children: [ToolCall]
-    @State private var isExpanded = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Button(action: { if !children.isEmpty { withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() } } }) {
-                HStack(spacing: 6) {
-                    if !children.isEmpty {
-                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .frame(width: 12)
-                    }
-                    Image(systemName: iconName(for: toolCall.name))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-                        .frame(width: 16)
-                    Text(displayText)
-                        .font(.system(size: 13, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                    if !children.isEmpty {
-                        Text("(\(children.count))")
-                            .font(.system(size: 11))
-                            .foregroundColor(Color(.tertiaryLabel))
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color(.tertiarySystemBackground))
-                .cornerRadius(6)
-            }
-            .buttonStyle(.plain)
-
-            if isExpanded {
-                VStack(alignment: .leading, spacing: 2) {
-                    ForEach(Array(children.enumerated()), id: \.offset) { _, child in
-                        HStack(spacing: 0) {
-                            Rectangle()
-                                .fill(Color(.tertiaryLabel))
-                                .frame(width: 1)
-                                .padding(.leading, 16)
-                            ToolCallRow(name: child.name, input: child.input)
+        VStack(alignment: .leading, spacing: 6) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(topLevelCalls.enumerated()), id: \.offset) { _, toolCall in
+                        ToolPill(
+                            toolCall: toolCall,
+                            childCount: children(of: toolCall.toolId).count,
+                            isExpanded: expandedToolId == toolCall.toolId
+                        )
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                if expandedToolId == toolCall.toolId {
+                                    expandedToolId = nil
+                                } else if !children(of: toolCall.toolId).isEmpty {
+                                    expandedToolId = toolCall.toolId
+                                }
+                            }
                         }
+                    }
+                }
+            }
+
+            if let expandedId = expandedToolId {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(children(of: expandedId).enumerated()), id: \.offset) { _, child in
+                        ToolCallRow(name: child.name, input: child.input)
                     }
                 }
                 .padding(.leading, 8)
@@ -143,19 +111,46 @@ struct ExpandableToolCall: View {
             }
         }
     }
+}
+
+struct ToolPill: View {
+    let toolCall: ToolCall
+    let childCount: Int
+    let isExpanded: Bool
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: iconName)
+                .font(.system(size: 11, weight: .medium))
+            Text(displayText)
+                .font(.system(size: 12, design: .monospaced))
+                .lineLimit(1)
+            if childCount > 0 {
+                Text("(\(childCount))")
+                    .font(.system(size: 10))
+                    .foregroundColor(Color(.tertiaryLabel))
+            }
+        }
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(isExpanded ? Color(.secondarySystemBackground) : Color(.tertiarySystemBackground))
+        .cornerRadius(14)
+    }
 
     private var displayText: String {
         if let input = toolCall.input, !input.isEmpty {
             if toolCall.name == "Task" {
-                return input  // Shows "Explore: Find files"
+                let parts = input.split(separator: ":", maxSplits: 1)
+                return parts.first.map(String.init) ?? input
             }
-            return "\(toolCall.name): \(input)"
+            return toolCall.name
         }
         return toolCall.name
     }
 
-    private func iconName(for name: String) -> String {
-        switch name.lowercased() {
+    private var iconName: String {
+        switch toolCall.name.lowercased() {
         case let n where n.contains("read"): return "doc.text"
         case let n where n.contains("write"), let n where n.contains("edit"): return "pencil"
         case let n where n.contains("bash"), let n where n.contains("shell"): return "terminal"

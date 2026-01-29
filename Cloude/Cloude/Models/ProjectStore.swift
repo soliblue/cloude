@@ -120,6 +120,81 @@ class ProjectStore: ObservableObject {
         save()
     }
 
+    func updateMessage(_ messageId: UUID, in conversation: Conversation, in project: Project, update: (inout ChatMessage) -> Void) {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }),
+              let convIndex = projects[projectIndex].conversations.firstIndex(where: { $0.id == conversation.id }),
+              let msgIndex = projects[projectIndex].conversations[convIndex].messages.firstIndex(where: { $0.id == messageId }) else {
+            return
+        }
+        update(&projects[projectIndex].conversations[convIndex].messages[msgIndex])
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
+
+    func queueMessage(_ message: ChatMessage, to conversation: Conversation, in project: Project) {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }),
+              let convIndex = projects[projectIndex].conversations.firstIndex(where: { $0.id == conversation.id }) else {
+            return
+        }
+        projects[projectIndex].conversations[convIndex].pendingMessages.append(message)
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
+
+    func popPendingMessages(from conversation: Conversation, in project: Project) -> [ChatMessage] {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }),
+              let convIndex = projects[projectIndex].conversations.firstIndex(where: { $0.id == conversation.id }) else {
+            return []
+        }
+        let pending = projects[projectIndex].conversations[convIndex].pendingMessages
+        projects[projectIndex].conversations[convIndex].pendingMessages = []
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+        return pending
+    }
+
+    func pendingMessageCount(in conversation: Conversation, in project: Project) -> Int {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }),
+              let convIndex = projects[projectIndex].conversations.firstIndex(where: { $0.id == conversation.id }) else {
+            return 0
+        }
+        return projects[projectIndex].conversations[convIndex].pendingMessages.count
+    }
+
+    func getQueuedMessages(in conversation: Conversation, in project: Project) -> [ChatMessage] {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }),
+              let convIndex = projects[projectIndex].conversations.firstIndex(where: { $0.id == conversation.id }) else {
+            return []
+        }
+        return projects[projectIndex].conversations[convIndex].messages.filter { $0.isQueued }
+    }
+
+    func clearQueuedFlags(in conversation: Conversation, in project: Project) {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == project.id }),
+              let convIndex = projects[projectIndex].conversations.firstIndex(where: { $0.id == conversation.id }) else {
+            return
+        }
+        for i in projects[projectIndex].conversations[convIndex].messages.indices {
+            if projects[projectIndex].conversations[convIndex].messages[i].isQueued {
+                projects[projectIndex].conversations[convIndex].messages[i].isQueued = false
+            }
+        }
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
+
     private func save() {
         if let data = try? JSONEncoder().encode(projects) {
             UserDefaults.standard.set(data, forKey: saveKey)

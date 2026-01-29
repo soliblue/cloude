@@ -99,9 +99,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
-        case .chat(let text, let workingDirectory, let sessionId, let isNewSession):
+        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64):
             server.broadcast(.status(state: .running))
-            runner.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession)
+            runner.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64)
 
         case .abort:
             runner.abort()

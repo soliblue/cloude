@@ -41,7 +41,9 @@ class ClaudeCodeRunner: ObservableObject {
         return "claude"
     }
 
-    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true) {
+    var tempImagePath: String?
+
+    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imageBase64: String? = nil) {
         guard !isRunning else {
             onOutput?("Claude is already running. Use abort to cancel.\n")
             return
@@ -51,6 +53,15 @@ class ClaudeCodeRunner: ObservableObject {
 
         if let wd = workingDirectory {
             currentDirectory = wd
+        }
+
+        if let base64 = imageBase64, let imageData = Data(base64Encoded: base64) {
+            let tempDir = FileManager.default.temporaryDirectory
+            let imagePath = tempDir.appendingPathComponent("cloude_image_\(UUID().uuidString).png").path
+            FileManager.default.createFile(atPath: imagePath, contents: imageData)
+            tempImagePath = imagePath
+        } else {
+            tempImagePath = nil
         }
 
         isRunning = true
@@ -63,6 +74,9 @@ class ClaudeCodeRunner: ObservableObject {
         var command = claudePath
         if let sid = sessionId, !isNewSession {
             command += " --resume \(sid)"
+        }
+        if let imagePath = tempImagePath {
+            command += " --image \(shellEscape(imagePath))"
         }
         command += " --dangerously-skip-permissions --output-format stream-json --verbose --include-partial-messages -p \(shellEscape(prompt))"
 

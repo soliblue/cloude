@@ -17,7 +17,9 @@ struct FilePreviewView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("Done") { dismiss() }
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark")
+                        }
                     }
                 }
         }

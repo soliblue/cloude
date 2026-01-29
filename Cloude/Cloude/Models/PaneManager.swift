@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-enum PaneType: String, CaseIterable {
+enum PaneType: String, CaseIterable, Codable {
     case chat
     case files
     case gitChanges
@@ -30,7 +30,7 @@ enum PaneType: String, CaseIterable {
     }
 }
 
-struct ChatPane: Identifiable {
+struct ChatPane: Identifiable, Codable {
     let id: UUID
     var type: PaneType
     var conversationId: UUID?
@@ -48,9 +48,44 @@ struct ChatPane: Identifiable {
 class PaneManager: ObservableObject {
     @Published var panes: [ChatPane] = [ChatPane()]
     @Published var activePaneId: UUID?
+    @Published var focusModeEnabled: Bool = true {
+        didSet { UserDefaults.standard.set(focusModeEnabled, forKey: focusModeKey) }
+    }
+
+    private let panesKey = "paneManager_panes"
+    private let activeKey = "paneManager_activePaneId"
+    private let focusModeKey = "paneManager_focusMode"
 
     init() {
-        activePaneId = panes.first?.id
+        focusModeEnabled = UserDefaults.standard.object(forKey: focusModeKey) as? Bool ?? true
+        load()
+        if panes.isEmpty {
+            panes = [ChatPane()]
+        }
+        if activePaneId == nil {
+            activePaneId = panes.first?.id
+        }
+    }
+
+    private func save() {
+        if let data = try? JSONEncoder().encode(panes) {
+            UserDefaults.standard.set(data, forKey: panesKey)
+        }
+        if let activeId = activePaneId {
+            UserDefaults.standard.set(activeId.uuidString, forKey: activeKey)
+        }
+    }
+
+    private func load() {
+        if let data = UserDefaults.standard.data(forKey: panesKey),
+           let decoded = try? JSONDecoder().decode([ChatPane].self, from: data) {
+            panes = decoded
+        }
+        if let idString = UserDefaults.standard.string(forKey: activeKey),
+           let id = UUID(uuidString: idString),
+           panes.contains(where: { $0.id == id }) {
+            activePaneId = id
+        }
     }
 
     var activePane: ChatPane? {
@@ -58,7 +93,7 @@ class PaneManager: ObservableObject {
     }
 
     var canAddPane: Bool {
-        panes.count < 4
+        panes.count < 3
     }
 
     var canRemovePane: Bool {
@@ -71,6 +106,7 @@ class PaneManager: ObservableObject {
         guard canAddPane else { return pane.id }
         panes.append(pane)
         activePaneId = pane.id
+        save()
         return pane.id
     }
 
@@ -80,17 +116,20 @@ class PaneManager: ObservableObject {
         if activePaneId == id {
             activePaneId = panes.first?.id
         }
+        save()
     }
 
     func setActive(_ id: UUID) {
         guard panes.contains(where: { $0.id == id }) else { return }
         activePaneId = id
+        save()
     }
 
     func updatePane(_ id: UUID, conversationId: UUID?, projectId: UUID?) {
         guard let index = panes.firstIndex(where: { $0.id == id }) else { return }
         panes[index].conversationId = conversationId
         panes[index].projectId = projectId
+        save()
     }
 
     func linkToCurrentConversation(_ paneId: UUID, project: Project?, conversation: Conversation?) {
@@ -100,5 +139,6 @@ class PaneManager: ObservableObject {
     func setPaneType(_ paneId: UUID, type: PaneType) {
         guard let index = panes.firstIndex(where: { $0.id == paneId }) else { return }
         panes[index].type = type
+        save()
     }
 }

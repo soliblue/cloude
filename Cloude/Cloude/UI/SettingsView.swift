@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var connection: ConnectionManager
+    @ObservedObject var paneManager: PaneManager
 
     @AppStorage("serverHost") private var serverHost = ""
     @AppStorage("serverPort") private var serverPort = "8765"
@@ -32,6 +33,7 @@ struct SettingsView: View {
                 .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
 
                 connectionSection
+                displaySection
                 securitySection
                 aboutSection
             }
@@ -39,8 +41,9 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                        .fontWeight(.semibold)
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                    }
                 }
             }
         }
@@ -99,6 +102,18 @@ struct SettingsView: View {
         }
     }
 
+    private var displaySection: some View {
+        Section {
+            SettingsRow(icon: "rectangle.expand.vertical", color: .indigo) {
+                Toggle("Focus Mode", isOn: $paneManager.focusModeEnabled)
+            }
+        } header: {
+            Text("Display")
+        } footer: {
+            Text("Active conversation expands to fill more space when multiple panes are open")
+        }
+    }
+
     private var securitySection: some View {
         Section {
             if BiometricAuth.isAvailable {
@@ -147,5 +162,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(connection: ConnectionManager())
+    SettingsView(connection: ConnectionManager(), paneManager: PaneManager())
 }

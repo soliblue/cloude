@@ -15,6 +15,7 @@ struct Conversation: Codable, Identifiable {
     let createdAt: Date
     var lastMessageAt: Date
     var messages: [ChatMessage]
+    var pendingMessages: [ChatMessage]
 
     init(name: String? = nil) {
         self.id = UUID()
@@ -22,7 +23,23 @@ struct Conversation: Codable, Identifiable {
         self.createdAt = Date()
         self.lastMessageAt = Date()
         self.messages = []
+        self.pendingMessages = []
         self.name = name ?? Self.generateName()
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        lastMessageAt = try container.decode(Date.self, forKey: .lastMessageAt)
+        messages = try container.decode([ChatMessage].self, forKey: .messages)
+        pendingMessages = try container.decodeIfPresent([ChatMessage].self, forKey: .pendingMessages) ?? []
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, sessionId, createdAt, lastMessageAt, messages, pendingMessages
     }
 
     private static func generateName() -> String {
@@ -51,13 +68,16 @@ struct ToolCall: Codable {
 struct ChatMessage: Codable, Identifiable {
     let id: UUID
     let isUser: Bool
-    let text: String
+    var text: String
     let timestamp: Date
     var toolCalls: [ToolCall]
     var durationMs: Int?
     var costUsd: Double?
+    var isQueued: Bool
+    var wasInterrupted: Bool
+    var imageBase64: String?
 
-    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil) {
+    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil) {
         self.id = UUID()
         self.isUser = isUser
         self.text = text
@@ -65,6 +85,27 @@ struct ChatMessage: Codable, Identifiable {
         self.toolCalls = toolCalls
         self.durationMs = durationMs
         self.costUsd = costUsd
+        self.isQueued = isQueued
+        self.wasInterrupted = wasInterrupted
+        self.imageBase64 = imageBase64
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        isUser = try container.decode(Bool.self, forKey: .isUser)
+        text = try container.decode(String.self, forKey: .text)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+        toolCalls = try container.decodeIfPresent([ToolCall].self, forKey: .toolCalls) ?? []
+        durationMs = try container.decodeIfPresent(Int.self, forKey: .durationMs)
+        costUsd = try container.decodeIfPresent(Double.self, forKey: .costUsd)
+        isQueued = try container.decodeIfPresent(Bool.self, forKey: .isQueued) ?? false
+        wasInterrupted = try container.decodeIfPresent(Bool.self, forKey: .wasInterrupted) ?? false
+        imageBase64 = try container.decodeIfPresent(String.self, forKey: .imageBase64)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64
     }
 }
 

@@ -5,6 +5,7 @@ import UIKit
 struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
     @StateObject private var projectStore = ProjectStore()
+    @StateObject private var paneManager = PaneManager()
     @State private var showSettings = false
     @State private var showProjects = false
     @State private var wasBackgrounded = false
@@ -16,17 +17,20 @@ struct CloudeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if requireBiometricAuth && !isUnlocked {
-                LockScreenView(onUnlock: { isUnlocked = true })
-            } else {
-                mainContent
+            Group {
+                if requireBiometricAuth && !isUnlocked {
+                    LockScreenView(onUnlock: { isUnlocked = true })
+                } else {
+                    mainContent
+                }
             }
+            .preferredColorScheme(appTheme.colorScheme)
         }
     }
 
     private var mainContent: some View {
         NavigationStack {
-            SplitChatView(connection: connection, projectStore: projectStore)
+            SplitChatView(connection: connection, projectStore: projectStore, paneManager: paneManager)
             .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -58,7 +62,7 @@ struct CloudeApp: App {
                 }
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView(connection: connection)
+            SettingsView(connection: connection, paneManager: paneManager)
         }
         .sheet(isPresented: $showProjects) {
             ProjectNavigationView(store: projectStore, connection: connection, isPresented: $showProjects)
@@ -79,7 +83,6 @@ struct CloudeApp: App {
                 wasBackgrounded = false
             }
         }
-        .preferredColorScheme(appTheme.colorScheme)
     }
 
     private func loadAndConnect() {
@@ -99,6 +102,23 @@ struct CloudeApp: App {
                let conversation = projectStore.currentConversation {
                 let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines))
                 projectStore.addMessage(message, to: conversation, in: project)
+            }
+        }
+
+        connection.onDisconnect = { [projectStore] convId, output in
+            guard !output.text.isEmpty else { return }
+            for project in projectStore.projects {
+                if let conv = project.conversations.first(where: { $0.id == convId }) {
+                    let message = ChatMessage(
+                        isUser: false,
+                        text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                        toolCalls: output.toolCalls,
+                        wasInterrupted: true
+                    )
+                    projectStore.addMessage(message, to: conv, in: project)
+                    output.reset()
+                    break
+                }
             }
         }
 

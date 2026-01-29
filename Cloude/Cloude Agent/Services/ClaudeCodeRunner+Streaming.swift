@@ -109,6 +109,11 @@ extension ClaudeCodeRunner {
         isRunning = false
         accumulatedOutput = ""
         lineBuffer = ""
+
+        if let imagePath = tempImagePath {
+            try? FileManager.default.removeItem(atPath: imagePath)
+            tempImagePath = nil
+        }
     }
 
     private func extractToolInput(name: String, input: [String: Any]?) -> String? {

@@ -33,7 +33,9 @@ extension ConnectionManager {
 
         case .authResult(let success, let errorMessage):
             isAuthenticated = success
-            if !success {
+            if success {
+                checkForMissedResponse()
+            } else {
                 lastError = errorMessage ?? "Authentication failed"
             }
 
@@ -54,11 +56,18 @@ extension ConnectionManager {
                 output(for: convId).newSessionId = id
             }
 
-        case .missedResponse(let sessionId, let text, let completedAt):
-            onMissedResponse?(sessionId, text, completedAt)
+        case .missedResponse(let sessionId, let text, _):
+            if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
+                output(for: interrupted.conversationId).text = text
+                output(for: interrupted.conversationId).isRunning = false
+                interruptedSession = nil
+            }
+            onMissedResponse?(sessionId, text, Date())
 
-        case .noMissedResponse:
-            break
+        case .noMissedResponse(let sessionId):
+            if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
+                interruptedSession = nil
+            }
 
         case .toolCall(let name, let input, let toolId, let parentToolId):
             if let convId = runningConversationId {
@@ -81,7 +90,7 @@ extension ConnectionManager {
         }
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil) {
+    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil) {
         if !isAuthenticated {
             reconnectIfNeeded()
         }
@@ -90,7 +99,7 @@ extension ConnectionManager {
             output(for: convId).reset()
             output(for: convId).isRunning = true
         }
-        send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession))
+        send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64))
     }
 
     func abort() {
