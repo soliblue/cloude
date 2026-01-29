@@ -19,3 +19,9 @@ xcuserdata/
 *.env
 *.secret
 *.key
+
+# Fastlane
+fastlane/report.xml
+fastlane/README.md
+*.ipa
+*.dSYM.zip

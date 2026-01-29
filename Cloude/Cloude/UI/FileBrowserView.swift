@@ -9,10 +9,10 @@ import SwiftUI
 
 struct FileBrowserView: View {
     @ObservedObject var connection: ConnectionManager
-    @State private var currentPath: String = ""
-    @State private var entries: [FileEntry] = []
-    @State private var selectedFile: FileEntry?
-    @State private var isLoading = false
+    @State var currentPath: String = "~"
+    @State var entries: [FileEntry] = []
+    @State var selectedFile: FileEntry?
+    @State var isLoading = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,36 +24,8 @@ struct FileBrowserView: View {
             FilePreviewView(file: file, connection: connection)
         }
         .onAppear {
-            if currentPath.isEmpty {
-                currentPath = NSHomeDirectory()
-                loadDirectory()
-            }
+            loadDirectory()
         }
-    }
-
-    private var pathBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
-                ForEach(pathComponents, id: \.path) { component in
-                    Button(action: { navigateTo(component.path) }) {
-                        HStack(spacing: 2) {
-                            Text(component.name)
-                                .font(.caption)
-                            if component.path != currentPath {
-                                Image(systemName: "chevron.right")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundColor(component.path == currentPath ? .primary : .accentColor)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-        }
-        .background(Color(.secondarySystemBackground))
     }
 
     private var fileList: some View {
@@ -78,21 +50,7 @@ struct FileBrowserView: View {
         }
     }
 
-    private var pathComponents: [PathComponent] {
-        var components: [PathComponent] = []
-        var path = currentPath
-
-        while path != "/" && !path.isEmpty {
-            let name = (path as NSString).lastPathComponent
-            components.insert(PathComponent(name: name, path: path), at: 0)
-            path = (path as NSString).deletingLastPathComponent
-        }
-        components.insert(PathComponent(name: "/", path: "/"), at: 0)
-
-        return components
-    }
-
-    private func navigateTo(_ path: String) {
+    func navigateTo(_ path: String) {
         currentPath = path
         loadDirectory()
     }
@@ -103,69 +61,9 @@ struct FileBrowserView: View {
         connection.listDirectory(path: currentPath)
 
         connection.onDirectoryListing = { path, newEntries in
-            if path == currentPath {
-                entries = newEntries
-                isLoading = false
-            }
-        }
-    }
-}
-
-struct PathComponent: Identifiable {
-    var id: String { path }
-    let name: String
-    let path: String
-}
-
-struct FileRow: View {
-    let entry: FileEntry
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                Image(systemName: entry.icon)
-                    .font(.title2)
-                    .foregroundColor(iconColor)
-                    .frame(width: 32)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(entry.name)
-                        .font(.body)
-                        .lineLimit(1)
-
-                    HStack(spacing: 8) {
-                        if !entry.isDirectory {
-                            Text(entry.formattedSize)
-                        }
-                        Text(entry.modified, style: .date)
-                    }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                if entry.isDirectory {
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var iconColor: Color {
-        if entry.isDirectory {
-            return .blue
-        } else if entry.isImage {
-            return .green
-        } else if entry.isVideo {
-            return .purple
-        } else {
-            return .secondary
+            currentPath = path
+            entries = newEntries
+            isLoading = false
         }
     }
 }
