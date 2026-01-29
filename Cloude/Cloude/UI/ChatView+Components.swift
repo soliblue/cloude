@@ -67,7 +67,6 @@ struct RunStatsView: View {
 
 struct ToolCallsSection: View {
     let toolCalls: [ToolCall]
-    @Binding var isExpanded: Bool
 
     private var topLevelCalls: [ToolCall] {
         toolCalls.filter { $0.parentToolId == nil }
@@ -78,18 +77,46 @@ struct ToolCallsSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() } }) {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(Array(topLevelCalls.enumerated()), id: \.offset) { _, toolCall in
+                ExpandableToolCall(
+                    toolCall: toolCall,
+                    children: children(of: toolCall.toolId)
+                )
+            }
+        }
+    }
+}
+
+struct ExpandableToolCall: View {
+    let toolCall: ToolCall
+    let children: [ToolCall]
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Button(action: { if !children.isEmpty { withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() } } }) {
                 HStack(spacing: 6) {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 10, weight: .semibold))
+                    if !children.isEmpty {
+                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .frame(width: 12)
+                    }
+                    Image(systemName: iconName(for: toolCall.name))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.secondary)
-                        .frame(width: 12)
-
-                    Text("\(toolCalls.count) tool call\(toolCalls.count == 1 ? "" : "s")")
-                        .font(.system(size: 13))
+                        .frame(width: 16)
+                    Text(displayText)
+                        .font(.system(size: 13, design: .monospaced))
                         .foregroundColor(.secondary)
-
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    if !children.isEmpty {
+                        Text("(\(children.count))")
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(.tertiaryLabel))
+                    }
                     Spacer()
                 }
                 .padding(.horizontal, 10)
@@ -101,27 +128,40 @@ struct ToolCallsSection: View {
 
             if isExpanded {
                 VStack(alignment: .leading, spacing: 2) {
-                    ForEach(Array(topLevelCalls.enumerated()), id: \.offset) { _, toolCall in
-                        ToolCallRow(name: toolCall.name, input: toolCall.input)
-                        let childCalls = children(of: toolCall.toolId)
-                        if !childCalls.isEmpty {
-                            VStack(alignment: .leading, spacing: 2) {
-                                ForEach(Array(childCalls.enumerated()), id: \.offset) { _, child in
-                                    HStack(spacing: 0) {
-                                        Rectangle()
-                                            .fill(Color(.tertiaryLabel))
-                                            .frame(width: 1)
-                                            .padding(.leading, 8)
-                                        ToolCallRow(name: child.name, input: child.input)
-                                    }
-                                }
-                            }
-                            .padding(.leading, 12)
+                    ForEach(Array(children.enumerated()), id: \.offset) { _, child in
+                        HStack(spacing: 0) {
+                            Rectangle()
+                                .fill(Color(.tertiaryLabel))
+                                .frame(width: 1)
+                                .padding(.leading, 16)
+                            ToolCallRow(name: child.name, input: child.input)
                         }
                     }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .padding(.leading, 8)
+                .transition(.opacity)
             }
+        }
+    }
+
+    private var displayText: String {
+        if let input = toolCall.input, !input.isEmpty {
+            if toolCall.name == "Task" {
+                return input  // Shows "Explore: Find files"
+            }
+            return "\(toolCall.name): \(input)"
+        }
+        return toolCall.name
+    }
+
+    private func iconName(for name: String) -> String {
+        switch name.lowercased() {
+        case let n where n.contains("read"): return "doc.text"
+        case let n where n.contains("write"), let n where n.contains("edit"): return "pencil"
+        case let n where n.contains("bash"), let n where n.contains("shell"): return "terminal"
+        case let n where n.contains("glob"), let n where n.contains("search"): return "magnifyingglass"
+        case let n where n.contains("task"), let n where n.contains("agent"): return "person.2"
+        default: return "wrench"
         }
     }
 }
