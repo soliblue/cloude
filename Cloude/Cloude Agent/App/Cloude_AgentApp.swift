@@ -19,9 +19,11 @@ struct Cloude_AgentApp: App {
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private var server: WebSocketServer!
+    var server: WebSocketServer!
     private var runner: ClaudeCodeRunner!
     private var popover: NSPopover!
+    private var currentSessionId: String?
+    private var accumulatedResponse = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -49,10 +51,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         runner.onOutput = { [weak self] text in
+            self?.accumulatedResponse += text
             self?.server.broadcast(.output(text: text))
         }
 
+        runner.onSessionId = { [weak self] sessionId in
+            self?.currentSessionId = sessionId
+            self?.server.broadcast(.sessionId(id: sessionId))
+        }
+
+        runner.onToolCall = { [weak self] name, input, toolId, parentToolId in
+            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId))
+        }
+
+        runner.onRunStats = { [weak self] durationMs, costUsd in
+            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd))
+        }
+
         runner.onComplete = { [weak self] in
+            if let sessionId = self?.currentSessionId, let response = self?.accumulatedResponse, !response.isEmpty {
+                ResponseStore.store(sessionId: sessionId, text: response)
+            }
+            self?.accumulatedResponse = ""
             self?.server.broadcast(.status(state: .idle))
         }
     }
@@ -79,9 +99,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
-        case .chat(let text, let workingDirectory):
+        case .chat(let text, let workingDirectory, let sessionId, let isNewSession):
             server.broadcast(.status(state: .running))
-            runner.run(prompt: text, workingDirectory: workingDirectory)
+            runner.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession)
 
         case .abort:
             runner.abort()
@@ -93,26 +113,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             handleGetFile(path, connection: connection)
 
         case .auth:
-            break // Handled by server
+            break
+
+        case .requestMissedResponse(let sessionId):
+            if let stored = ResponseStore.retrieve(sessionId: sessionId) {
+                server.sendMessage(.missedResponse(sessionId: sessionId, text: stored.text, completedAt: stored.completedAt), to: connection)
+                ResponseStore.clear(sessionId: sessionId)
+            } else {
+                server.sendMessage(.noMissedResponse(sessionId: sessionId), to: connection)
+            }
+
+        case .gitStatus(let path):
+            handleGitStatus(path, connection: connection)
+
+        case .gitDiff(let path, let file):
+            handleGitDiff(path, file: file, connection: connection)
+
+        case .gitCommit(let path, let message, let files):
+            handleGitCommit(path, message: message, files: files, connection: connection)
         }
     }
 
-    private func handleListDirectory(_ path: String, connection: NWConnection) {
-        switch FileService.shared.listDirectory(at: path) {
-        case .success(let entries):
-            server.sendMessage(.directoryListing(path: path, entries: entries), to: connection)
-        case .failure(let error):
-            server.sendMessage(.error(message: error.localizedDescription), to: connection)
-        }
-    }
-
-    private func handleGetFile(_ path: String, connection: NWConnection) {
-        switch FileService.shared.getFile(at: path) {
-        case .success(let result):
-            let base64 = result.data.base64EncodedString()
-            server.sendMessage(.fileContent(path: path, data: base64, mimeType: result.mimeType, size: result.size), to: connection)
-        case .failure(let error):
-            server.sendMessage(.error(message: error.localizedDescription), to: connection)
-        }
-    }
 }

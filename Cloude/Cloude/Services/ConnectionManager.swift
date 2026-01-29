@@ -18,6 +18,13 @@ class ConnectionManager: ObservableObject {
     var onFileChange: ((String, String?, String?) -> Void)?
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
     var onFileContent: ((String, String, String, Int64) -> Void)?
+    var onSessionId: ((String) -> Void)?
+    var onMissedResponse: ((String, String, Date) -> Void)?
+    var onToolCall: ((String, String?, String, String?) -> Void)?  // name, input, toolId, parentToolId
+    var onRunStats: ((Int, Double) -> Void)?
+    var onGitStatus: ((GitStatusInfo) -> Void)?
+    var onGitDiff: ((String, String) -> Void)?
+    var onGitCommit: ((Bool, String?) -> Void)?
 
     var hasCredentials: Bool {
         !savedHost.isEmpty && !savedToken.isEmpty
@@ -68,103 +75,44 @@ class ConnectionManager: ObservableObject {
         }
     }
 
-    private func receiveMessage() {
+    func receiveMessage() {
         webSocket?.receive { [weak self] result in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 switch result {
                 case .success(let message):
                     switch message {
                     case .string(let text):
-                        self?.handleMessage(text)
+                        self.handleMessage(text)
                     case .data(let data):
                         if let text = String(data: data, encoding: .utf8) {
-                            self?.handleMessage(text)
+                            self.handleMessage(text)
                         }
                     @unknown default:
                         break
                     }
-                    self?.receiveMessage()
+                    self.receiveMessage()
 
                 case .failure(let error):
-                    self?.lastError = error.localizedDescription
-                    self?.isConnected = false
-                    self?.isAuthenticated = false
+                    self.lastError = error.localizedDescription
+                    self.isConnected = false
+                    self.isAuthenticated = false
                 }
             }
         }
     }
 
-    private func handleMessage(_ text: String) {
-        guard let data = text.data(using: .utf8),
-              let message = try? JSONDecoder().decode(ServerMessage.self, from: data) else {
-            return
-        }
-
-        switch message {
-        case .output(let text):
-            onOutput?(text)
-
-        case .fileChange(let path, let diff, let content):
-            onFileChange?(path, diff, content)
-
-        case .status(let state):
-            agentState = state
-
-        case .authRequired:
-            authenticate()
-
-        case .authResult(let success, let errorMessage):
-            isAuthenticated = success
-            if !success {
-                lastError = errorMessage ?? "Authentication failed"
-            }
-
-        case .error(let errorMessage):
-            lastError = errorMessage
-
-        case .image:
-            break
-
-        case .directoryListing(let path, let entries):
-            onDirectoryListing?(path, entries)
-
-        case .fileContent(let path, let data, let mimeType, let size):
-            onFileContent?(path, data, mimeType, size)
-        }
-    }
-
-    private func authenticate() {
+    func authenticate() {
         send(.auth(token: savedToken))
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil) {
-        if !isAuthenticated {
-            reconnectIfNeeded()
-        }
-        send(.chat(message: message, workingDirectory: workingDirectory))
-    }
-
-    func abort() {
-        send(.abort)
-    }
-
-    func listDirectory(path: String) {
-        if !isAuthenticated { reconnectIfNeeded() }
-        send(.listDirectory(path: path))
-    }
-
-    func getFile(path: String) {
-        if !isAuthenticated { reconnectIfNeeded() }
-        send(.getFile(path: path))
-    }
-
-    private func send(_ message: ClientMessage) {
+    func send(_ message: ClientMessage) {
         guard let data = try? JSONEncoder().encode(message),
               let text = String(data: data, encoding: .utf8) else { return }
 
         webSocket?.send(.string(text)) { [weak self] error in
             if let error = error {
-                Task { @MainActor in
+                Task { @MainActor [weak self] in
                     self?.lastError = error.localizedDescription
                 }
             }
