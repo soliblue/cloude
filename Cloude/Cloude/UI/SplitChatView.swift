@@ -6,24 +6,57 @@
 //
 
 import SwiftUI
+import UIKit
+import PhotosUI
+import Combine
 
 struct SplitChatView: View {
     @ObservedObject var connection: ConnectionManager
     @ObservedObject var projectStore: ProjectStore
-    @StateObject private var paneManager = PaneManager()
+    @ObservedObject var paneManager: PaneManager
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State private var selectingPane: ChatPane?
+    @State private var isKeyboardVisible = false
+    @State private var inputText = ""
+    @State private var selectedImageData: Data?
+    @State private var hasClipboardContent = false
+    @State private var drafts: [UUID: (text: String, imageData: Data?)] = [:]
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                paneGrid(geometry: geometry)
-                Divider()
-                controlBar
-            }
+            paneGrid(geometry: geometry)
         }
-        .onAppear { initializeFirstPane() }
-        .onChange(of: paneManager.activePaneId) { _, _ in
+        .onTapGesture {
+            dismissKeyboard()
+        }
+        .safeAreaInset(edge: .bottom) {
+            GlobalInputBar(
+                inputText: $inputText,
+                selectedImageData: $selectedImageData,
+                hasClipboardContent: hasClipboardContent,
+                isConnected: connection.isAuthenticated,
+                onSend: sendMessage
+            )
+        }
+        .onAppear {
+            initializeFirstPane()
+            checkClipboard()
+        }
+        .onChange(of: paneManager.activePaneId) { oldId, newId in
+            if let oldId = oldId {
+                if !inputText.isEmpty || selectedImageData != nil {
+                    drafts[oldId] = (inputText, selectedImageData)
+                } else {
+                    drafts.removeValue(forKey: oldId)
+                }
+            }
+            if let newId = newId, let draft = drafts[newId] {
+                inputText = draft.text
+                selectedImageData = draft.imageData
+            } else {
+                inputText = ""
+                selectedImageData = nil
+            }
             if paneManager.panes.count == 1 { syncActivePaneToStore() }
         }
         .onChange(of: projectStore.currentConversation?.id) { _, _ in
@@ -38,95 +71,91 @@ struct SplitChatView: View {
                 }
             )
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            isKeyboardVisible = false
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)) { _ in
+            checkClipboard()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            checkClipboard()
+        }
     }
 
     @ViewBuilder
     private func paneGrid(geometry: GeometryProxy) -> some View {
-        let paneCount = paneManager.panes.count
-        let isLandscape = geometry.size.width > geometry.size.height
-
-        switch paneCount {
-        case 1:
-            singlePane
-        case 2:
-            twoPanes(isLandscape: isLandscape)
-        default:
-            fourPaneGrid
-        }
-    }
-
-    private var singlePane: some View {
-        paneView(for: paneManager.panes[0])
-            .padding(4)
-    }
-
-    private func twoPanes(isLandscape: Bool) -> some View {
-        Group {
-            if isLandscape {
-                HStack(spacing: 4) {
-                    ForEach(paneManager.panes) { pane in
-                        paneView(for: pane)
-                    }
-                }
-            } else {
-                VStack(spacing: 4) {
-                    ForEach(paneManager.panes) { pane in
-                        paneView(for: pane)
-                    }
-                }
-            }
-        }
-        .padding(4)
-    }
-
-    private var fourPaneGrid: some View {
-        let panes = paneManager.panes
-        return VStack(spacing: 4) {
-            HStack(spacing: 4) {
-                paneView(for: panes[0])
-                if panes.count > 1 {
-                    paneView(for: panes[1])
-                }
-            }
-            HStack(spacing: 4) {
-                if panes.count > 2 {
-                    paneView(for: panes[2])
-                }
-                if panes.count > 3 {
-                    paneView(for: panes[3])
-                }
+        VStack(spacing: 2) {
+            ForEach(paneManager.panes) { pane in
+                paneView(for: pane, totalHeight: geometry.size.height - 4)
             }
         }
         .padding(4)
     }
 
     @ViewBuilder
-    private func paneView(for pane: ChatPane) -> some View {
+    private func paneView(for pane: ChatPane, totalHeight: CGFloat) -> some View {
         let project = pane.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
         let conversation = project.flatMap { proj in
             pane.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
         }
         let isActive = pane.id == paneManager.activePaneId
+        let isThinking = pane.conversationId != nil && connection.runningConversationId == pane.conversationId
+        let height = heightForPane(pane, totalHeight: totalHeight)
 
         VStack(spacing: 0) {
             paneTypeHeader(for: pane, project: project, conversation: conversation)
             Divider()
             paneContent(for: pane, project: project, conversation: conversation)
         }
+        .frame(height: height)
         .background(Color(.systemBackground))
         .cornerRadius(8)
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isActive ? Color.accentColor : Color(.separator), lineWidth: isActive ? 2 : 0.5)
+            PulsingBorder(isActive: isActive, isThinking: isThinking)
         )
         .contentShape(Rectangle())
-        .onTapGesture { paneManager.setActive(pane.id) }
+        .onTapGesture {
+            paneManager.setActive(pane.id)
+        }
+    }
+
+    private func heightForPane(_ pane: ChatPane, totalHeight: CGFloat) -> CGFloat? {
+        let count = paneManager.panes.count
+        guard count > 1 else { return nil }
+
+        let isActive = pane.id == paneManager.activePaneId
+        let spacing = CGFloat(count - 1) * 2
+        let availableHeight = totalHeight - spacing
+
+        if isKeyboardVisible {
+            let collapsedHeight: CGFloat = 44
+            let totalCollapsedHeight = collapsedHeight * CGFloat(count - 1)
+            if isActive {
+                return availableHeight - totalCollapsedHeight
+            } else {
+                return collapsedHeight
+            }
+        }
+
+        guard paneManager.focusModeEnabled else { return nil }
+
+        if isActive {
+            return availableHeight * 0.65
+        } else {
+            return availableHeight * 0.35 / CGFloat(count - 1)
+        }
     }
 
     private func paneTypeHeader(for pane: ChatPane, project: Project?, conversation: Conversation?) -> some View {
         HStack(spacing: 8) {
             ForEach(PaneType.allCases, id: \.self) { type in
-                Button(action: { paneManager.setPaneType(pane.id, type: type) }) {
+                Button(action: {
+                    paneManager.setActive(pane.id)
+                    paneManager.setPaneType(pane.id, type: type)
+                }) {
                     Image(systemName: type.icon)
                         .font(.system(size: 14))
                         .foregroundColor(pane.type == type ? .accentColor : .secondary)
@@ -137,7 +166,10 @@ struct SplitChatView: View {
                 .buttonStyle(.plain)
             }
             Spacer()
-            Button(action: { selectingPane = pane }) {
+            Button(action: {
+                paneManager.setActive(pane.id)
+                selectingPane = pane
+            }) {
                 HStack(spacing: 4) {
                     if let conv = conversation {
                         Text(conv.name)
@@ -160,6 +192,22 @@ struct SplitChatView: View {
                 }
             }
             .buttonStyle(.plain)
+
+            Button(action: {
+                paneManager.setActive(pane.id)
+                if paneManager.panes.count == 1 {
+                    addPaneWithNewChat()
+                } else {
+                    paneManager.removePane(pane.id)
+                }
+            }) {
+                Image(systemName: paneManager.panes.count == 1 ? "plus" : "xmark")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .padding(6)
+            }
+            .buttonStyle(.plain)
+            .disabled(paneManager.panes.count == 1 && !paneManager.canAddPane)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
@@ -168,17 +216,28 @@ struct SplitChatView: View {
 
     @ViewBuilder
     private func paneContent(for pane: ChatPane, project: Project?, conversation: Conversation?) -> some View {
-        switch pane.type {
-        case .chat:
-            chatPaneContent(project: project, conversation: conversation)
-        case .files:
-            filesPaneContent(project: project)
-        case .gitChanges:
-            gitChangesPaneContent(project: project)
+        let isActive = pane.id == paneManager.activePaneId
+        let isCollapsed = isKeyboardVisible && !isActive && paneManager.panes.count > 1
+
+        if isCollapsed {
+            collapsedPaneContent(conversation: conversation)
+        } else {
+            switch pane.type {
+            case .chat:
+                chatPaneContent(for: pane, project: project, conversation: conversation)
+            case .files:
+                filesPaneContent(project: project)
+            case .gitChanges:
+                gitChangesPaneContent(project: project)
+            }
         }
     }
 
-    private func chatPaneContent(project: Project?, conversation: Conversation?) -> some View {
+    private func collapsedPaneContent(conversation: Conversation?) -> some View {
+        EmptyView()
+    }
+
+    private func chatPaneContent(for pane: ChatPane, project: Project?, conversation: Conversation?) -> some View {
         ProjectChatView(
             connection: connection,
             store: projectStore,
@@ -186,7 +245,13 @@ struct SplitChatView: View {
             conversation: conversation,
             isCompact: true,
             showHeader: false,
-            onSelectConversation: nil
+            showInput: false,
+            onSelectConversation: nil,
+            onInputFocus: nil,
+            onInteraction: {
+                paneManager.setActive(pane.id)
+                dismissKeyboard()
+            }
         )
     }
 
@@ -202,33 +267,6 @@ struct SplitChatView: View {
             connection: connection,
             rootPath: project?.rootDirectory
         )
-    }
-
-    private var controlBar: some View {
-        HStack {
-            Button(action: addPaneWithNewChat) {
-                Label("Add Pane", systemImage: "plus.rectangle.on.rectangle")
-                    .font(.caption)
-            }
-            .disabled(!paneManager.canAddPane)
-
-            Spacer()
-
-            Text("\(paneManager.panes.count) pane\(paneManager.panes.count == 1 ? "" : "s")")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Spacer()
-
-            Button(action: removeActivePane) {
-                Label("Remove Pane", systemImage: "minus.rectangle")
-                    .font(.caption)
-            }
-            .disabled(!paneManager.canRemovePane)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color(.secondarySystemBackground))
     }
 
     private func initializeFirstPane() {
@@ -251,12 +289,6 @@ struct SplitChatView: View {
         paneManager.linkToCurrentConversation(newPaneId, project: proj, conversation: newConv)
     }
 
-    private func removeActivePane() {
-        if let activeId = paneManager.activePaneId {
-            paneManager.removePane(activeId)
-        }
-    }
-
     private func syncActivePaneToStore() {
         guard let activePane = paneManager.activePane else { return }
         if let projectId = activePane.projectId,
@@ -277,5 +309,232 @@ struct SplitChatView: View {
             project: projectStore.currentProject,
             conversation: projectStore.currentConversation
         )
+    }
+
+    private func checkClipboard() {
+        hasClipboardContent = UIPasteboard.general.hasStrings
+    }
+
+    private func sendMessage() {
+        let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let imageBase64 = selectedImageData?.base64EncodedString()
+        guard !text.isEmpty || imageBase64 != nil else { return }
+
+        guard let activePane = paneManager.activePane else { return }
+
+        var project = activePane.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
+        if project == nil {
+            project = projectStore.createProject(name: "Default Project")
+        }
+        guard let proj = project else { return }
+
+        var conversation = proj.conversations.first { $0.id == activePane.conversationId }
+        if conversation == nil {
+            conversation = projectStore.newConversation(in: proj)
+            paneManager.linkToCurrentConversation(activePane.id, project: proj, conversation: conversation)
+        }
+        guard let conv = conversation else { return }
+
+        let isRunning = connection.runningConversationId == conv.id
+
+        if isRunning {
+            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: imageBase64)
+            projectStore.queueMessage(userMessage, to: conv, in: proj)
+        } else {
+            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: imageBase64)
+            projectStore.addMessage(userMessage, to: conv, in: proj)
+
+            let isNewSession = conv.sessionId == nil
+            let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64)
+        }
+
+        inputText = ""
+        selectedImageData = nil
+        if let activeId = paneManager.activePaneId {
+            drafts.removeValue(forKey: activeId)
+        }
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+struct GlobalInputBar: View {
+    @Binding var inputText: String
+    @Binding var selectedImageData: Data?
+    let hasClipboardContent: Bool
+    let isConnected: Bool
+    let onSend: () -> Void
+
+    @State private var selectedItem: PhotosPickerItem?
+    @FocusState private var isInputFocused: Bool
+    @State private var placeholderIndex = Int.random(in: 0..<20)
+
+    private static let placeholders = [
+        "fix the login bug pls",
+        "why isn't the button showing",
+        "make the font bigger",
+        "add a back button here",
+        "this crashes on launch",
+        "deploy to testflight",
+        "push to git",
+        "can you add dark mode",
+        "the animation is janky",
+        "why is this so slow",
+        "add a loading spinner",
+        "make it look nicer",
+        "refactor this mess",
+        "write tests for this",
+        "explain what this does",
+        "add error handling pls",
+        "the padding looks off",
+        "can we cache this",
+        "hide the keyboard on tap",
+        "make it work offline"
+    ]
+
+    private var placeholder: String {
+        Self.placeholders[placeholderIndex % Self.placeholders.count]
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            HStack(spacing: 8) {
+                ZStack(alignment: .leading) {
+                    if inputText.isEmpty {
+                        Text(placeholder)
+                            .foregroundColor(.secondary)
+                            .id(placeholderIndex)
+                            .transition(.opacity)
+                    }
+                    TextField("", text: $inputText, axis: .vertical)
+                        .textFieldStyle(.plain)
+                        .lineLimit(1...4)
+                        .focused($isInputFocused)
+                        .onSubmit { if canSend { onSend() } }
+                }
+
+                if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
+                    ZStack(alignment: .topTrailing) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 36, height: 36)
+                            .cornerRadius(8)
+                        Button(action: { selectedImageData = nil }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.accentColor)
+                        }
+                        .offset(x: 6, y: -6)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(Color(.systemBackground))
+            .cornerRadius(20)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.accentColor, lineWidth: 1.5)
+            )
+
+            PhotosPicker(selection: $selectedItem, matching: .images) {
+                Image(systemName: "photo")
+                    .font(.system(size: 18))
+                    .foregroundColor(.accentColor)
+            }
+
+            Button(action: {
+                if inputText.isEmpty && hasClipboardContent {
+                    if let text = UIPasteboard.general.string {
+                        inputText = text
+                    }
+                } else {
+                    onSend()
+                }
+            }) {
+                Image(systemName: actionButtonIcon)
+                    .font(.system(size: 18))
+                    .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+            }
+            .disabled(!canSend && !hasClipboardContent)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+        .onChange(of: selectedItem) { _, newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                    selectedImageData = data
+                }
+            }
+        }
+        .onChange(of: inputText) { old, new in
+            if !old.isEmpty && new.isEmpty {
+                placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
+            }
+        }
+        .onReceive(Timer.publish(every: 8, on: .main, in: .common).autoconnect()) { _ in
+            if inputText.isEmpty {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    placeholderIndex = (placeholderIndex + 1) % Self.placeholders.count
+                }
+            }
+        }
+    }
+
+    private var canSend: Bool {
+        !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImageData != nil
+    }
+
+    private var actionButtonIcon: String {
+        if inputText.isEmpty && !canSend {
+            return "clipboard"
+        }
+        return "paperplane.fill"
+    }
+}
+
+struct PulsingBorder: View {
+    let isActive: Bool
+    let isThinking: Bool
+
+    @State private var pulse = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .stroke(borderColor, lineWidth: isActive ? 1.5 : 0.5)
+            .opacity(isThinking ? (pulse ? 0.4 : 1.0) : 1.0)
+            .animation(isThinking ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: pulse)
+            .onAppear {
+                if isThinking { pulse = true }
+            }
+            .onChange(of: isThinking) { _, thinking in
+                pulse = thinking
+            }
+    }
+
+    private var borderColor: Color {
+        if isThinking {
+            return .orange
+        }
+        return isActive ? .accentColor : Color(.separator)
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat
+    var corners: UIRectCorner
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }

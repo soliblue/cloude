@@ -16,12 +16,15 @@ struct ProjectChatView: View {
     let conversation: Conversation?
     var isCompact: Bool = false
     var showHeader: Bool = false
+    var showInput: Bool = true
     var onSelectConversation: (() -> Void)?
+    var onInputFocus: (() -> Void)?
+    var onInteraction: (() -> Void)?
 
     @State private var inputText = ""
     @State private var scrollProxy: ScrollViewProxy?
     @State private var hasClipboardContent = false
-    @State private var lastCompletedOutput: String = ""
+    @State private var selectedImageData: Data?
 
     private var effectiveProject: Project? {
         project ?? store.currentProject
@@ -45,6 +48,11 @@ struct ProjectChatView: View {
         return connection.runningConversationId == convId
     }
 
+    private var pendingCount: Int {
+        guard let proj = effectiveProject, let conv = effectiveConversation else { return 0 }
+        return store.pendingMessageCount(in: conv, in: proj)
+    }
+
     var body: some View {
         let output = convOutput
 
@@ -63,18 +71,24 @@ struct ProjectChatView: View {
                 currentToolCalls: output?.toolCalls ?? [],
                 currentRunStats: isCompact ? nil : output?.runStats,
                 scrollProxy: $scrollProxy,
-                agentState: isThisConversationRunning ? .running : .idle
-            )
-            Divider()
-            ProjectChatInputArea(
-                inputText: $inputText,
-                hasClipboardContent: hasClipboardContent,
                 agentState: isThisConversationRunning ? .running : .idle,
-                isConnected: connection.isAuthenticated,
-                isCompact: isCompact,
-                onSend: sendMessage,
-                onAbort: { connection.abort() }
+                onRefresh: refreshMissedResponse,
+                onInteraction: onInteraction
             )
+            if showInput {
+                Divider()
+                ProjectChatInputArea(
+                    inputText: $inputText,
+                    selectedImageData: $selectedImageData,
+                    hasClipboardContent: hasClipboardContent,
+                    agentState: isThisConversationRunning ? .running : .idle,
+                    isConnected: connection.isAuthenticated,
+                    isCompact: isCompact,
+                    pendingCount: pendingCount,
+                    onSend: sendMessage,
+                    onInputFocus: onInputFocus
+                )
+            }
         }
         .onChange(of: connection.agentState) { oldState, newState in
             if oldState == .running && newState == .idle {
@@ -94,10 +108,7 @@ struct ProjectChatView: View {
         guard let convId = effectiveConversation?.id else { return }
         guard let output = convOutput else { return }
         guard !output.text.isEmpty else { return }
-        guard output.text != lastCompletedOutput else { return }
         guard output.isRunning == false else { return }
-
-        lastCompletedOutput = output.text
 
         if scenePhase != .active {
             NotificationManager.showCompletionNotification(preview: output.text)
@@ -109,6 +120,9 @@ struct ProjectChatView: View {
                 conv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
             }
 
+            let messageId = UUID()
+            if output.lastSavedMessageId == messageId { return }
+
             let message = ChatMessage(
                 isUser: false,
                 text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -116,14 +130,42 @@ struct ProjectChatView: View {
                 durationMs: output.runStats?.durationMs,
                 costUsd: output.runStats?.costUsd
             )
+
+            let freshConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
+            let isDuplicate = freshConv.messages.contains { !$0.isUser && $0.text == message.text && abs($0.timestamp.timeIntervalSinceNow) < 5 }
+            guard !isDuplicate else {
+                output.reset()
+                return
+            }
+
+            output.lastSavedMessageId = messageId
             store.addMessage(message, to: conv, in: proj)
             output.reset()
+
+            sendQueuedMessages(proj: proj, conv: conv)
         }
+    }
+
+    private func sendQueuedMessages(proj: Project, conv: Conversation) {
+        let freshConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
+        let pending = store.popPendingMessages(from: freshConv, in: proj)
+        guard !pending.isEmpty else { return }
+
+        for var msg in pending {
+            msg.isQueued = false
+            store.addMessage(msg, to: freshConv, in: proj)
+        }
+
+        let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
+        let updatedConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
+        let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
+        connection.sendChat(combinedText, workingDirectory: workingDir, sessionId: updatedConv.sessionId, isNewSession: false, conversationId: updatedConv.id)
     }
 
     private func sendMessage() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
+        let imageBase64 = selectedImageData?.base64EncodedString()
+        guard !text.isEmpty || imageBase64 != nil else { return }
 
         var proj = effectiveProject
         if proj == nil {
@@ -137,16 +179,31 @@ struct ProjectChatView: View {
         }
         guard let conv = conv else { return }
 
-        let userMessage = ChatMessage(isUser: true, text: text)
+        if isThisConversationRunning {
+            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: imageBase64)
+            store.queueMessage(userMessage, to: conv, in: proj)
+            inputText = ""
+            selectedImageData = nil
+            return
+        }
+
+        let userMessage = ChatMessage(isUser: true, text: text, imageBase64: imageBase64)
         store.addMessage(userMessage, to: conv, in: proj)
 
         let isNewSession = conv.sessionId == nil
         let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
-        connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id)
+        connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64)
         inputText = ""
+        selectedImageData = nil
     }
 
     private func checkClipboard() {
         hasClipboardContent = UIPasteboard.general.hasStrings
+    }
+
+    private func refreshMissedResponse() async {
+        guard let sessionId = effectiveConversation?.sessionId else { return }
+        connection.requestMissedResponse(sessionId: sessionId)
+        try? await Task.sleep(nanoseconds: 500_000_000)
     }
 }

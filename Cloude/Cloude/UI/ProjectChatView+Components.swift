@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import PhotosUI
 
 struct PaneHeaderView: View {
     let project: Project?
@@ -51,35 +52,39 @@ struct ProjectChatMessageList: View {
     let currentRunStats: (durationMs: Int, costUsd: Double)?
     @Binding var scrollProxy: ScrollViewProxy?
     let agentState: AgentState
+    var onRefresh: (() async -> Void)?
+    var onInteraction: (() -> Void)?
 
     var body: some View {
-        GeometryReader { geometry in
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(messages) { message in
-                            MessageBubble(message: message)
-                                .id(message.id)
-                        }
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(messages) { message in
+                        MessageBubble(message: message)
+                            .id(message.id)
+                    }
 
-                        if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil {
-                            streamingView
-                        }
-
-                        Spacer()
-                            .frame(height: geometry.size.height - 100)
-                            .id("bottomSpacer")
+                    if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil {
+                        streamingView
                     }
                 }
-                .scrollDismissesKeyboard(.interactively)
-                .onTapGesture {
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
-                .onAppear { scrollProxy = proxy }
-                .onChange(of: agentState) { old, new in
-                    if old == .idle && new == .running {
-                        scrollToBottom()
-                    }
+                .padding(.bottom, 16)
+            }
+            .refreshable {
+                await onRefresh?()
+            }
+            .scrollDismissesKeyboard(.immediately)
+            .onTapGesture {
+                onInteraction?()
+            }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 5)
+                    .onChanged { _ in onInteraction?() }
+            )
+            .onAppear { scrollProxy = proxy }
+            .onChange(of: messages.count) { oldCount, newCount in
+                if newCount > oldCount, let lastUserMessage = messages.last(where: { $0.isUser }) {
+                    scrollToMessage(lastUserMessage.id)
                 }
             }
         }
@@ -104,77 +109,125 @@ struct ProjectChatMessageList: View {
         .id("streaming")
     }
 
-    private func scrollToBottom() {
+    private func scrollToMessage(_ id: UUID) {
         withAnimation(.easeOut(duration: 0.2)) {
-            if !currentOutput.isEmpty {
-                scrollProxy?.scrollTo("streaming", anchor: .bottom)
-            } else if let last = messages.last {
-                scrollProxy?.scrollTo(last.id, anchor: .top)
-            }
+            scrollProxy?.scrollTo(id, anchor: .top)
         }
     }
 }
 
 struct ProjectChatInputArea: View {
     @Binding var inputText: String
+    @Binding var selectedImageData: Data?
     let hasClipboardContent: Bool
     let agentState: AgentState
     let isConnected: Bool
     var isCompact: Bool = false
+    var pendingCount: Int = 0
     let onSend: () -> Void
-    let onAbort: () -> Void
+    var onInputFocus: (() -> Void)?
+
+    @State private var selectedItem: PhotosPickerItem?
+    @FocusState private var isInputFocused: Bool
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: isCompact ? 8 : 12) {
-            if !isCompact {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 8, height: 8)
-                    .padding(.bottom, 8)
+        VStack(spacing: 0) {
+            if pendingCount > 0 {
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
+                        .font(.caption2)
+                    Text("\(pendingCount) message\(pendingCount == 1 ? "" : "s") queued")
+                        .font(.caption2)
+                }
+                .foregroundColor(.secondary)
+                .padding(.vertical, 4)
             }
 
-            TextField("Message...", text: $inputText, axis: .vertical)
-                .textFieldStyle(.plain)
-                .lineLimit(1...(isCompact ? 3 : 6))
-                .onSubmit { onSend() }
+            if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
+                HStack {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 60)
+                        .cornerRadius(8)
+                    Button(action: { selectedImageData = nil }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, isCompact ? 12 : 16)
+                .padding(.top, 8)
+            }
 
-            if isCompact {
-                HStack(spacing: 8) {
-                    if hasClipboardContent && inputText.isEmpty {
-                        Button(action: pasteFromClipboard) {
-                            Image(systemName: "clipboard")
+            HStack(alignment: .bottom, spacing: isCompact ? 8 : 12) {
+                if !isCompact {
+                    Circle()
+                        .fill(statusColor)
+                        .frame(width: 8, height: 8)
+                        .padding(.bottom, 8)
+                }
+
+                TextField("Message...", text: $inputText, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .lineLimit(1...(isCompact ? 3 : 6))
+                    .focused($isInputFocused)
+                    .onSubmit { onSend() }
+
+                if isCompact {
+                    HStack(spacing: 8) {
+                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                            Image(systemName: "photo")
                                 .foregroundColor(.secondary)
                         }
-                    }
-                    if agentState == .running {
-                        Button(action: onAbort) {
-                            Image(systemName: "stop.circle.fill")
-                                .foregroundColor(.orange)
+                        if hasClipboardContent && inputText.isEmpty {
+                            Button(action: pasteFromClipboard) {
+                                Image(systemName: "clipboard")
+                                    .foregroundColor(.secondary)
+                            }
                         }
-                    } else {
                         Button(action: onSend) {
                             Image(systemName: "paperplane")
-                                .foregroundColor(inputText.isEmpty ? .secondary : .accentColor)
+                                .foregroundColor(canSend ? .accentColor : .secondary)
                         }
-                        .disabled(inputText.isEmpty)
+                        .disabled(!canSend)
+                    }
+                } else {
+                    HStack(spacing: 8) {
+                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                            Image(systemName: "photo")
+                                .foregroundColor(.secondary)
+                        }
+                        InputButtons(
+                            inputText: $inputText,
+                            hasClipboardContent: hasClipboardContent,
+                            agentState: agentState,
+                            onPaste: pasteFromClipboard,
+                            onClear: { inputText = ""; selectedImageData = nil },
+                            onSend: onSend
+                        )
                     }
                 }
-            } else {
-                InputButtons(
-                    inputText: $inputText,
-                    hasClipboardContent: hasClipboardContent,
-                    agentState: agentState,
-                    onPaste: pasteFromClipboard,
-                    onClear: { inputText = "" },
-                    onAbort: onAbort,
-                    onSend: onSend
-                )
+            }
+            .padding(.horizontal, isCompact ? 12 : 16)
+            .padding(.top, isCompact ? 10 : 12)
+            .padding(.bottom, isCompact ? 10 : 16)
+        }
+        .background(Color(.systemBackground))
+        .onChange(of: selectedItem) { _, newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                    selectedImageData = data
+                }
             }
         }
-        .padding(.horizontal, isCompact ? 12 : 16)
-        .padding(.top, isCompact ? 10 : 12)
-        .padding(.bottom, isCompact ? 10 : 16)
-        .background(Color(.systemBackground))
+        .onChange(of: isInputFocused) { _, focused in
+            if focused { onInputFocus?() }
+        }
+    }
+
+    private var canSend: Bool {
+        !inputText.isEmpty || selectedImageData != nil
     }
 
     private var statusColor: Color {

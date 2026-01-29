@@ -69,10 +69,12 @@ struct ProjectSettingsSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { isPresented = false }
+                    Button(action: { isPresented = false }) {
+                        Image(systemName: "xmark")
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(action: {
                         if name != project.name {
                             store.renameProject(project, to: name)
                         }
@@ -80,6 +82,8 @@ struct ProjectSettingsSheet: View {
                             store.updateRootDirectory(project, to: rootDirectory)
                         }
                         isPresented = false
+                    }) {
+                        Image(systemName: "checkmark")
                     }
                 }
             }

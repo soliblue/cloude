@@ -9,6 +9,7 @@ class ConversationOutput: ObservableObject {
     @Published var runStats: (durationMs: Int, costUsd: Double)? { didSet { parent?.objectWillChange.send() } }
     @Published var isRunning: Bool = false { didSet { parent?.objectWillChange.send() } }
     @Published var newSessionId: String? { didSet { parent?.objectWillChange.send() } }
+    var lastSavedMessageId: UUID?
 
     func reset() {
         text = ""
@@ -33,12 +34,14 @@ class ConnectionManager: ObservableObject {
 
     var runningConversationId: UUID?
     var conversationOutputs: [UUID: ConversationOutput] = [:]
+    var interruptedSession: (conversationId: UUID, sessionId: String)?
 
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
     var onFileContent: ((String, String, String, Int64) -> Void)?
     var onMissedResponse: ((String, String, Date) -> Void)?
     var onGitStatus: ((GitStatusInfo) -> Void)?
     var onGitDiff: ((String, String) -> Void)?
+    var onDisconnect: ((UUID, ConversationOutput) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
@@ -119,11 +122,32 @@ class ConnectionManager: ObservableObject {
 
                 case .failure(let error):
                     self.lastError = error.localizedDescription
-                    self.isConnected = false
-                    self.isAuthenticated = false
+                    self.handleDisconnect()
                 }
             }
         }
+    }
+
+    func handleDisconnect() {
+        if let convId = runningConversationId,
+           let output = conversationOutputs[convId] {
+            if let sessionId = output.newSessionId {
+                interruptedSession = (convId, sessionId)
+            }
+            if !output.text.isEmpty {
+                onDisconnect?(convId, output)
+            }
+            output.isRunning = false
+        }
+        isConnected = false
+        isAuthenticated = false
+        agentState = .idle
+        runningConversationId = nil
+    }
+
+    func checkForMissedResponse() {
+        guard let interrupted = interruptedSession else { return }
+        send(.requestMissedResponse(sessionId: interrupted.sessionId))
     }
 
     func authenticate() {

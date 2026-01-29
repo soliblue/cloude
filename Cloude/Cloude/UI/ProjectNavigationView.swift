@@ -62,7 +62,9 @@ struct ProjectNavigationView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { isPresented = false }
+                    Button(action: { isPresented = false }) {
+                        Image(systemName: "xmark")
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { showNewProjectSheet = true }) {

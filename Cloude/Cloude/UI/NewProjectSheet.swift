@@ -49,13 +49,17 @@ struct NewProjectSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { isPresented = false }
+                    Button(action: { isPresented = false }) {
+                        Image(systemName: "xmark")
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") {
+                    Button(action: {
                         let projectName = name.isEmpty ? folderDisplayName : name
                         _ = store.createProject(name: projectName, rootDirectory: rootDirectory)
                         isPresented = false
+                    }) {
+                        Image(systemName: "checkmark")
                     }
                     .disabled(rootDirectory.isEmpty)
                 }

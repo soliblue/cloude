@@ -25,7 +25,9 @@ struct GitDiffView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                    }
                 }
             }
             .onAppear { loadDiff() }
@@ -53,7 +55,7 @@ struct GitDiffView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let diff = diff, !diff.isEmpty {
-                ScrollView([.horizontal, .vertical]) {
+                ScrollView([.horizontal, .vertical], showsIndicators: false) {
                     DiffTextView(diff: diff)
                         .padding()
                 }
