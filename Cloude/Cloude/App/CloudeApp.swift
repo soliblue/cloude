@@ -6,9 +6,7 @@ struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
     @StateObject private var projectStore = ProjectStore()
     @State private var showSettings = false
-    @State private var showFileBrowser = false
     @State private var showProjects = false
-    @State private var showSplitView = false
     @State private var wasBackgrounded = false
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
@@ -28,31 +26,13 @@ struct CloudeApp: App {
 
     private var mainContent: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                if projectStore.currentConversation != nil && !showSplitView {
-                    titleHeader
-                }
-                Group {
-                    if showSplitView {
-                        SplitChatView(connection: connection, projectStore: projectStore)
-                    } else {
-                        ProjectChatView(connection: connection, store: projectStore)
-                    }
-                }
-            }
+            SplitChatView(connection: connection, projectStore: projectStore)
             .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        HStack(spacing: 16) {
-                            Button(action: { showProjects = true }) {
-                                Image(systemName: "folder")
-                                    .padding(4)
-                            }
-
-                            Button(action: { newConversation() }) {
-                                Image(systemName: "square.and.pencil")
-                                    .padding(4)
-                            }
+                        Button(action: { showProjects = true }) {
+                            Image(systemName: "folder")
+                                .padding(4)
                         }
                     }
                     ToolbarItem(placement: .principal) {
@@ -70,39 +50,15 @@ struct CloudeApp: App {
                         .frame(maxWidth: .infinity)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: 16) {
-                            Button(action: { showSplitView.toggle() }) {
-                                Image(systemName: showSplitView ? "rectangle" : "rectangle.split.2x2")
-                                    .padding(4)
-                            }
-
-                            Button(action: { showFileBrowser = true }) {
-                                Image(systemName: "doc.text")
-                                    .padding(4)
-                            }
-
-                            Button(action: { showSettings = true }) {
-                                Image(systemName: "gearshape")
-                                    .padding(4)
-                            }
+                        Button(action: { showSettings = true }) {
+                            Image(systemName: "gearshape")
+                                .padding(4)
                         }
                     }
                 }
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(connection: connection)
-        }
-        .sheet(isPresented: $showFileBrowser) {
-            NavigationStack {
-                FileBrowserView(connection: connection)
-                    .navigationTitle("Files")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Done") { showFileBrowser = false }
-                        }
-                    }
-            }
         }
         .sheet(isPresented: $showProjects) {
             ProjectNavigationView(store: projectStore, connection: connection, isPresented: $showProjects)
@@ -124,36 +80,6 @@ struct CloudeApp: App {
             }
         }
         .preferredColorScheme(appTheme.colorScheme)
-        .onTapGesture {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        }
-    }
-
-    private var titleHeader: some View {
-        HStack {
-            if let project = projectStore.currentProject {
-                Text(project.name)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text("›")
-                    .foregroundColor(.secondary)
-            }
-            Text(projectStore.currentConversation?.name ?? "")
-                .font(.caption)
-                .fontWeight(.medium)
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
-    }
-
-    private func newConversation() {
-        if let project = projectStore.currentProject {
-            _ = projectStore.newConversation(in: project)
-        } else {
-            let project = projectStore.createProject(name: "Default Project")
-            _ = projectStore.newConversation(in: project)
-        }
     }
 
     private func loadAndConnect() {

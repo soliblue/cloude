@@ -9,10 +9,17 @@ import SwiftUI
 
 struct FileBrowserView: View {
     @ObservedObject var connection: ConnectionManager
+    var rootPath: String?
     @State var currentPath: String = "~"
     @State var entries: [FileEntry] = []
     @State var selectedFile: FileEntry?
     @State var isLoading = false
+
+    init(connection: ConnectionManager, rootPath: String? = nil) {
+        self.connection = connection
+        self.rootPath = rootPath
+        _currentPath = State(initialValue: rootPath ?? "~")
+    }
 
     var body: some View {
         VStack(spacing: 0) {
