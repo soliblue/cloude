@@ -75,6 +75,12 @@ extension ServerMessage {
             try container.encode("git_commit_result", forKey: .type)
             try container.encode(success, forKey: .success)
             try container.encodeIfPresent(message, forKey: .message)
+        case .transcription(let text):
+            try container.encode("transcription", forKey: .type)
+            try container.encode(text, forKey: .text)
+        case .whisperReady(let ready):
+            try container.encode("whisper_ready", forKey: .type)
+            try container.encode(ready, forKey: .ready)
         }
     }
 }

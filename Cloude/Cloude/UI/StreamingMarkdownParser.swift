@@ -26,12 +26,9 @@ enum StreamingBlock: Identifiable {
 struct StreamingMarkdownParser {
     static func parse(_ text: String) -> [StreamingBlock] {
         var blocks: [StreamingBlock] = []
-        var codeCount = 0
-        var tableCount = 0
-        var quoteCount = 0
-        var textCount = 0
-        var hrCount = 0
-        let lines = text.components(separatedBy: "\n")
+        let normalizedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedText.isEmpty else { return blocks }
+        let lines = normalizedText.components(separatedBy: "\n")
         var i = 0
 
         while i < lines.count {
@@ -40,6 +37,7 @@ struct StreamingMarkdownParser {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
 
             if line.hasPrefix("```") {
+                let startLine = i
                 let language = String(line.dropFirst(3)).trimmingCharacters(in: .whitespaces)
                 var codeLines: [String] = []
                 i += 1
@@ -55,17 +53,17 @@ struct StreamingMarkdownParser {
                 }
 
                 blocks.append(.code(
-                    id: "code-\(codeCount)",
+                    id: "code-L\(startLine)",
                     content: codeLines.joined(separator: "\n"),
                     language: language.isEmpty ? nil : language,
                     isComplete: foundClose
                 ))
-                codeCount += 1
                 if foundClose && i < lines.count { i += 1 }
                 continue
             }
 
             if trimmed.hasPrefix("|") && line.contains("|") {
+                let startLine = i
                 var tableRows: [[String]] = []
 
                 while i < lines.count {
@@ -80,7 +78,8 @@ struct StreamingMarkdownParser {
                         continue
                     }
 
-                    let isStreamingLine = (i == lines.count - 1) && !text.hasSuffix("\n")
+                    let originalHasTrailingNewline = text.hasSuffix("\n") || text.hasSuffix("\n ")
+                    let isStreamingLine = (i == lines.count - 1) && !originalHasTrailingNewline
                     if !isStreamingLine {
                         let cells = tableLine.split(separator: "|").map { String($0).trimmingCharacters(in: .whitespaces) }
                         if !cells.isEmpty { tableRows.append(cells) }
@@ -89,13 +88,13 @@ struct StreamingMarkdownParser {
                 }
 
                 if !tableRows.isEmpty {
-                    blocks.append(.table(id: "table-\(tableCount)", rows: tableRows))
-                    tableCount += 1
+                    blocks.append(.table(id: "table-L\(startLine)", rows: tableRows))
                 }
                 continue
             }
 
             if trimmed.hasPrefix(">") {
+                let startLine = i
                 var quoteLines: [String] = []
 
                 while i < lines.count {
@@ -106,19 +105,18 @@ struct StreamingMarkdownParser {
                 }
 
                 if !quoteLines.isEmpty {
-                    blocks.append(.blockquote(id: "quote-\(quoteCount)", content: quoteLines.joined(separator: "\n")))
-                    quoteCount += 1
+                    blocks.append(.blockquote(id: "quote-L\(startLine)", content: quoteLines.joined(separator: "\n")))
                 }
                 continue
             }
 
             if isHorizontalRule(trimmed) && !isLastLine {
-                blocks.append(.horizontalRule(id: "hr-\(hrCount)"))
-                hrCount += 1
+                blocks.append(.horizontalRule(id: "hr-L\(i)"))
                 i += 1
                 continue
             }
 
+            let textStartLine = i
             var textLines: [String] = []
             while i < lines.count {
                 let l = lines[i]
@@ -134,8 +132,7 @@ struct StreamingMarkdownParser {
             if !textLines.isEmpty {
                 let content = textLines.joined(separator: "\n")
                 if !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    blocks.append(.text(id: "text-\(textCount)", parseInlineMarkdown(content)))
-                    textCount += 1
+                    blocks.append(.text(id: "text-L\(textStartLine)", parseInlineMarkdown(content)))
                 }
             }
         }
@@ -328,10 +325,12 @@ struct StreamingMarkdownParser {
                     let urlString = String(remaining[urlStart..<urlEndIdx])
                     remaining = remaining[remaining.index(after: urlEndIdx)...]
 
-                    var attr = AttributedString(linkText)
+                    var attr = parseInlineElements(linkText)
                     if let url = URL(string: urlString) {
-                        attr.link = url
-                        attr.foregroundColor = .blue
+                        for run in attr.runs {
+                            attr[run.range].link = url
+                            attr[run.range].foregroundColor = .blue
+                        }
                     }
                     result.append(attr)
                     continue

@@ -196,3 +196,10 @@ struct TableCell: View {
         return AttributedString(text)
     }
 }
+
+struct HorizontalRuleView: View {
+    var body: some View {
+        Divider()
+            .padding(.vertical, 8)
+    }
+}
