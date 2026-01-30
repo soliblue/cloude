@@ -16,15 +16,10 @@ struct ProjectChatView: View {
     let conversation: Conversation?
     var isCompact: Bool = false
     var showHeader: Bool = false
-    var showInput: Bool = true
     var onSelectConversation: (() -> Void)?
-    var onInputFocus: (() -> Void)?
     var onInteraction: (() -> Void)?
 
-    @State private var inputText = ""
     @State private var scrollProxy: ScrollViewProxy?
-    @State private var hasClipboardContent = false
-    @State private var selectedImageData: Data?
 
     private var effectiveProject: Project? {
         project ?? store.currentProject
@@ -72,31 +67,11 @@ struct ProjectChatView: View {
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction
             )
-            if showInput {
-                Divider()
-                ProjectChatInputArea(
-                    inputText: $inputText,
-                    selectedImageData: $selectedImageData,
-                    hasClipboardContent: hasClipboardContent,
-                    agentState: isThisConversationRunning ? .running : .idle,
-                    isConnected: connection.isAuthenticated,
-                    isCompact: isCompact,
-                    onSend: sendMessage,
-                    onInputFocus: onInputFocus
-                )
-            }
         }
         .onChange(of: connection.agentState) { oldState, newState in
             if oldState == .running && newState == .idle {
                 handleCompletion()
             }
-        }
-        .onAppear { checkClipboard() }
-        .onReceive(NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)) { _ in
-            checkClipboard()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            checkClipboard()
         }
     }
 
@@ -156,45 +131,6 @@ struct ProjectChatView: View {
         let updatedConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
         let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
         connection.sendChat(combinedText, workingDirectory: workingDir, sessionId: updatedConv.sessionId, isNewSession: false, conversationId: updatedConv.id)
-    }
-
-    private func sendMessage() {
-        let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let imageBase64 = selectedImageData?.base64EncodedString()
-        guard !text.isEmpty || imageBase64 != nil else { return }
-
-        var proj = effectiveProject
-        if proj == nil {
-            proj = store.createProject(name: "Default Project")
-        }
-        guard let proj = proj else { return }
-
-        var conv = effectiveConversation
-        if conv == nil {
-            conv = store.newConversation(in: proj)
-        }
-        guard let conv = conv else { return }
-
-        if isThisConversationRunning {
-            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: imageBase64)
-            store.queueMessage(userMessage, to: conv, in: proj)
-            inputText = ""
-            selectedImageData = nil
-            return
-        }
-
-        let userMessage = ChatMessage(isUser: true, text: text, imageBase64: imageBase64)
-        store.addMessage(userMessage, to: conv, in: proj)
-
-        let isNewSession = conv.sessionId == nil
-        let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
-        connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64)
-        inputText = ""
-        selectedImageData = nil
-    }
-
-    private func checkClipboard() {
-        hasClipboardContent = UIPasteboard.general.hasStrings
     }
 
     private func refreshMissedResponse() async {
