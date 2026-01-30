@@ -15,9 +15,10 @@ enum ClientMessage: Codable {
     case gitStatus(path: String)
     case gitDiff(path: String, file: String?)
     case gitCommit(path: String, message: String, files: [String])
+    case transcribe(audioBase64: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64
     }
 
     init(from decoder: Decoder) throws {
@@ -58,6 +59,9 @@ enum ClientMessage: Codable {
             let message = try container.decode(String.self, forKey: .message)
             let files = try container.decode([String].self, forKey: .files)
             self = .gitCommit(path: path, message: message, files: files)
+        case "transcribe":
+            let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
+            self = .transcribe(audioBase64: audioBase64)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -99,6 +103,9 @@ enum ClientMessage: Codable {
             try container.encode(path, forKey: .path)
             try container.encode(message, forKey: .message)
             try container.encode(files, forKey: .files)
+        case .transcribe(let audioBase64):
+            try container.encode("transcribe", forKey: .type)
+            try container.encode(audioBase64, forKey: .audioBase64)
         }
     }
 }

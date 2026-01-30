@@ -37,7 +37,9 @@ struct SplitChatView: View {
                 selectedImageData: $selectedImageData,
                 hasClipboardContent: hasClipboardContent,
                 isConnected: connection.isAuthenticated,
-                onSend: sendMessage
+                isWhisperReady: connection.isWhisperReady,
+                onSend: sendMessage,
+                onTranscribe: transcribeAudio
             )
         }
         .onAppear {
@@ -45,6 +47,10 @@ struct SplitChatView: View {
             checkClipboard()
             setupGitStatusHandler()
             checkGitForAllProjects()
+            connection.onTranscription = { text in
+                print("[iOS] Received transcription: \(text)")
+                inputText = text
+            }
         }
         .onChange(of: paneManager.activePaneId) { oldId, newId in
             if let oldId = oldId {
@@ -274,10 +280,6 @@ struct SplitChatView: View {
             project: project,
             conversation: conversation,
             isCompact: true,
-            showHeader: false,
-            showInput: false,
-            onSelectConversation: nil,
-            onInputFocus: nil,
             onInteraction: {
                 paneManager.setActive(pane.id)
                 dismissKeyboard()
@@ -386,6 +388,11 @@ struct SplitChatView: View {
         }
     }
 
+    private func transcribeAudio(_ audioData: Data) {
+        print("[iOS] Sending audio for transcription: \(audioData.count) bytes")
+        connection.transcribe(audioBase64: audioData.base64EncodedString())
+    }
+
     private func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
@@ -421,10 +428,13 @@ struct GlobalInputBar: View {
     @Binding var selectedImageData: Data?
     let hasClipboardContent: Bool
     let isConnected: Bool
+    let isWhisperReady: Bool
     let onSend: () -> Void
+    var onTranscribe: ((Data) -> Void)?
 
     @State private var selectedItem: PhotosPickerItem?
     @FocusState private var isInputFocused: Bool
+    @StateObject private var audioRecorder = AudioRecorder()
     @State private var placeholderIndex = Int.random(in: 0..<20)
     @State private var textFieldId = UUID()
 
@@ -504,6 +514,13 @@ struct GlobalInputBar: View {
                     .foregroundColor(.accentColor)
             }
 
+            Button(action: toggleRecording) {
+                Image(systemName: micIcon)
+                    .font(.system(size: 18))
+                    .foregroundColor(micColor)
+            }
+            .disabled(!canRecord)
+
             Button(action: {
                 if inputText.isEmpty && hasClipboardContent {
                     if let text = UIPasteboard.general.string {
@@ -548,11 +565,39 @@ struct GlobalInputBar: View {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImageData != nil
     }
 
+    private var canRecord: Bool {
+        isConnected && isWhisperReady && !audioRecorder.isTranscribing
+    }
+
     private var actionButtonIcon: String {
         if inputText.isEmpty && !canSend {
             return "clipboard"
         }
         return "paperplane.fill"
+    }
+
+    private var micIcon: String {
+        if audioRecorder.isTranscribing { return "ellipsis" }
+        return audioRecorder.isRecording ? "stop.circle.fill" : "mic"
+    }
+
+    private var micColor: Color {
+        if !canRecord { return .secondary.opacity(0.4) }
+        return audioRecorder.isRecording ? .red : .accentColor
+    }
+
+    private func toggleRecording() {
+        if audioRecorder.isRecording {
+            if let data = audioRecorder.stopRecording() {
+                onTranscribe?(data)
+            }
+        } else {
+            audioRecorder.requestPermission { granted in
+                if granted {
+                    audioRecorder.startRecording()
+                }
+            }
+        }
     }
 }
 

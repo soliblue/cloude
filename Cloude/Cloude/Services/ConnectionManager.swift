@@ -23,6 +23,7 @@ class ConversationOutput: ObservableObject {
 class ConnectionManager: ObservableObject {
     @Published var isConnected = false
     @Published var isAuthenticated = false
+    @Published var isWhisperReady = false
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
 
@@ -42,6 +43,7 @@ class ConnectionManager: ObservableObject {
     var onGitStatus: ((GitStatusInfo) -> Void)?
     var onGitDiff: ((String, String) -> Void)?
     var onDisconnect: ((UUID, ConversationOutput) -> Void)?
+    var onTranscription: ((String) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
@@ -94,6 +96,7 @@ class ConnectionManager: ObservableObject {
         session = nil
         isConnected = false
         isAuthenticated = false
+        isWhisperReady = false
         agentState = .idle
 
         if clearCredentials {
@@ -141,6 +144,7 @@ class ConnectionManager: ObservableObject {
         }
         isConnected = false
         isAuthenticated = false
+        isWhisperReady = false
         agentState = .idle
         runningConversationId = nil
     }

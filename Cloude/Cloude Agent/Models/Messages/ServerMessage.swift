@@ -23,8 +23,11 @@ enum ServerMessage: Codable {
     case gitStatusResult(status: GitStatusInfo)
     case gitDiffResult(path: String, diff: String)
     case gitCommitResult(success: Bool, message: String?)
+    case transcription(text: String)
+    case whisperReady(ready: Bool)
 
     enum CodingKeys: String, CodingKey {
+        case ready
         case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId
     }
 
@@ -99,6 +102,12 @@ enum ServerMessage: Codable {
             let success = try container.decode(Bool.self, forKey: .success)
             let message = try container.decodeIfPresent(String.self, forKey: .message)
             self = .gitCommitResult(success: success, message: message)
+        case "transcription":
+            let text = try container.decode(String.self, forKey: .text)
+            self = .transcription(text: text)
+        case "whisper_ready":
+            let ready = try container.decode(Bool.self, forKey: .ready)
+            self = .whisperReady(ready: ready)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
