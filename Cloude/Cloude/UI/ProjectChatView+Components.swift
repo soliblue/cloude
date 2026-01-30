@@ -55,7 +55,12 @@ struct ProjectChatMessageList: View {
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
 
+    @State private var hasScrolledToStreaming = false
+    @State private var lastUserMessageCount = 0
+
     var body: some View {
+        let userMessageCount = messages.filter { $0.isUser }.count
+
         ScrollViewReader { proxy in
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0) {
@@ -81,10 +86,25 @@ struct ProjectChatMessageList: View {
                 DragGesture(minimumDistance: 5)
                     .onChanged { _ in onInteraction?() }
             )
-            .onAppear { scrollProxy = proxy }
-            .onChange(of: messages.count) { oldCount, newCount in
+            .onAppear {
+                scrollProxy = proxy
+                lastUserMessageCount = userMessageCount
+            }
+            .onChange(of: userMessageCount) { oldCount, newCount in
                 if newCount > oldCount, let lastUserMessage = messages.last(where: { $0.isUser }) {
                     scrollToMessage(lastUserMessage.id)
+                }
+                lastUserMessageCount = newCount
+            }
+            .onChange(of: currentOutput) { oldValue, newValue in
+                if oldValue.isEmpty && !newValue.isEmpty && !hasScrolledToStreaming {
+                    hasScrolledToStreaming = true
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        scrollProxy?.scrollTo("streaming", anchor: .top)
+                    }
+                }
+                if newValue.isEmpty {
+                    hasScrolledToStreaming = false
                 }
             }
         }
@@ -123,7 +143,6 @@ struct ProjectChatInputArea: View {
     let agentState: AgentState
     let isConnected: Bool
     var isCompact: Bool = false
-    var pendingCount: Int = 0
     let onSend: () -> Void
     var onInputFocus: (() -> Void)?
 
@@ -132,17 +151,6 @@ struct ProjectChatInputArea: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if pendingCount > 0 {
-                HStack(spacing: 4) {
-                    Image(systemName: "clock")
-                        .font(.caption2)
-                    Text("\(pendingCount) message\(pendingCount == 1 ? "" : "s") queued")
-                        .font(.caption2)
-                }
-                .foregroundColor(.secondary)
-                .padding(.vertical, 4)
-            }
-
             if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
                 HStack {
                     Image(uiImage: uiImage)

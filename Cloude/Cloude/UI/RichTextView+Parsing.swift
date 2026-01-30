@@ -11,6 +11,7 @@ enum ContentBlock {
     case table([[String]])
     case blockquote(String)
     case section(title: String, level: Int, content: [ContentBlock])
+    case horizontalRule
 }
 
 struct MarkdownParser {

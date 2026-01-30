@@ -188,3 +188,8 @@ Cloude/
 - **UI files should NOT contain**: date calculations, string formatting logic, data filtering/sorting, validation rules
 - **Logic files should NOT contain**: SwiftUI views, colors, fonts, layout code
 - Services should be pure structs with static methods when possible
+
+### Chat UX Guidelines
+- Minimize message movement during streaming - users should not have to chase content
+- Scroll to position content at the start of streaming, not during
+- Loading indicators should disappear once actual content is available (avoid redundant UI)
