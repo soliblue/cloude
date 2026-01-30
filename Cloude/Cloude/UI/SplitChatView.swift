@@ -21,6 +21,8 @@ struct SplitChatView: View {
     @State private var selectedImageData: Data?
     @State private var hasClipboardContent = false
     @State private var drafts: [UUID: (text: String, imageData: Data?)] = [:]
+    @State private var gitBranches: [UUID: String] = [:]
+    @State private var pendingGitChecks: [UUID] = []
 
     var body: some View {
         GeometryReader { geometry in
@@ -41,6 +43,8 @@ struct SplitChatView: View {
         .onAppear {
             initializeFirstPane()
             checkClipboard()
+            setupGitStatusHandler()
+            checkGitForAllProjects()
         }
         .onChange(of: paneManager.activePaneId) { oldId, newId in
             if let oldId = oldId {
@@ -68,6 +72,10 @@ struct SplitChatView: View {
                 onSelect: { project, conversation in
                     paneManager.linkToCurrentConversation(pane.id, project: project, conversation: conversation)
                     selectingPane = nil
+                    if gitBranches[project.id] == nil, !project.rootDirectory.isEmpty {
+                        pendingGitChecks = [project.id]
+                        checkNextGitProject()
+                    }
                 }
             )
         }
@@ -82,6 +90,15 @@ struct SplitChatView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             checkClipboard()
+        }
+        .onChange(of: connection.isAuthenticated) { _, isAuth in
+            if isAuth { checkGitForAllProjects() }
+        }
+        .onChange(of: connection.lastError) { _, error in
+            if error != nil && !pendingGitChecks.isEmpty {
+                pendingGitChecks.removeFirst()
+                checkNextGitProject()
+            }
         }
     }
 
@@ -150,18 +167,31 @@ struct SplitChatView: View {
     }
 
     private func paneTypeHeader(for pane: ChatPane, project: Project?, conversation: Conversation?) -> some View {
-        HStack(spacing: 8) {
-            ForEach(PaneType.allCases, id: \.self) { type in
+        let gitBranch = project.flatMap { gitBranches[$0.id] }
+        let availableTypes = PaneType.allCases.filter { type in
+            if type == .gitChanges { return gitBranch != nil }
+            return true
+        }
+
+        return HStack(spacing: 8) {
+            ForEach(availableTypes, id: \.self) { type in
                 Button(action: {
                     paneManager.setActive(pane.id)
                     paneManager.setPaneType(pane.id, type: type)
                 }) {
-                    Image(systemName: type.icon)
-                        .font(.system(size: 14))
-                        .foregroundColor(pane.type == type ? .accentColor : .secondary)
-                        .padding(6)
-                        .background(pane.type == type ? Color.accentColor.opacity(0.15) : Color.clear)
-                        .cornerRadius(6)
+                    HStack(spacing: 4) {
+                        Image(systemName: type.icon)
+                            .font(.system(size: 14))
+                        if type == .gitChanges, let branch = gitBranch {
+                            Text(branch)
+                                .font(.caption2)
+                                .lineLimit(1)
+                        }
+                    }
+                    .foregroundColor(pane.type == type ? .accentColor : .secondary)
+                    .padding(6)
+                    .background(pane.type == type ? Color.accentColor.opacity(0.15) : Color.clear)
+                    .cornerRadius(6)
                 }
                 .buttonStyle(.plain)
             }
@@ -359,6 +389,31 @@ struct SplitChatView: View {
     private func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
+
+    private func setupGitStatusHandler() {
+        connection.onGitStatus = { status in
+            if let projectId = pendingGitChecks.first {
+                pendingGitChecks.removeFirst()
+                if !status.branch.isEmpty {
+                    gitBranches[projectId] = status.branch
+                }
+                checkNextGitProject()
+            }
+        }
+    }
+
+    private func checkGitForAllProjects() {
+        pendingGitChecks = projectStore.projects
+            .filter { !$0.rootDirectory.isEmpty && gitBranches[$0.id] == nil }
+            .map { $0.id }
+        checkNextGitProject()
+    }
+
+    private func checkNextGitProject() {
+        guard let projectId = pendingGitChecks.first,
+              let project = projectStore.projects.first(where: { $0.id == projectId }) else { return }
+        connection.gitStatus(path: project.rootDirectory)
+    }
 }
 
 struct GlobalInputBar: View {
@@ -371,6 +426,7 @@ struct GlobalInputBar: View {
     @State private var selectedItem: PhotosPickerItem?
     @FocusState private var isInputFocused: Bool
     @State private var placeholderIndex = Int.random(in: 0..<20)
+    @State private var textFieldId = UUID()
 
     private static let placeholders = [
         "fix the login bug pls",
@@ -414,6 +470,7 @@ struct GlobalInputBar: View {
                         .lineLimit(1...4)
                         .focused($isInputFocused)
                         .onSubmit { if canSend { onSend() } }
+                        .id(textFieldId)
                 }
 
                 if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
@@ -475,6 +532,7 @@ struct GlobalInputBar: View {
         .onChange(of: inputText) { old, new in
             if !old.isEmpty && new.isEmpty {
                 placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
+                textFieldId = UUID()
             }
         }
         .onReceive(Timer.publish(every: 8, on: .main, in: .common).autoconnect()) { _ in

@@ -12,21 +12,24 @@ struct StreamingOutput: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                ProgressView()
-                    .scaleEffect(0.7)
-                Text("Claude is responding...")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-
-            Text(text)
-                .font(.body)
+            if text.isEmpty {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                    Text("Claude is responding...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 8)
+            }
+
+            if !text.isEmpty {
+                StreamingMarkdownView(text: text)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .background(Color(.systemBackground))
     }
