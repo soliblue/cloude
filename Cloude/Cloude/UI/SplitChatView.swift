@@ -466,79 +466,90 @@ struct GlobalInputBar: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
-                ZStack(alignment: .leading) {
-                    if inputText.isEmpty {
-                        Text(placeholder)
-                            .foregroundColor(.secondary)
-                            .id(placeholderIndex)
-                            .transition(.opacity)
-                    }
-                    TextField("", text: $inputText, axis: .vertical)
-                        .textFieldStyle(.plain)
-                        .lineLimit(1...4)
-                        .focused($isInputFocused)
-                        .onSubmit { if canSend { onSend() } }
-                        .id(textFieldId)
-                }
-
-                if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
-                    ZStack(alignment: .topTrailing) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 36, height: 36)
-                            .cornerRadius(8)
-                        Button(action: { selectedImageData = nil }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(.accentColor)
+        ZStack {
+            HStack(spacing: 12) {
+                HStack(spacing: 8) {
+                    ZStack(alignment: .leading) {
+                        if inputText.isEmpty {
+                            Text(placeholder)
+                                .foregroundColor(.secondary)
+                                .id(placeholderIndex)
+                                .transition(.opacity)
                         }
-                        .offset(x: 6, y: -6)
+                        TextField("", text: $inputText, axis: .vertical)
+                            .textFieldStyle(.plain)
+                            .lineLimit(1...4)
+                            .focused($isInputFocused)
+                            .onSubmit { if canSend { onSend() } }
+                            .id(textFieldId)
+                    }
+
+                    if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
+                        ZStack(alignment: .topTrailing) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 36, height: 36)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            Button(action: { selectedImageData = nil }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.accentColor)
+                            }
+                            .offset(x: 6, y: -6)
+                        }
                     }
                 }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(Color(.systemBackground))
-            .cornerRadius(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.accentColor, lineWidth: 1.5)
-            )
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
 
-            PhotosPicker(selection: $selectedItem, matching: .images) {
-                Image(systemName: "photo")
-                    .font(.system(size: 18))
-                    .foregroundColor(.accentColor)
-            }
-
-            Button(action: toggleRecording) {
-                Image(systemName: micIcon)
-                    .font(.system(size: 18))
-                    .foregroundColor(micColor)
-            }
-            .disabled(!canRecord)
-
-            Button(action: {
-                if inputText.isEmpty && hasClipboardContent {
-                    if let text = UIPasteboard.general.string {
-                        inputText = text
-                    }
-                } else {
-                    onSend()
+                PhotosPicker(selection: $selectedItem, matching: .images) {
+                    Image(systemName: "photo")
+                        .font(.system(size: 18))
+                        .foregroundColor(.accentColor)
                 }
-            }) {
-                Image(systemName: actionButtonIcon)
-                    .font(.system(size: 18))
-                    .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+
+                Button(action: toggleRecording) {
+                    Image(systemName: micIcon)
+                        .font(.system(size: 18))
+                        .foregroundColor(micColor)
+                }
+                .disabled(!canRecord)
+
+                Button(action: {
+                    if inputText.isEmpty && hasClipboardContent {
+                        if let text = UIPasteboard.general.string {
+                            inputText = text
+                        }
+                    } else {
+                        onSend()
+                    }
+                }) {
+                    Image(systemName: actionButtonIcon)
+                        .font(.system(size: 18))
+                        .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+                }
+                .disabled(!canSend && !hasClipboardContent)
             }
-            .disabled(!canSend && !hasClipboardContent)
+            .opacity(audioRecorder.isRecording ? 0.3 : 1.0)
+
+            if audioRecorder.isRecording {
+                RecordingOverlayView(
+                    audioLevel: audioRecorder.audioLevel,
+                    onStop: {
+                        if let data = audioRecorder.stopRecording() {
+                            onTranscribe?(data)
+                        }
+                    }
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: audioRecorder.isRecording)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color(.systemBackground))
         .onChange(of: selectedItem) { _, newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
