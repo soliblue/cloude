@@ -35,7 +35,9 @@ struct ProjectChatView: View {
     }
 
     private var messages: [ChatMessage] {
-        effectiveConversation?.messages ?? []
+        let sent = effectiveConversation?.messages ?? []
+        let pending = effectiveConversation?.pendingMessages ?? []
+        return sent + pending
     }
 
     private var convOutput: ConversationOutput? {
@@ -46,11 +48,6 @@ struct ProjectChatView: View {
     private var isThisConversationRunning: Bool {
         guard let convId = effectiveConversation?.id else { return false }
         return connection.runningConversationId == convId
-    }
-
-    private var pendingCount: Int {
-        guard let proj = effectiveProject, let conv = effectiveConversation else { return 0 }
-        return store.pendingMessageCount(in: conv, in: proj)
     }
 
     var body: some View {
@@ -84,7 +81,6 @@ struct ProjectChatView: View {
                     agentState: isThisConversationRunning ? .running : .idle,
                     isConnected: connection.isAuthenticated,
                     isCompact: isCompact,
-                    pendingCount: pendingCount,
                     onSend: sendMessage,
                     onInputFocus: onInputFocus
                 )
