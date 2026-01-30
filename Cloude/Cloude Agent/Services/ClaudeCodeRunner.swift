@@ -71,14 +71,16 @@ class ClaudeCodeRunner: ObservableObject {
         outputPipe = Pipe()
         errorPipe = Pipe()
 
+        var finalPrompt = prompt
+        if let imagePath = tempImagePath {
+            finalPrompt = "[Attached image: \(imagePath)]\n\n\(prompt)"
+        }
+
         var command = claudePath
         if let sid = sessionId, !isNewSession {
             command += " --resume \(sid)"
         }
-        if let imagePath = tempImagePath {
-            command += " --image \(shellEscape(imagePath))"
-        }
-        command += " --dangerously-skip-permissions --output-format stream-json --verbose --include-partial-messages -p \(shellEscape(prompt))"
+        command += " --dangerously-skip-permissions --output-format stream-json --verbose --include-partial-messages -p \(shellEscape(finalPrompt))"
 
         process?.executableURL = URL(fileURLWithPath: "/bin/zsh")
         process?.arguments = ["-l", "-c", command]
