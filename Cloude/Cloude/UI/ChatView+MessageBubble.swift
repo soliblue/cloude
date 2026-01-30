@@ -48,7 +48,7 @@ struct MessageBubble: View {
                                 if message.isUser {
                                     Text(message.text)
                                 } else {
-                                    RichTextView(text: message.text)
+                                    StreamingMarkdownView(text: message.text)
                                 }
                             }
                             .font(.body)

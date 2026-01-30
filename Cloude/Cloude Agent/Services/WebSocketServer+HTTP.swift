@@ -86,6 +86,7 @@ extension WebSocketServer {
         if case .auth(let token) = message {
             if authenticate(connection, token: token) {
                 sendMessage(.authResult(success: true, message: nil), to: connection)
+                sendMessage(.whisperReady(ready: WhisperService.shared.isReady), to: connection)
             } else {
                 sendMessage(.authResult(success: false, message: "Invalid token"), to: connection)
             }

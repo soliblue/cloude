@@ -69,39 +69,3 @@ struct ToolCallRow: View {
         }
     }
 }
-
-struct InputButtons: View {
-    @Binding var inputText: String
-    let hasClipboardContent: Bool
-    let agentState: AgentState
-    let onPaste: () -> Void
-    let onClear: () -> Void
-    let onSend: () -> Void
-
-    var body: some View {
-        HStack(spacing: 12) {
-            if hasClipboardContent && inputText.isEmpty {
-                Button(action: onPaste) {
-                    Image(systemName: "clipboard")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            if !inputText.isEmpty {
-                Button(action: onClear) {
-                    Image(systemName: "xmark.circle")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            Button(action: onSend) {
-                Image(systemName: "paperplane")
-                    .font(.title2)
-                    .foregroundColor(inputText.isEmpty ? .gray : .blue)
-            }
-            .disabled(inputText.isEmpty)
-        }
-    }
-}

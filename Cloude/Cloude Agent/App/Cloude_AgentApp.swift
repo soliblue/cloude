@@ -31,6 +31,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupServices()
         setupPopover()
         server.start()
+        initializeWhisper()
+    }
+
+    private func initializeWhisper() {
+        Task {
+            WhisperService.shared.onReady = { [weak self] in
+                self?.server.broadcast(.whisperReady(ready: true))
+            }
+            await WhisperService.shared.initialize()
+        }
     }
 
     private func setupMenuBar() {
@@ -131,6 +141,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         case .gitCommit(let path, let message, let files):
             handleGitCommit(path, message: message, files: files, connection: connection)
+
+        case .transcribe(let audioBase64):
+            handleTranscribe(audioBase64, connection: connection)
+        }
+    }
+
+    private func handleTranscribe(_ audioBase64: String, connection: NWConnection) {
+        print("[Transcribe] Received audio data: \(audioBase64.count) chars")
+        Task {
+            do {
+                print("[Transcribe] Starting whisper transcription...")
+                let text = try await WhisperService.shared.transcribe(audioBase64: audioBase64)
+                print("[Transcribe] Got result: \(text)")
+                await MainActor.run {
+                    server.sendMessage(.transcription(text: text), to: connection)
+                }
+            } catch {
+                print("[Transcribe] Error: \(error)")
+                await MainActor.run {
+                    server.sendMessage(.error(message: "Transcription failed: \(error.localizedDescription)"), to: connection)
+                }
+            }
         }
     }
 

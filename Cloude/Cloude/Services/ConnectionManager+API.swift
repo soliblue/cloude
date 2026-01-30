@@ -87,6 +87,14 @@ extension ConnectionManager {
 
         case .gitCommitResult:
             break
+
+        case .transcription(let text):
+            print("[ConnectionManager] Received transcription: \(text)")
+            onTranscription?(text)
+
+        case .whisperReady(let ready):
+            print("[ConnectionManager] Whisper ready: \(ready)")
+            isWhisperReady = ready
         }
     }
 
@@ -134,5 +142,10 @@ extension ConnectionManager {
     func gitCommit(path: String, message: String, files: [String]) {
         if !isAuthenticated { reconnectIfNeeded() }
         send(.gitCommit(path: path, message: message, files: files))
+    }
+
+    func transcribe(audioBase64: String) {
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.transcribe(audioBase64: audioBase64))
     }
 }
