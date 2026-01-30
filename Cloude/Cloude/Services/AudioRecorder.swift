@@ -11,9 +11,11 @@ import Foundation
 class AudioRecorder: ObservableObject {
     @Published var isRecording = false
     @Published var isTranscribing = false
+    @Published var audioLevel: Float = 0
 
     private var audioRecorder: AVAudioRecorder?
     private var recordingURL: URL?
+    private var levelTimer: Timer?
 
     func startRecording() {
         let session = AVAudioSession.sharedInstance()
@@ -40,14 +42,35 @@ class AudioRecorder: ObservableObject {
 
         do {
             audioRecorder = try AVAudioRecorder(url: audioFilename, settings: settings)
+            audioRecorder?.isMeteringEnabled = true
             audioRecorder?.record()
             isRecording = true
+            startMetering()
         } catch {
             print("Failed to start recording: \(error)")
         }
     }
 
+    private func startMetering() {
+        levelTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, let recorder = self.audioRecorder, recorder.isRecording else { return }
+                recorder.updateMeters()
+                let db = recorder.averagePower(forChannel: 0)
+                let normalized = max(0, min(1, (db + 60) / 60))
+                self.audioLevel = normalized
+            }
+        }
+    }
+
+    private func stopMetering() {
+        levelTimer?.invalidate()
+        levelTimer = nil
+        audioLevel = 0
+    }
+
     func stopRecording() -> Data? {
+        stopMetering()
         audioRecorder?.stop()
         isRecording = false
 
