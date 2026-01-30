@@ -66,6 +66,17 @@ struct ContentBlockView: View {
             BlockquoteView(text: content)
         case .section(let title, let level, let children):
             CollapsibleSection(title: title, level: level, content: children)
+        case .horizontalRule:
+            HorizontalRuleView()
         }
+    }
+}
+
+struct HorizontalRuleView: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color(.separator))
+            .frame(height: 1)
+            .padding(.vertical, 8)
     }
 }
