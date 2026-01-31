@@ -302,7 +302,7 @@ struct ToolCallLabel: View {
         switch name {
         case "Bash":
             return bashIconName(input ?? "")
-        case "Read": return "doc.text"
+        case "Read": return "eyeglasses"
         case "Write": return "doc.badge.plus"
         case "Edit": return "pencil"
         case "Glob": return "folder.badge.questionmark"

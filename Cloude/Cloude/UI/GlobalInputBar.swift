@@ -161,7 +161,8 @@ struct GlobalInputBar: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.top, 6)
+            .padding(.bottom, 12)
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .gesture(
