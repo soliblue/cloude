@@ -95,6 +95,10 @@ class RunnerManager: ObservableObject {
             self?.onCloudeCommand?(action, value, conversationId)
         }
 
+        runner.onStatus = { [weak self] state in
+            self?.onStatusChange?(state, conversationId)
+        }
+
         runner.onComplete = { [weak self] in
             guard let self else { return }
             let convRunner = self.activeRunners[conversationId]
