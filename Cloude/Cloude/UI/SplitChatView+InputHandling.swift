@@ -58,7 +58,6 @@ extension SplitChatView {
     }
 
     func transcribeAudio(_ audioData: Data) {
-        print("[iOS] Sending audio for transcription: \(audioData.count) bytes")
         connection.transcribe(audioBase64: audioData.base64EncodedString())
     }
 

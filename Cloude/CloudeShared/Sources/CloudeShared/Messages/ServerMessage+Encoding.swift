@@ -96,6 +96,14 @@ extension ServerMessage {
         case .memories(let sections):
             try container.encode("memories", forKey: .type)
             try container.encode(sections, forKey: .sections)
+        case .renameConversation(let conversationId, let name):
+            try container.encode("rename_conversation", forKey: .type)
+            try container.encode(conversationId, forKey: .conversationId)
+            try container.encode(name, forKey: .name)
+        case .setConversationSymbol(let conversationId, let symbol):
+            try container.encode("set_conversation_symbol", forKey: .type)
+            try container.encode(conversationId, forKey: .conversationId)
+            try container.encodeIfPresent(symbol, forKey: .symbol)
         }
     }
 }
