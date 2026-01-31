@@ -44,6 +44,10 @@ class ConnectionManager: ObservableObject {
     var onGitDiff: ((String, String) -> Void)?
     var onDisconnect: ((UUID, ConversationOutput) -> Void)?
     var onTranscription: ((String) -> Void)?
+    var onHeartbeatConfig: ((Int?, Int, String?) -> Void)?
+    var onHeartbeatOutput: ((String) -> Void)?
+    var onHeartbeatComplete: ((String) -> Void)?
+    var onMemories: (([MemorySection]) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {

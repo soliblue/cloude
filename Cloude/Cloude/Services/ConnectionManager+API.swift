@@ -38,6 +38,7 @@ extension ConnectionManager {
             isAuthenticated = success
             if success {
                 checkForMissedResponse()
+                send(.getHeartbeatConfig)
             } else {
                 lastError = errorMessage ?? "Authentication failed"
             }
@@ -101,6 +102,19 @@ extension ConnectionManager {
         case .whisperReady(let ready):
             print("[ConnectionManager] Whisper ready: \(ready)")
             isWhisperReady = ready
+
+        case .heartbeatConfig(let intervalMinutes, let unreadCount, let sessionId):
+            print("[Heartbeat] Received config: interval=\(String(describing: intervalMinutes)), unread=\(unreadCount), sessionId=\(String(describing: sessionId))")
+            onHeartbeatConfig?(intervalMinutes, unreadCount, sessionId)
+
+        case .heartbeatOutput(let text):
+            onHeartbeatOutput?(text)
+
+        case .heartbeatComplete(let message):
+            onHeartbeatComplete?(message)
+
+        case .memories(let sections):
+            onMemories?(sections)
         }
     }
 

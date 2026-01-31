@@ -16,9 +16,14 @@ enum ClientMessage: Codable {
     case gitDiff(path: String, file: String?)
     case gitCommit(path: String, message: String, files: [String])
     case transcribe(audioBase64: String)
+    case setHeartbeatInterval(minutes: Int?)
+    case getHeartbeatConfig
+    case markHeartbeatRead
+    case triggerHeartbeat
+    case getMemories
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, minutes
     }
 
     init(from decoder: Decoder) throws {
@@ -63,6 +68,17 @@ enum ClientMessage: Codable {
         case "transcribe":
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)
+        case "set_heartbeat_interval":
+            let minutes = try container.decodeIfPresent(Int.self, forKey: .minutes)
+            self = .setHeartbeatInterval(minutes: minutes)
+        case "get_heartbeat_config":
+            self = .getHeartbeatConfig
+        case "mark_heartbeat_read":
+            self = .markHeartbeatRead
+        case "trigger_heartbeat":
+            self = .triggerHeartbeat
+        case "get_memories":
+            self = .getMemories
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -108,6 +124,17 @@ enum ClientMessage: Codable {
         case .transcribe(let audioBase64):
             try container.encode("transcribe", forKey: .type)
             try container.encode(audioBase64, forKey: .audioBase64)
+        case .setHeartbeatInterval(let minutes):
+            try container.encode("set_heartbeat_interval", forKey: .type)
+            try container.encodeIfPresent(minutes, forKey: .minutes)
+        case .getHeartbeatConfig:
+            try container.encode("get_heartbeat_config", forKey: .type)
+        case .markHeartbeatRead:
+            try container.encode("mark_heartbeat_read", forKey: .type)
+        case .triggerHeartbeat:
+            try container.encode("trigger_heartbeat", forKey: .type)
+        case .getMemories:
+            try container.encode("get_memories", forKey: .type)
         }
     }
 }

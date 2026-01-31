@@ -86,6 +86,20 @@ extension ServerMessage {
         case .whisperReady(let ready):
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
+        case .heartbeatConfig(let intervalMinutes, let unreadCount, let sessionId):
+            try container.encode("heartbeat_config", forKey: .type)
+            try container.encodeIfPresent(intervalMinutes, forKey: .intervalMinutes)
+            try container.encode(unreadCount, forKey: .unreadCount)
+            try container.encodeIfPresent(sessionId, forKey: .sessionId)
+        case .heartbeatOutput(let text):
+            try container.encode("heartbeat_output", forKey: .type)
+            try container.encode(text, forKey: .text)
+        case .heartbeatComplete(let message):
+            try container.encode("heartbeat_complete", forKey: .type)
+            try container.encode(message, forKey: .message)
+        case .memories(let sections):
+            try container.encode("memories", forKey: .type)
+            try container.encode(sections, forKey: .sections)
         }
     }
 }

@@ -6,12 +6,27 @@ import SwiftUI
 
 struct StreamingMarkdownView: View {
     let text: String
+    @State private var cachedBlocks: [StreamingBlock] = []
+    @State private var cachedText: String = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(StreamingMarkdownParser.parse(text)) { block in
+            ForEach(blocks) { block in
                 StreamingBlockView(block: block)
             }
+        }
+        .onAppear { updateCacheIfNeeded() }
+        .onChange(of: text) { _, _ in updateCacheIfNeeded() }
+    }
+
+    private var blocks: [StreamingBlock] {
+        cachedText == text ? cachedBlocks : StreamingMarkdownParser.parse(text)
+    }
+
+    private func updateCacheIfNeeded() {
+        if cachedText != text {
+            cachedBlocks = StreamingMarkdownParser.parse(text)
+            cachedText = text
         }
     }
 }

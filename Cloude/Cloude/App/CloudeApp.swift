@@ -5,8 +5,11 @@ struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
     @StateObject private var projectStore = ProjectStore()
     @StateObject private var windowManager = WindowManager()
+    @StateObject private var heartbeatStore = HeartbeatStore()
     @State private var showSettings = false
-    @State private var showProjects = false
+    @State private var showHeartbeat = false
+    @State private var showMemories = false
+    @State private var memorySections: [MemorySection] = []
     @State private var wasBackgrounded = false
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
@@ -33,9 +36,16 @@ struct CloudeApp: App {
             .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button(action: { showProjects = true }) {
-                            Image(systemName: "folder")
-                                .padding(4)
+                        HStack(spacing: 12) {
+                            HeartbeatButton(unreadCount: heartbeatStore.unreadCount) {
+                                showHeartbeat = true
+                            }
+                            Button(action: {
+                                connection.send(.getMemories)
+                                showMemories = true
+                            }) {
+                                Image(systemName: "brain")
+                            }
                         }
                     }
                     ToolbarItem(placement: .principal) {
@@ -62,8 +72,11 @@ struct CloudeApp: App {
         .sheet(isPresented: $showSettings) {
             SettingsView(connection: connection, windowManager: windowManager)
         }
-        .sheet(isPresented: $showProjects) {
-            ProjectNavigationView(store: projectStore, connection: connection, isPresented: $showProjects)
+        .sheet(isPresented: $showHeartbeat) {
+            HeartbeatSheet(heartbeatStore: heartbeatStore, connection: connection)
+        }
+        .sheet(isPresented: $showMemories) {
+            MemoriesSheet(sections: memorySections)
         }
         .onAppear { loadAndConnect() }
         .onChange(of: scenePhase) { _, newPhase in
@@ -118,6 +131,22 @@ struct CloudeApp: App {
                     break
                 }
             }
+        }
+
+        connection.onHeartbeatConfig = { [heartbeatStore] intervalMinutes, unreadCount, sessionId in
+            heartbeatStore.handleConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount, sessionId: sessionId)
+        }
+
+        connection.onHeartbeatOutput = { [heartbeatStore] text in
+            heartbeatStore.handleOutput(text: text)
+        }
+
+        connection.onHeartbeatComplete = { [heartbeatStore] message in
+            heartbeatStore.handleComplete(message: message)
+        }
+
+        connection.onMemories = { sections in
+            memorySections = sections
         }
 
         connection.connect(host: host, port: port, token: token)

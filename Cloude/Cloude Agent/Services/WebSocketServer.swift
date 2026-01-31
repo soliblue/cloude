@@ -44,11 +44,11 @@ class WebSocketServer: ObservableObject {
                     case .ready:
                         self.isRunning = true
                         self.lastError = nil
-                        print("WebSocket server listening on port \(self.port)")
+                        Log.info("Server listening on port \(self.port)")
                     case .failed(let error):
                         self.isRunning = false
                         self.lastError = error.localizedDescription
-                        print("Server failed: \(error)")
+                        Log.error("Server failed: \(error)")
                     case .cancelled:
                         self.isRunning = false
                     default:
@@ -67,7 +67,7 @@ class WebSocketServer: ObservableObject {
             listener?.start(queue: .main)
         } catch {
             lastError = error.localizedDescription
-            print("Failed to start server: \(error)")
+            Log.error("Failed to start server: \(error)")
         }
     }
 
@@ -92,12 +92,13 @@ class WebSocketServer: ObservableObject {
             Task { @MainActor [self] in
                 switch state {
                 case .ready:
-                    print("Client connected")
+                    Log.info("Client connected")
                     self.receiveHTTPUpgrade(on: connection)
                 case .failed(let error):
-                    print("Connection failed: \(error)")
+                    Log.error("Connection failed: \(error)")
                     self.removeConnection(connection)
                 case .cancelled:
+                    Log.info("Client disconnected")
                     self.removeConnection(connection)
                 default:
                     break
@@ -121,8 +122,10 @@ class WebSocketServer: ObservableObject {
     func authenticate(_ connection: NWConnection, token: String) -> Bool {
         if token == authToken {
             authenticatedConnections.insert(ObjectIdentifier(connection))
+            Log.info("Client authenticated")
             return true
         }
+        Log.error("Authentication failed - invalid token")
         return false
     }
 

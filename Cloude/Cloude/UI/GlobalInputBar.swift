@@ -22,6 +22,13 @@ struct GlobalInputBar: View {
     @StateObject private var audioRecorder = AudioRecorder()
     @State private var placeholderIndex = Int.random(in: 0..<20)
     @State private var textFieldId = UUID()
+    @State private var swipeOffset: CGFloat = 0
+    @State private var isSwipingToRecord = false
+    @State private var showInputBar = true
+    @State private var showRecordingOverlay = false
+
+    private let swipeThreshold: CGFloat = 60
+    private let transitionDuration: Double = 0.15
 
     private static let placeholders = [
         "fix the login bug pls",
@@ -51,7 +58,7 @@ struct GlobalInputBar: View {
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             HStack(spacing: 12) {
                 HStack(spacing: 8) {
                     ZStack(alignment: .leading) {
@@ -96,13 +103,6 @@ struct GlobalInputBar: View {
                         .foregroundColor(.accentColor)
                 }
 
-                Button(action: toggleRecording) {
-                    Image(systemName: micIcon)
-                        .font(.system(size: 18))
-                        .foregroundColor(micColor)
-                }
-                .disabled(!canRecord)
-
                 Button(action: {
                     if inputText.isEmpty && hasClipboardContent {
                         if let text = UIPasteboard.general.string {
@@ -114,27 +114,46 @@ struct GlobalInputBar: View {
                 }) {
                     Image(systemName: actionButtonIcon)
                         .font(.system(size: 18))
-                        .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+                        .foregroundColor((canSend || showPasteButton) ? .accentColor : .accentColor.opacity(0.4))
                 }
-                .disabled(!canSend && !hasClipboardContent)
+                .disabled(!canSend && !showPasteButton)
             }
-            .opacity(audioRecorder.isRecording ? 0.3 : 1.0)
+            .opacity(showInputBar ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
+            .animation(.easeOut(duration: transitionDuration), value: showInputBar)
 
-            if audioRecorder.isRecording {
+            if showRecordingOverlay || isSwipingToRecord {
                 RecordingOverlayView(
                     audioLevel: audioRecorder.audioLevel,
-                    onStop: {
-                        if let data = audioRecorder.stopRecording() {
-                            onTranscribe?(data)
-                        }
-                    }
+                    onStop: stopRecording
                 )
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .offset(y: showRecordingOverlay ? 0 : max(0, swipeThreshold - swipeOffset))
+                .opacity(showRecordingOverlay ? 1 : Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold))
+                .animation(.easeOut(duration: transitionDuration), value: showRecordingOverlay)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: audioRecorder.isRecording)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .gesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    guard canRecord && !audioRecorder.isRecording else { return }
+                    let verticalDrag = -value.translation.height
+                    if verticalDrag > 0 {
+                        isSwipingToRecord = true
+                        swipeOffset = verticalDrag
+                    }
+                }
+                .onEnded { value in
+                    let verticalDrag = -value.translation.height
+                    if verticalDrag >= swipeThreshold && canRecord {
+                        startRecording()
+                    }
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        swipeOffset = 0
+                        isSwipingToRecord = false
+                    }
+                }
+        )
         .onChange(of: selectedItem) { _, newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
@@ -165,33 +184,41 @@ struct GlobalInputBar: View {
         isConnected && isWhisperReady && !audioRecorder.isTranscribing
     }
 
+    private var showPasteButton: Bool {
+        inputText.isEmpty && !canSend
+    }
+
     private var actionButtonIcon: String {
-        if inputText.isEmpty && !canSend {
-            return "clipboard"
-        }
-        return "paperplane.fill"
+        showPasteButton ? "clipboard" : "paperplane.fill"
     }
 
-    private var micIcon: String {
-        if audioRecorder.isTranscribing { return "ellipsis" }
-        return audioRecorder.isRecording ? "stop.circle.fill" : "mic"
-    }
-
-    private var micColor: Color {
-        if !canRecord { return .secondary.opacity(0.4) }
-        return audioRecorder.isRecording ? .red : .accentColor
-    }
-
-    private func toggleRecording() {
-        if audioRecorder.isRecording {
-            if let data = audioRecorder.stopRecording() {
-                onTranscribe?(data)
-            }
-        } else {
-            audioRecorder.requestPermission { granted in
-                if granted {
-                    audioRecorder.startRecording()
+    private func startRecording() {
+        audioRecorder.requestPermission { granted in
+            if granted {
+                withAnimation(.easeOut(duration: transitionDuration)) {
+                    showInputBar = false
                 }
+                DispatchQueue.main.asyncAfter(deadline: .now() + transitionDuration) {
+                    audioRecorder.startRecording()
+                    withAnimation(.easeOut(duration: transitionDuration)) {
+                        showRecordingOverlay = true
+                    }
+                }
+            }
+        }
+    }
+
+    private func stopRecording() {
+        let data = audioRecorder.stopRecording()
+        withAnimation(.easeOut(duration: transitionDuration)) {
+            showRecordingOverlay = false
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + transitionDuration) {
+            withAnimation(.easeOut(duration: transitionDuration)) {
+                showInputBar = true
+            }
+            if let data = data {
+                onTranscribe?(data)
             }
         }
     }

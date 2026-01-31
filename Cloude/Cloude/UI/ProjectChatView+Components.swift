@@ -51,7 +51,6 @@ struct ProjectChatMessageList: View {
     @Binding var scrollProxy: ScrollViewProxy?
     let agentState: AgentState
     let conversationId: UUID?
-    var isKeyboardVisible: Bool = false
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
 
@@ -105,23 +104,25 @@ struct ProjectChatMessageList: View {
                 .onAppear {
                     scrollProxy = proxy
                     lastUserMessageCount = userMessageCount
+                    if !messages.isEmpty {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            proxy.scrollTo(bottomId, anchor: .bottom)
+                        }
+                    }
                 }
                 .onChange(of: userMessageCount) { oldCount, newCount in
                     if newCount > oldCount, let lastUserMessage = messages.last(where: { $0.isUser }) {
-                        scrollToMessage(lastUserMessage.id, keyboardVisible: isKeyboardVisible)
+                        scrollToMessage(lastUserMessage.id, anchor: .top)
                     }
                     lastUserMessageCount = newCount
-                }
-                .onChange(of: isKeyboardVisible) { _, visible in
-                    if visible, let lastUserMessage = messages.last(where: { $0.isUser }) {
-                        scrollToMessage(lastUserMessage.id, keyboardVisible: true)
-                    }
                 }
                 .onChange(of: currentOutput) { oldValue, newValue in
                     if oldValue.isEmpty && !newValue.isEmpty && !hasScrolledToStreaming {
                         hasScrolledToStreaming = true
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            scrollProxy?.scrollTo(streamingId, anchor: .top)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                scrollProxy?.scrollTo(streamingId, anchor: .top)
+                            }
                         }
                     }
                     if newValue.isEmpty {
@@ -171,9 +172,9 @@ struct ProjectChatMessageList: View {
         .id(streamingId)
     }
 
-    private func scrollToMessage(_ id: UUID, keyboardVisible: Bool = false) {
+    private func scrollToMessage(_ id: UUID, anchor: UnitPoint = .top) {
         withAnimation(.easeOut(duration: 0.2)) {
-            scrollProxy?.scrollTo(id, anchor: keyboardVisible ? .bottom : .top)
+            scrollProxy?.scrollTo(id, anchor: anchor)
         }
     }
 }
