@@ -1,15 +1,8 @@
-//
-//  StatusView.swift
-//  Cloude Agent
-//
-//  Menu bar popover showing agent status
-//
-
 import SwiftUI
 
 struct StatusView: View {
     @ObservedObject var server: WebSocketServer
-    @ObservedObject var runner: ClaudeCodeRunner
+    @ObservedObject var runnerManager: RunnerManager
     let token: String
 
     @State var showToken = false
@@ -21,8 +14,6 @@ struct StatusView: View {
             header
             Divider()
             statusSection
-            Divider()
-            workingDirectorySection
             Divider()
             tokenSection
             Divider()

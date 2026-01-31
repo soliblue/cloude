@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 @main
 struct CloudeApp: App {

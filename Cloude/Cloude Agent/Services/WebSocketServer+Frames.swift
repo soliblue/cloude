@@ -1,12 +1,6 @@
-//
-//  WebSocketServer+Frames.swift
-//  Cloude Agent
-//
-//  WebSocket frame parsing and encoding
-//
-
 import Foundation
 import Network
+import CloudeShared
 
 enum WebSocketFrameResult {
     case message(String)

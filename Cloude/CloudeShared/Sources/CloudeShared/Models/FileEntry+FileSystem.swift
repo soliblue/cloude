@@ -1,23 +1,10 @@
-//
-//  FileEntry.swift
-//  Cloude Agent
-//
-//  File entry model for directory listings
-//
-
 import Foundation
+
+#if os(macOS)
 import UniformTypeIdentifiers
 
-struct FileEntry: Codable, Identifiable {
-    var id: String { path }
-    let name: String
-    let path: String
-    let isDirectory: Bool
-    let size: Int64
-    let modified: Date
-    let mimeType: String?
-
-    static func from(url: URL) -> FileEntry? {
+extension FileEntry {
+    public static func from(url: URL) -> FileEntry? {
         let fileManager = FileManager.default
         guard let attrs = try? fileManager.attributesOfItem(atPath: url.path) else {
             return nil
@@ -44,3 +31,4 @@ struct FileEntry: Codable, Identifiable {
         )
     }
 }
+#endif

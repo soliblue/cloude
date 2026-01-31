@@ -1,13 +1,8 @@
-//
-//  ClientMessage.swift
-//  Cloude Agent
-//
-
 import Foundation
 
-enum ClientMessage: Codable {
+public enum ClientMessage: Codable {
     case chat(message: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String?)
-    case abort
+    case abort(conversationId: String?)
     case auth(token: String)
     case listDirectory(path: String)
     case getFile(path: String)
@@ -26,7 +21,7 @@ enum ClientMessage: Codable {
         case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, minutes
     }
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
 
@@ -40,7 +35,8 @@ enum ClientMessage: Codable {
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId)
         case "abort":
-            self = .abort
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .abort(conversationId: conversationId)
         case "auth":
             let token = try container.decode(String.self, forKey: .token)
             self = .auth(token: token)
@@ -84,7 +80,7 @@ enum ClientMessage: Codable {
         }
     }
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .chat(let message, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId):
@@ -95,8 +91,9 @@ enum ClientMessage: Codable {
             try container.encode(isNewSession, forKey: .isNewSession)
             try container.encodeIfPresent(imageBase64, forKey: .imageBase64)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .abort:
+        case .abort(let conversationId):
             try container.encode("abort", forKey: .type)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .auth(let token):
             try container.encode("auth", forKey: .type)
             try container.encode(token, forKey: .token)

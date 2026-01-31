@@ -1,11 +1,5 @@
-//
-//  FileBrowserView+Components.swift
-//  Cloude
-//
-//  Components for FileBrowserView
-//
-
 import SwiftUI
+import CloudeShared
 
 struct PathComponent: Identifiable {
     var id: String { path }

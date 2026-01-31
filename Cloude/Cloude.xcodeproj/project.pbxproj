@@ -7,12 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED022F2619AE007FD3E4 /* CloudeShared */; };
+		C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED042F2619AE007FD3E4 /* CloudeShared */; };
 		C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2WHISPER022F2619AE007FD3E4 /* WhisperKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		C2B3BBA02F2619AE007FD3E4 /* Cloude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cloude.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cloude Agent.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2SHARED052F2619AE007FD3E4 /* CloudeShared */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = CloudeShared; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -46,6 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */,
 				C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -63,6 +68,7 @@
 		C2B3BB972F2619AE007FD3E4 = {
 			isa = PBXGroup;
 			children = (
+				C2SHARED052F2619AE007FD3E4 /* CloudeShared */,
 				C2B3BBA22F2619AE007FD3E4 /* Cloude */,
 				C2B3BBB32F2619E8007FD3E4 /* Cloude Agent */,
 				C2B3BBA12F2619AE007FD3E4 /* Products */,
@@ -97,6 +103,9 @@
 				C2B3BBA22F2619AE007FD3E4 /* Cloude */,
 			);
 			name = Cloude;
+			packageProductDependencies = (
+				C2SHARED022F2619AE007FD3E4 /* CloudeShared */,
+			);
 			productName = Cloude;
 			productReference = C2B3BBA02F2619AE007FD3E4 /* Cloude.app */;
 			productType = "com.apple.product-type.application";
@@ -118,6 +127,7 @@
 			);
 			name = "Cloude Agent";
 			packageProductDependencies = (
+				C2SHARED042F2619AE007FD3E4 /* CloudeShared */,
 				C2WHISPER022F2619AE007FD3E4 /* WhisperKit */,
 			);
 			productName = "Cloude Agent";
@@ -152,6 +162,7 @@
 			mainGroup = C2B3BB972F2619AE007FD3E4;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */,
 				C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -509,6 +520,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = CloudeShared;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -521,6 +539,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C2SHARED022F2619AE007FD3E4 /* CloudeShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */;
+			productName = CloudeShared;
+		};
+		C2SHARED042F2619AE007FD3E4 /* CloudeShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */;
+			productName = CloudeShared;
+		};
 		C2WHISPER022F2619AE007FD3E4 /* WhisperKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */;

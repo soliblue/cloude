@@ -1,22 +1,8 @@
-//
-//  FileEntry.swift
-//  Cloude
-//
-//  File entry model for directory listings
-//
-
 import Foundation
 
-struct FileEntry: Codable, Identifiable {
-    var id: String { path }
-    let name: String
-    let path: String
-    let isDirectory: Bool
-    let size: Int64
-    let modified: Date
-    let mimeType: String?
-
-    var icon: String {
+#if os(iOS)
+extension FileEntry {
+    public var icon: String {
         if isDirectory {
             return "folder.fill"
         }
@@ -40,27 +26,28 @@ struct FileEntry: Codable, Identifiable {
         return "doc.fill"
     }
 
-    var isMedia: Bool {
+    public var isMedia: Bool {
         guard let mime = mimeType else { return false }
         return mime.hasPrefix("image/") || mime.hasPrefix("video/") || mime.hasPrefix("audio/")
     }
 
-    var isImage: Bool {
+    public var isImage: Bool {
         mimeType?.hasPrefix("image/") ?? false
     }
 
-    var isVideo: Bool {
+    public var isVideo: Bool {
         mimeType?.hasPrefix("video/") ?? false
     }
 
-    var isText: Bool {
+    public var isText: Bool {
         guard let mime = mimeType else { return false }
         return mime.hasPrefix("text/") || mime.contains("json") || mime.contains("javascript") || mime.contains("xml")
     }
 
-    var formattedSize: String {
+    public var formattedSize: String {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         return formatter.string(fromByteCount: size)
     }
 }
+#endif

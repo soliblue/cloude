@@ -1,9 +1,5 @@
-//
-//  FolderPickerView+Components.swift
-//  Cloude
-//
-
 import SwiftUI
+import CloudeShared
 
 extension FolderPickerView {
     var pathBar: some View {

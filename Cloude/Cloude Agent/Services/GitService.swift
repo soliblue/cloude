@@ -1,9 +1,5 @@
-//
-//  GitService.swift
-//  Cloude Agent
-//
-
 import Foundation
+import CloudeShared
 
 struct GitService {
     static func isGitRepository(at path: String) -> Bool {
