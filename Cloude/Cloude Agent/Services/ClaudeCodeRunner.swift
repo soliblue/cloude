@@ -73,7 +73,7 @@ class ClaudeCodeRunner: ObservableObject {
 
         var finalPrompt = prompt
         if let imagePath = tempImagePath {
-            finalPrompt = "[Attached image: \(imagePath)]\n\n\(prompt)"
+            finalPrompt = "First, read the image at \(imagePath)\n\n\(prompt)"
         }
 
         var command = claudePath

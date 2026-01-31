@@ -15,7 +15,8 @@ struct MessageBubble: View {
             if !message.isUser && !message.toolCalls.isEmpty {
                 ToolCallsSection(toolCalls: message.toolCalls)
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -38,9 +39,9 @@ struct MessageBubble: View {
                            let uiImage = UIImage(data: imageData) {
                             Image(uiImage: uiImage)
                                 .resizable()
-                                .scaledToFit()
-                                .frame(maxHeight: 200)
-                                .cornerRadius(8)
+                                .scaledToFill()
+                                .frame(width: 36, height: 36)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
 
                         if !message.text.isEmpty {
@@ -67,7 +68,8 @@ struct MessageBubble: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.top, message.toolCalls.isEmpty ? 12 : 4)
+            .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(message.isUser ? Color(.systemGray6) : Color(.systemBackground))
             .contextMenu {

@@ -9,9 +9,10 @@ extension ServerMessage {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .output(let text):
+        case .output(let text, let conversationId):
             try container.encode("output", forKey: .type)
             try container.encode(text, forKey: .text)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .fileChange(let path, let diff, let content):
             try container.encode("file_change", forKey: .type)
             try container.encode(path, forKey: .path)
@@ -21,9 +22,10 @@ extension ServerMessage {
             try container.encode("image", forKey: .type)
             try container.encode(path, forKey: .path)
             try container.encode(base64, forKey: .base64)
-        case .status(let state):
+        case .status(let state, let conversationId):
             try container.encode("status", forKey: .type)
             try container.encode(state, forKey: .state)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .authRequired:
             try container.encode("auth_required", forKey: .type)
         case .authResult(let success, let message):
@@ -43,9 +45,10 @@ extension ServerMessage {
             try container.encode(data, forKey: .data)
             try container.encode(mimeType, forKey: .mimeType)
             try container.encode(size, forKey: .size)
-        case .sessionId(let id):
+        case .sessionId(let id, let conversationId):
             try container.encode("session_id", forKey: .type)
             try container.encode(id, forKey: .id)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .missedResponse(let sessionId, let text, let completedAt):
             try container.encode("missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
@@ -54,16 +57,18 @@ extension ServerMessage {
         case .noMissedResponse(let sessionId):
             try container.encode("no_missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
-        case .toolCall(let name, let input, let toolId, let parentToolId):
+        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId):
             try container.encode("tool_call", forKey: .type)
             try container.encode(name, forKey: .name)
             try container.encodeIfPresent(input, forKey: .input)
             try container.encode(toolId, forKey: .toolId)
             try container.encodeIfPresent(parentToolId, forKey: .parentToolId)
-        case .runStats(let durationMs, let costUsd):
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .runStats(let durationMs, let costUsd, let conversationId):
             try container.encode("run_stats", forKey: .type)
             try container.encode(durationMs, forKey: .durationMs)
             try container.encode(costUsd, forKey: .costUsd)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .gitStatusResult(let status):
             try container.encode("git_status_result", forKey: .type)
             try container.encode(status, forKey: .status)

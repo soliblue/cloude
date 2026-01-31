@@ -6,7 +6,7 @@
 import Foundation
 
 enum ClientMessage: Codable {
-    case chat(message: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?)
+    case chat(message: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String?)
     case abort
     case auth(token: String)
     case listDirectory(path: String)
@@ -18,7 +18,7 @@ enum ClientMessage: Codable {
     case transcribe(audioBase64: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId
     }
 
     init(from decoder: Decoder) throws {
@@ -32,7 +32,8 @@ enum ClientMessage: Codable {
             let sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
             let isNewSession = try container.decodeIfPresent(Bool.self, forKey: .isNewSession) ?? true
             let imageBase64 = try container.decodeIfPresent(String.self, forKey: .imageBase64)
-            self = .chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId)
         case "abort":
             self = .abort
         case "auth":
@@ -70,13 +71,14 @@ enum ClientMessage: Codable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .chat(let message, let workingDirectory, let sessionId, let isNewSession, let imageBase64):
+        case .chat(let message, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId):
             try container.encode("chat", forKey: .type)
             try container.encode(message, forKey: .message)
             try container.encodeIfPresent(workingDirectory, forKey: .workingDirectory)
             try container.encodeIfPresent(sessionId, forKey: .sessionId)
             try container.encode(isNewSession, forKey: .isNewSession)
             try container.encodeIfPresent(imageBase64, forKey: .imageBase64)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .abort:
             try container.encode("abort", forKey: .type)
         case .auth(let token):

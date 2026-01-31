@@ -10,17 +10,20 @@ extension ConnectionManager {
         }
 
         switch message {
-        case .output(let text):
-            if let convId = runningConversationId {
+        case .output(let text, let conversationId):
+            if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
+                output(for: convId).text += text
+            } else if let convId = runningConversationId {
                 output(for: convId).text += text
             }
 
         case .fileChange:
             break
 
-        case .status(let state):
+        case .status(let state, let conversationId):
             agentState = state
-            if let convId = runningConversationId {
+            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+            if let convId = targetConvId {
                 let out = output(for: convId)
                 out.isRunning = (state == .running)
                 if state == .idle {
@@ -51,8 +54,9 @@ extension ConnectionManager {
         case .fileContent(let path, let data, let mimeType, let size):
             onFileContent?(path, data, mimeType, size)
 
-        case .sessionId(let id):
-            if let convId = runningConversationId {
+        case .sessionId(let id, let conversationId):
+            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+            if let convId = targetConvId {
                 output(for: convId).newSessionId = id
             }
 
@@ -69,13 +73,15 @@ extension ConnectionManager {
                 interruptedSession = nil
             }
 
-        case .toolCall(let name, let input, let toolId, let parentToolId):
-            if let convId = runningConversationId {
+        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId):
+            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+            if let convId = targetConvId {
                 output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId))
             }
 
-        case .runStats(let durationMs, let costUsd):
-            if let convId = runningConversationId {
+        case .runStats(let durationMs, let costUsd, let conversationId):
+            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+            if let convId = targetConvId {
                 output(for: convId).runStats = (durationMs, costUsd)
             }
 
@@ -107,7 +113,7 @@ extension ConnectionManager {
             output(for: convId).reset()
             output(for: convId).isRunning = true
         }
-        send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64))
+        send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString))
     }
 
     func abort() {
