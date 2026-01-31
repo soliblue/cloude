@@ -44,6 +44,7 @@ struct WindowHeaderView: View {
 
 struct ProjectChatMessageList: View {
     let messages: [ChatMessage]
+    var queuedMessages: [ChatMessage] = []
     let currentOutput: String
     let currentToolCalls: [ToolCall]
     let currentRunStats: (durationMs: Int, costUsd: Double)?
@@ -92,17 +93,18 @@ struct ProjectChatMessageList: View {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
+                        ForEach(messages) { message in
                             MessageBubble(message: message)
                                 .id(message.id)
-                                .transition(.asymmetric(
-                                    insertion: .move(edge: .bottom).combined(with: .opacity),
-                                    removal: .opacity
-                                ))
                         }
 
                         if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
                             streamingView
+                        }
+
+                        ForEach(queuedMessages) { message in
+                            MessageBubble(message: message)
+                                .id(message.id)
                         }
 
                         Color.clear
@@ -191,7 +193,7 @@ struct ProjectChatMessageList: View {
                     .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
                     .overlay {
                         Image(systemName: "arrow.down")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.primary)
                     }
                     .highPriorityGesture(
@@ -270,7 +272,7 @@ struct CompactingIndicator: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "arrow.triangle.2.circlepath")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .rotationEffect(.degrees(pulse ? 360 : 0))
                 .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: pulse)
             Text("Compacting")

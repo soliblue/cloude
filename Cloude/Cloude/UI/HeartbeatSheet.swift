@@ -44,7 +44,6 @@ struct HeartbeatSheet: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     selectedImageData: $selectedImageData,
-                    hasClipboardContent: UIPasteboard.general.hasStrings,
                     isConnected: connection.isConnected,
                     isWhisperReady: connection.isWhisperReady,
                     onSend: sendMessage,

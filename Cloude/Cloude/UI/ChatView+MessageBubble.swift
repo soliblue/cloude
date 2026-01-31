@@ -44,13 +44,13 @@ struct MessageBubble: View {
                 HStack(alignment: .top, spacing: 8) {
                     if message.isQueued {
                         Image(systemName: "clock")
-                            .font(.caption)
+                            .font(.system(size: 15))
                             .foregroundColor(.secondary)
                     }
 
                     if message.wasInterrupted {
                         Image(systemName: "exclamationmark.triangle")
-                            .font(.caption)
+                            .font(.system(size: 15))
                             .foregroundColor(.orange)
                     }
 
@@ -219,7 +219,7 @@ struct InlineToolPill: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: iconName)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 14, weight: .medium))
             Text(displayText)
                 .font(.system(size: 12, design: .monospaced))
                 .lineLimit(1)
@@ -279,7 +279,7 @@ struct SlashCommandBubble: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
             Text(command)
                 .font(.system(size: 15, weight: .medium, design: .monospaced))
         }

@@ -15,6 +15,7 @@ struct SettingsRow<Content: View>: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
+                .font(.system(size: 20))
                 .foregroundColor(color)
                 .frame(width: 24)
             content
@@ -28,6 +29,7 @@ struct DeviceIPRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "wifi")
+                .font(.system(size: 20))
                 .foregroundColor(.green)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
@@ -75,7 +77,7 @@ struct ConnectionStatusCard: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: statusIcon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 25))
                     .foregroundColor(statusColor)
             }
 

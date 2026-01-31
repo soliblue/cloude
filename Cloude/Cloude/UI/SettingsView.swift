@@ -110,6 +110,7 @@ struct SettingsView: View {
             if connection.processes.isEmpty {
                 HStack {
                     Image(systemName: "checkmark.circle")
+                        .font(.system(size: 20))
                         .foregroundColor(.green)
                     Text("No Claude processes running")
                         .foregroundColor(.secondary)
@@ -129,6 +130,7 @@ struct SettingsView: View {
                         Spacer()
                         Button(action: { connection.killProcess(pid: proc.pid) }) {
                             Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 20))
                                 .foregroundColor(.red)
                         }
                         .buttonStyle(.plain)
@@ -139,6 +141,7 @@ struct SettingsView: View {
                     Button(action: { connection.killAllProcesses() }) {
                         HStack {
                             Image(systemName: "xmark.circle")
+                                .font(.system(size: 20))
                             Text("Kill All Processes")
                         }
                         .foregroundColor(.red)
@@ -151,7 +154,7 @@ struct SettingsView: View {
                 Spacer()
                 Button(action: { connection.getProcesses() }) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.caption)
+                        .font(.system(size: 15))
                 }
                 .buttonStyle(.plain)
             }
@@ -193,7 +196,7 @@ struct SettingsView: View {
                     Text("Help & Support")
                     Spacer()
                     Image(systemName: "arrow.up.right")
-                        .font(.caption)
+                        .font(.system(size: 15))
                         .foregroundColor(.secondary)
                 }
             }
