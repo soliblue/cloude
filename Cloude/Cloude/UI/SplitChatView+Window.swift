@@ -75,6 +75,7 @@ extension SplitChatView {
                     project: project,
                     conversation: conversation,
                     isCompact: true,
+                    isKeyboardVisible: isKeyboardVisible,
                     onInteraction: {
                         windowManager.setActive(window.id)
                         dismissKeyboard()

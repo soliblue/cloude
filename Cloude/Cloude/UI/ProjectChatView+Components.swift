@@ -51,6 +51,7 @@ struct ProjectChatMessageList: View {
     @Binding var scrollProxy: ScrollViewProxy?
     let agentState: AgentState
     let conversationId: UUID?
+    var isKeyboardVisible: Bool = false
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
 
@@ -107,9 +108,14 @@ struct ProjectChatMessageList: View {
                 }
                 .onChange(of: userMessageCount) { oldCount, newCount in
                     if newCount > oldCount, let lastUserMessage = messages.last(where: { $0.isUser }) {
-                        scrollToMessage(lastUserMessage.id)
+                        scrollToMessage(lastUserMessage.id, keyboardVisible: isKeyboardVisible)
                     }
                     lastUserMessageCount = newCount
+                }
+                .onChange(of: isKeyboardVisible) { _, visible in
+                    if visible, let lastUserMessage = messages.last(where: { $0.isUser }) {
+                        scrollToMessage(lastUserMessage.id, keyboardVisible: true)
+                    }
                 }
                 .onChange(of: currentOutput) { oldValue, newValue in
                     if oldValue.isEmpty && !newValue.isEmpty && !hasScrolledToStreaming {
@@ -165,9 +171,9 @@ struct ProjectChatMessageList: View {
         .id(streamingId)
     }
 
-    private func scrollToMessage(_ id: UUID) {
+    private func scrollToMessage(_ id: UUID, keyboardVisible: Bool = false) {
         withAnimation(.easeOut(duration: 0.2)) {
-            scrollProxy?.scrollTo(id, anchor: .top)
+            scrollProxy?.scrollTo(id, anchor: keyboardVisible ? .bottom : .top)
         }
     }
 }
