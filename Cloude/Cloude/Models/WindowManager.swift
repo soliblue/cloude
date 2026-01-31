@@ -38,60 +38,12 @@ struct ChatWindow: Identifiable, Codable {
     var type: WindowType
     var conversationId: UUID?
     var projectId: UUID?
-    var customName: String?
-    var emoji: String?
 
-    private static let randomNames = [
-        "Spark", "Nova", "Pulse", "Echo", "Drift", "Blaze", "Frost", "Dusk",
-        "Dawn", "Flux", "Glow", "Haze", "Mist", "Peak", "Reef", "Sage",
-        "Tide", "Vale", "Wave", "Zen", "Bolt", "Cove", "Edge", "Fern",
-        "Grid", "Hive", "Jade", "Kite", "Leaf", "Maze", "Nest", "Opal",
-        "Pine", "Quill", "Rush", "Sand", "Twig", "Vine", "Wisp", "Yarn",
-        "Arc", "Bay", "Cliff", "Dell", "Elm", "Fog", "Glen", "Hill",
-        "Ivy", "Jet", "Key", "Lane", "Moon", "Nook", "Oak", "Path"
-    ]
-
-    private static let randomSymbols = [
-        "star", "heart", "bolt", "flame", "leaf", "moon", "sun.max", "cloud",
-        "sparkles", "wand.and.stars", "lightbulb", "paperplane", "rocket",
-        "globe", "map", "compass.drawing", "flag", "bookmark", "tag",
-        "bubble.left", "quote.bubble", "text.bubble", "captions.bubble",
-        "phone", "video", "envelope", "bell", "music.note", "guitars",
-        "paintbrush", "pencil", "folder", "doc", "book", "newspaper",
-        "graduationcap", "briefcase", "hammer", "wrench", "gearshape",
-        "cpu", "memorychip", "antenna.radiowaves.left.and.right", "wifi",
-        "lock", "key", "eye", "hand.raised", "person", "figure.walk",
-        "hare", "tortoise", "bird", "fish", "leaf", "tree", "mountain.2",
-        "drop", "snowflake", "wind", "tornado", "rainbow"
-    ]
-
-    init(id: UUID = UUID(), type: WindowType = .chat, conversationId: UUID? = nil, projectId: UUID? = nil, customName: String? = nil, emoji: String? = nil) {
+    init(id: UUID = UUID(), type: WindowType = .chat, conversationId: UUID? = nil, projectId: UUID? = nil) {
         self.id = id
         self.type = type
         self.conversationId = conversationId
         self.projectId = projectId
-        self.customName = customName
-        self.emoji = emoji
-    }
-
-    static func withRandomIdentity() -> ChatWindow {
-        ChatWindow(
-            customName: randomNames.randomElement(),
-            emoji: randomSymbols.randomElement()
-        )
-    }
-
-    var displayLabel: String {
-        if let name = customName, !name.isEmpty {
-            if let emoji = emoji, !emoji.isEmpty {
-                return "\(emoji) \(name)"
-            }
-            return name
-        }
-        if let emoji = emoji, !emoji.isEmpty {
-            return emoji
-        }
-        return ""
     }
 }
 
@@ -119,7 +71,7 @@ class WindowManager: ObservableObject {
         focusModeEnabled = UserDefaults.standard.object(forKey: focusModeKey) as? Bool ?? true
         load()
         if windows.isEmpty {
-            windows = [ChatWindow.withRandomIdentity()]
+            windows = [ChatWindow()]
         }
         if activeWindowId == nil {
             activeWindowId = windows.first?.id
@@ -161,7 +113,7 @@ class WindowManager: ObservableObject {
 
     @discardableResult
     func addWindow() -> UUID {
-        let window = ChatWindow.withRandomIdentity()
+        let window = ChatWindow()
         guard canAddWindow else { return window.id }
         windows.append(window)
         activeWindowId = window.id
@@ -198,18 +150,6 @@ class WindowManager: ObservableObject {
     func setWindowType(_ windowId: UUID, type: WindowType) {
         guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
         windows[index].type = type
-        save()
-    }
-
-    func setWindowName(_ windowId: UUID, name: String?) {
-        guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
-        windows[index].customName = name
-        save()
-    }
-
-    func setWindowEmoji(_ windowId: UUID, emoji: String?) {
-        guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
-        windows[index].emoji = emoji
         save()
     }
 
