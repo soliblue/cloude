@@ -37,9 +37,9 @@ struct Conversation: Codable, Identifiable {
         "hare", "tortoise", "bird", "fish", "tree", "mountain.2", "drop"
     ]
 
-    init(name: String? = nil, symbol: String? = nil) {
-        self.id = UUID()
-        self.sessionId = nil
+    init(name: String? = nil, symbol: String? = nil, id: UUID = UUID(), sessionId: String? = nil) {
+        self.id = id
+        self.sessionId = sessionId
         self.createdAt = Date()
         self.lastMessageAt = Date()
         self.messages = []

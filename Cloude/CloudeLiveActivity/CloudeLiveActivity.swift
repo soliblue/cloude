@@ -156,6 +156,7 @@ struct LockScreenView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
+        .background(.regularMaterial, in: .rect(cornerRadius: 16))
     }
 
     var stateText: String {
