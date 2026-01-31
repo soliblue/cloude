@@ -29,7 +29,7 @@ class RunnerManager: ObservableObject {
         activeRunners.values.filter { $0.runner.isRunning }.count
     }
 
-    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String) {
+    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String, useFixedSessionId: Bool = false) {
         if let existing = activeRunners[conversationId], existing.runner.isRunning {
             Log.info("Runner for \(conversationId.prefix(8)) already running, aborting old one")
             existing.runner.abort()
@@ -45,7 +45,7 @@ class RunnerManager: ObservableObject {
         onStatusChange?(.running, conversationId)
 
         Log.info("Starting runner for conversation \(conversationId.prefix(8))...")
-        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64)
+        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, useFixedSessionId: useFixedSessionId)
     }
 
     func abort(conversationId: String) {

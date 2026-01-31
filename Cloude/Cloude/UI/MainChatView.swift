@@ -17,29 +17,37 @@ struct MainChatView: View {
     @State var drafts: [UUID: (text: String, imageData: Data?)] = [:]
     @State var gitBranches: [UUID: String] = [:]
     @State var pendingGitChecks: [UUID] = []
+    @State var showIntervalPicker = false
+
+    private var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
     var body: some View {
         GeometryReader { geometry in
             TabView(selection: $currentPageIndex) {
+                heartbeatWindowContent()
+                    .tag(0)
+
                 ForEach(Array(windowManager.windows.enumerated()), id: \.element.id) { index, window in
                     pagedWindowContent(for: window)
-                        .tag(index)
+                        .tag(index + 1)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .onChange(of: currentPageIndex) { _, newIndex in
-                windowManager.navigateToWindow(at: newIndex)
+                if newIndex > 0 {
+                    windowManager.navigateToWindow(at: newIndex - 1)
+                }
             }
             .onAppear {
                 if let activeId = windowManager.activeWindowId,
                    let index = windowManager.windowIndex(for: activeId) {
-                    currentPageIndex = index
+                    currentPageIndex = index + 1
                 }
             }
             .onChange(of: windowManager.activeWindowId) { _, newId in
                 if let id = newId, let index = windowManager.windowIndex(for: id) {
-                    if currentPageIndex != index {
-                        withAnimation { currentPageIndex = index }
+                    if currentPageIndex != index + 1 {
+                        withAnimation { currentPageIndex = index + 1 }
                     }
                 }
             }
@@ -156,6 +164,98 @@ struct MainChatView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             isKeyboardVisible = false
         }
+        .onChange(of: currentPageIndex) { oldIndex, newIndex in
+            if oldIndex == 0 && newIndex != 0 {
+                connection.send(.markHeartbeatRead)
+                heartbeatStore.markRead()
+            }
+        }
+        .confirmationDialog("Heartbeat Interval", isPresented: $showIntervalPicker, titleVisibility: .visible) {
+            ForEach([(0, "Off"), (5, "5 min"), (10, "10 min"), (30, "30 min"), (60, "1 hour"), (120, "2 hours"), (240, "4 hours"), (480, "8 hours"), (1440, "1 day")], id: \.0) { minutes, label in
+                Button(label) {
+                    let value = minutes == 0 ? nil : minutes
+                    heartbeatStore.intervalMinutes = value
+                    connection.send(.setHeartbeatInterval(minutes: value))
+                }
+            }
+        }
+        .onAppear {
+            connection.onHeartbeatConfig = { intervalMinutes, unreadCount in
+                heartbeatStore.handleConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount)
+            }
+        }
+    }
+
+    @ViewBuilder
+    func heartbeatWindowContent() -> some View {
+        let convOutput = connection.output(for: Heartbeat.conversationId)
+
+        VStack(spacing: 0) {
+            heartbeatHeader(isRunning: convOutput.isRunning)
+
+            HeartbeatChatView(
+                heartbeatStore: heartbeatStore,
+                connection: connection,
+                inputText: $inputText,
+                selectedImageData: $selectedImageData,
+                isKeyboardVisible: isKeyboardVisible
+            )
+        }
+    }
+
+    func heartbeatHeader(isRunning: Bool) -> some View {
+        HStack(spacing: 9) {
+            Button(action: triggerHeartbeat) {
+                Image(systemName: "bolt.heart")
+                    .font(.system(size: 17))
+                    .foregroundColor(isRunning ? .secondary : .accentColor)
+            }
+            .disabled(isRunning)
+            .buttonStyle(.plain)
+            .padding(7)
+
+            Spacer()
+
+            VStack(spacing: 2) {
+                Text("Heartbeat")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                if isRunning {
+                    Text("Running...")
+                        .font(.system(size: 10))
+                        .foregroundColor(.orange)
+                } else {
+                    Text("Last: \(heartbeatStore.lastTriggeredDisplayText)")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Spacer()
+
+            Button(action: { showIntervalPicker = true }) {
+                if heartbeatStore.intervalMinutes == nil {
+                    Image(systemName: "clock.badge.xmark")
+                        .font(.system(size: 17))
+                } else {
+                    Text(heartbeatStore.intervalDisplayText)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+            }
+            .buttonStyle(.plain)
+            .padding(7)
+        }
+        .padding(.horizontal, 11)
+        .padding(.vertical, 7)
+        .background(Color(.secondarySystemBackground))
+    }
+
+    private func triggerHeartbeat() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        heartbeatStore.recordTrigger()
+        connection.send(.triggerHeartbeat)
     }
 
     @ViewBuilder
@@ -272,55 +372,99 @@ struct MainChatView: View {
     }
 
     func pageIndicator() -> some View {
-        HStack(spacing: 10) {
-            ForEach(0..<5, id: \.self) { index in
-                if index < windowManager.windows.count {
-                    let window = windowManager.windows[index]
-                    let isActive = window.id == windowManager.activeWindowId
-                    let conversation = window.projectId.flatMap { pid in
-                        projectStore.projects.first { $0.id == pid }
-                    }.flatMap { proj in
-                        window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
-                    }
-                    let convId = window.conversationId
-                    let isWindowStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
+        HStack(spacing: 16) {
+            heartbeatIndicatorButton()
+            windowIndicatorButtons()
+        }
+        .frame(maxWidth: .infinity)
+    }
 
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index }
-                    } label: {
-                        if let symbol = conversation?.symbol, !symbol.isEmpty {
-                            Image(systemName: symbol)
-                                .font(.system(size: 20, weight: isActive ? .semibold : .regular))
-                                .foregroundStyle(isActive ? .primary : .secondary)
-                                .frame(width: 36, height: 36)
-                                .background(.ultraThinMaterial, in: Circle())
-                                .modifier(StreamingPulseModifier(isStreaming: isWindowStreaming))
-                        } else {
-                            Circle()
-                                .fill(isActive ? Color.primary : Color.secondary.opacity(0.3))
-                                .frame(width: isActive ? 14 : 10, height: isActive ? 14 : 10)
-                                .modifier(StreamingPulseModifier(isStreaming: isWindowStreaming))
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .simultaneousGesture(
-                        LongPressGesture().onEnded { _ in
-                            editingWindow = window
-                        }
-                    )
-                } else {
-                    Button(action: addWindowWithNewChat) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 36, height: 36)
-                            .background(.ultraThinMaterial, in: Circle())
-                    }
-                    .buttonStyle(.plain)
+    @ViewBuilder
+    private func heartbeatIndicatorButton() -> some View {
+        let isStreaming = connection.output(for: Heartbeat.conversationId).isRunning
+        let weight: Font.Weight = isHeartbeatActive || isStreaming ? .semibold : .regular
+        let color: Color = isHeartbeatActive ? .pink : (isStreaming ? .accentColor : .secondary)
+
+        Button {
+            withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 22, weight: weight))
+                    .foregroundStyle(color)
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+
+                if heartbeatStore.unreadCount > 0 && !isHeartbeatActive {
+                    Text(heartbeatStore.unreadCount > 9 ? "9+" : "\(heartbeatStore.unreadCount)")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(minWidth: 14, minHeight: 14)
+                        .background(Circle().fill(.red))
+                        .offset(x: 8, y: -8)
                 }
             }
         }
-        .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func windowIndicatorButtons() -> some View {
+        ForEach(0..<5, id: \.self) { index in
+            windowIndicatorButton(at: index)
+        }
+    }
+
+    @ViewBuilder
+    private func windowIndicatorButton(at index: Int) -> some View {
+        if index < windowManager.windows.count {
+            let window = windowManager.windows[index]
+            let isActive = currentPageIndex == index + 1
+            let convId = window.conversationId
+            let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
+            let conversation = window.projectId.flatMap { pid in
+                projectStore.projects.first { $0.id == pid }
+            }.flatMap { proj in
+                window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
+            }
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index + 1 }
+            } label: {
+                windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
+            }
+            .buttonStyle(.plain)
+            .simultaneousGesture(
+                LongPressGesture().onEnded { _ in
+                    editingWindow = window
+                }
+            )
+        } else {
+            Button(action: addWindowWithNewChat) {
+                Image(systemName: "plus")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    @ViewBuilder
+    private func windowIndicatorIcon(conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
+        let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
+        let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
+
+        if let symbol = conversation?.symbol, !symbol.isEmpty {
+            Image(systemName: symbol)
+                .font(.system(size: 22, weight: weight))
+                .foregroundStyle(color)
+                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+        } else {
+            let size: CGFloat = isActive || isStreaming ? 12 : 8
+            Circle()
+                .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
+                .frame(width: size, height: size)
+                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+        }
     }
 
     func sendMessage() {
@@ -337,6 +481,45 @@ struct MainChatView: View {
 
         guard !text.isEmpty || fullImageBase64 != nil else { return }
 
+        if isHeartbeatActive {
+            sendHeartbeatMessage(text: text, imageBase64: fullImageBase64, thumbnailBase64: thumbnailBase64)
+        } else {
+            sendProjectMessage(text: text, imageBase64: fullImageBase64, thumbnailBase64: thumbnailBase64)
+        }
+
+        inputText = ""
+        selectedImageData = nil
+        if let activeId = windowManager.activeWindowId {
+            drafts.removeValue(forKey: activeId)
+        }
+    }
+
+    private func sendHeartbeatMessage(text: String, imageBase64: String?, thumbnailBase64: String?) {
+        let convOutput = connection.output(for: Heartbeat.conversationId)
+
+        if convOutput.isRunning {
+            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnailBase64)
+            heartbeatStore.conversation.pendingMessages.append(userMessage)
+            heartbeatStore.save()
+        } else {
+            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnailBase64)
+            heartbeatStore.conversation.messages.append(userMessage)
+            heartbeatStore.save()
+
+            connection.sendChat(
+                text,
+                workingDirectory: nil,
+                sessionId: Heartbeat.sessionId,
+                isNewSession: false,
+                conversationId: Heartbeat.conversationId,
+                imageBase64: imageBase64,
+                conversationName: "Heartbeat",
+                conversationSymbol: "heart.fill"
+            )
+        }
+    }
+
+    private func sendProjectMessage(text: String, imageBase64: String?, thumbnailBase64: String?) {
         if windowManager.activeWindow == nil {
             windowManager.addWindow()
         }
@@ -366,13 +549,7 @@ struct MainChatView: View {
 
             let isNewSession = conv.sessionId == nil
             let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: fullImageBase64, conversationName: conv.name, conversationSymbol: conv.symbol)
-        }
-
-        inputText = ""
-        selectedImageData = nil
-        if let activeId = windowManager.activeWindowId {
-            drafts.removeValue(forKey: activeId)
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol)
         }
     }
 

@@ -82,17 +82,10 @@ extension ServerMessage {
         case .whisperReady(let ready):
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
-        case .heartbeatConfig(let intervalMinutes, let unreadCount, let sessionId):
+        case .heartbeatConfig(let intervalMinutes, let unreadCount):
             try container.encode("heartbeat_config", forKey: .type)
             try container.encodeIfPresent(intervalMinutes, forKey: .intervalMinutes)
             try container.encode(unreadCount, forKey: .unreadCount)
-            try container.encodeIfPresent(sessionId, forKey: .sessionId)
-        case .heartbeatOutput(let text):
-            try container.encode("heartbeat_output", forKey: .type)
-            try container.encode(text, forKey: .text)
-        case .heartbeatComplete(let message):
-            try container.encode("heartbeat_complete", forKey: .type)
-            try container.encode(message, forKey: .message)
         case .memories(let sections):
             try container.encode("memories", forKey: .type)
             try container.encode(sections, forKey: .sections)
@@ -107,6 +100,15 @@ extension ServerMessage {
         case .processList(let processes):
             try container.encode("process_list", forKey: .type)
             try container.encode(processes, forKey: .processes)
+        case .memoryAdded(let target, let section, let text, let conversationId):
+            try container.encode("memory_added", forKey: .type)
+            try container.encode(target, forKey: .target)
+            try container.encode(section, forKey: .section)
+            try container.encode(text, forKey: .text)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .defaultWorkingDirectory(let path):
+            try container.encode("default_working_directory", forKey: .type)
+            try container.encode(path, forKey: .path)
         }
     }
 }

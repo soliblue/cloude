@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CloudeShared
 
 struct WindowHeaderView: View {
@@ -54,6 +55,7 @@ struct ProjectChatMessageList: View {
     var isCompacting: Bool = false
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
+    var onDeleteQueued: ((UUID) -> Void)?
 
     @State private var hasScrolledToStreaming = false
     @State private var lastUserMessageCount = 0
@@ -95,7 +97,7 @@ struct ProjectChatMessageList: View {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(messages) { message in
                             MessageBubble(message: message)
-                                .id(message.id)
+                                .id("\(message.id)-\(message.isQueued)")
                         }
 
                         if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
@@ -103,8 +105,10 @@ struct ProjectChatMessageList: View {
                         }
 
                         ForEach(queuedMessages) { message in
-                            MessageBubble(message: message)
-                                .id(message.id)
+                            SwipeToDeleteBubble(message: message) {
+                                onDeleteQueued?(message.id)
+                            }
+                            .id("\(message.id)-queued")
                         }
 
                         Color.clear
@@ -121,6 +125,7 @@ struct ProjectChatMessageList: View {
                         .frame(height: 1)
                     }
                 }
+                .scrollContentBackground(.hidden)
                 .coordinateSpace(name: "scrollView")
                 .onPreferenceChange(BottomOverscrollKey.self) { offset in
                     bottomPullOffset = offset
@@ -262,6 +267,61 @@ private struct ScrollOffsetKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+struct SwipeToDeleteBubble: View {
+    let message: ChatMessage
+    let onDelete: () -> Void
+
+    @State private var offset: CGFloat = 0
+    @State private var showDelete = false
+
+    private let deleteThreshold: CGFloat = -60
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            if showDelete {
+                Button(action: onDelete) {
+                    Image(systemName: "trash.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 60)
+                        .frame(maxHeight: .infinity)
+                        .background(Color.red)
+                }
+                .transition(.opacity)
+            }
+
+            MessageBubble(message: message)
+                .offset(x: offset)
+                .gesture(
+                    DragGesture(minimumDistance: 10)
+                        .onChanged { value in
+                            let translation = value.translation.width
+                            if translation < 0 {
+                                offset = translation
+                                showDelete = translation < deleteThreshold
+                            }
+                        }
+                        .onEnded { value in
+                            if value.translation.width < deleteThreshold {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    offset = -UIScreen.main.bounds.width
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    onDelete()
+                                }
+                            } else {
+                                withAnimation(.spring(response: 0.3)) {
+                                    offset = 0
+                                    showDelete = false
+                                }
+                            }
+                        }
+                )
+        }
+        .clipped()
     }
 }
 

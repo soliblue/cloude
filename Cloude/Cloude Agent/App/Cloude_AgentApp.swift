@@ -19,6 +19,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Log.info("Agent starting up")
+
+        let killedAgents = ProcessMonitor.killOtherAgents()
+        if killedAgents > 0 {
+            Log.info("Killed \(killedAgents) existing agent process(es)")
+            Thread.sleep(forTimeInterval: 0.5)
+        }
+
         NSApp.setActivationPolicy(.accessory)
         setupMenuBar()
         setupServices()
@@ -45,14 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupHeartbeat() {
         let heartbeat = HeartbeatService.shared
-        heartbeat.onOutput = { [weak self] text in
-            self?.server.broadcast(.heartbeatOutput(text: text))
-        }
-        heartbeat.onComplete = { [weak self] message in
-            self?.server.broadcast(.heartbeatComplete(message: message))
-            let config = HeartbeatService.shared.getConfig()
-            self?.server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId))
-        }
+        heartbeat.runnerManager = runnerManager
     }
 
     private func setupMenuBar() {
@@ -93,6 +93,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         runnerManager.onStatusChange = { [weak self] state, conversationId in
             self?.server.broadcast(.status(state: state, conversationId: conversationId))
+        }
+
+        runnerManager.onComplete = { [weak self] conversationId, _ in
+            if conversationId == Heartbeat.sessionId {
+                let runner = self?.runnerManager.activeRunners[conversationId]
+                let response = runner?.accumulatedResponse ?? ""
+                let isEmpty = response.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                              response == "<skip>" ||
+                              response == "."
+                HeartbeatService.shared.handleComplete(isEmpty: isEmpty)
+                let config = HeartbeatService.shared.getConfig()
+                self?.server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount))
+            }
         }
     }
 
@@ -169,16 +182,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             HeartbeatService.shared.setInterval(minutes)
             let config = HeartbeatService.shared.getConfig()
             Log.info("Broadcasting config: interval=\(String(describing: config.intervalMinutes)), unread=\(config.unreadCount)")
-            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId))
+            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount))
 
         case .getHeartbeatConfig:
             let config = HeartbeatService.shared.getConfig()
-            server.sendMessage(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId), to: connection)
+            server.sendMessage(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount), to: connection)
 
         case .markHeartbeatRead:
             HeartbeatService.shared.markRead()
             let config = HeartbeatService.shared.getConfig()
-            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId))
+            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount))
 
         case .triggerHeartbeat:
             Log.info("Received triggerHeartbeat request")
@@ -208,18 +221,47 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleCloudeCommand(_ command: String, conversationId: String?) {
         let parts = command.dropFirst(7).split(separator: " ", maxSplits: 1).map(String.init)
-        guard let action = parts.first, let convId = conversationId else { return }
+        guard let action = parts.first else { return }
 
         switch action {
         case "rename":
-            guard parts.count >= 2 else { return }
+            guard let convId = conversationId, parts.count >= 2 else { return }
             let name = parts[1]
             server.broadcast(.renameConversation(conversationId: convId, name: name))
             Log.info("Renamed conversation \(convId.prefix(8)) to '\(name)'")
+
         case "symbol":
+            guard let convId = conversationId else { return }
             let symbol = parts.count >= 2 ? parts[1] : nil
             server.broadcast(.setConversationSymbol(conversationId: convId, symbol: symbol))
             Log.info("Set symbol for \(convId.prefix(8)) to '\(symbol ?? "nil")'")
+
+        case "memory":
+            guard parts.count >= 2 else { return }
+            let memoryArgs = parts[1].split(separator: " ", maxSplits: 2).map(String.init)
+            guard memoryArgs.count >= 3 else {
+                Log.info("Memory command requires: cloude memory <local|project> <section> <text>")
+                return
+            }
+
+            let targetStr = memoryArgs[0].lowercased()
+            let section = memoryArgs[1]
+            let text = memoryArgs[2]
+
+            let target: MemoryService.MemoryTarget
+            switch targetStr {
+            case "local": target = .local
+            case "project": target = .project
+            default:
+                Log.info("Unknown memory target: \(targetStr). Use 'local' or 'project'")
+                return
+            }
+
+            let success = MemoryService.addMemory(target: target, section: section, text: text)
+            if success {
+                server.broadcast(.memoryAdded(target: targetStr, section: section, text: text, conversationId: conversationId))
+            }
+
         default:
             Log.info("Unknown cloude command: \(action)")
         }
