@@ -161,7 +161,9 @@ struct HeartbeatSheet: View {
             workingDirectory: nil,
             sessionId: heartbeatStore.conversation.sessionId,
             isNewSession: heartbeatStore.conversation.sessionId == nil,
-            conversationId: heartbeatStore.conversation.id
+            conversationId: heartbeatStore.conversation.id,
+            conversationName: "Heartbeat",
+            conversationSymbol: "heart.fill"
         )
         heartbeatStore.isRunning = true
     }
@@ -208,7 +210,9 @@ struct HeartbeatSheet: View {
                 sessionId: heartbeatStore.conversation.sessionId,
                 isNewSession: heartbeatStore.conversation.sessionId == nil,
                 conversationId: heartbeatStore.conversation.id,
-                imageBase64: imageBase64
+                imageBase64: imageBase64,
+                conversationName: "Heartbeat",
+                conversationSymbol: "heart.fill"
             )
             heartbeatStore.isRunning = true
         }
