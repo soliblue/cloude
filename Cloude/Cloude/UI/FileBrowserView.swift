@@ -1,11 +1,5 @@
-//
-//  FileBrowserView.swift
-//  Cloude
-//
-//  Browse files on the remote Mac
-//
-
 import SwiftUI
+import CloudeShared
 
 struct FileBrowserView: View {
     @ObservedObject var connection: ConnectionManager

@@ -1,14 +1,8 @@
-//
-//  WebSocketServer.swift
-//  Cloude Agent
-//
-//  WebSocket server using Network framework
-//
-
 import Foundation
 import Network
 import CryptoKit
 import Combine
+import CloudeShared
 
 @MainActor
 class WebSocketServer: ObservableObject {

@@ -1,9 +1,5 @@
-//
-//  GitDiffView.swift
-//  Cloude
-//
-
 import SwiftUI
+import CloudeShared
 
 struct GitDiffView: View {
     @ObservedObject var connection: ConnectionManager

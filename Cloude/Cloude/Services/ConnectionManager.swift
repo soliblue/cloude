@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CloudeShared
 
 class ConversationOutput: ObservableObject {
     weak var parent: ConnectionManager?
@@ -26,6 +27,8 @@ class ConnectionManager: ObservableObject {
     @Published var isWhisperReady = false
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
+
+    let events = PassthroughSubject<ConnectionEvent, Never>()
 
     private var webSocket: URLSessionWebSocketTask?
     private var session: URLSession?
@@ -61,6 +64,10 @@ class ConnectionManager: ObservableObject {
 
     var hasCredentials: Bool {
         !savedHost.isEmpty && !savedToken.isEmpty
+    }
+
+    var isAnyRunning: Bool {
+        conversationOutputs.values.contains { $0.isRunning }
     }
 
     func connect(host: String, port: UInt16, token: String) {
@@ -142,6 +149,7 @@ class ConnectionManager: ObservableObject {
                 interruptedSession = (convId, sessionId)
             }
             if !output.text.isEmpty {
+                events.send(.disconnect(conversationId: convId, output: output))
                 onDisconnect?(convId, output)
             }
             output.isRunning = false

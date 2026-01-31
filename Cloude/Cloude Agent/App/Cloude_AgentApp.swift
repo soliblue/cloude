@@ -1,12 +1,6 @@
-//
-//  Cloude_AgentApp.swift
-//  Cloude Agent
-//
-//  Menu bar app that runs WebSocket server for remote Claude Code control
-//
-
 import SwiftUI
 import Network
+import CloudeShared
 
 @main
 struct Cloude_AgentApp: App {
@@ -20,11 +14,8 @@ struct Cloude_AgentApp: App {
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     var server: WebSocketServer!
-    private var runner: ClaudeCodeRunner!
+    var runnerManager: RunnerManager!
     private var popover: NSPopover!
-    private var currentSessionId: String?
-    private var currentConversationId: String?
-    private var accumulatedResponse = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Log.info("Agent starting up")
@@ -69,39 +60,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupServices() {
         let token = AuthManager.shared.token
         server = WebSocketServer(port: 8765, authToken: token)
-        runner = ClaudeCodeRunner()
+        runnerManager = RunnerManager()
 
         server.onMessage = { [weak self] message, connection in
             self?.handleMessage(message, from: connection)
         }
 
-        runner.onOutput = { [weak self] text in
-            self?.accumulatedResponse += text
-            self?.server.broadcast(.output(text: text, conversationId: self?.currentConversationId))
+        runnerManager.onOutput = { [weak self] text, conversationId in
+            self?.server.broadcast(.output(text: text, conversationId: conversationId))
         }
 
-        runner.onSessionId = { [weak self] sessionId in
-            self?.currentSessionId = sessionId
-            self?.server.broadcast(.sessionId(id: sessionId, conversationId: self?.currentConversationId))
+        runnerManager.onSessionId = { [weak self] sessionId, conversationId in
+            self?.server.broadcast(.sessionId(id: sessionId, conversationId: conversationId))
         }
 
-        runner.onToolCall = { [weak self] name, input, toolId, parentToolId in
-            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: self?.currentConversationId))
+        runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId in
+            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId))
         }
 
-        runner.onRunStats = { [weak self] durationMs, costUsd in
-            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, conversationId: self?.currentConversationId))
+        runnerManager.onRunStats = { [weak self] durationMs, costUsd, conversationId in
+            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, conversationId: conversationId))
         }
 
-        runner.onComplete = { [weak self] in
-            let responseLen = self?.accumulatedResponse.count ?? 0
-            Log.info("Claude run complete, response length=\(responseLen)")
-            if let sessionId = self?.currentSessionId, let response = self?.accumulatedResponse, !response.isEmpty {
-                ResponseStore.store(sessionId: sessionId, text: response)
-            }
-            self?.accumulatedResponse = ""
-            self?.server.broadcast(.status(state: .idle, conversationId: self?.currentConversationId))
-            self?.currentConversationId = nil
+        runnerManager.onStatusChange = { [weak self] state, conversationId in
+            self?.server.broadcast(.status(state: state, conversationId: conversationId))
         }
     }
 
@@ -111,7 +93,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(rootView: StatusView(
             server: server,
-            runner: runner,
+            runnerManager: runnerManager,
             token: AuthManager.shared.token
         ))
     }
@@ -128,14 +110,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
         case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId):
-            Log.info("Chat received: \(text.prefix(50))... (len=\(text.count), hasImage=\(imageBase64 != nil), isNew=\(isNewSession))")
-            currentConversationId = conversationId
-            server.broadcast(.status(state: .running, conversationId: conversationId))
-            runner.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64)
+            Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), hasImage=\(imageBase64 != nil), isNew=\(isNewSession))")
+            let convId = conversationId ?? UUID().uuidString
+            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId)
 
-        case .abort:
-            Log.info("Abort requested")
-            runner.abort()
+        case .abort(let conversationId):
+            if let convId = conversationId {
+                Log.info("Abort requested for conversation \(convId.prefix(8))")
+                runnerManager.abort(conversationId: convId)
+            } else {
+                Log.info("Abort all requested")
+                runnerManager.abortAll()
+            }
 
         case .listDirectory(let path):
             handleListDirectory(path, connection: connection)
@@ -210,5 +196,4 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
-
 }
