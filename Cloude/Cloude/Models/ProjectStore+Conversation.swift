@@ -119,6 +119,16 @@ extension ProjectStore {
         return projects[projectIndex].conversations[convIndex].pendingMessages.count
     }
 
+    func removePendingMessage(_ messageId: UUID, from conversation: Conversation, in project: Project) {
+        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+        projects[projectIndex].conversations[convIndex].pendingMessages.removeAll { $0.id == messageId }
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
+
     func getQueuedMessages(in conversation: Conversation, in project: Project) -> [ChatMessage] {
         guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return [] }
         return projects[projectIndex].conversations[convIndex].messages.filter { $0.isQueued }
