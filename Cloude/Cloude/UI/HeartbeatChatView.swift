@@ -86,7 +86,9 @@ struct HeartbeatChatView: View {
             workingDirectory: nil,
             sessionId: heartbeatStore.conversation.sessionId,
             isNewSession: heartbeatStore.conversation.sessionId == nil,
-            conversationId: heartbeatStore.conversation.id
+            conversationId: heartbeatStore.conversation.id,
+            conversationName: "Heartbeat",
+            conversationSymbol: "heart.fill"
         )
         heartbeatStore.isRunning = true
     }
