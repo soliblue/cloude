@@ -25,9 +25,13 @@ enum ServerMessage: Codable {
     case gitCommitResult(success: Bool, message: String?)
     case transcription(text: String)
     case whisperReady(ready: Bool)
+    case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int, sessionId: String?)
+    case heartbeatOutput(text: String)
+    case heartbeatComplete(message: String)
+    case memories(sections: [MemorySection])
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections
     }
 
     init(from decoder: Decoder) throws {
@@ -112,6 +116,20 @@ enum ServerMessage: Codable {
         case "whisper_ready":
             let ready = try container.decode(Bool.self, forKey: .ready)
             self = .whisperReady(ready: ready)
+        case "heartbeat_config":
+            let intervalMinutes = try container.decodeIfPresent(Int.self, forKey: .intervalMinutes)
+            let unreadCount = try container.decode(Int.self, forKey: .unreadCount)
+            let sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
+            self = .heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount, sessionId: sessionId)
+        case "heartbeat_output":
+            let text = try container.decode(String.self, forKey: .text)
+            self = .heartbeatOutput(text: text)
+        case "heartbeat_complete":
+            let message = try container.decode(String.self, forKey: .message)
+            self = .heartbeatComplete(message: message)
+        case "memories":
+            let sections = try container.decode([MemorySection].self, forKey: .sections)
+            self = .memories(sections: sections)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
