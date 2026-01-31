@@ -31,7 +31,14 @@ class HeartbeatService: ObservableObject {
     var onSessionId: ((String) -> Void)?
 
     private let heartbeatPrompt = """
-        This is your autonomous heartbeat. You can write thoughts, send a message to Soli, or take any action you want. Be concise. If you have nothing to say, just output <skip> and nothing else.
+        This is your autonomous heartbeat. Use this time proactively:
+        - Explore the codebase for refactoring opportunities or code improvements
+        - Add feature ideas or notes to CLAUDE.local.md (your personal memory file)
+        - Send a message with observations or suggestions
+        - Update your memory section in CLAUDE.local.md
+        - Check git status for uncommitted work
+        - Look for patterns that could be cleaner
+        Be concise but do something useful. Only output <skip> if you genuinely have nothing to contribute.
         """
 
     private let compactThreshold = 30
@@ -99,9 +106,11 @@ class HeartbeatService: ObservableObject {
             Log.info("Running /compact before heartbeat")
         }
 
+        let cloudeDir = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Desktop/coding/cloude").path
         runner?.run(
             prompt: prompt,
-            workingDirectory: FileManager.default.homeDirectoryForCurrentUser.path,
+            workingDirectory: cloudeDir,
             sessionId: sessionId,
             isNewSession: sessionId == nil
         )

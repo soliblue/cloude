@@ -32,7 +32,7 @@ struct HeartbeatSheet: View {
         NavigationStack {
             VStack(spacing: 0) {
                 ProjectChatMessageList(
-                    messages: heartbeatStore.conversation.messages,
+                    messages: heartbeatStore.conversation.messages + heartbeatStore.conversation.pendingMessages,
                     currentOutput: convOutput.text.isEmpty ? heartbeatStore.currentOutput : convOutput.text,
                     currentToolCalls: convOutput.toolCalls,
                     currentRunStats: convOutput.runStats,
@@ -87,10 +87,18 @@ struct HeartbeatSheet: View {
             .onAppear {
                 connection.send(.markHeartbeatRead)
                 heartbeatStore.markRead()
+                if !heartbeatStore.isRunning && !convOutput.isRunning {
+                    sendQueuedMessages()
+                }
             }
             .onChange(of: convOutput.isRunning) { wasRunning, isRunning in
                 if wasRunning && !isRunning && !convOutput.text.isEmpty {
                     handleUserChatCompletion()
+                }
+            }
+            .onChange(of: heartbeatStore.isRunning) { wasRunning, isRunning in
+                if wasRunning && !isRunning && !convOutput.isRunning {
+                    sendQueuedMessages()
                 }
             }
             .onChange(of: convOutput.newSessionId) { _, newId in
@@ -115,6 +123,31 @@ struct HeartbeatSheet: View {
         heartbeatStore.save()
         convOutput.reset()
         heartbeatStore.isRunning = false
+
+        sendQueuedMessages()
+    }
+
+    private func sendQueuedMessages() {
+        let pending = heartbeatStore.conversation.pendingMessages
+        guard !pending.isEmpty else { return }
+
+        heartbeatStore.conversation.pendingMessages = []
+
+        for var msg in pending {
+            msg.isQueued = false
+            heartbeatStore.conversation.messages.append(msg)
+        }
+        heartbeatStore.save()
+
+        let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
+        connection.sendChat(
+            combinedText,
+            workingDirectory: nil,
+            sessionId: heartbeatStore.conversation.sessionId,
+            isNewSession: false,
+            conversationId: heartbeatStore.conversation.id
+        )
+        heartbeatStore.isRunning = true
     }
 
     @ViewBuilder
@@ -136,22 +169,31 @@ struct HeartbeatSheet: View {
 
     private func sendMessage() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
+        let imageBase64 = selectedImageData?.base64EncodedString()
+        guard !text.isEmpty || imageBase64 != nil else { return }
 
-        let userMessage = ChatMessage(isUser: true, text: text)
-        heartbeatStore.conversation.messages.append(userMessage)
-        heartbeatStore.save()
+        let isRunning = heartbeatStore.isRunning || convOutput.isRunning
 
-        connection.sendChat(
-            text,
-            workingDirectory: nil,
-            sessionId: heartbeatStore.conversation.sessionId,
-            isNewSession: heartbeatStore.conversation.sessionId == nil,
-            conversationId: heartbeatStore.conversation.id,
-            imageBase64: selectedImageData?.base64EncodedString()
-        )
+        if isRunning {
+            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: imageBase64)
+            heartbeatStore.conversation.pendingMessages.append(userMessage)
+            heartbeatStore.save()
+        } else {
+            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: imageBase64)
+            heartbeatStore.conversation.messages.append(userMessage)
+            heartbeatStore.save()
 
-        heartbeatStore.isRunning = true
+            connection.sendChat(
+                text,
+                workingDirectory: nil,
+                sessionId: heartbeatStore.conversation.sessionId,
+                isNewSession: heartbeatStore.conversation.sessionId == nil,
+                conversationId: heartbeatStore.conversation.id,
+                imageBase64: imageBase64
+            )
+            heartbeatStore.isRunning = true
+        }
+
         inputText = ""
         selectedImageData = nil
     }
