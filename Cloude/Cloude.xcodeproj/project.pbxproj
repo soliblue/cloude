@@ -7,14 +7,45 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2LIVEACT012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2LIVEACT022F2619AE007FD3E4 /* CloudeShared */; };
+		C2LIVEACT032F2619AE007FD3E4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2LIVEACT042F2619AE007FD3E4 /* WidgetKit.framework */; };
+		C2LIVEACT052F2619AE007FD3E4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2LIVEACT062F2619AE007FD3E4 /* SwiftUI.framework */; };
+		C2LIVEACT072F2619AE007FD3E4 /* CloudeLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C2LIVEACT082F2619AE007FD3E4 /* CloudeLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED022F2619AE007FD3E4 /* CloudeShared */; };
 		C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED042F2619AE007FD3E4 /* CloudeShared */; };
 		C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2WHISPER022F2619AE007FD3E4 /* WhisperKit */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		C2LIVEACT132F2619AE007FD3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C2B3BB982F2619AE007FD3E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2LIVEACT0B2F2619AE007FD3E4;
+			remoteInfo = CloudeLiveActivityExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C2LIVEACT0E2F2619AE007FD3E4 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C2LIVEACT072F2619AE007FD3E4 /* CloudeLiveActivityExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		C2B3BBA02F2619AE007FD3E4 /* Cloude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cloude.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cloude Agent.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2LIVEACT042F2619AE007FD3E4 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		C2LIVEACT062F2619AE007FD3E4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		C2LIVEACT082F2619AE007FD3E4 /* CloudeLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CloudeLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2SHARED052F2619AE007FD3E4 /* CloudeShared */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = CloudeShared; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -25,6 +56,13 @@
 				Info.plist,
 			);
 			target = C2B3BB9F2F2619AE007FD3E4 /* Cloude */;
+		};
+		C2LIVEACT0A2F2619AE007FD3E4 /* Exceptions for "CloudeLiveActivity" folder in "CloudeLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C2LIVEACT0B2F2619AE007FD3E4 /* CloudeLiveActivityExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -39,7 +77,17 @@
 		};
 		C2B3BBB32F2619E8007FD3E4 /* Cloude Agent */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "Cloude Agent";
+			sourceTree = "<group>";
+		};
+		C2LIVEACT092F2619AE007FD3E4 /* CloudeLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C2LIVEACT0A2F2619AE007FD3E4 /* Exceptions for "CloudeLiveActivity" folder in "CloudeLiveActivityExtension" target */,
+			);
+			path = CloudeLiveActivity;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,6 +110,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C2LIVEACT0C2F2619AE007FD3E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2LIVEACT012F2619AE007FD3E4 /* CloudeShared in Frameworks */,
+				C2LIVEACT032F2619AE007FD3E4 /* WidgetKit.framework in Frameworks */,
+				C2LIVEACT052F2619AE007FD3E4 /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -71,7 +129,9 @@
 				C2SHARED052F2619AE007FD3E4 /* CloudeShared */,
 				C2B3BBA22F2619AE007FD3E4 /* Cloude */,
 				C2B3BBB32F2619E8007FD3E4 /* Cloude Agent */,
+				C2LIVEACT092F2619AE007FD3E4 /* CloudeLiveActivity */,
 				C2B3BBA12F2619AE007FD3E4 /* Products */,
+				C2LIVEACT0D2F2619AE007FD3E4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -80,8 +140,18 @@
 			children = (
 				C2B3BBA02F2619AE007FD3E4 /* Cloude.app */,
 				C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */,
+				C2LIVEACT082F2619AE007FD3E4 /* CloudeLiveActivityExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C2LIVEACT0D2F2619AE007FD3E4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C2LIVEACT042F2619AE007FD3E4 /* WidgetKit.framework */,
+				C2LIVEACT062F2619AE007FD3E4 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -94,10 +164,12 @@
 				C2B3BB9C2F2619AE007FD3E4 /* Sources */,
 				C2B3BB9D2F2619AE007FD3E4 /* Frameworks */,
 				C2B3BB9E2F2619AE007FD3E4 /* Resources */,
+				C2LIVEACT0E2F2619AE007FD3E4 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C2LIVEACT0F2F2619AE007FD3E4 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C2B3BBA22F2619AE007FD3E4 /* Cloude */,
@@ -134,6 +206,29 @@
 			productReference = C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C2LIVEACT0B2F2619AE007FD3E4 /* CloudeLiveActivityExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C2LIVEACT102F2619AE007FD3E4 /* Build configuration list for PBXNativeTarget "CloudeLiveActivityExtension" */;
+			buildPhases = (
+				C2LIVEACT112F2619AE007FD3E4 /* Sources */,
+				C2LIVEACT0C2F2619AE007FD3E4 /* Frameworks */,
+				C2LIVEACT122F2619AE007FD3E4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C2LIVEACT092F2619AE007FD3E4 /* CloudeLiveActivity */,
+			);
+			name = CloudeLiveActivityExtension;
+			packageProductDependencies = (
+				C2LIVEACT022F2619AE007FD3E4 /* CloudeShared */,
+			);
+			productName = CloudeLiveActivityExtension;
+			productReference = C2LIVEACT082F2619AE007FD3E4 /* CloudeLiveActivityExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -148,6 +243,9 @@
 						CreatedOnToolsVersion = 26.1.1;
 					};
 					C2B3BBB12F2619E8007FD3E4 = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
+					C2LIVEACT0B2F2619AE007FD3E4 = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
 				};
@@ -172,6 +270,7 @@
 			targets = (
 				C2B3BB9F2F2619AE007FD3E4 /* Cloude */,
 				C2B3BBB12F2619E8007FD3E4 /* Cloude Agent */,
+				C2LIVEACT0B2F2619AE007FD3E4 /* CloudeLiveActivityExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -185,6 +284,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C2B3BBB02F2619E8007FD3E4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C2LIVEACT122F2619AE007FD3E4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -208,7 +314,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C2LIVEACT112F2619AE007FD3E4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C2LIVEACT0F2F2619AE007FD3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2LIVEACT0B2F2619AE007FD3E4 /* CloudeLiveActivityExtension */;
+			targetProxy = C2LIVEACT132F2619AE007FD3E4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		C2B3BBA92F2619AF007FD3E4 /* Debug */ = {
@@ -341,7 +462,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -381,7 +502,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -422,7 +543,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 8;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_APP_SANDBOX = NO;
@@ -459,7 +580,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 8;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_APP_SANDBOX = NO;
@@ -485,6 +606,68 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		C2LIVEACT142F2619AE007FD3E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = Q9U8224WWM;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CloudeLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CloudeLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = soli.Cloude.LiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C2LIVEACT152F2619AE007FD3E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = Q9U8224WWM;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CloudeLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CloudeLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = soli.Cloude.LiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -518,6 +701,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C2LIVEACT102F2619AE007FD3E4 /* Build configuration list for PBXNativeTarget "CloudeLiveActivityExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C2LIVEACT142F2619AE007FD3E4 /* Debug */,
+				C2LIVEACT152F2619AE007FD3E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -539,6 +731,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C2LIVEACT022F2619AE007FD3E4 /* CloudeShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */;
+			productName = CloudeShared;
+		};
 		C2SHARED022F2619AE007FD3E4 /* CloudeShared */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */;

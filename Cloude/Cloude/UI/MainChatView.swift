@@ -202,24 +202,24 @@ struct MainChatView: View {
         let conversationId = window.conversationId
         let isStreaming = conversationId.map { connection.output(for: $0).isRunning } ?? false
 
-        return HStack(spacing: 8) {
+        return HStack(spacing: 9) {
             ForEach(availableTypes, id: \.self) { type in
                 Button(action: {
                     windowManager.setActive(window.id)
                     windowManager.setWindowType(window.id, type: type)
                 }) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 5) {
                         Image(systemName: type.icon)
-                            .font(.system(size: 14))
+                            .font(.system(size: 17))
                         if type == .gitChanges, let branch = gitBranch {
                             Text(branch)
-                                .font(.caption2)
+                                .font(.system(size: 12))
                                 .lineLimit(1)
                         }
                     }
                     .foregroundColor(window.type == type ? .accentColor : .secondary)
                     .opacity(window.type == type && isStreaming ? 0.4 : 1.0)
-                    .padding(6)
+                    .padding(7)
                 }
                 .buttonStyle(.plain)
             }
@@ -228,10 +228,10 @@ struct MainChatView: View {
                 windowManager.setActive(window.id)
                 editingWindow = window
             }) {
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     if let symbol = conversation?.symbol, !symbol.isEmpty {
                         Image(systemName: symbol)
-                            .font(.system(size: 12))
+                            .font(.system(size: 15))
                     }
                     if let conv = conversation {
                         Text(conv.name)
@@ -245,11 +245,11 @@ struct MainChatView: View {
                     }
                     if let proj = project {
                         Text("• \(proj.name)")
-                            .font(.caption2)
+                            .font(.system(size: 12))
                             .foregroundColor(.secondary)
                     }
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 12))
+                        .font(.system(size: 15))
                         .foregroundColor(.secondary)
                 }
             }
@@ -260,14 +260,14 @@ struct MainChatView: View {
                 windowManager.removeWindow(window.id)
             }) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.secondary)
-                    .padding(6)
+                    .padding(7)
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 7)
         .background(Color(.secondarySystemBackground))
     }
 
@@ -366,7 +366,7 @@ struct MainChatView: View {
 
             let isNewSession = conv.sessionId == nil
             let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: fullImageBase64)
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: fullImageBase64, conversationName: conv.name, conversationSymbol: conv.symbol)
         }
 
         inputText = ""

@@ -28,7 +28,10 @@ extension ConnectionManager {
                 out.isRunning = (state == .running || state == .compacting)
                 out.isCompacting = (state == .compacting)
                 if state == .idle {
+                    LiveActivityManager.shared.endActivity(conversationId: convId)
                     runningConversationId = nil
+                } else {
+                    LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: state)
                 }
             }
 
@@ -88,6 +91,7 @@ extension ConnectionManager {
                 let currentTextLength = output(for: convId).text.count
                 let position = textPosition ?? currentTextLength
                 output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position))
+                LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name)
             }
 
         case .runStats(let durationMs, let costUsd, let conversationId):
@@ -148,7 +152,7 @@ extension ConnectionManager {
         }
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil) {
+    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil, conversationName: String? = nil, conversationSymbol: String? = nil) {
         if !isAuthenticated {
             reconnectIfNeeded()
         }
@@ -156,6 +160,11 @@ extension ConnectionManager {
             runningConversationId = convId
             output(for: convId).reset()
             output(for: convId).isRunning = true
+            LiveActivityManager.shared.startActivity(
+                conversationId: convId,
+                conversationName: conversationName ?? "Chat",
+                conversationSymbol: conversationSymbol
+            )
         }
         send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString))
     }

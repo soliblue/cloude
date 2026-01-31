@@ -129,7 +129,7 @@ struct ProjectChatView: View {
         let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
         let updatedConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
         let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
-        connection.sendChat(combinedText, workingDirectory: workingDir, sessionId: updatedConv.sessionId, isNewSession: false, conversationId: updatedConv.id)
+        connection.sendChat(combinedText, workingDirectory: workingDir, sessionId: updatedConv.sessionId, isNewSession: false, conversationId: updatedConv.id, conversationName: updatedConv.name, conversationSymbol: updatedConv.symbol)
     }
 
     private func refreshMissedResponse() async {
