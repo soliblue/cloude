@@ -53,7 +53,7 @@ class WindowManager: ObservableObject {
     }
 
     var canRemoveWindow: Bool {
-        windows.count > 1
+        !windows.isEmpty
     }
 
     @discardableResult
