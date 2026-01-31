@@ -42,7 +42,7 @@ struct WindowEditSheet: View {
                 HStack(spacing: 12) {
                     Button(action: { showSymbolPicker = true }) {
                         Image(systemName: symbol.isEmpty ? "circle.dashed" : symbol)
-                            .font(.system(size: 24))
+                            .font(.system(size: 30))
                             .frame(width: 56, height: 56)
                             .background(Color(.tertiarySystemBackground))
                             .clipShape(Circle())
@@ -81,7 +81,7 @@ struct WindowEditSheet: View {
                                 }) {
                                     HStack(spacing: 10) {
                                         Image(systemName: conv.symbol ?? "bubble.left")
-                                            .font(.system(size: 14))
+                                            .font(.system(size: 17))
                                             .foregroundColor(.secondary)
                                             .frame(width: 24)
                                         Text(conv.name)
@@ -112,6 +112,7 @@ struct WindowEditSheet: View {
                     Button(action: onNewConversation) {
                         HStack {
                             Image(systemName: "plus")
+                                .font(.system(size: 18))
                             Text("New")
                         }
                         .font(.subheadline)
@@ -130,6 +131,7 @@ struct WindowEditSheet: View {
                         }) {
                             HStack {
                                 Image(systemName: "trash")
+                                    .font(.system(size: 18))
                                 Text("Remove")
                             }
                             .font(.subheadline)
