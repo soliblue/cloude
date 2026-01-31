@@ -76,7 +76,7 @@ struct RecordingOverlayView: View {
 
             Button(action: onStop) {
                 Image(systemName: "stop.circle.fill")
-                    .font(.system(size: 28))
+                    .font(.system(size: 35))
                     .foregroundColor(.accentColor.opacity(0.9))
             }
         }

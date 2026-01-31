@@ -23,7 +23,6 @@ private let slashCommands: [SlashCommand] = [
 struct GlobalInputBar: View {
     @Binding var inputText: String
     @Binding var selectedImageData: Data?
-    let hasClipboardContent: Bool
     let isConnected: Bool
     let isWhisperReady: Bool
     let onSend: () -> Void
@@ -97,6 +96,12 @@ struct GlobalInputBar: View {
 
             ZStack(alignment: .bottom) {
                 HStack(spacing: 12) {
+                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                        Image(systemName: "photo")
+                            .font(.system(size: 22))
+                            .foregroundColor(.accentColor)
+                    }
+
                     HStack(spacing: 8) {
                         ZStack(alignment: .leading) {
                             if inputText.isEmpty {
@@ -114,50 +119,36 @@ struct GlobalInputBar: View {
                                 .id(textFieldId)
                         }
 
-                    if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 36, height: 36)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                            Button(action: { selectedImageData = nil }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.accentColor)
+                        if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
+                            ZStack(alignment: .topTrailing) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 36, height: 36)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                Button(action: { selectedImageData = nil }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.accentColor)
+                                }
+                                .offset(x: 6, y: -6)
                             }
-                            .offset(x: 6, y: -6)
                         }
                     }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
 
-                PhotosPicker(selection: $selectedItem, matching: .images) {
-                    Image(systemName: "photo")
-                        .font(.system(size: 18))
-                        .foregroundColor(.accentColor)
-                }
-
-                Button(action: {
-                    if inputText.isEmpty && hasClipboardContent {
-                        if let text = UIPasteboard.general.string {
-                            inputText = text
-                        }
-                    } else {
-                        onSend()
+                    Button(action: onSend) {
+                        Image(systemName: "paperplane.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
                     }
-                }) {
-                    Image(systemName: actionButtonIcon)
-                        .font(.system(size: 18))
-                        .foregroundColor((canSend || showPasteButton) ? .accentColor : .accentColor.opacity(0.4))
+                    .disabled(!canSend)
                 }
-                .disabled(!canSend && !showPasteButton)
-            }
-            .opacity(showInputBar ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
-            .animation(.easeOut(duration: transitionDuration), value: showInputBar)
+                .opacity(showInputBar ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
+                .animation(.easeOut(duration: transitionDuration), value: showInputBar)
 
                 if showRecordingOverlay || isSwipingToRecord {
                     RecordingOverlayView(
@@ -224,14 +215,6 @@ struct GlobalInputBar: View {
         isConnected && isWhisperReady && !audioRecorder.isTranscribing
     }
 
-    private var showPasteButton: Bool {
-        inputText.isEmpty && !canSend
-    }
-
-    private var actionButtonIcon: String {
-        showPasteButton ? "clipboard" : "paperplane.fill"
-    }
-
     private func startRecording() {
         audioRecorder.requestPermission { granted in
             if granted {
@@ -275,7 +258,7 @@ struct SlashCommandSuggestions: View {
                     Button(action: { onSelect(command) }) {
                         HStack(spacing: 6) {
                             Image(systemName: command.icon)
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 15, weight: .semibold))
                             Text("/\(command.name)")
                                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
                         }

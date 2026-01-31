@@ -14,7 +14,7 @@ struct HeartbeatButton: View {
         Button(action: action) {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: "heart.fill")
-                    .font(.system(size: 18))
+                    .font(.system(size: 22))
                     .foregroundColor(.accentColor)
                     .scaleEffect(isPulsing ? 1.15 : 1.0)
                     .padding(4)
