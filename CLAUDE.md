@@ -183,6 +183,20 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 - Token stored in macOS/iOS Keychain
 - No TLS - rely on Tailscale for encryption (see `plans/secure.md` for future improvements)
 
+### Cloude Commands
+
+Control the iOS app via Bash commands. The Mac agent intercepts these and sends them to iOS.
+
+```bash
+cloude rename "Name"
+cloude symbol terminal
+```
+
+- Use proactively to keep conversations organized
+- Names: short, memorable, 1-2 words describing the topic
+- Symbols: SF Symbol names (`wrench.and.screwdriver`, `paintbrush.pointed`, `bolt.fill`, `sparkles`, `gear`, `doc.text`, `folder`, `terminal`)
+- The command "fails" with not found - this is expected, the agent already intercepted it
+
 ## Code Style
 
 ### General

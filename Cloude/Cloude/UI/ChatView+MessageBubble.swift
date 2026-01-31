@@ -16,11 +16,10 @@ struct MessageBubble: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if !message.isUser && !message.toolCalls.isEmpty && !hasPositionedToolCalls {
+            if !message.isUser && !message.toolCalls.isEmpty {
                 ToolCallsSection(toolCalls: message.toolCalls)
                     .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .padding(.bottom, 4)
+                    .padding(.vertical, 8)
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -121,26 +120,37 @@ struct InterleavedMessageContent: View {
     let text: String
     let toolCalls: [ToolCall]
 
-    private var segments: [ContentSegment] {
+    private var groupedSegments: [GroupedSegment] {
         let sortedTools = toolCalls
             .filter { $0.parentToolId == nil && $0.textPosition != nil }
             .sorted { ($0.textPosition ?? 0) < ($1.textPosition ?? 0) }
 
-        var result: [ContentSegment] = []
+        var result: [GroupedSegment] = []
         var currentIndex = 0
+        var pendingTools: [ToolCall] = []
+        var hasAddedText = false
 
         for tool in sortedTools {
             let position = tool.textPosition ?? 0
             if position > currentIndex && position <= text.count {
+                if !pendingTools.isEmpty && hasAddedText {
+                    result.append(.tools(pendingTools))
+                }
+                pendingTools = []
                 let startIdx = text.index(text.startIndex, offsetBy: currentIndex)
                 let endIdx = text.index(text.startIndex, offsetBy: position)
                 let segment = String(text[startIdx..<endIdx])
                 if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     result.append(.text(segment))
+                    hasAddedText = true
                 }
                 currentIndex = position
             }
-            result.append(.tool(tool))
+            pendingTools.append(tool)
+        }
+
+        if !pendingTools.isEmpty && hasAddedText {
+            result.append(.tools(pendingTools))
         }
 
         if currentIndex < text.count {
@@ -151,7 +161,7 @@ struct InterleavedMessageContent: View {
             }
         }
 
-        if result.isEmpty && !text.isEmpty {
+        if result.isEmpty && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             result.append(.text(text))
         }
 
@@ -160,21 +170,27 @@ struct InterleavedMessageContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+            ForEach(Array(groupedSegments.enumerated()), id: \.offset) { _, segment in
                 switch segment {
                 case .text(let content):
                     StreamingMarkdownView(text: content)
-                case .tool(let toolCall):
-                    InlineToolPill(toolCall: toolCall)
+                case .tools(let tools):
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
+                                InlineToolPill(toolCall: tool)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-private enum ContentSegment {
+private enum GroupedSegment {
     case text(String)
-    case tool(ToolCall)
+    case tools([ToolCall])
 }
 
 struct InlineToolPill: View {
@@ -183,16 +199,16 @@ struct InlineToolPill: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: iconName)
-                .font(.system(size: 10, weight: .medium))
+                .font(.system(size: 11, weight: .medium))
             Text(displayText)
-                .font(.system(size: 11, design: .monospaced))
+                .font(.system(size: 12, design: .monospaced))
                 .lineLimit(1)
         }
-        .foregroundColor(.secondary)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color(.tertiarySystemBackground))
-        .cornerRadius(10)
+        .foregroundColor(toolColor)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(toolColor.opacity(0.12))
+        .cornerRadius(14)
     }
 
     private var displayText: String {
@@ -205,11 +221,10 @@ struct InlineToolPill: View {
             let filename = (input as NSString).lastPathComponent
             return "\(toolCall.name) \(filename)"
         case "Bash":
-            let truncated = input.prefix(25)
+            let truncated = input.prefix(20)
             return truncated.count < input.count ? "\(truncated)..." : String(input)
         case "Glob", "Grep":
-            let truncated = input.prefix(20)
-            return "\(toolCall.name): \(truncated.count < input.count ? "\(truncated)..." : input)"
+            return "\(toolCall.name): \(input)"
         case "Task":
             let parts = input.split(separator: ":", maxSplits: 1)
             return parts.first.map(String.init) ?? input
@@ -230,5 +245,9 @@ struct InlineToolPill: View {
         if n.contains("list") { return "list.bullet" }
         if n.contains("notebook") { return "book" }
         return "wrench"
+    }
+
+    private var toolColor: Color {
+        toolCallColor(for: toolCall.name)
     }
 }

@@ -56,6 +56,8 @@ struct ProjectChatMessageList: View {
     @State private var hasScrolledToStreaming = false
     @State private var lastUserMessageCount = 0
     @State private var showScrollToBottom = false
+    @State private var bottomPullOffset: CGFloat = 0
+    @State private var isRefreshingFromBottom = false
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -72,9 +74,13 @@ struct ProjectChatMessageList: View {
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(messages) { message in
+                        ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                             MessageBubble(message: message)
                                 .id(message.id)
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
                         }
 
                         if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil {
@@ -86,8 +92,26 @@ struct ProjectChatMessageList: View {
                             .id(bottomId)
                             .onAppear { showScrollToBottom = false }
                             .onDisappear { showScrollToBottom = true }
+
+                        GeometryReader { geo in
+                            let offset = geo.frame(in: .named("scrollView")).maxY - geo.size.height
+                            Color.clear
+                                .preference(key: BottomOverscrollKey.self, value: offset)
+                        }
+                        .frame(height: 1)
                     }
                     .padding(.bottom, 16)
+                }
+                .coordinateSpace(name: "scrollView")
+                .onPreferenceChange(BottomOverscrollKey.self) { offset in
+                    bottomPullOffset = offset
+                    if offset < -60 && !isRefreshingFromBottom {
+                        isRefreshingFromBottom = true
+                        Task {
+                            await onRefresh?()
+                            isRefreshingFromBottom = false
+                        }
+                    }
                 }
                 .refreshable {
                     await onRefresh?()
@@ -111,10 +135,13 @@ struct ProjectChatMessageList: View {
                 }
                 .onChange(of: userMessageCount) { oldCount, newCount in
                     if newCount > oldCount, let lastUserMessage = messages.last(where: { $0.isUser }) {
-                        scrollToMessage(lastUserMessage.id, anchor: .top)
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            scrollToMessage(lastUserMessage.id, anchor: .top)
+                        }
                     }
                     lastUserMessageCount = newCount
                 }
+                .animation(.easeOut(duration: 0.25), value: messages.count)
                 .onChange(of: currentOutput) { oldValue, newValue in
                     if oldValue.isEmpty && !newValue.isEmpty && !hasScrolledToStreaming {
                         hasScrolledToStreaming = true
@@ -131,19 +158,23 @@ struct ProjectChatMessageList: View {
             }
 
             if showScrollToBottom {
-                Image(systemName: "arrow.down")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primary)
+                Circle()
+                    .fill(Color(.secondarySystemBackground))
                     .frame(width: 44, height: 44)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(Circle())
                     .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-                    .contentShape(Circle())
-                    .onTapGesture {
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            scrollProxy?.scrollTo(bottomId, anchor: .bottom)
-                        }
+                    .overlay {
+                        Image(systemName: "arrow.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.primary)
                     }
+                    .highPriorityGesture(
+                        TapGesture()
+                            .onEnded {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    scrollProxy?.scrollTo(bottomId, anchor: .bottom)
+                                }
+                            }
+                    )
                     .padding(.trailing, 16)
                     .padding(.bottom, 8)
                     .transition(.opacity.combined(with: .scale(scale: 0.8)))
@@ -159,14 +190,20 @@ struct ProjectChatMessageList: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
             }
-            if !currentOutput.isEmpty {
-                StreamingOutput(text: currentOutput)
+            if !currentOutput.isEmpty || !currentToolCalls.isEmpty {
+                StreamingInterleavedOutput(text: currentOutput, toolCalls: currentToolCalls)
             }
-            if let stats = currentRunStats {
-                RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 4)
+            Group {
+                if let stats = currentRunStats {
+                    RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd)
+                        .transition(.opacity)
+                } else {
+                    Color.clear
+                }
             }
+            .frame(height: 20)
+            .padding(.horizontal, 16)
+            .padding(.top, 4)
         }
         .id(streamingId)
     }
@@ -175,5 +212,12 @@ struct ProjectChatMessageList: View {
         withAnimation(.easeOut(duration: 0.2)) {
             scrollProxy?.scrollTo(id, anchor: anchor)
         }
+    }
+}
+
+private struct BottomOverscrollKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }

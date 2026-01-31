@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 struct StreamingOutput: View {
     let text: String
@@ -32,6 +33,113 @@ struct StreamingOutput: View {
         .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
         .onAppear { pulse = true }
     }
+}
+
+struct StreamingInterleavedOutput: View {
+    let text: String
+    let toolCalls: [ToolCall]
+    @State private var pulse = false
+
+    private var groupedSegments: [StreamingSegment] {
+        let sortedTools = toolCalls
+            .filter { $0.parentToolId == nil && $0.textPosition != nil }
+            .sorted { ($0.textPosition ?? 0) < ($1.textPosition ?? 0) }
+
+        var result: [StreamingSegment] = []
+        var currentIndex = 0
+        var pendingTools: [ToolCall] = []
+        var hasAddedText = false
+
+        for tool in sortedTools {
+            let position = tool.textPosition ?? 0
+            if position > currentIndex && position <= text.count {
+                if !pendingTools.isEmpty && hasAddedText {
+                    result.append(.tools(pendingTools))
+                }
+                pendingTools = []
+                let startIdx = text.index(text.startIndex, offsetBy: currentIndex)
+                let endIdx = text.index(text.startIndex, offsetBy: position)
+                let segment = String(text[startIdx..<endIdx])
+                if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    result.append(.text(segment))
+                    hasAddedText = true
+                }
+                currentIndex = position
+            }
+            pendingTools.append(tool)
+        }
+
+        if !pendingTools.isEmpty && hasAddedText {
+            result.append(.tools(pendingTools))
+        }
+
+        if currentIndex < text.count {
+            let startIdx = text.index(text.startIndex, offsetBy: currentIndex)
+            let remaining = String(text[startIdx...])
+            if !remaining.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                result.append(.text(remaining))
+            }
+        }
+
+        if result.isEmpty && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            result.append(.text(text))
+        }
+
+        return result
+    }
+
+    private var hasPositionedToolCalls: Bool {
+        toolCalls.contains { $0.textPosition != nil && $0.parentToolId == nil }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if text.isEmpty && toolCalls.isEmpty {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                    Text("Claude is responding...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+            }
+
+            if !groupedSegments.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(groupedSegments.enumerated()), id: \.offset) { _, segment in
+                        switch segment {
+                        case .text(let content):
+                            StreamingMarkdownView(text: content)
+                        case .tools(let tools):
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
+                                        InlineToolPill(toolCall: tool)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .background(
+            Color.accentColor
+                .opacity(pulse ? 0.1 : 0.03)
+        )
+        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
+        .onAppear { pulse = true }
+    }
+}
+
+private enum StreamingSegment {
+    case text(String)
+    case tools([ToolCall])
 }
 
 struct RunStatsView: View {
