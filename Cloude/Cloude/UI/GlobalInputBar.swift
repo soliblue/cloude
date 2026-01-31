@@ -7,14 +7,30 @@ import SwiftUI
 import UIKit
 import PhotosUI
 import Combine
+import CloudeShared
 
 struct SlashCommand {
     let name: String
     let description: String
     let icon: String
+    let isSkill: Bool
+
+    init(name: String, description: String, icon: String, isSkill: Bool = false) {
+        self.name = name
+        self.description = description
+        self.icon = icon
+        self.isSkill = isSkill
+    }
+
+    init(skill: Skill) {
+        self.name = skill.name
+        self.description = skill.description
+        self.icon = "hammer.circle"
+        self.isSkill = true
+    }
 }
 
-private let slashCommands: [SlashCommand] = [
+private let builtInCommands: [SlashCommand] = [
     SlashCommand(name: "compact", description: "Compress conversation context", icon: "arrow.triangle.2.circlepath"),
     SlashCommand(name: "context", description: "Show token usage", icon: "chart.pie"),
     SlashCommand(name: "cost", description: "Show usage stats", icon: "dollarsign.circle"),
@@ -25,7 +41,10 @@ struct GlobalInputBar: View {
     @Binding var selectedImageData: Data?
     let isConnected: Bool
     let isWhisperReady: Bool
+    let isRunning: Bool
+    let skills: [Skill]
     let onSend: () -> Void
+    var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
 
     @State private var selectedItem: PhotosPickerItem?
@@ -37,9 +56,12 @@ struct GlobalInputBar: View {
     @State private var isSwipingToRecord = false
     @State private var showInputBar = true
     @State private var showRecordingOverlay = false
+    @State private var idleTime: Date = Date()
+    @State private var showStopButton = false
 
     private let swipeThreshold: CGFloat = 60
     private let transitionDuration: Double = 0.15
+    private let stopButtonDelay: TimeInterval = 3.0
 
     private static let placeholders = [
         "fix the login bug pls",
@@ -68,13 +90,17 @@ struct GlobalInputBar: View {
         Self.placeholders[placeholderIndex % Self.placeholders.count]
     }
 
+    private var allCommands: [SlashCommand] {
+        builtInCommands + skills.map { SlashCommand(skill: $0) }
+    }
+
     private var filteredCommands: [SlashCommand] {
         guard inputText.hasPrefix("/") else { return [] }
         let query = String(inputText.dropFirst()).lowercased()
         if query.isEmpty {
-            return slashCommands
+            return allCommands
         }
-        return slashCommands.filter { $0.name.lowercased().hasPrefix(query) }
+        return allCommands.filter { $0.name.lowercased().hasPrefix(query) }
     }
 
     private var isSlashCommand: Bool {
@@ -140,12 +166,20 @@ struct GlobalInputBar: View {
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
 
-                    Button(action: onSend) {
-                        Image(systemName: "paperplane.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+                    if shouldShowStopButton {
+                        Button(action: { onStop?() }) {
+                            Image(systemName: "stop.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(.orange)
+                        }
+                    } else {
+                        Button(action: onSend) {
+                            Image(systemName: "paperplane.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+                        }
+                        .disabled(!canSend)
                     }
-                    .disabled(!canSend)
                 }
                 .opacity(showInputBar ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
                 .animation(.easeOut(duration: transitionDuration), value: showInputBar)
@@ -205,10 +239,39 @@ struct GlobalInputBar: View {
                 }
             }
         }
+        .onChange(of: inputText) { _, _ in
+            idleTime = Date()
+            showStopButton = false
+        }
+        .onChange(of: isInputFocused) { _, focused in
+            if focused {
+                showStopButton = false
+            } else {
+                idleTime = Date()
+            }
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            if isRunning && !isInputFocused && Date().timeIntervalSince(idleTime) >= stopButtonDelay {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showStopButton = true
+                }
+            }
+        }
+        .onChange(of: isRunning) { _, running in
+            if !running {
+                showStopButton = false
+            } else {
+                idleTime = Date()
+            }
+        }
     }
 
     private var canSend: Bool {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImageData != nil
+    }
+
+    private var shouldShowStopButton: Bool {
+        isRunning && showStopButton && !isInputFocused
     }
 
     private var canRecord: Bool {
@@ -262,10 +325,10 @@ struct SlashCommandSuggestions: View {
                             Text("/\(command.name)")
                                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
                         }
-                        .foregroundColor(.cyan)
+                        .foregroundColor(command.isSkill ? .purple : .cyan)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color.cyan.opacity(0.12))
+                        .background((command.isSkill ? Color.purple : Color.cyan).opacity(0.12))
                         .cornerRadius(16)
                     }
                     .buttonStyle(.plain)
