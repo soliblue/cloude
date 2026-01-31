@@ -109,6 +109,7 @@ struct WindowEditSheet: View {
 struct SymbolPickerSheet: View {
     @Binding var selectedSymbol: String
     @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
 
     private static let symbolCategories: [(String, [String])] = [
         ("Communication", ["message", "message.fill", "bubble.left", "bubble.left.fill", "bubble.right", "bubble.right.fill", "bubble.left.and.bubble.right", "bubble.left.and.bubble.right.fill", "phone", "phone.fill", "video", "video.fill", "envelope", "envelope.fill", "paperplane", "paperplane.fill", "bell", "bell.fill", "megaphone", "megaphone.fill"]),
@@ -130,11 +131,22 @@ struct SymbolPickerSheet: View {
         ("Status", ["checkmark", "checkmark.circle", "checkmark.circle.fill", "xmark", "xmark.circle", "xmark.circle.fill", "exclamationmark.triangle", "exclamationmark.triangle.fill", "info.circle", "info.circle.fill", "questionmark.circle", "questionmark.circle.fill", "plus.circle", "plus.circle.fill", "minus.circle", "minus.circle.fill", "flag", "flag.fill", "bell.badge", "bell.badge.fill"])
     ]
 
+    private var filteredCategories: [(String, [String])] {
+        if searchText.isEmpty {
+            return Self.symbolCategories
+        }
+        let query = searchText.lowercased()
+        return Self.symbolCategories.compactMap { category, symbols in
+            let filtered = symbols.filter { $0.lowercased().contains(query) }
+            return filtered.isEmpty ? nil : (category, filtered)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 16) {
-                    ForEach(Self.symbolCategories, id: \.0) { category, symbols in
+                    ForEach(filteredCategories, id: \.0) { category, symbols in
                         VStack(alignment: .leading, spacing: 8) {
                             Text(category)
                                 .font(.headline)
@@ -150,7 +162,7 @@ struct SymbolPickerSheet: View {
                                         Image(systemName: symbol)
                                             .font(.system(size: 22))
                                             .frame(width: 44, height: 44)
-                                            .background(selectedSymbol == symbol ? Color.accentColor.opacity(0.2) : Color(.tertiarySystemBackground))
+                                            .background(selectedSymbol == symbol ? Color.accentColor.opacity(0.2) : Color.clear)
                                             .cornerRadius(8)
                                     }
                                     .buttonStyle(.plain)
@@ -161,6 +173,7 @@ struct SymbolPickerSheet: View {
                 }
                 .padding()
             }
+            .searchable(text: $searchText, prompt: "Search symbols")
             .navigationTitle("Choose Symbol")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
