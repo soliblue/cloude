@@ -158,6 +158,11 @@ extension ConnectionManager {
 
         case .defaultWorkingDirectory(let path):
             defaultWorkingDirectory = path
+
+        case .skills(let newSkills):
+            skills = newSkills
+            events.send(.skills(newSkills))
+            onSkills?(newSkills)
         }
     }
 

@@ -11,4 +11,5 @@ enum ConnectionEvent {
     case transcription(String)
     case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories([MemorySection])
+    case skills([Skill])
 }
