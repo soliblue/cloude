@@ -23,6 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var runner: ClaudeCodeRunner!
     private var popover: NSPopover!
     private var currentSessionId: String?
+    private var currentConversationId: String?
     private var accumulatedResponse = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -62,20 +63,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         runner.onOutput = { [weak self] text in
             self?.accumulatedResponse += text
-            self?.server.broadcast(.output(text: text))
+            self?.server.broadcast(.output(text: text, conversationId: self?.currentConversationId))
         }
 
         runner.onSessionId = { [weak self] sessionId in
             self?.currentSessionId = sessionId
-            self?.server.broadcast(.sessionId(id: sessionId))
+            self?.server.broadcast(.sessionId(id: sessionId, conversationId: self?.currentConversationId))
         }
 
         runner.onToolCall = { [weak self] name, input, toolId, parentToolId in
-            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId))
+            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: self?.currentConversationId))
         }
 
         runner.onRunStats = { [weak self] durationMs, costUsd in
-            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd))
+            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, conversationId: self?.currentConversationId))
         }
 
         runner.onComplete = { [weak self] in
@@ -83,7 +84,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 ResponseStore.store(sessionId: sessionId, text: response)
             }
             self?.accumulatedResponse = ""
-            self?.server.broadcast(.status(state: .idle))
+            self?.server.broadcast(.status(state: .idle, conversationId: self?.currentConversationId))
+            self?.currentConversationId = nil
         }
     }
 
@@ -109,8 +111,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
-        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64):
-            server.broadcast(.status(state: .running))
+        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId):
+            currentConversationId = conversationId
+            server.broadcast(.status(state: .running, conversationId: conversationId))
             runner.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64)
 
         case .abort:

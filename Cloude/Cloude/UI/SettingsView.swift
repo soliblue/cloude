@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var connection: ConnectionManager
-    @ObservedObject var paneManager: PaneManager
+    @ObservedObject var windowManager: WindowManager
 
     @AppStorage("serverHost") private var serverHost = ""
     @AppStorage("serverPort") private var serverPort = "8765"
@@ -105,12 +105,12 @@ struct SettingsView: View {
     private var displaySection: some View {
         Section {
             SettingsRow(icon: "rectangle.expand.vertical", color: .indigo) {
-                Toggle("Focus Mode", isOn: $paneManager.focusModeEnabled)
+                Toggle("Focus Mode", isOn: $windowManager.focusModeEnabled)
             }
         } header: {
             Text("Display")
         } footer: {
-            Text("Active conversation expands to fill more space when multiple panes are open")
+            Text("Active conversation expands to fill more space when multiple windows are open")
         }
     }
 
@@ -162,5 +162,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(connection: ConnectionManager(), paneManager: PaneManager())
+    SettingsView(connection: ConnectionManager(), windowManager: WindowManager())
 }

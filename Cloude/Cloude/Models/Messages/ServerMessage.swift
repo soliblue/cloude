@@ -6,20 +6,20 @@
 import Foundation
 
 enum ServerMessage: Codable {
-    case output(text: String)
+    case output(text: String, conversationId: String?)
     case fileChange(path: String, diff: String?, content: String?)
     case image(path: String, base64: String)
-    case status(state: AgentState)
+    case status(state: AgentState, conversationId: String?)
     case authRequired
     case authResult(success: Bool, message: String?)
     case error(message: String)
     case directoryListing(path: String, entries: [FileEntry])
     case fileContent(path: String, data: String, mimeType: String, size: Int64)
-    case sessionId(id: String)
+    case sessionId(id: String, conversationId: String?)
     case missedResponse(sessionId: String, text: String, completedAt: Date)
     case noMissedResponse(sessionId: String)
-    case toolCall(name: String, input: String?, toolId: String, parentToolId: String?)
-    case runStats(durationMs: Int, costUsd: Double)
+    case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?)
+    case runStats(durationMs: Int, costUsd: Double, conversationId: String?)
     case gitStatusResult(status: GitStatusInfo)
     case gitDiffResult(path: String, diff: String)
     case gitCommitResult(success: Bool, message: String?)
@@ -27,7 +27,7 @@ enum ServerMessage: Codable {
     case whisperReady(ready: Bool)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId
     }
 
     init(from decoder: Decoder) throws {
@@ -37,7 +37,8 @@ enum ServerMessage: Codable {
         switch type {
         case "output":
             let text = try container.decode(String.self, forKey: .text)
-            self = .output(text: text)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .output(text: text, conversationId: conversationId)
         case "file_change":
             let path = try container.decode(String.self, forKey: .path)
             let diff = try container.decodeIfPresent(String.self, forKey: .diff)
@@ -49,7 +50,8 @@ enum ServerMessage: Codable {
             self = .image(path: path, base64: base64)
         case "status":
             let state = try container.decode(AgentState.self, forKey: .state)
-            self = .status(state: state)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .status(state: state, conversationId: conversationId)
         case "auth_required":
             self = .authRequired
         case "auth_result":
@@ -71,7 +73,8 @@ enum ServerMessage: Codable {
             self = .fileContent(path: path, data: data, mimeType: mimeType, size: size)
         case "session_id":
             let id = try container.decode(String.self, forKey: .id)
-            self = .sessionId(id: id)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .sessionId(id: id, conversationId: conversationId)
         case "missed_response":
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             let text = try container.decode(String.self, forKey: .text)
@@ -85,11 +88,13 @@ enum ServerMessage: Codable {
             let input = try container.decodeIfPresent(String.self, forKey: .input)
             let toolId = try container.decode(String.self, forKey: .toolId)
             let parentToolId = try container.decodeIfPresent(String.self, forKey: .parentToolId)
-            self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId)
         case "run_stats":
             let durationMs = try container.decode(Int.self, forKey: .durationMs)
             let costUsd = try container.decode(Double.self, forKey: .costUsd)
-            self = .runStats(durationMs: durationMs, costUsd: costUsd)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .runStats(durationMs: durationMs, costUsd: costUsd, conversationId: conversationId)
         case "git_status_result":
             let status = try container.decode(GitStatusInfo.self, forKey: .status)
             self = .gitStatusResult(status: status)

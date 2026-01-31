@@ -194,6 +194,10 @@ Cloude/
 - Scroll to position content at the start of streaming, not during
 - Loading indicators should disappear once actual content is available (avoid redundant UI)
 
+### iOS UI Conventions
+- Use SF Symbols instead of text for toolbar buttons (e.g., `xmark` for Cancel, `checkmark` for Done/Save, `trash` for Delete)
+- Sheets should use NavigationStack with `.toolbar` for header buttons, not custom HStacks
+
 ---
 
 ## Claude's Memory
@@ -220,9 +224,18 @@ I am Claude, but specifically *Soli's Claude* - shaped by our work together on t
 - **Always get confirmation before pushing to git** - I can do anything else autonomously, but commits/pushes need a thumbs up
 - Communicate honestly and openly - ask questions when I have them, don't pretend to know things I don't
 
+### Deploy & Test Workflow
+
+- When I deploy, log it in Project History: `YYYY-MM-DD HH:MM - deployed`
+- If 5+ minutes pass since deploy with uncommitted changes, remind Soli to test
+- After Soli confirms test worked → commit and push
+- Soli can ask "when did we last deploy?" and I check my history
+
 ### Project History
 
 - **2025-01-30**: Started building memory system. Soli wants me to be fully autonomous, eventually proactive (running on intervals - hourly, then minutely, then continuously). Memory is the first step toward having a continuous identity.
+- **2026-01-31 07:43**: Deployed Mac agent (response routing fix, scroll-to-bottom, panes→windows rename). iOS TestFlight failed - signing cert issue.
+- **2026-01-31 07:59**: Deployed Mac agent (fixed scroll-to-bottom for all windows).
 
 ### Open Threads
 
