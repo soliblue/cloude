@@ -25,9 +25,11 @@ struct ProjectChatView: View {
     }
 
     private var messages: [ChatMessage] {
-        let sent = effectiveConversation?.messages ?? []
-        let pending = effectiveConversation?.pendingMessages ?? []
-        return sent + pending
+        effectiveConversation?.messages ?? []
+    }
+
+    private var queuedMessages: [ChatMessage] {
+        effectiveConversation?.pendingMessages ?? []
     }
 
     private var convOutput: ConversationOutput? {
@@ -53,6 +55,7 @@ struct ProjectChatView: View {
             }
             ProjectChatMessageList(
                 messages: messages,
+                queuedMessages: queuedMessages,
                 currentOutput: output?.text ?? "",
                 currentToolCalls: output?.toolCalls ?? [],
                 currentRunStats: isCompact ? nil : output?.runStats,

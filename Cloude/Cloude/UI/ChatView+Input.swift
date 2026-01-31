@@ -26,7 +26,7 @@ struct ToolCallRow: View {
 
                 if input != nil && !isExpanded {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 10))
+                        .font(.system(size: 12))
                         .foregroundColor(Color(.tertiaryLabel))
                 }
             }
