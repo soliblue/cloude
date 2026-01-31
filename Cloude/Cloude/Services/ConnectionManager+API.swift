@@ -119,18 +119,10 @@ extension ConnectionManager {
             print("[ConnectionManager] Whisper ready: \(ready)")
             isWhisperReady = ready
 
-        case .heartbeatConfig(let intervalMinutes, let unreadCount, let sessionId):
-            print("[Heartbeat] Received config: interval=\(String(describing: intervalMinutes)), unread=\(unreadCount), sessionId=\(String(describing: sessionId))")
-            events.send(.heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount, sessionId: sessionId))
-            onHeartbeatConfig?(intervalMinutes, unreadCount, sessionId)
-
-        case .heartbeatOutput(let text):
-            events.send(.heartbeatOutput(text))
-            onHeartbeatOutput?(text)
-
-        case .heartbeatComplete(let message):
-            events.send(.heartbeatComplete(message))
-            onHeartbeatComplete?(message)
+        case .heartbeatConfig(let intervalMinutes, let unreadCount):
+            print("[Heartbeat] Received config: interval=\(String(describing: intervalMinutes)), unread=\(unreadCount)")
+            events.send(.heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount))
+            onHeartbeatConfig?(intervalMinutes, unreadCount)
 
         case .memories(let sections):
             events.send(.memories(sections))
@@ -149,6 +141,23 @@ extension ConnectionManager {
         case .processList(let procs):
             processes = procs
             onProcessList?(procs)
+
+        case .memoryAdded(let target, let section, let text, let conversationId):
+            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+            if let convId = targetConvId {
+                let memoryCall = ToolCall(
+                    name: "Memory",
+                    input: "\(target): \(section) - \(text)",
+                    toolId: UUID().uuidString,
+                    parentToolId: nil,
+                    textPosition: output(for: convId).text.count
+                )
+                output(for: convId).toolCalls.append(memoryCall)
+            }
+            onMemoryAdded?(target, section, text)
+
+        case .defaultWorkingDirectory(let path):
+            defaultWorkingDirectory = path
         }
     }
 
@@ -166,7 +175,8 @@ extension ConnectionManager {
                 conversationSymbol: conversationSymbol
             )
         }
-        send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString))
+        let effectiveWorkingDir = workingDirectory ?? defaultWorkingDirectory
+        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString))
     }
 
     func abort(conversationId: UUID? = nil) {

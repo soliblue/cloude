@@ -15,43 +15,37 @@ struct HeartbeatChatView: View {
     @State private var scrollProxy: ScrollViewProxy?
 
     private var convOutput: ConversationOutput {
-        connection.output(for: heartbeatStore.conversation.id)
+        connection.output(for: Heartbeat.conversationId)
     }
 
     var body: some View {
         ProjectChatMessageList(
-            messages: heartbeatStore.conversation.messages + heartbeatStore.conversation.pendingMessages,
-            currentOutput: convOutput.text.isEmpty ? heartbeatStore.currentOutput : convOutput.text,
+            messages: heartbeatStore.conversation.messages,
+            queuedMessages: heartbeatStore.conversation.pendingMessages,
+            currentOutput: convOutput.text,
             currentToolCalls: convOutput.toolCalls,
             currentRunStats: convOutput.runStats,
             scrollProxy: $scrollProxy,
-            agentState: (heartbeatStore.isRunning || convOutput.isRunning) ? .running : .idle,
-            conversationId: heartbeatStore.conversation.id
+            agentState: convOutput.isRunning ? .running : .idle,
+            conversationId: Heartbeat.conversationId,
+            onDeleteQueued: { messageId in
+                heartbeatStore.conversation.pendingMessages.removeAll { $0.id == messageId }
+                heartbeatStore.save()
+            }
         )
         .onAppear {
-            if !heartbeatStore.isRunning && !convOutput.isRunning {
+            if !convOutput.isRunning {
                 sendQueuedMessages()
             }
         }
         .onChange(of: convOutput.isRunning) { wasRunning, isRunning in
             if wasRunning && !isRunning && !convOutput.text.isEmpty {
-                handleUserChatCompletion()
-            }
-        }
-        .onChange(of: heartbeatStore.isRunning) { wasRunning, isRunning in
-            if wasRunning && !isRunning && !convOutput.isRunning {
-                sendQueuedMessages()
-            }
-        }
-        .onChange(of: convOutput.newSessionId) { _, newId in
-            if let sessionId = newId {
-                heartbeatStore.conversation.sessionId = sessionId
-                heartbeatStore.save()
+                handleChatCompletion()
             }
         }
     }
 
-    private func handleUserChatCompletion() {
+    private func handleChatCompletion() {
         let message = ChatMessage(
             isUser: false,
             text: convOutput.text.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -63,7 +57,6 @@ struct HeartbeatChatView: View {
         heartbeatStore.conversation.lastMessageAt = Date()
         heartbeatStore.save()
         convOutput.reset()
-        heartbeatStore.isRunning = false
 
         sendQueuedMessages()
     }
@@ -84,12 +77,11 @@ struct HeartbeatChatView: View {
         connection.sendChat(
             combinedText,
             workingDirectory: nil,
-            sessionId: heartbeatStore.conversation.sessionId,
-            isNewSession: heartbeatStore.conversation.sessionId == nil,
-            conversationId: heartbeatStore.conversation.id,
+            sessionId: Heartbeat.sessionId,
+            isNewSession: false,
+            conversationId: Heartbeat.conversationId,
             conversationName: "Heartbeat",
             conversationSymbol: "heart.fill"
         )
-        heartbeatStore.isRunning = true
     }
 }

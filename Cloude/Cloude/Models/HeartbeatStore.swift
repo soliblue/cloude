@@ -5,14 +5,13 @@
 
 import Foundation
 import Combine
+import CloudeShared
 
 @MainActor
 class HeartbeatStore: ObservableObject {
     @Published var intervalMinutes: Int?
     @Published var unreadCount: Int = 0
     @Published var conversation: Conversation
-    @Published var isRunning = false
-    @Published var currentOutput = ""
     @Published var lastTriggeredAt: Date?
 
     private let storageKey = "heartbeatConversation"
@@ -21,9 +20,22 @@ class HeartbeatStore: ObservableObject {
     init() {
         if let data = UserDefaults.standard.data(forKey: storageKey),
            let saved = try? JSONDecoder().decode(Conversation.self, from: data) {
-            conversation = saved
+            conversation = Conversation(
+                name: saved.name,
+                symbol: saved.symbol,
+                id: Heartbeat.conversationId,
+                sessionId: Heartbeat.sessionId
+            )
+            conversation.messages = saved.messages
+            conversation.pendingMessages = saved.pendingMessages
+            conversation.lastMessageAt = saved.lastMessageAt
         } else {
-            conversation = Conversation(name: "Heartbeat", symbol: "heart.fill")
+            conversation = Conversation(
+                name: "Heartbeat",
+                symbol: "heart.fill",
+                id: Heartbeat.conversationId,
+                sessionId: Heartbeat.sessionId
+            )
         }
         if let timestamp = UserDefaults.standard.object(forKey: lastTriggeredKey) as? Date {
             lastTriggeredAt = timestamp
@@ -36,35 +48,15 @@ class HeartbeatStore: ObservableObject {
         }
     }
 
-    func handleConfig(intervalMinutes: Int?, unreadCount: Int, sessionId: String?) {
+    func handleConfig(intervalMinutes: Int?, unreadCount: Int) {
         print("[HeartbeatStore] handleConfig: interval=\(String(describing: intervalMinutes)), unread=\(unreadCount)")
         self.intervalMinutes = intervalMinutes
         self.unreadCount = unreadCount
     }
 
-    func handleOutput(text: String) {
-        currentOutput += text
-        isRunning = true
-        if lastTriggeredAt == nil {
-            recordTrigger()
-        }
-    }
-
     func recordTrigger() {
         lastTriggeredAt = Date()
         UserDefaults.standard.set(lastTriggeredAt, forKey: lastTriggeredKey)
-    }
-
-    func handleComplete(message: String) {
-        print("[HeartbeatStore] handleComplete: '\(message.prefix(30))...'")
-        if !message.isEmpty {
-            let chatMessage = ChatMessage(isUser: false, text: message)
-            conversation.messages.append(chatMessage)
-            conversation.lastMessageAt = Date()
-            save()
-        }
-        currentOutput = ""
-        isRunning = false
     }
 
     func markRead() {
