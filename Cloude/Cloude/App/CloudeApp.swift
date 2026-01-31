@@ -1,11 +1,10 @@
 import SwiftUI
-import UIKit
 
 @main
 struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
     @StateObject private var projectStore = ProjectStore()
-    @StateObject private var paneManager = PaneManager()
+    @StateObject private var windowManager = WindowManager()
     @State private var showSettings = false
     @State private var showProjects = false
     @State private var wasBackgrounded = false
@@ -30,7 +29,7 @@ struct CloudeApp: App {
 
     private var mainContent: some View {
         NavigationStack {
-            SplitChatView(connection: connection, projectStore: projectStore, paneManager: paneManager)
+            SplitChatView(connection: connection, projectStore: projectStore, windowManager: windowManager)
             .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -40,29 +39,28 @@ struct CloudeApp: App {
                         }
                     }
                     ToolbarItem(placement: .principal) {
-                        ZStack {
-                            HStack {
-                                Spacer()
-                                Image("Logo")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 36, height: 36)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                Spacer()
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
+                        Image("Logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 45, height: 45)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: { showSettings = true }) {
-                            Image(systemName: "gearshape")
-                                .padding(4)
+                        HStack(spacing: 16) {
+                            Button(action: { windowManager.toggleLayoutMode() }) {
+                                Image(systemName: windowManager.layoutMode == .paged ? "rectangle.split.1x2" : "rectangle.stack")
+                                    .padding(4)
+                            }
+                            Button(action: { showSettings = true }) {
+                                Image(systemName: "gearshape")
+                                    .padding(4)
+                            }
                         }
                     }
                 }
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView(connection: connection, paneManager: paneManager)
+            SettingsView(connection: connection, windowManager: windowManager)
         }
         .sheet(isPresented: $showProjects) {
             ProjectNavigationView(store: projectStore, connection: connection, isPresented: $showProjects)

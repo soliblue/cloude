@@ -1,11 +1,11 @@
 //
-//  PaneConversationPicker.swift
+//  WindowConversationPicker.swift
 //  Cloude
 //
 
 import SwiftUI
 
-struct PaneConversationPicker: View {
+struct WindowConversationPicker: View {
     @ObservedObject var projectStore: ProjectStore
     let onSelect: (Project, Conversation) -> Void
     @Environment(\.dismiss) private var dismiss

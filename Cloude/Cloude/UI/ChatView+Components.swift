@@ -9,6 +9,7 @@ import SwiftUI
 
 struct StreamingOutput: View {
     let text: String
+    @State private var pulse = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -31,7 +32,12 @@ struct StreamingOutput: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .background(Color(.systemBackground))
+        .background(
+            Color.accentColor
+                .opacity(pulse ? 0.1 : 0.03)
+        )
+        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
+        .onAppear { pulse = true }
     }
 }
 
