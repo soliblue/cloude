@@ -33,11 +33,11 @@ struct HeartbeatSheet: View {
             VStack(spacing: 0) {
                 ProjectChatMessageList(
                     messages: heartbeatStore.conversation.messages + heartbeatStore.conversation.pendingMessages,
-                    currentOutput: convOutput.text.isEmpty ? heartbeatStore.currentOutput : convOutput.text,
+                    currentOutput: convOutput.text,
                     currentToolCalls: convOutput.toolCalls,
                     currentRunStats: convOutput.runStats,
                     scrollProxy: $scrollProxy,
-                    agentState: (heartbeatStore.isRunning || convOutput.isRunning) ? .running : .idle,
+                    agentState: convOutput.isRunning ? .running : .idle,
                     conversationId: heartbeatStore.conversation.id
                 )
 
@@ -63,7 +63,7 @@ struct HeartbeatSheet: View {
                     VStack(spacing: 2) {
                         Text("Heartbeat")
                             .font(.headline)
-                        if heartbeatStore.isRunning || convOutput.isRunning {
+                        if convOutput.isRunning {
                             Text("Running...")
                                 .font(.caption2)
                                 .foregroundColor(.orange)
@@ -79,7 +79,7 @@ struct HeartbeatSheet: View {
                         Button(action: triggerHeartbeat) {
                             Image(systemName: "bolt.heart")
                         }
-                        .disabled(heartbeatStore.isRunning)
+                        .disabled(convOutput.isRunning)
 
                         Divider()
                             .frame(height: 20)
@@ -102,31 +102,20 @@ struct HeartbeatSheet: View {
             .onAppear {
                 connection.send(.markHeartbeatRead)
                 heartbeatStore.markRead()
-                if !heartbeatStore.isRunning && !convOutput.isRunning {
+                if !convOutput.isRunning {
                     sendQueuedMessages()
                 }
             }
             .onChange(of: convOutput.isRunning) { wasRunning, isRunning in
                 if wasRunning && !isRunning && !convOutput.text.isEmpty {
-                    handleUserChatCompletion()
-                }
-            }
-            .onChange(of: heartbeatStore.isRunning) { wasRunning, isRunning in
-                if wasRunning && !isRunning && !convOutput.isRunning {
-                    sendQueuedMessages()
-                }
-            }
-            .onChange(of: convOutput.newSessionId) { _, newId in
-                if let sessionId = newId {
-                    heartbeatStore.conversation.sessionId = sessionId
-                    heartbeatStore.save()
+                    handleChatCompletion()
                 }
             }
         }
         .presentationBackground(.ultraThinMaterial)
     }
 
-    private func handleUserChatCompletion() {
+    private func handleChatCompletion() {
         let message = ChatMessage(
             isUser: false,
             text: convOutput.text.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -138,7 +127,6 @@ struct HeartbeatSheet: View {
         heartbeatStore.conversation.lastMessageAt = Date()
         heartbeatStore.save()
         convOutput.reset()
-        heartbeatStore.isRunning = false
 
         sendQueuedMessages()
     }
@@ -159,13 +147,12 @@ struct HeartbeatSheet: View {
         connection.sendChat(
             combinedText,
             workingDirectory: nil,
-            sessionId: heartbeatStore.conversation.sessionId,
-            isNewSession: heartbeatStore.conversation.sessionId == nil,
-            conversationId: heartbeatStore.conversation.id,
+            sessionId: Heartbeat.sessionId,
+            isNewSession: false,
+            conversationId: Heartbeat.conversationId,
             conversationName: "Heartbeat",
             conversationSymbol: "heart.fill"
         )
-        heartbeatStore.isRunning = true
     }
 
     @ViewBuilder
@@ -182,10 +169,8 @@ struct HeartbeatSheet: View {
     private func triggerHeartbeat() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
-        print("[HeartbeatSheet] Triggering heartbeat")
         heartbeatStore.recordTrigger()
         connection.send(.triggerHeartbeat)
-        heartbeatStore.isRunning = true
     }
 
     private func sendMessage() {
@@ -193,9 +178,7 @@ struct HeartbeatSheet: View {
         let imageBase64 = selectedImageData?.base64EncodedString()
         guard !text.isEmpty || imageBase64 != nil else { return }
 
-        let isRunning = heartbeatStore.isRunning || convOutput.isRunning
-
-        if isRunning {
+        if convOutput.isRunning {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: imageBase64)
             heartbeatStore.conversation.pendingMessages.append(userMessage)
             heartbeatStore.save()
@@ -207,14 +190,13 @@ struct HeartbeatSheet: View {
             connection.sendChat(
                 text,
                 workingDirectory: nil,
-                sessionId: heartbeatStore.conversation.sessionId,
-                isNewSession: heartbeatStore.conversation.sessionId == nil,
-                conversationId: heartbeatStore.conversation.id,
+                sessionId: Heartbeat.sessionId,
+                isNewSession: false,
+                conversationId: Heartbeat.conversationId,
                 imageBase64: imageBase64,
                 conversationName: "Heartbeat",
                 conversationSymbol: "heart.fill"
             )
-            heartbeatStore.isRunning = true
         }
 
         inputText = ""

@@ -30,6 +30,7 @@ class ConnectionManager: ObservableObject {
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
     @Published var processes: [AgentProcessInfo] = []
+    @Published var defaultWorkingDirectory: String?
 
     let events = PassthroughSubject<ConnectionEvent, Never>()
 
@@ -50,10 +51,9 @@ class ConnectionManager: ObservableObject {
     var onGitDiff: ((String, String) -> Void)?
     var onDisconnect: ((UUID, ConversationOutput) -> Void)?
     var onTranscription: ((String) -> Void)?
-    var onHeartbeatConfig: ((Int?, Int, String?) -> Void)?
-    var onHeartbeatOutput: ((String) -> Void)?
-    var onHeartbeatComplete: ((String) -> Void)?
+    var onHeartbeatConfig: ((Int?, Int) -> Void)?
     var onMemories: (([MemorySection]) -> Void)?
+    var onMemoryAdded: ((String, String, String) -> Void)?
     var onRenameConversation: ((UUID, String) -> Void)?
     var onSetConversationSymbol: ((UUID, String?) -> Void)?
     var onProcessList: (([AgentProcessInfo]) -> Void)?

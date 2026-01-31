@@ -5,6 +5,7 @@
 
 import Foundation
 import Combine
+import CloudeShared
 
 @MainActor
 class HeartbeatService: ObservableObject {
@@ -13,11 +14,11 @@ class HeartbeatService: ObservableObject {
     @Published var intervalMinutes: Int? {
         didSet { UserDefaults.standard.set(intervalMinutes, forKey: "heartbeatIntervalMinutes") }
     }
-    @Published var sessionId: String? {
-        didSet { UserDefaults.standard.set(sessionId, forKey: "heartbeatSessionId") }
-    }
     @Published var messageCount: Int = 0 {
         didSet { UserDefaults.standard.set(messageCount, forKey: "heartbeatMessageCount") }
+    }
+    @Published var sessionInitialized: Bool = false {
+        didSet { UserDefaults.standard.set(sessionInitialized, forKey: "heartbeatSessionInitialized") }
     }
     @Published var projectDirectory: String? {
         didSet { UserDefaults.standard.set(projectDirectory, forKey: "heartbeatProjectDirectory") }
@@ -26,12 +27,8 @@ class HeartbeatService: ObservableObject {
     @Published var isRunning = false
 
     private var timer: DispatchSourceTimer?
-    private var runner: ClaudeCodeRunner?
-    private var accumulatedOutput = ""
 
-    var onOutput: ((String) -> Void)?
-    var onComplete: ((String) -> Void)?
-    var onSessionId: ((String) -> Void)?
+    var runnerManager: RunnerManager?
 
     private let heartbeatPrompt = """
         This is your autonomous heartbeat. Use this time proactively:
@@ -48,7 +45,6 @@ class HeartbeatService: ObservableObject {
 
     private init() {
         intervalMinutes = UserDefaults.standard.object(forKey: "heartbeatIntervalMinutes") as? Int
-        sessionId = UserDefaults.standard.string(forKey: "heartbeatSessionId")
         messageCount = UserDefaults.standard.integer(forKey: "heartbeatMessageCount")
         projectDirectory = UserDefaults.standard.string(forKey: "heartbeatProjectDirectory")
 
@@ -63,8 +59,8 @@ class HeartbeatService: ObservableObject {
         scheduleTimer()
     }
 
-    func getConfig() -> (intervalMinutes: Int?, unreadCount: Int, sessionId: String?) {
-        (intervalMinutes, unreadCount, sessionId)
+    func getConfig() -> (intervalMinutes: Int?, unreadCount: Int) {
+        (intervalMinutes, unreadCount)
     }
 
     func markRead() {
@@ -83,25 +79,25 @@ class HeartbeatService: ObservableObject {
         timer?.setEventHandler { [weak self] in
             Task { @MainActor [weak self] in
                 Log.info("Timer fired, triggering heartbeat")
-                self?.runHeartbeat()
+                self?.triggerNow()
             }
         }
         timer?.resume()
     }
 
-    func runHeartbeat() {
+    func triggerNow() {
+        guard let runnerManager else {
+            Log.error("No runnerManager set for HeartbeatService")
+            return
+        }
+
         guard !isRunning else {
             Log.info("Heartbeat already running, skipping")
             return
         }
-        Log.info("Starting heartbeat run (messageCount=\(messageCount), sessionId=\(String(describing: sessionId)))")
-        isRunning = true
-        accumulatedOutput = ""
 
-        if runner == nil {
-            runner = ClaudeCodeRunner()
-            setupRunnerCallbacks()
-        }
+        Log.info("Starting heartbeat run (messageCount=\(messageCount))")
+        isRunning = true
 
         let shouldCompact = messageCount >= compactThreshold
         let prompt = shouldCompact ? "/compact\n\n\(heartbeatPrompt)" : heartbeatPrompt
@@ -110,11 +106,16 @@ class HeartbeatService: ObservableObject {
             Log.info("Running /compact before heartbeat")
         }
 
-        runner?.run(
+        let workingDir = projectDirectory ?? Self.findCloudeProjectRoot() ?? MemoryService.projectRoot
+
+        runnerManager.run(
             prompt: prompt,
-            workingDirectory: projectDirectory ?? MemoryService.projectRoot,
-            sessionId: sessionId,
-            isNewSession: sessionId == nil
+            workingDirectory: workingDir,
+            sessionId: Heartbeat.sessionId,
+            isNewSession: true,
+            imageBase64: nil,
+            conversationId: Heartbeat.sessionId,
+            useFixedSessionId: true
         )
 
         messageCount += 1
@@ -123,38 +124,28 @@ class HeartbeatService: ObservableObject {
         }
     }
 
-    private func setupRunnerCallbacks() {
-        runner?.onOutput = { [weak self] (text: String) in
-            Task { @MainActor in
-                self?.accumulatedOutput += text
-                self?.onOutput?(text)
-            }
+    func handleComplete(isEmpty: Bool) {
+        if !isEmpty {
+            unreadCount += 1
         }
-
-        runner?.onSessionId = { [weak self] (sid: String) in
-            Task { @MainActor in
-                self?.sessionId = sid
-                self?.onSessionId?(sid)
-            }
-        }
-
-        runner?.onComplete = { [weak self] in
-            Task { @MainActor in
-                guard let self else { return }
-                let output = self.accumulatedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
-                let isSkip = output == "<skip>" || output == "." || output.isEmpty
-                Log.info("Heartbeat complete, length=\(output.count), isSkip=\(isSkip)")
-                if !isSkip {
-                    self.unreadCount += 1
-                }
-                self.onComplete?(isSkip ? "" : output)
-                self.isRunning = false
-            }
-        }
+        isRunning = false
     }
 
-    func triggerNow() {
-        Log.info("Manual trigger requested")
-        runHeartbeat()
+    private static func findCloudeProjectRoot() -> String? {
+        let possiblePaths = [
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/CODING/cloude").path,
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("cloude").path,
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Projects/cloude").path,
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Developer/cloude").path
+        ]
+
+        for path in possiblePaths {
+            let claudeMdPath = (path as NSString).appendingPathComponent("CLAUDE.md")
+            if FileManager.default.fileExists(atPath: claudeMdPath) {
+                Log.info("Found Cloude project at \(path)")
+                return path
+            }
+        }
+        return nil
     }
 }

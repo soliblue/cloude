@@ -11,6 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **NEVER kill/stop the Cloude Agent process** - The user connects to Claude Code through the Cloude Agent. Killing it disconnects them and they lose the ability to communicate with you. If asked to restart or rebuild the agent, launch the new one BEFORE or WITHOUT killing the old one.
 
+**NEVER build/restart the Mac agent yourself** - Building or launching the Mac agent from CLI (via fastlane or xcodebuild) causes connection issues when the user is already running it from Xcode. If the agent needs to be rebuilt, tell the user and let them handle it from Xcode.
+
 ## Multi-Agent Workflow
 
 Multiple Claude agents may work on this project simultaneously. Follow these rules:

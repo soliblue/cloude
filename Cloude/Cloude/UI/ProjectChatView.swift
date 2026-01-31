@@ -64,7 +64,12 @@ struct ProjectChatView: View {
                 conversationId: effectiveConversation?.id,
                 isCompacting: output?.isCompacting ?? false,
                 onRefresh: refreshMissedResponse,
-                onInteraction: onInteraction
+                onInteraction: onInteraction,
+                onDeleteQueued: { messageId in
+                    if let proj = effectiveProject, let conv = effectiveConversation {
+                        store.removePendingMessage(messageId, from: conv, in: proj)
+                    }
+                }
             )
         }
         .onChange(of: output?.isRunning) { oldValue, newValue in

@@ -313,6 +313,7 @@ struct ToolCallLabel: View {
         case "TodoWrite": return "checklist"
         case "AskUserQuestion": return "questionmark.bubble"
         case "NotebookEdit": return "text.book.closed"
+        case "Memory": return "brain.head.profile"
         default: return "bolt"
         }
     }
@@ -548,6 +549,7 @@ func toolCallColor(for name: String, input: String? = nil) -> Color {
     case "TodoWrite": return .mint
     case "NotebookEdit": return .purple
     case "AskUserQuestion": return .orange
+    case "Memory": return .pink
     default: return .secondary
     }
 }

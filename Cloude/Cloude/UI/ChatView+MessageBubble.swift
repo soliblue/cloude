@@ -42,12 +42,6 @@ struct MessageBubble: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .top, spacing: 8) {
-                    if message.isQueued {
-                        Image(systemName: "clock")
-                            .font(.system(size: 15))
-                            .foregroundColor(.secondary)
-                    }
-
                     if message.wasInterrupted {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 15))

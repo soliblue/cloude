@@ -81,6 +81,7 @@ extension WebSocketServer {
             if authenticate(connection, token: token) {
                 sendMessage(.authResult(success: true, message: nil), to: connection)
                 sendMessage(.whisperReady(ready: WhisperService.shared.isReady), to: connection)
+                sendMessage(.defaultWorkingDirectory(path: MemoryService.projectRoot), to: connection)
             } else {
                 sendMessage(.authResult(success: false, message: "Invalid token"), to: connection)
             }

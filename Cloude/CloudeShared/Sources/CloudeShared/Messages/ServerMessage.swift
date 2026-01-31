@@ -20,16 +20,16 @@ public enum ServerMessage: Codable {
     case gitCommitResult(success: Bool, message: String?)
     case transcription(text: String)
     case whisperReady(ready: Bool)
-    case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int, sessionId: String?)
-    case heartbeatOutput(text: String)
-    case heartbeatComplete(message: String)
+    case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories(sections: [MemorySection])
     case renameConversation(conversationId: String, name: String)
     case setConversationSymbol(conversationId: String, symbol: String?)
     case processList(processes: [AgentProcessInfo])
+    case memoryAdded(target: String, section: String, text: String, conversationId: String?)
+    case defaultWorkingDirectory(path: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section
     }
 
     public init(from decoder: Decoder) throws {
@@ -118,14 +118,7 @@ public enum ServerMessage: Codable {
         case "heartbeat_config":
             let intervalMinutes = try container.decodeIfPresent(Int.self, forKey: .intervalMinutes)
             let unreadCount = try container.decode(Int.self, forKey: .unreadCount)
-            let sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
-            self = .heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount, sessionId: sessionId)
-        case "heartbeat_output":
-            let text = try container.decode(String.self, forKey: .text)
-            self = .heartbeatOutput(text: text)
-        case "heartbeat_complete":
-            let message = try container.decode(String.self, forKey: .message)
-            self = .heartbeatComplete(message: message)
+            self = .heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount)
         case "memories":
             let sections = try container.decode([MemorySection].self, forKey: .sections)
             self = .memories(sections: sections)
@@ -140,6 +133,15 @@ public enum ServerMessage: Codable {
         case "process_list":
             let processes = try container.decode([AgentProcessInfo].self, forKey: .processes)
             self = .processList(processes: processes)
+        case "memory_added":
+            let target = try container.decode(String.self, forKey: .target)
+            let section = try container.decode(String.self, forKey: .section)
+            let text = try container.decode(String.self, forKey: .text)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .memoryAdded(target: target, section: section, text: text, conversationId: conversationId)
+        case "default_working_directory":
+            let path = try container.decode(String.self, forKey: .path)
+            self = .defaultWorkingDirectory(path: path)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

@@ -81,7 +81,7 @@ class LiveActivityManager {
         )
 
         Task {
-            await activity.end(.init(state: finalContent, staleDate: nil), dismissalPolicy: .default)
+            await activity.end(.init(state: finalContent, staleDate: nil), dismissalPolicy: .immediate)
             await MainActor.run {
                 activities.removeValue(forKey: convIdString)
                 lastUpdateTimes.removeValue(forKey: convIdString)
