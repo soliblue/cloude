@@ -92,7 +92,11 @@ struct SymbolPickerSheet: View {
                     }
                 }
             }
+            .background(.ultraThinMaterial)
+            .scrollContentBackground(.hidden)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
+        .presentationBackground(.ultraThinMaterial)
     }
 }
