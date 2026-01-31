@@ -11,26 +11,48 @@ import Combine
 struct Conversation: Codable, Identifiable {
     let id: UUID
     var name: String
+    var symbol: String?
     var sessionId: String?
     let createdAt: Date
     var lastMessageAt: Date
     var messages: [ChatMessage]
     var pendingMessages: [ChatMessage]
 
-    init(name: String? = nil) {
+    static let randomNames = [
+        "Spark", "Nova", "Pulse", "Echo", "Drift", "Blaze", "Frost", "Dusk",
+        "Dawn", "Flux", "Glow", "Haze", "Mist", "Peak", "Reef", "Sage",
+        "Tide", "Vale", "Wave", "Zen", "Bolt", "Cove", "Edge", "Fern",
+        "Grid", "Hive", "Jade", "Kite", "Leaf", "Maze", "Nest", "Opal",
+        "Pine", "Quill", "Rush", "Sand", "Twig", "Vine", "Wisp", "Yarn",
+        "Arc", "Bay", "Cliff", "Dell", "Elm", "Fog", "Glen", "Hill",
+        "Ivy", "Jet", "Key", "Lane", "Moon", "Nook", "Oak", "Path"
+    ]
+
+    static let randomSymbols = [
+        "star", "heart", "bolt", "flame", "leaf", "moon", "sun.max", "cloud",
+        "sparkles", "wand.and.stars", "lightbulb", "paperplane", "rocket",
+        "globe", "map", "flag", "bookmark", "tag", "bubble.left", "terminal",
+        "paintbrush", "pencil", "folder", "doc", "book", "briefcase",
+        "hammer", "wrench", "gearshape", "cpu", "lock", "key", "eye",
+        "hare", "tortoise", "bird", "fish", "tree", "mountain.2", "drop"
+    ]
+
+    init(name: String? = nil, symbol: String? = nil) {
         self.id = UUID()
         self.sessionId = nil
         self.createdAt = Date()
         self.lastMessageAt = Date()
         self.messages = []
         self.pendingMessages = []
-        self.name = name ?? Self.generateName()
+        self.name = name ?? Self.randomNames.randomElement() ?? "Chat"
+        self.symbol = symbol ?? Self.randomSymbols.randomElement()
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
+        symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
         sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         lastMessageAt = try container.decode(Date.self, forKey: .lastMessageAt)
@@ -39,15 +61,7 @@ struct Conversation: Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, sessionId, createdAt, lastMessageAt, messages, pendingMessages
-    }
-
-    private static func generateName() -> String {
-        let adjectives = ["Quick", "Bright", "Swift", "Calm", "Bold", "Wise", "Kind", "Warm", "Cool", "Fresh"]
-        let nouns = ["Chat", "Talk", "Session", "Thread", "Topic", "Query", "Task", "Project", "Idea", "Plan"]
-        let adj = adjectives.randomElement() ?? "New"
-        let noun = nouns.randomElement() ?? "Chat"
-        return "\(adj) \(noun)"
+        case id, name, symbol, sessionId, createdAt, lastMessageAt, messages, pendingMessages
     }
 }
 

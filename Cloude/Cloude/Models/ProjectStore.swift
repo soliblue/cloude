@@ -103,6 +103,26 @@ class ProjectStore: ObservableObject {
         save()
     }
 
+    func renameConversation(_ conversation: Conversation, in project: Project, to name: String) {
+        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+        projects[projectIndex].conversations[convIndex].name = name
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
+
+    func setConversationSymbol(_ conversation: Conversation, in project: Project, symbol: String?) {
+        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+        projects[projectIndex].conversations[convIndex].symbol = symbol
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
+
     func deleteProject(_ project: Project) {
         projects.removeAll { $0.id == project.id }
         if currentProject?.id == project.id {

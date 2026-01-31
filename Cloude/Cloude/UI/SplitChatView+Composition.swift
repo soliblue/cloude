@@ -47,11 +47,14 @@ extension SplitChatView {
         HStack(spacing: 10) {
             ForEach(Array(windowManager.windows.enumerated()), id: \.element.id) { index, window in
                 let isActive = window.id == windowManager.activeWindowId
+                let conversation = window.projectId.flatMap { pid in
+                    projectStore.projects.first { $0.id == pid }
+                }.flatMap { proj in
+                    window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
+                }
 
-                Button(action: {
-                    withAnimation { currentPageIndex = index }
-                }) {
-                    if let symbol = window.emoji, !symbol.isEmpty {
+                Group {
+                    if let symbol = conversation?.symbol, !symbol.isEmpty {
                         Image(systemName: symbol)
                             .font(.system(size: 18))
                             .frame(width: 40, height: 40)
@@ -63,7 +66,13 @@ extension SplitChatView {
                             .frame(width: isActive ? 16 : 12, height: isActive ? 16 : 12)
                     }
                 }
-                .buttonStyle(.plain)
+                .contentShape(Circle())
+                .onTapGesture {
+                    withAnimation { currentPageIndex = index }
+                }
+                .onLongPressGesture {
+                    editingWindow = window
+                }
             }
         }
         .frame(maxWidth: .infinity)
@@ -192,16 +201,11 @@ extension SplitChatView {
                 editingWindow = window
             }) {
                 HStack(spacing: 4) {
-                    if let symbol = window.emoji, !symbol.isEmpty {
+                    if let symbol = conversation?.symbol, !symbol.isEmpty {
                         Image(systemName: symbol)
                             .font(.system(size: 12))
                     }
-                    if let name = window.customName, !name.isEmpty {
-                        Text(name)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .lineLimit(1)
-                    } else if let conv = conversation {
+                    if let conv = conversation {
                         Text(conv.name)
                             .font(.caption)
                             .fontWeight(.medium)
@@ -211,7 +215,7 @@ extension SplitChatView {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    if let proj = project, window.customName == nil {
+                    if let proj = project {
                         Text("• \(proj.name)")
                             .font(.caption2)
                             .foregroundColor(.secondary)
