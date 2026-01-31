@@ -66,7 +66,6 @@ struct ProjectChatView: View {
                 scrollProxy: $scrollProxy,
                 agentState: isThisConversationRunning ? .running : .idle,
                 conversationId: effectiveConversation?.id,
-                isKeyboardVisible: isKeyboardVisible,
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction
             )

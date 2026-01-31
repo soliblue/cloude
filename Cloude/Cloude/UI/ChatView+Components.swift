@@ -148,14 +148,25 @@ struct ToolPill: View {
     }
 
     private var displayText: String {
-        if let input = toolCall.input, !input.isEmpty {
-            if toolCall.name == "Task" {
-                let parts = input.split(separator: ":", maxSplits: 1)
-                return parts.first.map(String.init) ?? input
-            }
+        guard let input = toolCall.input, !input.isEmpty else {
             return toolCall.name
         }
-        return toolCall.name
+
+        switch toolCall.name {
+        case "Read", "Write", "Edit":
+            let filename = (input as NSString).lastPathComponent
+            return "\(toolCall.name) \(filename)"
+        case "Bash":
+            let truncated = input.prefix(20)
+            return truncated.count < input.count ? "\(truncated)..." : String(input)
+        case "Glob", "Grep":
+            return "\(toolCall.name): \(input)"
+        case "Task":
+            let parts = input.split(separator: ":", maxSplits: 1)
+            return parts.first.map(String.init) ?? input
+        default:
+            return toolCall.name
+        }
     }
 
     private var iconName: String {

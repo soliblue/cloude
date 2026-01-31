@@ -66,7 +66,20 @@ struct SplitChatView: View {
             checkGitForAllProjects()
             connection.onTranscription = { text in
                 print("[iOS] Received transcription: \(text)")
-                inputText = text
+                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                let isBlank = trimmed.isEmpty ||
+                    trimmed.contains("blank audio") ||
+                    trimmed.contains("no speech") ||
+                    trimmed.contains("inaudible") ||
+                    trimmed == "you" ||
+                    trimmed == "thanks for watching"
+                if !isBlank {
+                    if inputText.isEmpty {
+                        inputText = text
+                    } else {
+                        inputText += " " + text
+                    }
+                }
             }
         }
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
@@ -141,6 +154,6 @@ struct SplitChatView: View {
     }
 
     private func checkClipboard() {
-        hasClipboardContent = UIPasteboard.general.hasStrings
+        hasClipboardContent = true
     }
 }
