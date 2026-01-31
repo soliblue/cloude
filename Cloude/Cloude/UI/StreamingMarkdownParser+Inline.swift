@@ -93,9 +93,8 @@ extension StreamingMarkdownParser {
                 }
                 var parsed = parseInlineElements(innerText)
                 for run in parsed.runs {
-                    var newAttrs = run.attributes
-                    newAttrs.font = (newAttrs.font ?? .body).bold().italic()
-                    parsed[run.range].mergeAttributes(newAttrs)
+                    let existing = parsed[run.range].inlinePresentationIntent ?? []
+                    parsed[run.range].inlinePresentationIntent = existing.union([.stronglyEmphasized, .emphasized])
                 }
                 result.append(parsed)
                 continue
@@ -114,9 +113,8 @@ extension StreamingMarkdownParser {
                 }
                 var parsed = parseInlineElements(innerText)
                 for run in parsed.runs {
-                    var newAttrs = run.attributes
-                    newAttrs.font = (newAttrs.font ?? .body).bold()
-                    parsed[run.range].mergeAttributes(newAttrs)
+                    let existing = parsed[run.range].inlinePresentationIntent ?? []
+                    parsed[run.range].inlinePresentationIntent = existing.union(.stronglyEmphasized)
                 }
                 result.append(parsed)
                 continue
@@ -157,9 +155,8 @@ extension StreamingMarkdownParser {
                 }
                 var parsed = parseInlineElements(innerText)
                 for run in parsed.runs {
-                    var newAttrs = run.attributes
-                    newAttrs.font = (newAttrs.font ?? .body).italic()
-                    parsed[run.range].mergeAttributes(newAttrs)
+                    let existing = parsed[run.range].inlinePresentationIntent ?? []
+                    parsed[run.range].inlinePresentationIntent = existing.union(.emphasized)
                 }
                 result.append(parsed)
                 continue

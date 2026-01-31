@@ -19,6 +19,9 @@ class HeartbeatService: ObservableObject {
     @Published var messageCount: Int = 0 {
         didSet { UserDefaults.standard.set(messageCount, forKey: "heartbeatMessageCount") }
     }
+    @Published var projectDirectory: String? {
+        didSet { UserDefaults.standard.set(projectDirectory, forKey: "heartbeatProjectDirectory") }
+    }
     @Published var unreadCount: Int = 0
     @Published var isRunning = false
 
@@ -47,6 +50,7 @@ class HeartbeatService: ObservableObject {
         intervalMinutes = UserDefaults.standard.object(forKey: "heartbeatIntervalMinutes") as? Int
         sessionId = UserDefaults.standard.string(forKey: "heartbeatSessionId")
         messageCount = UserDefaults.standard.integer(forKey: "heartbeatMessageCount")
+        projectDirectory = UserDefaults.standard.string(forKey: "heartbeatProjectDirectory")
 
         if intervalMinutes != nil {
             scheduleTimer()
@@ -106,11 +110,9 @@ class HeartbeatService: ObservableObject {
             Log.info("Running /compact before heartbeat")
         }
 
-        let cloudeDir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Desktop/coding/cloude").path
         runner?.run(
             prompt: prompt,
-            workingDirectory: cloudeDir,
+            workingDirectory: projectDirectory ?? MemoryService.projectRoot,
             sessionId: sessionId,
             isNewSession: sessionId == nil
         )
@@ -142,10 +144,10 @@ class HeartbeatService: ObservableObject {
                 let output = self.accumulatedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
                 let isSkip = output == "<skip>" || output == "." || output.isEmpty
                 Log.info("Heartbeat complete, length=\(output.count), isSkip=\(isSkip)")
-                if !output.isEmpty {
+                if !isSkip {
                     self.unreadCount += 1
-                    self.onComplete?(output)
                 }
+                self.onComplete?(isSkip ? "" : output)
                 self.isRunning = false
             }
         }
