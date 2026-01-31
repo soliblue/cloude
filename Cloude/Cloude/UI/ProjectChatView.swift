@@ -16,6 +16,7 @@ struct ProjectChatView: View {
     let conversation: Conversation?
     var isCompact: Bool = false
     var showHeader: Bool = false
+    var isKeyboardVisible: Bool = false
     var onSelectConversation: (() -> Void)?
     var onInteraction: (() -> Void)?
 
@@ -65,6 +66,7 @@ struct ProjectChatView: View {
                 scrollProxy: $scrollProxy,
                 agentState: isThisConversationRunning ? .running : .idle,
                 conversationId: effectiveConversation?.id,
+                isKeyboardVisible: isKeyboardVisible,
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction
             )

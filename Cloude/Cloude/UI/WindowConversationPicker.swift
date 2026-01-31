@@ -1,14 +1,15 @@
 //
 //  WindowConversationPicker.swift
 //  Cloude
-//
 
 import SwiftUI
 
 struct WindowConversationPicker: View {
     @ObservedObject var projectStore: ProjectStore
+    @ObservedObject var connection: ConnectionManager
     let onSelect: (Project, Conversation) -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var showFolderPicker = false
 
     var body: some View {
         NavigationStack {
@@ -18,6 +19,12 @@ struct WindowConversationPicker: View {
                         ForEach(project.conversations) { conversation in
                             Button(action: { onSelect(project, conversation) }) {
                                 HStack {
+                                    if let symbol = conversation.symbol, !symbol.isEmpty {
+                                        Image(systemName: symbol)
+                                            .font(.body)
+                                            .foregroundColor(.secondary)
+                                            .frame(width: 24)
+                                    }
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(conversation.name)
                                             .font(.body)
@@ -35,9 +42,16 @@ struct WindowConversationPicker: View {
                         }
 
                         Button(action: { createNewConversation(in: project) }) {
-                            Label("New Conversation", systemImage: "plus")
+                            Label("New Chat", systemImage: "plus")
                                 .foregroundColor(.accentColor)
                         }
+                    }
+                }
+
+                Section {
+                    Button(action: { showFolderPicker = true }) {
+                        Label("New Project", systemImage: "folder.badge.plus")
+                            .foregroundColor(.accentColor)
                     }
                 }
             }
@@ -50,11 +64,23 @@ struct WindowConversationPicker: View {
                     }
                 }
             }
+            .sheet(isPresented: $showFolderPicker) {
+                FolderPickerView(connection: connection) { path in
+                    createNewProject(at: path)
+                }
+            }
         }
     }
 
     private func createNewConversation(in project: Project) {
         let newConv = projectStore.newConversation(in: project)
         onSelect(project, newConv)
+    }
+
+    private func createNewProject(at path: String) {
+        let folderName = (path as NSString).lastPathComponent
+        let project = projectStore.createProject(name: folderName, rootDirectory: path)
+        let conversation = projectStore.newConversation(in: project)
+        onSelect(project, conversation)
     }
 }

@@ -95,6 +95,7 @@ extension SplitChatView {
                     project: project,
                     conversation: conversation,
                     isCompact: false,
+                    isKeyboardVisible: isKeyboardVisible,
                     onInteraction: { dismissKeyboard() }
                 )
             case .files:
