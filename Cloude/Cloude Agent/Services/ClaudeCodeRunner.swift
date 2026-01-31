@@ -81,7 +81,11 @@ class ClaudeCodeRunner: ObservableObject {
         var command = claudePath
         if let sid = sessionId {
             if useFixedSessionId {
-                command += " --session-id \(sid)"
+                if isNewSession {
+                    command += " --session-id \(sid)"
+                } else {
+                    command += " --resume \(sid)"
+                }
             } else if !isNewSession {
                 command += " --resume \(sid)"
             }
@@ -89,7 +93,7 @@ class ClaudeCodeRunner: ObservableObject {
         command += " --dangerously-skip-permissions --output-format stream-json --verbose --include-partial-messages -p \(shellEscape(finalPrompt))"
 
         process?.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        process?.arguments = ["-l", "-c", command]
+        process?.arguments = ["-l", "-i", "-c", command]
         process?.currentDirectoryURL = URL(fileURLWithPath: directory)
         process?.standardOutput = outputPipe
         process?.standardError = errorPipe

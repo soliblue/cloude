@@ -107,16 +107,21 @@ class HeartbeatService: ObservableObject {
         }
 
         let workingDir = projectDirectory ?? Self.findCloudeProjectRoot() ?? MemoryService.projectRoot
+        let needsCreate = !sessionInitialized
 
         runnerManager.run(
             prompt: prompt,
             workingDirectory: workingDir,
             sessionId: Heartbeat.sessionId,
-            isNewSession: true,
+            isNewSession: needsCreate,
             imageBase64: nil,
             conversationId: Heartbeat.sessionId,
             useFixedSessionId: true
         )
+
+        if needsCreate {
+            sessionInitialized = true
+        }
 
         messageCount += 1
         if shouldCompact {

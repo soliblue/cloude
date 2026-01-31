@@ -198,7 +198,15 @@ Control the iOS app via Bash commands. The Mac agent intercepts these and sends 
 ```bash
 cloude rename UI Polish      # Set conversation name (1-2 words, no quotes)
 cloude symbol paintbrush.pointed  # Set SF Symbol icon (no quotes)
+cloude memory local Notes Learned something new  # Add to CLAUDE.local.md
+cloude memory project Notes Project-specific info  # Add to CLAUDE.md
 ```
+
+**Memory command:**
+- Use `local` for personal memories (CLAUDE.local.md) - preferences, history, identity
+- Use `project` for project docs (CLAUDE.md) - architecture, workflows, code style
+- Section names: Identity, User Preferences, Session History, Open Threads, Notes (or any existing section)
+- Add memories proactively when you learn something worth remembering
 
 **CRITICAL - First Message Behavior:**
 - On the VERY FIRST user message, BEFORE writing any text response, immediately call both `cloude rename` and `cloude symbol` commands
@@ -210,7 +218,7 @@ cloude symbol paintbrush.pointed  # Set SF Symbol icon (no quotes)
 - Update every ~10 messages or whenever the topic shifts significantly
 - Names: short, memorable, 1-2 words describing the topic (NO quotes around the name)
 - Symbols: Be specific and creative - avoid repetitive/generic icons. Pick symbols that uniquely represent the topic (e.g., `pill.circle` for tool pills, `arrow.triangle.branch` for git work, `cube.transparent` for 3D stuff, `waveform` for audio). NO quotes around the symbol name.
-- The command "fails" with not found - this is expected, the agent already intercepted it
+- Commands now work silently (the `cloude` CLI is installed by the Mac agent)
 
 ## Code Style
 

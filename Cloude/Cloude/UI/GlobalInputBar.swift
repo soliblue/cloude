@@ -168,9 +168,9 @@ struct GlobalInputBar: View {
 
                     if shouldShowStopButton {
                         Button(action: { onStop?() }) {
-                            Image(systemName: "stop.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(.orange)
+                            Image(systemName: "stop.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.accentColor.opacity(0.9))
                         }
                     } else {
                         Button(action: onSend) {
