@@ -9,24 +9,11 @@ import Combine
 class WindowManager: ObservableObject {
     @Published var windows: [ChatWindow] = [ChatWindow()]
     @Published var activeWindowId: UUID?
-    @Published var layoutMode: LayoutMode = .paged {
-        didSet { UserDefaults.standard.set(layoutMode.rawValue, forKey: layoutModeKey) }
-    }
-    @Published var focusModeEnabled: Bool = true {
-        didSet { UserDefaults.standard.set(focusModeEnabled, forKey: focusModeKey) }
-    }
 
     private let windowsKey = "windowManager_windows"
     private let activeKey = "windowManager_activeWindowId"
-    private let layoutModeKey = "windowManager_layoutMode"
-    private let focusModeKey = "windowManager_focusMode"
 
     init() {
-        if let modeString = UserDefaults.standard.string(forKey: layoutModeKey),
-           let mode = LayoutMode(rawValue: modeString) {
-            layoutMode = mode
-        }
-        focusModeEnabled = UserDefaults.standard.object(forKey: focusModeKey) as? Bool ?? true
         load()
         if windows.isEmpty {
             windows = [ChatWindow()]
@@ -109,10 +96,6 @@ class WindowManager: ObservableObject {
         guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
         windows[index].type = type
         save()
-    }
-
-    func toggleLayoutMode() {
-        layoutMode = layoutMode == .split ? .paged : .split
     }
 
     func windowIndex(for id: UUID) -> Int? {

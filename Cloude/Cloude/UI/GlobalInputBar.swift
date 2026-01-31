@@ -8,6 +8,18 @@ import UIKit
 import PhotosUI
 import Combine
 
+struct SlashCommand {
+    let name: String
+    let description: String
+    let icon: String
+}
+
+private let slashCommands: [SlashCommand] = [
+    SlashCommand(name: "compact", description: "Compress conversation context", icon: "arrow.triangle.2.circlepath"),
+    SlashCommand(name: "context", description: "Show token usage", icon: "chart.pie"),
+    SlashCommand(name: "cost", description: "Show usage stats", icon: "dollarsign.circle"),
+]
+
 struct GlobalInputBar: View {
     @Binding var inputText: String
     @Binding var selectedImageData: Data?
@@ -57,24 +69,50 @@ struct GlobalInputBar: View {
         Self.placeholders[placeholderIndex % Self.placeholders.count]
     }
 
+    private var filteredCommands: [SlashCommand] {
+        guard inputText.hasPrefix("/") else { return [] }
+        let query = String(inputText.dropFirst()).lowercased()
+        if query.isEmpty {
+            return slashCommands
+        }
+        return slashCommands.filter { $0.name.lowercased().hasPrefix(query) }
+    }
+
+    private var isSlashCommand: Bool {
+        inputText.hasPrefix("/")
+    }
+
     var body: some View {
-        ZStack(alignment: .bottom) {
-            HStack(spacing: 12) {
-                HStack(spacing: 8) {
-                    ZStack(alignment: .leading) {
-                        if inputText.isEmpty {
-                            Text(placeholder)
-                                .foregroundColor(.secondary)
-                                .id(placeholderIndex)
-                                .transition(.opacity)
-                        }
-                        TextField("", text: $inputText, axis: .vertical)
-                            .textFieldStyle(.plain)
-                            .lineLimit(1...4)
-                            .focused($isInputFocused)
-                            .onSubmit { if canSend { onSend() } }
-                            .id(textFieldId)
+        VStack(spacing: 0) {
+            if !filteredCommands.isEmpty {
+                SlashCommandSuggestions(
+                    commands: filteredCommands,
+                    onSelect: { command in
+                        inputText = "/\(command.name)"
+                        onSend()
                     }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
+            ZStack(alignment: .bottom) {
+                HStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        ZStack(alignment: .leading) {
+                            if inputText.isEmpty {
+                                Text(placeholder)
+                                    .foregroundColor(.secondary)
+                                    .id(placeholderIndex)
+                                    .transition(.opacity)
+                            }
+                            TextField("", text: $inputText, axis: .vertical)
+                                .textFieldStyle(.plain)
+                                .lineLimit(1...4)
+                                .focused($isInputFocused)
+                                .foregroundColor(isSlashCommand ? .cyan : .primary)
+                                .onSubmit { if canSend { onSend() } }
+                                .id(textFieldId)
+                        }
 
                     if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
                         ZStack(alignment: .topTrailing) {
@@ -121,18 +159,20 @@ struct GlobalInputBar: View {
             .opacity(showInputBar ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
             .animation(.easeOut(duration: transitionDuration), value: showInputBar)
 
-            if showRecordingOverlay || isSwipingToRecord {
-                RecordingOverlayView(
-                    audioLevel: audioRecorder.audioLevel,
-                    onStop: stopRecording
-                )
-                .offset(y: showRecordingOverlay ? 0 : max(0, swipeThreshold - swipeOffset))
-                .opacity(showRecordingOverlay ? 1 : Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold))
-                .animation(.easeOut(duration: transitionDuration), value: showRecordingOverlay)
+                if showRecordingOverlay || isSwipingToRecord {
+                    RecordingOverlayView(
+                        audioLevel: audioRecorder.audioLevel,
+                        onStop: stopRecording
+                    )
+                    .offset(y: showRecordingOverlay ? 0 : max(0, swipeThreshold - swipeOffset))
+                    .opacity(showRecordingOverlay ? 1 : Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold))
+                    .animation(.easeOut(duration: transitionDuration), value: showRecordingOverlay)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .gesture(
             DragGesture(minimumDistance: 10)
                 .onChanged { value in
@@ -220,6 +260,36 @@ struct GlobalInputBar: View {
             if let data = data {
                 onTranscribe?(data)
             }
+        }
+    }
+}
+
+struct SlashCommandSuggestions: View {
+    let commands: [SlashCommand]
+    let onSelect: (SlashCommand) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(commands, id: \.name) { command in
+                    Button(action: { onSelect(command) }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: command.icon)
+                                .font(.system(size: 12, weight: .semibold))
+                            Text("/\(command.name)")
+                                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                        }
+                        .foregroundColor(.cyan)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.cyan.opacity(0.12))
+                        .cornerRadius(16)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
         }
     }
 }

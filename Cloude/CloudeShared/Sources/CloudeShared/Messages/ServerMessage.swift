@@ -26,9 +26,10 @@ public enum ServerMessage: Codable {
     case memories(sections: [MemorySection])
     case renameConversation(conversationId: String, name: String)
     case setConversationSymbol(conversationId: String, symbol: String?)
+    case processList(processes: [AgentProcessInfo])
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes
     }
 
     public init(from decoder: Decoder) throws {
@@ -136,6 +137,9 @@ public enum ServerMessage: Codable {
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
             self = .setConversationSymbol(conversationId: conversationId, symbol: symbol)
+        case "process_list":
+            let processes = try container.decode([AgentProcessInfo].self, forKey: .processes)
+            self = .processList(processes: processes)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

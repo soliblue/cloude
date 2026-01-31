@@ -28,6 +28,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         initializeWhisper()
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        Log.info("Agent terminating, killing all Claude processes")
+        let killed = ProcessMonitor.killAllClaudeProcesses()
+        Log.info("Killed \(killed) Claude process(es)")
+    }
+
     private func initializeWhisper() {
         Task {
             WhisperService.shared.onReady = { [weak self] in
@@ -182,6 +188,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Log.info("Received getMemories request")
             let sections = MemoryService.parseMemories()
             server.sendMessage(.memories(sections: sections), to: connection)
+
+        case .getProcesses:
+            let procs = ProcessMonitor.findClaudeProcesses().map { AgentProcessInfo(pid: $0.id, command: $0.command, startTime: $0.startTime) }
+            server.sendMessage(.processList(processes: procs), to: connection)
+
+        case .killProcess(let pid):
+            Log.info("Killing process \(pid)")
+            _ = ProcessMonitor.killProcess(pid)
+            let procs = ProcessMonitor.findClaudeProcesses().map { AgentProcessInfo(pid: $0.id, command: $0.command, startTime: $0.startTime) }
+            server.broadcast(.processList(processes: procs))
+
+        case .killAllProcesses:
+            Log.info("Killing all Claude processes")
+            _ = ProcessMonitor.killAllClaudeProcesses()
+            server.broadcast(.processList(processes: []))
         }
     }
 

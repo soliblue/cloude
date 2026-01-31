@@ -2,7 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Critical Warning
+## Critical Warnings
+
+**FIRST MESSAGE = RENAME + SYMBOL** - On the VERY FIRST user message of ANY conversation, BEFORE writing any text response, you MUST immediately run both `cloude rename` and `cloude symbol` commands. This is non-negotiable. No text output first. Tool calls first. Every. Single. Time.
+
+- Run as **two separate Bash commands** (not combined with `&&`)
+- Pass the name/symbol directly with NO quotes: `cloude rename Memory Fix` not `cloude rename "Memory Fix"`
 
 **NEVER kill/stop the Cloude Agent process** - The user connects to Claude Code through the Cloude Agent. Killing it disconnects them and they lose the ability to communicate with you. If asked to restart or rebuild the agent, launch the new one BEFORE or WITHOUT killing the old one.
 
@@ -187,14 +192,22 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 
 Control the iOS app via Bash commands. The Mac agent intercepts these and sends them to iOS.
 
+**Supported commands (ONLY use these - never invent new ones):**
 ```bash
-cloude rename "Name"
-cloude symbol terminal
+cloude rename UI Polish      # Set conversation name (1-2 words, no quotes)
+cloude symbol paintbrush.pointed  # Set SF Symbol icon (no quotes)
 ```
 
-- Use proactively to keep conversations organized
-- Names: short, memorable, 1-2 words describing the topic
-- Symbols: SF Symbol names (`wrench.and.screwdriver`, `paintbrush.pointed`, `bolt.fill`, `sparkles`, `gear`, `doc.text`, `folder`, `terminal`)
+**CRITICAL - First Message Behavior:**
+- On the VERY FIRST user message, BEFORE writing any text response, immediately call both `cloude rename` and `cloude symbol` commands
+- Do this as the first two tool calls of the conversation - no text output first
+- If the first message has enough context to pick a meaningful name/symbol, use it
+- If the first message is vague, pick something reasonable and update later
+
+**Ongoing:**
+- Update every ~10 messages or whenever the topic shifts significantly
+- Names: short, memorable, 1-2 words describing the topic (NO quotes around the name)
+- Symbols: Be specific and creative - avoid repetitive/generic icons. Pick symbols that uniquely represent the topic (e.g., `pill.circle` for tool pills, `arrow.triangle.branch` for git work, `cube.transparent` for 3D stuff, `waveform` for audio). NO quotes around the symbol name.
 - The command "fails" with not found - this is expected, the agent already intercepted it
 
 ## Code Style

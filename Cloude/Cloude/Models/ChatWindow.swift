@@ -4,11 +4,6 @@
 
 import Foundation
 
-enum LayoutMode: String, Codable {
-    case split
-    case paged
-}
-
 enum WindowType: String, CaseIterable, Codable {
     case chat
     case files

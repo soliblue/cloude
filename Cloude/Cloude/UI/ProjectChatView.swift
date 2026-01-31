@@ -59,6 +59,7 @@ struct ProjectChatView: View {
                 scrollProxy: $scrollProxy,
                 agentState: isThisConversationRunning ? .running : .idle,
                 conversationId: effectiveConversation?.id,
+                isCompacting: output?.isCompacting ?? false,
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction
             )

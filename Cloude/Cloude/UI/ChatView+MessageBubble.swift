@@ -14,6 +14,24 @@ struct MessageBubble: View {
         message.toolCalls.contains { $0.textPosition != nil && $0.parentToolId == nil }
     }
 
+    private var isSlashCommand: Bool {
+        message.isUser && message.text.hasPrefix("/")
+    }
+
+    private var slashCommandInfo: (name: String, icon: String)? {
+        guard isSlashCommand else { return nil }
+        let text = message.text.dropFirst()
+        let name = String(text.split(separator: " ").first ?? Substring(text))
+        let icon: String
+        switch name {
+        case "compact": icon = "arrow.triangle.2.circlepath"
+        case "context": icon = "chart.pie"
+        case "cost": icon = "dollarsign.circle"
+        default: icon = "command"
+        }
+        return (name, icon)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if !message.isUser && !message.toolCalls.isEmpty {
@@ -49,7 +67,9 @@ struct MessageBubble: View {
 
                         if !message.text.isEmpty {
                             Group {
-                                if message.isUser {
+                                if isSlashCommand, let info = slashCommandInfo {
+                                    SlashCommandBubble(command: message.text, icon: info.icon)
+                                } else if message.isUser {
                                     Text(message.text)
                                 } else if hasPositionedToolCalls {
                                     InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
@@ -248,6 +268,25 @@ struct InlineToolPill: View {
     }
 
     private var toolColor: Color {
-        toolCallColor(for: toolCall.name)
+        toolCallColor(for: toolCall.name, input: toolCall.input)
+    }
+}
+
+struct SlashCommandBubble: View {
+    let command: String
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+            Text(command)
+                .font(.system(size: 15, weight: .medium, design: .monospaced))
+        }
+        .foregroundColor(.cyan)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(Color.cyan.opacity(0.12))
+        .cornerRadius(18)
     }
 }
