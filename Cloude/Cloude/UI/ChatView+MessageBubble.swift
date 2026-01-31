@@ -71,7 +71,7 @@ struct MessageBubble: View {
             .padding(.top, message.toolCalls.isEmpty ? 12 : 4)
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(message.isUser ? Color(.systemGray6) : Color(.systemBackground))
+            .background(message.isUser ? Color(.systemGray5) : Color(.systemGray6).opacity(0.3))
             .contextMenu {
                 Button {
                     UIPasteboard.general.string = message.text
