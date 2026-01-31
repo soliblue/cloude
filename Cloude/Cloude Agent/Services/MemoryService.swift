@@ -3,23 +3,23 @@ import CloudeShared
 
 struct MemoryService {
     static func parseMemories() -> [MemorySection] {
-        let claudeMdPaths = [
-            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/CODING/cloude/CLAUDE.md").path,
-            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("CLAUDE.md").path
+        let localMdPaths = [
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/coding/cloude/CLAUDE.local.md").path,
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("CLAUDE.local.md").path
         ]
 
         var content: String?
-        for path in claudeMdPaths {
+        for path in localMdPaths {
             if let data = FileManager.default.contents(atPath: path),
                let text = String(data: data, encoding: .utf8) {
                 content = text
-                Log.info("Found CLAUDE.md at \(path)")
+                Log.info("Found CLAUDE.local.md at \(path)")
                 break
             }
         }
 
         guard let fileContent = content else {
-            Log.error("CLAUDE.md not found")
+            Log.error("CLAUDE.local.md not found - this file contains personal memories and is gitignored")
             return []
         }
 
