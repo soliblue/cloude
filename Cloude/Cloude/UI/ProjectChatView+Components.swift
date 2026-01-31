@@ -163,16 +163,7 @@ struct ProjectChatMessageList: View {
                     }
                     lastUserMessageCount = newCount
                 }
-                .animation(.easeOut(duration: 0.25), value: messages.count)
                 .onChange(of: currentOutput) { oldValue, newValue in
-                    if oldValue.isEmpty && !newValue.isEmpty && !hasScrolledToStreaming {
-                        hasScrolledToStreaming = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                scrollProxy?.scrollTo(streamingId, anchor: .top)
-                            }
-                        }
-                    }
                     if newValue.isEmpty {
                         hasScrolledToStreaming = false
                     }

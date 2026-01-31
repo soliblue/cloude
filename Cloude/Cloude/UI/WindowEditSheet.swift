@@ -123,7 +123,7 @@ struct WindowEditSheet: View {
                     }
                     .buttonStyle(.plain)
 
-                    if windowManager.windows.count > 1 {
+                    if windowManager.canRemoveWindow {
                         Button(action: {
                             windowManager.removeWindow(window.id)
                             onDismiss()

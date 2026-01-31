@@ -11,32 +11,33 @@ struct WindowConversationPicker: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showFolderPicker = false
 
+    private var recentConversations: [(Project, Conversation)] {
+        projectStore.projects
+            .flatMap { project in project.conversations.map { (project, $0) } }
+            .sorted { $0.1.lastMessageAt > $1.1.lastMessageAt }
+            .prefix(5)
+            .map { $0 }
+    }
+
     var body: some View {
         NavigationStack {
             List {
+                if !recentConversations.isEmpty {
+                    Section("Recent") {
+                        ForEach(recentConversations, id: \.1.id) { project, conversation in
+                            Button(action: { onSelect(project, conversation) }) {
+                                conversationRow(conversation, projectName: project.name)
+                            }
+                            .foregroundColor(.primary)
+                        }
+                    }
+                }
+
                 ForEach(projectStore.projects) { project in
                     Section(project.name) {
                         ForEach(project.conversations) { conversation in
                             Button(action: { onSelect(project, conversation) }) {
-                                HStack {
-                                    if let symbol = conversation.symbol, !symbol.isEmpty {
-                                        Image(systemName: symbol)
-                                            .font(.body)
-                                            .foregroundColor(.secondary)
-                                            .frame(width: 24)
-                                    }
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(conversation.name)
-                                            .font(.body)
-                                        Text("\(conversation.messages.count) messages")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
+                                conversationRow(conversation, projectName: nil)
                             }
                             .foregroundColor(.primary)
                         }
@@ -74,6 +75,35 @@ struct WindowConversationPicker: View {
             }
         }
         .presentationBackground(.ultraThinMaterial)
+    }
+
+    @ViewBuilder
+    private func conversationRow(_ conversation: Conversation, projectName: String?) -> some View {
+        HStack {
+            if let symbol = conversation.symbol, !symbol.isEmpty {
+                Image(systemName: symbol)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .frame(width: 24)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(conversation.name)
+                    .font(.body)
+                if let projectName {
+                    Text(projectName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("\(conversation.messages.count) messages")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
     }
 
     private func createNewConversation(in project: Project) {
