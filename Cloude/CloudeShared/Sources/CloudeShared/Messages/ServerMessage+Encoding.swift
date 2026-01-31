@@ -104,6 +104,9 @@ extension ServerMessage {
             try container.encode("set_conversation_symbol", forKey: .type)
             try container.encode(conversationId, forKey: .conversationId)
             try container.encodeIfPresent(symbol, forKey: .symbol)
+        case .processList(let processes):
+            try container.encode("process_list", forKey: .type)
+            try container.encode(processes, forKey: .processes)
         }
     }
 }

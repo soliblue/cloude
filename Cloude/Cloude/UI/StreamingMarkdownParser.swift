@@ -114,7 +114,8 @@ struct StreamingMarkdownParser {
             if !textLines.isEmpty {
                 let content = textLines.joined(separator: "\n")
                 if !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    blocks.append(.text(id: "text-L\(textStartLine)", parseInlineMarkdown(content)))
+                    let segments = parseToSegments(content)
+                    blocks.append(.text(id: "text-L\(textStartLine)", segmentsToAttributedString(segments), segments: segments))
                 }
             }
         }

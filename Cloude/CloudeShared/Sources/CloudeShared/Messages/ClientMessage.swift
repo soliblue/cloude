@@ -16,9 +16,12 @@ public enum ClientMessage: Codable {
     case markHeartbeatRead
     case triggerHeartbeat
     case getMemories
+    case getProcesses
+    case killProcess(pid: Int32)
+    case killAllProcesses
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, minutes
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, minutes, pid
     }
 
     public init(from decoder: Decoder) throws {
@@ -75,6 +78,13 @@ public enum ClientMessage: Codable {
             self = .triggerHeartbeat
         case "get_memories":
             self = .getMemories
+        case "get_processes":
+            self = .getProcesses
+        case "kill_process":
+            let pid = try container.decode(Int32.self, forKey: .pid)
+            self = .killProcess(pid: pid)
+        case "kill_all_processes":
+            self = .killAllProcesses
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -132,6 +142,13 @@ public enum ClientMessage: Codable {
             try container.encode("trigger_heartbeat", forKey: .type)
         case .getMemories:
             try container.encode("get_memories", forKey: .type)
+        case .getProcesses:
+            try container.encode("get_processes", forKey: .type)
+        case .killProcess(let pid):
+            try container.encode("kill_process", forKey: .type)
+            try container.encode(pid, forKey: .pid)
+        case .killAllProcesses:
+            try container.encode("kill_all_processes", forKey: .type)
         }
     }
 }

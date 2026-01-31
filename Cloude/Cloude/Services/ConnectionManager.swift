@@ -9,6 +9,7 @@ class ConversationOutput: ObservableObject {
     @Published var toolCalls: [ToolCall] = [] { didSet { parent?.objectWillChange.send() } }
     @Published var runStats: (durationMs: Int, costUsd: Double)? { didSet { parent?.objectWillChange.send() } }
     @Published var isRunning: Bool = false { didSet { parent?.objectWillChange.send() } }
+    @Published var isCompacting: Bool = false { didSet { parent?.objectWillChange.send() } }
     @Published var newSessionId: String? { didSet { parent?.objectWillChange.send() } }
     var lastSavedMessageId: UUID?
 
@@ -17,6 +18,7 @@ class ConversationOutput: ObservableObject {
         toolCalls = []
         runStats = nil
         newSessionId = nil
+        isCompacting = false
     }
 }
 
@@ -27,6 +29,7 @@ class ConnectionManager: ObservableObject {
     @Published var isWhisperReady = false
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
+    @Published var processes: [AgentProcessInfo] = []
 
     let events = PassthroughSubject<ConnectionEvent, Never>()
 
@@ -53,6 +56,7 @@ class ConnectionManager: ObservableObject {
     var onMemories: (([MemorySection]) -> Void)?
     var onRenameConversation: ((UUID, String) -> Void)?
     var onSetConversationSymbol: ((UUID, String?) -> Void)?
+    var onProcessList: (([AgentProcessInfo]) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {

@@ -9,7 +9,6 @@ struct CloudeApp: App {
     @StateObject private var windowManager = WindowManager()
     @StateObject private var heartbeatStore = HeartbeatStore()
     @State private var showSettings = false
-    @State private var showHeartbeat = false
     @State private var showMemories = false
     @State private var memorySections: [MemorySection] = []
     @State private var isLoadingMemories = false
@@ -35,22 +34,17 @@ struct CloudeApp: App {
 
     private var mainContent: some View {
         NavigationStack {
-            SplitChatView(connection: connection, projectStore: projectStore, windowManager: windowManager)
+            MainChatView(connection: connection, projectStore: projectStore, windowManager: windowManager, heartbeatStore: heartbeatStore)
             .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        HStack(spacing: 12) {
-                            HeartbeatButton(unreadCount: heartbeatStore.unreadCount) {
-                                showHeartbeat = true
-                            }
-                            Button(action: {
-                                isLoadingMemories = true
-                                memorySections = []
-                                connection.send(.getMemories)
-                                showMemories = true
-                            }) {
-                                Image(systemName: "brain")
-                            }
+                        Button(action: {
+                            isLoadingMemories = true
+                            memorySections = []
+                            connection.send(.getMemories)
+                            showMemories = true
+                        }) {
+                            Image(systemName: "brain")
                         }
                     }
                     ToolbarItem(placement: .principal) {
@@ -61,24 +55,15 @@ struct CloudeApp: App {
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: 16) {
-                            Button(action: { windowManager.toggleLayoutMode() }) {
-                                Image(systemName: windowManager.layoutMode == .paged ? "rectangle.split.1x2" : "rectangle.stack")
-                                    .padding(4)
-                            }
-                            Button(action: { showSettings = true }) {
-                                Image(systemName: "gearshape")
-                                    .padding(4)
-                            }
+                        Button(action: { showSettings = true }) {
+                            Image(systemName: "gearshape")
+                                .padding(4)
                         }
                     }
                 }
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView(connection: connection, windowManager: windowManager)
-        }
-        .sheet(isPresented: $showHeartbeat) {
-            HeartbeatSheet(heartbeatStore: heartbeatStore, connection: connection)
+            SettingsView(connection: connection)
         }
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories)
@@ -148,18 +133,6 @@ struct CloudeApp: App {
                     break
                 }
             }
-        }
-
-        connection.onHeartbeatConfig = { [heartbeatStore] intervalMinutes, unreadCount, sessionId in
-            heartbeatStore.handleConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount, sessionId: sessionId)
-        }
-
-        connection.onHeartbeatOutput = { [heartbeatStore] text in
-            heartbeatStore.handleOutput(text: text)
-        }
-
-        connection.onHeartbeatComplete = { [heartbeatStore] message in
-            heartbeatStore.handleComplete(message: message)
         }
 
         connection.onMemories = { sections in

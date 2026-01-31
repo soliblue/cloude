@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CloudeShared
 
 @MainActor
 class ClaudeCodeRunner: ObservableObject {
@@ -18,6 +19,7 @@ class ClaudeCodeRunner: ObservableObject {
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double) -> Void)?
     var onCloudeCommand: ((String, String) -> Void)?
+    var onStatus: ((AgentState) -> Void)?
 
     var accumulatedOutput = ""
     var lineBuffer = ""
