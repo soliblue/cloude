@@ -52,9 +52,11 @@ struct SplitChatView: View {
                 if windowManager.layoutMode == .paged && windowManager.windows.count > 1 {
                     pageIndicator()
                         .frame(height: 24)
-                        .padding(.bottom, 4)
+                        .padding(.bottom, isKeyboardVisible ? 12 : 4)
                 }
             }
+            .contentShape(Rectangle())
+            .onTapGesture { }
             .background(windowManager.layoutMode == .paged ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
         }
         .onAppear {
@@ -90,6 +92,7 @@ struct SplitChatView: View {
         .sheet(item: $selectingWindow) { window in
             WindowConversationPicker(
                 projectStore: projectStore,
+                connection: connection,
                 onSelect: { project, conversation in
                     windowManager.linkToCurrentConversation(window.id, project: project, conversation: conversation)
                     selectingWindow = nil
