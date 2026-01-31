@@ -1,12 +1,7 @@
-//
-//  ServerMessage+Encoding.swift
-//  Cloude Agent
-//
-
 import Foundation
 
 extension ServerMessage {
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .output(let text, let conversationId):

@@ -1,9 +1,5 @@
-//
-//  SplitChatView+GitStatus.swift
-//  Cloude
-//
-
 import SwiftUI
+import CloudeShared
 
 extension SplitChatView {
     func setupGitStatusHandler() {

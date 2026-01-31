@@ -1,11 +1,5 @@
-//
-//  ProjectChatView+Components.swift
-//  Cloude
-//
-//  Components for ProjectChatView
-//
-
 import SwiftUI
+import CloudeShared
 
 struct WindowHeaderView: View {
     let project: Project?

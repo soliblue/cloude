@@ -1,11 +1,6 @@
-//
-//  ServerMessage.swift
-//  Cloude Agent
-//
-
 import Foundation
 
-enum ServerMessage: Codable {
+public enum ServerMessage: Codable {
     case output(text: String, conversationId: String?)
     case fileChange(path: String, diff: String?, content: String?)
     case image(path: String, base64: String)
@@ -31,11 +26,10 @@ enum ServerMessage: Codable {
     case memories(sections: [MemorySection])
 
     enum CodingKeys: String, CodingKey {
-        case ready
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, conversationId, intervalMinutes, unreadCount, sections
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections
     }
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
 

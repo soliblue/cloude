@@ -1,9 +1,5 @@
-//
-//  MemoriesSheet.swift
-//  Cloude
-//
-
 import SwiftUI
+import CloudeShared
 
 struct MemoriesSheet: View {
     let sections: [MemorySection]
