@@ -20,19 +20,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Log.info("Agent starting up")
 
+        Log.info("Checking for other agents...")
         let killedAgents = ProcessMonitor.killOtherAgents()
         if killedAgents > 0 {
             Log.info("Killed \(killedAgents) existing agent process(es)")
             Thread.sleep(forTimeInterval: 0.5)
         }
+        Log.info("Other agents check complete")
 
+        Log.info("Setting activation policy...")
         NSApp.setActivationPolicy(.accessory)
+        Log.info("Setting up menu bar...")
         setupMenuBar()
+        Log.info("Setting up services...")
         setupServices()
+        Log.info("Setting up popover...")
         setupPopover()
+        Log.info("Setting up heartbeat...")
         setupHeartbeat()
+        Log.info("Starting server...")
         server.start()
+        Log.info("Server start called, initializing whisper...")
         initializeWhisper()
+        Log.info("Startup sequence complete")
     }
 
     func applicationWillTerminate(_ notification: Notification) {

@@ -109,6 +109,9 @@ extension ServerMessage {
         case .defaultWorkingDirectory(let path):
             try container.encode("default_working_directory", forKey: .type)
             try container.encode(path, forKey: .path)
+        case .skills(let skills):
+            try container.encode("skills", forKey: .type)
+            try container.encode(skills, forKey: .skills)
         }
     }
 }

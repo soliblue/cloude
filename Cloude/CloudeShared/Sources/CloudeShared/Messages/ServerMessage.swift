@@ -27,9 +27,10 @@ public enum ServerMessage: Codable {
     case processList(processes: [AgentProcessInfo])
     case memoryAdded(target: String, section: String, text: String, conversationId: String?)
     case defaultWorkingDirectory(path: String)
+    case skills([Skill])
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills
     }
 
     public init(from decoder: Decoder) throws {
@@ -142,6 +143,9 @@ public enum ServerMessage: Codable {
         case "default_working_directory":
             let path = try container.decode(String.self, forKey: .path)
             self = .defaultWorkingDirectory(path: path)
+        case "skills":
+            let skills = try container.decode([Skill].self, forKey: .skills)
+            self = .skills(skills)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

@@ -31,6 +31,7 @@ class ConnectionManager: ObservableObject {
     @Published var lastError: String?
     @Published var processes: [AgentProcessInfo] = []
     @Published var defaultWorkingDirectory: String?
+    @Published var skills: [Skill] = []
 
     let events = PassthroughSubject<ConnectionEvent, Never>()
 
@@ -57,6 +58,7 @@ class ConnectionManager: ObservableObject {
     var onRenameConversation: ((UUID, String) -> Void)?
     var onSetConversationSymbol: ((UUID, String?) -> Void)?
     var onProcessList: (([AgentProcessInfo]) -> Void)?
+    var onSkills: (([Skill]) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
