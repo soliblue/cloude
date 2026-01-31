@@ -51,12 +51,28 @@ struct HeartbeatSheet: View {
                     onTranscribe: transcribeAudio
                 )
             }
-            .navigationTitle("Heartbeat")
+            .background(.ultraThinMaterial)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                    }
+                }
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 2) {
+                        Text("Heartbeat")
+                            .font(.headline)
+                        if heartbeatStore.isRunning || convOutput.isRunning {
+                            Text("Running...")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                        } else {
+                            Text("Last: \(heartbeatStore.lastTriggeredDisplayText)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -108,6 +124,7 @@ struct HeartbeatSheet: View {
                 }
             }
         }
+        .presentationBackground(.ultraThinMaterial)
     }
 
     private func handleUserChatCompletion() {
@@ -162,7 +179,10 @@ struct HeartbeatSheet: View {
     }
 
     private func triggerHeartbeat() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
         print("[HeartbeatSheet] Triggering heartbeat")
+        heartbeatStore.recordTrigger()
         connection.send(.triggerHeartbeat)
         heartbeatStore.isRunning = true
     }

@@ -45,8 +45,11 @@ struct NewProjectSheet: View {
                     Text("The working directory for Claude Code in this project.")
                 }
             }
+            .background(.ultraThinMaterial)
+            .scrollContentBackground(.hidden)
             .navigationTitle("New Project")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { isPresented = false }) {
@@ -73,6 +76,7 @@ struct NewProjectSheet: View {
                 }
             }
         }
+        .presentationBackground(.ultraThinMaterial)
     }
 
     private var folderDisplayName: String {

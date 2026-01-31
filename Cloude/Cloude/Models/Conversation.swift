@@ -70,12 +70,14 @@ struct ToolCall: Codable {
     let input: String?
     let toolId: String
     let parentToolId: String?
+    var textPosition: Int?
 
-    init(name: String, input: String?, toolId: String = UUID().uuidString, parentToolId: String? = nil) {
+    init(name: String, input: String?, toolId: String = UUID().uuidString, parentToolId: String? = nil, textPosition: Int? = nil) {
         self.name = name
         self.input = input
         self.toolId = toolId
         self.parentToolId = parentToolId
+        self.textPosition = textPosition
     }
 }
 

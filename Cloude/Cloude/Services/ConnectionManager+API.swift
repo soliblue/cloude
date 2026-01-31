@@ -77,10 +77,12 @@ extension ConnectionManager {
                 interruptedSession = nil
             }
 
-        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId):
+        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition):
             let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
             if let convId = targetConvId {
-                output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId))
+                let currentTextLength = output(for: convId).text.count
+                let position = textPosition ?? currentTextLength
+                output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position))
             }
 
         case .runStats(let durationMs, let costUsd, let conversationId):

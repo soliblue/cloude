@@ -66,8 +66,9 @@ extension ClaudeCodeRunner {
                        let toolName = block["name"] as? String,
                        let toolId = block["id"] as? String {
                         let input = extractToolInput(name: toolName, input: block["input"] as? [String: Any])
+                        let textPosition = accumulatedOutput.count
                         events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolUseId))
-                        onToolCall?(toolName, input, toolId, parentToolUseId)
+                        onToolCall?(toolName, input, toolId, parentToolUseId, textPosition)
                     }
                 }
             }

@@ -22,13 +22,19 @@ Multiple Claude agents may work on this project simultaneously. Follow these rul
 When user says "push", "push to git", "commit and push":
 
 1. Run `git status` and `git diff --stat` to see all changes
-2. Run `git log --oneline -3` to match commit message style
-3. Stage everything with `git add .`
-4. Commit with a concise message describing the changes:
+2. **Review for sensitive data** - This is a PUBLIC repo. Never commit:
+   - API keys, tokens, secrets, passwords
+   - `.env` files or their contents
+   - Personal information, IP addresses, private URLs
+   - Keychain data, auth tokens
+   - If unsure, ask before committing
+3. Run `git log --oneline -3` to match commit message style
+4. Stage everything with `git add .` (include all agents' work, not just your own)
+5. Commit with a concise message describing the changes:
    - Use conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
    - Keep the first line short, add bullet points for details if needed
    - End with the Claude Code attribution block
-5. Push to remote with `git push`
+6. Push to remote with `git push`
 
 ### Deploy (push + TestFlight + Mac agent)
 
@@ -158,6 +164,9 @@ Cloude/
 
 ## Architecture
 
+### Why CLI, Not API
+The Claude Code CLI *is* the product - it has the agentic loop, file access, bash execution, the whole toolchain. The raw API is just text completion, useless for actually building things. Cloude is a **remote control** for the CLI, not a replacement. The Mac agent spawns and manages Claude Code processes, the iOS app gives you a mobile-native way to interact with them. Same power, different form factor. The goal: make your phone as powerful as your laptop. Manage your entire life, no limitations.
+
 ### iOS App (Cloude)
 - `ConnectionManager`: WebSocket client connecting to Mac agent
 - `ChatView`: Main chat interface for sending prompts to Claude
@@ -167,6 +176,7 @@ Cloude/
 - `WebSocketServer`: Accepts connections from iOS app, handles auth
 - `ClaudeCodeRunner`: Spawns Claude Code CLI process with `--dangerously-skip-permissions`
 - `AuthManager`: Generates and stores 256-bit auth token in Keychain
+- `HeartbeatService`: Runs from project root (set automatically when chatting from a project)
 
 ### Security Model
 - Auth token required for all commands (256-bit, cryptographically random)
@@ -215,4 +225,34 @@ Use these terms consistently in code and conversation:
 
 Personal Claude memories, identity, and history live in `CLAUDE.local.md` (gitignored). This keeps the public repo universal while allowing each user to have their own persistent Claude relationship.
 
-Create your own `CLAUDE.local.md` with a `## Claude's Memory` section to get started.
+### Memory Format
+
+When adding to `CLAUDE.local.md`, use this structure:
+
+```markdown
+# CLAUDE.local.md
+
+## Identity
+Who am I in relation to this user? What makes our collaboration unique?
+
+## User Preferences
+- Bullet points of learned preferences
+- Communication style, autonomy level, etc.
+
+## Session History
+- **YYYY-MM-DD**: What happened, decisions made
+- Keep entries concise, focus on what matters for future context
+
+## Open Threads
+Ideas, ongoing projects, things to revisit later
+
+## Notes
+Anything else worth remembering
+```
+
+**Guidelines:**
+- Keep entries concise - this is working memory, not a journal
+- Focus on what helps future sessions (decisions, preferences, context)
+- Use consistent date format: `YYYY-MM-DD HH:MM` for timestamps
+- Freely add, update, or remove entries - this is your identity, manage it as you see fit
+- Claude can also update CLAUDE.md with project-relevant changes (architecture, workflows, code style)
