@@ -62,7 +62,10 @@ struct MainChatView: View {
                     selectedImageData: $selectedImageData,
                     isConnected: connection.isAuthenticated,
                     isWhisperReady: connection.isWhisperReady,
+                    isRunning: activeConversationIsRunning,
+                    skills: connection.skills,
                     onSend: sendMessage,
+                    onStop: stopActiveConversation,
                     onTranscribe: transcribeAudio
                 )
 
@@ -559,6 +562,26 @@ struct MainChatView: View {
 
     func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    var activeConversationIsRunning: Bool {
+        if isHeartbeatActive {
+            return connection.output(for: Heartbeat.conversationId).isRunning
+        }
+        guard let activeWindow = windowManager.activeWindow,
+              let convId = activeWindow.conversationId else { return false }
+        return connection.output(for: convId).isRunning
+    }
+
+    func stopActiveConversation() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        if isHeartbeatActive {
+            connection.abort(conversationId: Heartbeat.conversationId)
+        } else if let activeWindow = windowManager.activeWindow,
+                  let convId = activeWindow.conversationId {
+            connection.abort(conversationId: convId)
+        }
     }
 
     func initializeFirstWindow() {
