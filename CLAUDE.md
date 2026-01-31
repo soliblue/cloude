@@ -198,6 +198,17 @@ Cloude/
 - Use SF Symbols instead of text for toolbar buttons (e.g., `xmark` for Cancel, `checkmark` for Done/Save, `trash` for Delete)
 - Sheets should use NavigationStack with `.toolbar` for header buttons, not custom HStacks
 
+### App Terminology
+Use these terms consistently in code and conversation:
+- **Window** - Chat container with name, symbol, linked conversation
+- **Tab** - View type within a window (chat, files, git)
+- **Header** - Top bar of a window showing tabs and name
+- **Full/Split** - Layout modes (one window vs stacked)
+- **Switcher** - Bottom indicator for switching windows in full mode
+- **Input bar** - Bottom prompt/message input area
+- **Project** - Group of conversations + root directory
+- **Conversation** - Chat thread with messages
+
 ---
 
 ## Claude's Memory
