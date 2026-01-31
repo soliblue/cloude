@@ -67,29 +67,49 @@ extension SplitChatView {
             .buttonStyle(.plain)
 
             if showCloseButton {
-                Button(action: {
-                    windowManager.setActive(window.id)
-                    if windowManager.windows.count == 1 {
-                        addWindowWithNewChat()
-                    } else {
-                        windowManager.removeWindow(window.id)
+                if windowManager.windows.count == 1 {
+                    if windowManager.canAddWindow {
+                        Button(action: addWindowWithNewChat) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.secondary)
+                                .padding(6)
+                        }
+                        .buttonStyle(.plain)
                     }
-                }) {
-                    Image(systemName: windowManager.windows.count == 1 ? "plus" : "xmark")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-                        .padding(6)
+                } else {
+                    Button(action: {
+                        windowManager.setActive(window.id)
+                        windowManager.removeWindow(window.id)
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(6)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-                .disabled(windowManager.windows.count == 1 && !windowManager.canAddWindow)
             } else {
-                Button(action: addWindowWithNewChat) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-                        .padding(6)
+                if windowManager.canAddWindow {
+                    Button(action: addWindowWithNewChat) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(6)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button(action: {
+                        windowManager.setActive(window.id)
+                        windowManager.removeWindow(window.id)
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(6)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 10)

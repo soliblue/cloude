@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import CloudeShared
 
 @main
@@ -112,15 +113,24 @@ struct CloudeApp: App {
             return
         }
 
-        connection.onMissedResponse = { [projectStore] _, text, _ in
-            if let project = projectStore.currentProject,
-               let conversation = projectStore.currentConversation {
+        connection.onMissedResponse = { [projectStore] _, text, _, interruptedConvId, interruptedMsgId in
+            if let convId = interruptedConvId,
+               let msgId = interruptedMsgId,
+               let project = projectStore.projects.first(where: { $0.conversations.contains { $0.id == convId } }),
+               let conversation = project.conversations.first(where: { $0.id == convId }) {
+                projectStore.updateMessage(msgId, in: conversation, in: project) { msg in
+                    msg.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    msg.wasInterrupted = false
+                }
+                projectStore.objectWillChange.send()
+            } else if let project = projectStore.currentProject,
+                      let conversation = projectStore.currentConversation {
                 let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines))
                 projectStore.addMessage(message, to: conversation, in: project)
             }
         }
 
-        connection.onDisconnect = { [projectStore] convId, output in
+        connection.onDisconnect = { [projectStore, connection] convId, output in
             guard !output.text.isEmpty else { return }
             for project in projectStore.projects {
                 if let conv = project.conversations.first(where: { $0.id == convId }) {
@@ -131,6 +141,9 @@ struct CloudeApp: App {
                         wasInterrupted: true
                     )
                     projectStore.addMessage(message, to: conv, in: project)
+                    if let sessionId = output.newSessionId {
+                        connection.interruptedSession = (convId, sessionId, message.id)
+                    }
                     output.reset()
                     break
                 }
@@ -152,6 +165,24 @@ struct CloudeApp: App {
         connection.onMemories = { sections in
             memorySections = sections
             isLoadingMemories = false
+        }
+
+        connection.onRenameConversation = { [projectStore] convId, name in
+            for project in projectStore.projects {
+                if let conv = project.conversations.first(where: { $0.id == convId }) {
+                    projectStore.renameConversation(conv, in: project, to: name)
+                    break
+                }
+            }
+        }
+
+        connection.onSetConversationSymbol = { [projectStore] convId, symbol in
+            for project in projectStore.projects {
+                if let conv = project.conversations.first(where: { $0.id == convId }) {
+                    projectStore.setConversationSymbol(conv, in: project, symbol: symbol)
+                    break
+                }
+            }
         }
 
         connection.connect(host: host, port: port, token: token)

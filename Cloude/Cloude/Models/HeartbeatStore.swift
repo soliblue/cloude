@@ -37,13 +37,9 @@ class HeartbeatStore: ObservableObject {
     }
 
     func handleConfig(intervalMinutes: Int?, unreadCount: Int, sessionId: String?) {
-        print("[HeartbeatStore] handleConfig: interval=\(String(describing: intervalMinutes)), unread=\(unreadCount), sessionId=\(String(describing: sessionId))")
+        print("[HeartbeatStore] handleConfig: interval=\(String(describing: intervalMinutes)), unread=\(unreadCount)")
         self.intervalMinutes = intervalMinutes
         self.unreadCount = unreadCount
-        if let sid = sessionId {
-            self.conversation.sessionId = sid
-            save()
-        }
     }
 
     func handleOutput(text: String) {

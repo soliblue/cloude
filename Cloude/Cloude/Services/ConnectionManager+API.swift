@@ -64,13 +64,17 @@ extension ConnectionManager {
             }
 
         case .missedResponse(let sessionId, let text, _):
+            var interruptedConvId: UUID?
+            var interruptedMsgId: UUID?
             if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
+                interruptedConvId = interrupted.conversationId
+                interruptedMsgId = interrupted.messageId
                 output(for: interrupted.conversationId).text = text
                 output(for: interrupted.conversationId).isRunning = false
                 interruptedSession = nil
             }
             events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date()))
-            onMissedResponse?(sessionId, text, Date())
+            onMissedResponse?(sessionId, text, Date(), interruptedConvId, interruptedMsgId)
 
         case .noMissedResponse(let sessionId):
             if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
@@ -103,7 +107,6 @@ extension ConnectionManager {
             break
 
         case .transcription(let text):
-            print("[ConnectionManager] Received transcription: \(text)")
             events.send(.transcription(text))
             onTranscription?(text)
 
@@ -127,6 +130,16 @@ extension ConnectionManager {
         case .memories(let sections):
             events.send(.memories(sections))
             onMemories?(sections)
+
+        case .renameConversation(let conversationId, let name):
+            if let convId = UUID(uuidString: conversationId) {
+                onRenameConversation?(convId, name)
+            }
+
+        case .setConversationSymbol(let conversationId, let symbol):
+            if let convId = UUID(uuidString: conversationId) {
+                onSetConversationSymbol?(convId, symbol)
+            }
         }
     }
 
