@@ -24,9 +24,11 @@ public enum ServerMessage: Codable {
     case heartbeatOutput(text: String)
     case heartbeatComplete(message: String)
     case memories(sections: [MemorySection])
+    case renameConversation(conversationId: String, name: String)
+    case setConversationSymbol(conversationId: String, symbol: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol
     }
 
     public init(from decoder: Decoder) throws {
@@ -126,6 +128,14 @@ public enum ServerMessage: Codable {
         case "memories":
             let sections = try container.decode([MemorySection].self, forKey: .sections)
             self = .memories(sections: sections)
+        case "rename_conversation":
+            let conversationId = try container.decode(String.self, forKey: .conversationId)
+            let name = try container.decode(String.self, forKey: .name)
+            self = .renameConversation(conversationId: conversationId, name: name)
+        case "set_conversation_symbol":
+            let conversationId = try container.decode(String.self, forKey: .conversationId)
+            let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
+            self = .setConversationSymbol(conversationId: conversationId, symbol: symbol)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

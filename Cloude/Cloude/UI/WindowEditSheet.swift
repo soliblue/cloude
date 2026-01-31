@@ -9,6 +9,7 @@ struct WindowEditSheet: View {
     @ObservedObject var projectStore: ProjectStore
     @ObservedObject var windowManager: WindowManager
     let onSelectConversation: () -> Void
+    let onNewConversation: () -> Void
     let onDismiss: () -> Void
 
     @State private var name: String = ""
@@ -48,6 +49,20 @@ struct WindowEditSheet: View {
                 }
 
                 HStack(spacing: 12) {
+                    Button(action: onNewConversation) {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("New")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color(.tertiarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+
                     Button(action: onSelectConversation) {
                         HStack {
                             Image(systemName: "bubble.left.and.bubble.right")

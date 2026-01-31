@@ -113,6 +113,7 @@ extension ClaudeCodeRunner {
         isRunning = false
         accumulatedOutput = ""
         lineBuffer = ""
+        commandBuffer = ""
 
         events.send(.complete)
         onComplete?()
@@ -127,6 +128,7 @@ extension ClaudeCodeRunner {
         isRunning = false
         accumulatedOutput = ""
         lineBuffer = ""
+        commandBuffer = ""
 
         if let imagePath = tempImagePath {
             try? FileManager.default.removeItem(atPath: imagePath)
@@ -155,5 +157,54 @@ extension ClaudeCodeRunner {
         default:
             return nil
         }
+    }
+
+    private func extractCloudeCommands(_ text: String) -> String {
+        commandBuffer += text
+
+        let pattern = #"\[\[cloude:(\w+):([^\]]*)\]\]"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            let output = commandBuffer
+            commandBuffer = ""
+            return output
+        }
+
+        var result = ""
+        var lastEnd = commandBuffer.startIndex
+
+        let range = NSRange(commandBuffer.startIndex..., in: commandBuffer)
+        let matches = regex.matches(in: commandBuffer, range: range)
+
+        if !matches.isEmpty {
+            Log.info("Found \(matches.count) cloude command(s) in buffer")
+        }
+
+        for match in matches {
+            guard let fullRange = Range(match.range, in: commandBuffer),
+                  let actionRange = Range(match.range(at: 1), in: commandBuffer),
+                  let valueRange = Range(match.range(at: 2), in: commandBuffer) else { continue }
+
+            result += commandBuffer[lastEnd..<fullRange.lowerBound]
+
+            let action = String(commandBuffer[actionRange])
+            let value = String(commandBuffer[valueRange])
+            Log.info("Executing cloude command: \(action) = \(value)")
+            onCloudeCommand?(action, value)
+
+            lastEnd = fullRange.upperBound
+        }
+
+        if commandBuffer.contains("[[cloude:") && !commandBuffer.contains("]]") {
+            if let startIdx = commandBuffer.range(of: "[[cloude:")?.lowerBound {
+                result += commandBuffer[lastEnd..<startIdx]
+                commandBuffer = String(commandBuffer[startIdx...])
+                Log.info("Buffering partial command: \(commandBuffer)")
+                return result
+            }
+        }
+
+        result += commandBuffer[lastEnd...]
+        commandBuffer = ""
+        return result
     }
 }

@@ -17,9 +17,12 @@ class ClaudeCodeRunner: ObservableObject {
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double) -> Void)?
+    var onCloudeCommand: ((String, String) -> Void)?
 
     var accumulatedOutput = ""
     var lineBuffer = ""
+    var commandBuffer = ""
+    var processedCommandRanges: [Range<String.Index>] = []
 
     private var claudePath: String {
         let paths = [

@@ -38,11 +38,11 @@ class ConnectionManager: ObservableObject {
 
     var runningConversationId: UUID?
     var conversationOutputs: [UUID: ConversationOutput] = [:]
-    var interruptedSession: (conversationId: UUID, sessionId: String)?
+    var interruptedSession: (conversationId: UUID, sessionId: String, messageId: UUID)?
 
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
     var onFileContent: ((String, String, String, Int64) -> Void)?
-    var onMissedResponse: ((String, String, Date) -> Void)?
+    var onMissedResponse: ((String, String, Date, UUID?, UUID?) -> Void)?
     var onGitStatus: ((GitStatusInfo) -> Void)?
     var onGitDiff: ((String, String) -> Void)?
     var onDisconnect: ((UUID, ConversationOutput) -> Void)?
@@ -51,6 +51,8 @@ class ConnectionManager: ObservableObject {
     var onHeartbeatOutput: ((String) -> Void)?
     var onHeartbeatComplete: ((String) -> Void)?
     var onMemories: (([MemorySection]) -> Void)?
+    var onRenameConversation: ((UUID, String) -> Void)?
+    var onSetConversationSymbol: ((UUID, String?) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
@@ -145,9 +147,6 @@ class ConnectionManager: ObservableObject {
     func handleDisconnect() {
         if let convId = runningConversationId,
            let output = conversationOutputs[convId] {
-            if let sessionId = output.newSessionId {
-                interruptedSession = (convId, sessionId)
-            }
             if !output.text.isEmpty {
                 events.send(.disconnect(conversationId: convId, output: output))
                 onDisconnect?(convId, output)

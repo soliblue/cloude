@@ -161,7 +161,7 @@ struct HeartbeatSheet: View {
             combinedText,
             workingDirectory: nil,
             sessionId: heartbeatStore.conversation.sessionId,
-            isNewSession: false,
+            isNewSession: heartbeatStore.conversation.sessionId == nil,
             conversationId: heartbeatStore.conversation.id
         )
         heartbeatStore.isRunning = true

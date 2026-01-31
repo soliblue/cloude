@@ -75,6 +75,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId, textPosition in
+            if name == "Bash", let cmd = input, cmd.hasPrefix("cloude ") {
+                self?.handleCloudeCommand(cmd, conversationId: conversationId)
+            }
             self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition))
         }
 
@@ -179,6 +182,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Log.info("Received getMemories request")
             let sections = MemoryService.parseMemories()
             server.sendMessage(.memories(sections: sections), to: connection)
+        }
+    }
+
+    private func handleCloudeCommand(_ command: String, conversationId: String?) {
+        let parts = command.dropFirst(7).split(separator: " ", maxSplits: 1).map(String.init)
+        guard let action = parts.first, let convId = conversationId else { return }
+
+        switch action {
+        case "rename":
+            guard parts.count >= 2 else { return }
+            let name = parts[1]
+            server.broadcast(.renameConversation(conversationId: convId, name: name))
+            Log.info("Renamed conversation \(convId.prefix(8)) to '\(name)'")
+        case "symbol":
+            let symbol = parts.count >= 2 ? parts[1] : nil
+            server.broadcast(.setConversationSymbol(conversationId: convId, symbol: symbol))
+            Log.info("Set symbol for \(convId.prefix(8)) to '\(symbol ?? "nil")'")
+        default:
+            Log.info("Unknown cloude command: \(action)")
         }
     }
 

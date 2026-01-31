@@ -65,7 +65,6 @@ struct SplitChatView: View {
             setupGitStatusHandler()
             checkGitForAllProjects()
             connection.onTranscription = { text in
-                print("[iOS] Received transcription: \(text)")
                 let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
                 let isBlank = trimmed.isEmpty ||
                     trimmed.contains("blank audio") ||
@@ -126,6 +125,14 @@ struct SplitChatView: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         selectingWindow = window
                     }
+                },
+                onNewConversation: {
+                    if let projectId = window.projectId,
+                       let project = projectStore.projects.first(where: { $0.id == projectId }) {
+                        let newConv = projectStore.newConversation(in: project)
+                        windowManager.linkToCurrentConversation(window.id, project: project, conversation: newConv)
+                    }
+                    editingWindow = nil
                 },
                 onDismiss: { editingWindow = nil }
             )
