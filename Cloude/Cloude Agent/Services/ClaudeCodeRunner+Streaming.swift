@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CloudeShared
 
 extension ClaudeCodeRunner {
     func processStreamLines(_ text: String) {
@@ -15,6 +16,16 @@ extension ClaudeCodeRunner {
             }
 
             let type = json["type"] as? String ?? ""
+
+            if type == "system",
+               let subtype = json["subtype"] as? String,
+               subtype == "status",
+               let status = json["status"] as? String {
+                if status == "compacting" {
+                    events.send(.status(.compacting))
+                    onStatus?(.compacting)
+                }
+            }
 
             if type == "stream_event",
                let event = json["event"] as? [String: Any],
@@ -70,6 +81,19 @@ extension ClaudeCodeRunner {
                         events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolUseId))
                         onToolCall?(toolName, input, toolId, parentToolUseId, textPosition)
                     }
+                }
+            }
+
+            if type == "user",
+               let message = json["message"] as? [String: Any],
+               let content = message["content"] as? String {
+                if content.hasPrefix("<local-command-stdout>") && content.hasSuffix("</local-command-stdout>") {
+                    let start = content.index(content.startIndex, offsetBy: "<local-command-stdout>".count)
+                    let end = content.index(content.endIndex, offsetBy: -"</local-command-stdout>".count)
+                    let extracted = String(content[start..<end])
+                    accumulatedOutput += extracted
+                    events.send(.output(extracted))
+                    onOutput?(extracted)
                 }
             }
 

@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
+import CloudeShared
 
 struct SettingsView: View {
     @ObservedObject var connection: ConnectionManager
-    @ObservedObject var windowManager: WindowManager
 
     @AppStorage("serverHost") private var serverHost = ""
     @AppStorage("serverPort") private var serverPort = "8765"
@@ -33,7 +33,7 @@ struct SettingsView: View {
                 .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
 
                 connectionSection
-                displaySection
+                processesSection
                 securitySection
                 aboutSection
             }
@@ -50,6 +50,9 @@ struct SettingsView: View {
         .onAppear {
             if let saved = KeychainHelper.get(key: "authToken") {
                 authToken = saved
+            }
+            if connection.isAuthenticated {
+                connection.getProcesses()
             }
         }
         .onChange(of: authToken) { _, newValue in
@@ -102,15 +105,58 @@ struct SettingsView: View {
         }
     }
 
-    private var displaySection: some View {
+    private var processesSection: some View {
         Section {
-            SettingsRow(icon: "rectangle.expand.vertical", color: .indigo) {
-                Toggle("Focus Mode", isOn: $windowManager.focusModeEnabled)
+            if connection.processes.isEmpty {
+                HStack {
+                    Image(systemName: "checkmark.circle")
+                        .foregroundColor(.green)
+                    Text("No Claude processes running")
+                        .foregroundColor(.secondary)
+                }
+            } else {
+                ForEach(connection.processes) { proc in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("PID \(proc.pid)")
+                                .font(.system(.body, design: .monospaced))
+                            if let start = proc.startTime {
+                                Text(start, style: .relative)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        Spacer()
+                        Button(action: { connection.killProcess(pid: proc.pid) }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                if connection.processes.count > 1 {
+                    Button(action: { connection.killAllProcesses() }) {
+                        HStack {
+                            Image(systemName: "xmark.circle")
+                            Text("Kill All Processes")
+                        }
+                        .foregroundColor(.red)
+                    }
+                }
             }
         } header: {
-            Text("Display")
+            HStack {
+                Text("Claude Processes")
+                Spacer()
+                Button(action: { connection.getProcesses() }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption)
+                }
+                .buttonStyle(.plain)
+            }
         } footer: {
-            Text("Active conversation expands to fill more space when multiple windows are open")
+            Text("Running Claude Code processes on the Mac agent")
         }
     }
 
@@ -162,5 +208,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(connection: ConnectionManager(), windowManager: WindowManager())
+    SettingsView(connection: ConnectionManager())
 }

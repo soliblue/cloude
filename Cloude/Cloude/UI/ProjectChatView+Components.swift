@@ -50,6 +50,7 @@ struct ProjectChatMessageList: View {
     @Binding var scrollProxy: ScrollViewProxy?
     let agentState: AgentState
     let conversationId: UUID?
+    var isCompacting: Bool = false
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
 
@@ -58,6 +59,8 @@ struct ProjectChatMessageList: View {
     @State private var showScrollToBottom = false
     @State private var bottomPullOffset: CGFloat = 0
     @State private var isRefreshingFromBottom = false
+    @State private var scrollOffset: CGFloat = 0
+    @State private var isInitialLoad = true
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -67,10 +70,25 @@ struct ProjectChatMessageList: View {
         "streaming-\(conversationId?.uuidString ?? "none")"
     }
 
+    private var showLoadingIndicator: Bool {
+        isInitialLoad && messages.isEmpty && conversationId != nil && currentOutput.isEmpty
+    }
+
     var body: some View {
         let userMessageCount = messages.filter { $0.isUser }.count
 
         ZStack(alignment: .bottomTrailing) {
+            if showLoadingIndicator {
+                VStack {
+                    Spacer()
+                    ProgressView()
+                        .scaleEffect(1.2)
+                        .tint(.secondary)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: 0) {
@@ -83,20 +101,20 @@ struct ProjectChatMessageList: View {
                                 ))
                         }
 
-                        if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil {
+                        if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
                             streamingView
                         }
 
                         Color.clear
                             .frame(height: 1)
                             .id(bottomId)
-                            .onAppear { showScrollToBottom = false }
-                            .onDisappear { showScrollToBottom = true }
 
                         GeometryReader { geo in
-                            let offset = geo.frame(in: .named("scrollView")).maxY - geo.size.height
+                            let frame = geo.frame(in: .named("scrollView"))
+                            let distanceFromBottom = frame.maxY - geo.size.height
                             Color.clear
-                                .preference(key: BottomOverscrollKey.self, value: offset)
+                                .preference(key: BottomOverscrollKey.self, value: distanceFromBottom)
+                                .preference(key: ScrollOffsetKey.self, value: frame.minY)
                         }
                         .frame(height: 1)
                     }
@@ -112,6 +130,10 @@ struct ProjectChatMessageList: View {
                             isRefreshingFromBottom = false
                         }
                     }
+                }
+                .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                    scrollOffset = offset
+                    showScrollToBottom = offset < -200
                 }
                 .refreshable {
                     await onRefresh?()
@@ -154,6 +176,20 @@ struct ProjectChatMessageList: View {
                     if newValue.isEmpty {
                         hasScrolledToStreaming = false
                     }
+                    if !newValue.isEmpty && isInitialLoad {
+                        isInitialLoad = false
+                    }
+                }
+                .onChange(of: messages.count) { _, newCount in
+                    if newCount > 0 && isInitialLoad {
+                        isInitialLoad = false
+                    }
+                }
+                .task {
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                    if isInitialLoad {
+                        isInitialLoad = false
+                    }
                 }
             }
 
@@ -181,10 +217,18 @@ struct ProjectChatMessageList: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: showScrollToBottom)
+        .onChange(of: conversationId) { _, _ in
+            isInitialLoad = true
+        }
     }
 
     private var streamingView: some View {
         VStack(alignment: .leading, spacing: 0) {
+            if isCompacting {
+                CompactingIndicator()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+            }
             if !currentToolCalls.isEmpty {
                 ToolCallsSection(toolCalls: currentToolCalls)
                     .padding(.horizontal, 16)
@@ -219,5 +263,33 @@ private struct BottomOverscrollKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+private struct ScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+struct CompactingIndicator: View {
+    @State private var pulse = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.system(size: 11, weight: .semibold))
+                .rotationEffect(.degrees(pulse ? 360 : 0))
+                .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: pulse)
+            Text("Compacting")
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+        }
+        .foregroundColor(.cyan)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.cyan.opacity(0.12))
+        .cornerRadius(14)
+        .onAppear { pulse = true }
     }
 }
