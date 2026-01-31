@@ -19,6 +19,7 @@ xcuserdata/
 *.env
 *.secret
 *.key
+certs/
 
 # Fastlane
 fastlane/report.xml

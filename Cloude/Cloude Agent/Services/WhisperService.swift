@@ -24,7 +24,7 @@ class WhisperService: ObservableObject {
     private init() {}
 
     func initialize() async {
-        print("[WhisperService] Starting initialization...")
+        Log.info("Starting initialization")
 
         let modelFolder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Cloude/WhisperModels")
@@ -32,7 +32,7 @@ class WhisperService: ObservableObject {
         do {
             try FileManager.default.createDirectory(at: modelFolder, withIntermediateDirectories: true)
 
-            print("[WhisperService] Downloading/loading model...")
+            Log.info("Downloading/loading model...")
             let modelPath = try await WhisperKit.download(
                 variant: modelVariant,
                 downloadBase: modelFolder,
@@ -40,18 +40,17 @@ class WhisperService: ObservableObject {
             ) { progress in
                 Task { @MainActor in
                     self.downloadProgress = progress.fractionCompleted
-                    print("[WhisperService] Download progress: \(Int(progress.fractionCompleted * 100))%")
                 }
             }
 
-            print("[WhisperService] Initializing WhisperKit with model at: \(modelPath)")
+            Log.info("Loading model from \(modelPath.lastPathComponent)")
             whisperKit = try await WhisperKit(modelFolder: modelPath.path)
 
             isReady = true
-            print("[WhisperService] Ready!")
+            Log.info("Ready")
             onReady?()
         } catch {
-            print("[WhisperService] Failed to initialize: \(error)")
+            Log.error("Failed to initialize: \(error)")
         }
     }
 
@@ -70,10 +69,9 @@ class WhisperService: ObservableObject {
         isTranscribing = true
         defer { isTranscribing = false }
 
-        print("[WhisperService] Starting transcription, audio size: \(audioData.count) bytes")
+        Log.debug("Transcribing \(audioData.count) bytes")
 
         let samples = try audioDataToSamples(audioData)
-        print("[WhisperService] Converted to \(samples.count) samples")
 
         var options = DecodingOptions()
         options.verbose = false
@@ -81,7 +79,7 @@ class WhisperService: ObservableObject {
         let results = try await whisperKit.transcribe(audioArray: samples, decodeOptions: options)
         let text = results.map { $0.text }.joined().trimmingCharacters(in: .whitespacesAndNewlines)
 
-        print("[WhisperService] Transcription result: \(text)")
+        Log.info("Transcribed: '\(text.prefix(50))...'")
         return text
     }
 

@@ -27,10 +27,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var accumulatedResponse = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Log.info("Agent starting up")
         NSApp.setActivationPolicy(.accessory)
         setupMenuBar()
         setupServices()
         setupPopover()
+        setupHeartbeat()
         server.start()
         initializeWhisper()
     }
@@ -41,6 +43,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.server.broadcast(.whisperReady(ready: true))
             }
             await WhisperService.shared.initialize()
+        }
+    }
+
+    private func setupHeartbeat() {
+        let heartbeat = HeartbeatService.shared
+        heartbeat.onOutput = { [weak self] text in
+            self?.server.broadcast(.heartbeatOutput(text: text))
+        }
+        heartbeat.onComplete = { [weak self] message in
+            self?.server.broadcast(.heartbeatComplete(message: message))
+            let config = HeartbeatService.shared.getConfig()
+            self?.server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId))
         }
     }
 
@@ -80,6 +94,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         runner.onComplete = { [weak self] in
+            let responseLen = self?.accumulatedResponse.count ?? 0
+            Log.info("Claude run complete, response length=\(responseLen)")
             if let sessionId = self?.currentSessionId, let response = self?.accumulatedResponse, !response.isEmpty {
                 ResponseStore.store(sessionId: sessionId, text: response)
             }
@@ -112,11 +128,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
         case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId):
+            Log.info("Chat received: \(text.prefix(50))... (len=\(text.count), hasImage=\(imageBase64 != nil), isNew=\(isNewSession))")
             currentConversationId = conversationId
             server.broadcast(.status(state: .running, conversationId: conversationId))
             runner.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64)
 
         case .abort:
+            Log.info("Abort requested")
             runner.abort()
 
         case .listDirectory(let path):
@@ -147,21 +165,45 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
+
+        case .setHeartbeatInterval(let minutes):
+            Log.info("setHeartbeatInterval: \(String(describing: minutes))")
+            HeartbeatService.shared.setInterval(minutes)
+            let config = HeartbeatService.shared.getConfig()
+            Log.info("Broadcasting config: interval=\(String(describing: config.intervalMinutes)), unread=\(config.unreadCount)")
+            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId))
+
+        case .getHeartbeatConfig:
+            let config = HeartbeatService.shared.getConfig()
+            server.sendMessage(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId), to: connection)
+
+        case .markHeartbeatRead:
+            HeartbeatService.shared.markRead()
+            let config = HeartbeatService.shared.getConfig()
+            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount, sessionId: config.sessionId))
+
+        case .triggerHeartbeat:
+            Log.info("Received triggerHeartbeat request")
+            HeartbeatService.shared.triggerNow()
+
+        case .getMemories:
+            Log.info("Received getMemories request")
+            let sections = MemoryService.parseMemories()
+            server.sendMessage(.memories(sections: sections), to: connection)
         }
     }
 
     private func handleTranscribe(_ audioBase64: String, connection: NWConnection) {
-        print("[Transcribe] Received audio data: \(audioBase64.count) chars")
+        Log.info("Transcribe: received \(audioBase64.count) chars")
         Task {
             do {
-                print("[Transcribe] Starting whisper transcription...")
                 let text = try await WhisperService.shared.transcribe(audioBase64: audioBase64)
-                print("[Transcribe] Got result: \(text)")
+                Log.info("Transcribe: result '\(text.prefix(50))...'")
                 await MainActor.run {
                     server.sendMessage(.transcription(text: text), to: connection)
                 }
             } catch {
-                print("[Transcribe] Error: \(error)")
+                Log.error("Transcribe failed: \(error.localizedDescription)")
                 await MainActor.run {
                     server.sendMessage(.error(message: "Transcription failed: \(error.localizedDescription)"), to: connection)
                 }
