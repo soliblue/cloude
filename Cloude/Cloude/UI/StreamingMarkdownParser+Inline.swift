@@ -172,7 +172,7 @@ extension StreamingMarkdownParser {
                     }
                     codeText.append(remaining.removeFirst())
                 }
-                var attr = AttributedString(codeText)
+                var attr = AttributedString(" \(codeText) ")
                 attr.font = .system(.body, design: .monospaced)
                 attr.backgroundColor = .secondary.opacity(0.2)
                 result.append(attr)
