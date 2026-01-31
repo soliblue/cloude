@@ -217,58 +217,12 @@ struct InlineToolPill: View {
     let toolCall: ToolCall
 
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: iconName)
-                .font(.system(size: 14, weight: .medium))
-            Text(displayText)
-                .font(.system(size: 12, design: .monospaced))
-                .lineLimit(1)
-        }
-        .foregroundColor(toolColor)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(toolColor.opacity(0.12))
-        .cornerRadius(14)
-    }
-
-    private var displayText: String {
-        guard let input = toolCall.input, !input.isEmpty else {
-            return toolCall.name
-        }
-
-        switch toolCall.name {
-        case "Read", "Write", "Edit":
-            let filename = (input as NSString).lastPathComponent
-            return "\(toolCall.name) \(filename)"
-        case "Bash":
-            let truncated = input.prefix(20)
-            return truncated.count < input.count ? "\(truncated)..." : String(input)
-        case "Glob", "Grep":
-            return "\(toolCall.name): \(input)"
-        case "Task":
-            let parts = input.split(separator: ":", maxSplits: 1)
-            return parts.first.map(String.init) ?? input
-        default:
-            return toolCall.name
-        }
-    }
-
-    private var iconName: String {
-        let n = toolCall.name.lowercased()
-        if n.contains("read") { return "doc.text" }
-        if n.contains("write") || n.contains("edit") { return "pencil" }
-        if n.contains("bash") || n.contains("shell") { return "terminal" }
-        if n.contains("glob") || n.contains("grep") || n.contains("search") { return "magnifyingglass" }
-        if n.contains("task") || n.contains("agent") { return "person.2" }
-        if n.contains("web") || n.contains("fetch") { return "globe" }
-        if n.contains("git") { return "arrow.triangle.branch" }
-        if n.contains("list") { return "list.bullet" }
-        if n.contains("notebook") { return "book" }
-        return "wrench"
-    }
-
-    private var toolColor: Color {
-        toolCallColor(for: toolCall.name, input: toolCall.input)
+        ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
+            .lineLimit(1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
+            .cornerRadius(14)
     }
 }
 

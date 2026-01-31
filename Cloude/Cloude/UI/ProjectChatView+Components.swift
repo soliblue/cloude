@@ -120,7 +120,6 @@ struct ProjectChatMessageList: View {
                         }
                         .frame(height: 1)
                     }
-                    .padding(.bottom, 16)
                 }
                 .coordinateSpace(name: "scrollView")
                 .onPreferenceChange(BottomOverscrollKey.self) { offset in
