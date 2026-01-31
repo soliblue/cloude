@@ -28,7 +28,7 @@ struct StreamingOutput: View {
         }
         .background(
             Color.accentColor
-                .opacity(pulse ? 0.1 : 0.03)
+                .opacity(pulse ? 0.06 : 0.02)
         )
         .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
         .onAppear { pulse = true }
@@ -130,7 +130,7 @@ struct StreamingInterleavedOutput: View {
         }
         .background(
             Color.accentColor
-                .opacity(pulse ? 0.1 : 0.03)
+                .opacity(pulse ? 0.06 : 0.02)
         )
         .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
         .onAppear { pulse = true }

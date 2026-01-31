@@ -14,7 +14,6 @@ struct MainChatView: View {
     @State var isKeyboardVisible = false
     @State var inputText = ""
     @State var selectedImageData: Data?
-    @State private var hasClipboardContent = false
     @State var drafts: [UUID: (text: String, imageData: Data?)] = [:]
     @State var gitBranches: [UUID: String] = [:]
     @State var pendingGitChecks: [UUID] = []
@@ -53,7 +52,6 @@ struct MainChatView: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     selectedImageData: $selectedImageData,
-                    hasClipboardContent: hasClipboardContent,
                     isConnected: connection.isAuthenticated,
                     isWhisperReady: connection.isWhisperReady,
                     onSend: sendMessage,
@@ -70,7 +68,6 @@ struct MainChatView: View {
         }
         .onAppear {
             initializeFirstWindow()
-            checkClipboard()
             setupGitStatusHandler()
             checkGitForAllProjects()
             connection.onTranscription = { text in
@@ -159,12 +156,6 @@ struct MainChatView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             isKeyboardVisible = false
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)) { _ in
-            checkClipboard()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            checkClipboard()
-        }
     }
 
     @ViewBuilder
@@ -227,7 +218,7 @@ struct MainChatView: View {
                         }
                     }
                     .foregroundColor(window.type == type ? .accentColor : .secondary)
-                    .opacity(window.type == type && isStreaming ? 0.6 : 1.0)
+                    .opacity(window.type == type && isStreaming ? 0.4 : 1.0)
                     .padding(6)
                 }
                 .buttonStyle(.plain)
@@ -258,7 +249,7 @@ struct MainChatView: View {
                             .foregroundColor(.secondary)
                     }
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10))
+                        .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
             }
@@ -291,39 +282,39 @@ struct MainChatView: View {
                     }.flatMap { proj in
                         window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
                     }
+                    let convId = window.conversationId
+                    let isWindowStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
 
-                    Group {
-                        let convId = window.conversationId
-                        let isWindowStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
-
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index }
+                    } label: {
                         if let symbol = conversation?.symbol, !symbol.isEmpty {
                             Image(systemName: symbol)
-                                .font(.system(size: 18))
-                                .foregroundColor(isActive ? .accentColor : .secondary)
-                                .opacity(isActive && isWindowStreaming ? 0.6 : 1.0)
-                                .frame(width: 40, height: 40)
+                                .font(.system(size: 20, weight: isActive ? .semibold : .regular))
+                                .foregroundStyle(isActive ? .primary : .secondary)
+                                .frame(width: 36, height: 36)
+                                .background(.ultraThinMaterial, in: Circle())
+                                .modifier(StreamingPulseModifier(isStreaming: isWindowStreaming))
                         } else {
                             Circle()
-                                .fill(isActive ? Color.accentColor : Color.secondary.opacity(0.3))
-                                .opacity(isActive && isWindowStreaming ? 0.6 : 1.0)
-                                .frame(width: isActive ? 16 : 12, height: isActive ? 16 : 12)
+                                .fill(isActive ? Color.primary : Color.secondary.opacity(0.3))
+                                .frame(width: isActive ? 14 : 10, height: isActive ? 14 : 10)
+                                .modifier(StreamingPulseModifier(isStreaming: isWindowStreaming))
                         }
                     }
-                    .contentShape(Circle())
-                    .onTapGesture {
-                        withAnimation { currentPageIndex = index }
-                    }
-                    .onLongPressGesture {
-                        editingWindow = window
-                    }
+                    .buttonStyle(.plain)
+                    .simultaneousGesture(
+                        LongPressGesture().onEnded { _ in
+                            editingWindow = window
+                        }
+                    )
                 } else {
                     Button(action: addWindowWithNewChat) {
                         Image(systemName: "plus")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary.opacity(0.5))
-                            .frame(width: 32, height: 32)
-                            .background(Color.secondary.opacity(0.1))
-                            .clipShape(Circle())
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 36, height: 36)
+                            .background(.ultraThinMaterial, in: Circle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -393,10 +384,6 @@ struct MainChatView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
-    func checkClipboard() {
-        hasClipboardContent = UIPasteboard.general.hasStrings
-    }
-
     func initializeFirstWindow() {
         guard let firstWindow = windowManager.windows.first,
               firstWindow.conversationId == nil,
@@ -462,5 +449,22 @@ struct MainChatView: View {
         guard let projectId = pendingGitChecks.first,
               let project = projectStore.projects.first(where: { $0.id == projectId }) else { return }
         connection.gitStatus(path: project.rootDirectory)
+    }
+}
+
+struct StreamingPulseModifier: ViewModifier {
+    let isStreaming: Bool
+    @State private var isPulsing = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isStreaming ? (isPulsing ? 0.4 : 1.0) : 1.0)
+            .animation(isStreaming ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: isPulsing)
+            .onChange(of: isStreaming) { _, streaming in
+                isPulsing = streaming
+            }
+            .onAppear {
+                if isStreaming { isPulsing = true }
+            }
     }
 }
