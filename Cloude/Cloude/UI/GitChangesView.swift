@@ -1,9 +1,5 @@
-//
-//  GitChangesView.swift
-//  Cloude
-//
-
 import SwiftUI
+import CloudeShared
 
 struct GitChangesView: View {
     @ObservedObject var connection: ConnectionManager

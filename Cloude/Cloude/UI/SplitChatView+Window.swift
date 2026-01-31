@@ -12,7 +12,7 @@ extension SplitChatView {
             window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
         }
         let isActive = window.id == windowManager.activeWindowId
-        let isThinking = window.conversationId != nil && connection.runningConversationId == window.conversationId
+        let isThinking = window.conversationId.flatMap { connection.output(for: $0).isRunning } ?? false
         let height = heightForWindow(window, totalHeight: totalHeight)
 
         VStack(spacing: 0) {
