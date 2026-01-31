@@ -53,7 +53,8 @@ class AudioRecorder: ObservableObject {
 
     private func startMetering() {
         levelTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
-            Task { @MainActor in
+            guard let self else { return }
+            Task { @MainActor [weak self] in
                 guard let self, let recorder = self.audioRecorder, recorder.isRecording else { return }
                 recorder.updateMeters()
                 let db = recorder.averagePower(forChannel: 0)
@@ -87,7 +88,7 @@ class AudioRecorder: ObservableObject {
     }
 
     func requestPermission(completion: @escaping (Bool) -> Void) {
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
+        AVAudioApplication.requestRecordPermission { granted in
             DispatchQueue.main.async {
                 completion(granted)
             }

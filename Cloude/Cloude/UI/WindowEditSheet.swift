@@ -110,8 +110,12 @@ struct WindowEditSheet: View {
             .sheet(isPresented: $showSymbolPicker) {
                 SymbolPickerSheet(selectedSymbol: $symbol)
             }
+            .background(.ultraThinMaterial)
+            .scrollContentBackground(.hidden)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }
         .presentationDetents([.height(280)])
+        .presentationBackground(.ultraThinMaterial)
         .onAppear {
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""

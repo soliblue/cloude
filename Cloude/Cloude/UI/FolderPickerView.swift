@@ -23,8 +23,10 @@ struct FolderPickerView: View {
                 Divider()
                 selectButton
             }
+            .background(.ultraThinMaterial)
             .navigationTitle("Select Folder")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { dismiss() }) {
@@ -33,6 +35,7 @@ struct FolderPickerView: View {
                 }
             }
         }
+        .presentationBackground(.ultraThinMaterial)
         .onAppear { loadDirectory() }
     }
 

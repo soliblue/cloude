@@ -71,7 +71,7 @@ struct ProjectChatView: View {
     }
 
     private func handleCompletion() {
-        guard let convId = effectiveConversation?.id else { return }
+        guard effectiveConversation?.id != nil else { return }
         guard let output = convOutput else { return }
         guard !output.text.isEmpty else { return }
         guard output.isRunning == false else { return }

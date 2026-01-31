@@ -13,8 +13,10 @@ class HeartbeatStore: ObservableObject {
     @Published var conversation: Conversation
     @Published var isRunning = false
     @Published var currentOutput = ""
+    @Published var lastTriggeredAt: Date?
 
     private let storageKey = "heartbeatConversation"
+    private let lastTriggeredKey = "heartbeatLastTriggered"
 
     init() {
         if let data = UserDefaults.standard.data(forKey: storageKey),
@@ -22,6 +24,9 @@ class HeartbeatStore: ObservableObject {
             conversation = saved
         } else {
             conversation = Conversation(name: "Heartbeat", symbol: "heart.fill")
+        }
+        if let timestamp = UserDefaults.standard.object(forKey: lastTriggeredKey) as? Date {
+            lastTriggeredAt = timestamp
         }
     }
 
@@ -44,6 +49,14 @@ class HeartbeatStore: ObservableObject {
     func handleOutput(text: String) {
         currentOutput += text
         isRunning = true
+        if lastTriggeredAt == nil {
+            recordTrigger()
+        }
+    }
+
+    func recordTrigger() {
+        lastTriggeredAt = Date()
+        UserDefaults.standard.set(lastTriggeredAt, forKey: lastTriggeredKey)
     }
 
     func handleComplete(message: String) {
@@ -75,5 +88,26 @@ class HeartbeatStore: ObservableObject {
         case 1440: return "1 day"
         default: return "\(minutes)min"
         }
+    }
+
+    var nextHeartbeatAt: Date? {
+        guard let interval = intervalMinutes, interval > 0,
+              let lastTriggered = lastTriggeredAt else { return nil }
+        return lastTriggered.addingTimeInterval(TimeInterval(interval * 60))
+    }
+
+    var lastTriggeredDisplayText: String {
+        guard let date = lastTriggeredAt else { return "Never" }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    var nextHeartbeatDisplayText: String? {
+        guard let next = nextHeartbeatAt else { return nil }
+        if next <= Date() { return "Soon" }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: next, relativeTo: Date())
     }
 }

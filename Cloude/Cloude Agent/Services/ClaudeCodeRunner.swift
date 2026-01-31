@@ -13,7 +13,7 @@ class ClaudeCodeRunner: ObservableObject {
     var errorPipe: Pipe?
 
     var onOutput: ((String) -> Void)?
-    var onToolCall: ((String, String?, String, String?) -> Void)?
+    var onToolCall: ((String, String?, String, String?, Int) -> Void)?
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double) -> Void)?

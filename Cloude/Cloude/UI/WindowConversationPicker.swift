@@ -55,8 +55,11 @@ struct WindowConversationPicker: View {
                     }
                 }
             }
+            .background(.ultraThinMaterial)
+            .scrollContentBackground(.hidden)
             .navigationTitle("Select Chat")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { dismiss() }) {
@@ -70,6 +73,7 @@ struct WindowConversationPicker: View {
                 }
             }
         }
+        .presentationBackground(.ultraThinMaterial)
     }
 
     private func createNewConversation(in project: Project) {

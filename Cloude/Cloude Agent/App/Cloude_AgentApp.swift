@@ -74,8 +74,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.server.broadcast(.sessionId(id: sessionId, conversationId: conversationId))
         }
 
-        runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId in
-            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId))
+        runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId, textPosition in
+            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition))
         }
 
         runnerManager.onRunStats = { [weak self] durationMs, costUsd, conversationId in
@@ -111,6 +111,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         switch message {
         case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId):
             Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), hasImage=\(imageBase64 != nil), isNew=\(isNewSession))")
+            if let wd = workingDirectory, !wd.isEmpty {
+                HeartbeatService.shared.projectDirectory = wd
+            }
             let convId = conversationId ?? UUID().uuidString
             runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId)
 

@@ -8,8 +8,13 @@ struct WindowHeaderView: View {
 
     var body: some View {
         Button(action: { onSelectConversation?() }) {
-            HStack {
+            HStack(spacing: 6) {
                 if let conv = conversation {
+                    if let symbol = conv.symbol {
+                        Image(systemName: symbol)
+                            .font(.caption)
+                            .foregroundColor(.accentColor)
+                    }
                     Text(conv.name)
                         .font(.caption)
                         .fontWeight(.medium)

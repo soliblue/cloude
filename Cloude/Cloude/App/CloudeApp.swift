@@ -11,6 +11,7 @@ struct CloudeApp: App {
     @State private var showHeartbeat = false
     @State private var showMemories = false
     @State private var memorySections: [MemorySection] = []
+    @State private var isLoadingMemories = false
     @State private var wasBackgrounded = false
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
@@ -42,6 +43,8 @@ struct CloudeApp: App {
                                 showHeartbeat = true
                             }
                             Button(action: {
+                                isLoadingMemories = true
+                                memorySections = []
                                 connection.send(.getMemories)
                                 showMemories = true
                             }) {
@@ -77,7 +80,7 @@ struct CloudeApp: App {
             HeartbeatSheet(heartbeatStore: heartbeatStore, connection: connection)
         }
         .sheet(isPresented: $showMemories) {
-            MemoriesSheet(sections: memorySections)
+            MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories)
         }
         .onAppear { loadAndConnect() }
         .onChange(of: scenePhase) { _, newPhase in
@@ -148,6 +151,7 @@ struct CloudeApp: App {
 
         connection.onMemories = { sections in
             memorySections = sections
+            isLoadingMemories = false
         }
 
         connection.connect(host: host, port: port, token: token)

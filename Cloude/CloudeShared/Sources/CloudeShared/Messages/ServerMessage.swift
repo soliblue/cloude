@@ -13,7 +13,7 @@ public enum ServerMessage: Codable {
     case sessionId(id: String, conversationId: String?)
     case missedResponse(sessionId: String, text: String, completedAt: Date)
     case noMissedResponse(sessionId: String)
-    case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?)
+    case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?)
     case runStats(durationMs: Int, costUsd: Double, conversationId: String?)
     case gitStatusResult(status: GitStatusInfo)
     case gitDiffResult(path: String, diff: String)
@@ -26,7 +26,7 @@ public enum ServerMessage: Codable {
     case memories(sections: [MemorySection])
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition
     }
 
     public init(from decoder: Decoder) throws {
@@ -88,7 +88,8 @@ public enum ServerMessage: Codable {
             let toolId = try container.decode(String.self, forKey: .toolId)
             let parentToolId = try container.decodeIfPresent(String.self, forKey: .parentToolId)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId)
+            let textPosition = try container.decodeIfPresent(Int.self, forKey: .textPosition)
+            self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition)
         case "run_stats":
             let durationMs = try container.decode(Int.self, forKey: .durationMs)
             let costUsd = try container.decode(Double.self, forKey: .costUsd)

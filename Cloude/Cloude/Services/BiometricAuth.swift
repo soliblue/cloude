@@ -17,6 +17,7 @@ struct BiometricAuth {
         case .faceID: return .faceID
         case .touchID: return .touchID
         case .opticID: return .faceID
+        case .none: return .none
         @unknown default: return .none
         }
     }

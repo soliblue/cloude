@@ -52,13 +52,14 @@ extension ServerMessage {
         case .noMissedResponse(let sessionId):
             try container.encode("no_missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
-        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId):
+        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition):
             try container.encode("tool_call", forKey: .type)
             try container.encode(name, forKey: .name)
             try container.encodeIfPresent(input, forKey: .input)
             try container.encode(toolId, forKey: .toolId)
             try container.encodeIfPresent(parentToolId, forKey: .parentToolId)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
+            try container.encodeIfPresent(textPosition, forKey: .textPosition)
         case .runStats(let durationMs, let costUsd, let conversationId):
             try container.encode("run_stats", forKey: .type)
             try container.encode(durationMs, forKey: .durationMs)

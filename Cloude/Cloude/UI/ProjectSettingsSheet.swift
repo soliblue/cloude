@@ -65,8 +65,11 @@ struct ProjectSettingsSheet: View {
                     }
                 }
             }
+            .background(.ultraThinMaterial)
+            .scrollContentBackground(.hidden)
             .navigationTitle("Project Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { isPresented = false }) {
@@ -94,6 +97,7 @@ struct ProjectSettingsSheet: View {
             }
         }
         .presentationDetents([.medium])
+        .presentationBackground(.ultraThinMaterial)
     }
 
     private var folderDisplayName: String {
