@@ -8,12 +8,16 @@ struct StatusView: View {
     @State var showToken = false
     @State var copied = false
     @State var ipCopied = false
+    @State var claudeProcesses: [ClaudeProcess] = []
+    @State var processRefreshTimer: Timer?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
             Divider()
             statusSection
+            Divider()
+            processesSection
             Divider()
             tokenSection
             Divider()
@@ -23,6 +27,20 @@ struct StatusView: View {
         }
         .padding()
         .frame(width: 280)
+        .onAppear {
+            refreshProcesses()
+            processRefreshTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+                refreshProcesses()
+            }
+        }
+        .onDisappear {
+            processRefreshTimer?.invalidate()
+            processRefreshTimer = nil
+        }
+    }
+
+    func refreshProcesses() {
+        claudeProcesses = ProcessMonitor.findClaudeProcesses()
     }
 
     func copyToken() {

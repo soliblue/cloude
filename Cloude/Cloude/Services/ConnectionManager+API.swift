@@ -25,7 +25,8 @@ extension ConnectionManager {
             let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
             if let convId = targetConvId {
                 let out = output(for: convId)
-                out.isRunning = (state == .running)
+                out.isRunning = (state == .running || state == .compacting)
+                out.isCompacting = (state == .compacting)
                 if state == .idle {
                     runningConversationId = nil
                 }
@@ -140,6 +141,10 @@ extension ConnectionManager {
             if let convId = UUID(uuidString: conversationId) {
                 onSetConversationSymbol?(convId, symbol)
             }
+
+        case .processList(let procs):
+            processes = procs
+            onProcessList?(procs)
         }
     }
 
@@ -192,5 +197,20 @@ extension ConnectionManager {
     func transcribe(audioBase64: String) {
         if !isAuthenticated { reconnectIfNeeded() }
         send(.transcribe(audioBase64: audioBase64))
+    }
+
+    func getProcesses() {
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.getProcesses)
+    }
+
+    func killProcess(pid: Int32) {
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.killProcess(pid: pid))
+    }
+
+    func killAllProcesses() {
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.killAllProcesses)
     }
 }

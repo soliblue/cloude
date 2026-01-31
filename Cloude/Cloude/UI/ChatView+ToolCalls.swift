@@ -1,5 +1,82 @@
 import SwiftUI
 
+struct ToolCallLabel: View {
+    let name: String
+    let input: String?
+    var size: Size = .regular
+
+    enum Size {
+        case regular
+        case small
+
+        var iconSize: CGFloat { self == .regular ? 12 : 11 }
+        var textSize: CGFloat { self == .regular ? 13 : 12 }
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: iconName)
+                .font(.system(size: size.iconSize, weight: .semibold))
+            Text(name)
+                .font(.system(size: size.textSize, weight: .semibold, design: .monospaced))
+            if let detail = displayDetail {
+                Text(detail)
+                    .font(.system(size: size.textSize, design: .monospaced))
+                    .opacity(0.85)
+            }
+        }
+        .foregroundColor(toolCallColor(for: name, input: input))
+    }
+
+    private var displayDetail: String? {
+        guard let input = input, !input.isEmpty else { return nil }
+
+        switch name {
+        case "Read", "Write", "Edit":
+            let filename = (input as NSString).lastPathComponent
+            return truncateFilename(filename, maxLength: 16)
+        case "Bash":
+            let truncated = input.prefix(20)
+            return truncated.count < input.count ? "\(truncated)..." : String(input)
+        case "Glob", "Grep":
+            let truncated = input.prefix(16)
+            return truncated.count < input.count ? "\(truncated)..." : String(input)
+        case "Task":
+            let parts = input.split(separator: ":", maxSplits: 1)
+            return parts.first.map(String.init)
+        default:
+            return nil
+        }
+    }
+
+    private func truncateFilename(_ filename: String, maxLength: Int) -> String {
+        guard filename.count > maxLength else { return filename }
+        let ext = (filename as NSString).pathExtension
+        let name = (filename as NSString).deletingPathExtension
+        let availableLength = maxLength - ext.count - (ext.isEmpty ? 0 : 4)
+        guard availableLength > 0 else { return filename }
+        return "\(name.prefix(availableLength))….\(ext)"
+    }
+
+    private var iconName: String {
+        switch name {
+        case "Bash": return "terminal"
+        case "Read": return "doc.text"
+        case "Write": return "doc.badge.plus"
+        case "Edit": return "pencil"
+        case "Glob": return "folder.badge.questionmark"
+        case "Grep": return "magnifyingglass"
+        case "Task": return "arrow.trianglehead.branch"
+        case "WebFetch": return "globe"
+        case "WebSearch": return "magnifyingglass.circle"
+        case "TodoWrite": return "checklist"
+        case "AskUserQuestion": return "questionmark.bubble"
+        case "NotebookEdit": return "text.book.closed"
+        default: return "bolt"
+        }
+    }
+}
+
 struct ToolCallsSection: View {
     let toolCalls: [ToolCall]
     @State private var expandedToolId: String?
@@ -60,78 +137,26 @@ struct ToolPill: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: iconName)
-                .font(.system(size: 11, weight: .semibold))
-            Text(toolCall.name)
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
-            if let detail = displayDetail {
-                Text(detail)
-                    .font(.system(size: 12, design: .monospaced))
-                    .opacity(0.85)
-            }
+            ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
             if childCount > 0 {
                 Text("(\(childCount))")
                     .font(.system(size: 10))
+                    .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
                     .opacity(0.7)
             }
         }
         .lineLimit(1)
-        .foregroundColor(toolColor)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(toolColor.opacity(isExpanded ? 0.2 : 0.12))
+        .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(isExpanded ? 0.2 : 0.12))
         .cornerRadius(14)
-    }
-
-    private var displayDetail: String? {
-        guard let input = toolCall.input, !input.isEmpty else {
-            return nil
-        }
-
-        switch toolCall.name {
-        case "Read", "Write", "Edit":
-            let filename = (input as NSString).lastPathComponent
-            return truncateFilename(filename, maxLength: 16)
-        case "Bash":
-            let truncated = input.prefix(20)
-            return truncated.count < input.count ? "\(truncated)..." : String(input)
-        case "Glob", "Grep":
-            let truncated = input.prefix(16)
-            return truncated.count < input.count ? "\(truncated)..." : String(input)
-        case "Task":
-            let parts = input.split(separator: ":", maxSplits: 1)
-            return parts.first.map(String.init)
-        default:
-            return nil
-        }
-    }
-
-    private func truncateFilename(_ filename: String, maxLength: Int) -> String {
-        guard filename.count > maxLength else { return filename }
-        let ext = (filename as NSString).pathExtension
-        let name = (filename as NSString).deletingPathExtension
-        let availableLength = maxLength - ext.count - (ext.isEmpty ? 0 : 4)
-        guard availableLength > 0 else { return filename }
-        return "\(name.prefix(availableLength))….\(ext)"
-    }
-
-    private var iconName: String {
-        switch toolCall.name.lowercased() {
-        case let n where n.contains("read"): return "doc.text"
-        case let n where n.contains("write"), let n where n.contains("edit"): return "pencil"
-        case let n where n.contains("bash"), let n where n.contains("shell"): return "terminal"
-        case let n where n.contains("glob"), let n where n.contains("search"): return "magnifyingglass"
-        case let n where n.contains("task"), let n where n.contains("agent"): return "person.2"
-        default: return "wrench"
-        }
-    }
-
-    private var toolColor: Color {
-        toolCallColor(for: toolCall.name)
     }
 }
 
-func toolCallColor(for name: String) -> Color {
+func toolCallColor(for name: String, input: String? = nil) -> Color {
+    if name == "Bash", let cmd = input, cmd.hasPrefix("cloude ") {
+        return .accentColor
+    }
     switch name {
     case "Read": return .blue
     case "Write", "Edit": return .orange

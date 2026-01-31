@@ -36,9 +36,13 @@ struct StreamingBlockView: View {
 
     var body: some View {
         switch block {
-        case .text(_, let attributed):
-            Text(attributed)
-                .textSelection(.enabled)
+        case .text(_, let attributed, let segments):
+            if segments.contains(where: { if case .code = $0 { return true } else { return false } }) {
+                InlineTextView(segments: segments)
+            } else {
+                Text(attributed)
+                    .textSelection(.enabled)
+            }
 
         case .code(_, let content, let language, _):
             CodeBlock(code: content, language: language)
