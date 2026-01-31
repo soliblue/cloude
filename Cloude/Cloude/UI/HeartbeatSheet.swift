@@ -46,7 +46,10 @@ struct HeartbeatSheet: View {
                     selectedImageData: $selectedImageData,
                     isConnected: connection.isConnected,
                     isWhisperReady: connection.isWhisperReady,
+                    isRunning: convOutput.isRunning,
+                    skills: connection.skills,
                     onSend: sendMessage,
+                    onStop: { connection.abort(conversationId: Heartbeat.conversationId) },
                     onTranscribe: transcribeAudio
                 )
             }
