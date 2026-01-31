@@ -3,47 +3,67 @@ import CloudeShared
 
 struct MemoriesSheet: View {
     let sections: [MemorySection]
+    var isLoading: Bool = false
     @Environment(\.dismiss) private var dismiss
-    @State private var expandedSection: String?
+    @State private var expandedSections: Set<String> = []
 
     var body: some View {
         NavigationStack {
-            List {
-                if sections.isEmpty {
+            ScrollView {
+                if isLoading {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                        Text("Loading memories...")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 60)
+                } else if sections.isEmpty {
                     ContentUnavailableView(
                         "No Memories",
                         systemImage: "brain",
                         description: Text("Claude's memories will appear here once loaded")
                     )
+                    .padding(.top, 40)
                 } else {
-                    ForEach(sections) { section in
-                        MemorySectionRow(
-                            section: section,
-                            isExpanded: expandedSection == section.id,
-                            onTap: {
-                                withAnimation {
-                                    if expandedSection == section.id {
-                                        expandedSection = nil
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(sections.enumerated()), id: \.element.id) { index, section in
+                            MemorySectionRow(
+                                section: section,
+                                isExpanded: expandedSections.contains(section.id),
+                                onTap: {
+                                    if expandedSections.contains(section.id) {
+                                        expandedSections.remove(section.id)
                                     } else {
-                                        expandedSection = section.id
+                                        expandedSections.insert(section.id)
                                     }
                                 }
+                            )
+                            if index < sections.count - 1 {
+                                Divider()
+                                    .padding(.leading, 16)
                             }
-                        )
+                        }
                     }
+                    .padding(.vertical, 8)
                 }
             }
-            .listStyle(.insetGrouped)
+            .background(.ultraThinMaterial)
+            .scrollContentBackground(.hidden)
             .navigationTitle("Memories")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                            .fontWeight(.medium)
                     }
                 }
             }
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }
+        .presentationBackground(.ultraThinMaterial)
     }
 }
 
@@ -53,42 +73,32 @@ struct MemorySectionRow: View {
     let onTap: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             Button(action: onTap) {
-                HStack {
-                    Image(systemName: iconForSection(section.title))
-                        .foregroundColor(.accentColor)
-                        .frame(width: 24)
+                HStack(spacing: 12) {
                     Text(section.title)
-                        .font(.headline)
+                        .font(.body)
+                        .foregroundColor(.primary)
                     Spacer()
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote)
+                        .fontWeight(.semibold)
                         .foregroundColor(.secondary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             if isExpanded {
                 StreamingMarkdownView(text: section.content)
                     .font(.subheadline)
-                    .padding(.leading, 32)
-                    .padding(.top, 4)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 14)
             }
-        }
-        .padding(.vertical, 4)
-    }
-
-    private func iconForSection(_ title: String) -> String {
-        switch title.lowercased() {
-        case let t where t.contains("identity"): return "person.fill"
-        case let t where t.contains("understanding"): return "lightbulb.fill"
-        case let t where t.contains("preference"): return "heart.fill"
-        case let t where t.contains("workflow"): return "arrow.triangle.2.circlepath"
-        case let t where t.contains("history"): return "clock.fill"
-        case let t where t.contains("thread"): return "bubble.left.and.bubble.right.fill"
-        case let t where t.contains("rule"): return "list.bullet"
-        default: return "doc.text.fill"
         }
     }
 }
