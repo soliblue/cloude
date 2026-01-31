@@ -28,6 +28,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         Log.info("Other agents check complete")
 
+        Log.info("Installing CLI...")
+        CLIInstaller.installIfNeeded()
+
         Log.info("Setting activation policy...")
         NSApp.setActivationPolicy(.accessory)
         Log.info("Setting up menu bar...")
