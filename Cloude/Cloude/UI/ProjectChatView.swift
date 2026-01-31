@@ -50,7 +50,7 @@ struct ProjectChatView: View {
 
         VStack(spacing: 0) {
             if showHeader {
-                PaneHeaderView(
+                WindowHeaderView(
                     project: effectiveProject,
                     conversation: effectiveConversation,
                     onSelectConversation: onSelectConversation
@@ -64,6 +64,7 @@ struct ProjectChatView: View {
                 currentRunStats: isCompact ? nil : output?.runStats,
                 scrollProxy: $scrollProxy,
                 agentState: isThisConversationRunning ? .running : .idle,
+                conversationId: effectiveConversation?.id,
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction
             )
