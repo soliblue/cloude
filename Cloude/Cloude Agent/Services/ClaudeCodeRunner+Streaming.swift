@@ -23,11 +23,24 @@ extension ClaudeCodeRunner {
             if type == "stream_event",
                let event = json["event"] as? [String: Any],
                let eventType = event["type"] as? String {
+                if eventType == "content_block_start" {
+                    if !accumulatedOutput.isEmpty && !accumulatedOutput.hasSuffix("\n") {
+                        accumulatedOutput += "\n\n"
+                        onOutput?("\n\n")
+                    }
+                }
                 if eventType == "content_block_delta",
                    let delta = event["delta"] as? [String: Any],
                    let deltaText = delta["text"] as? String {
                     accumulatedOutput += deltaText
                     onOutput?(deltaText)
+                }
+            }
+
+            if type == "content_block_start" {
+                if !accumulatedOutput.isEmpty && !accumulatedOutput.hasSuffix("\n") {
+                    accumulatedOutput += "\n\n"
+                    onOutput?("\n\n")
                 }
             }
 
