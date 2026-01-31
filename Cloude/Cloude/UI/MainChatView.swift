@@ -346,6 +346,9 @@ struct MainChatView: View {
 
         guard !text.isEmpty || fullImageBase64 != nil else { return }
 
+        if windowManager.activeWindow == nil {
+            windowManager.addWindow()
+        }
         guard let activeWindow = windowManager.activeWindow else { return }
 
         var project = activeWindow.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
