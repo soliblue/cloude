@@ -1,10 +1,3 @@
-//
-//  StatusView+Sections.swift
-//  Cloude Agent
-//
-//  Section views for StatusView
-//
-
 import SwiftUI
 
 extension StatusView {
@@ -35,25 +28,14 @@ extension StatusView {
                     .font(.caption)
             }
 
-            if runner.isRunning {
+            if runnerManager.isAnyRunning {
                 HStack {
                     ProgressView()
                         .scaleEffect(0.5)
-                    Text("Claude is running...")
+                    Text("\(runnerManager.runningCount) conversation(s) running...")
                         .font(.caption)
                 }
             }
-        }
-    }
-
-    var workingDirectorySection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Working Directory")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Text(runner.currentDirectory)
-                .font(.caption)
-                .lineLimit(2)
         }
     }
 
@@ -119,9 +101,9 @@ extension StatusView {
 
             Spacer()
 
-            if runner.isRunning {
-                Button("Abort") {
-                    runner.abort()
+            if runnerManager.isAnyRunning {
+                Button("Abort All") {
+                    runnerManager.abortAll()
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.orange)

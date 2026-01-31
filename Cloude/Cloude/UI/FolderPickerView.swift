@@ -1,11 +1,5 @@
-//
-//  FolderPickerView.swift
-//  Cloude
-//
-//  Folder picker for selecting project root directory
-//
-
 import SwiftUI
+import CloudeShared
 
 struct FolderPickerView: View {
     @ObservedObject var connection: ConnectionManager

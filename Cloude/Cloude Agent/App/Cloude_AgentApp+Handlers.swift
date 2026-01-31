@@ -1,10 +1,6 @@
-//
-//  Cloude_AgentApp+Handlers.swift
-//  Cloude Agent
-//
-
 import Foundation
 import Network
+import CloudeShared
 
 extension AppDelegate {
     func handleListDirectory(_ path: String, connection: NWConnection) {

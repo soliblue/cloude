@@ -1,13 +1,7 @@
-//
-//  WebSocketServer+HTTP.swift
-//  Cloude Agent
-//
-//  HTTP upgrade handling for WebSocket connections
-//
-
 import Foundation
 import Network
 import CryptoKit
+import CloudeShared
 
 extension WebSocketServer {
     func receiveHTTPUpgrade(on connection: NWConnection) {

@@ -1,12 +1,6 @@
-//
-//  FileManager.swift
-//  Cloude Agent
-//
-//  Handles file browsing and serving
-//
-
 import Foundation
 import UniformTypeIdentifiers
+import CloudeShared
 
 class FileService {
     static let shared = FileService()

@@ -1,9 +1,5 @@
-//
-//  ClaudeCodeRunner+Streaming.swift
-//  Cloude Agent
-//
-
 import Foundation
+import Combine
 
 extension ClaudeCodeRunner {
     func processStreamLines(_ text: String) {
@@ -33,6 +29,7 @@ extension ClaudeCodeRunner {
                    let delta = event["delta"] as? [String: Any],
                    let deltaText = delta["text"] as? String {
                     accumulatedOutput += deltaText
+                    events.send(.output(deltaText))
                     onOutput?(deltaText)
                 }
             }
@@ -48,6 +45,7 @@ extension ClaudeCodeRunner {
                let delta = json["delta"] as? [String: Any],
                let deltaText = delta["text"] as? String {
                 accumulatedOutput += deltaText
+                events.send(.output(deltaText))
                 onOutput?(deltaText)
             }
 
@@ -67,20 +65,25 @@ extension ClaudeCodeRunner {
                     if block["type"] as? String == "tool_use",
                        let toolName = block["name"] as? String,
                        let toolId = block["id"] as? String {
-                        onToolCall?(toolName, extractToolInput(name: toolName, input: block["input"] as? [String: Any]), toolId, parentToolUseId)
+                        let input = extractToolInput(name: toolName, input: block["input"] as? [String: Any])
+                        events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolUseId))
+                        onToolCall?(toolName, input, toolId, parentToolUseId)
                     }
                 }
             }
 
             if type == "result" {
                 if let sessionId = json["session_id"] as? String {
+                    events.send(.sessionId(sessionId))
                     onSessionId?(sessionId)
                 }
                 if let durationMs = json["duration_ms"] as? Int,
                    let costUsd = json["total_cost_usd"] as? Double {
+                    events.send(.runStats(durationMs: durationMs, costUsd: costUsd))
                     onRunStats?(durationMs, costUsd)
                 }
                 if let result = json["result"] as? String, accumulatedOutput.isEmpty {
+                    events.send(.output(result))
                     onOutput?(result)
                 }
             }
@@ -110,6 +113,7 @@ extension ClaudeCodeRunner {
         accumulatedOutput = ""
         lineBuffer = ""
 
+        events.send(.complete)
         onComplete?()
     }
 

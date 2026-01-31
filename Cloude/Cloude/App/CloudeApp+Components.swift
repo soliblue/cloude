@@ -1,6 +1,5 @@
-// CloudeApp+Components.swift
-
 import SwiftUI
+import CloudeShared
 
 struct ConnectionStatus: View {
     @ObservedObject var connection: ConnectionManager
@@ -16,7 +15,7 @@ struct ConnectionStatus: View {
 
     private var statusColor: Color {
         if connection.isAuthenticated {
-            return connection.agentState == .running ? .orange : .green
+            return connection.isAnyRunning ? .orange : .green
         } else if connection.isConnected {
             return .yellow
         }

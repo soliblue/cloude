@@ -1,6 +1,6 @@
-// ConnectionManager+API.swift
-
 import Foundation
+import Combine
+import CloudeShared
 
 extension ConnectionManager {
     func handleMessage(_ text: String) {
@@ -50,9 +50,11 @@ extension ConnectionManager {
             break
 
         case .directoryListing(let path, let entries):
+            events.send(.directoryListing(path: path, entries: entries))
             onDirectoryListing?(path, entries)
 
         case .fileContent(let path, let data, let mimeType, let size):
+            events.send(.fileContent(path: path, data: data, mimeType: mimeType, size: size))
             onFileContent?(path, data, mimeType, size)
 
         case .sessionId(let id, let conversationId):
@@ -67,6 +69,7 @@ extension ConnectionManager {
                 output(for: interrupted.conversationId).isRunning = false
                 interruptedSession = nil
             }
+            events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date()))
             onMissedResponse?(sessionId, text, Date())
 
         case .noMissedResponse(let sessionId):
@@ -87,9 +90,11 @@ extension ConnectionManager {
             }
 
         case .gitStatusResult(let status):
+            events.send(.gitStatus(status))
             onGitStatus?(status)
 
         case .gitDiffResult(let path, let diff):
+            events.send(.gitDiff(path: path, diff: diff))
             onGitDiff?(path, diff)
 
         case .gitCommitResult:
@@ -97,6 +102,7 @@ extension ConnectionManager {
 
         case .transcription(let text):
             print("[ConnectionManager] Received transcription: \(text)")
+            events.send(.transcription(text))
             onTranscription?(text)
 
         case .whisperReady(let ready):
@@ -105,15 +111,19 @@ extension ConnectionManager {
 
         case .heartbeatConfig(let intervalMinutes, let unreadCount, let sessionId):
             print("[Heartbeat] Received config: interval=\(String(describing: intervalMinutes)), unread=\(unreadCount), sessionId=\(String(describing: sessionId))")
+            events.send(.heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount, sessionId: sessionId))
             onHeartbeatConfig?(intervalMinutes, unreadCount, sessionId)
 
         case .heartbeatOutput(let text):
+            events.send(.heartbeatOutput(text))
             onHeartbeatOutput?(text)
 
         case .heartbeatComplete(let message):
+            events.send(.heartbeatComplete(message))
             onHeartbeatComplete?(message)
 
         case .memories(let sections):
+            events.send(.memories(sections))
             onMemories?(sections)
         }
     }
@@ -130,8 +140,8 @@ extension ConnectionManager {
         send(.chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString))
     }
 
-    func abort() {
-        send(.abort)
+    func abort(conversationId: UUID? = nil) {
+        send(.abort(conversationId: conversationId?.uuidString))
     }
 
     func listDirectory(path: String) {

@@ -1,5 +1,6 @@
 import SwiftUI
 import AVKit
+import CloudeShared
 
 struct ImagePreview: View {
     let image: UIImage

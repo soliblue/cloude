@@ -36,7 +36,7 @@ extension SplitChatView {
         }
         guard let conv = conversation else { return }
 
-        let isRunning = connection.runningConversationId == conv.id
+        let isRunning = connection.output(for: conv.id).isRunning
 
         if isRunning {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnailBase64)

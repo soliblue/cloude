@@ -1,8 +1,3 @@
-//
-//  ClaudeCodeRunner.swift
-//  Cloude Agent
-//
-
 import Foundation
 import Combine
 
@@ -11,12 +6,14 @@ class ClaudeCodeRunner: ObservableObject {
     @Published var isRunning = false
     @Published var currentDirectory: String = FileManager.default.homeDirectoryForCurrentUser.path
 
+    let events = PassthroughSubject<RunnerEvent, Never>()
+
     var process: Process?
     var outputPipe: Pipe?
     var errorPipe: Pipe?
 
     var onOutput: ((String) -> Void)?
-    var onToolCall: ((String, String?, String, String?) -> Void)?  // name, input, toolId, parentToolId
+    var onToolCall: ((String, String?, String, String?) -> Void)?
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double) -> Void)?

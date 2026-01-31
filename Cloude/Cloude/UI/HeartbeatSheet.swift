@@ -1,10 +1,6 @@
-//
-//  HeartbeatSheet.swift
-//  Cloude
-//
-
 import SwiftUI
 import UIKit
+import CloudeShared
 
 struct HeartbeatSheet: View {
     @ObservedObject var heartbeatStore: HeartbeatStore
@@ -146,14 +142,14 @@ struct HeartbeatSheet: View {
         heartbeatStore.conversation.messages.append(userMessage)
         heartbeatStore.save()
 
-        connection.send(.chat(
-            message: text,
+        connection.sendChat(
+            text,
             workingDirectory: nil,
             sessionId: heartbeatStore.conversation.sessionId,
             isNewSession: heartbeatStore.conversation.sessionId == nil,
-            imageBase64: selectedImageData?.base64EncodedString(),
-            conversationId: heartbeatStore.conversation.id.uuidString
-        ))
+            conversationId: heartbeatStore.conversation.id,
+            imageBase64: selectedImageData?.base64EncodedString()
+        )
 
         heartbeatStore.isRunning = true
         inputText = ""

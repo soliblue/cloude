@@ -1,9 +1,5 @@
-//
-//  MemoryService.swift
-//  Cloude Agent
-//
-
 import Foundation
+import CloudeShared
 
 struct MemoryService {
     static func parseMemories() -> [MemorySection] {

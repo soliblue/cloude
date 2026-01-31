@@ -1,9 +1,5 @@
-//
-//  GitChangesView+Components.swift
-//  Cloude
-//
-
 import SwiftUI
+import CloudeShared
 
 struct GitFileRow: View {
     let file: GitFileStatus

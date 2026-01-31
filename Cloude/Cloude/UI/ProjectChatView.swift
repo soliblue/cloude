@@ -1,11 +1,5 @@
-//
-//  ProjectChatView.swift
-//  Cloude
-//
-//  Chat interface that works with projects
-//
-
 import SwiftUI
+import CloudeShared
 
 struct ProjectChatView: View {
     @ObservedObject var connection: ConnectionManager
@@ -42,8 +36,7 @@ struct ProjectChatView: View {
     }
 
     private var isThisConversationRunning: Bool {
-        guard let convId = effectiveConversation?.id else { return false }
-        return connection.runningConversationId == convId
+        convOutput?.isRunning ?? false
     }
 
     var body: some View {
@@ -70,8 +63,8 @@ struct ProjectChatView: View {
                 onInteraction: onInteraction
             )
         }
-        .onChange(of: connection.agentState) { oldState, newState in
-            if oldState == .running && newState == .idle {
+        .onChange(of: output?.isRunning) { oldValue, newValue in
+            if oldValue == true && newValue == false {
                 handleCompletion()
             }
         }
