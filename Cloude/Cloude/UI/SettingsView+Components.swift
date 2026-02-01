@@ -108,7 +108,7 @@ struct ConnectionStatusCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color.oceanGroupedSecondary)
         .cornerRadius(12)
         .padding(.horizontal)
     }

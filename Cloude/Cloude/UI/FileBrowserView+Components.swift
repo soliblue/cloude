@@ -30,7 +30,7 @@ extension FileBrowserView {
             .padding(.horizontal)
             .padding(.vertical, 8)
         }
-        .background(Color(.secondarySystemBackground))
+        .background(Color.oceanSecondary)
     }
 
     var pathComponents: [PathComponent] {
