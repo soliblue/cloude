@@ -18,6 +18,7 @@ struct Conversation: Codable, Identifiable {
     var lastMessageAt: Date
     var messages: [ChatMessage]
     var pendingMessages: [ChatMessage]
+    var pendingFork: Bool
 
     static let randomNames = [
         "Spark", "Nova", "Pulse", "Echo", "Drift", "Blaze", "Frost", "Dusk",
@@ -38,7 +39,7 @@ struct Conversation: Codable, Identifiable {
         "hare", "tortoise", "bird", "fish", "tree", "mountain.2", "drop"
     ]
 
-    init(name: String? = nil, symbol: String? = nil, id: UUID = UUID(), sessionId: String? = nil, workingDirectory: String? = nil) {
+    init(name: String? = nil, symbol: String? = nil, id: UUID = UUID(), sessionId: String? = nil, workingDirectory: String? = nil, pendingFork: Bool = false) {
         self.id = id
         self.sessionId = sessionId
         self.workingDirectory = workingDirectory
@@ -46,6 +47,7 @@ struct Conversation: Codable, Identifiable {
         self.lastMessageAt = Date()
         self.messages = []
         self.pendingMessages = []
+        self.pendingFork = pendingFork
         self.name = name ?? Self.randomNames.randomElement() ?? "Chat"
         self.symbol = symbol ?? Self.randomSymbols.randomElement()
     }
@@ -61,10 +63,11 @@ struct Conversation: Codable, Identifiable {
         lastMessageAt = try container.decode(Date.self, forKey: .lastMessageAt)
         messages = try container.decode([ChatMessage].self, forKey: .messages)
         pendingMessages = try container.decodeIfPresent([ChatMessage].self, forKey: .pendingMessages) ?? []
+        pendingFork = try container.decodeIfPresent(Bool.self, forKey: .pendingFork) ?? false
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork
     }
 }
 

@@ -171,6 +171,13 @@ struct MainChatView: View {
                     guard !workingDir.isEmpty else { return }
                     connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
+                },
+                onDuplicate: { newConv in
+                    if let projectId = window.projectId,
+                       let project = projectStore.projects.first(where: { $0.id == projectId }) {
+                        windowManager.linkToCurrentConversation(window.id, project: project, conversation: newConv)
+                    }
+                    editingWindow = nil
                 }
             )
         }
@@ -583,9 +590,14 @@ struct MainChatView: View {
             let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnailBase64)
             projectStore.addMessage(userMessage, to: conv, in: proj)
 
-            let isNewSession = conv.sessionId == nil
+            let isFork = conv.pendingFork
+            let isNewSession = conv.sessionId == nil && !isFork
             let workingDir = conv.workingDirectory ?? (proj.rootDirectory.isEmpty ? nil : proj.rootDirectory)
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol)
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork)
+
+            if isFork {
+                projectStore.clearPendingFork(conv, in: proj)
+            }
         }
     }
 
