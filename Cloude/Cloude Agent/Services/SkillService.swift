@@ -40,6 +40,8 @@ struct SkillService {
         var name: String?
         var description: String?
         var userInvocable = true
+        var icon: String?
+        var aliases: [String] = []
 
         for line in frontmatter.split(separator: "\n") {
             guard let colonIndex = line.firstIndex(of: ":") else { continue }
@@ -50,11 +52,15 @@ struct SkillService {
             case "name": name = value
             case "description": description = value
             case "user-invocable": userInvocable = value == "true"
+            case "icon": icon = value
+            case "aliases":
+                let trimmed = value.trimmingCharacters(in: CharacterSet(charactersIn: "[]"))
+                aliases = trimmed.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
             default: break
             }
         }
 
         guard let n = name, let d = description else { return nil }
-        return Skill(name: n, description: d, userInvocable: userInvocable)
+        return Skill(name: n, description: d, userInvocable: userInvocable, icon: icon, aliases: aliases)
     }
 }
