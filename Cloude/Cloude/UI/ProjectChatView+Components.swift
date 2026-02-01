@@ -63,6 +63,7 @@ struct ProjectChatMessageList: View {
     @State private var lastUserMessageCount = 0
     @State private var showScrollToBottom = false
     @State private var bottomPullOffset: CGFloat = 0
+    @State private var scrollViewHeight: CGFloat = 0
     @State private var isRefreshingFromBottom = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isInitialLoad = true
@@ -118,26 +119,28 @@ struct ProjectChatMessageList: View {
                             .id(bottomId)
 
                         GeometryReader { geo in
-                            let frame = geo.frame(in: .named("scrollView"))
-                            let distanceFromBottom = frame.maxY - geo.size.height
+                            let frame = geo.frame(in: .named("scrollArea"))
                             Color.clear
-                                .preference(key: BottomOverscrollKey.self, value: distanceFromBottom)
+                                .preference(key: BottomOverscrollKey.self, value: frame.minY)
                                 .preference(key: ScrollOffsetKey.self, value: frame.minY)
                         }
                         .frame(height: 1)
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .coordinateSpace(name: "scrollView")
+                .background(
+                    GeometryReader { scrollGeo in
+                        Color.clear
+                            .preference(key: ScrollViewHeightKey.self, value: scrollGeo.size.height)
+                    }
+                )
+                .coordinateSpace(name: "scrollArea")
                 .onPreferenceChange(BottomOverscrollKey.self) { offset in
                     bottomPullOffset = offset
-                    if offset < -60 && !isRefreshingFromBottom {
-                        isRefreshingFromBottom = true
-                        Task {
-                            await onRefresh?()
-                            isRefreshingFromBottom = false
-                        }
-                    }
+                    checkBottomOverscroll()
+                }
+                .onPreferenceChange(ScrollViewHeightKey.self) { height in
+                    scrollViewHeight = height
                 }
                 .onPreferenceChange(ScrollOffsetKey.self) { offset in
                     scrollOffset = offset
@@ -256,6 +259,17 @@ struct ProjectChatMessageList: View {
             scrollProxy?.scrollTo(id, anchor: anchor)
         }
     }
+
+    private func checkBottomOverscroll() {
+        let overscroll = scrollViewHeight - bottomPullOffset
+        if overscroll > 60 && !isRefreshingFromBottom && scrollViewHeight > 0 {
+            isRefreshingFromBottom = true
+            Task {
+                await onRefresh?()
+                isRefreshingFromBottom = false
+            }
+        }
+    }
 }
 
 private struct BottomOverscrollKey: PreferenceKey {
@@ -266,6 +280,13 @@ private struct BottomOverscrollKey: PreferenceKey {
 }
 
 private struct ScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct ScrollViewHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()

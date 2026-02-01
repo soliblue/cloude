@@ -237,7 +237,7 @@ extension ConnectionManager {
             )
         }
         let effectiveWorkingDir = workingDirectory ?? defaultWorkingDirectory
-        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString))
+        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString, conversationName: conversationName))
     }
 
     func abort(conversationId: UUID? = nil) {

@@ -5,6 +5,7 @@ import CloudeShared
 struct ConversationRunner {
     let runner: ClaudeCodeRunner
     let conversationId: String
+    var conversationName: String?
     var accumulatedResponse: String = ""
     var sessionId: String?
 }
@@ -29,14 +30,30 @@ class RunnerManager: ObservableObject {
         activeRunners.values.filter { $0.runner.isRunning }.count
     }
 
-    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String, useFixedSessionId: Bool = false) {
+    func getProcessInfo() -> [AgentProcessInfo] {
+        let systemProcs = ProcessMonitor.findClaudeProcesses()
+        return systemProcs.map { proc in
+            let matchingRunner = activeRunners.values.first { runner in
+                runner.runner.process?.processIdentifier == proc.id
+            }
+            return AgentProcessInfo(
+                pid: proc.id,
+                command: proc.command,
+                startTime: proc.startTime,
+                conversationId: matchingRunner?.conversationId,
+                conversationName: matchingRunner?.conversationName
+            )
+        }
+    }
+
+    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false) {
         if let existing = activeRunners[conversationId], existing.runner.isRunning {
             Log.info("Runner for \(conversationId.prefix(8)) already running, aborting old one")
             existing.runner.abort()
         }
 
         let runner = ClaudeCodeRunner()
-        var convRunner = ConversationRunner(runner: runner, conversationId: conversationId)
+        var convRunner = ConversationRunner(runner: runner, conversationId: conversationId, conversationName: conversationName)
         convRunner.sessionId = sessionId
 
         setupCallbacks(for: runner, conversationId: conversationId)
