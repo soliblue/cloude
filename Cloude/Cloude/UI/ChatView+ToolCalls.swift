@@ -167,13 +167,16 @@ struct ToolCallLabel: View {
             }
             return "~"
         case "git":
-            return parsed.subcommand ?? "status"
+            if let arg = parsed.allArgs.first {
+                return midTruncate(arg, maxLength: 20)
+            }
+            return ""
         case "npm", "yarn", "pnpm", "bun":
-            return parsed.subcommand ?? "install"
+            return parsed.allArgs.first ?? ""
         case "cargo":
-            return parsed.subcommand ?? "build"
+            return parsed.allArgs.first ?? ""
         case "pip", "pip3":
-            return parsed.subcommand ?? "install"
+            return parsed.allArgs.first ?? ""
         case "make":
             return parsed.firstArg ?? "all"
         case "python", "python3":
@@ -187,7 +190,7 @@ struct ToolCallLabel: View {
             }
             return ""
         case "swift":
-            return parsed.subcommand ?? "build"
+            return parsed.allArgs.first ?? ""
         case "xcodebuild":
             if let scheme = parsed.flagValue("-scheme") {
                 return scheme
@@ -196,9 +199,9 @@ struct ToolCallLabel: View {
         case "fastlane":
             return parsed.allArgs.prefix(2).joined(separator: " ")
         case "docker":
-            return parsed.subcommand ?? "run"
+            return parsed.allArgs.first ?? ""
         case "kubectl":
-            return parsed.subcommand ?? "get"
+            return parsed.allArgs.first ?? ""
         case "cat", "head", "tail":
             if let file = parsed.firstArg {
                 return truncateFilename((file as NSString).lastPathComponent, maxLength: 16)
@@ -296,6 +299,14 @@ struct ToolCallLabel: View {
         let availableLength = maxLength - ext.count - (ext.isEmpty ? 0 : 4)
         guard availableLength > 0 else { return filename }
         return "\(name.prefix(availableLength))….\(ext)"
+    }
+
+    private func midTruncate(_ text: String, maxLength: Int) -> String {
+        guard text.count > maxLength else { return text }
+        let half = (maxLength - 1) / 2
+        let start = text.prefix(half)
+        let end = text.suffix(half)
+        return "\(start)…\(end)"
     }
 
     private var iconName: String {

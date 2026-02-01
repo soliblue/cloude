@@ -57,6 +57,7 @@ class ConnectionManager: ObservableObject {
     var onMemoryAdded: ((String, String, String) -> Void)?
     var onRenameConversation: ((UUID, String) -> Void)?
     var onSetConversationSymbol: ((UUID, String?) -> Void)?
+    var onSessionIdReceived: ((UUID, String) -> Void)?
     var onProcessList: (([AgentProcessInfo]) -> Void)?
     var onSkills: (([Skill]) -> Void)?
 
@@ -76,6 +77,15 @@ class ConnectionManager: ObservableObject {
 
     var isAnyRunning: Bool {
         conversationOutputs.values.contains { $0.isRunning }
+    }
+
+    func clearAllRunningStates() {
+        for output in conversationOutputs.values {
+            output.isRunning = false
+            output.isCompacting = false
+        }
+        agentState = .idle
+        runningConversationId = nil
     }
 
     func connect(host: String, port: UInt16, token: String) {

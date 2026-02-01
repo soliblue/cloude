@@ -71,9 +71,9 @@ extension StreamingMarkdownParser {
         var segments: [InlineSegment] = []
         var remaining = text[...]
         var currentText = ""
-        var currentIntents: InlinePresentationIntent = []
-        var currentStrikethrough = false
-        var currentLink: URL? = nil
+        let currentIntents: InlinePresentationIntent = []
+        let currentStrikethrough = false
+        let currentLink: URL? = nil
 
         func flushText() {
             guard !currentText.isEmpty else { return }

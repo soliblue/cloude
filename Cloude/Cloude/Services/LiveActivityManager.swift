@@ -50,7 +50,8 @@ class LiveActivityManager {
     func updateActivity(
         conversationId: UUID,
         agentState: AgentState,
-        currentTool: String? = nil
+        currentTool: String? = nil,
+        toolDetail: String? = nil
     ) {
         let convIdString = conversationId.uuidString
         guard let activity = activities[convIdString] else { return }
@@ -63,7 +64,8 @@ class LiveActivityManager {
 
         let newState = CloudeActivityAttributes.ContentState(
             agentState: agentState,
-            currentTool: currentTool
+            currentTool: currentTool,
+            toolDetail: toolDetail
         )
 
         Task {
@@ -92,7 +94,7 @@ class LiveActivityManager {
     func endAllActivities() {
         for (convId, activity) in activities {
             Task {
-                await activity.end(dismissalPolicy: .immediate)
+                await activity.end(nil, dismissalPolicy: .immediate)
             }
             lastUpdateTimes.removeValue(forKey: convId)
         }

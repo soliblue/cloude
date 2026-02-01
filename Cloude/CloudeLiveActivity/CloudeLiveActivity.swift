@@ -27,8 +27,14 @@ struct CloudeLiveActivity: Widget {
                         HStack(spacing: 6) {
                             Image(systemName: toolIcon(tool))
                                 .font(.caption)
-                            Text(toolDisplayName(tool))
-                                .font(.caption)
+                            if let detail = context.state.toolDetail {
+                                Text(detail)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                            } else {
+                                Text(toolDisplayName(tool))
+                                    .font(.caption)
+                            }
                         }
                         .foregroundStyle(.secondary)
                     }
@@ -143,9 +149,16 @@ struct LockScreenView: View {
                         Text("·")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
-                        Text(toolDisplayName(tool))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        if let detail = context.state.toolDetail {
+                            Text(detail)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        } else {
+                            Text(toolDisplayName(tool))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }

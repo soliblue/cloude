@@ -396,24 +396,17 @@ struct MainChatView: View {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
             ZStack(alignment: .topTrailing) {
-                if isHeartbeatActive {
-                    Image(systemName: "heart.circle.fill")
-                        .font(.system(size: 26, weight: .semibold))
-                        .foregroundStyle(.accentColor)
-                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                } else {
-                    Image(systemName: "heart.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(.accentColor)
-                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                }
+                Image(systemName: isHeartbeatActive ? "heart.circle.fill" : "heart.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(Color.accentColor)
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
 
                 if heartbeatStore.unreadCount > 0 && !isHeartbeatActive {
                     Text(heartbeatStore.unreadCount > 9 ? "9+" : "\(heartbeatStore.unreadCount)")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundColor(.white)
                         .frame(minWidth: 14, minHeight: 14)
-                        .background(Circle().fill(.accentColor))
+                        .background(Circle().fill(Color.accentColor))
                         .offset(x: 8, y: -8)
                 }
             }

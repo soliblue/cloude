@@ -15,6 +15,7 @@ xcuserdata/
 # Claude Code
 .claude/
 CLAUDE.local.md
+moltbook.local.json
 
 # Secrets
 *.env

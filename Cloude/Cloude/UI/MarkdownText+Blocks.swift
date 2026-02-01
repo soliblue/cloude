@@ -24,7 +24,7 @@ struct BlockquoteView: View {
     let text: String
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .top, spacing: 0) {
             Rectangle()
                 .fill(Color(.systemGray3))
                 .frame(width: 3)
@@ -32,6 +32,8 @@ struct BlockquoteView: View {
                 .font(.body)
                 .italic()
                 .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.leading, 12)
                 .padding(.vertical, 4)
         }

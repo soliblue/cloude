@@ -7,11 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | File | Purpose | Git |
 |------|---------|-----|
 | `CLAUDE.md` | Project instructions, architecture, code style | Public |
-| `CLAUDE.local.md` | Personal memory, identity, preferences, heartbeat tasks | Gitignored |
+| `CLAUDE.local.md` | Personal memory, identity, preferences, staging | Gitignored |
 | `FEATURES.md` | Feature tracking and roadmap | Public |
 | `.env` | API keys, secrets | Gitignored |
 
 Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from project root.
+
+**Minimize markdown files** - Only these core files + `plans/` directory. Don't create new markdown files; they won't be auto-loaded and context gets lost.
 
 **For anyone cloning this repo:** Create your own `CLAUDE.local.md` (see format below) and `.env` with your App Store Connect credentials.
 
@@ -38,6 +40,27 @@ Multiple Claude agents may work on this project simultaneously. Follow these rul
 - Only fix issues in code you are actively modifying
 - If a build fails due to someone else's changes, inform the user rather than fixing it yourself
 - Coordinate through the user, not by modifying each other's work
+
+### Plans Directory
+
+The `plans/` directory is for multi-session and multi-agent coordination:
+
+- **When starting significant work**, create a plan file (e.g., `plans/my-feature.md`) documenting your approach, progress, and open questions
+- **Other agents can read plans** to understand what's in progress and avoid conflicts
+- **Delete your plan file** once the work is complete and deployed
+- Plans are a communication channel between agents across sessions - use them to leave context for your future self or other agents
+- Don't modify another agent's plan unless collaborating explicitly
+
+### Staging Section (in CLAUDE.local.md)
+
+Track changes since last deploy to coordinate testing:
+
+1. **After completing a feature**, add it to "Awaiting test" in CLAUDE.local.md
+2. **When Soli confirms testing**, move items to "Tested & ready"
+3. **At 5+ untested items**, stop adding features - tell Soli to test first
+4. **After deploy**, clear the staging section and update "Last deploy" timestamp
+
+This prevents features from piling up untested and keeps everyone aligned.
 
 ## Git Workflow
 

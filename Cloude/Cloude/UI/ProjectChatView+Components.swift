@@ -309,7 +309,7 @@ struct SwipeToDeleteBubble: View {
                         .onEnded { value in
                             if value.translation.width < deleteThreshold {
                                 withAnimation(.easeOut(duration: 0.2)) {
-                                    offset = -UIScreen.main.bounds.width
+                                    offset = -400
                                 }
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                     onDelete()
