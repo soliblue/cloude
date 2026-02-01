@@ -97,7 +97,7 @@ struct FilePathPreviewView: View {
         isLoading = true
         connection.getFile(path: path)
 
-        connection.onFileContent = { responsePath, data, mime, _ in
+        connection.onFileContent = { responsePath, data, mime, _, _ in
             guard responsePath == path else { return }
             isLoading = false
             mimeType = mime
