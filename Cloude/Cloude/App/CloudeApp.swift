@@ -160,7 +160,8 @@ struct CloudeApp: App {
         connection.onSessionIdReceived = { [projectStore] convId, sessionId in
             for project in projectStore.projects {
                 if let conv = project.conversations.first(where: { $0.id == convId }) {
-                    projectStore.updateSessionId(conv, in: project, sessionId: sessionId)
+                    let workingDir = project.rootDirectory.isEmpty ? nil : project.rootDirectory
+                    projectStore.updateSessionId(conv, in: project, sessionId: sessionId, workingDirectory: workingDir)
                     break
                 }
             }

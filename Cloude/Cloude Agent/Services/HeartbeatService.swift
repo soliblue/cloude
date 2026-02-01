@@ -37,6 +37,7 @@ class HeartbeatService: ObservableObject {
     private init() {
         intervalMinutes = UserDefaults.standard.object(forKey: "heartbeatIntervalMinutes") as? Int
         messageCount = UserDefaults.standard.integer(forKey: "heartbeatMessageCount")
+        sessionInitialized = UserDefaults.standard.bool(forKey: "heartbeatSessionInitialized")
         projectDirectory = UserDefaults.standard.string(forKey: "heartbeatProjectDirectory")
 
         if intervalMinutes != nil {
