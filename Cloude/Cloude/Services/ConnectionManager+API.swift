@@ -219,6 +219,13 @@ extension ConnectionManager {
         case .historySyncError(let sessionId, let error):
             events.send(.historySyncError(sessionId: sessionId, error: error))
             onHistorySyncError?(sessionId, error)
+
+        case .heartbeatSkipped(let conversationId):
+            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+            if let convId = targetConvId {
+                output(for: convId).skipped = true
+            }
+            onHeartbeatSkipped?(conversationId)
         }
     }
 

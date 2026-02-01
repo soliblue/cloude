@@ -283,6 +283,8 @@ struct MainChatView: View {
                     store: projectStore,
                     project: project,
                     conversation: conversation,
+                    window: window,
+                    windowManager: windowManager,
                     isCompact: false,
                     isKeyboardVisible: isKeyboardVisible,
                     onInteraction: { dismissKeyboard() },

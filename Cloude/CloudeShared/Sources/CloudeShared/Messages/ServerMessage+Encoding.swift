@@ -120,6 +120,9 @@ extension ServerMessage {
             try container.encode("history_sync_error", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
             try container.encode(error, forKey: .error)
+        case .heartbeatSkipped(let conversationId):
+            try container.encode("heartbeat_skipped", forKey: .type)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         }
     }
 }

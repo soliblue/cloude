@@ -292,6 +292,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 server.broadcast(.memoryAdded(target: targetStr, section: section, text: text, conversationId: conversationId))
             }
 
+        case "skip":
+            Log.info("Heartbeat skipped for \(conversationId?.prefix(8) ?? "nil")")
+            server.broadcast(.heartbeatSkipped(conversationId: conversationId))
+
         default:
             Log.info("Unknown cloude command: \(action)")
         }
