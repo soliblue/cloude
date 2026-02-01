@@ -30,43 +30,45 @@ struct MessageBubble: View {
         }
     }
 
+    private var backgroundColor: Color {
+        if message.wasInterrupted {
+            return Color.orange.opacity(0.15)
+        } else if message.isUser {
+            return Color.oceanBackground
+        } else {
+            return Color.oceanGray6.opacity(0.3)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .top, spacing: 8) {
-                if message.wasInterrupted {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 15))
-                        .foregroundColor(.orange)
+            VStack(alignment: .leading, spacing: 8) {
+                if let imageBase64 = message.imageBase64,
+                   let imageData = Data(base64Encoded: imageBase64),
+                   let uiImage = UIImage(data: imageData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 36, height: 36)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    if let imageBase64 = message.imageBase64,
-                       let imageData = Data(base64Encoded: imageBase64),
-                       let uiImage = UIImage(data: imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 36, height: 36)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    }
-
-                    Group {
-                        if isSlashCommand, let info = slashCommandInfo {
-                            SlashCommandBubble(command: message.text, icon: info.icon, isSkill: !info.isBuiltIn)
-                        } else if message.isUser {
-                            if !message.text.isEmpty {
-                                Text(message.text)
-                            }
-                        } else if hasToolCalls {
-                            InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
-                        } else if !message.text.isEmpty {
-                            StreamingMarkdownView(text: message.text)
+                Group {
+                    if isSlashCommand, let info = slashCommandInfo {
+                        SlashCommandBubble(command: message.text, icon: info.icon, isSkill: !info.isBuiltIn)
+                    } else if message.isUser {
+                        if !message.text.isEmpty {
+                            Text(message.text)
                         }
+                    } else if hasToolCalls {
+                        InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
+                    } else if !message.text.isEmpty {
+                        StreamingMarkdownView(text: message.text)
                     }
-                    .font(.body)
                 }
-                .opacity(message.isQueued ? 0.6 : 1.0)
+                .font(.body)
             }
+            .opacity(message.isQueued ? 0.6 : 1.0)
 
             if !message.isUser, let durationMs = message.durationMs, let costUsd = message.costUsd {
                 HStack(spacing: 8) {
@@ -80,7 +82,7 @@ struct MessageBubble: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(message.isUser ? Color.oceanBackground : Color.oceanGray6.opacity(0.3))
+        .background(backgroundColor)
             .contextMenu {
                 Button {
                     UIPasteboard.general.string = message.text
@@ -199,27 +201,26 @@ struct InlineToolPill: View {
     private var filePath: String? {
         guard ["Read", "Write", "Edit"].contains(toolCall.name),
               let input = toolCall.input else { return nil }
-        if let data = input.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let path = json["file_path"] as? String {
-            return path
-        }
-        return nil
+        return input
+    }
+
+    private var fileURL: URL? {
+        guard let path = filePath,
+              let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else { return nil }
+        return URL(string: "cloude://file\(encodedPath)")
     }
 
     var body: some View {
-        Group {
-            if let path = filePath,
-               let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-               let url = URL(string: "cloude://file\(encodedPath)") {
-                Button(action: { openURL(url) }) {
-                    pillContent
-                }
-                .buttonStyle(.plain)
-            } else {
-                pillContent
-            }
-        }
+        pillContent
+            .highPriorityGesture(
+                TapGesture()
+                    .onEnded {
+                        print("[InlineToolPill] Tapped, filePath: \(filePath ?? "nil"), fileURL: \(fileURL?.absoluteString ?? "nil")")
+                        if let url = fileURL {
+                            openURL(url)
+                        }
+                    }
+            )
     }
 
     private var pillContent: some View {
