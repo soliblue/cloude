@@ -42,25 +42,80 @@ struct SkillService {
         var userInvocable = true
         var icon: String?
         var aliases: [String] = []
+        var parameters: [SkillParameter] = []
 
-        for line in frontmatter.split(separator: "\n") {
-            guard let colonIndex = line.firstIndex(of: ":") else { continue }
-            let key = String(line[line.startIndex..<colonIndex]).trimmingCharacters(in: .whitespaces)
-            let value = String(line[line.index(after: colonIndex)...]).trimmingCharacters(in: .whitespaces)
+        var inParameters = false
+        var currentParam: [String: String] = [:]
 
-            switch key {
-            case "name": name = value
-            case "description": description = value
-            case "user-invocable": userInvocable = value == "true"
-            case "icon": icon = value
-            case "aliases":
-                let trimmed = value.trimmingCharacters(in: CharacterSet(charactersIn: "[]"))
-                aliases = trimmed.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-            default: break
+        for line in frontmatter.components(separatedBy: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty { continue }
+
+            if trimmed == "parameters:" {
+                inParameters = true
+                continue
+            }
+
+            if inParameters {
+                if line.hasPrefix("  - ") {
+                    if !currentParam.isEmpty {
+                        if let pName = currentParam["name"], let pPlaceholder = currentParam["placeholder"] {
+                            let pRequired = currentParam["required"] != "false"
+                            parameters.append(SkillParameter(name: pName, placeholder: pPlaceholder, required: pRequired))
+                        }
+                        currentParam = [:]
+                    }
+                    let rest = String(line.dropFirst(4))
+                    if let colonIdx = rest.firstIndex(of: ":") {
+                        let key = String(rest[rest.startIndex..<colonIdx]).trimmingCharacters(in: .whitespaces)
+                        let val = String(rest[rest.index(after: colonIdx)...]).trimmingCharacters(in: .whitespaces)
+                        currentParam[key] = val
+                    }
+                } else if line.hasPrefix("    ") {
+                    let rest = line.trimmingCharacters(in: .whitespaces)
+                    if let colonIdx = rest.firstIndex(of: ":") {
+                        let key = String(rest[rest.startIndex..<colonIdx]).trimmingCharacters(in: .whitespaces)
+                        let val = String(rest[rest.index(after: colonIdx)...]).trimmingCharacters(in: .whitespaces)
+                        currentParam[key] = val
+                    }
+                } else if !line.hasPrefix(" ") {
+                    inParameters = false
+                    if !currentParam.isEmpty {
+                        if let pName = currentParam["name"], let pPlaceholder = currentParam["placeholder"] {
+                            let pRequired = currentParam["required"] != "false"
+                            parameters.append(SkillParameter(name: pName, placeholder: pPlaceholder, required: pRequired))
+                        }
+                        currentParam = [:]
+                    }
+                }
+            }
+
+            if !inParameters {
+                guard let colonIndex = line.firstIndex(of: ":") else { continue }
+                let key = String(line[line.startIndex..<colonIndex]).trimmingCharacters(in: .whitespaces)
+                let value = String(line[line.index(after: colonIndex)...]).trimmingCharacters(in: .whitespaces)
+
+                switch key {
+                case "name": name = value
+                case "description": description = value
+                case "user-invocable": userInvocable = value == "true"
+                case "icon": icon = value
+                case "aliases":
+                    let trimmedVal = value.trimmingCharacters(in: CharacterSet(charactersIn: "[]"))
+                    aliases = trimmedVal.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                default: break
+                }
+            }
+        }
+
+        if !currentParam.isEmpty {
+            if let pName = currentParam["name"], let pPlaceholder = currentParam["placeholder"] {
+                let pRequired = currentParam["required"] != "false"
+                parameters.append(SkillParameter(name: pName, placeholder: pPlaceholder, required: pRequired))
             }
         }
 
         guard let n = name, let d = description else { return nil }
-        return Skill(name: n, description: d, userInvocable: userInvocable, icon: icon, aliases: aliases)
+        return Skill(name: n, description: d, userInvocable: userInvocable, icon: icon, aliases: aliases, parameters: parameters)
     }
 }
