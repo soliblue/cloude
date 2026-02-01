@@ -44,7 +44,7 @@ struct WindowEditSheet: View {
                         Image.safeSymbol(symbol.isEmpty ? nil : symbol, fallback: "circle.dashed")
                             .font(.system(size: 30))
                             .frame(width: 56, height: 56)
-                            .background(Color(.tertiarySystemBackground))
+                            .background(Color.oceanSurface)
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
@@ -54,7 +54,7 @@ struct WindowEditSheet: View {
                         .textFieldStyle(.plain)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .background(Color(.tertiarySystemBackground))
+                        .background(Color.oceanSurface)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
@@ -103,7 +103,7 @@ struct WindowEditSheet: View {
                                 }
                             }
                         }
-                        .background(Color(.tertiarySystemBackground))
+                        .background(Color.oceanSurface)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
@@ -119,7 +119,7 @@ struct WindowEditSheet: View {
                         .foregroundColor(.primary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color(.tertiarySystemBackground))
+                        .background(Color.oceanSurface)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
@@ -138,7 +138,7 @@ struct WindowEditSheet: View {
                             .foregroundColor(.red)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color(.tertiarySystemBackground))
+                            .background(Color.oceanSurface)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
                         .buttonStyle(.plain)

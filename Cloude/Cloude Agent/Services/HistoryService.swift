@@ -1,9 +1,14 @@
 import Foundation
 import CloudeShared
 
+enum HistoryError: Error {
+    case fileNotFound(String)
+    case readFailed(String)
+}
+
 struct HistoryService {
 
-    static func getHistory(sessionId: String, workingDirectory: String) -> Result<[HistoryMessage], String> {
+    static func getHistory(sessionId: String, workingDirectory: String) -> Result<[HistoryMessage], HistoryError> {
         let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-")
         let trimmedPath = projectPath.hasPrefix("-") ? String(projectPath.dropFirst()) : projectPath
 
@@ -14,7 +19,7 @@ struct HistoryService {
             .appendingPathComponent("\(sessionId).jsonl")
 
         guard FileManager.default.fileExists(atPath: sessionFile.path) else {
-            return .failure("Session file not found: \(sessionFile.path)")
+            return .failure(.fileNotFound(sessionFile.path))
         }
 
         do {
@@ -59,7 +64,7 @@ struct HistoryService {
 
             return .success(messages)
         } catch {
-            return .failure("Failed to read session file: \(error.localizedDescription)")
+            return .failure(.readFailed(error.localizedDescription))
         }
     }
 }

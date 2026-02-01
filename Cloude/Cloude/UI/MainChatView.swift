@@ -255,7 +255,7 @@ struct MainChatView: View {
         }
         .padding(.horizontal, 11)
         .padding(.vertical, 7)
-        .background(Color(.secondarySystemBackground))
+        .background(Color.oceanSecondary)
     }
 
     private func triggerHeartbeat() {
@@ -375,7 +375,7 @@ struct MainChatView: View {
         }
         .padding(.horizontal, 11)
         .padding(.vertical, 7)
-        .background(Color(.secondarySystemBackground))
+        .background(Color.oceanSecondary)
     }
 
     func pageIndicator() -> some View {

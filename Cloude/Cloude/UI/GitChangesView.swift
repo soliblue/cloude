@@ -63,7 +63,7 @@ struct GitChangesView: View {
                 .foregroundColor(status.hasChanges ? .orange : .green)
         }
         .padding()
-        .background(Color(.secondarySystemBackground))
+        .background(Color.oceanSecondary)
     }
 
     private func filesList(_ files: [GitFileStatus]) -> some View {

@@ -238,8 +238,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 Log.info("Found \(messages.count) messages")
                 server.sendMessage(.historySync(sessionId: sessionId, messages: messages), to: connection)
             case .failure(let error):
-                Log.error("History sync failed: \(error)")
-                server.sendMessage(.historySyncError(sessionId: sessionId, error: error), to: connection)
+                let errorMsg: String
+                switch error {
+                case .fileNotFound(let path): errorMsg = "Session file not found: \(path)"
+                case .readFailed(let msg): errorMsg = "Read failed: \(msg)"
+                }
+                Log.error("History sync failed: \(errorMsg)")
+                server.sendMessage(.historySyncError(sessionId: sessionId, error: errorMsg), to: connection)
             }
         }
     }
