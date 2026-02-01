@@ -116,18 +116,20 @@ extension ConnectionManager {
                 onSessionIdReceived?(convId, id)
             }
 
-        case .missedResponse(let sessionId, let text, _):
+        case .missedResponse(let sessionId, let text, _, let storedToolCalls):
             var interruptedConvId: UUID?
             var interruptedMsgId: UUID?
+            let toolCalls = storedToolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition) }
             if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
                 interruptedConvId = interrupted.conversationId
                 interruptedMsgId = interrupted.messageId
                 output(for: interrupted.conversationId).text = text
+                output(for: interrupted.conversationId).toolCalls = toolCalls
                 output(for: interrupted.conversationId).isRunning = false
                 interruptedSession = nil
             }
-            events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date()))
-            onMissedResponse?(sessionId, text, Date(), interruptedConvId, interruptedMsgId)
+            events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: storedToolCalls))
+            onMissedResponse?(sessionId, text, toolCalls, Date(), interruptedConvId, interruptedMsgId)
 
         case .noMissedResponse(let sessionId):
             if let interrupted = interruptedSession, interrupted.sessionId == sessionId {

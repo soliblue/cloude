@@ -167,17 +167,12 @@ struct WindowEditForm: View {
 
             HStack(spacing: 12) {
                 Button(action: onNewConversation) {
-                    HStack {
-                        Image(systemName: "plus")
-                            .font(.system(size: 18))
-                        Text("New")
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.primary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.oceanSurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    Image(systemName: "plus")
+                        .font(.system(size: 20))
+                        .foregroundColor(.primary)
+                        .frame(width: 44, height: 44)
+                        .background(Color.oceanSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
 
@@ -187,17 +182,12 @@ struct WindowEditForm: View {
                             onDuplicate?(newConv)
                         }
                     } label: {
-                        HStack {
-                            Image(systemName: "arrow.triangle.branch")
-                                .font(.system(size: 18))
-                            Text("Fork")
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.oceanSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        Image(systemName: "arrow.triangle.branch")
+                            .font(.system(size: 20))
+                            .foregroundColor(.primary)
+                            .frame(width: 44, height: 44)
+                            .background(Color.oceanSurface)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
                 }
@@ -211,20 +201,17 @@ struct WindowEditForm: View {
                             isRefreshing = false
                         }
                     } label: {
-                        HStack {
+                        Group {
                             if isRefreshing {
                                 ProgressView()
                                     .scaleEffect(0.8)
                             } else {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 20))
                             }
-                            Text("Refresh")
                         }
-                        .font(.subheadline)
                         .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .frame(width: 44, height: 44)
                         .background(Color.oceanSurface)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
@@ -232,19 +219,16 @@ struct WindowEditForm: View {
                     .disabled(isRefreshing)
                 }
 
+                Spacer()
+
                 if showRemoveButton && windowManager.canRemoveWindow {
                     Button(action: { onRemove?() }) {
-                        HStack {
-                            Image(systemName: "trash")
-                                .font(.system(size: 18))
-                            Text("Remove")
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.oceanSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        Image(systemName: "trash")
+                            .font(.system(size: 20))
+                            .foregroundColor(.red)
+                            .frame(width: 44, height: 44)
+                            .background(Color.oceanSurface)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
                 }

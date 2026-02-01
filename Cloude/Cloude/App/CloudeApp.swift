@@ -2,6 +2,10 @@ import SwiftUI
 import Combine
 import CloudeShared
 
+extension String: @retroactive Identifiable {
+    public var id: String { self }
+}
+
 @main
 struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
@@ -15,6 +19,7 @@ struct CloudeApp: App {
     @State private var wasBackgrounded = false
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
+    @State private var filePathToPreview: String? = nil
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
     @Environment(\.scenePhase) var scenePhase
@@ -64,6 +69,15 @@ struct CloudeApp: App {
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories)
         }
+        .sheet(item: $filePathToPreview) { path in
+            FilePathPreviewView(path: path, connection: connection)
+        }
+        .onOpenURL { url in
+            if url.scheme == "cloude", url.host == "file" {
+                let path = url.path.removingPercentEncoding ?? url.path
+                filePathToPreview = path
+            }
+        }
         .onAppear { loadAndConnect() }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
@@ -97,18 +111,19 @@ struct CloudeApp: App {
             return
         }
 
-        connection.onMissedResponse = { [projectStore] _, text, _, interruptedConvId, interruptedMsgId in
+        connection.onMissedResponse = { [projectStore] _, text, toolCalls, _, interruptedConvId, interruptedMsgId in
             if let convId = interruptedConvId,
                let msgId = interruptedMsgId,
                let (project, conv) = projectStore.findConversation(withId: convId) {
                 projectStore.updateMessage(msgId, in: conv, in: project) { msg in
                     msg.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    msg.toolCalls = toolCalls
                     msg.wasInterrupted = false
                 }
                 projectStore.objectWillChange.send()
             } else if let project = projectStore.currentProject,
                       let conversation = projectStore.currentConversation {
-                let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines))
+                let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
                 projectStore.addMessage(message, to: conversation, in: project)
             }
         }
@@ -157,7 +172,8 @@ struct CloudeApp: App {
         connection.onHistorySync = { [projectStore] sessionId, historyMessages in
             if let (project, conv) = projectStore.findConversation(withSessionId: sessionId) {
                 let newMessages = historyMessages.map { msg in
-                    ChatMessage(isUser: msg.isUser, text: msg.text)
+                    let toolCalls = msg.toolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition) }
+                    return ChatMessage(isUser: msg.isUser, text: msg.text, toolCalls: toolCalls)
                 }
                 projectStore.replaceMessages(conv, in: project, with: newMessages)
             }
