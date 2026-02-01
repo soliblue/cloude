@@ -167,9 +167,10 @@ struct ProjectChatMessageList: View {
                     showScrollToBottom = offset < -200
                 }
                 .scrollDismissesKeyboard(.immediately)
-                .onTapGesture {
-                    onInteraction?()
-                }
+                .simultaneousGesture(
+                    TapGesture()
+                        .onEnded { onInteraction?() }
+                )
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 5)
                         .onChanged { _ in onInteraction?() }
