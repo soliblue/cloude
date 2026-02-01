@@ -18,12 +18,16 @@ extension ClaudeCodeRunner {
             let type = json["type"] as? String ?? ""
 
             if type == "system",
-               let subtype = json["subtype"] as? String,
-               subtype == "status",
-               let status = json["status"] as? String {
-                if status == "compacting" {
-                    events.send(.status(.compacting))
-                    onStatus?(.compacting)
+               let subtype = json["subtype"] as? String {
+                if subtype == "init", let sessionId = json["session_id"] as? String {
+                    events.send(.sessionId(sessionId))
+                    onSessionId?(sessionId)
+                }
+                if subtype == "status", let status = json["status"] as? String {
+                    if status == "compacting" {
+                        events.send(.status(.compacting))
+                        onStatus?(.compacting)
+                    }
                 }
             }
 
