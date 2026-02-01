@@ -15,11 +15,13 @@ struct WindowEditForm: View {
     let onNewConversation: () -> Void
     var showRemoveButton: Bool = true
     var onRemove: (() -> Void)?
+    var onRefresh: (() async -> Void)?
 
     @State private var name: String = ""
     @State private var symbol: String = ""
     @State private var showSymbolPicker = false
     @State private var showFolderPicker = false
+    @State private var isRefreshing = false
 
     private var project: Project? {
         window.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
@@ -177,6 +179,36 @@ struct WindowEditForm: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
+
+                if onRefresh != nil {
+                    Button {
+                        guard !isRefreshing else { return }
+                        isRefreshing = true
+                        Task {
+                            await onRefresh?()
+                            isRefreshing = false
+                        }
+                    } label: {
+                        HStack {
+                            if isRefreshing {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 18))
+                            }
+                            Text("Refresh")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.oceanSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isRefreshing)
+                }
 
                 if showRemoveButton && windowManager.canRemoveWindow {
                     Button(action: { onRemove?() }) {
