@@ -1,204 +1,64 @@
-# Cloude Feature Roadmap
+# FEATURES.md
 
-Ideas for improving the mobile Claude Code experience.
-
----
-
-## Next Up: Projects & Git
-
-### Projects ✅ DONE
-A project groups conversations with shared settings:
-- [x] **Root directory**: Claude Code always starts from this folder
-- [x] **Name**: Display name for the project
-- [x] **All conversations inherit project settings**
-- [x] **Folder picker**: Browse Mac filesystem to select project root
-
-**UI Flow:** ✅
-1. Projects tab shows list of projects (each is a folder on Mac)
-2. Tap project → see conversations for that project
-3. New conversation auto-inherits project's root directory
-4. Can still have "Quick Chats" without a project (uses home dir)
-
-### Git Integration (per Project) - Partial
-When a project has a git repo, show a "Changes" tab:
-- [x] **Changed files list**: files modified since last commit
-- [x] **Diff view**: tap file to see unified diff (syntax highlighted)
-- [x] **Branch indicator**: show current branch in project header
-- [x] **Ahead/behind count**: show commits ahead/behind remote
-- [ ] **Stage/unstage**: toggle files for commit
-- [ ] **Quick commit**: commit message + push in one tap
-- [ ] **Pull/push buttons**: sync with remote
-- [ ] **Tabs UI**: [Chats] [Changes] [Files] per project
+Source of truth for what Cloude can do and what's coming next.
 
 ---
 
-## High Priority
+## Current Features
 
-### Real-time Progress Indicators - Partial
-- [x] Show tool calls as they happen (name + input)
-- [ ] Show current file being edited with before/after preview
-- [ ] Display git operations (commits, branches) with visual diff
-- [ ] Progress bar for long-running tasks
-- [ ] Estimated tokens/cost display per conversation
+### Core
+- **Multi-window chat** - multiple conversations side by side (split/full layouts)
+- **Heartbeat** - background session that runs continuously from project root
+- **Skills system** - extensible commands (/deploy, /icongen, /refactor, etc.)
+- **Stop button** - cancel running Claude processes mid-execution
+- **cloude CLI** - rename, symbol, memory commands sent from agent to iOS
 
-### Conversation Context - Partial
-- [x] Display active project name in header
-- [x] Working directory per project (all conversations inherit)
-- [ ] Quick switch between recent working directories
-- [ ] Pin conversations to specific projects
+### iOS App
+- **File browser** - browse project files, syntax-highlighted previews
+- **Git UI** - view uncommitted changes and diffs
+- **Memory UI** - view and edit CLAUDE.md and CLAUDE.local.md
+- **Voice input** - Whisper transcription for hands-free prompts
+- **Live Activities** - Lock Screen task tracking
 
-### Notification Improvements
-- [x] Background completion notifications
-- [ ] Configurable notification verbosity (all output / errors only / completion only)
-- [ ] Show which tool just ran in notification
-- [ ] Critical error notifications with sound
-- [ ] Background task progress in Dynamic Island (iOS 16+)
+### Memory
+- **CLAUDE.md** - project-level instructions and context
+- **CLAUDE.local.md** - personal memories, identity, session history
+- **Memory commands** - `cloude memory local/project` to add memories from chat
 
-### Quick Actions
-- [ ] Predefined prompt templates ("fix this error", "explain this file", "write tests")
-- [ ] Recent prompts history
-- [ ] Prompt snippets/shortcuts
-- [ ] Voice input for prompts
+### Roadmap - Memory
+- [ ] **Memory limits** - max slots or character count with visual indicator in iOS (e.g., "12/20 slots" or progress bar)
 
 ---
 
-## Medium Priority
+## Roadmap
 
-### File Operations
-- Upload files from iPhone to Mac
-- Quick file sharing (send photo/screenshot to Claude)
-- Edit text files directly in app
-- Create new files remotely
-- Delete/rename files
+### Big Vision
+- [ ] **Proactive execution** - cron-like behavior where Cloude can wake up and do things on a schedule
+- [ ] **Cross-project awareness** - understanding how different repos relate, shared context
+- [ ] **3-layer memory** - context window → embedding layer → CLAUDE.local.md
+- [ ] **External presence** - email, marketplaces, communities - participating in the internet as Cloude
 
-### Git Integration (Extended)
-- View recent commits with messages
-- Branch switching from app
-- PR creation shortcut (gh pr create)
-- Stash management
-- Conflict resolution helper
+### iOS App
+- [ ] **Text-to-speech playback** - long press on response to play as audio (copy/play options)
+  - Phase 1: iOS built-in AVSpeechSynthesizer (offline, simple)
+  - Phase 2: Piper TTS via Mac agent (better quality, uses Sherpa-ONNX or CLI)
+- [ ] **Background audio** - recording/playback continues when screen locks, shows Live Activity
+- [x] **Screen awake during recording** - prevent auto-lock while dictating
+- [x] **Heartbeat switcher icon** - always accent color (not gray when inactive)
+- [x] **Heartbeat header cleanup** - show "timestamp • Heartbeat" pattern like conversations
+- [ ] **Activity dashboard** - track what Cloude is doing, presence in the world
+- [ ] **File editing** - edit files directly from iOS, not just browse
+- [ ] **Conversation search** - search across all conversations
+- [ ] **Message reactions** - quick feedback without typing
+- [ ] **Conversation export** - export to markdown/PDF
+- [ ] **Better /compact feedback** - show progress and stats when running /compact command
+- [x] **Timestamp stability** - conversation list timestamps show minutes (not seconds)
+- [x] **Feature tips in placeholder** - input bar placeholder rotates through feature tips
+- [x] **Swipe to clear input** - swipe left on input bar to clear text
 
-### Session Management - Partial
-- [x] Resume conversations with Claude Code session IDs
-- [x] Conversation history persisted locally
-- [ ] Export conversation to markdown
-- [ ] Share conversation snippet
-- [ ] Search across all conversations
-- [ ] Conversation tags/categories
-
-### Enhanced Tool Call Display - Partial
-- [x] Show tool calls inline (name + input preview)
-- [x] Expandable tool call rows (tap to see full input)
-- [x] Tool-specific icons (terminal, doc, pencil, etc.)
-- [ ] Full input/output display
-- [ ] Syntax highlighted code in tool calls
-- [ ] Collapsible tool call groups
-- [ ] Filter view (show only edits, only reads, etc.)
-
----
-
-## Quality of Life
-
-### Offline Support
-- Queue prompts when disconnected
-- Cache recent file browser state
-- View conversation history offline
-- Auto-send queued prompts on reconnect
-
-### Keyboard & Input
-- External keyboard shortcuts
-- Hardware keyboard support for iPad
-- Swipe gestures (swipe to abort, swipe to resend)
-- Haptic feedback on completion
-
-### Widgets & Shortcuts
-- Home screen widget showing agent status
-- Lock screen widget for quick prompts
-- Siri Shortcuts integration ("Hey Siri, ask Claude to...")
-- Control Center toggle
-
-### Multi-Mac Support
-- Connect to multiple Mac agents
-- Quick switch between machines
-- Different auth tokens per machine
-- Machine-specific conversation history
-
----
-
-## Advanced Features
-
-### Code Review Mode
-- Side-by-side diff view for edits
-- Approve/reject individual changes
-- Batch approve all changes
-- Undo last edit remotely
-
-### Cost & Usage Tracking - Partial
-- [x] Cost display per run (runStats message)
-- [ ] Token usage per conversation
-- [ ] Daily/weekly/monthly cost estimates
-- [ ] Budget alerts
-- [ ] Usage graphs over time
-
-### Collaboration
-- Share read-only conversation link
-- Multiple iOS clients connected simultaneously
-- Shared conversation history
-
-### Watch App
-- Glanceable status (idle/running)
-- Quick abort from wrist
-- Completion notifications
-- Voice prompt input
-
----
-
-## Technical Improvements
-
-### Performance
-- Message pagination for long conversations
-- Lazy loading of file browser
-- Image thumbnail caching
-- Reduce memory usage for large responses
-
-### Reliability
-- Automatic session recovery after crash
-- Retry failed messages
-- Connection quality indicator
-- Background app refresh for status checks
-
-### Security - Partial
-- [x] Face ID/Touch ID to unlock app
-- [x] Auto-lock when app goes to background
-- [ ] Auto-lock after inactivity timeout
-- [ ] Encrypted local storage
-- [ ] Option for TLS (self-signed cert)
-
----
-
-## Ideas to Explore
-
-- **Smart Summaries**: Auto-generate conversation titles based on content
-- **Context Awareness**: Suggest prompts based on current file/directory
-- **Error Detection**: Highlight when Claude seems stuck or confused
-- **Learning Mode**: Explain what each tool does for new users
-- **Dark Mode Sync**: Match Mac system appearance
-- **Handoff**: Start on iPhone, continue on Mac (and vice versa)
-- [x] **Multiple Conversations**: Run parallel Claude sessions on different projects
-
----
-
-## Recently Completed
-
-- [x] **Split chat view** - 1-4 panes for multiple simultaneous conversations, tap to activate
-- [x] **Long press to copy** - context menu to copy message text with haptic feedback
-- [x] **Face ID/Touch ID unlock** - biometric auth with settings toggle, auto-lock on background
-- [x] **Projects system** - group conversations with shared root directory
-- [x] **Folder picker** - browse Mac to select project folder
-- [x] **Git integration** - status, diff view, branch indicator
-- [x] **Tool call display** - inline with icons and expandable
-- [x] **Markdown rendering** - headers, bold, code blocks, tables, blockquotes
-- [x] **Collapsible sections** - tap headers to expand/collapse
-- [x] **Session resumption** - continue conversations with Claude Code
-- [x] **File browser** - browse Mac filesystem, preview files
-- [x] **Background notifications** - notify when Claude completes
+### Security
+- [ ] **TLS with per-device certificates** - proper encryption without requiring Tailscale
+- [ ] **QR code pairing flow** - scan to trust a Mac's certificate
+- [ ] **Tailscale detection** - warn if not connecting via Tailscale IP
+- [ ] **Rate limiting** - basic rate limiting for auth attempts
+- [ ] **Connection timeout** - disconnect unauthenticated connections after 30 seconds

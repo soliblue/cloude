@@ -80,8 +80,17 @@ struct HeartbeatSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
                         Button(action: triggerHeartbeat) {
-                            Image(systemName: "bolt.heart")
+                            Image(systemName: "bolt.heart.fill")
+                                .font(.system(size: 13))
+                                .foregroundColor(convOutput.isRunning ? .secondary : .white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    Capsule()
+                                        .fill(convOutput.isRunning ? Color.secondary.opacity(0.2) : Color.accentColor)
+                                )
                         }
+                        .buttonStyle(.plain)
                         .disabled(convOutput.isRunning)
 
                         Divider()
