@@ -18,18 +18,16 @@ struct MessageBubble: View {
         message.isUser && message.text.hasPrefix("/")
     }
 
-    private var slashCommandInfo: (name: String, icon: String)? {
+    private var slashCommandInfo: (name: String, icon: String, isBuiltIn: Bool)? {
         guard isSlashCommand else { return nil }
         let text = message.text.dropFirst()
         let name = String(text.split(separator: " ").first ?? Substring(text))
-        let icon: String
         switch name {
-        case "compact": icon = "arrow.triangle.2.circlepath"
-        case "context": icon = "chart.pie"
-        case "cost": icon = "dollarsign.circle"
-        default: icon = "command"
+        case "compact": return (name, "arrow.triangle.2.circlepath", true)
+        case "context": return (name, "chart.pie", true)
+        case "cost": return (name, "dollarsign.circle", true)
+        default: return (name, "command", false)
         }
-        return (name, icon)
     }
 
     var body: some View {
@@ -54,7 +52,7 @@ struct MessageBubble: View {
 
                     Group {
                         if isSlashCommand, let info = slashCommandInfo {
-                            SlashCommandBubble(command: message.text, icon: info.icon)
+                            SlashCommandBubble(command: message.text, icon: info.icon, isSkill: !info.isBuiltIn)
                         } else if message.isUser {
                             if !message.text.isEmpty {
                                 Text(message.text)
@@ -210,18 +208,46 @@ struct InlineToolPill: View {
 struct SlashCommandBubble: View {
     let command: String
     let icon: String
+    var isSkill: Bool = true
 
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
             Text(command)
-                .font(.system(size: 15, weight: .medium, design: .monospaced))
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
         }
-        .foregroundColor(.cyan)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(Color.cyan.opacity(0.12))
-        .cornerRadius(18)
+        .foregroundStyle(isSkill ? skillGradient : builtInGradient)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(isSkill ? Color.purple.opacity(0.12) : Color.cyan.opacity(0.12))
+                .overlay(
+                    isSkill ?
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.purple.opacity(0.3), Color.pink.opacity(0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                    : nil
+                )
+        )
+    }
+
+    private var skillGradient: LinearGradient {
+        LinearGradient(
+            colors: [.purple, .pink.opacity(0.8)],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+
+    private var builtInGradient: LinearGradient {
+        LinearGradient(colors: [.cyan], startPoint: .leading, endPoint: .trailing)
     }
 }
