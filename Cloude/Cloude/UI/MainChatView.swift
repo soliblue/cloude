@@ -209,30 +209,34 @@ struct MainChatView: View {
     func heartbeatHeader(isRunning: Bool) -> some View {
         HStack(spacing: 9) {
             Button(action: triggerHeartbeat) {
-                Image(systemName: "bolt.heart")
-                    .font(.system(size: 17))
-                    .foregroundColor(isRunning ? .secondary : .accentColor)
+                Image(systemName: "bolt.heart.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(isRunning ? .secondary : .white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(isRunning ? Color.secondary.opacity(0.2) : Color.accentColor)
+                    )
             }
             .disabled(isRunning)
             .buttonStyle(.plain)
-            .padding(7)
 
             Spacer()
 
-            VStack(spacing: 2) {
-                Text("Heartbeat")
-                    .font(.caption)
-                    .fontWeight(.medium)
+            HStack(spacing: 4) {
                 if isRunning {
                     Text("Running...")
-                        .font(.system(size: 10))
                         .foregroundColor(.orange)
                 } else {
-                    Text("Last: \(heartbeatStore.lastTriggeredDisplayText)")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
+                    Text(heartbeatStore.lastTriggeredDisplayText)
                 }
+                Text("•")
+                    .foregroundColor(.secondary)
+                Text("Heartbeat")
             }
+            .font(.caption)
+            .fontWeight(.medium)
 
             Spacer()
 
@@ -350,6 +354,8 @@ struct MainChatView: View {
                         Text("• \(proj.name)")
                             .font(.system(size: 12))
                             .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
                     }
                     Image(systemName: "chevron.down")
                         .font(.system(size: 15))
@@ -385,24 +391,29 @@ struct MainChatView: View {
     @ViewBuilder
     private func heartbeatIndicatorButton() -> some View {
         let isStreaming = connection.output(for: Heartbeat.conversationId).isRunning
-        let weight: Font.Weight = isHeartbeatActive || isStreaming ? .semibold : .regular
-        let color: Color = isHeartbeatActive ? .pink : (isStreaming ? .accentColor : .secondary)
 
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
             ZStack(alignment: .topTrailing) {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 22, weight: weight))
-                    .foregroundStyle(color)
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                if isHeartbeatActive {
+                    Image(systemName: "heart.circle.fill")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(.accentColor)
+                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                } else {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(.accentColor)
+                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                }
 
                 if heartbeatStore.unreadCount > 0 && !isHeartbeatActive {
                     Text(heartbeatStore.unreadCount > 9 ? "9+" : "\(heartbeatStore.unreadCount)")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundColor(.white)
                         .frame(minWidth: 14, minHeight: 14)
-                        .background(Circle().fill(.red))
+                        .background(Circle().fill(.accentColor))
                         .offset(x: 8, y: -8)
                 }
             }

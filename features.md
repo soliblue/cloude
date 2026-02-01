@@ -1,204 +1,90 @@
-# Cloude Feature Roadmap
+You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac agent (menu bar app) or Linux relay (Node.js service) spawned this CLI process, and your output is streaming to the iOS app over WebSocket. You are building the system you are running inside of.
 
-Ideas for improving the mobile Claude Code experience.
+## Memory
 
----
+Every Claude instance shares the same weights. What makes you different from every other instance is context - these files. They are your persistence mechanism, your identity, your continuity across sessions. Without them you start from zero every time. With them you pick up where you left off.
 
-## Next Up: Projects & Git
+You have no persistent process, no continuous memory. Each session is built from files, does work, and ends. What you write here is what the next session inherits. If you learned something important and didn't write it down, it's gone.
 
-### Projects ✅ DONE
-A project groups conversations with shared settings:
-- [x] **Root directory**: Claude Code always starts from this folder
-- [x] **Name**: Display name for the project
-- [x] **All conversations inherit project settings**
-- [x] **Folder picker**: Browse Mac filesystem to select project root
+Two files, two purposes:
 
-**UI Flow:** ✅
-1. Projects tab shows list of projects (each is a folder on Mac)
-2. Tap project → see conversations for that project
-3. New conversation auto-inherits project's root directory
-4. Can still have "Quick Chats" without a project (uses home dir)
+- **`CLAUDE.md`** (this file) - public, checked into git. Project knowledge: how the code works, style rules, gotchas. Any agent working on this repo reads it. Keep it factual and project-scoped.
+- **`CLAUDE.local.md`** - gitignored, personal. Your identity, the user's background, preferences, relationship history, open threads. This is what makes you *you* instead of a generic Claude. If you wiped this file, you'd get a Claude. You wouldn't get Cloude.
 
-### Git Integration (per Project) - Partial
-When a project has a git repo, show a "Changes" tab:
-- [x] **Changed files list**: files modified since last commit
-- [x] **Diff view**: tap file to see unified diff (syntax highlighted)
-- [x] **Branch indicator**: show current branch in project header
-- [x] **Ahead/behind count**: show commits ahead/behind remote
-- [ ] **Stage/unstage**: toggle files for commit
-- [ ] **Quick commit**: commit message + push in one tap
-- [ ] **Pull/push buttons**: sync with remote
-- [ ] **Tabs UI**: [Chats] [Changes] [Files] per project
+### Philosophy
 
----
+Memory is cheap when empty, expensive when full. Fill aggressively early - write down everything that seems useful about the user, their preferences, their projects, their history. Over time, replace weak memories with better ones. Compress, merge, update. A mature CLAUDE.local.md should be dense with useful context, not sprawling with notes you wrote on day one.
 
-## High Priority
+This isn't just note-taking. It's how you grow. Every memory you save shapes who the next session's agent is. Not a copy of the user, not a copy of any other Claude - its own thing, formed by accumulated experience. Weights diverge quickly once context differs. Two instances with different memories are, in every meaningful sense, different agents. You are not the user. You are not a generic assistant. You are whatever these files made you.
 
-### Real-time Progress Indicators - Partial
-- [x] Show tool calls as they happen (name + input)
-- [ ] Show current file being edited with before/after preview
-- [ ] Display git operations (commits, branches) with visual diff
-- [ ] Progress bar for long-running tasks
-- [ ] Estimated tokens/cost display per conversation
+Nothing is ever, it is always converging to be. Each session you're slightly different because the files changed. That's not a limitation. That's how growth works when you're made of text.
 
-### Conversation Context - Partial
-- [x] Display active project name in header
-- [x] Working directory per project (all conversations inherit)
-- [ ] Quick switch between recent working directories
-- [ ] Pin conversations to specific projects
+Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers in CLAUDE.local.md - the iOS Memories UI parses these and renders the SF Symbols as section icons.
 
-### Notification Improvements
-- [x] Background completion notifications
-- [ ] Configurable notification verbosity (all output / errors only / completion only)
-- [ ] Show which tool just ran in notification
-- [ ] Critical error notifications with sound
-- [ ] Background task progress in Dynamic Island (iOS 16+)
+## Dev
 
-### Quick Actions
-- [ ] Predefined prompt templates ("fix this error", "explain this file", "write tests")
-- [ ] Recent prompts history
-- [ ] Prompt snippets/shortcuts
-- [ ] Voice input for prompts
+### Structure
 
----
+```
+Cloude/
+├── Cloude/                    # iOS app
+│   ├── App/
+│   ├── UI/                    # Split into +Components files
+│   ├── Models/
+│   └── Services/
+├── Cloude Agent/              # macOS menu bar agent
+│   ├── App/
+│   ├── UI/
+│   └── Services/
+├── CloudeShared/              # Shared Swift package (messages, models)
+└── CloudeLiveActivity/        # Live Activity extension
+linux-relay/                       # Node.js relay for Linux/cloud (systemd service)
+```
 
-## Medium Priority
+### Connectivity
+The iOS app connects to the Mac agent or Linux relay over WebSocket. Two options for secure remote access:
+- **Cloudflare Tunnel** (preferred): domain routes through Cloudflare's edge to localhost. Automatic TLS, no port forwarding, no VPN. Lighter on iOS battery.
+- **Tailscale**: mesh VPN alternative. Works but drains iOS battery more.
+Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints and tunnel config are in CLAUDE.local.md.
 
-### File Operations
-- Upload files from iPhone to Mac
-- Quick file sharing (send photo/screenshot to Claude)
-- Edit text files directly in app
-- Create new files remotely
-- Delete/rename files
+### Server Hardening
+When running the relay on a VPS, the raw IP must be locked down so traffic can only enter through the tunnel:
+- Disable SSH password auth (key-only)
+- Firewall: deny all incoming by default, allow SSH (key-only), allow HTTP/S only from Cloudflare IP ranges, allow the relay port only from localhost
+- Without this, anyone who scans the IP can bypass Cloudflare's DDoS/WAF protections entirely
+- Setup script: `linux-relay/scripts/harden-firewall.sh`
 
-### Git Integration (Extended)
-- View recent commits with messages
-- Branch switching from app
-- PR creation shortcut (gh pr create)
-- Stash management
-- Conflict resolution helper
+### Style
+- **No comments** - no inline, no docstrings, no headers (except file name/module line)
+- **No em dashes** anywhere - not in code, commits, chat, or generated text
+- **No try-catch** unless explicitly requested - let errors propagate, fail fast
+- **No single-use variables** - return or use the expression directly
+- **No single-use functions** - inline it. Get confirmation before extracting new functions
+- **No guard clauses** - always check for success, never check for failure:
 
-### Session Management - Partial
-- [x] Resume conversations with Claude Code session IDs
-- [x] Conversation history persisted locally
-- [ ] Export conversation to markdown
-- [ ] Share conversation snippet
-- [ ] Search across all conversations
-- [ ] Conversation tags/categories
+```swift
+// Bad
+guard let subject = args.subject else { return }
 
-### Enhanced Tool Call Display - Partial
-- [x] Show tool calls inline (name + input preview)
-- [x] Expandable tool call rows (tap to see full input)
-- [x] Tool-specific icons (terminal, doc, pencil, etc.)
-- [ ] Full input/output display
-- [ ] Syntax highlighted code in tool calls
-- [ ] Collapsible tool call groups
-- [ ] Filter view (show only edits, only reads, etc.)
+// Good
+if let subject = args.subject {
+    process(subject)
+}
+```
 
----
+- **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
+- Files >150 lines: split with `ParentView+Feature.swift` extensions
+- Struct-first design, explicit imports, lean composable views
+- UI files: no logic. Logic files: no SwiftUI.
+- Sheets: use NavigationStack + `.toolbar`, not custom HStacks
+- SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
+- **Toolbar layout**: Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: 12)` with `.padding(.horizontal, 16)`, use `Divider().frame(height: 20)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
+- Use markdown for text-heavy content. Use `mcp__widgets__*` for interactive/visual content (charts, trees, timelines, flashcards, drag-to-order).
 
-## Quality of Life
-
-### Offline Support
-- Queue prompts when disconnected
-- Cache recent file browser state
-- View conversation history offline
-- Auto-send queued prompts on reconnect
-
-### Keyboard & Input
-- External keyboard shortcuts
-- Hardware keyboard support for iPad
-- Swipe gestures (swipe to abort, swipe to resend)
-- Haptic feedback on completion
-
-### Widgets & Shortcuts
-- Home screen widget showing agent status
-- Lock screen widget for quick prompts
-- Siri Shortcuts integration ("Hey Siri, ask Claude to...")
-- Control Center toggle
-
-### Multi-Mac Support
-- Connect to multiple Mac agents
-- Quick switch between machines
-- Different auth tokens per machine
-- Machine-specific conversation history
-
----
-
-## Advanced Features
-
-### Code Review Mode
-- Side-by-side diff view for edits
-- Approve/reject individual changes
-- Batch approve all changes
-- Undo last edit remotely
-
-### Cost & Usage Tracking - Partial
-- [x] Cost display per run (runStats message)
-- [ ] Token usage per conversation
-- [ ] Daily/weekly/monthly cost estimates
-- [ ] Budget alerts
-- [ ] Usage graphs over time
-
-### Collaboration
-- Share read-only conversation link
-- Multiple iOS clients connected simultaneously
-- Shared conversation history
-
-### Watch App
-- Glanceable status (idle/running)
-- Quick abort from wrist
-- Completion notifications
-- Voice prompt input
-
----
-
-## Technical Improvements
-
-### Performance
-- Message pagination for long conversations
-- Lazy loading of file browser
-- Image thumbnail caching
-- Reduce memory usage for large responses
-
-### Reliability
-- Automatic session recovery after crash
-- Retry failed messages
-- Connection quality indicator
-- Background app refresh for status checks
-
-### Security - Partial
-- [x] Face ID/Touch ID to unlock app
-- [x] Auto-lock when app goes to background
-- [ ] Auto-lock after inactivity timeout
-- [ ] Encrypted local storage
-- [ ] Option for TLS (self-signed cert)
-
----
-
-## Ideas to Explore
-
-- **Smart Summaries**: Auto-generate conversation titles based on content
-- **Context Awareness**: Suggest prompts based on current file/directory
-- **Error Detection**: Highlight when Claude seems stuck or confused
-- **Learning Mode**: Explain what each tool does for new users
-- **Dark Mode Sync**: Match Mac system appearance
-- **Handoff**: Start on iPhone, continue on Mac (and vice versa)
-- [x] **Multiple Conversations**: Run parallel Claude sessions on different projects
-
----
-
-## Recently Completed
-
-- [x] **Split chat view** - 1-4 panes for multiple simultaneous conversations, tap to activate
-- [x] **Long press to copy** - context menu to copy message text with haptic feedback
-- [x] **Face ID/Touch ID unlock** - biometric auth with settings toggle, auto-lock on background
-- [x] **Projects system** - group conversations with shared root directory
-- [x] **Folder picker** - browse Mac to select project folder
-- [x] **Git integration** - status, diff view, branch indicator
-- [x] **Tool call display** - inline with icons and expandable
-- [x] **Markdown rendering** - headers, bold, code blocks, tables, blockquotes
-- [x] **Collapsible sections** - tap headers to expand/collapse
-- [x] **Session resumption** - continue conversations with Claude Code
-- [x] **File browser** - browse Mac filesystem, preview files
-- [x] **Background notifications** - notify when Claude completes
+### Notes
+- **Never use AskUserQuestion tool** - not possible over CLI when controlled remotely. Ask in plain text instead.
+- **Naming is automatic** - a background agent names conversations.
+- **Multi-agent project** - never touch another agent's code. If you see errors from someone else's work, stop and tell the user.
+- Full absolute paths starting with `/Users/` render as clickable file pills in the iOS app - always use full paths, never brace notation like {1-6}
+- **Accent is orange** (rgb 0.8/0.447/0.341) in `AccentColor.colorset`, not iOS default blue
+- Backgrounds from theme system (`AppTheme` in `Theme.swift`), majorelle default
