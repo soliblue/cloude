@@ -14,19 +14,23 @@ struct SlashCommand {
     let description: String
     let icon: String
     let isSkill: Bool
+    let resolvesTo: String?
 
-    init(name: String, description: String, icon: String, isSkill: Bool = false) {
+    init(name: String, description: String, icon: String, isSkill: Bool = false, resolvesTo: String? = nil) {
         self.name = name
         self.description = description
         self.icon = icon
         self.isSkill = isSkill
+        self.resolvesTo = resolvesTo
     }
 
-    init(skill: Skill) {
-        self.name = skill.name
-        self.description = skill.description
-        self.icon = "hammer.circle"
-        self.isSkill = true
+    static func fromSkill(_ skill: Skill) -> [SlashCommand] {
+        let icon = skill.icon ?? "hammer.circle"
+        var commands = [SlashCommand(name: skill.name, description: skill.description, icon: icon, isSkill: true)]
+        for alias in skill.aliases {
+            commands.append(SlashCommand(name: alias, description: skill.description, icon: icon, isSkill: true, resolvesTo: skill.name))
+        }
+        return commands
     }
 }
 
@@ -82,7 +86,7 @@ struct GlobalInputBar: View {
     }
 
     private var allCommands: [SlashCommand] {
-        builtInCommands + skills.map { SlashCommand(skill: $0) }
+        builtInCommands + skills.flatMap { SlashCommand.fromSkill($0) }
     }
 
     private var filteredCommands: [SlashCommand] {
@@ -104,7 +108,7 @@ struct GlobalInputBar: View {
                 SlashCommandSuggestions(
                     commands: filteredCommands,
                     onSelect: { command in
-                        inputText = "/\(command.name)"
+                        inputText = "/\(command.resolvesTo ?? command.name)"
                         onSend()
                     }
                 )
@@ -329,17 +333,7 @@ struct SlashCommandSuggestions: View {
             HStack(spacing: 8) {
                 ForEach(commands, id: \.name) { command in
                     Button(action: { onSelect(command) }) {
-                        HStack(spacing: 6) {
-                            Image(systemName: command.icon)
-                                .font(.system(size: 15, weight: .semibold))
-                            Text("/\(command.name)")
-                                .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                        }
-                        .foregroundColor(command.isSkill ? .purple : .cyan)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background((command.isSkill ? Color.purple : Color.cyan).opacity(0.12))
-                        .cornerRadius(16)
+                        SkillPill(command: command)
                     }
                     .buttonStyle(.plain)
                 }
@@ -347,5 +341,50 @@ struct SlashCommandSuggestions: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
+    }
+}
+
+struct SkillPill: View {
+    let command: SlashCommand
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: command.icon)
+                .font(.system(size: 14, weight: .semibold))
+            Text("/\(command.name)")
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+        }
+        .foregroundStyle(command.isSkill ? skillGradient : builtInGradient)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(command.isSkill ? Color.purple.opacity(0.12) : Color.cyan.opacity(0.12))
+                .overlay(
+                    command.isSkill ?
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.purple.opacity(0.3), Color.pink.opacity(0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                    : nil
+                )
+        )
+    }
+
+    private var skillGradient: LinearGradient {
+        LinearGradient(
+            colors: [.purple, .pink.opacity(0.8)],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+
+    private var builtInGradient: LinearGradient {
+        LinearGradient(colors: [.cyan], startPoint: .leading, endPoint: .trailing)
     }
 }
