@@ -138,7 +138,7 @@ extension ConnectionManager {
                 let currentTextLength = output(for: convId).text.count
                 let position = textPosition ?? currentTextLength
                 output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position))
-                let detail = extractToolDetail(name: name, input: input)
+                let detail = input.flatMap { extractToolDetail(name: name, input: $0) }
                 LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name, toolDetail: detail)
             }
 
@@ -211,6 +211,14 @@ extension ConnectionManager {
             skills = newSkills
             events.send(.skills(newSkills))
             onSkills?(newSkills)
+
+        case .historySync(let sessionId, let messages):
+            events.send(.historySync(sessionId: sessionId, messages: messages))
+            onHistorySync?(sessionId, messages)
+
+        case .historySyncError(let sessionId, let error):
+            events.send(.historySyncError(sessionId: sessionId, error: error))
+            onHistorySyncError?(sessionId, error)
         }
     }
 
@@ -284,5 +292,10 @@ extension ConnectionManager {
     func killAllProcesses() {
         if !isAuthenticated { reconnectIfNeeded() }
         send(.killAllProcesses)
+    }
+
+    func syncHistory(sessionId: String, workingDirectory: String) {
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory))
     }
 }

@@ -166,6 +166,18 @@ struct CloudeApp: App {
             }
         }
 
+        connection.onHistorySync = { [projectStore] sessionId, historyMessages in
+            for project in projectStore.projects {
+                if let conv = project.conversations.first(where: { $0.sessionId == sessionId }) {
+                    let newMessages = historyMessages.map { msg in
+                        ChatMessage(isUser: msg.isUser, text: msg.text)
+                    }
+                    projectStore.replaceMessages(conv, in: project, with: newMessages)
+                    break
+                }
+            }
+        }
+
         connection.connect(host: host, port: port, token: token)
     }
 }
