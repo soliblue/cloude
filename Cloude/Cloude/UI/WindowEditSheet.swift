@@ -88,7 +88,7 @@ struct WindowEditSheet: View {
                                             .font(.subheadline)
                                             .lineLimit(1)
                                         Spacer()
-                                        Text(conv.lastMessageAt, style: .relative)
+                                        Text(relativeTime(conv.lastMessageAt))
                                             .font(.caption2)
                                             .foregroundColor(.secondary)
                                     }
@@ -183,5 +183,16 @@ struct WindowEditSheet: View {
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
         }
+    }
+
+    private func relativeTime(_ date: Date) -> String {
+        let seconds = Int(-date.timeIntervalSinceNow)
+        if seconds < 60 { return "now" }
+        let minutes = seconds / 60
+        if minutes < 60 { return "\(minutes)m ago" }
+        let hours = minutes / 60
+        if hours < 24 { return "\(hours)h ago" }
+        let days = hours / 24
+        return "\(days)d ago"
     }
 }

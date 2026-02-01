@@ -53,6 +53,7 @@ struct GlobalInputBar: View {
     @State private var placeholderIndex = Int.random(in: 0..<20)
     @State private var textFieldId = UUID()
     @State private var swipeOffset: CGFloat = 0
+    @State private var horizontalSwipeOffset: CGFloat = 0
     @State private var isSwipingToRecord = false
     @State private var showInputBar = true
     @State private var showRecordingOverlay = false
@@ -64,26 +65,16 @@ struct GlobalInputBar: View {
     private let stopButtonDelay: TimeInterval = 3.0
 
     private static let placeholders = [
-        "fix the login bug pls",
-        "why isn't the button showing",
-        "make the font bigger",
-        "add a back button here",
-        "this crashes on launch",
-        "deploy to testflight",
-        "push to git",
-        "can you add dark mode",
-        "the animation is janky",
-        "why is this so slow",
-        "add a loading spinner",
-        "make it look nicer",
-        "refactor this mess",
-        "write tests for this",
-        "explain what this does",
-        "add error handling pls",
-        "the padding looks off",
-        "can we cache this",
-        "hide the keyboard on tap",
-        "make it work offline"
+        "Swipe up to record a voice note",
+        "Type / to see available commands",
+        "Check the Git tab for changes",
+        "Long press a message to copy",
+        "Swipe between windows below",
+        "Try /compact to reduce context",
+        "Swipe left here to clear text",
+        "Tap the header to switch chats",
+        "The heartbeat runs on a schedule",
+        "Try /cost to see usage stats"
     ]
 
     private var placeholder: String {
@@ -165,6 +156,8 @@ struct GlobalInputBar: View {
                     .padding(.vertical, 10)
                     .background(.ultraThinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .offset(x: -horizontalSwipeOffset * 0.3)
+                    .opacity(1 - Double(min(horizontalSwipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.5)
 
                     if shouldShowStopButton {
                         Button(action: { onStop?() }) {
@@ -201,20 +194,35 @@ struct GlobalInputBar: View {
         .gesture(
             DragGesture(minimumDistance: 10)
                 .onChanged { value in
-                    guard canRecord && !audioRecorder.isRecording else { return }
                     let verticalDrag = -value.translation.height
-                    if verticalDrag > 0 {
+                    let horizontalDrag = -value.translation.width
+
+                    if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
                         isSwipingToRecord = true
                         swipeOffset = verticalDrag
+                        horizontalSwipeOffset = 0
+                    } else if horizontalDrag > abs(verticalDrag) && !inputText.isEmpty {
+                        horizontalSwipeOffset = horizontalDrag
+                        swipeOffset = 0
+                        isSwipingToRecord = false
                     }
                 }
                 .onEnded { value in
                     let verticalDrag = -value.translation.height
-                    if verticalDrag >= swipeThreshold && canRecord {
+                    let horizontalDrag = -value.translation.width
+
+                    if verticalDrag >= swipeThreshold && canRecord && isSwipingToRecord {
                         startRecording()
+                    } else if horizontalDrag >= swipeThreshold && !inputText.isEmpty {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            inputText = ""
+                            selectedImageData = nil
+                        }
                     }
+
                     withAnimation(.easeOut(duration: 0.2)) {
                         swipeOffset = 0
+                        horizontalSwipeOffset = 0
                         isSwipingToRecord = false
                     }
                 }
@@ -281,6 +289,7 @@ struct GlobalInputBar: View {
     private func startRecording() {
         audioRecorder.requestPermission { granted in
             if granted {
+                UIApplication.shared.isIdleTimerDisabled = true
                 withAnimation(.easeOut(duration: transitionDuration)) {
                     showInputBar = false
                 }
@@ -295,6 +304,7 @@ struct GlobalInputBar: View {
     }
 
     private func stopRecording() {
+        UIApplication.shared.isIdleTimerDisabled = false
         let data = audioRecorder.stopRecording()
         withAnimation(.easeOut(duration: transitionDuration)) {
             showRecordingOverlay = false
