@@ -362,12 +362,16 @@ struct ToolCallLabel: View {
     private var displayName: String {
         guard name == "Bash", let input = input, !input.isEmpty else { return name }
         let parsed = BashCommandParser.parse(input)
-        let cmd = parsed.command
+        var cmd = parsed.command
         if cmd.isEmpty { return name }
-        if let sub = parsed.subcommand, ["git", "npm", "yarn", "pnpm", "bun", "cargo", "docker", "kubectl", "pip", "pip3", "swift", "claude"].contains(cmd) {
-            return "\(cmd) \(sub)"
+        if cmd.contains("/") {
+            cmd = (cmd as NSString).lastPathComponent
         }
-        return cmd
+        if let sub = parsed.subcommand, ["git", "npm", "yarn", "pnpm", "bun", "cargo", "docker", "kubectl", "pip", "pip3", "swift", "claude"].contains(cmd) {
+            let combined = "\(cmd) \(sub)"
+            return midTruncate(combined, maxLength: 24)
+        }
+        return midTruncate(cmd, maxLength: 20)
     }
 
     private var displayDetail: String? {
@@ -507,8 +511,7 @@ struct ToolCallLabel: View {
             }
             return ""
         default:
-            let truncated = cmd.prefix(20)
-            return truncated.count < cmd.count ? "\(truncated)..." : String(cmd)
+            return ""
         }
     }
 
