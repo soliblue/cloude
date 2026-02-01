@@ -49,7 +49,7 @@ class ConnectionManager: ObservableObject {
 
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
     var onFileContent: ((String, String, String, Int64) -> Void)?
-    var onMissedResponse: ((String, String, Date, UUID?, UUID?) -> Void)?
+    var onMissedResponse: ((String, String, [ToolCall], Date, UUID?, UUID?) -> Void)?
     var onGitStatus: ((GitStatusInfo) -> Void)?
     var onGitDiff: ((String, String) -> Void)?
     var onDisconnect: ((UUID, ConversationOutput) -> Void)?

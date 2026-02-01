@@ -1,9 +1,18 @@
 import Foundation
+import CloudeShared
 
 struct StoredResponse: Codable {
     let sessionId: String
     let text: String
     let completedAt: Date
+    let toolCalls: [StoredToolCall]
+
+    init(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall] = []) {
+        self.sessionId = sessionId
+        self.text = text
+        self.completedAt = completedAt
+        self.toolCalls = toolCalls
+    }
 }
 
 struct ResponseStore {
@@ -15,9 +24,9 @@ struct ResponseStore {
         load()
     }()
 
-    static func store(sessionId: String, text: String) {
+    static func store(sessionId: String, text: String, toolCalls: [StoredToolCall] = []) {
         prune()
-        responses[sessionId] = StoredResponse(sessionId: sessionId, text: text, completedAt: Date())
+        responses[sessionId] = StoredResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: toolCalls)
         if responses.count > maxEntries {
             let sorted = responses.values.sorted { $0.completedAt < $1.completedAt }
             for response in sorted.prefix(responses.count - maxEntries) {
