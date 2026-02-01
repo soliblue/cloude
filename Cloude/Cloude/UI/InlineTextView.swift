@@ -34,7 +34,7 @@ struct InlineTextView: View {
             case .text(_, let attr):
                 result.append(attr)
             case .code(_, let code):
-                var attr = AttributedString("\u{2009}\(code)\u{2009}")
+                var attr = AttributedString(code)
                 attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .regular, design: .monospaced)
                 attr.backgroundColor = Color(.secondarySystemFill)
                 result.append(attr)
