@@ -18,12 +18,11 @@ struct HistoryService {
 
     static func getHistory(sessionId: String, workingDirectory: String) -> Result<[HistoryMessage], HistoryError> {
         let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-")
-        let trimmedPath = projectPath.hasPrefix("-") ? String(projectPath.dropFirst()) : projectPath
 
         let claudeProjectsDir = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".claude/projects")
         let sessionFile = claudeProjectsDir
-            .appendingPathComponent(trimmedPath)
+            .appendingPathComponent(projectPath)
             .appendingPathComponent("\(sessionId).jsonl")
 
         guard FileManager.default.fileExists(atPath: sessionFile.path) else {
@@ -52,9 +51,10 @@ struct HistoryService {
                 let timestamp = dateFormatter.date(from: timestampStr) ?? Date()
 
                 if type == "user" {
-                    if let messageObj = json["message"] as? [String: Any],
-                       let content = messageObj["content"] as? String {
-                        userMessages.append((uuid, timestamp, content))
+                    if let messageObj = json["message"] as? [String: Any] {
+                        if let content = messageObj["content"] as? String {
+                            userMessages.append((uuid, timestamp, content))
+                        }
                     }
                 } else if type == "assistant" {
                     guard let messageObj = json["message"] as? [String: Any],

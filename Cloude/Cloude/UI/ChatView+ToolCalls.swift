@@ -471,8 +471,14 @@ struct ToolCallLabel: View {
         .foregroundColor(toolCallColor(for: name, input: input))
     }
 
+    private var isMemoryCommand: Bool {
+        guard name == "Bash", let input = input else { return false }
+        return input.hasPrefix("cloude memory ")
+    }
+
     private var displayName: String {
         guard name == "Bash", let input = input, !input.isEmpty else { return name }
+        if isMemoryCommand { return "Memory" }
         let parsed = BashCommandParser.parse(input)
         var cmd = parsed.command
         if cmd.isEmpty { return name }
@@ -494,6 +500,15 @@ struct ToolCallLabel: View {
             let filename = (input as NSString).lastPathComponent
             return truncateFilename(filename, maxLength: 16)
         case "Bash":
+            if isMemoryCommand {
+                let parts = input.split(separator: " ", maxSplits: 3)
+                if parts.count >= 4 {
+                    let text = String(parts[3])
+                    let truncated = text.prefix(24)
+                    return truncated.count < text.count ? "\(truncated)..." : text
+                }
+                return nil
+            }
             return bashDisplayDetail(input)
         case "Glob", "Grep":
             let truncated = input.prefix(16)
@@ -669,6 +684,7 @@ struct ToolCallLabel: View {
     private var iconName: String {
         switch name {
         case "Bash":
+            if isMemoryCommand { return "brain.head.profile" }
             return bashIconName(input ?? "")
         case "Read": return "eyeglasses"
         case "Write": return "doc.badge.plus"
@@ -716,6 +732,7 @@ struct ToolCallLabel: View {
 
 func toolCallColor(for name: String, input: String? = nil) -> Color {
     if name == "Bash", let cmd = input {
+        if cmd.hasPrefix("cloude memory ") { return .pink }
         return bashCommandColor(cmd)
     }
     switch name {
