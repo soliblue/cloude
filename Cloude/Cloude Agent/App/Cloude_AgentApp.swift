@@ -144,13 +144,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
-        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId):
+        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId, let conversationName):
             Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), hasImage=\(imageBase64 != nil), isNew=\(isNewSession))")
             if let wd = workingDirectory, !wd.isEmpty {
                 HeartbeatService.shared.projectDirectory = wd
             }
             let convId = conversationId ?? UUID().uuidString
-            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId)
+            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId, conversationName: conversationName)
 
         case .abort(let conversationId):
             if let convId = conversationId {
@@ -216,13 +216,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             server.sendMessage(.memories(sections: sections), to: connection)
 
         case .getProcesses:
-            let procs = ProcessMonitor.findClaudeProcesses().map { AgentProcessInfo(pid: $0.id, command: $0.command, startTime: $0.startTime) }
+            let procs = runnerManager.getProcessInfo()
             server.sendMessage(.processList(processes: procs), to: connection)
 
         case .killProcess(let pid):
             Log.info("Killing process \(pid)")
             _ = ProcessMonitor.killProcess(pid)
-            let procs = ProcessMonitor.findClaudeProcesses().map { AgentProcessInfo(pid: $0.id, command: $0.command, startTime: $0.startTime) }
+            let procs = runnerManager.getProcessInfo()
             server.broadcast(.processList(processes: procs))
 
         case .killAllProcesses:

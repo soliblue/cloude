@@ -119,12 +119,24 @@ struct SettingsView: View {
                 ForEach(connection.processes) { proc in
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("PID \(proc.pid)")
-                                .font(.system(.body, design: .monospaced))
-                            if let start = proc.startTime {
-                                Text(start, style: .relative)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                            if let name = proc.conversationName {
+                                Text(name)
+                                    .font(.system(.body, weight: .medium))
+                            } else {
+                                Text("PID \(proc.pid)")
+                                    .font(.system(.body, design: .monospaced))
+                            }
+                            HStack(spacing: 8) {
+                                if proc.conversationName != nil {
+                                    Text("PID \(proc.pid)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                if let start = proc.startTime {
+                                    Text(start, style: .relative)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
                         Spacer()
