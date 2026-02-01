@@ -12,4 +12,6 @@ enum ConnectionEvent {
     case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories([MemorySection])
     case skills([Skill])
+    case historySync(sessionId: String, messages: [HistoryMessage])
+    case historySyncError(sessionId: String, error: String)
 }

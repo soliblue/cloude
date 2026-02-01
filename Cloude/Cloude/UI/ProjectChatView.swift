@@ -17,11 +17,17 @@ struct ProjectChatView: View {
     @State private var scrollProxy: ScrollViewProxy?
 
     private var effectiveProject: Project? {
-        project ?? store.currentProject
+        if let project = project {
+            return store.projects.first { $0.id == project.id } ?? project
+        }
+        return store.currentProject
     }
 
     private var effectiveConversation: Conversation? {
-        conversation ?? store.currentConversation
+        if let conversation = conversation, let proj = effectiveProject {
+            return proj.conversations.first { $0.id == conversation.id } ?? conversation
+        }
+        return store.currentConversation
     }
 
     private var messages: [ChatMessage] {
@@ -138,8 +144,11 @@ struct ProjectChatView: View {
     }
 
     private func refreshMissedResponse() async {
-        guard let sessionId = effectiveConversation?.sessionId else { return }
-        connection.requestMissedResponse(sessionId: sessionId)
-        try? await Task.sleep(nanoseconds: 500_000_000)
+        guard let conv = effectiveConversation,
+              let sessionId = conv.sessionId,
+              let proj = effectiveProject,
+              !proj.rootDirectory.isEmpty else { return }
+        connection.syncHistory(sessionId: sessionId, workingDirectory: proj.rootDirectory)
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
     }
 }

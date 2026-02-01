@@ -148,4 +148,14 @@ extension ProjectStore {
         }
         save()
     }
+
+    func replaceMessages(_ conversation: Conversation, in project: Project, with messages: [ChatMessage]) {
+        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+        projects[projectIndex].conversations[convIndex].messages = messages
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
 }

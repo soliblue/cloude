@@ -41,7 +41,7 @@ struct WindowEditSheet: View {
             VStack(spacing: 16) {
                 HStack(spacing: 12) {
                     Button(action: { showSymbolPicker = true }) {
-                        Image(systemName: symbol.isEmpty ? "circle.dashed" : symbol)
+                        Image.safeSymbol(symbol.isEmpty ? nil : symbol, fallback: "circle.dashed")
                             .font(.system(size: 30))
                             .frame(width: 56, height: 56)
                             .background(Color(.tertiarySystemBackground))
@@ -80,7 +80,7 @@ struct WindowEditSheet: View {
                                     onSelectConversation(conv)
                                 }) {
                                     HStack(spacing: 10) {
-                                        Image(systemName: conv.symbol ?? "bubble.left")
+                                        Image.safeSymbol(conv.symbol)
                                             .font(.system(size: 17))
                                             .foregroundColor(.secondary)
                                             .frame(width: 24)

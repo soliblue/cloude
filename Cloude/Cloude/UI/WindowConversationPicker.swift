@@ -80,8 +80,8 @@ struct WindowConversationPicker: View {
     @ViewBuilder
     private func conversationRow(_ conversation: Conversation, projectName: String?) -> some View {
         HStack {
-            if let symbol = conversation.symbol, !symbol.isEmpty {
-                Image(systemName: symbol)
+            if conversation.symbol.isValidSFSymbol {
+                Image.safeSymbol(conversation.symbol)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .frame(width: 24)
