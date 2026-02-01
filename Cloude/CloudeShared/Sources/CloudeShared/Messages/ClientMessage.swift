@@ -6,6 +6,7 @@ public enum ClientMessage: Codable {
     case auth(token: String)
     case listDirectory(path: String)
     case getFile(path: String)
+    case getFileFullQuality(path: String)
     case requestMissedResponse(sessionId: String)
     case gitStatus(path: String)
     case gitDiff(path: String, file: String?)
@@ -52,6 +53,9 @@ public enum ClientMessage: Codable {
         case "get_file":
             let path = try container.decode(String.self, forKey: .path)
             self = .getFile(path: path)
+        case "get_file_full_quality":
+            let path = try container.decode(String.self, forKey: .path)
+            self = .getFileFullQuality(path: path)
         case "request_missed_response":
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             self = .requestMissedResponse(sessionId: sessionId)
@@ -121,6 +125,9 @@ public enum ClientMessage: Codable {
             try container.encode(path, forKey: .path)
         case .getFile(let path):
             try container.encode("get_file", forKey: .type)
+            try container.encode(path, forKey: .path)
+        case .getFileFullQuality(let path):
+            try container.encode("get_file_full_quality", forKey: .type)
             try container.encode(path, forKey: .path)
         case .requestMissedResponse(let sessionId):
             try container.encode("request_missed_response", forKey: .type)

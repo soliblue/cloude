@@ -9,7 +9,7 @@ public enum ServerMessage: Codable {
     case authResult(success: Bool, message: String?)
     case error(message: String)
     case directoryListing(path: String, entries: [FileEntry])
-    case fileContent(path: String, data: String, mimeType: String, size: Int64)
+    case fileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool)
     case sessionId(id: String, conversationId: String?)
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall])
     case noMissedResponse(sessionId: String)
@@ -31,9 +31,11 @@ public enum ServerMessage: Codable {
     case historySync(sessionId: String, messages: [HistoryMessage])
     case historySyncError(sessionId: String, error: String)
     case heartbeatSkipped(conversationId: String?)
+    case fileChunk(path: String, chunkIndex: Int, totalChunks: Int, data: String, mimeType: String, size: Int64)
+    case fileThumbnail(path: String, data: String, fullSize: Int64)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize
     }
 
     public init(from decoder: Decoder) throws {
@@ -76,7 +78,8 @@ public enum ServerMessage: Codable {
             let data = try container.decode(String.self, forKey: .data)
             let mimeType = try container.decode(String.self, forKey: .mimeType)
             let size = try container.decode(Int64.self, forKey: .size)
-            self = .fileContent(path: path, data: data, mimeType: mimeType, size: size)
+            let truncated = try container.decodeIfPresent(Bool.self, forKey: .truncated) ?? false
+            self = .fileContent(path: path, data: data, mimeType: mimeType, size: size, truncated: truncated)
         case "session_id":
             let id = try container.decode(String.self, forKey: .id)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
@@ -161,6 +164,19 @@ public enum ServerMessage: Codable {
         case "heartbeat_skipped":
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .heartbeatSkipped(conversationId: conversationId)
+        case "file_chunk":
+            let path = try container.decode(String.self, forKey: .path)
+            let chunkIndex = try container.decode(Int.self, forKey: .chunkIndex)
+            let totalChunks = try container.decode(Int.self, forKey: .totalChunks)
+            let data = try container.decode(String.self, forKey: .data)
+            let mimeType = try container.decode(String.self, forKey: .mimeType)
+            let size = try container.decode(Int64.self, forKey: .size)
+            self = .fileChunk(path: path, chunkIndex: chunkIndex, totalChunks: totalChunks, data: data, mimeType: mimeType, size: size)
+        case "file_thumbnail":
+            let path = try container.decode(String.self, forKey: .path)
+            let data = try container.decode(String.self, forKey: .data)
+            let fullSize = try container.decode(Int64.self, forKey: .fullSize)
+            self = .fileThumbnail(path: path, data: data, fullSize: fullSize)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

@@ -106,9 +106,39 @@ extension ConnectionManager {
             events.send(.directoryListing(path: path, entries: entries))
             onDirectoryListing?(path, entries)
 
-        case .fileContent(let path, let data, let mimeType, let size):
-            events.send(.fileContent(path: path, data: data, mimeType: mimeType, size: size))
-            onFileContent?(path, data, mimeType, size)
+        case .fileContent(let path, let data, let mimeType, let size, let truncated):
+            events.send(.fileContent(path: path, data: data, mimeType: mimeType, size: size, truncated: truncated))
+            onFileContent?(path, data, mimeType, size, truncated)
+
+        case .fileChunk(let path, let chunkIndex, let totalChunks, let data, let mimeType, let size):
+            print("[ConnectionManager] Received chunk \(chunkIndex + 1)/\(totalChunks) for \(path), data size: \(data.count)")
+            chunkProgress = ChunkProgress(path: path, current: chunkIndex, total: totalChunks)
+            events.send(.fileChunk(path: path, chunkIndex: chunkIndex, totalChunks: totalChunks, data: data, mimeType: mimeType, size: size))
+            if pendingChunks[path] == nil {
+                pendingChunks[path] = (chunks: [:], totalChunks: totalChunks, mimeType: mimeType, size: size)
+            }
+            pendingChunks[path]?.chunks[chunkIndex] = data
+            print("[ConnectionManager] Stored chunk \(chunkIndex), have \(pendingChunks[path]?.chunks.count ?? 0)/\(totalChunks)")
+            if let pending = pendingChunks[path], (0..<pending.totalChunks).allSatisfy({ pending.chunks[$0] != nil }) {
+                print("[ConnectionManager] All chunks received, combining...")
+                var combinedData = Data()
+                for i in 0..<pending.totalChunks {
+                    if let chunkBase64 = pending.chunks[i], let chunkData = Data(base64Encoded: chunkBase64) {
+                        combinedData.append(chunkData)
+                        print("[ConnectionManager] Decoded chunk \(i): \(chunkData.count) bytes")
+                    } else {
+                        print("[ConnectionManager] FAILED to decode chunk \(i)")
+                    }
+                }
+                let combinedBase64 = combinedData.base64EncodedString()
+                print("[ConnectionManager] Combined: \(combinedData.count) bytes, base64: \(combinedBase64.count) chars")
+                pendingChunks.removeValue(forKey: path)
+                events.send(.fileContent(path: path, data: combinedBase64, mimeType: pending.mimeType, size: pending.size, truncated: false))
+                onFileContent?(path, combinedBase64, pending.mimeType, pending.size, false)
+            }
+
+        case .fileThumbnail(let path, let data, let fullSize):
+            events.send(.fileThumbnail(path: path, data: data, fullSize: fullSize))
 
         case .sessionId(let id, let conversationId):
             if let convId = targetConversationId(from: conversationId) {
@@ -259,6 +289,12 @@ extension ConnectionManager {
     func getFile(path: String) {
         if !isAuthenticated { reconnectIfNeeded() }
         send(.getFile(path: path))
+    }
+
+    func getFileFullQuality(path: String) {
+        print("[ConnectionManager] getFileFullQuality called for: \(path)")
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.getFileFullQuality(path: path))
     }
 
     func requestMissedResponse(sessionId: String) {

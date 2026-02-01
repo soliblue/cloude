@@ -34,12 +34,13 @@ extension ServerMessage {
             try container.encode("directory_listing", forKey: .type)
             try container.encode(path, forKey: .path)
             try container.encode(entries, forKey: .entries)
-        case .fileContent(let path, let data, let mimeType, let size):
+        case .fileContent(let path, let data, let mimeType, let size, let truncated):
             try container.encode("file_content", forKey: .type)
             try container.encode(path, forKey: .path)
             try container.encode(data, forKey: .data)
             try container.encode(mimeType, forKey: .mimeType)
             try container.encode(size, forKey: .size)
+            try container.encode(truncated, forKey: .truncated)
         case .sessionId(let id, let conversationId):
             try container.encode("session_id", forKey: .type)
             try container.encode(id, forKey: .id)
@@ -124,6 +125,19 @@ extension ServerMessage {
         case .heartbeatSkipped(let conversationId):
             try container.encode("heartbeat_skipped", forKey: .type)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .fileChunk(let path, let chunkIndex, let totalChunks, let data, let mimeType, let size):
+            try container.encode("file_chunk", forKey: .type)
+            try container.encode(path, forKey: .path)
+            try container.encode(chunkIndex, forKey: .chunkIndex)
+            try container.encode(totalChunks, forKey: .totalChunks)
+            try container.encode(data, forKey: .data)
+            try container.encode(mimeType, forKey: .mimeType)
+            try container.encode(size, forKey: .size)
+        case .fileThumbnail(let path, let data, let fullSize):
+            try container.encode("file_thumbnail", forKey: .type)
+            try container.encode(path, forKey: .path)
+            try container.encode(data, forKey: .data)
+            try container.encode(fullSize, forKey: .fullSize)
         }
     }
 }
