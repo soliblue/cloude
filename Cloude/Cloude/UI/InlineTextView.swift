@@ -41,9 +41,12 @@ struct InlineTextView: View {
                 attr.backgroundColor = Color(.secondarySystemFill)
                 result.append(attr)
             case .filePath(_, let path):
-                var attr = AttributedString(path)
+                let filename = (path as NSString).lastPathComponent
+                let icon = fileIconChar(for: filename)
+                var attr = AttributedString(" \(icon) \(filename) ")
                 attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .medium, design: .monospaced)
-                attr.foregroundColor = .accentColor
+                attr.foregroundColor = fileIconColor(for: filename)
+                attr.backgroundColor = fileIconColor(for: filename).opacity(0.12)
                 if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                    let url = URL(string: "cloude://file\(encodedPath)") {
                     attr.link = url
@@ -54,5 +57,25 @@ struct InlineTextView: View {
             }
         }
         return result
+    }
+}
+
+private func fileIconChar(for filename: String) -> String {
+    let ext = (filename as NSString).pathExtension.lowercased()
+    switch ext {
+    case "swift": return "◆"
+    case "py": return "◇"
+    case "js", "jsx", "ts", "tsx": return "◈"
+    case "json", "yaml", "yml", "toml": return "{ }"
+    case "md", "txt": return "¶"
+    case "html", "xml", "plist": return "◁"
+    case "css", "scss", "sass": return "◀"
+    case "sh", "bash", "zsh": return "▶"
+    case "png", "jpg", "jpeg", "gif", "webp", "heic", "svg": return "□"
+    case "pdf": return "▣"
+    case "mp4", "mov", "avi", "mkv": return "▷"
+    case "mp3", "wav", "m4a", "flac": return "♪"
+    case "zip", "tar", "gz", "rar": return "▤"
+    default: return "○"
     }
 }
