@@ -167,6 +167,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case .getFile(let path):
             handleGetFile(path, connection: connection)
 
+        case .getFileFullQuality(let path):
+            handleGetFile(path, connection: connection, fullQuality: true)
+
         case .auth:
             break
 

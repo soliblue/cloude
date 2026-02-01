@@ -34,6 +34,13 @@ class ConnectionManager: ObservableObject {
     @Published var processes: [AgentProcessInfo] = []
     @Published var defaultWorkingDirectory: String?
     @Published var skills: [Skill] = []
+    @Published var chunkProgress: ChunkProgress?
+
+struct ChunkProgress: Equatable {
+    let path: String
+    let current: Int
+    let total: Int
+}
 
     let events = PassthroughSubject<ConnectionEvent, Never>()
 
@@ -48,7 +55,8 @@ class ConnectionManager: ObservableObject {
     var interruptedSession: (conversationId: UUID, sessionId: String, messageId: UUID)?
 
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
-    var onFileContent: ((String, String, String, Int64) -> Void)?
+    var onFileContent: ((String, String, String, Int64, Bool) -> Void)?
+    var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
     var onMissedResponse: ((String, String, [ToolCall], Date, UUID?, UUID?) -> Void)?
     var onGitStatus: ((GitStatusInfo) -> Void)?
     var onGitDiff: ((String, String) -> Void)?
