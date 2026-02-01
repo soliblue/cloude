@@ -29,7 +29,7 @@ struct BashCommandParser {
                     i += 1
                 }
             } else {
-                if subcommand == nil && ["git", "npm", "yarn", "pnpm", "bun", "cargo", "pip", "pip3", "swift", "docker", "kubectl", "cloude", "fastlane", "xcodebuild"].contains(cmd) {
+                if subcommand == nil && ["git", "npm", "yarn", "pnpm", "bun", "cargo", "pip", "pip3", "swift", "docker", "kubectl", "cloude", "claude", "fastlane", "xcodebuild"].contains(cmd) {
                     subcommand = token
                 } else {
                     args.append(token)
@@ -127,7 +127,7 @@ struct ToolCallLabel: View {
         let parsed = BashCommandParser.parse(input)
         let cmd = parsed.command
         if cmd.isEmpty { return name }
-        if let sub = parsed.subcommand, ["git", "npm", "yarn", "pnpm", "bun", "cargo", "docker", "kubectl", "pip", "pip3", "swift"].contains(cmd) {
+        if let sub = parsed.subcommand, ["git", "npm", "yarn", "pnpm", "bun", "cargo", "docker", "kubectl", "pip", "pip3", "swift", "claude"].contains(cmd) {
             return "\(cmd) \(sub)"
         }
         return cmd
@@ -264,6 +264,11 @@ struct ToolCallLabel: View {
             return ""
         case "cloude":
             return parsed.subcommand ?? ""
+        case "claude":
+            if let arg = parsed.allArgs.first {
+                return midTruncate(arg, maxLength: 20)
+            }
+            return ""
         default:
             let truncated = cmd.prefix(20)
             return truncated.count < cmd.count ? "\(truncated)..." : String(cmd)
@@ -441,6 +446,7 @@ struct ToolCallLabel: View {
         case "tar", "zip", "unzip", "gzip": return "archivebox"
         case "brew": return "mug"
         case "cloude": return "message.badge.waveform"
+        case "claude": return "brain.head.profile"
         case "pytest", "jest", "mocha", "vitest": return "checkmark.diamond"
         case "eslint", "prettier", "rubocop": return "wand.and.stars"
         case "code": return "chevron.left.forwardslash.chevron.right"
@@ -569,6 +575,7 @@ private func bashCommandColor(_ cmd: String) -> Color {
     let parsed = BashCommandParser.parse(cmd)
     switch parsed.command {
     case "cloude": return .accentColor
+    case "claude": return .purple
     case "git": return .orange
     case "npm", "yarn", "pnpm", "bun": return .red
     case "cargo": return Color(red: 0.87, green: 0.46, blue: 0.19)
