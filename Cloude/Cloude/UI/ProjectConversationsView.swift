@@ -98,7 +98,8 @@ struct ProjectConversationsView: View {
                         Image(systemName: "gearshape")
                     }
                     Button(action: {
-                        _ = store.newConversation(in: currentProject)
+                        let workingDir = currentProject.rootDirectory.isEmpty ? nil : currentProject.rootDirectory
+                        _ = store.newConversation(in: currentProject, workingDirectory: workingDir)
                         isPresented = false
                     }) {
                         Image(systemName: "plus")

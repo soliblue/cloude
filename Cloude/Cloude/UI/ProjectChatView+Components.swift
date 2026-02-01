@@ -93,6 +93,10 @@ struct ProjectChatMessageList: View {
         !isInitialLoad && messages.isEmpty && currentOutput.isEmpty && conversationId != nil
     }
 
+    private var hasRequiredDependencies: Bool {
+        window != nil && projectStore != nil && windowManager != nil && connection != nil
+    }
+
     var body: some View {
         let userMessageCount = messages.filter { $0.isUser }.count
 
@@ -106,25 +110,29 @@ struct ProjectChatMessageList: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if showEmptyState, let win = window, let projStore = projectStore, let winMgr = windowManager, let conn = connection {
+            } else if showEmptyState && hasRequiredDependencies {
                 ScrollView {
                     WindowEditForm(
-                        window: win,
-                        projectStore: projStore,
-                        windowManager: winMgr,
-                        connection: conn,
+                        window: window!,
+                        projectStore: projectStore!,
+                        windowManager: windowManager!,
+                        connection: connection!,
                         onSelectConversation: { conv in onSelectConversation?(conv) },
                         onShowAllConversations: { onShowAllConversations?() },
                         onNewConversation: { onNewConversation?() },
                         showRemoveButton: false
                     )
-                    .padding(.horizontal, 20)
+                    .padding(20)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .padding(.horizontal, 16)
                     .padding(.top, 40)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            ScrollViewReader { proxy in
+            if !showEmptyState || !hasRequiredDependencies {
+                ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(messages) { message in
@@ -245,6 +253,7 @@ struct ProjectChatMessageList: View {
                     .padding(.trailing, 16)
                     .padding(.bottom, 8)
                     .transition(.opacity.combined(with: .scale(scale: 0.8)))
+            }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: showScrollToBottom)
