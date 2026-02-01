@@ -14,13 +14,44 @@ extension AppDelegate {
         }
     }
 
-    func handleGetFile(_ path: String, connection: NWConnection) {
+    func handleGetFile(_ path: String, connection: NWConnection, fullQuality: Bool = false) {
+        Log.info("[GetFile] Request for: \(path), fullQuality: \(fullQuality)")
+
         switch FileService.shared.getFile(at: path) {
         case .success(let result):
-            let base64 = result.data.base64EncodedString()
-            server.sendMessage(.fileContent(path: path, data: base64, mimeType: result.mimeType, size: result.size), to: connection)
+            Log.info("[GetFile] File loaded: \(result.size) bytes, needsChunking: \(result.needsChunking)")
+            if result.needsChunking {
+                let chunks = FileService.shared.chunkData(result.data)
+                Log.info("[GetFile] Split into \(chunks.count) chunks")
+                sendChunks(chunks, path: path, mimeType: result.mimeType, size: result.size, connection: connection)
+            } else {
+                let base64 = result.data.base64EncodedString()
+                Log.info("[GetFile] Sending single message: \(base64.count) bytes")
+                server.sendMessage(.fileContent(path: path, data: base64, mimeType: result.mimeType, size: result.size, truncated: false), to: connection)
+            }
         case .failure(let error):
+            Log.error("[GetFile] Error: \(error.localizedDescription)")
             server.sendMessage(.error(message: error.localizedDescription), to: connection)
+        }
+    }
+
+    private func sendChunks(_ chunks: [Data], path: String, mimeType: String, size: Int64, connection: NWConnection, index: Int = 0) {
+        guard index < chunks.count else {
+            Log.info("[FileChunk] All \(chunks.count) chunks sent for \(path)")
+            return
+        }
+        let base64 = chunks[index].base64EncodedString()
+        Log.info("[FileChunk] Sending chunk \(index + 1)/\(chunks.count) (\(base64.count) bytes) for \(path)")
+        let message = ServerMessage.fileChunk(
+            path: path,
+            chunkIndex: index,
+            totalChunks: chunks.count,
+            data: base64,
+            mimeType: mimeType,
+            size: size
+        )
+        server.sendMessage(message, to: connection) { [weak self] in
+            self?.sendChunks(chunks, path: path, mimeType: mimeType, size: size, connection: connection, index: index + 1)
         }
     }
 
