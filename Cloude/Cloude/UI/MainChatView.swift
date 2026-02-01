@@ -154,7 +154,8 @@ struct MainChatView: View {
                 onNewConversation: {
                     if let projectId = window.projectId,
                        let project = projectStore.projects.first(where: { $0.id == projectId }) {
-                        let newConv = projectStore.newConversation(in: project)
+                        let workingDir = activeWindowWorkingDirectory()
+                        let newConv = projectStore.newConversation(in: project, workingDirectory: workingDir)
                         windowManager.linkToCurrentConversation(window.id, project: project, conversation: newConv)
                     }
                     editingWindow = nil
@@ -298,7 +299,8 @@ struct MainChatView: View {
                     },
                     onNewConversation: {
                         if let proj = project {
-                            let newConv = projectStore.newConversation(in: proj)
+                            let workingDir = activeWindowWorkingDirectory()
+                            let newConv = projectStore.newConversation(in: proj, workingDirectory: workingDir)
                             windowManager.linkToCurrentConversation(window.id, project: proj, conversation: newConv)
                         }
                     }
@@ -555,7 +557,8 @@ struct MainChatView: View {
 
         var conversation = proj.conversations.first { $0.id == activeWindow.conversationId }
         if conversation == nil {
-            conversation = projectStore.newConversation(in: proj)
+            let workingDir = activeWindowWorkingDirectory()
+            conversation = projectStore.newConversation(in: proj, workingDirectory: workingDir)
             windowManager.linkToCurrentConversation(activeWindow.id, project: proj, conversation: conversation)
         }
         guard let conv = conversation else { return }
@@ -618,9 +621,21 @@ struct MainChatView: View {
         }
         guard let proj = project else { return }
 
+        let activeWorkingDir = activeWindowWorkingDirectory()
         let newWindowId = windowManager.addWindow()
-        let newConv = projectStore.newConversation(in: proj)
+        let newConv = projectStore.newConversation(in: proj, workingDirectory: activeWorkingDir)
         windowManager.linkToCurrentConversation(newWindowId, project: proj, conversation: newConv)
+    }
+
+    func activeWindowWorkingDirectory() -> String? {
+        guard let activeWindow = windowManager.activeWindow,
+              let projectId = activeWindow.projectId,
+              let project = projectStore.projects.first(where: { $0.id == projectId }),
+              let convId = activeWindow.conversationId,
+              let conv = project.conversations.first(where: { $0.id == convId }) else {
+            return projectStore.currentProject?.rootDirectory
+        }
+        return conv.workingDirectory ?? project.rootDirectory
     }
 
     func syncActiveWindowToStore() {
