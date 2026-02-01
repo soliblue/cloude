@@ -15,20 +15,24 @@ struct SlashCommand {
     let icon: String
     let isSkill: Bool
     let resolvesTo: String?
+    let parameters: [SkillParameter]
 
-    init(name: String, description: String, icon: String, isSkill: Bool = false, resolvesTo: String? = nil) {
+    init(name: String, description: String, icon: String, isSkill: Bool = false, resolvesTo: String? = nil, parameters: [SkillParameter] = []) {
         self.name = name
         self.description = description
         self.icon = icon
         self.isSkill = isSkill
         self.resolvesTo = resolvesTo
+        self.parameters = parameters
     }
+
+    var hasParameters: Bool { !parameters.isEmpty }
 
     static func fromSkill(_ skill: Skill) -> [SlashCommand] {
         let icon = skill.icon ?? "hammer.circle"
-        var commands = [SlashCommand(name: skill.name, description: skill.description, icon: icon, isSkill: true)]
+        var commands = [SlashCommand(name: skill.name, description: skill.description, icon: icon, isSkill: true, parameters: skill.parameters)]
         for alias in skill.aliases {
-            commands.append(SlashCommand(name: alias, description: skill.description, icon: icon, isSkill: true, resolvesTo: skill.name))
+            commands.append(SlashCommand(name: alias, description: skill.description, icon: icon, isSkill: true, resolvesTo: skill.name, parameters: skill.parameters))
         }
         return commands
     }
@@ -53,6 +57,7 @@ struct GlobalInputBar: View {
 
     @State private var selectedItem: PhotosPickerItem?
     @FocusState private var isInputFocused: Bool
+    @FocusState private var focusedParamIndex: Int?
     @StateObject private var audioRecorder = AudioRecorder()
     @State private var placeholderIndex = Int.random(in: 0..<20)
     @State private var textFieldId = UUID()
@@ -63,6 +68,8 @@ struct GlobalInputBar: View {
     @State private var showRecordingOverlay = false
     @State private var idleTime: Date = Date()
     @State private var showStopButton = false
+    @State private var selectedSkillCommand: SlashCommand?
+    @State private var parameterValues: [String] = []
 
     private let swipeThreshold: CGFloat = 60
     private let transitionDuration: Double = 0.15
@@ -111,12 +118,37 @@ struct GlobalInputBar: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if !filteredCommands.isEmpty {
+            if let skill = selectedSkillCommand {
+                SkillParameterBar(
+                    skill: skill,
+                    parameterValues: $parameterValues,
+                    focusedIndex: $focusedParamIndex,
+                    onCancel: {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            selectedSkillCommand = nil
+                            parameterValues = []
+                            inputText = ""
+                        }
+                    }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if !filteredCommands.isEmpty {
                 SlashCommandSuggestions(
                     commands: filteredCommands,
                     onSelect: { command in
-                        inputText = "/\(command.resolvesTo ?? command.name)"
-                        onSend()
+                        if command.hasParameters {
+                            withAnimation(.easeOut(duration: 0.15)) {
+                                selectedSkillCommand = command
+                                parameterValues = Array(repeating: "", count: command.parameters.count)
+                                inputText = "/\(command.resolvesTo ?? command.name)"
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                focusedParamIndex = 0
+                            }
+                        } else {
+                            inputText = "/\(command.resolvesTo ?? command.name)"
+                            onSend()
+                        }
                     }
                 )
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -177,12 +209,12 @@ struct GlobalInputBar: View {
                                 .foregroundColor(.accentColor.opacity(0.9))
                         }
                     } else {
-                        Button(action: onSend) {
+                        Button(action: sendWithParameters) {
                             Image(systemName: "paperplane.fill")
                                 .font(.system(size: 22))
-                                .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+                                .foregroundColor(canSendWithParams ? .accentColor : .accentColor.opacity(0.4))
                         }
-                        .disabled(!canSend)
+                        .disabled(!canSendWithParams)
                     }
                 }
                 .opacity(showInputBar ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
@@ -289,12 +321,39 @@ struct GlobalInputBar: View {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImageData != nil
     }
 
+    private var canSendWithParams: Bool {
+        if let skill = selectedSkillCommand {
+            let requiredFilled = zip(skill.parameters, parameterValues).allSatisfy { param, value in
+                !param.required || !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+            return requiredFilled
+        }
+        return canSend
+    }
+
     private var shouldShowStopButton: Bool {
         isRunning && showStopButton && !isInputFocused
     }
 
     private var canRecord: Bool {
         isConnected && isWhisperReady && !audioRecorder.isTranscribing
+    }
+
+    private func sendWithParameters() {
+        if let skill = selectedSkillCommand {
+            let paramText = parameterValues.enumerated().compactMap { idx, value -> String? in
+                let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return nil }
+                return trimmed
+            }.joined(separator: " ")
+
+            if !paramText.isEmpty {
+                inputText = "/\(skill.resolvesTo ?? skill.name) \(paramText)"
+            }
+            selectedSkillCommand = nil
+            parameterValues = []
+        }
+        onSend()
     }
 
     private func startRecording() {
@@ -393,5 +452,103 @@ struct SkillPill: View {
 
     private var builtInGradient: LinearGradient {
         LinearGradient(colors: [.cyan], startPoint: .leading, endPoint: .trailing)
+    }
+}
+
+struct SkillParameterBar: View {
+    let skill: SlashCommand
+    @Binding var parameterValues: [String]
+    var focusedIndex: FocusState<Int?>.Binding
+
+    let onCancel: () -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Button(action: onCancel) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+
+                HStack(spacing: 6) {
+                    Image(systemName: skill.icon)
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("/\(skill.resolvesTo ?? skill.name)")
+                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                }
+                .foregroundStyle(skillGradient)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.purple.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [Color.purple.opacity(0.3), Color.pink.opacity(0.2)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                )
+
+                ForEach(Array(skill.parameters.enumerated()), id: \.offset) { index, param in
+                    ParameterInputBubble(
+                        parameter: param,
+                        value: $parameterValues[index],
+                        isFocused: focusedIndex.wrappedValue == index,
+                        onTap: { focusedIndex.wrappedValue = index }
+                    )
+                    .focused(focusedIndex, equals: index)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+    }
+
+    private var skillGradient: LinearGradient {
+        LinearGradient(
+            colors: [.purple, .pink.opacity(0.8)],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+}
+
+struct ParameterInputBubble: View {
+    let parameter: SkillParameter
+    @Binding var value: String
+    let isFocused: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        HStack(spacing: 4) {
+            TextField(parameter.placeholder, text: $value)
+                .font(.system(size: 12, design: .monospaced))
+                .textFieldStyle(.plain)
+                .frame(minWidth: 100, maxWidth: 200)
+            if parameter.required && value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Image(systemName: "asterisk")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundColor(.pink.opacity(0.6))
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.purple.opacity(isFocused ? 0.18 : 0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.purple.opacity(isFocused ? 0.4 : 0.2), lineWidth: 1)
+                )
+        )
+        .onTapGesture(perform: onTap)
     }
 }
