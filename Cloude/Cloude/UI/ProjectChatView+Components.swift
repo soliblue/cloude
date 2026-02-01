@@ -249,16 +249,11 @@ struct ProjectChatMessageList: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
             }
-            if !currentToolCalls.isEmpty {
-                ToolCallsSection(toolCalls: currentToolCalls)
-                    .padding(.vertical, 8)
-            }
             if !currentOutput.isEmpty || !currentToolCalls.isEmpty || currentRunStats != nil {
                 StreamingInterleavedOutput(
                     text: currentOutput,
                     toolCalls: currentToolCalls,
-                    runStats: currentRunStats,
-                    hasToolCallsSection: !currentToolCalls.isEmpty
+                    runStats: currentRunStats
                 )
             }
         }
