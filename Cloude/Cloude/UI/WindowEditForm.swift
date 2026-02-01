@@ -16,6 +16,7 @@ struct WindowEditForm: View {
     var showRemoveButton: Bool = true
     var onRemove: (() -> Void)?
     var onRefresh: (() async -> Void)?
+    var onDuplicate: ((Conversation) -> Void)?
 
     @State private var name: String = ""
     @State private var symbol: String = ""
@@ -179,6 +180,27 @@ struct WindowEditForm: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
+
+                if let conv = conversation, conv.sessionId != nil, let proj = project {
+                    Button {
+                        if let newConv = projectStore.duplicateConversation(conv, in: proj) {
+                            onDuplicate?(newConv)
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.triangle.branch")
+                                .font(.system(size: 18))
+                            Text("Fork")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.oceanSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 if onRefresh != nil {
                     Button {
