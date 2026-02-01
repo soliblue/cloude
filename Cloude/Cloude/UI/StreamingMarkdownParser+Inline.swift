@@ -222,7 +222,31 @@ extension StreamingMarkdownParser {
                     }
                     codeText.append(remaining.removeFirst())
                 }
-                segments.append(.code(codeText))
+                if looksLikeFilePath(codeText) {
+                    segments.append(.filePath(codeText))
+                } else {
+                    segments.append(.code(codeText))
+                }
+                continue
+            }
+
+            if remaining.hasPrefix("/Users/") || remaining.hasPrefix("/tmp/") || remaining.hasPrefix("/var/") {
+                flushText()
+                var pathText = ""
+                while !remaining.isEmpty {
+                    let ch = remaining.first!
+                    if ch.isWhitespace || ch == ")" || ch == "]" || ch == "," || ch == ";" {
+                        break
+                    }
+                    pathText.append(remaining.removeFirst())
+                }
+                if looksLikeFilePath(pathText) {
+                    segments.append(.filePath(pathText))
+                } else {
+                    var attr = AttributedString(pathText)
+                    if let font = font { attr.font = font }
+                    segments.append(.text(attr))
+                }
                 continue
             }
 
@@ -268,6 +292,15 @@ extension StreamingMarkdownParser {
                 attr.font = .system(size: 14, weight: .regular, design: .monospaced)
                 attr.backgroundColor = .secondary.opacity(0.2)
                 result.append(attr)
+            case .filePath(_, let path):
+                var attr = AttributedString(path)
+                attr.font = .system(size: 14, weight: .medium, design: .monospaced)
+                attr.foregroundColor = .accentColor
+                if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+                   let url = URL(string: "cloude://file\(encodedPath)") {
+                    attr.link = url
+                }
+                result.append(attr)
             case .lineBreak:
                 result.append(AttributedString("\n"))
             }
@@ -290,5 +323,14 @@ extension StreamingMarkdownParser {
         idx = line.index(after: idx)
         guard idx < line.endIndex && line[idx] == " " else { return nil }
         return line.index(after: idx)
+    }
+
+    private static func looksLikeFilePath(_ text: String) -> Bool {
+        guard text.hasPrefix("/") else { return false }
+        let imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".heic", ".svg", ".pdf"]
+        let codeExtensions = [".swift", ".py", ".js", ".ts", ".json", ".md", ".txt", ".html", ".css", ".yml", ".yaml", ".sh", ".pptx", ".plist"]
+        let allExtensions = imageExtensions + codeExtensions
+        let lowered = text.lowercased()
+        return allExtensions.contains { lowered.hasSuffix($0) }
     }
 }

@@ -44,11 +44,12 @@ extension ServerMessage {
             try container.encode("session_id", forKey: .type)
             try container.encode(id, forKey: .id)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .missedResponse(let sessionId, let text, let completedAt):
+        case .missedResponse(let sessionId, let text, let completedAt, let toolCalls):
             try container.encode("missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
             try container.encode(text, forKey: .text)
             try container.encode(completedAt, forKey: .completedAt)
+            try container.encode(toolCalls, forKey: .toolCalls)
         case .noMissedResponse(let sessionId):
             try container.encode("no_missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
