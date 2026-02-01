@@ -71,9 +71,6 @@ struct ProjectChatMessageList: View {
     @State private var hasScrolledToStreaming = false
     @State private var lastUserMessageCount = 0
     @State private var showScrollToBottom = false
-    @State private var bottomPullOffset: CGFloat = 0
-    @State private var scrollViewHeight: CGFloat = 0
-    @State private var isRefreshingFromBottom = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isInitialLoad = true
 
@@ -158,33 +155,16 @@ struct ProjectChatMessageList: View {
                         GeometryReader { geo in
                             let frame = geo.frame(in: .named("scrollArea"))
                             Color.clear
-                                .preference(key: BottomOverscrollKey.self, value: frame.minY)
                                 .preference(key: ScrollOffsetKey.self, value: frame.minY)
                         }
                         .frame(height: 1)
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .background(
-                    GeometryReader { scrollGeo in
-                        Color.clear
-                            .preference(key: ScrollViewHeightKey.self, value: scrollGeo.size.height)
-                    }
-                )
                 .coordinateSpace(name: "scrollArea")
-                .onPreferenceChange(BottomOverscrollKey.self) { offset in
-                    bottomPullOffset = offset
-                    checkBottomOverscroll()
-                }
-                .onPreferenceChange(ScrollViewHeightKey.self) { height in
-                    scrollViewHeight = height
-                }
                 .onPreferenceChange(ScrollOffsetKey.self) { offset in
                     scrollOffset = offset
                     showScrollToBottom = offset < -200
-                }
-                .refreshable {
-                    await onRefresh?()
                 }
                 .scrollDismissesKeyboard(.immediately)
                 .onTapGesture {
@@ -271,23 +251,16 @@ struct ProjectChatMessageList: View {
             }
             if !currentToolCalls.isEmpty {
                 ToolCallsSection(toolCalls: currentToolCalls)
-                    .padding(.horizontal, 16)
                     .padding(.vertical, 8)
             }
-            if !currentOutput.isEmpty || !currentToolCalls.isEmpty {
-                StreamingInterleavedOutput(text: currentOutput, toolCalls: currentToolCalls)
+            if !currentOutput.isEmpty || !currentToolCalls.isEmpty || currentRunStats != nil {
+                StreamingInterleavedOutput(
+                    text: currentOutput,
+                    toolCalls: currentToolCalls,
+                    runStats: currentRunStats,
+                    hasToolCallsSection: !currentToolCalls.isEmpty
+                )
             }
-            Group {
-                if let stats = currentRunStats {
-                    RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd)
-                        .transition(.opacity)
-                } else {
-                    Color.clear
-                }
-            }
-            .frame(height: 20)
-            .padding(.horizontal, 16)
-            .padding(.top, 4)
         }
         .id(streamingId)
     }
@@ -297,34 +270,9 @@ struct ProjectChatMessageList: View {
             scrollProxy?.scrollTo(id, anchor: anchor)
         }
     }
-
-    private func checkBottomOverscroll() {
-        let overscroll = scrollViewHeight - bottomPullOffset
-        if overscroll > 60 && !isRefreshingFromBottom && scrollViewHeight > 0 {
-            isRefreshingFromBottom = true
-            Task {
-                await onRefresh?()
-                isRefreshingFromBottom = false
-            }
-        }
-    }
-}
-
-private struct BottomOverscrollKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
 }
 
 private struct ScrollOffsetKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
-
-private struct ScrollViewHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()

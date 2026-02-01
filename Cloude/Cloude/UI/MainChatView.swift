@@ -160,7 +160,18 @@ struct MainChatView: View {
                     }
                     editingWindow = nil
                 },
-                onDismiss: { editingWindow = nil }
+                onDismiss: { editingWindow = nil },
+                onRefresh: {
+                    guard let projectId = window.projectId,
+                          let project = projectStore.projects.first(where: { $0.id == projectId }),
+                          let convId = window.conversationId,
+                          let conv = project.conversations.first(where: { $0.id == convId }),
+                          let sessionId = conv.sessionId else { return }
+                    let workingDir = conv.workingDirectory ?? project.rootDirectory
+                    guard !workingDir.isEmpty else { return }
+                    connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                }
             )
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in

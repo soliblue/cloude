@@ -36,7 +36,6 @@ struct MessageBubble: View {
         VStack(alignment: .leading, spacing: 0) {
             if !message.isUser && !message.toolCalls.isEmpty {
                 ToolCallsSection(toolCalls: message.toolCalls)
-                    .padding(.horizontal, 16)
                     .padding(.vertical, 8)
             }
 
@@ -195,7 +194,9 @@ struct InterleavedMessageContent: View {
                                 InlineToolPill(toolCall: tool)
                             }
                         }
+                        .padding(.horizontal, 16)
                     }
+                    .padding(.horizontal, -16)
                 }
             }
         }

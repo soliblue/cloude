@@ -13,6 +13,7 @@ struct WindowEditSheet: View {
     let onShowAllConversations: () -> Void
     let onNewConversation: () -> Void
     let onDismiss: () -> Void
+    var onRefresh: (() async -> Void)?
 
     var body: some View {
         NavigationStack {
@@ -28,7 +29,8 @@ struct WindowEditSheet: View {
                 onRemove: {
                     windowManager.removeWindow(window.id)
                     onDismiss()
-                }
+                },
+                onRefresh: onRefresh
             )
             .padding(.horizontal, 20)
             .navigationTitle("Edit Chat")
