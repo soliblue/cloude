@@ -85,7 +85,11 @@ struct GlobalInputBar: View {
         Self.placeholders[placeholderIndex % Self.placeholders.count]
     }
 
-    private var allCommands: [SlashCommand] {
+    private var primaryCommands: [SlashCommand] {
+        builtInCommands + skills.map { SlashCommand.fromSkill($0).first! }
+    }
+
+    private var allCommandsWithAliases: [SlashCommand] {
         builtInCommands + skills.flatMap { SlashCommand.fromSkill($0) }
     }
 
@@ -93,9 +97,12 @@ struct GlobalInputBar: View {
         guard inputText.hasPrefix("/") else { return [] }
         let query = String(inputText.dropFirst()).lowercased()
         if query.isEmpty {
-            return allCommands
+            return primaryCommands
         }
-        return allCommands.filter { $0.name.lowercased().hasPrefix(query) }
+        if let match = allCommandsWithAliases.first(where: { $0.name.lowercased() == query }) {
+            return [match]
+        }
+        return primaryCommands.filter { $0.name.lowercased().hasPrefix(query) }
     }
 
     private var isSlashCommand: Bool {
