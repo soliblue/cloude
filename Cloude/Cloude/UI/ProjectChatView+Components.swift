@@ -58,6 +58,13 @@ struct ProjectChatMessageList: View {
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
     var onDeleteQueued: ((UUID) -> Void)?
+    var project: Project?
+    var conversation: Conversation?
+    var projectStore: ProjectStore?
+    var connection: ConnectionManager?
+    var onSelectConversation: ((Conversation) -> Void)?
+    var onShowAllConversations: (() -> Void)?
+    var onNewConversation: (() -> Void)?
 
     @State private var hasScrolledToStreaming = false
     @State private var lastUserMessageCount = 0
@@ -67,6 +74,10 @@ struct ProjectChatMessageList: View {
     @State private var isRefreshingFromBottom = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isInitialLoad = true
+    @State private var showFolderPicker = false
+    @State private var showSymbolPicker = false
+    @State private var editName = ""
+    @State private var editSymbol = ""
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -78,6 +89,25 @@ struct ProjectChatMessageList: View {
 
     private var showLoadingIndicator: Bool {
         isInitialLoad && messages.isEmpty && conversationId != nil && currentOutput.isEmpty
+    }
+
+    private var showEmptyState: Bool {
+        !isInitialLoad && messages.isEmpty && currentOutput.isEmpty && conversationId != nil
+    }
+
+    private var canChangeFolder: Bool {
+        guard let conv = conversation else { return false }
+        return conv.messages.isEmpty && conv.sessionId == nil
+    }
+
+    private var currentFolderPath: String {
+        conversation?.workingDirectory ?? project?.rootDirectory ?? ""
+    }
+
+    private var folderDisplayName: String {
+        let path = currentFolderPath
+        if path.isEmpty { return "No folder selected" }
+        return (path as NSString).lastPathComponent
     }
 
     var body: some View {
@@ -93,6 +123,8 @@ struct ProjectChatMessageList: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if showEmptyState && canChangeFolder {
+                emptyStateView
             }
 
             ScrollViewReader { proxy in
@@ -252,6 +284,176 @@ struct ProjectChatMessageList: View {
             .padding(.top, 4)
         }
         .id(streamingId)
+    }
+
+    private var recentConversations: [Conversation] {
+        guard let proj = project else { return [] }
+        return proj.conversations
+            .sorted { $0.lastMessageAt > $1.lastMessageAt }
+            .filter { $0.id != conversation?.id }
+            .prefix(5)
+            .map { $0 }
+    }
+
+    private var emptyStateView: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                HStack(spacing: 12) {
+                    Button(action: { showSymbolPicker = true }) {
+                        Image.safeSymbol(editSymbol.isEmpty ? nil : editSymbol, fallback: "circle.dashed")
+                            .font(.system(size: 30))
+                            .frame(width: 56, height: 56)
+                            .background(Color.oceanSurface)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    TextField("Name", text: $editName)
+                        .font(.title3)
+                        .textFieldStyle(.plain)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.oceanSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .onChange(of: editName) { _, newValue in
+                            if let proj = project, let conv = conversation, !newValue.isEmpty {
+                                projectStore?.renameConversation(conv, in: proj, to: newValue)
+                            }
+                        }
+                }
+
+                if canChangeFolder {
+                    Button(action: { showFolderPicker = true }) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "folder.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.accentColor)
+                                .frame(width: 32)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(folderDisplayName)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .lineLimit(1)
+                                if !currentFolderPath.isEmpty {
+                                    Text(currentFolderPath)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                        .truncationMode(.head)
+                                }
+                            }
+                            Spacer()
+                            Text("Change")
+                                .font(.caption)
+                                .foregroundColor(.accentColor)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Color.oceanSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                if !recentConversations.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Recent")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Button(action: { onShowAllConversations?() }) {
+                                Text("See All")
+                                    .font(.caption)
+                                    .foregroundColor(.accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 4)
+
+                        VStack(spacing: 0) {
+                            ForEach(recentConversations) { conv in
+                                Button(action: { onSelectConversation?(conv) }) {
+                                    HStack(spacing: 10) {
+                                        Image.safeSymbol(conv.symbol)
+                                            .font(.system(size: 17))
+                                            .foregroundColor(.secondary)
+                                            .frame(width: 24)
+                                        Text(conv.name)
+                                            .font(.subheadline)
+                                            .lineLimit(1)
+                                        Spacer()
+                                        Text(relativeTime(conv.lastMessageAt))
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+
+                                if conv.id != recentConversations.last?.id {
+                                    Divider()
+                                        .padding(.leading, 46)
+                                }
+                            }
+                        }
+                        .background(Color.oceanSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                }
+
+                Button(action: { onNewConversation?() }) {
+                    HStack {
+                        Image(systemName: "plus")
+                            .font(.system(size: 18))
+                        Text("New")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.oceanSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 40)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .sheet(isPresented: $showFolderPicker) {
+            if let conn = connection {
+                FolderPickerView(connection: conn) { path in
+                    if let proj = project, let conv = conversation {
+                        projectStore?.setWorkingDirectory(conv, in: proj, path: path)
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showSymbolPicker) {
+            SymbolPickerSheet(selectedSymbol: $editSymbol)
+        }
+        .onChange(of: editSymbol) { _, newValue in
+            if let proj = project, let conv = conversation {
+                projectStore?.setConversationSymbol(conv, in: proj, symbol: newValue.isEmpty ? nil : newValue)
+            }
+        }
+        .onAppear {
+            editName = conversation?.name ?? ""
+            editSymbol = conversation?.symbol ?? ""
+        }
+    }
+
+    private func relativeTime(_ date: Date) -> String {
+        let seconds = Int(-date.timeIntervalSinceNow)
+        if seconds < 60 { return "now" }
+        let minutes = seconds / 60
+        if minutes < 60 { return "\(minutes)m ago" }
+        let hours = minutes / 60
+        if hours < 24 { return "\(hours)h ago" }
+        let days = hours / 24
+        return "\(days)d ago"
     }
 
     private func scrollToMessage(_ id: UUID, anchor: UnitPoint = .top) {

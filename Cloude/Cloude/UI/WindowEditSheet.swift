@@ -8,6 +8,7 @@ struct WindowEditSheet: View {
     let window: ChatWindow
     @ObservedObject var projectStore: ProjectStore
     @ObservedObject var windowManager: WindowManager
+    @ObservedObject var connection: ConnectionManager
     let onSelectConversation: (Conversation) -> Void
     let onShowAllConversations: () -> Void
     let onNewConversation: () -> Void
@@ -16,6 +17,7 @@ struct WindowEditSheet: View {
     @State private var name: String = ""
     @State private var symbol: String = ""
     @State private var showSymbolPicker = false
+    @State private var showFolderPicker = false
 
     private var project: Project? {
         window.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
@@ -34,6 +36,21 @@ struct WindowEditSheet: View {
             .filter { $0.id != conversation?.id }
             .prefix(5)
             .map { $0 }
+    }
+
+    private var canChangeFolder: Bool {
+        guard let conv = conversation else { return false }
+        return conv.messages.isEmpty && conv.sessionId == nil
+    }
+
+    private var currentFolderPath: String {
+        conversation?.workingDirectory ?? project?.rootDirectory ?? ""
+    }
+
+    private var folderDisplayName: String {
+        let path = currentFolderPath
+        if path.isEmpty { return "No folder selected" }
+        return (path as NSString).lastPathComponent
     }
 
     var body: some View {
@@ -56,6 +73,39 @@ struct WindowEditSheet: View {
                         .padding(.vertical, 12)
                         .background(Color.oceanSurface)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                if canChangeFolder {
+                    Button(action: { showFolderPicker = true }) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "folder.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.accentColor)
+                                .frame(width: 32)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(folderDisplayName)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .lineLimit(1)
+                                if !currentFolderPath.isEmpty {
+                                    Text(currentFolderPath)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                        .truncationMode(.head)
+                                }
+                            }
+                            Spacer()
+                            Text("Change")
+                                .font(.caption)
+                                .foregroundColor(.accentColor)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Color.oceanSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 if !recentConversations.isEmpty {
@@ -172,6 +222,13 @@ struct WindowEditSheet: View {
             }
             .sheet(isPresented: $showSymbolPicker) {
                 SymbolPickerSheet(selectedSymbol: $symbol)
+            }
+            .sheet(isPresented: $showFolderPicker) {
+                FolderPickerView(connection: connection) { path in
+                    if let proj = project, let conv = conversation {
+                        projectStore.setWorkingDirectory(conv, in: proj, path: path)
+                    }
+                }
             }
             .background(.ultraThinMaterial)
             .scrollContentBackground(.hidden)

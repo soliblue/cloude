@@ -137,6 +137,7 @@ struct MainChatView: View {
                 window: window,
                 projectStore: projectStore,
                 windowManager: windowManager,
+                connection: connection,
                 onSelectConversation: { conv in
                     if let projectId = window.projectId,
                        let project = projectStore.projects.first(where: { $0.id == projectId }) {
@@ -284,7 +285,21 @@ struct MainChatView: View {
                     conversation: conversation,
                     isCompact: false,
                     isKeyboardVisible: isKeyboardVisible,
-                    onInteraction: { dismissKeyboard() }
+                    onInteraction: { dismissKeyboard() },
+                    onSelectRecentConversation: { conv in
+                        if let proj = project {
+                            windowManager.linkToCurrentConversation(window.id, project: proj, conversation: conv)
+                        }
+                    },
+                    onShowAllConversations: {
+                        selectingWindow = window
+                    },
+                    onNewConversation: {
+                        if let proj = project {
+                            let newConv = projectStore.newConversation(in: proj)
+                            windowManager.linkToCurrentConversation(window.id, project: proj, conversation: newConv)
+                        }
+                    }
                 )
             case .files:
                 FileBrowserView(
@@ -553,7 +568,7 @@ struct MainChatView: View {
             projectStore.addMessage(userMessage, to: conv, in: proj)
 
             let isNewSession = conv.sessionId == nil
-            let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
+            let workingDir = conv.workingDirectory ?? (proj.rootDirectory.isEmpty ? nil : proj.rootDirectory)
             connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol)
         }
     }

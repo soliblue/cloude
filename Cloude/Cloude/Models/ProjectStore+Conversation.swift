@@ -39,10 +39,14 @@ extension ProjectStore {
         save()
     }
 
-    func updateSessionId(_ conversation: Conversation, in project: Project, sessionId: String) {
+    func updateSessionId(_ conversation: Conversation, in project: Project, sessionId: String, workingDirectory: String?) {
         guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        guard projects[projectIndex].conversations[convIndex].sessionId != sessionId else { return }
+        let conv = projects[projectIndex].conversations[convIndex]
+        guard conv.sessionId != sessionId || conv.workingDirectory != workingDirectory else { return }
         projects[projectIndex].conversations[convIndex].sessionId = sessionId
+        if conv.workingDirectory == nil, let wd = workingDirectory {
+            projects[projectIndex].conversations[convIndex].workingDirectory = wd
+        }
         currentProject = projects[projectIndex]
         if currentConversation?.id == conversation.id {
             currentConversation = projects[projectIndex].conversations[convIndex]
@@ -63,6 +67,16 @@ extension ProjectStore {
     func setConversationSymbol(_ conversation: Conversation, in project: Project, symbol: String?) {
         guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
         projects[projectIndex].conversations[convIndex].symbol = symbol
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
+        }
+        save()
+    }
+
+    func setWorkingDirectory(_ conversation: Conversation, in project: Project, path: String) {
+        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+        projects[projectIndex].conversations[convIndex].workingDirectory = path
         currentProject = projects[projectIndex]
         if currentConversation?.id == conversation.id {
             currentConversation = projects[projectIndex].conversations[convIndex]

@@ -3,6 +3,10 @@ import WidgetKit
 import SwiftUI
 import CloudeShared
 
+extension Color {
+    static let cloudeAccent = Color(red: 0.8, green: 0.447, blue: 0.341)
+}
+
 struct CloudeLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: CloudeActivityAttributes.self) { context in
@@ -12,7 +16,7 @@ struct CloudeLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     Image(systemName: context.attributes.conversationSymbol ?? "cloud.fill")
                         .font(.title2)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.cloudeAccent)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     StateIndicator(state: context.state.agentState)
@@ -41,12 +45,12 @@ struct CloudeLiveActivity: Widget {
                 }
             } compactLeading: {
                 Image(systemName: context.attributes.conversationSymbol ?? "cloud.fill")
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.cloudeAccent)
             } compactTrailing: {
                 StateIndicator(state: context.state.agentState, compact: true)
             } minimal: {
                 Image(systemName: "cloud.fill")
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.cloudeAccent)
             }
         }
     }
@@ -133,11 +137,12 @@ struct LockScreenView: View {
         HStack(spacing: 10) {
             Image(systemName: context.attributes.conversationSymbol ?? "cloud.fill")
                 .font(.body)
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.cloudeAccent)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(context.attributes.conversationName)
-                    .font(.subheadline.weight(.medium))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.cloudeAccent)
                     .lineLimit(1)
 
                 HStack(spacing: 4) {
@@ -169,7 +174,7 @@ struct LockScreenView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(.regularMaterial, in: .rect(cornerRadius: 16))
+        .background(Color.white, in: .rect(cornerRadius: 16))
     }
 
     var stateText: String {
