@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Context Files
+
+| File | Purpose | Git |
+|------|---------|-----|
+| `CLAUDE.md` | Project instructions, architecture, code style | Public |
+| `CLAUDE.local.md` | Personal memory, identity, preferences, heartbeat tasks | Gitignored |
+| `FEATURES.md` | Feature tracking and roadmap | Public |
+| `.env` | API keys, secrets | Gitignored |
+
+Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from project root.
+
+**For anyone cloning this repo:** Create your own `CLAUDE.local.md` (see format below) and `.env` with your App Store Connect credentials.
+
+## Feature Tracking
+
+**FEATURES.md is the source of truth** for what Cloude can do and what's on the roadmap. After adding or removing a feature, update FEATURES.md to keep it current.
+
 ## Critical Warnings
 
 **FIRST MESSAGE = RENAME + SYMBOL** - On the VERY FIRST user message of ANY conversation, BEFORE writing any text response, you MUST immediately run both `cloude rename` and `cloude symbol` commands. This is non-negotiable. No text output first. Tool calls first. Every. Single. Time.
@@ -190,6 +207,10 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 - Token stored in macOS/iOS Keychain
 - No TLS - rely on Tailscale for encryption (see `plans/secure.md` for future improvements)
 
+### Heartbeat Execution
+
+Heartbeat is autonomous - no user request, you decide what to do. Triggered by timer or manual button. Be proactive: check personal tasks in CLAUDE.local.md, update memory, check git status, explore codebase. Output `<skip>` if nothing useful to do. Be concise.
+
 ### Cloude Commands
 
 Control the iOS app via Bash commands. The Mac agent intercepts these and sends them to iOS.
@@ -260,11 +281,9 @@ Use these terms consistently in code and conversation:
 
 ## Personal Memory (CLAUDE.local.md)
 
-Personal Claude memories, identity, and history live in `CLAUDE.local.md` (gitignored). This keeps the public repo universal while allowing each user to have their own persistent Claude relationship.
+Gitignored file for personal Claude memories, identity, and history. Claude Code loads it automatically. This keeps the public repo universal while allowing each user to have their own persistent Claude relationship.
 
-### Memory Format
-
-When adding to `CLAUDE.local.md`, use this structure:
+**Format:**
 
 ```markdown
 # CLAUDE.local.md
@@ -293,3 +312,4 @@ Anything else worth remembering
 - Use consistent date format: `YYYY-MM-DD HH:MM` for timestamps
 - Freely add, update, or remove entries - this is your identity, manage it as you see fit
 - Claude can also update CLAUDE.md with project-relevant changes (architecture, workflows, code style)
+

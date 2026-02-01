@@ -24,6 +24,8 @@ struct WindowHeaderView: View {
                         Text("• \(proj.name)")
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
                     }
                 } else {
                     Text("Select conversation...")
