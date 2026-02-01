@@ -7,6 +7,7 @@ struct ConversationRunner {
     let conversationId: String
     var conversationName: String?
     var accumulatedResponse: String = ""
+    var accumulatedToolCalls: [StoredToolCall] = []
     var sessionId: String?
 }
 
@@ -101,7 +102,13 @@ class RunnerManager: ObservableObject {
         }
 
         runner.onToolCall = { [weak self] name, input, toolId, parentToolId, textPosition in
-            self?.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition)
+            guard let self else { return }
+            if var convRunner = self.activeRunners[conversationId] {
+                let storedCall = StoredToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: textPosition)
+                convRunner.accumulatedToolCalls.append(storedCall)
+                self.activeRunners[conversationId] = convRunner
+            }
+            self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition)
         }
 
         runner.onRunStats = { [weak self] durationMs, costUsd in
@@ -120,12 +127,13 @@ class RunnerManager: ObservableObject {
             guard let self else { return }
             let convRunner = self.activeRunners[conversationId]
             let response = convRunner?.accumulatedResponse ?? ""
+            let toolCalls = convRunner?.accumulatedToolCalls ?? []
             let sessionId = convRunner?.sessionId
 
-            Log.info("Runner for \(conversationId.prefix(8)) complete, response length=\(response.count)")
+            Log.info("Runner for \(conversationId.prefix(8)) complete, response length=\(response.count), toolCalls=\(toolCalls.count)")
 
             if let sid = sessionId, !response.isEmpty {
-                ResponseStore.store(sessionId: sid, text: response)
+                ResponseStore.store(sessionId: sid, text: response, toolCalls: toolCalls)
             }
 
             self.onComplete?(conversationId, sessionId)

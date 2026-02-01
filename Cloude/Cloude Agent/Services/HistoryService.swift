@@ -8,6 +8,14 @@ enum HistoryError: Error {
 
 struct HistoryService {
 
+    private struct ContentItem {
+        let type: String
+        let text: String?
+        let toolName: String?
+        let toolId: String?
+        let toolInput: String?
+    }
+
     static func getHistory(sessionId: String, workingDirectory: String) -> Result<[HistoryMessage], HistoryError> {
         let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-")
         let trimmedPath = projectPath.hasPrefix("-") ? String(projectPath.dropFirst()) : projectPath
@@ -26,15 +34,18 @@ struct HistoryService {
             let content = try String(contentsOf: sessionFile, encoding: .utf8)
             let lines = content.components(separatedBy: .newlines).filter { !$0.isEmpty }
 
-            var messages: [HistoryMessage] = []
             let dateFormatter = ISO8601DateFormatter()
             dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+            var userMessages: [(uuid: String, timestamp: Date, text: String)] = []
+            var assistantMessages: [String: (timestamp: Date, items: [ContentItem])] = [:]
 
             for line in lines {
                 guard let data = line.data(using: .utf8),
                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                       let type = json["type"] as? String,
-                      let timestampStr = json["timestamp"] as? String else {
+                      let timestampStr = json["timestamp"] as? String,
+                      let uuid = json["uuid"] as? String else {
                     continue
                 }
 
@@ -43,26 +54,72 @@ struct HistoryService {
                 if type == "user" {
                     if let messageObj = json["message"] as? [String: Any],
                        let content = messageObj["content"] as? String {
-                        messages.append(HistoryMessage(isUser: true, text: content, timestamp: timestamp))
+                        userMessages.append((uuid, timestamp, content))
                     }
                 } else if type == "assistant" {
-                    if let messageObj = json["message"] as? [String: Any],
-                       let contentArray = messageObj["content"] as? [[String: Any]] {
-                        var textParts: [String] = []
-                        for item in contentArray {
-                            if let itemType = item["type"] as? String, itemType == "text",
-                               let text = item["text"] as? String {
-                                textParts.append(text)
+                    guard let messageObj = json["message"] as? [String: Any],
+                          let contentArray = messageObj["content"] as? [[String: Any]] else {
+                        continue
+                    }
+
+                    for item in contentArray {
+                        guard let itemType = item["type"] as? String else { continue }
+
+                        let contentItem: ContentItem
+                        if itemType == "text", let text = item["text"] as? String {
+                            contentItem = ContentItem(type: "text", text: text, toolName: nil, toolId: nil, toolInput: nil)
+                        } else if itemType == "tool_use",
+                                  let name = item["name"] as? String,
+                                  let toolId = item["id"] as? String {
+                            var inputStr: String?
+                            if let inputDict = item["input"] as? [String: Any],
+                               let inputData = try? JSONSerialization.data(withJSONObject: inputDict),
+                               let inputJson = String(data: inputData, encoding: .utf8) {
+                                inputStr = inputJson
                             }
+                            contentItem = ContentItem(type: "tool_use", text: nil, toolName: name, toolId: toolId, toolInput: inputStr)
+                        } else {
+                            continue
                         }
-                        if !textParts.isEmpty {
-                            messages.append(HistoryMessage(isUser: false, text: textParts.joined(separator: "\n"), timestamp: timestamp))
+
+                        if var existing = assistantMessages[uuid] {
+                            existing.items.append(contentItem)
+                            assistantMessages[uuid] = existing
+                        } else {
+                            assistantMessages[uuid] = (timestamp, [contentItem])
                         }
                     }
                 }
             }
 
-            return .success(messages)
+            var allMessages: [(uuid: String, timestamp: Date, message: HistoryMessage)] = []
+
+            for user in userMessages {
+                allMessages.append((user.uuid, user.timestamp, HistoryMessage(isUser: true, text: user.text, timestamp: user.timestamp)))
+            }
+
+            for (uuid, data) in assistantMessages {
+                var accumulatedText = ""
+                var toolCalls: [StoredToolCall] = []
+
+                for item in data.items {
+                    if item.type == "text", let text = item.text {
+                        accumulatedText += text
+                    } else if item.type == "tool_use",
+                              let name = item.toolName,
+                              let toolId = item.toolId {
+                        let position = accumulatedText.count
+                        toolCalls.append(StoredToolCall(name: name, input: item.toolInput, toolId: toolId, textPosition: position))
+                    }
+                }
+
+                if !accumulatedText.isEmpty || !toolCalls.isEmpty {
+                    allMessages.append((uuid, data.timestamp, HistoryMessage(isUser: false, text: accumulatedText, timestamp: data.timestamp, toolCalls: toolCalls)))
+                }
+            }
+
+            let sorted = allMessages.sorted { $0.timestamp < $1.timestamp }
+            return .success(sorted.map { $0.message })
         } catch {
             return .failure(.readFailed(error.localizedDescription))
         }

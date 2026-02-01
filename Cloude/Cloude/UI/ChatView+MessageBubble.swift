@@ -194,8 +194,35 @@ private enum GroupedSegment {
 
 struct InlineToolPill: View {
     let toolCall: ToolCall
+    @Environment(\.openURL) private var openURL
+
+    private var filePath: String? {
+        guard ["Read", "Write", "Edit"].contains(toolCall.name),
+              let input = toolCall.input else { return nil }
+        if let data = input.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let path = json["file_path"] as? String {
+            return path
+        }
+        return nil
+    }
 
     var body: some View {
+        Group {
+            if let path = filePath,
+               let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+               let url = URL(string: "cloude://file\(encodedPath)") {
+                Button(action: { openURL(url) }) {
+                    pillContent
+                }
+                .buttonStyle(.plain)
+            } else {
+                pillContent
+            }
+        }
+    }
+
+    private var pillContent: some View {
         ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
             .lineLimit(1)
             .padding(.horizontal, 10)

@@ -11,7 +11,7 @@ public enum ServerMessage: Codable {
     case directoryListing(path: String, entries: [FileEntry])
     case fileContent(path: String, data: String, mimeType: String, size: Int64)
     case sessionId(id: String, conversationId: String?)
-    case missedResponse(sessionId: String, text: String, completedAt: Date)
+    case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall])
     case noMissedResponse(sessionId: String)
     case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?)
     case runStats(durationMs: Int, costUsd: Double, conversationId: String?)
@@ -33,7 +33,7 @@ public enum ServerMessage: Codable {
     case heartbeatSkipped(conversationId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls
     }
 
     public init(from decoder: Decoder) throws {
@@ -85,7 +85,8 @@ public enum ServerMessage: Codable {
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             let text = try container.decode(String.self, forKey: .text)
             let completedAt = try container.decode(Date.self, forKey: .completedAt)
-            self = .missedResponse(sessionId: sessionId, text: text, completedAt: completedAt)
+            let toolCalls = try container.decodeIfPresent([StoredToolCall].self, forKey: .toolCalls) ?? []
+            self = .missedResponse(sessionId: sessionId, text: text, completedAt: completedAt, toolCalls: toolCalls)
         case "no_missed_response":
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             self = .noMissedResponse(sessionId: sessionId)

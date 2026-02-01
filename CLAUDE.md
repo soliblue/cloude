@@ -28,9 +28,7 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 - Run as **two separate Bash commands** (not combined with `&&`)
 - Pass the name/symbol directly with NO quotes: `cloude rename Memory Fix` not `cloude rename "Memory Fix"`
 
-**NEVER kill/stop the Cloude Agent process** - The user connects to Claude Code through the Cloude Agent. Killing it disconnects them and they lose the ability to communicate with you. If asked to restart or rebuild the agent, launch the new one BEFORE or WITHOUT killing the old one.
-
-**NEVER build/restart the Mac agent yourself** - Building or launching the Mac agent from CLI (via fastlane or xcodebuild) causes connection issues when the user is already running it from Xcode. If the agent needs to be rebuilt, tell the user and let them handle it from Xcode.
+**Rebuilding the Mac agent** - You CAN rebuild the agent using `source .env && fastlane mac build_agent`. The build process will kill the old agent and launch the new one. **CRITICAL:** Always run this as the LAST thing in your response. Say everything important first, then trigger the build. The connection will drop briefly but the iOS app will reconnect automatically.
 
 ## Multi-Agent Workflow
 

@@ -172,7 +172,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         case .requestMissedResponse(let sessionId):
             if let stored = ResponseStore.retrieve(sessionId: sessionId) {
-                server.sendMessage(.missedResponse(sessionId: sessionId, text: stored.text, completedAt: stored.completedAt), to: connection)
+                server.sendMessage(.missedResponse(sessionId: sessionId, text: stored.text, completedAt: stored.completedAt, toolCalls: stored.toolCalls), to: connection)
                 ResponseStore.clear(sessionId: sessionId)
             } else {
                 server.sendMessage(.noMissedResponse(sessionId: sessionId), to: connection)
