@@ -39,39 +39,36 @@ struct StreamingInterleavedOutput: View {
     let text: String
     let toolCalls: [ToolCall]
     var runStats: (durationMs: Int, costUsd: Double)? = nil
-    var hasToolCallsSection: Bool = false
     @State private var pulse = false
 
     private var groupedSegments: [StreamingSegment] {
-        let sortedTools = toolCalls
-            .filter { $0.parentToolId == nil && $0.textPosition != nil }
+        let topLevelTools = toolCalls
+            .filter { $0.parentToolId == nil }
             .sorted { ($0.textPosition ?? 0) < ($1.textPosition ?? 0) }
 
         var result: [StreamingSegment] = []
         var currentIndex = 0
         var pendingTools: [ToolCall] = []
-        var hasAddedText = false
 
-        for tool in sortedTools {
+        for tool in topLevelTools {
             let position = tool.textPosition ?? 0
             if position > currentIndex && position <= text.count {
-                if !pendingTools.isEmpty && hasAddedText {
+                if !pendingTools.isEmpty {
                     result.append(.tools(pendingTools))
+                    pendingTools = []
                 }
-                pendingTools = []
                 let startIdx = text.index(text.startIndex, offsetBy: currentIndex)
                 let endIdx = text.index(text.startIndex, offsetBy: position)
                 let segment = String(text[startIdx..<endIdx])
                 if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     result.append(.text(segment))
-                    hasAddedText = true
                 }
                 currentIndex = position
             }
             pendingTools.append(tool)
         }
 
-        if !pendingTools.isEmpty && hasAddedText {
+        if !pendingTools.isEmpty {
             result.append(.tools(pendingTools))
         }
 
@@ -83,15 +80,7 @@ struct StreamingInterleavedOutput: View {
             }
         }
 
-        if result.isEmpty && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            result.append(.text(text))
-        }
-
         return result
-    }
-
-    private var hasPositionedToolCalls: Bool {
-        toolCalls.contains { $0.textPosition != nil && $0.parentToolId == nil }
     }
 
     var body: some View {
@@ -140,8 +129,7 @@ struct StreamingInterleavedOutput: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.top, hasToolCallsSection ? 4 : 12)
-            .padding(.bottom, 12)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(
