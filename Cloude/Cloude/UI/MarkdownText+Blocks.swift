@@ -15,7 +15,7 @@ struct CodeBlock: View {
                 .textSelection(.enabled)
         }
         .padding(12)
-        .background(Color(.secondarySystemBackground))
+        .background(Color.oceanSecondary)
         .cornerRadius(8)
     }
 }
@@ -60,7 +60,7 @@ struct MarkdownTableView: View {
             }
         }
         .padding(8)
-        .background(Color(.secondarySystemBackground))
+        .background(Color.oceanSecondary)
         .cornerRadius(6)
     }
 }
