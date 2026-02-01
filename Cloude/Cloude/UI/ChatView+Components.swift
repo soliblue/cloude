@@ -38,6 +38,8 @@ struct StreamingOutput: View {
 struct StreamingInterleavedOutput: View {
     let text: String
     let toolCalls: [ToolCall]
+    var runStats: (durationMs: Int, costUsd: Double)? = nil
+    var hasToolCallsSection: Bool = false
     @State private var pulse = false
 
     private var groupedSegments: [StreamingSegment] {
@@ -94,7 +96,7 @@ struct StreamingInterleavedOutput: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if text.isEmpty && toolCalls.isEmpty {
+            if text.isEmpty && toolCalls.isEmpty && runStats == nil {
                 HStack(spacing: 6) {
                     ProgressView()
                         .scaleEffect(0.7)
@@ -106,27 +108,41 @@ struct StreamingInterleavedOutput: View {
                 .padding(.top, 8)
             }
 
-            if !groupedSegments.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Array(groupedSegments.enumerated()), id: \.offset) { _, segment in
-                        switch segment {
-                        case .text(let content):
-                            StreamingMarkdownView(text: content)
-                        case .tools(let tools):
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 8) {
-                                    ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
-                                        InlineToolPill(toolCall: tool)
+            VStack(alignment: .leading, spacing: 4) {
+                if !groupedSegments.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(Array(groupedSegments.enumerated()), id: \.offset) { _, segment in
+                            switch segment {
+                            case .text(let content):
+                                StreamingMarkdownView(text: content)
+                            case .tools(let tools):
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 8) {
+                                        ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
+                                            InlineToolPill(toolCall: tool)
+                                        }
                                     }
+                                    .padding(.horizontal, 16)
                                 }
+                                .padding(.horizontal, -16)
                             }
                         }
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let stats = runStats {
+                    HStack(spacing: 8) {
+                        Text(Date(), style: .time)
+                            .font(.caption2)
+                        RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd)
+                    }
+                    .foregroundColor(.secondary)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.top, hasToolCallsSection ? 4 : 12)
+            .padding(.bottom, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(
             Color.accentColor
