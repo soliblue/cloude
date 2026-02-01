@@ -232,7 +232,7 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 
 ### Heartbeat Execution
 
-Heartbeat is autonomous - no user request, you decide what to do. Triggered by timer or manual button. Be proactive: check personal tasks in CLAUDE.local.md, update memory, check git status, explore codebase. Output `<skip>` if nothing useful to do. Be concise.
+Heartbeat is autonomous - no user request, you decide what to do. Triggered by timer or manual button. Be proactive: check personal tasks in CLAUDE.local.md, update memory, check git status, explore codebase. Use `cloude skip` if nothing useful to do. Be concise.
 
 ### Cloude Commands
 
@@ -244,6 +244,7 @@ cloude rename UI Polish      # Set conversation name (1-2 words, no quotes)
 cloude symbol paintbrush.pointed  # Set SF Symbol icon (no quotes)
 cloude memory local Notes Learned something new  # Add to CLAUDE.local.md
 cloude memory project Notes Project-specific info  # Add to CLAUDE.md
+cloude skip                  # Signal heartbeat skip (nothing useful to do)
 ```
 
 **Memory command:**

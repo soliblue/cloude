@@ -11,6 +11,7 @@ class ConversationOutput: ObservableObject {
     @Published var isRunning: Bool = false { didSet { parent?.objectWillChange.send() } }
     @Published var isCompacting: Bool = false { didSet { parent?.objectWillChange.send() } }
     @Published var newSessionId: String? { didSet { parent?.objectWillChange.send() } }
+    @Published var skipped: Bool = false { didSet { parent?.objectWillChange.send() } }
     var lastSavedMessageId: UUID?
 
     func reset() {
@@ -19,6 +20,7 @@ class ConversationOutput: ObservableObject {
         runStats = nil
         newSessionId = nil
         isCompacting = false
+        skipped = false
     }
 }
 
@@ -62,6 +64,7 @@ class ConnectionManager: ObservableObject {
     var onSkills: (([Skill]) -> Void)?
     var onHistorySync: ((String, [HistoryMessage]) -> Void)?
     var onHistorySyncError: ((String, String) -> Void)?
+    var onHeartbeatSkipped: ((String?) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
