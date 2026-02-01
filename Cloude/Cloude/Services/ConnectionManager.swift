@@ -60,6 +60,8 @@ class ConnectionManager: ObservableObject {
     var onSessionIdReceived: ((UUID, String) -> Void)?
     var onProcessList: (([AgentProcessInfo]) -> Void)?
     var onSkills: (([Skill]) -> Void)?
+    var onHistorySync: ((String, [HistoryMessage]) -> Void)?
+    var onHistorySyncError: ((String, String) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {

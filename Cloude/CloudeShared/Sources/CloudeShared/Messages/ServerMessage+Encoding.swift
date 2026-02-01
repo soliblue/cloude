@@ -112,6 +112,14 @@ extension ServerMessage {
         case .skills(let skills):
             try container.encode("skills", forKey: .type)
             try container.encode(skills, forKey: .skills)
+        case .historySync(let sessionId, let messages):
+            try container.encode("history_sync", forKey: .type)
+            try container.encode(sessionId, forKey: .sessionId)
+            try container.encode(messages, forKey: .messages)
+        case .historySyncError(let sessionId, let error):
+            try container.encode("history_sync_error", forKey: .type)
+            try container.encode(sessionId, forKey: .sessionId)
+            try container.encode(error, forKey: .error)
         }
     }
 }

@@ -336,10 +336,8 @@ struct MainChatView: View {
                 editingWindow = window
             }) {
                 HStack(spacing: 5) {
-                    if let symbol = conversation?.symbol, !symbol.isEmpty {
-                        Image(systemName: symbol)
-                            .font(.system(size: 15))
-                    }
+                    Image.safeSymbol(conversation?.symbol)
+                        .font(.system(size: 15))
                     if let conv = conversation {
                         Text(conv.name)
                             .font(.caption)
@@ -460,7 +458,7 @@ struct MainChatView: View {
         let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
-        if let symbol = conversation?.symbol, !symbol.isEmpty {
+        if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
             Image(systemName: symbol)
                 .font(.system(size: 22, weight: weight))
                 .foregroundStyle(color)
@@ -662,10 +660,12 @@ struct StreamingPulseModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .opacity(isStreaming ? (isPulsing ? 0.4 : 1.0) : 1.0)
-            .animation(isStreaming ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: isPulsing)
+            .opacity(isPulsing ? 0.4 : 1.0)
+            .animation(isPulsing ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true) : .linear(duration: 0.15), value: isPulsing)
             .onChange(of: isStreaming) { _, streaming in
-                isPulsing = streaming
+                withAnimation(streaming ? nil : .linear(duration: 0.15)) {
+                    isPulsing = streaming
+                }
             }
             .onAppear {
                 if isStreaming { isPulsing = true }

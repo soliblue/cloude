@@ -229,6 +229,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Log.info("Killing all Claude processes")
             _ = ProcessMonitor.killAllClaudeProcesses()
             server.broadcast(.processList(processes: []))
+
+        case .syncHistory(let sessionId, let workingDirectory):
+            Log.info("Syncing history for session \(sessionId.prefix(8)) in \(workingDirectory)")
+            let result = HistoryService.getHistory(sessionId: sessionId, workingDirectory: workingDirectory)
+            switch result {
+            case .success(let messages):
+                Log.info("Found \(messages.count) messages")
+                server.sendMessage(.historySync(sessionId: sessionId, messages: messages), to: connection)
+            case .failure(let error):
+                Log.error("History sync failed: \(error)")
+                server.sendMessage(.historySyncError(sessionId: sessionId, error: error), to: connection)
+            }
         }
     }
 
