@@ -37,7 +37,13 @@ struct StreamingBlockView: View {
     var body: some View {
         switch block {
         case .text(_, let attributed, let segments):
-            if segments.contains(where: { if case .code = $0 { return true } else { return false } }) {
+            let hasSpecialSegments = segments.contains { segment in
+                switch segment {
+                case .code, .filePath: return true
+                default: return false
+                }
+            }
+            if hasSpecialSegments {
                 InlineTextView(segments: segments)
             } else {
                 Text(attributed)
