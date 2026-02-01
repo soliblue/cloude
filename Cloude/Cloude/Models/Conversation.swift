@@ -13,6 +13,7 @@ struct Conversation: Codable, Identifiable {
     var name: String
     var symbol: String?
     var sessionId: String?
+    var workingDirectory: String?
     let createdAt: Date
     var lastMessageAt: Date
     var messages: [ChatMessage]
@@ -37,9 +38,10 @@ struct Conversation: Codable, Identifiable {
         "hare", "tortoise", "bird", "fish", "tree", "mountain.2", "drop"
     ]
 
-    init(name: String? = nil, symbol: String? = nil, id: UUID = UUID(), sessionId: String? = nil) {
+    init(name: String? = nil, symbol: String? = nil, id: UUID = UUID(), sessionId: String? = nil, workingDirectory: String? = nil) {
         self.id = id
         self.sessionId = sessionId
+        self.workingDirectory = workingDirectory
         self.createdAt = Date()
         self.lastMessageAt = Date()
         self.messages = []
@@ -54,6 +56,7 @@ struct Conversation: Codable, Identifiable {
         name = try container.decode(String.self, forKey: .name)
         symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
         sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
+        workingDirectory = try container.decodeIfPresent(String.self, forKey: .workingDirectory)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         lastMessageAt = try container.decode(Date.self, forKey: .lastMessageAt)
         messages = try container.decode([ChatMessage].self, forKey: .messages)
@@ -61,7 +64,7 @@ struct Conversation: Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, createdAt, lastMessageAt, messages, pendingMessages
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages
     }
 }
 

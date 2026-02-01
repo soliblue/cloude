@@ -13,6 +13,9 @@ struct ProjectChatView: View {
     var isKeyboardVisible: Bool = false
     var onSelectConversation: (() -> Void)?
     var onInteraction: (() -> Void)?
+    var onSelectRecentConversation: ((Conversation) -> Void)?
+    var onShowAllConversations: (() -> Void)?
+    var onNewConversation: (() -> Void)?
 
     @State private var scrollProxy: ScrollViewProxy?
 
@@ -75,7 +78,14 @@ struct ProjectChatView: View {
                     if let proj = effectiveProject, let conv = effectiveConversation {
                         store.removePendingMessage(messageId, from: conv, in: proj)
                     }
-                }
+                },
+                project: effectiveProject,
+                conversation: effectiveConversation,
+                projectStore: store,
+                connection: connection,
+                onSelectConversation: onSelectRecentConversation,
+                onShowAllConversations: onShowAllConversations,
+                onNewConversation: onNewConversation
             )
         }
         .onChange(of: output?.isRunning) { oldValue, newValue in
@@ -97,7 +107,8 @@ struct ProjectChatView: View {
 
         if let proj = effectiveProject, var conv = effectiveConversation {
             if let newSessionId = output.newSessionId {
-                store.updateSessionId(conv, in: proj, sessionId: newSessionId)
+                let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
+                store.updateSessionId(conv, in: proj, sessionId: newSessionId, workingDirectory: workingDir)
                 conv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
             }
 
@@ -139,16 +150,17 @@ struct ProjectChatView: View {
 
         let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
         let updatedConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
-        let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
+        let workingDir = updatedConv.workingDirectory ?? (proj.rootDirectory.isEmpty ? nil : proj.rootDirectory)
         connection.sendChat(combinedText, workingDirectory: workingDir, sessionId: updatedConv.sessionId, isNewSession: false, conversationId: updatedConv.id, conversationName: updatedConv.name, conversationSymbol: updatedConv.symbol)
     }
 
     private func refreshMissedResponse() async {
         guard let conv = effectiveConversation,
               let sessionId = conv.sessionId,
-              let proj = effectiveProject,
-              !proj.rootDirectory.isEmpty else { return }
-        connection.syncHistory(sessionId: sessionId, workingDirectory: proj.rootDirectory)
+              let proj = effectiveProject else { return }
+        let workingDir = conv.workingDirectory ?? proj.rootDirectory
+        guard !workingDir.isEmpty else { return }
+        connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
         try? await Task.sleep(nanoseconds: 1_000_000_000)
     }
 }
