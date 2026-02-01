@@ -118,7 +118,7 @@ struct GlobalInputBar: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if let skill = selectedSkillCommand {
+            if let skill = selectedSkillCommand, parameterValues.count == skill.parameters.count {
                 SkillParameterBar(
                     skill: skill,
                     parameterValues: $parameterValues,
@@ -498,13 +498,15 @@ struct SkillParameterBar: View {
                 )
 
                 ForEach(Array(skill.parameters.enumerated()), id: \.offset) { index, param in
-                    ParameterInputBubble(
-                        parameter: param,
-                        value: $parameterValues[index],
-                        isFocused: focusedIndex.wrappedValue == index,
-                        onTap: { focusedIndex.wrappedValue = index }
-                    )
-                    .focused(focusedIndex, equals: index)
+                    if index < parameterValues.count {
+                        ParameterInputBubble(
+                            parameter: param,
+                            value: $parameterValues[index],
+                            isFocused: focusedIndex.wrappedValue == index,
+                            onTap: { focusedIndex.wrappedValue = index }
+                        )
+                        .focused(focusedIndex, equals: index)
+                    }
                 }
             }
             .padding(.horizontal, 16)
