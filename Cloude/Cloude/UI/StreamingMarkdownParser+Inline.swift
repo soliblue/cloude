@@ -264,7 +264,7 @@ extension StreamingMarkdownParser {
             case .text(_, let attr):
                 result.append(attr)
             case .code(_, let code):
-                var attr = AttributedString("\u{2009}\(code)\u{2009}")
+                var attr = AttributedString(code)
                 attr.font = .system(size: 14, weight: .regular, design: .monospaced)
                 attr.backgroundColor = .secondary.opacity(0.2)
                 result.append(attr)
