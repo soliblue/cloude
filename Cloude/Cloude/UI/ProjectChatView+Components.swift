@@ -11,8 +11,8 @@ struct WindowHeaderView: View {
         Button(action: { onSelectConversation?() }) {
             HStack(spacing: 6) {
                 if let conv = conversation {
-                    if let symbol = conv.symbol {
-                        Image(systemName: symbol)
+                    if conv.symbol.isValidSFSymbol {
+                        Image.safeSymbol(conv.symbol)
                             .font(.caption)
                             .foregroundColor(.accentColor)
                     }

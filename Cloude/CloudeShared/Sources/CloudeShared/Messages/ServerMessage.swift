@@ -28,9 +28,11 @@ public enum ServerMessage: Codable {
     case memoryAdded(target: String, section: String, text: String, conversationId: String?)
     case defaultWorkingDirectory(path: String)
     case skills([Skill])
+    case historySync(sessionId: String, messages: [HistoryMessage])
+    case historySyncError(sessionId: String, error: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error
     }
 
     public init(from decoder: Decoder) throws {
@@ -146,6 +148,14 @@ public enum ServerMessage: Codable {
         case "skills":
             let skills = try container.decode([Skill].self, forKey: .skills)
             self = .skills(skills)
+        case "history_sync":
+            let sessionId = try container.decode(String.self, forKey: .sessionId)
+            let messages = try container.decode([HistoryMessage].self, forKey: .messages)
+            self = .historySync(sessionId: sessionId, messages: messages)
+        case "history_sync_error":
+            let sessionId = try container.decode(String.self, forKey: .sessionId)
+            let error = try container.decode(String.self, forKey: .error)
+            self = .historySyncError(sessionId: sessionId, error: error)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

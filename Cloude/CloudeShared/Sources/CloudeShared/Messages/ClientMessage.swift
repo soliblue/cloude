@@ -19,6 +19,7 @@ public enum ClientMessage: Codable {
     case getProcesses
     case killProcess(pid: Int32)
     case killAllProcesses
+    case syncHistory(sessionId: String, workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
         case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, minutes, pid
@@ -85,6 +86,10 @@ public enum ClientMessage: Codable {
             self = .killProcess(pid: pid)
         case "kill_all_processes":
             self = .killAllProcesses
+        case "sync_history":
+            let sessionId = try container.decode(String.self, forKey: .sessionId)
+            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
+            self = .syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -149,6 +154,10 @@ public enum ClientMessage: Codable {
             try container.encode(pid, forKey: .pid)
         case .killAllProcesses:
             try container.encode("kill_all_processes", forKey: .type)
+        case .syncHistory(let sessionId, let workingDirectory):
+            try container.encode("sync_history", forKey: .type)
+            try container.encode(sessionId, forKey: .sessionId)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
         }
     }
 }
