@@ -11,6 +11,7 @@ struct CloudeLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: CloudeActivityAttributes.self) { context in
             LockScreenView(context: context)
+                .activityBackgroundTint(.white)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
@@ -148,21 +149,21 @@ struct LockScreenView: View {
                 HStack(spacing: 4) {
                     Text(stateText)
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.gray)
 
                     if let tool = context.state.currentTool {
                         Text("·")
                             .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.gray)
                         if let detail = context.state.toolDetail {
                             Text(detail)
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.gray)
                                 .lineLimit(1)
                         } else {
                             Text(toolDisplayName(tool))
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.gray)
                         }
                     }
                 }
@@ -172,9 +173,8 @@ struct LockScreenView: View {
 
             StateIndicatorCompact(state: context.state.agentState)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(Color.white, in: .rect(cornerRadius: 16))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
     }
 
     var stateText: String {

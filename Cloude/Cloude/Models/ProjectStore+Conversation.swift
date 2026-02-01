@@ -10,11 +10,11 @@ extension ProjectStore {
         currentConversation = conversation
     }
 
-    func newConversation(in project: Project) -> Conversation {
+    func newConversation(in project: Project, workingDirectory: String? = nil) -> Conversation {
         guard let index = projects.firstIndex(where: { $0.id == project.id }) else {
             return Conversation()
         }
-        let conversation = Conversation()
+        let conversation = Conversation(workingDirectory: workingDirectory)
         projects[index].addConversation(conversation)
         currentProject = projects[index]
         currentConversation = conversation

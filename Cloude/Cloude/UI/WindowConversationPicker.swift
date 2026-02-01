@@ -107,14 +107,15 @@ struct WindowConversationPicker: View {
     }
 
     private func createNewConversation(in project: Project) {
-        let newConv = projectStore.newConversation(in: project)
+        let workingDir = project.rootDirectory.isEmpty ? nil : project.rootDirectory
+        let newConv = projectStore.newConversation(in: project, workingDirectory: workingDir)
         onSelect(project, newConv)
     }
 
     private func createNewProject(at path: String) {
         let folderName = (path as NSString).lastPathComponent
         let project = projectStore.createProject(name: folderName, rootDirectory: path)
-        let conversation = projectStore.newConversation(in: project)
+        let conversation = projectStore.newConversation(in: project, workingDirectory: path)
         onSelect(project, conversation)
     }
 }
