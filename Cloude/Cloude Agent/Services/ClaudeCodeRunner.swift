@@ -45,7 +45,7 @@ class ClaudeCodeRunner: ObservableObject {
 
     var tempImagePath: String?
 
-    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imageBase64: String? = nil, useFixedSessionId: Bool = false) {
+    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imageBase64: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false) {
         guard !isRunning else {
             onOutput?("Claude is already running. Use abort to cancel.\n")
             return
@@ -80,7 +80,9 @@ class ClaudeCodeRunner: ObservableObject {
 
         var command = claudePath
         if let sid = sessionId {
-            if useFixedSessionId {
+            if forkSession {
+                command += " --resume \(sid) --fork-session"
+            } else if useFixedSessionId {
                 if isNewSession {
                     command += " --session-id \(sid)"
                 } else {

@@ -144,13 +144,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
-        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId, let conversationName):
-            Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), hasImage=\(imageBase64 != nil), isNew=\(isNewSession))")
+        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId, let conversationName, let forkSession):
+            Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), hasImage=\(imageBase64 != nil), isNew=\(isNewSession), fork=\(forkSession))")
             if let wd = workingDirectory, !wd.isEmpty {
                 HeartbeatService.shared.projectDirectory = wd
             }
             let convId = conversationId ?? UUID().uuidString
-            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId, conversationName: conversationName)
+            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId, conversationName: conversationName, forkSession: forkSession)
 
         case .abort(let conversationId):
             if let convId = conversationId {

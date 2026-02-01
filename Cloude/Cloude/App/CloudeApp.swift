@@ -100,9 +100,8 @@ struct CloudeApp: App {
         connection.onMissedResponse = { [projectStore] _, text, _, interruptedConvId, interruptedMsgId in
             if let convId = interruptedConvId,
                let msgId = interruptedMsgId,
-               let project = projectStore.projects.first(where: { $0.conversations.contains { $0.id == convId } }),
-               let conversation = project.conversations.first(where: { $0.id == convId }) {
-                projectStore.updateMessage(msgId, in: conversation, in: project) { msg in
+               let (project, conv) = projectStore.findConversation(withId: convId) {
+                projectStore.updateMessage(msgId, in: conv, in: project) { msg in
                     msg.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     msg.wasInterrupted = false
                 }
@@ -116,21 +115,18 @@ struct CloudeApp: App {
 
         connection.onDisconnect = { [projectStore, connection] convId, output in
             guard !output.text.isEmpty else { return }
-            for project in projectStore.projects {
-                if let conv = project.conversations.first(where: { $0.id == convId }) {
-                    let message = ChatMessage(
-                        isUser: false,
-                        text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
-                        toolCalls: output.toolCalls,
-                        wasInterrupted: true
-                    )
-                    projectStore.addMessage(message, to: conv, in: project)
-                    if let sessionId = output.newSessionId {
-                        connection.interruptedSession = (convId, sessionId, message.id)
-                    }
-                    output.reset()
-                    break
+            if let (project, conv) = projectStore.findConversation(withId: convId) {
+                let message = ChatMessage(
+                    isUser: false,
+                    text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                    toolCalls: output.toolCalls,
+                    wasInterrupted: true
+                )
+                projectStore.addMessage(message, to: conv, in: project)
+                if let sessionId = output.newSessionId {
+                    connection.interruptedSession = (convId, sessionId, message.id)
                 }
+                output.reset()
             }
         }
 
@@ -140,42 +136,30 @@ struct CloudeApp: App {
         }
 
         connection.onRenameConversation = { [projectStore] convId, name in
-            for project in projectStore.projects {
-                if let conv = project.conversations.first(where: { $0.id == convId }) {
-                    projectStore.renameConversation(conv, in: project, to: name)
-                    break
-                }
+            if let (project, conv) = projectStore.findConversation(withId: convId) {
+                projectStore.renameConversation(conv, in: project, to: name)
             }
         }
 
         connection.onSetConversationSymbol = { [projectStore] convId, symbol in
-            for project in projectStore.projects {
-                if let conv = project.conversations.first(where: { $0.id == convId }) {
-                    projectStore.setConversationSymbol(conv, in: project, symbol: symbol)
-                    break
-                }
+            if let (project, conv) = projectStore.findConversation(withId: convId) {
+                projectStore.setConversationSymbol(conv, in: project, symbol: symbol)
             }
         }
 
         connection.onSessionIdReceived = { [projectStore] convId, sessionId in
-            for project in projectStore.projects {
-                if let conv = project.conversations.first(where: { $0.id == convId }) {
-                    let workingDir = project.rootDirectory.isEmpty ? nil : project.rootDirectory
-                    projectStore.updateSessionId(conv, in: project, sessionId: sessionId, workingDirectory: workingDir)
-                    break
-                }
+            if let (project, conv) = projectStore.findConversation(withId: convId) {
+                let workingDir = project.rootDirectory.isEmpty ? nil : project.rootDirectory
+                projectStore.updateSessionId(conv, in: project, sessionId: sessionId, workingDirectory: workingDir)
             }
         }
 
         connection.onHistorySync = { [projectStore] sessionId, historyMessages in
-            for project in projectStore.projects {
-                if let conv = project.conversations.first(where: { $0.sessionId == sessionId }) {
-                    let newMessages = historyMessages.map { msg in
-                        ChatMessage(isUser: msg.isUser, text: msg.text)
-                    }
-                    projectStore.replaceMessages(conv, in: project, with: newMessages)
-                    break
+            if let (project, conv) = projectStore.findConversation(withSessionId: sessionId) {
+                let newMessages = historyMessages.map { msg in
+                    ChatMessage(isUser: msg.isUser, text: msg.text)
                 }
+                projectStore.replaceMessages(conv, in: project, with: newMessages)
             }
         }
 

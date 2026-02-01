@@ -49,6 +49,10 @@ private func extractToolDetail(name: String, input: String) -> String? {
 }
 
 extension ConnectionManager {
+    private func targetConversationId(from conversationId: String?) -> UUID? {
+        conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+    }
+
     func handleMessage(_ text: String) {
         guard let data = text.data(using: .utf8),
               let message = try? JSONDecoder().decode(ServerMessage.self, from: data) else {
@@ -68,8 +72,7 @@ extension ConnectionManager {
 
         case .status(let state, let conversationId):
             agentState = state
-            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
-            if let convId = targetConvId {
+            if let convId = targetConversationId(from: conversationId) {
                 let out = output(for: convId)
                 out.isRunning = (state == .running || state == .compacting)
                 out.isCompacting = (state == .compacting)
@@ -108,8 +111,7 @@ extension ConnectionManager {
             onFileContent?(path, data, mimeType, size)
 
         case .sessionId(let id, let conversationId):
-            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
-            if let convId = targetConvId {
+            if let convId = targetConversationId(from: conversationId) {
                 output(for: convId).newSessionId = id
                 onSessionIdReceived?(convId, id)
             }
@@ -133,8 +135,7 @@ extension ConnectionManager {
             }
 
         case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition):
-            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
-            if let convId = targetConvId {
+            if let convId = targetConversationId(from: conversationId) {
                 let currentTextLength = output(for: convId).text.count
                 let position = textPosition ?? currentTextLength
                 output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position))
@@ -143,8 +144,7 @@ extension ConnectionManager {
             }
 
         case .runStats(let durationMs, let costUsd, let conversationId):
-            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
-            if let convId = targetConvId {
+            if let convId = targetConversationId(from: conversationId) {
                 output(for: convId).runStats = (durationMs, costUsd)
             }
 
@@ -191,8 +191,7 @@ extension ConnectionManager {
             onProcessList?(procs)
 
         case .memoryAdded(let target, let section, let text, let conversationId):
-            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
-            if let convId = targetConvId {
+            if let convId = targetConversationId(from: conversationId) {
                 let memoryCall = ToolCall(
                     name: "Memory",
                     input: "\(target): \(section) - \(text)",
@@ -221,15 +220,14 @@ extension ConnectionManager {
             onHistorySyncError?(sessionId, error)
 
         case .heartbeatSkipped(let conversationId):
-            let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
-            if let convId = targetConvId {
+            if let convId = targetConversationId(from: conversationId) {
                 output(for: convId).skipped = true
             }
             onHeartbeatSkipped?(conversationId)
         }
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil, conversationName: String? = nil, conversationSymbol: String? = nil) {
+    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false) {
         if !isAuthenticated {
             reconnectIfNeeded()
         }
@@ -244,7 +242,7 @@ extension ConnectionManager {
             )
         }
         let effectiveWorkingDir = workingDirectory ?? defaultWorkingDirectory
-        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString, conversationName: conversationName))
+        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString, conversationName: conversationName, forkSession: forkSession))
     }
 
     func abort(conversationId: UUID? = nil) {

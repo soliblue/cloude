@@ -1,5 +1,242 @@
 import SwiftUI
 
+private let bashIconMap: [String: String] = [
+    "ls": "list.bullet",
+    "cd": "folder",
+    "pwd": "location",
+    "mkdir": "folder.badge.plus",
+    "rm": "trash",
+    "rmdir": "folder.badge.minus",
+    "cp": "doc.on.doc",
+    "mv": "arrow.right.doc.on.clipboard",
+    "touch": "doc.badge.plus",
+    "cat": "doc.text",
+    "head": "doc.text",
+    "tail": "doc.text",
+    "less": "doc.text",
+    "more": "doc.text",
+    "chmod": "lock.shield",
+    "chown": "lock.shield",
+    "python": "chevron.left.forwardslash.chevron.right",
+    "python3": "chevron.left.forwardslash.chevron.right",
+    "node": "chevron.left.forwardslash.chevron.right",
+    "xcodebuild": "hammer",
+    "fastlane": "airplane",
+    "make": "hammer",
+    "curl": "arrow.down.circle",
+    "wget": "arrow.down.circle",
+    "grep": "magnifyingglass",
+    "rg": "magnifyingglass",
+    "ag": "magnifyingglass",
+    "find": "folder.badge.questionmark",
+    "fd": "folder.badge.questionmark",
+    "echo": "text.bubble",
+    "printf": "text.bubble",
+    "export": "gearshape",
+    "env": "gearshape",
+    "source": "arrow.right.circle",
+    ".": "arrow.right.circle",
+    "ssh": "server.rack",
+    "scp": "arrow.left.arrow.right",
+    "rsync": "arrow.left.arrow.right",
+    "tar": "archivebox",
+    "zip": "archivebox",
+    "unzip": "archivebox",
+    "gzip": "archivebox",
+    "brew": "mug",
+    "cloude": "message.badge.waveform",
+    "claude": "brain.head.profile",
+    "pytest": "checkmark.diamond",
+    "jest": "checkmark.diamond",
+    "mocha": "checkmark.diamond",
+    "vitest": "checkmark.diamond",
+    "eslint": "wand.and.stars",
+    "prettier": "wand.and.stars",
+    "rubocop": "wand.and.stars",
+    "code": "chevron.left.forwardslash.chevron.right",
+    "vim": "pencil.and.outline",
+    "nvim": "pencil.and.outline",
+    "nano": "pencil.and.outline",
+    "emacs": "pencil.and.outline",
+    "man": "questionmark.circle",
+    "help": "questionmark.circle",
+    "which": "location.magnifyingglass",
+    "whereis": "location.magnifyingglass",
+    "type": "location.magnifyingglass",
+    "ps": "cpu",
+    "top": "cpu",
+    "htop": "cpu",
+    "kill": "xmark.circle",
+    "killall": "xmark.circle",
+    "open": "arrow.up.forward.square",
+    "pbcopy": "doc.on.clipboard",
+    "pbpaste": "doc.on.clipboard",
+    "date": "calendar",
+    "whoami": "person",
+    "sleep": "moon.zzz",
+    "clear": "eraser",
+    "history": "clock.arrow.circlepath",
+    "alias": "link",
+    "wc": "number",
+    "sort": "arrow.up.arrow.down",
+    "uniq": "star",
+    "diff": "plus.forwardslash.minus",
+    "sed": "text.magnifyingglass",
+    "awk": "text.magnifyingglass",
+    "tee": "arrow.triangle.branch",
+    "xargs": "arrow.right.to.line"
+]
+
+private let gitSubcommandIcons: [String: String] = [
+    "commit": "checkmark.circle",
+    "push": "arrow.up.circle",
+    "pull": "arrow.down.circle",
+    "clone": "square.and.arrow.down",
+    "branch": "arrow.triangle.branch",
+    "checkout": "arrow.triangle.swap",
+    "switch": "arrow.triangle.swap",
+    "merge": "arrow.triangle.merge",
+    "rebase": "arrow.triangle.capsulepath",
+    "status": "questionmark.folder",
+    "diff": "plus.forwardslash.minus",
+    "log": "clock.arrow.circlepath",
+    "stash": "tray.and.arrow.down",
+    "fetch": "arrow.down.doc",
+    "reset": "arrow.uturn.backward.circle",
+    "add": "plus.circle",
+    "init": "sparkles",
+    "remote": "network"
+]
+
+private let npmSubcommandIcons: [String: String] = [
+    "install": "square.and.arrow.down",
+    "i": "square.and.arrow.down",
+    "add": "square.and.arrow.down",
+    "run": "play",
+    "start": "play",
+    "test": "checkmark.diamond",
+    "build": "hammer",
+    "publish": "paperplane",
+    "init": "sparkles",
+    "uninstall": "trash",
+    "remove": "trash",
+    "rm": "trash",
+    "update": "arrow.up.circle",
+    "upgrade": "arrow.up.circle"
+]
+
+private let cargoSubcommandIcons: [String: String] = [
+    "build": "hammer",
+    "run": "play",
+    "test": "checkmark.diamond",
+    "new": "sparkles",
+    "init": "sparkles",
+    "publish": "paperplane",
+    "add": "plus.circle",
+    "remove": "minus.circle",
+    "update": "arrow.up.circle"
+]
+
+private let pipSubcommandIcons: [String: String] = [
+    "install": "square.and.arrow.down",
+    "uninstall": "trash",
+    "list": "list.bullet",
+    "freeze": "snowflake"
+]
+
+private let swiftSubcommandIcons: [String: String] = [
+    "build": "hammer",
+    "run": "play",
+    "test": "checkmark.diamond",
+    "package": "shippingbox"
+]
+
+private let dockerSubcommandIcons: [String: String] = [
+    "build": "hammer",
+    "run": "play",
+    "push": "arrow.up.circle",
+    "pull": "arrow.down.circle",
+    "stop": "stop",
+    "ps": "list.bullet",
+    "ls": "list.bullet",
+    "rm": "trash",
+    "rmi": "trash"
+]
+
+private let kubectlSubcommandIcons: [String: String] = [
+    "get": "list.bullet",
+    "apply": "checkmark.circle",
+    "delete": "trash",
+    "describe": "doc.text.magnifyingglass",
+    "logs": "text.alignleft",
+    "exec": "terminal"
+]
+
+private let bashColorMap: [String: Color] = [
+    "cloude": .accentColor,
+    "claude": .purple,
+    "git": .orange,
+    "npm": .red,
+    "yarn": .red,
+    "pnpm": .red,
+    "bun": .red,
+    "node": .green,
+    "swift": .orange,
+    "xcodebuild": .orange,
+    "fastlane": .orange,
+    "docker": .blue,
+    "kubectl": .blue,
+    "make": .purple,
+    "ls": .cyan,
+    "cd": .cyan,
+    "pwd": .cyan,
+    "mkdir": .cyan,
+    "rmdir": .cyan,
+    "rm": .red,
+    "kill": .red,
+    "killall": .red,
+    "cp": .teal,
+    "mv": .teal,
+    "cat": .blue,
+    "head": .blue,
+    "tail": .blue,
+    "less": .blue,
+    "more": .blue,
+    "curl": .indigo,
+    "wget": .indigo,
+    "ssh": .indigo,
+    "scp": .indigo,
+    "rsync": .indigo,
+    "grep": .pink,
+    "rg": .pink,
+    "ag": .pink,
+    "find": .pink,
+    "fd": .pink,
+    "brew": .yellow,
+    "tar": .brown,
+    "zip": .brown,
+    "unzip": .brown,
+    "gzip": .brown,
+    "vim": .purple,
+    "nvim": .purple,
+    "nano": .purple,
+    "emacs": .purple,
+    "code": .purple,
+    "pytest": .green,
+    "jest": .green,
+    "mocha": .green,
+    "vitest": .green,
+    "eslint": .purple,
+    "prettier": .purple,
+    "rubocop": .purple,
+    "pip": .yellow,
+    "pip3": .yellow,
+    "python": .yellow,
+    "python3": .yellow
+]
+
+private let cargoColor = Color(red: 0.87, green: 0.46, blue: 0.19)
+
 struct BashCommandParser {
     let command: String
     let subcommand: String?
@@ -336,142 +573,29 @@ struct ToolCallLabel: View {
 
     private func bashIconName(_ cmd: String) -> String {
         let parsed = BashCommandParser.parse(cmd)
-        switch parsed.command {
-        case "ls": return "list.bullet"
-        case "cd": return "folder"
-        case "pwd": return "location"
-        case "mkdir": return "folder.badge.plus"
-        case "rm": return "trash"
-        case "rmdir": return "folder.badge.minus"
-        case "cp": return "doc.on.doc"
-        case "mv": return "arrow.right.doc.on.clipboard"
-        case "touch": return "doc.badge.plus"
-        case "cat", "head", "tail", "less", "more": return "doc.text"
-        case "chmod", "chown": return "lock.shield"
-        case "git":
-            switch parsed.subcommand {
-            case "commit": return "checkmark.circle"
-            case "push": return "arrow.up.circle"
-            case "pull": return "arrow.down.circle"
-            case "clone": return "square.and.arrow.down"
-            case "branch": return "arrow.triangle.branch"
-            case "checkout", "switch": return "arrow.triangle.swap"
-            case "merge": return "arrow.triangle.merge"
-            case "rebase": return "arrow.triangle.capsulepath"
-            case "status": return "questionmark.folder"
-            case "diff": return "plus.forwardslash.minus"
-            case "log": return "clock.arrow.circlepath"
-            case "stash": return "tray.and.arrow.down"
-            case "fetch": return "arrow.down.doc"
-            case "reset": return "arrow.uturn.backward.circle"
-            case "add": return "plus.circle"
-            case "init": return "sparkles"
-            case "remote": return "network"
-            default: return "arrow.triangle.branch"
+
+        if let sub = parsed.subcommand {
+            switch parsed.command {
+            case "git":
+                return gitSubcommandIcons[sub] ?? "arrow.triangle.branch"
+            case "npm", "yarn", "pnpm", "bun":
+                return npmSubcommandIcons[sub] ?? "shippingbox"
+            case "cargo":
+                return cargoSubcommandIcons[sub] ?? "gearshape.2"
+            case "pip", "pip3":
+                return pipSubcommandIcons[sub] ?? "cube"
+            case "swift":
+                return swiftSubcommandIcons[sub] ?? "swift"
+            case "docker":
+                return dockerSubcommandIcons[sub] ?? "shippingbox"
+            case "kubectl":
+                return kubectlSubcommandIcons[sub] ?? "server.rack"
+            default:
+                break
             }
-        case "npm", "yarn", "pnpm", "bun":
-            switch parsed.subcommand {
-            case "install", "i", "add": return "square.and.arrow.down"
-            case "run", "start": return "play"
-            case "test": return "checkmark.diamond"
-            case "build": return "hammer"
-            case "publish": return "paperplane"
-            case "init": return "sparkles"
-            case "uninstall", "remove", "rm": return "trash"
-            case "update", "upgrade": return "arrow.up.circle"
-            default: return "shippingbox"
-            }
-        case "cargo":
-            switch parsed.subcommand {
-            case "build": return "hammer"
-            case "run": return "play"
-            case "test": return "checkmark.diamond"
-            case "new", "init": return "sparkles"
-            case "publish": return "paperplane"
-            case "add": return "plus.circle"
-            case "remove": return "minus.circle"
-            case "update": return "arrow.up.circle"
-            default: return "gearshape.2"
-            }
-        case "pip", "pip3":
-            switch parsed.subcommand {
-            case "install": return "square.and.arrow.down"
-            case "uninstall": return "trash"
-            case "list": return "list.bullet"
-            case "freeze": return "snowflake"
-            default: return "cube"
-            }
-        case "python", "python3": return "chevron.left.forwardslash.chevron.right"
-        case "node": return "chevron.left.forwardslash.chevron.right"
-        case "swift":
-            switch parsed.subcommand {
-            case "build": return "hammer"
-            case "run": return "play"
-            case "test": return "checkmark.diamond"
-            case "package": return "shippingbox"
-            default: return "swift"
-            }
-        case "xcodebuild": return "hammer"
-        case "fastlane": return "airplane"
-        case "make": return "hammer"
-        case "docker":
-            switch parsed.subcommand {
-            case "build": return "hammer"
-            case "run": return "play"
-            case "push": return "arrow.up.circle"
-            case "pull": return "arrow.down.circle"
-            case "stop": return "stop"
-            case "ps", "ls": return "list.bullet"
-            case "rm", "rmi": return "trash"
-            default: return "shippingbox"
-            }
-        case "kubectl":
-            switch parsed.subcommand {
-            case "get": return "list.bullet"
-            case "apply": return "checkmark.circle"
-            case "delete": return "trash"
-            case "describe": return "doc.text.magnifyingglass"
-            case "logs": return "text.alignleft"
-            case "exec": return "terminal"
-            default: return "server.rack"
-            }
-        case "curl", "wget": return "arrow.down.circle"
-        case "grep", "rg", "ag": return "magnifyingglass"
-        case "find", "fd": return "folder.badge.questionmark"
-        case "echo", "printf": return "text.bubble"
-        case "export", "env": return "gearshape"
-        case "source", ".": return "arrow.right.circle"
-        case "ssh": return "server.rack"
-        case "scp", "rsync": return "arrow.left.arrow.right"
-        case "tar", "zip", "unzip", "gzip": return "archivebox"
-        case "brew": return "mug"
-        case "cloude": return "message.badge.waveform"
-        case "claude": return "brain.head.profile"
-        case "pytest", "jest", "mocha", "vitest": return "checkmark.diamond"
-        case "eslint", "prettier", "rubocop": return "wand.and.stars"
-        case "code": return "chevron.left.forwardslash.chevron.right"
-        case "vim", "nvim", "nano", "emacs": return "pencil.and.outline"
-        case "man", "help": return "questionmark.circle"
-        case "which", "whereis", "type": return "location.magnifyingglass"
-        case "ps", "top", "htop": return "cpu"
-        case "kill", "killall": return "xmark.circle"
-        case "open": return "arrow.up.forward.square"
-        case "pbcopy", "pbpaste": return "doc.on.clipboard"
-        case "date": return "calendar"
-        case "whoami": return "person"
-        case "sleep": return "moon.zzz"
-        case "clear": return "eraser"
-        case "history": return "clock.arrow.circlepath"
-        case "alias": return "link"
-        case "wc": return "number"
-        case "sort": return "arrow.up.arrow.down"
-        case "uniq": return "star"
-        case "diff": return "plus.forwardslash.minus"
-        case "sed", "awk": return "text.magnifyingglass"
-        case "tee": return "arrow.triangle.branch"
-        case "xargs": return "arrow.right.to.line"
-        default: return "terminal"
         }
+
+        return bashIconMap[parsed.command] ?? "terminal"
     }
 }
 
@@ -497,29 +621,8 @@ func toolCallColor(for name: String, input: String? = nil) -> Color {
 
 private func bashCommandColor(_ cmd: String) -> Color {
     let parsed = BashCommandParser.parse(cmd)
-    switch parsed.command {
-    case "cloude": return .accentColor
-    case "claude": return .purple
-    case "git": return .orange
-    case "npm", "yarn", "pnpm", "bun": return .red
-    case "cargo": return Color(red: 0.87, green: 0.46, blue: 0.19)
-    case "pip", "pip3", "python", "python3": return .yellow
-    case "node": return .green
-    case "swift", "xcodebuild", "fastlane": return .orange
-    case "docker": return .blue
-    case "kubectl": return .blue
-    case "make": return .purple
-    case "ls", "cd", "pwd", "mkdir", "rmdir": return .cyan
-    case "rm", "kill", "killall": return .red
-    case "cp", "mv": return .teal
-    case "cat", "head", "tail", "less", "more": return .blue
-    case "curl", "wget", "ssh", "scp", "rsync": return .indigo
-    case "grep", "rg", "ag", "find", "fd": return .pink
-    case "brew": return .yellow
-    case "tar", "zip", "unzip", "gzip": return .brown
-    case "vim", "nvim", "nano", "emacs", "code": return .purple
-    case "pytest", "jest", "mocha", "vitest": return .green
-    case "eslint", "prettier", "rubocop": return .purple
-    default: return .green
+    if parsed.command == "cargo" {
+        return cargoColor
     }
+    return bashColorMap[parsed.command] ?? .green
 }

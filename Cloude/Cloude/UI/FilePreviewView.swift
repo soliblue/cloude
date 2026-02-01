@@ -1,5 +1,4 @@
 import SwiftUI
-import AVKit
 import CloudeShared
 
 struct FilePreviewView: View {

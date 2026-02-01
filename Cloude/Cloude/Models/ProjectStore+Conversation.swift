@@ -5,6 +5,24 @@
 import Foundation
 
 extension ProjectStore {
+    func findConversation(withId id: UUID) -> (Project, Conversation)? {
+        for project in projects {
+            if let conv = project.conversations.first(where: { $0.id == id }) {
+                return (project, conv)
+            }
+        }
+        return nil
+    }
+
+    func findConversation(withSessionId sessionId: String) -> (Project, Conversation)? {
+        for project in projects {
+            if let conv = project.conversations.first(where: { $0.sessionId == sessionId }) {
+                return (project, conv)
+            }
+        }
+        return nil
+    }
+
     func selectConversation(_ conversation: Conversation, in project: Project) {
         currentProject = project
         currentConversation = conversation
@@ -90,6 +108,33 @@ extension ProjectStore {
         currentProject = projects[index]
         if currentConversation?.id == conversation.id {
             currentConversation = projects[index].conversations.first
+        }
+        save()
+    }
+
+    func duplicateConversation(_ conversation: Conversation, in project: Project) -> Conversation? {
+        guard let index = projects.firstIndex(where: { $0.id == project.id }),
+              conversation.sessionId != nil else { return nil }
+        let newConversation = Conversation(
+            name: conversation.name,
+            symbol: conversation.symbol,
+            sessionId: conversation.sessionId,
+            workingDirectory: conversation.workingDirectory,
+            pendingFork: true
+        )
+        projects[index].addConversation(newConversation)
+        currentProject = projects[index]
+        currentConversation = newConversation
+        save()
+        return newConversation
+    }
+
+    func clearPendingFork(_ conversation: Conversation, in project: Project) {
+        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+        projects[projectIndex].conversations[convIndex].pendingFork = false
+        currentProject = projects[projectIndex]
+        if currentConversation?.id == conversation.id {
+            currentConversation = projects[projectIndex].conversations[convIndex]
         }
         save()
     }
