@@ -8,6 +8,8 @@ struct ProjectChatView: View {
 
     let project: Project?
     let conversation: Conversation?
+    var window: ChatWindow?
+    var windowManager: WindowManager?
     var isCompact: Bool = false
     var showHeader: Bool = false
     var isKeyboardVisible: Bool = false
@@ -83,6 +85,8 @@ struct ProjectChatView: View {
                 conversation: effectiveConversation,
                 projectStore: store,
                 connection: connection,
+                window: window,
+                windowManager: windowManager,
                 onSelectConversation: onSelectRecentConversation,
                 onShowAllConversations: onShowAllConversations,
                 onNewConversation: onNewConversation
