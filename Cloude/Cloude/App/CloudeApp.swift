@@ -48,11 +48,7 @@ struct CloudeApp: App {
                         }
                     }
                     ToolbarItem(placement: .principal) {
-                        Image("Logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 45, height: 45)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        ConnectionStatusLogo(connection: connection)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: { showSettings = true }) {
@@ -77,6 +73,9 @@ struct CloudeApp: App {
                     isUnlocked = false
                 }
             } else if newPhase == .active {
+                if wasBackgrounded {
+                    connection.clearAllRunningStates()
+                }
                 connection.reconnectIfNeeded()
                 if wasBackgrounded, let sessionId = lastActiveSessionId {
                     connection.requestMissedResponse(sessionId: sessionId)
@@ -153,6 +152,15 @@ struct CloudeApp: App {
             for project in projectStore.projects {
                 if let conv = project.conversations.first(where: { $0.id == convId }) {
                     projectStore.setConversationSymbol(conv, in: project, symbol: symbol)
+                    break
+                }
+            }
+        }
+
+        connection.onSessionIdReceived = { [projectStore] convId, sessionId in
+            for project in projectStore.projects {
+                if let conv = project.conversations.first(where: { $0.id == convId }) {
+                    projectStore.updateSessionId(conv, in: project, sessionId: sessionId)
                     break
                 }
             }

@@ -2,6 +2,52 @@ import Foundation
 import Combine
 import CloudeShared
 
+private func extractToolDetail(name: String, input: String) -> String? {
+    switch name {
+    case "Bash":
+        if let data = input.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let command = json["command"] as? String {
+            let firstLine = command.components(separatedBy: .newlines).first ?? command
+            let trimmed = firstLine.trimmingCharacters(in: .whitespaces)
+            if trimmed.count > 40 {
+                return String(trimmed.prefix(37)) + "..."
+            }
+            return trimmed
+        }
+    case "Read", "Write", "Edit":
+        if let data = input.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let path = json["file_path"] as? String {
+            return (path as NSString).lastPathComponent
+        }
+    case "Grep":
+        if let data = input.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let pattern = json["pattern"] as? String {
+            if pattern.count > 30 {
+                return String(pattern.prefix(27)) + "..."
+            }
+            return pattern
+        }
+    case "Glob":
+        if let data = input.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let pattern = json["pattern"] as? String {
+            return pattern
+        }
+    case "Task":
+        if let data = input.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let desc = json["description"] as? String {
+            return desc
+        }
+    default:
+        break
+    }
+    return nil
+}
+
 extension ConnectionManager {
     func handleMessage(_ text: String) {
         guard let data = text.data(using: .utf8),
@@ -65,6 +111,7 @@ extension ConnectionManager {
             let targetConvId: UUID? = conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
             if let convId = targetConvId {
                 output(for: convId).newSessionId = id
+                onSessionIdReceived?(convId, id)
             }
 
         case .missedResponse(let sessionId, let text, _):
@@ -91,7 +138,8 @@ extension ConnectionManager {
                 let currentTextLength = output(for: convId).text.count
                 let position = textPosition ?? currentTextLength
                 output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position))
-                LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name)
+                let detail = extractToolDetail(name: name, input: input)
+                LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name, toolDetail: detail)
             }
 
         case .runStats(let durationMs, let costUsd, let conversationId):
