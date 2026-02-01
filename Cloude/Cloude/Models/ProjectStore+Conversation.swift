@@ -41,6 +41,7 @@ extension ProjectStore {
 
     func updateSessionId(_ conversation: Conversation, in project: Project, sessionId: String) {
         guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+        guard projects[projectIndex].conversations[convIndex].sessionId != sessionId else { return }
         projects[projectIndex].conversations[convIndex].sessionId = sessionId
         currentProject = projects[projectIndex]
         if currentConversation?.id == conversation.id {
