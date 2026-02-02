@@ -53,7 +53,7 @@ struct WindowEditSheet: View {
             .scrollContentBackground(.hidden)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }
-        .presentationDetents([.height(480)])
+        .presentationDetents([.large])
         .presentationBackground(.ultraThinMaterial)
     }
 }

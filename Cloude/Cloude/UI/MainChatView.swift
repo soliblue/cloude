@@ -85,7 +85,9 @@ struct MainChatView: View {
             connection.onTranscription = { text in
                 let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
                 let isBlank = trimmed.isEmpty ||
+                    trimmed.contains("blank_audio") ||
                     trimmed.contains("blank audio") ||
+                    trimmed.contains("silence") ||
                     trimmed.contains("no speech") ||
                     trimmed.contains("inaudible") ||
                     trimmed == "you" ||
@@ -106,6 +108,7 @@ struct MainChatView: View {
                 } else {
                     drafts.removeValue(forKey: oldId)
                 }
+                cleanupEmptyConversation(for: oldId)
             }
             if let newId = newId, let draft = drafts[newId] {
                 inputText = draft.text
@@ -727,6 +730,17 @@ struct MainChatView: View {
         guard let projectId = pendingGitChecks.first,
               let project = projectStore.projects.first(where: { $0.id == projectId }) else { return }
         connection.gitStatus(path: project.rootDirectory)
+    }
+
+    func cleanupEmptyConversation(for windowId: UUID) {
+        guard let window = windowManager.windows.first(where: { $0.id == windowId }),
+              let projectId = window.projectId,
+              let project = projectStore.projects.first(where: { $0.id == projectId }),
+              let convId = window.conversationId,
+              let conversation = project.conversations.first(where: { $0.id == convId }),
+              conversation.isEmpty else { return }
+        projectStore.deleteConversation(conversation, from: project)
+        windowManager.unlinkConversation(windowId)
     }
 }
 

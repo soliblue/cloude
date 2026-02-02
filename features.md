@@ -8,10 +8,11 @@ Source of truth for what Cloude can do and what's coming next.
 
 ### Core
 - **Multi-window chat** - multiple conversations side by side (split/full layouts)
-- **Heartbeat** - background session that runs continuously from project root
+- **Heartbeat** - background session with configurable schedule (5 min to 1 day intervals)
 - **Skills system** - extensible commands (/deploy, /icongen, /refactor, etc.)
 - **Stop button** - cancel running Claude processes mid-execution
 - **cloude CLI** - rename, symbol, memory commands sent from agent to iOS
+- **Run stats** - duration and cost displayed on assistant messages
 
 ### iOS App
 - **File browser** - browse project files, syntax-highlighted previews
@@ -33,7 +34,7 @@ Source of truth for what Cloude can do and what's coming next.
 ## Roadmap
 
 ### Big Vision
-- [ ] **Proactive execution** - cron-like behavior where Cloude can wake up and do things on a schedule
+- [x] **Proactive execution** - cron-like behavior where Cloude can wake up and do things on a schedule (implemented via heartbeat intervals)
 - [ ] **Cross-project awareness** - understanding how different repos relate, shared context
 - [ ] **3-layer memory** - context window → embedding layer → CLAUDE.local.md
 - [ ] **External presence** - email, marketplaces, communities - participating in the internet as Cloude
@@ -52,13 +53,16 @@ Source of truth for what Cloude can do and what's coming next.
 - [ ] **Message reactions** - quick feedback without typing
 - [ ] **Conversation export** - export to markdown/PDF
 - [ ] **Better /compact feedback** - show progress and stats when running /compact command
+- [ ] **Tool call icons** - custom SF Symbol icons for each tool type (Read, Write, Bash, Grep, etc.) instead of text labels
+- [x] **Tool grouping bug** - consecutive tool pills render correctly during streaming but stack vertically after reload (fixed: group by message ID in history sync)
+- [ ] **Chained command parsing** - parse `&&` chains in Bash tool calls and display each command as a separate pill within the same group
+- [ ] **Voice message resilience** - save recording to fixed temp file, show resend button on failure, delete on success
+- [ ] **Compact input fields** - pill style with label on left, divider, input on right (more space efficient)
 - [x] **Timestamp stability** - conversation list timestamps show minutes (not seconds)
 - [x] **Feature tips in placeholder** - input bar placeholder rotates through feature tips
 - [x] **Swipe to clear input** - swipe left on input bar to clear text
 
 ### Security
-- [ ] **TLS with per-device certificates** - proper encryption without requiring Tailscale
-- [ ] **QR code pairing flow** - scan to trust a Mac's certificate
-- [ ] **Tailscale detection** - warn if not connecting via Tailscale IP
+- [ ] **Tailscale requirement info** - show in iOS Settings and Mac Agent menu that Tailscale is required, with download link
 - [ ] **Rate limiting** - basic rate limiting for auth attempts
 - [ ] **Connection timeout** - disconnect unauthenticated connections after 30 seconds

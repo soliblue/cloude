@@ -62,7 +62,12 @@ extension ConnectionManager {
         switch message {
         case .output(let text, let conversationId):
             if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
-                output(for: convId).text += text
+                let out = output(for: convId)
+                out.text += text
+                if !out.isRunning {
+                    out.isRunning = true
+                    runningConversationId = convId
+                }
             } else if let convId = runningConversationId {
                 output(for: convId).text += text
             }

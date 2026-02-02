@@ -210,12 +210,19 @@ struct GlobalInputBar: View {
                                 .foregroundColor(.accentColor.opacity(0.9))
                         }
                     } else {
-                        Button(action: sendWithParameters) {
+                        Menu {
+                            Button(action: startRecording) {
+                                Label("Record", systemImage: "mic.fill")
+                            }
+                            .disabled(!canRecord)
+                        } label: {
                             Image(systemName: "paperplane.fill")
                                 .font(.system(size: 22))
                                 .foregroundColor(canSendWithParams ? .accentColor : .accentColor.opacity(0.4))
+                        } primaryAction: {
+                            sendWithParameters()
                         }
-                        .disabled(!canSendWithParams)
+                        .disabled(!canSendWithParams && !canRecord)
                     }
                 }
                 .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)

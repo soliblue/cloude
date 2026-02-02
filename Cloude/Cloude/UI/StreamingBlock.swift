@@ -11,6 +11,7 @@ enum StreamingBlock: Identifiable {
     case blockquote(id: String, content: String)
     case horizontalRule(id: String)
     case header(id: String, level: Int, content: AttributedString, segments: [InlineSegment])
+    case toolGroup(id: String, tools: [ToolCall])
 
     var id: String {
         switch self {
@@ -20,6 +21,7 @@ enum StreamingBlock: Identifiable {
         case .blockquote(let id, _): return id
         case .horizontalRule(let id): return id
         case .header(let id, _, _, _): return id
+        case .toolGroup(let id, _): return id
         }
     }
 }

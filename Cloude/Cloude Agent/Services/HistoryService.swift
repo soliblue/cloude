@@ -62,6 +62,8 @@ struct HistoryService {
                         continue
                     }
 
+                    let messageId = messageObj["id"] as? String ?? uuid
+
                     for item in contentArray {
                         guard let itemType = item["type"] as? String else { continue }
 
@@ -78,11 +80,11 @@ struct HistoryService {
                             continue
                         }
 
-                        if var existing = assistantMessages[uuid] {
+                        if var existing = assistantMessages[messageId] {
                             existing.items.append(contentItem)
-                            assistantMessages[uuid] = existing
+                            assistantMessages[messageId] = existing
                         } else {
-                            assistantMessages[uuid] = (timestamp, [contentItem])
+                            assistantMessages[messageId] = (timestamp, [contentItem])
                         }
                     }
                 }

@@ -77,7 +77,11 @@ class WhisperService: ObservableObject {
         options.verbose = false
 
         let results = try await whisperKit.transcribe(audioArray: samples, decodeOptions: options)
-        let text = results.map { $0.text }.joined().trimmingCharacters(in: .whitespacesAndNewlines)
+        var text = results.map { $0.text }.joined().trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if text.contains("[BLANK_AUDIO]") || text.contains("[ Silence ]") || text.contains("[silence]") {
+            text = ""
+        }
 
         Log.info("Transcribed: '\(text.prefix(50))...'")
         return text

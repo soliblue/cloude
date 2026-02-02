@@ -147,73 +147,9 @@ struct InterleavedMessageContent: View {
     let text: String
     let toolCalls: [ToolCall]
 
-    private var groupedSegments: [GroupedSegment] {
-        let topLevelTools = toolCalls
-            .filter { $0.parentToolId == nil }
-            .sorted { ($0.textPosition ?? 0) < ($1.textPosition ?? 0) }
-
-        var result: [GroupedSegment] = []
-        var currentIndex = 0
-        var pendingTools: [ToolCall] = []
-
-        for tool in topLevelTools {
-            let position = tool.textPosition ?? 0
-            if position > currentIndex && position <= text.count {
-                let startIdx = text.index(text.startIndex, offsetBy: currentIndex)
-                let endIdx = text.index(text.startIndex, offsetBy: position)
-                let segment = String(text[startIdx..<endIdx])
-                if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    if !pendingTools.isEmpty {
-                        result.append(.tools(pendingTools))
-                        pendingTools = []
-                    }
-                    result.append(.text(segment))
-                    currentIndex = position
-                }
-            }
-            pendingTools.append(tool)
-        }
-
-        if !pendingTools.isEmpty {
-            result.append(.tools(pendingTools))
-        }
-
-        if currentIndex < text.count {
-            let startIdx = text.index(text.startIndex, offsetBy: currentIndex)
-            let remaining = String(text[startIdx...])
-            if !remaining.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                result.append(.text(remaining))
-            }
-        }
-
-        return result
-    }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(groupedSegments.enumerated()), id: \.offset) { _, segment in
-                switch segment {
-                case .text(let content):
-                    StreamingMarkdownView(text: content)
-                case .tools(let tools):
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
-                                InlineToolPill(toolCall: tool)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                    }
-                    .padding(.horizontal, -16)
-                }
-            }
-        }
+        StreamingMarkdownView(text: text, toolCalls: toolCalls)
     }
-}
-
-private enum GroupedSegment {
-    case text(String)
-    case tools([ToolCall])
 }
 
 struct InlineToolPill: View {
