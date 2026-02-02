@@ -29,6 +29,7 @@ class ConnectionManager: ObservableObject {
     @Published var isConnected = false
     @Published var isAuthenticated = false
     @Published var isWhisperReady = false
+    @Published var isTranscribing = false
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
     @Published var processes: [AgentProcessInfo] = []
@@ -139,6 +140,7 @@ struct ChunkProgress: Equatable {
         isConnected = false
         isAuthenticated = false
         isWhisperReady = false
+        isTranscribing = false
         agentState = .idle
 
         if clearCredentials {
@@ -185,6 +187,7 @@ struct ChunkProgress: Equatable {
         isConnected = false
         isAuthenticated = false
         isWhisperReady = false
+        isTranscribing = false
         agentState = .idle
         runningConversationId = nil
     }

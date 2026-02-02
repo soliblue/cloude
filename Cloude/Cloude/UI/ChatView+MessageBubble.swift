@@ -30,6 +30,21 @@ struct MessageBubble: View {
         }
     }
 
+    private func formatTimestamp(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let formatter = DateFormatter()
+        if calendar.isDateInToday(date) {
+            formatter.dateFormat = "HH:mm"
+        } else if calendar.isDateInYesterday(date) {
+            formatter.dateFormat = "'Yesterday' HH:mm"
+        } else if calendar.isDate(date, equalTo: Date(), toGranularity: .year) {
+            formatter.dateFormat = "MMM d, HH:mm"
+        } else {
+            formatter.dateFormat = "MMM d yyyy, HH:mm"
+        }
+        return formatter.string(from: date)
+    }
+
     private var backgroundColor: Color {
         if message.wasInterrupted {
             return Color.orange.opacity(0.15)
@@ -70,12 +85,19 @@ struct MessageBubble: View {
             }
             .opacity(message.isQueued ? 0.6 : 1.0)
 
-            if !message.isUser, let durationMs = message.durationMs, let costUsd = message.costUsd {
-                HStack(spacing: 8) {
-                    Text(message.timestamp, style: .time)
-                        .font(.caption2)
+            if message.isUser {
+                HStack(spacing: 10) {
+                    StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
+                    StatLabel(icon: "textformat.size", text: "\(message.text.count)")
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+            } else if let durationMs = message.durationMs, let costUsd = message.costUsd {
+                HStack(spacing: 10) {
+                    StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
                     RunStatsView(durationMs: durationMs, costUsd: costUsd)
                 }
+                .font(.caption)
                 .foregroundColor(.secondary)
             }
         }
@@ -198,16 +220,62 @@ struct InlineToolPill: View {
     let toolCall: ToolCall
     @Environment(\.openURL) private var openURL
 
-    private var filePath: String? {
-        guard ["Read", "Write", "Edit"].contains(toolCall.name),
-              let input = toolCall.input else { return nil }
-        return input
+    private var isMemoryCommand: Bool {
+        toolCall.name == "Bash" && (toolCall.input?.hasPrefix("cloude memory ") ?? false)
     }
 
-    private var fileURL: URL? {
-        guard let path = filePath,
-              let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else { return nil }
-        return URL(string: "cloude://file\(encodedPath)")
+    private var filePath: String? {
+        guard let input = toolCall.input else { return nil }
+
+        if ["Read", "Write", "Edit"].contains(toolCall.name) {
+            return input
+        }
+
+        if toolCall.name == "Bash" && !isMemoryCommand {
+            return extractFilePathFromBash(input)
+        }
+
+        return nil
+    }
+
+    private func extractFilePathFromBash(_ command: String) -> String? {
+        let parsed = BashCommandParser.parse(command)
+
+        if parsed.command == "git", let sub = parsed.subcommand {
+            let fileSubcommands = ["add", "diff", "checkout", "restore", "show"]
+            if fileSubcommands.contains(sub), parsed.allArgs.count == 1 {
+                let arg = parsed.allArgs[0]
+                if isValidPath(arg) { return arg }
+            }
+        }
+
+        let singlePathCommands = ["ls", "cd", "mkdir", "touch", "open", "cat", "head", "tail"]
+        if singlePathCommands.contains(parsed.command) {
+            if let arg = parsed.firstArg, isValidPath(arg) { return arg }
+        }
+
+        let destCommands = ["cp", "mv"]
+        if destCommands.contains(parsed.command), parsed.allArgs.count == 2 {
+            let dest = parsed.allArgs[1]
+            if isValidPath(dest) { return dest }
+        }
+
+        return nil
+    }
+
+    private func isValidPath(_ path: String) -> Bool {
+        path.hasPrefix("/") && !path.contains("*") && !path.contains("?")
+    }
+
+    private var actionURL: URL? {
+        if isMemoryCommand {
+            return URL(string: "cloude://memory")
+        }
+        if let path = filePath,
+           let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) {
+            return URL(string: "cloude://file\(encodedPath)")
+        }
+        return nil
     }
 
     var body: some View {
@@ -215,8 +283,7 @@ struct InlineToolPill: View {
             .highPriorityGesture(
                 TapGesture()
                     .onEnded {
-                        print("[InlineToolPill] Tapped, filePath: \(filePath ?? "nil"), fileURL: \(fileURL?.absoluteString ?? "nil")")
-                        if let url = fileURL {
+                        if let url = actionURL {
                             openURL(url)
                         }
                     }
@@ -279,3 +346,4 @@ struct SlashCommandBubble: View {
         LinearGradient(colors: [.cyan], startPoint: .leading, endPoint: .trailing)
     }
 }
+

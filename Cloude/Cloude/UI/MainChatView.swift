@@ -62,6 +62,7 @@ struct MainChatView: View {
                     selectedImageData: $selectedImageData,
                     isConnected: connection.isAuthenticated,
                     isWhisperReady: connection.isWhisperReady,
+                    isTranscribing: connection.isTranscribing,
                     isRunning: activeConversationIsRunning,
                     skills: connection.skills,
                     onSend: sendMessage,

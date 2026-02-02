@@ -1,6 +1,18 @@
 import SwiftUI
 import Foundation
 
+struct StatLabel: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+            Text(text)
+        }
+    }
+}
+
 struct StreamingOutput: View {
     let text: String
     @State private var pulse = false
@@ -151,12 +163,10 @@ struct RunStatsView: View {
     let costUsd: Double
 
     var body: some View {
-        HStack(spacing: 12) {
-            Label(formattedDuration, systemImage: "clock")
-            Label(formattedCost, systemImage: "dollarsign.circle")
+        HStack(spacing: 10) {
+            StatLabel(icon: "timer", text: formattedDuration)
+            StatLabel(icon: "dollarsign.circle", text: formattedCost)
         }
-        .font(.caption)
-        .foregroundColor(.secondary)
     }
 
     private var formattedDuration: String {

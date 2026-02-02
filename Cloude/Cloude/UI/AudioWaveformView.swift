@@ -50,34 +50,46 @@ struct AudioWaveformView: View {
 
 struct RecordingOverlayView: View {
     let audioLevel: Float
+    var isTranscribing: Bool = false
     let onStop: () -> Void
 
     @State private var pulse = false
 
     var body: some View {
         HStack(spacing: 16) {
-            Circle()
-                .fill(Color.accentColor.opacity(0.8))
-                .frame(width: 10, height: 10)
-                .scaleEffect(pulse ? 1.3 : 0.9)
-                .opacity(pulse ? 0.9 : 0.5)
+            if isTranscribing {
+                ProgressView()
+                    .tint(.accentColor)
 
-            Spacer()
+                Spacer()
 
-            AudioWaveformView(
-                audioLevel: audioLevel,
-                barCount: 7,
-                color: .accentColor.opacity(0.7),
-                barWidth: 5,
-                maxHeight: 28
-            )
+                Image(systemName: "waveform")
+                    .font(.system(size: 24))
+                    .foregroundColor(.accentColor.opacity(0.5))
+            } else {
+                Circle()
+                    .fill(Color.accentColor.opacity(0.8))
+                    .frame(width: 10, height: 10)
+                    .scaleEffect(pulse ? 1.3 : 0.9)
+                    .opacity(pulse ? 0.9 : 0.5)
 
-            Spacer()
+                Spacer()
 
-            Button(action: onStop) {
-                Image(systemName: "stop.circle.fill")
-                    .font(.system(size: 35))
-                    .foregroundColor(.accentColor.opacity(0.9))
+                AudioWaveformView(
+                    audioLevel: audioLevel,
+                    barCount: 7,
+                    color: .accentColor.opacity(0.7),
+                    barWidth: 5,
+                    maxHeight: 28
+                )
+
+                Spacer()
+
+                Button(action: onStop) {
+                    Image(systemName: "stop.circle.fill")
+                        .font(.system(size: 35))
+                        .foregroundColor(.accentColor.opacity(0.9))
+                }
             }
         }
         .padding(.horizontal, 16)

@@ -17,6 +17,13 @@ extension AppDelegate {
     func handleGetFile(_ path: String, connection: NWConnection, fullQuality: Bool = false) {
         Log.info("[GetFile] Request for: \(path), fullQuality: \(fullQuality)")
 
+        var isDir: ObjCBool = false
+        if FileManager.default.fileExists(atPath: path, isDirectory: &isDir), isDir.boolValue {
+            Log.info("[GetFile] Path is directory, returning listing instead")
+            handleListDirectory(path, connection: connection)
+            return
+        }
+
         switch FileService.shared.getFile(at: path) {
         case .success(let result):
             Log.info("[GetFile] File loaded: \(result.size) bytes, needsChunking: \(result.needsChunking)")

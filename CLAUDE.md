@@ -32,12 +32,13 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 ## Multi-Agent Workflow
 
-Multiple Claude agents may work on this project simultaneously. Follow these rules:
+**⚠️ CRITICAL: Multiple Claude agents work on this project simultaneously.**
 
-- **NEVER fix bugs you didn't introduce** - if you see errors from another agent's work, leave them alone
-- Only fix issues in code you are actively modifying
-- If a build fails due to someone else's changes, inform the user rather than fixing it yourself
-- Coordinate through the user, not by modifying each other's work
+- **NEVER touch another agent's code** - if you see errors, broken builds, or issues from another agent's work, **STOP and tell Soli**. Do not fix it yourself, even if it seems simple.
+- **ASK before fixing build errors** - if a build fails and it's not clearly your code, ask Soli before touching it
+- Only modify code you are actively working on for your current task
+- Coordinate through Soli, not by modifying each other's work
+- When in doubt, ask first
 
 ### Plans Directory
 

@@ -192,6 +192,7 @@ extension ConnectionManager {
             break
 
         case .transcription(let text):
+            isTranscribing = false
             events.send(.transcription(text))
             onTranscription?(text)
 
@@ -319,6 +320,7 @@ extension ConnectionManager {
 
     func transcribe(audioBase64: String) {
         if !isAuthenticated { reconnectIfNeeded() }
+        isTranscribing = true
         send(.transcribe(audioBase64: audioBase64))
     }
 
