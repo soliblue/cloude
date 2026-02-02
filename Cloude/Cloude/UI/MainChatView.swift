@@ -387,8 +387,10 @@ struct MainChatView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    if let proj = project {
-                        Text("• \(proj.name)")
+                    if let folder = (conversation?.workingDirectory ?? project?.rootDirectory).flatMap({ path in
+                        path.isEmpty ? nil : (path as NSString).lastPathComponent
+                    }) {
+                        Text("• \(folder)")
                             .font(.system(size: 12))
                             .foregroundColor(.secondary)
                             .lineLimit(1)

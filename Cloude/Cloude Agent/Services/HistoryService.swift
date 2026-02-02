@@ -71,12 +71,8 @@ struct HistoryService {
                         } else if itemType == "tool_use",
                                   let name = item["name"] as? String,
                                   let toolId = item["id"] as? String {
-                            var inputStr: String?
-                            if let inputDict = item["input"] as? [String: Any],
-                               let inputData = try? JSONSerialization.data(withJSONObject: inputDict),
-                               let inputJson = String(data: inputData, encoding: .utf8) {
-                                inputStr = inputJson
-                            }
+                            let inputDict = item["input"] as? [String: Any]
+                            let inputStr = extractToolInput(name: name, input: inputDict)
                             contentItem = ContentItem(type: "tool_use", text: nil, toolName: name, toolId: toolId, toolInput: inputStr)
                         } else {
                             continue
@@ -122,6 +118,29 @@ struct HistoryService {
             return .success(sorted.map { $0.message })
         } catch {
             return .failure(.readFailed(error.localizedDescription))
+        }
+    }
+
+    private static func extractToolInput(name: String, input: [String: Any]?) -> String? {
+        switch name {
+        case "Bash":
+            return input?["command"] as? String
+        case "Read", "Write", "Edit":
+            return input?["file_path"] as? String
+        case "Glob":
+            return input?["pattern"] as? String
+        case "Grep":
+            return input?["pattern"] as? String
+        case "WebFetch":
+            return input?["url"] as? String
+        case "WebSearch":
+            return input?["query"] as? String
+        case "Task":
+            let agentType = input?["subagent_type"] as? String ?? "agent"
+            let description = input?["description"] as? String ?? ""
+            return "\(agentType): \(description)"
+        default:
+            return nil
         }
     }
 }

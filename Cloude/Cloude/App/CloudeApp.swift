@@ -173,7 +173,7 @@ struct CloudeApp: App {
             if let (project, conv) = projectStore.findConversation(withSessionId: sessionId) {
                 let newMessages = historyMessages.map { msg in
                     let toolCalls = msg.toolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition) }
-                    return ChatMessage(isUser: msg.isUser, text: msg.text, toolCalls: toolCalls)
+                    return ChatMessage(isUser: msg.isUser, text: msg.text, timestamp: msg.timestamp, toolCalls: toolCalls)
                 }
                 projectStore.replaceMessages(conv, in: project, with: newMessages)
             }
