@@ -10,6 +10,7 @@ struct StatLabel: View {
             Image(systemName: icon)
             Text(text)
         }
+        .font(.caption2)
     }
 }
 
