@@ -73,9 +73,18 @@ struct CloudeApp: App {
             FilePathPreviewView(path: path, connection: connection)
         }
         .onOpenURL { url in
-            if url.scheme == "cloude", url.host == "file" {
+            guard url.scheme == "cloude" else { return }
+            switch url.host {
+            case "file":
                 let path = url.path.removingPercentEncoding ?? url.path
                 filePathToPreview = path
+            case "memory":
+                isLoadingMemories = true
+                memorySections = []
+                connection.send(.getMemories)
+                showMemories = true
+            default:
+                break
             }
         }
         .onAppear { loadAndConnect() }
