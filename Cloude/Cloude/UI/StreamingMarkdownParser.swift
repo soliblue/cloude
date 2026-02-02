@@ -164,4 +164,51 @@ struct StreamingMarkdownParser {
         default: return .footnote.bold()
         }
     }
+
+    static func parseWithToolCalls(_ text: String, toolCalls: [ToolCall]) -> [StreamingBlock] {
+        let topLevelTools = toolCalls
+            .filter { $0.parentToolId == nil }
+            .sorted { ($0.textPosition ?? 0) < ($1.textPosition ?? 0) }
+
+        guard !topLevelTools.isEmpty else {
+            return parse(text)
+        }
+
+        var result: [StreamingBlock] = []
+        var currentPosition = 0
+        var pendingTools: [ToolCall] = []
+
+        for tool in topLevelTools {
+            let toolPosition = tool.textPosition ?? 0
+
+            if toolPosition > currentPosition && toolPosition <= text.count {
+                if !pendingTools.isEmpty {
+                    result.append(.toolGroup(id: "tools-\(currentPosition)", tools: pendingTools))
+                    pendingTools = []
+                }
+                let startIdx = text.index(text.startIndex, offsetBy: currentPosition)
+                let endIdx = text.index(text.startIndex, offsetBy: toolPosition)
+                let segment = String(text[startIdx..<endIdx])
+                if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    result.append(contentsOf: parse(segment))
+                }
+                currentPosition = toolPosition
+            }
+            pendingTools.append(tool)
+        }
+
+        if !pendingTools.isEmpty {
+            result.append(.toolGroup(id: "tools-\(currentPosition)", tools: pendingTools))
+        }
+
+        if currentPosition < text.count {
+            let startIdx = text.index(text.startIndex, offsetBy: currentPosition)
+            let remaining = String(text[startIdx...])
+            if !remaining.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                result.append(contentsOf: parse(remaining))
+            }
+        }
+
+        return result
+    }
 }
