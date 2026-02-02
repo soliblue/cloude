@@ -21,6 +21,13 @@ struct ProjectConversationsView: View {
         store.projects.first(where: { $0.id == project.id }) ?? project
     }
 
+    private var folderName: String {
+        if !currentProject.rootDirectory.isEmpty {
+            return (currentProject.rootDirectory as NSString).lastPathComponent
+        }
+        return currentProject.name
+    }
+
     var body: some View {
         List {
             if !currentProject.rootDirectory.isEmpty {
@@ -62,7 +69,7 @@ struct ProjectConversationsView: View {
             }
         }
         .listStyle(.plain)
-        .navigationTitle(currentProject.name)
+        .navigationTitle(folderName)
         .navigationBarTitleDisplayMode(.inline)
         .overlay {
             if currentProject.conversations.isEmpty {

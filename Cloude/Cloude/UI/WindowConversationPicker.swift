@@ -32,21 +32,33 @@ struct WindowConversationPicker: View {
                 if !recentConversations.isEmpty {
                     Section("Recent") {
                         ForEach(recentConversations, id: \.1.id) { project, conversation in
-                            Button(action: { onSelect(project, conversation) }) {
-                                conversationRow(conversation, projectName: project.name)
-                            }
-                            .foregroundColor(.primary)
+                            conversationRow(conversation, showFolder: true)
+                                .contentShape(Rectangle())
+                                .onTapGesture { onSelect(project, conversation) }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        projectStore.deleteConversation(conversation, from: project)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                         }
                     }
                 }
 
                 ForEach(projectStore.projects) { project in
-                    Section(project.name) {
+                    Section(folderName(for: project)) {
                         ForEach(project.conversations.filter { !openInOtherWindows.contains($0.id) }) { conversation in
-                            Button(action: { onSelect(project, conversation) }) {
-                                conversationRow(conversation, projectName: nil)
-                            }
-                            .foregroundColor(.primary)
+                            conversationRow(conversation)
+                                .contentShape(Rectangle())
+                                .onTapGesture { onSelect(project, conversation) }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        projectStore.deleteConversation(conversation, from: project)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                         }
 
                         Button(action: { createNewConversation(in: project) }) {
@@ -85,7 +97,7 @@ struct WindowConversationPicker: View {
     }
 
     @ViewBuilder
-    private func conversationRow(_ conversation: Conversation, projectName: String?) -> some View {
+    private func conversationRow(_ conversation: Conversation, showFolder: Bool = false) -> some View {
         HStack {
             if conversation.symbol.isValidSFSymbol {
                 Image.safeSymbol(conversation.symbol)
@@ -96,8 +108,8 @@ struct WindowConversationPicker: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(conversation.name)
                     .font(.body)
-                if let projectName {
-                    Text(projectName)
+                if showFolder, let path = conversation.workingDirectory, !path.isEmpty {
+                    Text((path as NSString).lastPathComponent)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
@@ -111,6 +123,13 @@ struct WindowConversationPicker: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
+    }
+
+    private func folderName(for project: Project) -> String {
+        if !project.rootDirectory.isEmpty {
+            return (project.rootDirectory as NSString).lastPathComponent
+        }
+        return project.name
     }
 
     private func createNewConversation(in project: Project) {

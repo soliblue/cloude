@@ -7,6 +7,12 @@ struct WindowHeaderView: View {
     let conversation: Conversation?
     let onSelectConversation: (() -> Void)?
 
+    private var folderName: String? {
+        let path = conversation?.workingDirectory ?? project?.rootDirectory ?? ""
+        guard !path.isEmpty else { return nil }
+        return (path as NSString).lastPathComponent
+    }
+
     var body: some View {
         Button(action: { onSelectConversation?() }) {
             HStack(spacing: 6) {
@@ -20,8 +26,8 @@ struct WindowHeaderView: View {
                         .font(.caption)
                         .fontWeight(.medium)
                         .lineLimit(1)
-                    if let proj = project {
-                        Text("• \(proj.name)")
+                    if let folder = folderName {
+                        Text("• \(folder)")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                             .lineLimit(1)

@@ -112,6 +112,19 @@ struct ChatMessage: Codable, Identifiable {
         self.imageBase64 = imageBase64
     }
 
+    init(isUser: Bool, text: String, timestamp: Date, toolCalls: [ToolCall] = []) {
+        self.id = UUID()
+        self.isUser = isUser
+        self.text = text
+        self.timestamp = timestamp
+        self.toolCalls = toolCalls
+        self.durationMs = nil
+        self.costUsd = nil
+        self.isQueued = false
+        self.wasInterrupted = false
+        self.imageBase64 = nil
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)

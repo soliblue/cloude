@@ -7,6 +7,8 @@ Use Mac CLI history as the single source of truth for a conversation when the us
 - CLI history is JSONL in `~/.claude/projects/<project-path>/<session-id>.jsonl`.
 - `user` and `assistant` entries include a `timestamp` field with ISO8601 + fractional seconds (e.g. `2026-01-31T11:30:52.198Z`).
 - `assistant` entries include `tool_use` blocks with `id`, `name`, and `input`.
+- User prompts are stored as plain text in `message.content` even when they reference an image file path.
+- Image bytes appear only in `tool_result` entries (user messages with `content` arrays containing `type: image`).
 - There are non-message entries (system, file-history-snapshot, tool_result in user content arrays) that should be ignored by the iOS history view.
 
 (Validated by inspecting files under `~/.claude/projects/-Users-soli-Desktop-CODING-cloude/`.)
@@ -40,6 +42,7 @@ Use Mac CLI history as the single source of truth for a conversation when the us
 ## Edge Cases
 - If session history file is missing, keep local messages and surface the existing error UI.
 - If user sent a message while offline and it never reached the CLI, a full replace will drop that local message. (Current app has no offline send queue, so this is acceptable for now; we can add a guard later if needed.)
+- Image prompts: the CLI stores only the text prompt; the actual image is in a `tool_result` entry. Full replace will drop iOS image thumbnails unless we parse tool_result images and reattach them.
 - Tool results are not stored in history as assistant messages; they will not appear in iOS unless we add support for user tool_result blocks.
 
 ## Testing Plan (manual)

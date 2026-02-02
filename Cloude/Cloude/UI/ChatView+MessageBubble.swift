@@ -137,17 +137,17 @@ struct InterleavedMessageContent: View {
         for tool in topLevelTools {
             let position = tool.textPosition ?? 0
             if position > currentIndex && position <= text.count {
-                if !pendingTools.isEmpty {
-                    result.append(.tools(pendingTools))
-                    pendingTools = []
-                }
                 let startIdx = text.index(text.startIndex, offsetBy: currentIndex)
                 let endIdx = text.index(text.startIndex, offsetBy: position)
                 let segment = String(text[startIdx..<endIdx])
                 if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    if !pendingTools.isEmpty {
+                        result.append(.tools(pendingTools))
+                        pendingTools = []
+                    }
                     result.append(.text(segment))
+                    currentIndex = position
                 }
-                currentIndex = position
             }
             pendingTools.append(tool)
         }
