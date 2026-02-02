@@ -6,14 +6,21 @@ import SwiftUI
 
 struct WindowConversationPicker: View {
     @ObservedObject var projectStore: ProjectStore
+    @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
+    let currentWindowId: UUID
     let onSelect: (Project, Conversation) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var showFolderPicker = false
 
+    private var openInOtherWindows: Set<UUID> {
+        windowManager.conversationIds(excludingWindow: currentWindowId)
+    }
+
     private var recentConversations: [(Project, Conversation)] {
         projectStore.projects
             .flatMap { project in project.conversations.map { (project, $0) } }
+            .filter { !openInOtherWindows.contains($0.1.id) }
             .sorted { $0.1.lastMessageAt > $1.1.lastMessageAt }
             .prefix(5)
             .map { $0 }
@@ -35,7 +42,7 @@ struct WindowConversationPicker: View {
 
                 ForEach(projectStore.projects) { project in
                     Section(project.name) {
-                        ForEach(project.conversations) { conversation in
+                        ForEach(project.conversations.filter { !openInOtherWindows.contains($0.id) }) { conversation in
                             Button(action: { onSelect(project, conversation) }) {
                                 conversationRow(conversation, projectName: nil)
                             }

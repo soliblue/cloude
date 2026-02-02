@@ -1,0 +1,23 @@
+{
+  "images": [
+    {
+      "filename": "cloude-symbol-nobg@1x.png",
+      "idiom": "universal",
+      "scale": "1x"
+    },
+    {
+      "filename": "cloude-symbol-nobg@2x.png",
+      "idiom": "universal",
+      "scale": "2x"
+    },
+    {
+      "filename": "cloude-symbol-nobg.png",
+      "idiom": "universal",
+      "scale": "3x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

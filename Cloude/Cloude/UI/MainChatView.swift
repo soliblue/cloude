@@ -121,7 +121,9 @@ struct MainChatView: View {
         .sheet(item: $selectingWindow) { window in
             WindowConversationPicker(
                 projectStore: projectStore,
+                windowManager: windowManager,
                 connection: connection,
+                currentWindowId: window.id,
                 onSelect: { project, conversation in
                     windowManager.linkToCurrentConversation(window.id, project: project, conversation: conversation)
                     selectingWindow = nil
@@ -415,12 +417,28 @@ struct MainChatView: View {
         .background(Color.oceanSecondary)
     }
 
+    @ViewBuilder
     func pageIndicator() -> some View {
+        let maxIndex = windowManager.windows.count
         HStack(spacing: 16) {
             heartbeatIndicatorButton()
             windowIndicatorButtons()
         }
         .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded { value in
+                    let horizontal = abs(value.translation.width)
+                    let vertical = abs(value.translation.height)
+                    guard horizontal > vertical else { return }
+                    if value.translation.width > 0 && currentPageIndex < maxIndex {
+                        withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex += 1 }
+                    } else if value.translation.width < 0 && currentPageIndex > 0 {
+                        withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex -= 1 }
+                    }
+                }
+        )
     }
 
     @ViewBuilder

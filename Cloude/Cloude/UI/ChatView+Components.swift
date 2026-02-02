@@ -20,7 +20,7 @@ struct StreamingOutput: View {
             }
 
             if !text.isEmpty {
-                StreamingMarkdownView(text: text)
+                StreamingMarkdownView(text: text, isComplete: false)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -103,7 +103,7 @@ struct StreamingInterleavedOutput: View {
                         ForEach(Array(groupedSegments.enumerated()), id: \.offset) { _, segment in
                             switch segment {
                             case .text(let content):
-                                StreamingMarkdownView(text: content)
+                                StreamingMarkdownView(text: content, isComplete: false)
                             case .tools(let tools):
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 8) {
