@@ -69,7 +69,7 @@ struct WindowEditForm: View {
                     Image.safeSymbol(symbol.isEmpty ? nil : symbol, fallback: "circle.dashed")
                         .font(.system(size: 30))
                         .frame(width: 56, height: 56)
-                        .background(Color.oceanSurface)
+                        .background(.regularMaterial)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -79,7 +79,7 @@ struct WindowEditForm: View {
                     .textFieldStyle(.plain)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Color.oceanSurface)
+                    .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .onChange(of: name) { _, newValue in
                         if let proj = project, let conv = conversation, !newValue.isEmpty {
@@ -115,7 +115,7 @@ struct WindowEditForm: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
-                    .background(Color.oceanSurface)
+                    .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
@@ -172,7 +172,7 @@ struct WindowEditForm: View {
                             }
                         }
                     }
-                    .background(Color.oceanSurface)
+                    .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
@@ -183,7 +183,7 @@ struct WindowEditForm: View {
                         .font(.system(size: 20))
                         .foregroundColor(.primary)
                         .frame(width: 44, height: 44)
-                        .background(Color.oceanSurface)
+                        .background(.regularMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
@@ -198,7 +198,7 @@ struct WindowEditForm: View {
                             .font(.system(size: 20))
                             .foregroundColor(.primary)
                             .frame(width: 44, height: 44)
-                            .background(Color.oceanSurface)
+                            .background(.regularMaterial)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
@@ -224,7 +224,7 @@ struct WindowEditForm: View {
                         }
                         .foregroundColor(.primary)
                         .frame(width: 44, height: 44)
-                        .background(Color.oceanSurface)
+                        .background(.regularMaterial)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
@@ -239,7 +239,7 @@ struct WindowEditForm: View {
                             .font(.system(size: 20))
                             .foregroundColor(.red)
                             .frame(width: 44, height: 44)
-                            .background(Color.oceanSurface)
+                            .background(.regularMaterial)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
