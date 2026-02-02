@@ -100,6 +100,12 @@ class WindowManager: ObservableObject {
         updateWindow(windowId, conversationId: conversation?.id, projectId: project?.id)
     }
 
+    func unlinkConversation(_ windowId: UUID) {
+        guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
+        windows[index].conversationId = nil
+        save()
+    }
+
     func setWindowType(_ windowId: UUID, type: WindowType) {
         guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
         windows[index].type = type
