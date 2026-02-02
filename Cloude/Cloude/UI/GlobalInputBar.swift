@@ -49,6 +49,7 @@ struct GlobalInputBar: View {
     @Binding var selectedImageData: Data?
     let isConnected: Bool
     let isWhisperReady: Bool
+    let isTranscribing: Bool
     let isRunning: Bool
     let skills: [Skill]
     let onSend: () -> Void
@@ -217,17 +218,20 @@ struct GlobalInputBar: View {
                         .disabled(!canSendWithParams)
                     }
                 }
-                .opacity(showInputBar ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
+                .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
                 .animation(.easeOut(duration: transitionDuration), value: showInputBar)
+                .animation(.easeOut(duration: transitionDuration), value: isTranscribing)
 
-                if showRecordingOverlay || isSwipingToRecord {
+                if showRecordingOverlay || isSwipingToRecord || isTranscribing {
                     RecordingOverlayView(
                         audioLevel: audioRecorder.audioLevel,
+                        isTranscribing: isTranscribing,
                         onStop: stopRecording
                     )
-                    .offset(y: showRecordingOverlay ? 0 : max(0, swipeThreshold - swipeOffset))
-                    .opacity(showRecordingOverlay ? 1 : Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold))
+                    .offset(y: (showRecordingOverlay || isTranscribing) ? 0 : max(0, swipeThreshold - swipeOffset))
+                    .opacity((showRecordingOverlay || isTranscribing) ? 1 : Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold))
                     .animation(.easeOut(duration: transitionDuration), value: showRecordingOverlay)
+                    .animation(.easeOut(duration: transitionDuration), value: isTranscribing)
                 }
             }
             .padding(.horizontal, 16)

@@ -46,6 +46,7 @@ struct HeartbeatSheet: View {
                     selectedImageData: $selectedImageData,
                     isConnected: connection.isConnected,
                     isWhisperReady: connection.isWhisperReady,
+                    isTranscribing: connection.isTranscribing,
                     isRunning: convOutput.isRunning,
                     skills: connection.skills,
                     onSend: sendMessage,
