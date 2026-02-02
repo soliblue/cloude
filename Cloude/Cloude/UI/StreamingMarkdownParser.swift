@@ -98,6 +98,15 @@ struct StreamingMarkdownParser {
                 continue
             }
 
+            if let headerInfo = Self.parseHeaderLine(trimmed) {
+                let (level, headerText) = headerInfo
+                let segments = Self.parseLineToSegments(headerText, font: Self.headerFont(for: level))
+                let attributed = segmentsToAttributedString(segments)
+                blocks.append(.header(id: "header-L\(i)", level: level, content: attributed, segments: segments))
+                i += 1
+                continue
+            }
+
             let textStartLine = i
             var textLines: [String] = []
             while i < lines.count {
@@ -107,6 +116,7 @@ struct StreamingMarkdownParser {
                 if lt.hasPrefix("|") && l.contains("|") { break }
                 if lt.hasPrefix(">") { break }
                 if isHorizontalRule(lt) && i < lines.count - 1 { break }
+                if Self.parseHeaderLine(lt) != nil { break }
                 textLines.append(l)
                 i += 1
             }
@@ -132,5 +142,26 @@ struct StreamingMarkdownParser {
         let starCount = line.filter { $0 == "*" }.count
         let underscoreCount = line.filter { $0 == "_" }.count
         return (dashOnly && dashCount >= 3) || (starOnly && starCount >= 3) || (underscoreOnly && underscoreCount >= 3)
+    }
+
+    static func parseHeaderLine(_ line: String) -> (level: Int, text: String)? {
+        if line.hasPrefix("###### ") { return (6, String(line.dropFirst(7))) }
+        if line.hasPrefix("##### ") { return (5, String(line.dropFirst(6))) }
+        if line.hasPrefix("#### ") { return (4, String(line.dropFirst(5))) }
+        if line.hasPrefix("### ") { return (3, String(line.dropFirst(4))) }
+        if line.hasPrefix("## ") { return (2, String(line.dropFirst(3))) }
+        if line.hasPrefix("# ") { return (1, String(line.dropFirst(2))) }
+        return nil
+    }
+
+    static func headerFont(for level: Int) -> Font {
+        switch level {
+        case 1: return .title2.bold()
+        case 2: return .title3.bold()
+        case 3: return .headline
+        case 4: return .subheadline.bold()
+        case 5: return .callout.bold()
+        default: return .footnote.bold()
+        }
     }
 }

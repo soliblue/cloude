@@ -19,25 +19,7 @@ extension StreamingMarkdownParser {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             let indent = line.prefix(while: { $0 == " " || $0 == "\t" }).count
 
-            if trimmed.hasPrefix("###### ") {
-                let segments = parseLineToSegments(String(trimmed.dropFirst(7)), font: .footnote.bold())
-                result.append(contentsOf: segments)
-            } else if trimmed.hasPrefix("##### ") {
-                let segments = parseLineToSegments(String(trimmed.dropFirst(6)), font: .callout.bold())
-                result.append(contentsOf: segments)
-            } else if trimmed.hasPrefix("#### ") {
-                let segments = parseLineToSegments(String(trimmed.dropFirst(5)), font: .subheadline.bold())
-                result.append(contentsOf: segments)
-            } else if trimmed.hasPrefix("### ") {
-                let segments = parseLineToSegments(String(trimmed.dropFirst(4)), font: .headline)
-                result.append(contentsOf: segments)
-            } else if trimmed.hasPrefix("## ") {
-                let segments = parseLineToSegments(String(trimmed.dropFirst(3)), font: .title3.bold())
-                result.append(contentsOf: segments)
-            } else if trimmed.hasPrefix("# ") {
-                let segments = parseLineToSegments(String(trimmed.dropFirst(2)), font: .title2.bold())
-                result.append(contentsOf: segments)
-            } else if trimmed.hasPrefix("- [x] ") || trimmed.hasPrefix("- [ ] ") {
+            if trimmed.hasPrefix("- [x] ") || trimmed.hasPrefix("- [ ] ") {
                 let indentStr = String(repeating: "  ", count: indent / 2)
                 let isChecked = trimmed.hasPrefix("- [x] ")
                 let checkbox = isChecked ? "☑ " : "☐ "
@@ -67,7 +49,7 @@ extension StreamingMarkdownParser {
         return result
     }
 
-    private static func parseLineToSegments(_ text: String, font: Font?) -> [InlineSegment] {
+    static func parseLineToSegments(_ text: String, font: Font?) -> [InlineSegment] {
         var segments: [InlineSegment] = []
         var remaining = text[...]
         var currentText = ""
