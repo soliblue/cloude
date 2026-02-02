@@ -2,10 +2,12 @@
 
 Reusable icon generation pipeline: generate → remove background → autocrop → 1x/2x/3x sizing.
 
+Location: `/Users/soli/Desktop/CODING/cloude/skills/icongen/`
+
 ## Setup
 
 ```bash
-cd /Users/soli/Desktop/CODING/icongen
+cd /Users/soli/Desktop/CODING/cloude/skills/icongen
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -14,34 +16,34 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-cd /Users/soli/Desktop/CODING/icongen
+cd /Users/soli/Desktop/CODING/cloude/skills/icongen
 source .venv/bin/activate
 
-# Generate with reference style
-GOOGLE_API_KEY=your_key python generate.py \
-  --ref ~/path/to/reference_icon.png \
-  --prompt "a simple heart icon" \
-  --output icon_heart
+# Generate with Cloude pixel art style (use ref-creature.png)
+source .env && GOOGLE_API_KEY=$GOOGLE_API_KEY python generate.py \
+  --ref ref-creature.png \
+  --prompt "description of icon" \
+  --output cloude-name
 
-# Generate without reference (uses default minimal style)
-GOOGLE_API_KEY=your_key python generate.py \
+# Generate without reference
+source .env && GOOGLE_API_KEY=$GOOGLE_API_KEY python generate.py \
   --prompt "a simple heart icon" \
-  --output icon_heart
+  --output icon-heart
 
 # Process existing image (skip generation)
 python generate.py \
   --skip-generate \
   --input ~/Downloads/my_icon.png \
-  --output icon_processed
+  --output icon-processed
 
 # Add directly to iOS assets folder
 python generate.py \
   --prompt "heart icon" \
-  --output icon_heart \
-  --assets-dir ~/Projects/MyApp/Assets.xcassets/Icons
+  --output icon-heart \
+  --assets-dir /Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Assets.xcassets
 
 # Generate 1x, 2x, 3x sizes
-python generate.py --prompt "heart icon" --output icon_heart --sizes
+python generate.py --prompt "heart icon" --output icon-heart --sizes
 
 # Custom padding (default 5%)
 python generate.py ... --padding 10
@@ -49,7 +51,7 @@ python generate.py ... --padding 10
 
 ## Output
 
-Default output in `icongen/output/`:
+Default output in `output/`:
 - `{name}.png` - high quality original
 
 With `--sizes` flag, also generates:
@@ -62,18 +64,14 @@ With `--assets-dir` (implies `--sizes`), also creates:
 ## Agent Integration
 
 ```bash
-# Generate and get output path
-OUTPUT=$(source /Users/soli/Desktop/CODING/icongen/.venv/bin/activate && \
-  GOOGLE_API_KEY=$GOOGLE_API_KEY python /Users/soli/Desktop/CODING/icongen/generate.py \
-  --prompt "heart icon" \
-  --output icon_heart)
-
-# Generate and add to iOS project assets
-source /Users/soli/Desktop/CODING/icongen/.venv/bin/activate && \
-  GOOGLE_API_KEY=$GOOGLE_API_KEY python /Users/soli/Desktop/CODING/icongen/generate.py \
-  --prompt "heart icon" \
-  --output icon_heart \
-  --assets-dir /path/to/App/Assets.xcassets/Icons
+# Generate with Cloude style and add to iOS assets
+source /Users/soli/Desktop/CODING/cloude/skills/icongen/.venv/bin/activate && \
+  source /Users/soli/Desktop/CODING/cloude/.env && \
+  GOOGLE_API_KEY=$GOOGLE_API_KEY python /Users/soli/Desktop/CODING/cloude/skills/icongen/generate.py \
+  --ref /Users/soli/Desktop/CODING/cloude/skills/icongen/ref-creature.png \
+  --prompt "description" \
+  --output cloude-name \
+  --assets-dir /Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Assets.xcassets
 ```
 
 ## Pipeline Steps
@@ -88,3 +86,40 @@ source /Users/soli/Desktop/CODING/icongen/.venv/bin/activate && \
 
 - `GOOGLE_API_KEY` - Required for generation step
 - `GEMINI_MODEL` - Optional, defaults to `gemini-2.0-flash-exp`
+
+## Asset Naming Conventions
+
+Follow these naming patterns for all generated assets:
+
+### Prefixes by Category
+
+| Prefix | Use Case | Example |
+|--------|----------|---------|
+| `cloude-` | Main Cloude character/mascot | `cloude-idle.png`, `cloude-thinking.png` |
+| `icon-` | UI icons (buttons, tabs, actions) | `icon-send.png`, `icon-settings.png` |
+| `avatar-` | User/profile images | `avatar-user.png`, `avatar-guest.png` |
+| `state-` | App states/status indicators | `state-offline.png`, `state-error.png` |
+| `bg-` | Backgrounds/decorative | `bg-clouds.png`, `bg-gradient.png` |
+
+### Naming Rules
+
+- **Lowercase with hyphens**: `cloude-happy.png` not `Cloude_Happy.png`
+- **Descriptive but concise**: `icon-send.png` not `icon-send-message-button.png`
+- **No version numbers in names**: Use archive folder for old versions
+- **Variants use suffixes**: `cloude-idle-dark.png`, `icon-send-filled.png`
+
+### Output Structure
+
+```
+output/
+├── cloude-*.png      # Character assets
+├── icon-*.png        # UI icons
+├── avatar-*.png      # Profile images
+├── state-*.png       # Status indicators
+└── archive/          # Unused/old versions
+```
+
+### Reference Files (root folder)
+
+Keep reference images in the skill root (not output):
+- `ref-creature.png` - Main Cloude pixel art reference (use for all Cloude-style generation)

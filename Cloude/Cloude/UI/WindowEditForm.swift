@@ -34,11 +34,15 @@ struct WindowEditForm: View {
         }
     }
 
+    private var openInOtherWindows: Set<UUID> {
+        windowManager.conversationIds(excludingWindow: window.id)
+    }
+
     private var recentConversations: [Conversation] {
         guard let proj = project else { return [] }
         return proj.conversations
             .sorted { $0.lastMessageAt > $1.lastMessageAt }
-            .filter { $0.id != conversation?.id }
+            .filter { $0.id != conversation?.id && !openInOtherWindows.contains($0.id) }
             .prefix(5)
             .map { $0 }
     }
@@ -141,9 +145,17 @@ struct WindowEditForm: View {
                                         .font(.system(size: 17))
                                         .foregroundColor(.secondary)
                                         .frame(width: 24)
-                                    Text(conv.name)
-                                        .font(.subheadline)
-                                        .lineLimit(1)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(conv.name)
+                                            .font(.subheadline)
+                                            .lineLimit(1)
+                                        if let dir = conv.workingDirectory {
+                                            Text((dir as NSString).lastPathComponent)
+                                                .font(.caption2)
+                                                .foregroundColor(.accentColor)
+                                                .lineLimit(1)
+                                        }
+                                    }
                                     Spacer()
                                     Text(relativeTime(conv.lastMessageAt))
                                         .font(.caption2)

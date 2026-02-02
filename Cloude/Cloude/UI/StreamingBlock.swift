@@ -10,6 +10,7 @@ enum StreamingBlock: Identifiable {
     case table(id: String, rows: [[String]])
     case blockquote(id: String, content: String)
     case horizontalRule(id: String)
+    case header(id: String, level: Int, content: AttributedString, segments: [InlineSegment])
 
     var id: String {
         switch self {
@@ -18,6 +19,7 @@ enum StreamingBlock: Identifiable {
         case .table(let id, _): return id
         case .blockquote(let id, _): return id
         case .horizontalRule(let id): return id
+        case .header(let id, _, _, _): return id
         }
     }
 }

@@ -56,6 +56,14 @@ class WindowManager: ObservableObject {
         !windows.isEmpty
     }
 
+    var openConversationIds: Set<UUID> {
+        Set(windows.compactMap { $0.conversationId })
+    }
+
+    func conversationIds(excludingWindow windowId: UUID) -> Set<UUID> {
+        Set(windows.filter { $0.id != windowId }.compactMap { $0.conversationId })
+    }
+
     @discardableResult
     func addWindow() -> UUID {
         let window = ChatWindow()
