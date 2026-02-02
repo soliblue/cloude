@@ -17,6 +17,7 @@ struct FilePathPreviewView: View {
     @State private var mimeType: String?
     @State private var errorMessage: String?
     @State private var highlightedCode: AttributedString?
+    @State private var directoryEntries: [FileEntry]?
 
     private var fileName: String {
         (path as NSString).lastPathComponent
@@ -81,6 +82,8 @@ struct FilePathPreviewView: View {
                 Text("Loading...")
                     .foregroundColor(.secondary)
             }
+        } else if directoryEntries != nil {
+            FileBrowserView(connection: connection, rootPath: path)
         } else if let error = errorMessage {
             ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
         } else if let data = fileData {
@@ -147,6 +150,12 @@ struct FilePathPreviewView: View {
                 errorMessage = "Failed to decode file"
                 isLoading = false
             }
+        }
+
+        connection.onDirectoryListing = { responsePath, entries in
+            guard responsePath == path else { return }
+            directoryEntries = entries
+            isLoading = false
         }
     }
 
