@@ -89,21 +89,27 @@ struct FilePreviewView: View {
         Button {
             loadFullQuality()
         } label: {
-            HStack {
+            VStack(spacing: 6) {
                 if isLoadingFullQuality {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    if let progress = loadProgress {
-                        Text("\(progress.current + 1)/\(progress.total)")
+                    if let progress = currentProgress {
+                        ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
+                            .progressViewStyle(.linear)
+                            .frame(width: 160)
+                        Text("\(progress.current + 1) of \(progress.total)")
                             .font(.caption)
+                            .foregroundStyle(.secondary)
                     } else {
+                        ProgressView()
+                            .scaleEffect(0.8)
                         Text("Loading...")
                             .font(.caption)
                     }
                 } else {
-                    Image(systemName: "arrow.down.circle")
-                    Text("Load Full Quality (\(ByteCountFormatter.string(fromByteCount: fullSize, countStyle: .file)))")
-                        .font(.caption)
+                    HStack {
+                        Image(systemName: "arrow.down.circle")
+                        Text("Load Full Quality (\(ByteCountFormatter.string(fromByteCount: fullSize, countStyle: .file)))")
+                            .font(.caption)
+                    }
                 }
             }
             .padding(.horizontal, 16)
