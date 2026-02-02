@@ -20,6 +20,10 @@ struct Conversation: Codable, Identifiable {
     var pendingMessages: [ChatMessage]
     var pendingFork: Bool
 
+    var isEmpty: Bool {
+        messages.isEmpty && pendingMessages.isEmpty && sessionId == nil
+    }
+
     static let randomNames = [
         "Spark", "Nova", "Pulse", "Echo", "Drift", "Blaze", "Frost", "Dusk",
         "Dawn", "Flux", "Glow", "Haze", "Mist", "Peak", "Reef", "Sage",

@@ -6,9 +6,11 @@ import SwiftUI
 
 struct StreamingMarkdownView: View {
     let text: String
+    var toolCalls: [ToolCall] = []
     var isComplete: Bool = true
     @State private var cachedBlocks: [StreamingBlock] = []
     @State private var cachedText: String = ""
+    @State private var cachedToolCount: Int = 0
     @State private var collapsedHeaders: Set<String> = []
 
     var body: some View {
@@ -24,16 +26,30 @@ struct StreamingMarkdownView: View {
         }
         .onAppear { updateCacheIfNeeded() }
         .onChange(of: text) { _, _ in updateCacheIfNeeded() }
+        .onChange(of: toolCalls.count) { _, _ in updateCacheIfNeeded() }
     }
 
     private var blocks: [StreamingBlock] {
-        cachedText == text ? cachedBlocks : StreamingMarkdownParser.parse(text)
+        let topLevelToolCount = toolCalls.filter { $0.parentToolId == nil }.count
+        if cachedText == text && cachedToolCount == topLevelToolCount {
+            return cachedBlocks
+        }
+        if toolCalls.isEmpty {
+            return StreamingMarkdownParser.parse(text)
+        }
+        return StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
     }
 
     private func updateCacheIfNeeded() {
-        if cachedText != text {
-            cachedBlocks = StreamingMarkdownParser.parse(text)
+        let topLevelToolCount = toolCalls.filter { $0.parentToolId == nil }.count
+        if cachedText != text || cachedToolCount != topLevelToolCount {
+            if toolCalls.isEmpty {
+                cachedBlocks = StreamingMarkdownParser.parse(text)
+            } else {
+                cachedBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
+            }
             cachedText = text
+            cachedToolCount = topLevelToolCount
         }
     }
 
@@ -228,6 +244,25 @@ struct StreamingBlockView: View {
                 Text(content)
                     .textSelection(.enabled)
             }
+
+        case .toolGroup(_, let tools):
+            ToolGroupView(tools: tools)
         }
+    }
+}
+
+struct ToolGroupView: View {
+    let tools: [ToolCall]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
+                    InlineToolPill(toolCall: tool)
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .padding(.horizontal, -16)
     }
 }
