@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2HIGHLIGHT012F2619AE007FD3E4 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C2HIGHLIGHT022F2619AE007FD3E4 /* HighlightSwift */; };
 		C2LIVEACT012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2LIVEACT022F2619AE007FD3E4 /* CloudeShared */; };
 		C2LIVEACT032F2619AE007FD3E4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2LIVEACT042F2619AE007FD3E4 /* WidgetKit.framework */; };
 		C2LIVEACT052F2619AE007FD3E4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2LIVEACT062F2619AE007FD3E4 /* SwiftUI.framework */; };
@@ -14,7 +15,6 @@
 		C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED022F2619AE007FD3E4 /* CloudeShared */; };
 		C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED042F2619AE007FD3E4 /* CloudeShared */; };
 		C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2WHISPER022F2619AE007FD3E4 /* WhisperKit */; };
-		C2HIGHLIGHT012F2619AE007FD3E4 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C2HIGHLIGHT022F2619AE007FD3E4 /* HighlightSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -723,14 +723,6 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.0;
-			};
-		};
 		C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/appstefan/HighlightSwift.git";
@@ -739,9 +731,22 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C2HIGHLIGHT022F2619AE007FD3E4 /* HighlightSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */;
+			productName = HighlightSwift;
+		};
 		C2LIVEACT022F2619AE007FD3E4 /* CloudeShared */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */;
@@ -761,11 +766,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */;
 			productName = WhisperKit;
-		};
-		C2HIGHLIGHT022F2619AE007FD3E4 /* HighlightSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */;
-			productName = HighlightSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

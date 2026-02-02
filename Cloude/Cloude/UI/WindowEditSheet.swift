@@ -35,6 +35,7 @@ struct WindowEditSheet: View {
                 onDuplicate: onDuplicate
             )
             .padding(.horizontal, 20)
+            .padding(.top, 16)
             .navigationTitle("Edit Chat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -49,7 +50,6 @@ struct WindowEditSheet: View {
                     }
                 }
             }
-            .background(.ultraThinMaterial)
             .scrollContentBackground(.hidden)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }

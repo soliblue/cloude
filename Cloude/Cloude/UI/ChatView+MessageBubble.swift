@@ -15,18 +15,32 @@ struct MessageBubble: View {
     }
 
     private var isSlashCommand: Bool {
-        message.isUser && message.text.hasPrefix("/")
+        guard message.isUser else { return false }
+        return message.text.hasPrefix("/") || message.text.contains("<command-name>")
     }
 
     private var slashCommandInfo: (name: String, icon: String, isBuiltIn: Bool)? {
         guard isSlashCommand else { return nil }
-        let text = message.text.dropFirst()
-        let name = String(text.split(separator: " ").first ?? Substring(text))
-        switch name {
-        case "compact": return (name, "arrow.triangle.2.circlepath", true)
-        case "context": return (name, "chart.pie", true)
-        case "cost": return (name, "dollarsign.circle", true)
-        default: return (name, "command", false)
+
+        let commandName: String
+        if message.text.contains("<command-name>") {
+            if let start = message.text.range(of: "<command-name>"),
+               let end = message.text.range(of: "</command-name>") {
+                let nameWithSlash = String(message.text[start.upperBound..<end.lowerBound])
+                commandName = nameWithSlash.hasPrefix("/") ? String(nameWithSlash.dropFirst()) : nameWithSlash
+            } else {
+                return nil
+            }
+        } else {
+            let text = message.text.dropFirst()
+            commandName = String(text.split(separator: " ").first ?? Substring(text))
+        }
+
+        switch commandName {
+        case "compact": return (commandName, "arrow.triangle.2.circlepath", true)
+        case "context": return (commandName, "chart.pie", true)
+        case "cost": return (commandName, "dollarsign.circle", true)
+        default: return (commandName, "command", false)
         }
     }
 
@@ -70,7 +84,7 @@ struct MessageBubble: View {
 
                 Group {
                     if isSlashCommand, let info = slashCommandInfo {
-                        SlashCommandBubble(command: message.text, icon: info.icon, isSkill: !info.isBuiltIn)
+                        SlashCommandBubble(command: "/\(info.name)", icon: info.icon, isSkill: !info.isBuiltIn)
                     } else if message.isUser {
                         if !message.text.isEmpty {
                             Text(message.text)
