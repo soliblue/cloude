@@ -21,9 +21,10 @@ public enum ClientMessage: Codable {
     case killProcess(pid: Int32)
     case killAllProcesses
     case syncHistory(sessionId: String, workingDirectory: String)
+    case searchFiles(query: String, workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query
     }
 
     public init(from decoder: Decoder) throws {
@@ -96,6 +97,10 @@ public enum ClientMessage: Codable {
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
+        case "search_files":
+            let query = try container.decode(String.self, forKey: .query)
+            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
+            self = .searchFiles(query: query, workingDirectory: workingDirectory)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -168,6 +173,10 @@ public enum ClientMessage: Codable {
         case .syncHistory(let sessionId, let workingDirectory):
             try container.encode("sync_history", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
+        case .searchFiles(let query, let workingDirectory):
+            try container.encode("search_files", forKey: .type)
+            try container.encode(query, forKey: .query)
             try container.encode(workingDirectory, forKey: .workingDirectory)
         }
     }

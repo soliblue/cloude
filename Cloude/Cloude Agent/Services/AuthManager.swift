@@ -14,7 +14,31 @@ class AuthManager {
     private let service = "com.cloude.agent"
     private let account = "authToken"
 
+    private var failedAttempts: [String: [Date]] = [:]
+    private let maxAttempts = 3
+    private let lockoutWindow: TimeInterval = 300
+
     private init() {}
+
+    func isRateLimited(ip: String) -> Bool {
+        cleanupOldAttempts(for: ip)
+        let attempts = failedAttempts[ip] ?? []
+        return attempts.count >= maxAttempts
+    }
+
+    func recordFailedAttempt(ip: String) {
+        cleanupOldAttempts(for: ip)
+        failedAttempts[ip, default: []].append(Date())
+    }
+
+    func clearAttempts(for ip: String) {
+        failedAttempts.removeValue(forKey: ip)
+    }
+
+    private func cleanupOldAttempts(for ip: String) {
+        let cutoff = Date().addingTimeInterval(-lockoutWindow)
+        failedAttempts[ip] = failedAttempts[ip]?.filter { $0 > cutoff } ?? []
+    }
 
     var token: String {
         get {
