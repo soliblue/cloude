@@ -15,4 +15,14 @@ struct NotificationManager {
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
     }
+
+    static func showCustomNotification(title: String?, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title ?? "Cloude"
+        content.body = String(body.prefix(200))
+        content.sound = .default
+
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
 }

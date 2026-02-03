@@ -356,6 +356,77 @@ struct BashCommandParser {
     let allArgs: [String]
     private let flags: [String: String]
 
+    static func isScript(_ input: String) -> Bool {
+        let scriptPatterns = [
+            "\\bfor\\b.*\\bdo\\b",
+            "\\bwhile\\b.*\\bdo\\b",
+            "\\buntil\\b.*\\bdo\\b",
+            "\\bif\\b.*\\bthen\\b",
+            "\\bcase\\b.*\\bin\\b",
+            "\\bdone\\b",
+            "\\bfi\\b",
+            "\\besac\\b"
+        ]
+        for pattern in scriptPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: []),
+               regex.firstMatch(in: input, range: NSRange(input.startIndex..., in: input)) != nil {
+                return true
+            }
+        }
+        return false
+    }
+
+    static func splitChainedCommands(_ input: String) -> [String] {
+        if isScript(input) {
+            return [input]
+        }
+
+        var commands: [String] = []
+        var current = ""
+        var inQuote: Character?
+        var escape = false
+        var i = input.startIndex
+
+        while i < input.endIndex {
+            let char = input[i]
+            if escape {
+                current.append(char)
+                escape = false
+            } else if char == "\\" {
+                escape = true
+                current.append(char)
+            } else if let q = inQuote {
+                current.append(char)
+                if char == q { inQuote = nil }
+            } else if char == "\"" || char == "'" {
+                inQuote = char
+                current.append(char)
+            } else if char == "&" {
+                let next = input.index(after: i)
+                if next < input.endIndex && input[next] == "&" {
+                    let trimmed = current.trimmingCharacters(in: .whitespaces)
+                    if !trimmed.isEmpty { commands.append(trimmed) }
+                    current = ""
+                    i = input.index(after: next)
+                    continue
+                } else {
+                    current.append(char)
+                }
+            } else if char == ";" {
+                let trimmed = current.trimmingCharacters(in: .whitespaces)
+                if !trimmed.isEmpty { commands.append(trimmed) }
+                current = ""
+            } else {
+                current.append(char)
+            }
+            i = input.index(after: i)
+        }
+
+        let trimmed = current.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty { commands.append(trimmed) }
+        return commands
+    }
+
     static func parse(_ input: String) -> BashCommandParser {
         let tokens = tokenize(input)
         guard let cmd = tokens.first else {
@@ -476,9 +547,15 @@ struct ToolCallLabel: View {
         return input.hasPrefix("cloude memory ")
     }
 
+    private var isScript: Bool {
+        guard name == "Bash", let input = input else { return false }
+        return BashCommandParser.isScript(input)
+    }
+
     private var displayName: String {
         guard name == "Bash", let input = input, !input.isEmpty else { return name }
         if isMemoryCommand { return "Memory" }
+        if isScript { return "Script" }
         let parsed = BashCommandParser.parse(input)
         var cmd = parsed.command
         if cmd.isEmpty { return name }
@@ -509,6 +586,7 @@ struct ToolCallLabel: View {
                 }
                 return nil
             }
+            if isScript { return nil }
             return bashDisplayDetail(input)
         case "Glob", "Grep":
             let truncated = input.prefix(16)
@@ -681,24 +759,27 @@ struct ToolCallLabel: View {
         return "\(start)…\(end)"
     }
 
+    var iconNameForDetail: String { iconName }
+
     private var iconName: String {
         switch name {
         case "Bash":
-            if isMemoryCommand { return "brain.head.profile" }
+            if isMemoryCommand { return "brain" }
+            if isScript { return "scroll" }
             return bashIconName(input ?? "")
-        case "Read": return "eyeglasses"
+        case "Read": return "doc.text"
         case "Write": return "doc.badge.plus"
-        case "Edit": return "pencil"
-        case "Glob": return "folder.badge.questionmark"
+        case "Edit": return "pencil.line"
+        case "Glob": return "folder.badge.magnifyingglass"
         case "Grep": return "magnifyingglass"
-        case "Task": return "arrow.trianglehead.branch"
+        case "Task": return "person.2"
         case "WebFetch": return "globe"
         case "WebSearch": return "magnifyingglass.circle"
         case "TodoWrite": return "checklist"
         case "AskUserQuestion": return "questionmark.bubble"
         case "NotebookEdit": return "text.book.closed"
-        case "Memory": return "brain.head.profile"
-        default: return "bolt"
+        case "Memory": return "brain"
+        default: return "gear"
         }
     }
 
@@ -733,6 +814,7 @@ struct ToolCallLabel: View {
 func toolCallColor(for name: String, input: String? = nil) -> Color {
     if name == "Bash", let cmd = input {
         if cmd.hasPrefix("cloude memory ") { return .pink }
+        if BashCommandParser.isScript(cmd) { return .teal }
         return bashCommandColor(cmd)
     }
     switch name {

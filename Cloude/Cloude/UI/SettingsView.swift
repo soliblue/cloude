@@ -33,6 +33,7 @@ struct SettingsView: View {
                 .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
 
                 connectionSection
+                tailscaleSection
                 processesSection
                 securitySection
                 aboutSection
@@ -213,6 +214,38 @@ struct SettingsView: View {
                 }
             }
             .foregroundColor(.primary)
+        }
+    }
+
+    private var tailscaleSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "network")
+                        .font(.system(size: 20))
+                        .foregroundColor(.blue)
+                    Text("Tailscale Required")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
+
+                Text("Cloude connects to your Mac agent over Tailscale, a secure mesh VPN. Install Tailscale on both your iPhone and Mac to enable remote access.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Link(destination: URL(string: "https://tailscale.com/download")!) {
+                    HStack {
+                        Text("Download Tailscale")
+                            .font(.subheadline)
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 12))
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+        } header: {
+            Text("Network")
         }
     }
 

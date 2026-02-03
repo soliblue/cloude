@@ -101,10 +101,38 @@ platform :mac do
   lane :build_agent do
     begin
       setup_signing
-      sh("xcodebuild -project ../Cloude/Cloude.xcodeproj -scheme 'Cloude Agent' -destination 'platform=macOS' -derivedDataPath ../build clean build")
+
+      log_dir = File.expand_path("~/Library/Logs/Cloude")
+      FileUtils.mkdir_p(log_dir)
+      deploy_log = File.join(log_dir, "deploy.log")
+
+      File.open(deploy_log, "a") do |f|
+        f.puts "\n#{'=' * 60}"
+        f.puts "DEPLOY STARTED: #{Time.now}"
+        f.puts "#{'=' * 60}"
+      end
+
+      sh("xcodebuild -project ../Cloude/Cloude.xcodeproj -scheme 'Cloude Agent' -destination 'platform=macOS' -derivedDataPath ../build clean build 2>&1 | tee -a #{deploy_log}")
+
+      File.open(deploy_log, "a") do |f|
+        f.puts "BUILD COMPLETE: #{Time.now}"
+        f.puts "Killing old agent..."
+      end
+
       sh("pkill -x 'Cloude Agent' || true")
       sh("sleep 1")
+
+      File.open(deploy_log, "a") do |f|
+        f.puts "Launching new agent: #{Time.now}"
+      end
+
       sh("open ../build/Build/Products/Debug/Cloude\\ Agent.app")
+
+      File.open(deploy_log, "a") do |f|
+        f.puts "LAUNCH COMMAND SENT: #{Time.now}"
+        f.puts "Check ~/Library/Logs/Cloude/agent.log for startup logs"
+        f.puts "#{'=' * 60}\n"
+      end
     ensure
       cleanup_signing
     end

@@ -76,7 +76,7 @@ extension ConnectionManager {
             break
 
         case .status(let state, let conversationId):
-            agentState = state
+            if agentState != state { agentState = state }
             if let convId = targetConversationId(from: conversationId) {
                 let out = output(for: convId)
                 out.isRunning = (state == .running || state == .compacting)
@@ -103,6 +103,10 @@ extension ConnectionManager {
 
         case .error(let errorMessage):
             lastError = errorMessage
+            if errorMessage.lowercased().contains("transcription") && isTranscribing {
+                isTranscribing = false
+                AudioRecorder.markTranscriptionFailed()
+            }
 
         case .image:
             break
@@ -262,6 +266,31 @@ extension ConnectionManager {
                 output(for: convId).skipped = true
             }
             onHeartbeatSkipped?(conversationId)
+
+        case .deleteConversation(let conversationId):
+            if let convId = UUID(uuidString: conversationId) {
+                onDeleteConversation?(convId)
+            }
+
+        case .notify(let title, let body, _):
+            onNotify?(title, body)
+
+        case .clipboard(let text):
+            onClipboard?(text)
+
+        case .openURL(let url):
+            onOpenURL?(url)
+
+        case .haptic(let style):
+            onHaptic?(style)
+
+        case .speak(let text):
+            onSpeak?(text)
+
+        case .switchConversation(let conversationId):
+            if let convId = UUID(uuidString: conversationId) {
+                onSwitchConversation?(convId)
+            }
         }
     }
 
