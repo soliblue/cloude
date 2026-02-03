@@ -169,6 +169,8 @@ struct GlobalInputBar: View {
                         Image(systemName: "photo")
                             .font(.system(size: 22))
                             .foregroundColor(.accentColor)
+                            .frame(height: 44)
+                            .contentShape(Rectangle())
                     }
 
                     HStack(spacing: 8) {
@@ -216,6 +218,8 @@ struct GlobalInputBar: View {
                             Image(systemName: "stop.circle.fill")
                                 .font(.system(size: 28))
                                 .foregroundColor(.accentColor.opacity(0.9))
+                                .frame(height: 44)
+                                .contentShape(Rectangle())
                         }
                     } else {
                         Menu {
@@ -227,6 +231,8 @@ struct GlobalInputBar: View {
                             Image(systemName: "paperplane.fill")
                                 .font(.system(size: 22))
                                 .foregroundColor(canSendWithParams ? .accentColor : .accentColor.opacity(0.4))
+                                .frame(height: 44)
+                                .contentShape(Rectangle())
                         } primaryAction: {
                             sendWithParameters()
                         }

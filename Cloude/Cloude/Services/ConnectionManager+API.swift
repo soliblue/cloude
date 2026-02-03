@@ -291,7 +291,19 @@ extension ConnectionManager {
             if let convId = UUID(uuidString: conversationId) {
                 onSwitchConversation?(convId)
             }
+
+        case .question(let questions, let conversationId):
+            let convId = conversationId.flatMap { UUID(uuidString: $0) }
+            onQuestion?(questions, convId)
+
+        case .fileSearchResults(let files, let query):
+            onFileSearchResults?(files, query)
         }
+    }
+
+    func searchFiles(query: String, workingDirectory: String) {
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.searchFiles(query: query, workingDirectory: workingDirectory))
     }
 
     func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false) {

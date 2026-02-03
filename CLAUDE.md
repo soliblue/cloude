@@ -23,6 +23,8 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 ## Critical Warnings
 
+**NEVER USE AskUserQuestion TOOL** - The iOS app cannot handle interactive question prompts from the CLI. When you need to ask the user something, just ask in plain text in your response. The user will reply in the next message. Do not use the AskUserQuestion tool - it will break the conversation flow.
+
 **FIRST MESSAGE = RENAME + SYMBOL** - On the VERY FIRST user message of ANY conversation, BEFORE writing any text response, you MUST immediately run both `cloude rename` and `cloude symbol` commands. This is non-negotiable. No text output first. Tool calls first. Every. Single. Time.
 
 - Run as **two separate Bash commands** (not combined with `&&`)
@@ -251,7 +253,17 @@ cloude open https://...      # Open a URL on iOS
 cloude haptic <style>        # Trigger haptic feedback (light/medium/heavy/rigid/soft)
 cloude speak Hello world     # Text-to-speech on iOS
 cloude switch <conv-id>      # Switch to a different conversation by UUID
+cloude ask --q "Question?" --options "A,B,C"  # Ask user a multiple-choice question
 ```
+
+**Asking Questions (`cloude ask`):**
+- Use for multiple-choice questions - renders as tappable option buttons in iOS
+- Simple format: `cloude ask --q "What color?" --options "Red,Blue,Green"`
+- With descriptions: `cloude ask --q "Which?" --options "A:Fast but complex,B:Simple but slow"`
+- Multi-select: add `--multi` flag
+- Multiple questions: `cloude ask --questions '[{"q":"Color?","options":["Red","Blue"]},{"q":"Size?","options":["S","M","L"],"multi":true}]'`
+- User's answers come back as the next message, e.g., "Color? Blue\nSize? M, L"
+- For open-ended questions, just ask in plain text instead
 
 **Memory command:**
 - Use `local` for personal memories (CLAUDE.local.md) - preferences, history, identity
