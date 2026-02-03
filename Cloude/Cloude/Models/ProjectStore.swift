@@ -5,11 +5,20 @@
 import Foundation
 import Combine
 
+import CloudeShared
+
+struct PendingQuestion: Equatable {
+    let conversationId: UUID
+    let questions: [Question]
+}
+
 @MainActor
 class ProjectStore: ObservableObject {
     @Published var projects: [Project] = []
     @Published var currentProject: Project?
     @Published var currentConversation: Conversation?
+    @Published var pendingQuestion: PendingQuestion?
+    @Published var questionInputFocused: Bool = false
 
     private let saveKey = "saved_projects"
 

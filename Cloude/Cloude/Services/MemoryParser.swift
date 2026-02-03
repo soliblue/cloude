@@ -4,9 +4,61 @@ import CloudeShared
 struct MemoryParser {
     static func parse(sections: [MemorySection]) -> [ParsedMemorySection] {
         sections.map { section in
-            let items = parseItems(from: section.content)
-            return ParsedMemorySection(from: section, items: items)
+            parseSection(id: section.id, title: section.title, content: section.content, level: 2)
         }
+    }
+
+    private static func parseSection(id: String, title: String, content: String, level: Int) -> ParsedMemorySection {
+        let headerPrefix = String(repeating: "#", count: level + 1) + " "
+        let lines = content.components(separatedBy: "\n")
+
+        var topLevelContent: [String] = []
+        var subsections: [ParsedMemorySection] = []
+        var currentSubsectionTitle: String?
+        var currentSubsectionContent: [String] = []
+
+        for line in lines {
+            if line.hasPrefix(headerPrefix) {
+                if let subsectionTitle = currentSubsectionTitle {
+                    let subsectionId = "\(id)/\(subsectionTitle)"
+                    let subsection = parseSection(
+                        id: subsectionId,
+                        title: subsectionTitle,
+                        content: currentSubsectionContent.joined(separator: "\n"),
+                        level: level + 1
+                    )
+                    subsections.append(subsection)
+                }
+
+                currentSubsectionTitle = String(line.dropFirst(headerPrefix.count)).trimmingCharacters(in: .whitespaces)
+                currentSubsectionContent = []
+            } else if currentSubsectionTitle != nil {
+                currentSubsectionContent.append(line)
+            } else {
+                topLevelContent.append(line)
+            }
+        }
+
+        if let subsectionTitle = currentSubsectionTitle {
+            let subsectionId = "\(id)/\(subsectionTitle)"
+            let subsection = parseSection(
+                id: subsectionId,
+                title: subsectionTitle,
+                content: currentSubsectionContent.joined(separator: "\n"),
+                level: level + 1
+            )
+            subsections.append(subsection)
+        }
+
+        let items = parseItems(from: topLevelContent.joined(separator: "\n"))
+
+        return ParsedMemorySection(
+            id: id,
+            title: title,
+            items: items,
+            subsections: subsections,
+            rawContent: content
+        )
     }
 
     static func parseItems(from content: String) -> [MemoryItem] {
