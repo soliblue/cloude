@@ -43,7 +43,9 @@ struct InlineTextView: View {
             case .filePath(_, let path):
                 let filename = (path as NSString).lastPathComponent
                 let icon = fileIconChar(for: filename)
-                var attr = AttributedString(" \(icon) \(filename) ")
+                let nbsp = "\u{00A0}"
+                let pillText = "\(nbsp)\(icon)\(nbsp)\(filename.replacingOccurrences(of: " ", with: nbsp))\(nbsp)"
+                var attr = AttributedString(pillText)
                 attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .medium, design: .monospaced)
                 attr.foregroundColor = fileIconColor(for: filename)
                 attr.backgroundColor = fileIconColor(for: filename).opacity(0.12)
