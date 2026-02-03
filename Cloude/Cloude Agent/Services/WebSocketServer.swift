@@ -25,11 +25,17 @@ class WebSocketServer: ObservableObject {
     }
 
     func start() {
+        Log.startup("WebSocketServer.start() called")
+        Log.startup("  Configuring TCP parameters...")
+
         do {
             let parameters = NWParameters.tcp
             parameters.allowLocalEndpointReuse = true
+            Log.startup("  ✓ TCP parameters configured (allowLocalEndpointReuse=true)")
 
+            Log.startup("  Creating NWListener on port \(port)...")
             listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: port)!)
+            Log.startup("  ✓ NWListener created successfully")
 
             listener?.stateUpdateHandler = { [weak self] state in
                 guard let self else { return }
@@ -38,15 +44,21 @@ class WebSocketServer: ObservableObject {
                     case .ready:
                         self.isRunning = true
                         self.lastError = nil
-                        Log.info("Server listening on port \(self.port)")
+                        Log.startup("  ★ SERVER READY - Listening on port \(self.port)")
                     case .failed(let error):
                         self.isRunning = false
                         self.lastError = error.localizedDescription
+                        Log.startup("  ✗ SERVER FAILED: \(error)")
                         Log.error("Server failed: \(error)")
                     case .cancelled:
                         self.isRunning = false
-                    default:
-                        break
+                        Log.startup("  ○ Server cancelled")
+                    case .waiting(let error):
+                        Log.startup("  … Server waiting: \(error)")
+                    case .setup:
+                        Log.startup("  … Server setting up...")
+                    @unknown default:
+                        Log.startup("  ? Unknown server state")
                     }
                 }
             }
@@ -58,9 +70,12 @@ class WebSocketServer: ObservableObject {
                 }
             }
 
+            Log.startup("  Starting listener on main queue...")
             listener?.start(queue: .main)
+            Log.startup("  ✓ listener.start() called")
         } catch {
             lastError = error.localizedDescription
+            Log.startup("  ✗ FAILED TO START SERVER: \(error)")
             Log.error("Failed to start server: \(error)")
         }
     }

@@ -5,13 +5,13 @@ import CloudeShared
 class ConversationOutput: ObservableObject {
     weak var parent: ConnectionManager?
 
-    @Published var text: String = "" { didSet { parent?.objectWillChange.send() } }
+    @Published var text: String = "" { didSet { if text != oldValue { parent?.objectWillChange.send() } } }
     @Published var toolCalls: [ToolCall] = [] { didSet { parent?.objectWillChange.send() } }
     @Published var runStats: (durationMs: Int, costUsd: Double)? { didSet { parent?.objectWillChange.send() } }
-    @Published var isRunning: Bool = false { didSet { parent?.objectWillChange.send() } }
-    @Published var isCompacting: Bool = false { didSet { parent?.objectWillChange.send() } }
-    @Published var newSessionId: String? { didSet { parent?.objectWillChange.send() } }
-    @Published var skipped: Bool = false { didSet { parent?.objectWillChange.send() } }
+    @Published var isRunning: Bool = false { didSet { if isRunning != oldValue { parent?.objectWillChange.send() } } }
+    @Published var isCompacting: Bool = false { didSet { if isCompacting != oldValue { parent?.objectWillChange.send() } } }
+    @Published var newSessionId: String? { didSet { if newSessionId != oldValue { parent?.objectWillChange.send() } } }
+    @Published var skipped: Bool = false { didSet { if skipped != oldValue { parent?.objectWillChange.send() } } }
     var lastSavedMessageId: UUID?
 
     func reset() {
@@ -74,6 +74,13 @@ struct ChunkProgress: Equatable {
     var onHistorySync: ((String, [HistoryMessage]) -> Void)?
     var onHistorySyncError: ((String, String) -> Void)?
     var onHeartbeatSkipped: ((String?) -> Void)?
+    var onDeleteConversation: ((UUID) -> Void)?
+    var onNotify: ((String?, String) -> Void)?
+    var onClipboard: ((String) -> Void)?
+    var onOpenURL: ((String) -> Void)?
+    var onHaptic: ((String) -> Void)?
+    var onSpeak: ((String) -> Void)?
+    var onSwitchConversation: ((UUID) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
