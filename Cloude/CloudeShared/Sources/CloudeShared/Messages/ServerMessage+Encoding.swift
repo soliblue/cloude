@@ -161,6 +161,14 @@ extension ServerMessage {
         case .switchConversation(let conversationId):
             try container.encode("switch_conversation", forKey: .type)
             try container.encode(conversationId, forKey: .conversationId)
+        case .question(let questions, let conversationId):
+            try container.encode("question", forKey: .type)
+            try container.encode(questions, forKey: .questions)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .fileSearchResults(let files, let query):
+            try container.encode("file_search_results", forKey: .type)
+            try container.encode(files, forKey: .files)
+            try container.encode(query, forKey: .query)
         }
     }
 }

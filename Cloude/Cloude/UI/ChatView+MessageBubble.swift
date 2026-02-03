@@ -37,6 +37,7 @@ struct MessageBubble: View {
         }
 
         switch commandName {
+        case "clear": return (commandName, "trash", true)
         case "compact": return (commandName, "arrow.triangle.2.circlepath", true)
         case "context": return (commandName, "chart.pie", true)
         case "cost": return (commandName, "dollarsign.circle", true)

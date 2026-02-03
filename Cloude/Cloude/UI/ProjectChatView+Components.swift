@@ -147,6 +147,54 @@ struct ProjectChatMessageList: View {
                             streamingView
                         }
 
+                        if let pending = projectStore?.pendingQuestion,
+                           pending.conversationId == conversationId {
+                            QuestionView(
+                                questions: pending.questions,
+                                isStreaming: agentState == .running || agentState == .compacting,
+                                onSubmit: { answer in
+                                    projectStore?.pendingQuestion = nil
+                                    projectStore?.questionInputFocused = false
+                                    if let conv = conversation, let proj = project, let store = projectStore {
+                                        let userMessage = ChatMessage(isUser: true, text: answer)
+                                        store.addMessage(userMessage, to: conv, in: proj)
+                                        let sessionId = conv.sessionId
+                                        let workingDir = conv.workingDirectory ?? proj.rootDirectory
+                                        connection?.sendChat(
+                                            answer,
+                                            workingDirectory: workingDir,
+                                            sessionId: sessionId,
+                                            isNewSession: false,
+                                            conversationId: conv.id,
+                                            conversationName: conv.name,
+                                            conversationSymbol: conv.symbol
+                                        )
+                                    }
+                                },
+                                onDismiss: {
+                                    projectStore?.questionInputFocused = false
+                                    if let conv = conversation, let proj = project, let store = projectStore {
+                                        let skipMessage = ChatMessage(isUser: true, text: "(skipped question)")
+                                        store.addMessage(skipMessage, to: conv, in: proj)
+                                    }
+                                    projectStore?.pendingQuestion = nil
+                                },
+                                onFocusChange: { focused in
+                                    projectStore?.questionInputFocused = focused
+                                    if focused {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                            withAnimation {
+                                                scrollProxy?.scrollTo("question-input", anchor: .bottom)
+                                            }
+                                        }
+                                    }
+                                }
+                            )
+                            .id("question-input")
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                        }
+
                         ForEach(queuedMessages) { message in
                             SwipeToDeleteBubble(message: message) {
                                 onDeleteQueued?(message.id)

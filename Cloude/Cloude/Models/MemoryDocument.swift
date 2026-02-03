@@ -38,13 +38,32 @@ struct ParsedMemorySection: Identifiable {
     let id: String
     let title: String
     let items: [MemoryItem]
+    let subsections: [ParsedMemorySection]
     let rawContent: String
     var isExpanded: Bool
 
-    init(from section: MemorySection, items: [MemoryItem]) {
+    var hasChildren: Bool {
+        !items.isEmpty || !subsections.isEmpty
+    }
+
+    var childCount: Int {
+        items.count + subsections.reduce(0) { $0 + $1.childCount + 1 }
+    }
+
+    init(id: String, title: String, items: [MemoryItem], subsections: [ParsedMemorySection] = [], rawContent: String = "", isExpanded: Bool = false) {
+        self.id = id
+        self.title = title
+        self.items = items
+        self.subsections = subsections
+        self.rawContent = rawContent
+        self.isExpanded = isExpanded
+    }
+
+    init(from section: MemorySection, items: [MemoryItem], subsections: [ParsedMemorySection] = []) {
         self.id = section.id
         self.title = section.title
         self.items = items
+        self.subsections = subsections
         self.rawContent = section.content
         self.isExpanded = false
     }

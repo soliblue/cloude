@@ -40,9 +40,11 @@ public enum ServerMessage: Codable {
     case haptic(style: String)
     case speak(text: String)
     case switchConversation(conversationId: String)
+    case question(questions: [Question], conversationId: String?)
+    case fileSearchResults(files: [String], query: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query
     }
 
     public init(from decoder: Decoder) throws {
@@ -207,6 +209,14 @@ public enum ServerMessage: Codable {
         case "switch_conversation":
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             self = .switchConversation(conversationId: conversationId)
+        case "question":
+            let questions = try container.decode([Question].self, forKey: .questions)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .question(questions: questions, conversationId: conversationId)
+        case "file_search_results":
+            let files = try container.decode([String].self, forKey: .files)
+            let query = try container.decode(String.self, forKey: .query)
+            self = .fileSearchResults(files: files, query: query)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

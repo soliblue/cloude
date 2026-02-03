@@ -81,6 +81,8 @@ struct ChunkProgress: Equatable {
     var onHaptic: ((String) -> Void)?
     var onSpeak: ((String) -> Void)?
     var onSwitchConversation: ((UUID) -> Void)?
+    var onQuestion: (([Question], UUID?) -> Void)?
+    var onFileSearchResults: (([String], String) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {

@@ -68,7 +68,8 @@ class RunnerManager: ObservableObject {
 
     func abort(conversationId: String) {
         guard let convRunner = activeRunners[conversationId] else {
-            Log.info("No runner found for \(conversationId.prefix(8)) to abort")
+            Log.info("No runner found for \(conversationId.prefix(8)) to abort, broadcasting idle")
+            onStatusChange?(.idle, conversationId)
             return
         }
         Log.info("Aborting runner for \(conversationId.prefix(8))")

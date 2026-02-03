@@ -234,6 +234,14 @@ struct CloudeApp: App {
             }
         }
 
+        connection.onQuestion = { [projectStore] questions, convId in
+            if let convId = convId {
+                projectStore.pendingQuestion = PendingQuestion(conversationId: convId, questions: questions)
+            } else if let currentId = projectStore.currentConversation?.id {
+                projectStore.pendingQuestion = PendingQuestion(conversationId: currentId, questions: questions)
+            }
+        }
+
         connection.connect(host: host, port: port, token: token)
     }
 }

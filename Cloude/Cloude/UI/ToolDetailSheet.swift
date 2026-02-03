@@ -37,6 +37,14 @@ struct ToolDetailSheet: View {
         if isMemoryCommand { return "Memory" }
         if isScript { return "Script" }
         if toolCall.name == "Bash", let input = toolCall.input {
+            let commands = BashCommandParser.splitChainedCommands(input)
+            if commands.count > 1 {
+                let names = commands.map { cmd -> String in
+                    let parsed = BashCommandParser.parse(cmd)
+                    return parsed.command.isEmpty ? "bash" : parsed.command
+                }
+                return names.joined(separator: " && ")
+            }
             let parsed = BashCommandParser.parse(input)
             if !parsed.command.isEmpty {
                 if let sub = parsed.subcommand {
@@ -49,7 +57,10 @@ struct ToolDetailSheet: View {
     }
 
     private var iconName: String {
-        ToolCallLabel(name: toolCall.name, input: toolCall.input).iconNameForDetail
+        if !chainedCommands.isEmpty {
+            return "link"
+        }
+        return ToolCallLabel(name: toolCall.name, input: toolCall.input).iconNameForDetail
     }
 
     var body: some View {

@@ -129,13 +129,30 @@ class WebSocketServer: ObservableObject {
     }
 
     func authenticate(_ connection: NWConnection, token: String) -> Bool {
+        let ip = connectionIP(connection)
+
+        if AuthManager.shared.isRateLimited(ip: ip) {
+            Log.error("Authentication blocked - rate limited (\(ip))")
+            return false
+        }
+
         if token == authToken {
             authenticatedConnections.insert(ObjectIdentifier(connection))
+            AuthManager.shared.clearAttempts(for: ip)
             Log.info("Client authenticated")
             return true
         }
-        Log.error("Authentication failed - invalid token")
+
+        AuthManager.shared.recordFailedAttempt(ip: ip)
+        Log.error("Authentication failed - invalid token (\(ip))")
         return false
+    }
+
+    private func connectionIP(_ connection: NWConnection) -> String {
+        if case .hostPort(let host, _) = connection.endpoint {
+            return "\(host)"
+        }
+        return "unknown"
     }
 
     func broadcast(_ message: ServerMessage) {
