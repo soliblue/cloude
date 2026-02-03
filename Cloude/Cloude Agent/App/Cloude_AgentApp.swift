@@ -18,34 +18,58 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var popover: NSPopover!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Log.info("Agent starting up")
+        Log.rotateIfNeeded()
+        Log.logSeparator()
+        Log.startup("╔══════════════════════════════════════════════════════════════╗")
+        Log.startup("║          CLOUDE AGENT STARTING - \(Date())          ║")
+        Log.startup("╚══════════════════════════════════════════════════════════════╝")
+        Log.startup("PID: \(ProcessInfo.processInfo.processIdentifier)")
+        Log.startup("Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
+        Log.startup("Bundle: \(Bundle.main.bundlePath)")
 
-        Log.info("Checking for other agents...")
+        Log.startup("[1/8] Checking for other agents...")
         let killedAgents = ProcessMonitor.killOtherAgents()
         if killedAgents > 0 {
-            Log.info("Killed \(killedAgents) existing agent process(es)")
+            Log.startup("       Killed \(killedAgents) existing agent process(es), waiting 500ms...")
             Thread.sleep(forTimeInterval: 0.5)
         }
-        Log.info("Other agents check complete")
+        Log.startup("       ✓ Other agents check complete")
 
-        Log.info("Installing CLI...")
+        Log.startup("[2/8] Installing CLI...")
         CLIInstaller.installIfNeeded()
+        Log.startup("       ✓ CLI installed")
 
-        Log.info("Setting activation policy...")
+        Log.startup("[3/8] Setting activation policy...")
         NSApp.setActivationPolicy(.accessory)
-        Log.info("Setting up menu bar...")
+        Log.startup("       ✓ Activation policy set to accessory")
+
+        Log.startup("[4/8] Setting up menu bar...")
         setupMenuBar()
-        Log.info("Setting up services...")
+        Log.startup("       ✓ Menu bar ready")
+
+        Log.startup("[5/8] Setting up services (WebSocket, RunnerManager)...")
         setupServices()
-        Log.info("Setting up popover...")
+        Log.startup("       ✓ Services configured")
+
+        Log.startup("[6/8] Setting up popover...")
         setupPopover()
-        Log.info("Setting up heartbeat...")
+        Log.startup("       ✓ Popover ready")
+
+        Log.startup("[7/8] Setting up heartbeat...")
         setupHeartbeat()
-        Log.info("Starting server...")
+        Log.startup("       ✓ Heartbeat configured")
+
+        Log.startup("[8/8] Starting WebSocket server on port \(server.port)...")
         server.start()
-        Log.info("Server start called, initializing whisper...")
+        Log.startup("       Server.start() called - waiting for state update...")
+
+        Log.startup("[POST] Initializing Whisper...")
         initializeWhisper()
-        Log.info("Startup sequence complete")
+
+        Log.startup("═══════════════════════════════════════════════════════════════")
+        Log.startup("STARTUP SEQUENCE COMPLETE - Server should be listening on :\(server.port)")
+        Log.startup("Log file: \(Log.logPath)")
+        Log.startup("═══════════════════════════════════════════════════════════════")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -298,6 +322,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case "skip":
             Log.info("Heartbeat skipped for \(conversationId?.prefix(8) ?? "nil")")
             server.broadcast(.heartbeatSkipped(conversationId: conversationId))
+
+        case "delete":
+            guard let convId = conversationId else { return }
+            server.broadcast(.deleteConversation(conversationId: convId))
+            Log.info("Delete conversation \(convId.prefix(8))")
+
+        case "notify":
+            guard parts.count >= 2 else { return }
+            let body = parts[1]
+            server.broadcast(.notify(title: nil, body: body, conversationId: conversationId))
+            Log.info("Notify: \(body.prefix(50))")
+
+        case "clipboard":
+            guard parts.count >= 2 else { return }
+            let text = parts[1]
+            server.broadcast(.clipboard(text: text))
+            Log.info("Clipboard: \(text.prefix(50))")
+
+        case "open":
+            guard parts.count >= 2 else { return }
+            let url = parts[1]
+            server.broadcast(.openURL(url: url))
+            Log.info("Open URL: \(url)")
+
+        case "haptic":
+            let style = parts.count >= 2 ? parts[1] : "medium"
+            server.broadcast(.haptic(style: style))
+            Log.info("Haptic: \(style)")
+
+        case "speak":
+            guard parts.count >= 2 else { return }
+            let text = parts[1]
+            server.broadcast(.speak(text: text))
+            Log.info("Speak: \(text.prefix(50))")
+
+        case "switch":
+            guard parts.count >= 2 else { return }
+            let targetId = parts[1]
+            server.broadcast(.switchConversation(conversationId: targetId))
+            Log.info("Switch to conversation: \(targetId.prefix(8))")
 
         default:
             Log.info("Unknown cloude command: \(action)")

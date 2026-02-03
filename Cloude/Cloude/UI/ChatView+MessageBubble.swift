@@ -168,10 +168,25 @@ struct InterleavedMessageContent: View {
 
 struct InlineToolPill: View {
     let toolCall: ToolCall
+    var children: [ToolCall] = []
     @Environment(\.openURL) private var openURL
+    @State private var showDetail = false
+    @State private var isExpanded = false
 
     private var isMemoryCommand: Bool {
         toolCall.name == "Bash" && (toolCall.input?.hasPrefix("cloude memory ") ?? false)
+    }
+
+    private var isScript: Bool {
+        guard toolCall.name == "Bash", let input = toolCall.input else { return false }
+        return BashCommandParser.isScript(input)
+    }
+
+    private var chainedCommands: [String] {
+        guard toolCall.name == "Bash", let input = toolCall.input else { return [] }
+        if isScript { return [] }
+        let commands = BashCommandParser.splitChainedCommands(input)
+        return commands.count > 1 ? commands : []
     }
 
     private var filePath: String? {
@@ -217,36 +232,103 @@ struct InlineToolPill: View {
         path.hasPrefix("/") && !path.contains("*") && !path.contains("?")
     }
 
-    private var actionURL: URL? {
+    private var hasQuickAction: Bool {
+        if !chainedCommands.isEmpty { return false }
+        return isMemoryCommand || filePath != nil
+    }
+
+    private func performQuickAction() {
         if isMemoryCommand {
-            return URL(string: "cloude://memory")
+            if let url = URL(string: "cloude://memory") {
+                openURL(url)
+            }
+        } else if let path = filePath,
+                  let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+                  let url = URL(string: "cloude://file\(encodedPath)") {
+            openURL(url)
         }
-        if let path = filePath,
-           let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) {
-            return URL(string: "cloude://file\(encodedPath)")
-        }
-        return nil
     }
 
     var body: some View {
-        pillContent
-            .highPriorityGesture(
-                TapGesture()
-                    .onEnded {
-                        if let url = actionURL {
-                            openURL(url)
+        Group {
+            if children.isEmpty {
+                pillContent
+            } else {
+                VStack(alignment: .leading, spacing: 4) {
+                    pillContent
+
+                    if isExpanded {
+                        ForEach(children, id: \.toolId) { child in
+                            InlineToolPill(toolCall: child)
+                                .padding(.leading, 16)
                         }
                     }
-            )
+                }
+            }
+        }
+        .highPriorityGesture(
+            TapGesture()
+                .onEnded {
+                    if hasQuickAction {
+                        performQuickAction()
+                    } else {
+                        showDetail = true
+                    }
+                }
+        )
+        .onLongPressGesture {
+            showDetail = true
+        }
+        .sheet(isPresented: $showDetail) {
+            ToolDetailSheet(toolCall: toolCall)
+        }
     }
 
     private var pillContent: some View {
-        ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
-            .lineLimit(1)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
-            .cornerRadius(14)
+        HStack(spacing: 4) {
+            if !chainedCommands.isEmpty {
+                chainedPillContent
+            } else {
+                ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
+                    .lineLimit(1)
+            }
+
+            if !children.isEmpty {
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isExpanded.toggle()
+                        }
+                    }
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
+        .cornerRadius(14)
+    }
+
+    private var chainedPillContent: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, cmd in
+                if index > 0 {
+                    Image(systemName: "link")
+                        .font(.system(size: 8))
+                        .foregroundColor(.secondary)
+                }
+                let parsed = BashCommandParser.parse(cmd)
+                Text(parsed.command.isEmpty ? "cmd" : parsed.command)
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .foregroundColor(toolCallColor(for: "Bash", input: cmd))
+            }
+            if chainedCommands.count > 3 {
+                Text("+\(chainedCommands.count - 3)")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+        }
     }
 }
 

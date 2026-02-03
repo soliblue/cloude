@@ -1,6 +1,8 @@
 import SwiftUI
 import Combine
 import CloudeShared
+import AVFoundation
+import UIKit
 
 extension String: @retroactive Identifiable {
     public var id: String { self }
@@ -185,6 +187,50 @@ struct CloudeApp: App {
                     return ChatMessage(isUser: msg.isUser, text: msg.text, timestamp: msg.timestamp, toolCalls: toolCalls)
                 }
                 projectStore.replaceMessages(conv, in: project, with: newMessages)
+            }
+        }
+
+        connection.onDeleteConversation = { [projectStore] convId in
+            if let (project, conv) = projectStore.findConversation(withId: convId) {
+                projectStore.deleteConversation(conv, from: project)
+            }
+        }
+
+        connection.onNotify = { title, body in
+            NotificationManager.showCustomNotification(title: title, body: body)
+        }
+
+        connection.onClipboard = { text in
+            UIPasteboard.general.string = text
+        }
+
+        connection.onOpenURL = { urlString in
+            if let url = URL(string: urlString) {
+                UIApplication.shared.open(url)
+            }
+        }
+
+        connection.onHaptic = { style in
+            let generator: UIImpactFeedbackGenerator
+            switch style {
+            case "light": generator = UIImpactFeedbackGenerator(style: .light)
+            case "heavy": generator = UIImpactFeedbackGenerator(style: .heavy)
+            case "rigid": generator = UIImpactFeedbackGenerator(style: .rigid)
+            case "soft": generator = UIImpactFeedbackGenerator(style: .soft)
+            default: generator = UIImpactFeedbackGenerator(style: .medium)
+            }
+            generator.impactOccurred()
+        }
+
+        connection.onSpeak = { text in
+            let utterance = AVSpeechUtterance(string: text)
+            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+            AVSpeechSynthesizer().speak(utterance)
+        }
+
+        connection.onSwitchConversation = { [projectStore] convId in
+            if let (project, conv) = projectStore.findConversation(withId: convId) {
+                projectStore.selectConversation(conv, in: project)
             }
         }
 

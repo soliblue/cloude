@@ -7,15 +7,41 @@ import AVFoundation
 import Combine
 import Foundation
 
+extension Notification.Name {
+    static let pendingAudioCleared = Notification.Name("pendingAudioCleared")
+    static let transcriptionFailed = Notification.Name("transcriptionFailed")
+}
+
 @MainActor
 class AudioRecorder: ObservableObject {
     @Published var isRecording = false
     @Published var isTranscribing = false
     @Published var audioLevel: Float = 0
+    @Published var hasPendingAudio = false
 
     private var audioRecorder: AVAudioRecorder?
-    private var recordingURL: URL?
     private var levelTimer: Timer?
+
+    static let pendingAudioURL: URL = {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("pending_audio.wav")
+    }()
+
+    static let pendingAudioCleared = NotificationCenter.default.publisher(for: .pendingAudioCleared)
+    static let transcriptionFailed = NotificationCenter.default.publisher(for: .transcriptionFailed)
+
+    static func clearPendingAudioFile() {
+        try? FileManager.default.removeItem(at: pendingAudioURL)
+        NotificationCenter.default.post(name: .pendingAudioCleared, object: nil)
+    }
+
+    static func markTranscriptionFailed() {
+        NotificationCenter.default.post(name: .transcriptionFailed, object: nil)
+    }
+
+    init() {
+        hasPendingAudio = FileManager.default.fileExists(atPath: Self.pendingAudioURL.path)
+    }
 
     func startRecording() {
         let session = AVAudioSession.sharedInstance()
@@ -27,10 +53,6 @@ class AudioRecorder: ObservableObject {
             return
         }
 
-        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let audioFilename = documentsPath.appendingPathComponent("recording.wav")
-        recordingURL = audioFilename
-
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatLinearPCM),
             AVSampleRateKey: 16000,
@@ -41,7 +63,7 @@ class AudioRecorder: ObservableObject {
         ]
 
         do {
-            audioRecorder = try AVAudioRecorder(url: audioFilename, settings: settings)
+            audioRecorder = try AVAudioRecorder(url: Self.pendingAudioURL, settings: settings)
             audioRecorder?.isMeteringEnabled = true
             audioRecorder?.record()
             isRecording = true
@@ -75,16 +97,23 @@ class AudioRecorder: ObservableObject {
         audioRecorder?.stop()
         isRecording = false
 
-        guard let url = recordingURL else { return nil }
-
         do {
-            let data = try Data(contentsOf: url)
-            try FileManager.default.removeItem(at: url)
+            let data = try Data(contentsOf: Self.pendingAudioURL)
             return data
         } catch {
             print("Failed to read recording: \(error)")
             return nil
         }
+    }
+
+    func pendingAudioData() -> Data? {
+        guard hasPendingAudio else { return nil }
+        return try? Data(contentsOf: Self.pendingAudioURL)
+    }
+
+    func clearPendingAudio() {
+        try? FileManager.default.removeItem(at: Self.pendingAudioURL)
+        hasPendingAudio = false
     }
 
     func requestPermission(completion: @escaping (Bool) -> Void) {

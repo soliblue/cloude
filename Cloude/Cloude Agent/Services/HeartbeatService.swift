@@ -70,14 +70,14 @@ class HeartbeatService: ObservableObject {
         timer?.schedule(deadline: .now() + .seconds(minutes * 60), repeating: .seconds(minutes * 60))
         timer?.setEventHandler { [weak self] in
             Task { @MainActor [weak self] in
-                Log.info("Timer fired, triggering heartbeat")
-                self?.triggerNow()
+                Log.info("Timer fired, triggering heartbeat (automatic)")
+                self?.triggerNow(automatic: true)
             }
         }
         timer?.resume()
     }
 
-    func triggerNow() {
+    func triggerNow(automatic: Bool = false) {
         guard let runnerManager else {
             Log.error("No runnerManager set for HeartbeatService")
             return
@@ -100,6 +100,7 @@ class HeartbeatService: ObservableObject {
 
         let workingDir = projectDirectory ?? Self.findCloudeProjectRoot() ?? MemoryService.projectRoot
         let needsCreate = !sessionInitialized
+        let model = automatic ? "sonnet" : nil
 
         runnerManager.run(
             prompt: prompt,
@@ -108,7 +109,8 @@ class HeartbeatService: ObservableObject {
             isNewSession: needsCreate,
             imageBase64: nil,
             conversationId: Heartbeat.sessionId,
-            useFixedSessionId: true
+            useFixedSessionId: true,
+            model: model
         )
 
         if needsCreate {

@@ -37,7 +37,7 @@ struct WindowConversationPicker: View {
                                 .onTapGesture { onSelect(project, conversation) }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                        projectStore.deleteConversation(conversation, from: project)
+                                        deleteConversation(conversation, from: project)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -54,7 +54,7 @@ struct WindowConversationPicker: View {
                                 .onTapGesture { onSelect(project, conversation) }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                        projectStore.deleteConversation(conversation, from: project)
+                                        deleteConversation(conversation, from: project)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -143,5 +143,15 @@ struct WindowConversationPicker: View {
         let project = projectStore.createProject(name: folderName, rootDirectory: path)
         let conversation = projectStore.newConversation(in: project, workingDirectory: path)
         onSelect(project, conversation)
+    }
+
+    private func deleteConversation(_ conversation: Conversation, from project: Project) {
+        let isCurrentWindowConversation = windowManager.windows
+            .first(where: { $0.id == currentWindowId })?.conversationId == conversation.id
+        projectStore.deleteConversation(conversation, from: project)
+        if isCurrentWindowConversation {
+            windowManager.removeWindow(currentWindowId)
+            dismiss()
+        }
     }
 }

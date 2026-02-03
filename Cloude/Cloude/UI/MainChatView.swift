@@ -22,7 +22,7 @@ struct MainChatView: View {
     private var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
     var body: some View {
-        GeometryReader { geometry in
+        VStack(spacing: 0) {
             TabView(selection: $currentPageIndex) {
                 heartbeatWindowContent()
                     .tag(0)
@@ -33,7 +33,21 @@ struct MainChatView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .onChange(of: currentPageIndex) { _, newIndex in
+            .onChange(of: currentPageIndex) { oldIndex, newIndex in
+                if oldIndex > 0 {
+                    let oldWindowIndex = oldIndex - 1
+                    if oldWindowIndex < windowManager.windows.count {
+                        let oldWindow = windowManager.windows[oldWindowIndex]
+                        if let projectId = oldWindow.projectId,
+                           let project = projectStore.projects.first(where: { $0.id == projectId }),
+                           let convId = oldWindow.conversationId,
+                           let conv = project.conversations.first(where: { $0.id == convId }),
+                           conv.isEmpty {
+                            projectStore.deleteConversation(conv, from: project)
+                            windowManager.removeWindow(oldWindow.id)
+                        }
+                    }
+                }
                 if newIndex > 0 {
                     windowManager.navigateToWindow(at: newIndex - 1)
                 }
@@ -51,11 +65,10 @@ struct MainChatView: View {
                     }
                 }
             }
-        }
-        .onTapGesture {
-            dismissKeyboard()
-        }
-        .safeAreaInset(edge: .bottom) {
+            .onTapGesture {
+                dismissKeyboard()
+            }
+
             VStack(spacing: 0) {
                 GlobalInputBar(
                     inputText: $inputText,
@@ -99,6 +112,7 @@ struct MainChatView: View {
                         inputText += " " + text
                     }
                 }
+                AudioRecorder.clearPendingAudioFile()
             }
         }
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
@@ -129,6 +143,13 @@ struct MainChatView: View {
                 connection: connection,
                 currentWindowId: window.id,
                 onSelect: { project, conversation in
+                    if let oldProjectId = window.projectId,
+                       let oldProject = projectStore.projects.first(where: { $0.id == oldProjectId }),
+                       let oldConvId = window.conversationId,
+                       let oldConv = oldProject.conversations.first(where: { $0.id == oldConvId }),
+                       oldConv.isEmpty {
+                        projectStore.deleteConversation(oldConv, from: oldProject)
+                    }
                     windowManager.linkToCurrentConversation(window.id, project: project, conversation: conversation)
                     selectingWindow = nil
                     if gitBranches[project.id] == nil, !project.rootDirectory.isEmpty {
@@ -147,6 +168,11 @@ struct MainChatView: View {
                 onSelectConversation: { conv in
                     if let projectId = window.projectId,
                        let project = projectStore.projects.first(where: { $0.id == projectId }) {
+                        if let oldConvId = window.conversationId,
+                           let oldConv = project.conversations.first(where: { $0.id == oldConvId }),
+                           oldConv.isEmpty, oldConv.id != conv.id {
+                            projectStore.deleteConversation(oldConv, from: project)
+                        }
                         windowManager.linkToCurrentConversation(window.id, project: project, conversation: conv)
                     }
                     editingWindow = nil
@@ -160,6 +186,11 @@ struct MainChatView: View {
                 onNewConversation: {
                     if let projectId = window.projectId,
                        let project = projectStore.projects.first(where: { $0.id == projectId }) {
+                        if let oldConvId = window.conversationId,
+                           let oldConv = project.conversations.first(where: { $0.id == oldConvId }),
+                           oldConv.isEmpty {
+                            projectStore.deleteConversation(oldConv, from: project)
+                        }
                         let workingDir = activeWindowWorkingDirectory()
                         let newConv = projectStore.newConversation(in: project, workingDirectory: workingDir)
                         windowManager.linkToCurrentConversation(window.id, project: project, conversation: newConv)

@@ -119,6 +119,14 @@ struct GlobalInputBar: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if audioRecorder.hasPendingAudio && !audioRecorder.isRecording && !isTranscribing {
+                PendingAudioBanner(
+                    onResend: resendPendingAudio,
+                    onDiscard: { audioRecorder.clearPendingAudio() }
+                )
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
             if let skill = selectedSkillCommand, parameterValues.count == skill.parameters.count {
                 SkillParameterBar(
                     skill: skill,
@@ -326,6 +334,12 @@ struct GlobalInputBar: View {
                 idleTime = Date()
             }
         }
+        .onReceive(AudioRecorder.pendingAudioCleared) { _ in
+            audioRecorder.hasPendingAudio = false
+        }
+        .onReceive(AudioRecorder.transcriptionFailed) { _ in
+            audioRecorder.hasPendingAudio = true
+        }
     }
 
     private var canSend: Bool {
@@ -398,6 +412,49 @@ struct GlobalInputBar: View {
                 onTranscribe?(data)
             }
         }
+    }
+
+    private func resendPendingAudio() {
+        if let data = audioRecorder.pendingAudioData() {
+            onTranscribe?(data)
+        }
+    }
+}
+
+struct PendingAudioBanner: View {
+    let onResend: () -> Void
+    let onDiscard: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "waveform.circle.fill")
+                .font(.system(size: 20))
+                .foregroundColor(.orange)
+
+            Text("Unsent voice note")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Spacer()
+
+            Button(action: onDiscard) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+
+            Button(action: onResend) {
+                Text("Resend")
+                    .font(.subheadline.weight(.medium))
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+            .controlSize(.small)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial)
     }
 }
 

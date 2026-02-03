@@ -244,6 +244,13 @@ cloude symbol paintbrush.pointed  # Set SF Symbol icon (no quotes)
 cloude memory local Notes Learned something new  # Add to CLAUDE.local.md
 cloude memory project Notes Project-specific info  # Add to CLAUDE.md
 cloude skip                  # Signal heartbeat skip (nothing useful to do)
+cloude delete                # Delete the current conversation
+cloude notify Task complete! # Send a push notification to iOS
+cloude clipboard <text>      # Copy text to iOS clipboard
+cloude open https://...      # Open a URL on iOS
+cloude haptic <style>        # Trigger haptic feedback (light/medium/heavy/rigid/soft)
+cloude speak Hello world     # Text-to-speech on iOS
+cloude switch <conv-id>      # Switch to a different conversation by UUID
 ```
 
 **Memory command:**
