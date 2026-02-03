@@ -28,6 +28,15 @@ Source of truth for what Cloude can do and what's coming next.
 
 ### Roadmap - Memory
 - [ ] **Memory limits** - max slots or character count with visual indicator in iOS (e.g., "12/20 slots" or progress bar)
+- [ ] **Structured memory UI** - display memories as cards/items with titles instead of raw markdown
+  - Each memory entry has a title, content, and optional metadata
+  - Groups/sections that can be collapsed, reordered, nested hierarchically
+  - Drag-and-drop to reorganize memories between groups
+  - Visual distinction between local vs project memories
+- [ ] **Memory organization** - intelligent grouping that adapts over time
+  - Auto-suggest groupings based on content similarity
+  - User can create custom groups and move items
+  - Multi-level hierarchy support (groups within groups)
 
 ---
 
@@ -39,7 +48,18 @@ Source of truth for what Cloude can do and what's coming next.
 - [ ] **3-layer memory** - context window → embedding layer → CLAUDE.local.md
 - [ ] **External presence** - email, marketplaces, communities - participating in the internet as Cloude
 
-### iOS App
+### Tool Display UX (Major Theme)
+- [ ] **Tool call icons** - custom SF Symbol icons for each tool type (Read, Write, Bash, Grep, etc.) instead of text labels
+- [ ] **Tool detail popover** - tap pill to open liquid glass modal with full details (input, output, duration, file preview)
+- [ ] **Nested tool hierarchy** - show parent tools expandable to reveal child tool calls (Task spawns agents with their own tools)
+  - parentToolId is already stored but children are never rendered
+  - Tap parent pill to expand/collapse nested tools
+- [x] **Chained command parsing** - parse `&&` chains in Bash tool calls and display each command as a separate pill within the same group
+- [ ] **Real-time tool updates** - show progress within tool pills (bytes read, lines matched, command output streaming)
+- [ ] **Tool output preview** - inline expandable preview of tool results without leaving chat
+- [x] **Tool grouping bug** - consecutive tool pills render correctly during streaming but stack vertically after reload (fixed: group by message ID in history sync)
+
+### iOS App (Other)
 - [ ] **Text-to-speech playback** - long press on response to play as audio (copy/play options)
   - Phase 1: iOS built-in AVSpeechSynthesizer (offline, simple)
   - Phase 2: Piper TTS via Mac agent (better quality, uses Sherpa-ONNX or CLI)
@@ -53,9 +73,6 @@ Source of truth for what Cloude can do and what's coming next.
 - [ ] **Message reactions** - quick feedback without typing
 - [ ] **Conversation export** - export to markdown/PDF
 - [ ] **Better /compact feedback** - show progress and stats when running /compact command
-- [ ] **Tool call icons** - custom SF Symbol icons for each tool type (Read, Write, Bash, Grep, etc.) instead of text labels
-- [x] **Tool grouping bug** - consecutive tool pills render correctly during streaming but stack vertically after reload (fixed: group by message ID in history sync)
-- [ ] **Chained command parsing** - parse `&&` chains in Bash tool calls and display each command as a separate pill within the same group
 - [ ] **Voice message resilience** - save recording to fixed temp file, show resend button on failure, delete on success
 - [ ] **Compact input fields** - pill style with label on left, divider, input on right (more space efficient)
 - [x] **Timestamp stability** - conversation list timestamps show minutes (not seconds)

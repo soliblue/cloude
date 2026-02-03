@@ -138,6 +138,29 @@ extension ServerMessage {
             try container.encode(path, forKey: .path)
             try container.encode(data, forKey: .data)
             try container.encode(fullSize, forKey: .fullSize)
+        case .deleteConversation(let conversationId):
+            try container.encode("delete_conversation", forKey: .type)
+            try container.encode(conversationId, forKey: .conversationId)
+        case .notify(let title, let body, let conversationId):
+            try container.encode("notify", forKey: .type)
+            try container.encodeIfPresent(title, forKey: .title)
+            try container.encode(body, forKey: .body)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .clipboard(let text):
+            try container.encode("clipboard", forKey: .type)
+            try container.encode(text, forKey: .text)
+        case .openURL(let url):
+            try container.encode("open_url", forKey: .type)
+            try container.encode(url, forKey: .url)
+        case .haptic(let style):
+            try container.encode("haptic", forKey: .type)
+            try container.encode(style, forKey: .style)
+        case .speak(let text):
+            try container.encode("speak", forKey: .type)
+            try container.encode(text, forKey: .text)
+        case .switchConversation(let conversationId):
+            try container.encode("switch_conversation", forKey: .type)
+            try container.encode(conversationId, forKey: .conversationId)
         }
     }
 }

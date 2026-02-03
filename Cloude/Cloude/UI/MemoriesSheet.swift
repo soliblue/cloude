@@ -6,6 +6,7 @@ struct MemoriesSheet: View {
     var isLoading: Bool = false
     @Environment(\.dismiss) private var dismiss
     @State private var expandedSections: Set<String> = []
+    @State private var parsedSections: [ParsedMemorySection] = []
 
     var body: some View {
         NavigationStack {
@@ -19,7 +20,7 @@ struct MemoriesSheet: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 60)
-                } else if sections.isEmpty {
+                } else if parsedSections.isEmpty {
                     ContentUnavailableView(
                         "No Memories",
                         systemImage: "brain",
@@ -27,26 +28,25 @@ struct MemoriesSheet: View {
                     )
                     .padding(.top, 40)
                 } else {
-                    LazyVStack(spacing: 0) {
-                        ForEach(Array(sections.enumerated()), id: \.element.id) { index, section in
-                            MemorySectionRow(
+                    LazyVStack(spacing: 12) {
+                        ForEach(parsedSections) { section in
+                            MemorySectionCard(
                                 section: section,
                                 isExpanded: expandedSections.contains(section.id),
-                                onTap: {
-                                    if expandedSections.contains(section.id) {
-                                        expandedSections.remove(section.id)
-                                    } else {
-                                        expandedSections.insert(section.id)
+                                onToggle: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        if expandedSections.contains(section.id) {
+                                            expandedSections.remove(section.id)
+                                        } else {
+                                            expandedSections.insert(section.id)
+                                        }
                                     }
                                 }
                             )
-                            if index < sections.count - 1 {
-                                Divider()
-                                    .padding(.leading, 16)
-                            }
                         }
                     }
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
                 }
             }
             .background(.ultraThinMaterial)
@@ -64,27 +64,39 @@ struct MemoriesSheet: View {
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }
         .presentationBackground(.ultraThinMaterial)
+        .onAppear {
+            parsedSections = MemoryParser.parse(sections: sections)
+        }
+        .onChange(of: sections) { _, newSections in
+            parsedSections = MemoryParser.parse(sections: newSections)
+        }
     }
 }
 
-struct MemorySectionRow: View {
-    let section: MemorySection
+struct MemorySectionCard: View {
+    let section: ParsedMemorySection
     let isExpanded: Bool
-    let onTap: () -> Void
+    let onToggle: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Button(action: onTap) {
+            Button(action: onToggle) {
                 HStack(spacing: 12) {
-                    Text(section.title)
-                        .font(.body)
-                        .foregroundColor(.primary)
-                    Spacer()
                     Image(systemName: "chevron.right")
                         .font(.footnote)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
+
+                    Text(section.title)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    Spacer()
+
+                    Text("\(section.items.count)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -93,12 +105,57 @@ struct MemorySectionRow: View {
             .buttonStyle(.plain)
 
             if isExpanded {
-                StreamingMarkdownView(text: section.content)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 14)
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(section.items) { item in
+                        MemoryItemCard(item: item)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 12)
             }
         }
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+struct MemoryItemCard: View {
+    let item: MemoryItem
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            if item.isBullet {
+                Circle()
+                    .fill(Color.secondary.opacity(0.5))
+                    .frame(width: 6, height: 6)
+                    .padding(.top, 6)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                if let date = item.timestamp {
+                    Text(formatDate(date))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+
+                Text(LocalizedStringKey(item.content))
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color(.tertiarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
     }
 }

@@ -254,11 +254,19 @@ struct StreamingBlockView: View {
 struct ToolGroupView: View {
     let tools: [ToolCall]
 
+    private var toolHierarchy: [(parent: ToolCall, children: [ToolCall])] {
+        let topLevel = tools.filter { $0.parentToolId == nil }
+        return topLevel.map { parent in
+            let children = tools.filter { $0.parentToolId == parent.toolId }
+            return (parent, children)
+        }
+    }
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
-                    InlineToolPill(toolCall: tool)
+                ForEach(Array(toolHierarchy.reversed().enumerated()), id: \.offset) { _, item in
+                    InlineToolPill(toolCall: item.parent, children: item.children)
                 }
             }
             .padding(.horizontal, 16)
