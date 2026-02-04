@@ -52,9 +52,11 @@ struct GlobalInputBar: View {
     let isTranscribing: Bool
     let isRunning: Bool
     let skills: [Skill]
+    let fileSearchResults: [String]
     let onSend: () -> Void
     var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
+    var onFileSearch: ((String) -> Void)?
 
     @State private var selectedItem: PhotosPickerItem?
     @FocusState private var isInputFocused: Bool
@@ -71,6 +73,7 @@ struct GlobalInputBar: View {
     @State private var showStopButton = false
     @State private var selectedSkillCommand: SlashCommand?
     @State private var parameterValues: [String] = []
+    @State private var fileSearchDebounce: Task<Void, Never>?
 
     private let swipeThreshold: CGFloat = 60
     private let transitionDuration: Double = 0.15
@@ -117,6 +120,21 @@ struct GlobalInputBar: View {
         inputText.hasPrefix("/")
     }
 
+    private var atMentionQuery: String? {
+        guard let atIndex = inputText.lastIndex(of: "@") else { return nil }
+        let afterAt = inputText[inputText.index(after: atIndex)...]
+        let endIndex = afterAt.firstIndex(where: { $0 == " " || $0 == "\n" }) ?? afterAt.endIndex
+        let mention = String(afterAt[..<endIndex])
+        if mention.isEmpty { return nil }
+        let hasExtension = mention.contains(".") && !mention.hasSuffix(".")
+        if hasExtension { return nil }
+        return mention
+    }
+
+    private var showFileSuggestions: Bool {
+        atMentionQuery != nil && !fileSearchResults.isEmpty
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if audioRecorder.hasPendingAudio && !audioRecorder.isRecording && !isTranscribing {
@@ -139,6 +157,12 @@ struct GlobalInputBar: View {
                             inputText = ""
                         }
                     }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if showFileSuggestions {
+                FileSuggestionsList(
+                    files: fileSearchResults,
+                    onSelect: selectFile
                 )
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             } else if !filteredCommands.isEmpty {
@@ -307,6 +331,15 @@ struct GlobalInputBar: View {
                 placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
                 textFieldId = UUID()
             }
+            if let query = atMentionQuery, query.count >= 1 {
+                fileSearchDebounce?.cancel()
+                fileSearchDebounce = Task {
+                    try? await Task.sleep(nanoseconds: 150_000_000)
+                    if !Task.isCancelled {
+                        onFileSearch?(query)
+                    }
+                }
+            }
         }
         .onReceive(Timer.publish(every: 8, on: .main, in: .common).autoconnect()) { _ in
             if inputText.isEmpty {
@@ -424,6 +457,16 @@ struct GlobalInputBar: View {
         if let data = audioRecorder.pendingAudioData() {
             onTranscribe?(data)
         }
+    }
+
+    private func selectFile(_ file: String) {
+        guard let atIndex = inputText.lastIndex(of: "@") else { return }
+        let fileName = (file as NSString).lastPathComponent
+        let beforeAt = String(inputText[..<atIndex])
+        let afterQuery = inputText[inputText.index(after: atIndex)...]
+        let spaceIndex = afterQuery.firstIndex(where: { $0 == " " || $0 == "\n" })
+        let afterMention = spaceIndex.map { String(afterQuery[$0...]) } ?? ""
+        inputText = beforeAt + "@" + fileName + afterMention
     }
 }
 
@@ -626,5 +669,82 @@ struct ParameterInputBubble: View {
                 )
         )
         .onTapGesture(perform: onTap)
+    }
+}
+
+struct FileSuggestionsList: View {
+    let files: [String]
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(files, id: \.self) { file in
+                    Button(action: { onSelect(file) }) {
+                        FilePill(path: file)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+    }
+}
+
+struct FilePill: View {
+    let path: String
+
+    private var fileName: String {
+        (path as NSString).lastPathComponent
+    }
+
+    private var icon: String {
+        let ext = (fileName as NSString).pathExtension.lowercased()
+        switch ext {
+        case "swift": return "swift"
+        case "js", "ts", "jsx", "tsx": return "j.square"
+        case "py": return "p.square"
+        case "md": return "doc.text"
+        case "json": return "curlybraces"
+        case "yml", "yaml": return "list.bullet.indent"
+        default: return "doc"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
+            Text(fileName)
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .lineLimit(1)
+        }
+        .foregroundStyle(fileGradient)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.orange.opacity(0.12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.orange.opacity(0.3), Color.yellow.opacity(0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+        )
+    }
+
+    private var fileGradient: LinearGradient {
+        LinearGradient(
+            colors: [.orange, .yellow.opacity(0.8)],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
     }
 }
