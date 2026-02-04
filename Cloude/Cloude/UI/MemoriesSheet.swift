@@ -128,6 +128,12 @@ struct MemorySectionCard: View {
                         .foregroundColor(.secondary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
 
+                    if let icon = section.icon {
+                        Image(systemName: icon)
+                            .font(depth == 0 ? .body : .subheadline)
+                            .foregroundColor(.accentColor)
+                    }
+
                     Text(section.title)
                         .font(depth == 0 ? .headline : .subheadline)
                         .fontWeight(depth == 0 ? .semibold : .medium)
@@ -219,13 +225,6 @@ struct MemoryItemCard: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            if item.isBullet {
-                Circle()
-                    .fill(Color.secondary.opacity(0.5))
-                    .frame(width: 6, height: 6)
-                    .padding(.top, 6)
-            }
-
             VStack(alignment: .leading, spacing: 4) {
                 if let date = item.timestamp {
                     Text(formatDate(date))

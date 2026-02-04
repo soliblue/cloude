@@ -219,6 +219,7 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 - `ConnectionManager`: WebSocket client connecting to Mac agent
 - `ChatView`: Main chat interface for sending prompts to Claude
 - `SettingsView`: Connection settings, auth token, debug info
+- **Path Links**: Full absolute paths starting with `/Users/` render as clickable file pills in tool results and inline text, opening file preview or folder browser
 
 ### macOS Agent (Cloude Agent)
 - `WebSocketServer`: Accepts connections from iOS app, handles auth
@@ -257,13 +258,27 @@ cloude ask --q "Question?" --options "A,B,C"  # Ask user a multiple-choice quest
 ```
 
 **Asking Questions (`cloude ask`):**
-- Use for multiple-choice questions - renders as tappable option buttons in iOS
-- Simple format: `cloude ask --q "What color?" --options "Red,Blue,Green"`
-- With descriptions: `cloude ask --q "Which?" --options "A:Fast but complex,B:Simple but slow"`
-- Multi-select: add `--multi` flag
-- Multiple questions: `cloude ask --questions '[{"q":"Color?","options":["Red","Blue"]},{"q":"Size?","options":["S","M","L"],"multi":true}]'`
-- User's answers come back as the next message, e.g., "Color? Blue\nSize? M, L"
-- For open-ended questions, just ask in plain text instead
+Use for multiple-choice questions — renders as tappable option buttons in iOS. User's answers come back as the next message (e.g., "Color? Blue\nSize? M, L"). For open-ended questions, just ask in plain text instead.
+
+Formats:
+```bash
+# Simple (single question, single-select)
+cloude ask --q "What color?" --options "Red,Blue,Green"
+
+# With descriptions (colon separates label:description)
+cloude ask --q "Which approach?" --options "A:Fast but complex,B:Simple but slow"
+
+# Multi-select (user can pick multiple)
+cloude ask --q "Which languages?" --options "Swift,Python,Rust" --multi
+
+# Multiple questions (JSON array) - PREFERRED for 2+ questions
+cloude ask --questions '[{"q":"Coffee or tea?","options":["Coffee","Tea"]},{"q":"Languages?","options":["Swift","Python","Rust"],"multi":true}]'
+```
+
+JSON format for `--questions`:
+- `q`: question text (required)
+- `options`: array of strings (required)
+- `multi`: boolean for multi-select (optional, default false)
 
 **Memory command:**
 - Use `local` for personal memories (CLAUDE.local.md) - preferences, history, identity
@@ -287,6 +302,7 @@ cloude ask --q "Question?" --options "A,B,C"  # Ask user a multiple-choice quest
 
 ### General
 - **NEVER add comments to code** - no inline comments, no docstrings, no file header comments (except the file name/module line). Code should be self-explanatory through clear naming.
+- **File size limit**: For files >150 lines, use `ParentView+Feature.swift` extensions to break down complexity (e.g., `SettingsView+Cards.swift`, `ChatView+Components.swift`)
 - Avoid single-use helpers and variables
 - Struct-first design for models and services
 - Keep views lean with small composable structs

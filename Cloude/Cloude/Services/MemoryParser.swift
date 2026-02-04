@@ -9,6 +9,7 @@ struct MemoryParser {
     }
 
     private static func parseSection(id: String, title: String, content: String, level: Int) -> ParsedMemorySection {
+        let (cleanTitle, icon) = extractIcon(from: title)
         let headerPrefix = String(repeating: "#", count: level + 1) + " "
         let lines = content.components(separatedBy: "\n")
 
@@ -20,7 +21,8 @@ struct MemoryParser {
         for line in lines {
             if line.hasPrefix(headerPrefix) {
                 if let subsectionTitle = currentSubsectionTitle {
-                    let subsectionId = "\(id)/\(subsectionTitle)"
+                    let (cleanSubTitle, _) = extractIcon(from: subsectionTitle)
+                    let subsectionId = "\(id)/\(cleanSubTitle)"
                     let subsection = parseSection(
                         id: subsectionId,
                         title: subsectionTitle,
@@ -40,7 +42,8 @@ struct MemoryParser {
         }
 
         if let subsectionTitle = currentSubsectionTitle {
-            let subsectionId = "\(id)/\(subsectionTitle)"
+            let (cleanSubTitle, _) = extractIcon(from: subsectionTitle)
+            let subsectionId = "\(id)/\(cleanSubTitle)"
             let subsection = parseSection(
                 id: subsectionId,
                 title: subsectionTitle,
@@ -54,11 +57,25 @@ struct MemoryParser {
 
         return ParsedMemorySection(
             id: id,
-            title: title,
+            title: cleanTitle,
+            icon: icon,
             items: items,
             subsections: subsections,
             rawContent: content
         )
+    }
+
+    private static func extractIcon(from title: String) -> (String, String?) {
+        let pattern = "^(.+?)\\s*\\{([a-z0-9.]+)\\}$"
+        if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
+           let match = regex.firstMatch(in: title, range: NSRange(title.startIndex..., in: title)) {
+            let titleRange = Range(match.range(at: 1), in: title)!
+            let iconRange = Range(match.range(at: 2), in: title)!
+            let cleanTitle = String(title[titleRange]).trimmingCharacters(in: .whitespaces)
+            let icon = String(title[iconRange])
+            return (cleanTitle, icon)
+        }
+        return (title, nil)
     }
 
     static func parseItems(from content: String) -> [MemoryItem] {
