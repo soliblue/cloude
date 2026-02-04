@@ -49,9 +49,11 @@ struct HeartbeatSheet: View {
                     isTranscribing: connection.isTranscribing,
                     isRunning: convOutput.isRunning,
                     skills: connection.skills,
+                    fileSearchResults: [],
                     onSend: sendMessage,
                     onStop: { connection.abort(conversationId: Heartbeat.conversationId) },
-                    onTranscribe: transcribeAudio
+                    onTranscribe: transcribeAudio,
+                    onFileSearch: nil
                 )
             }
             .background(.ultraThinMaterial)
