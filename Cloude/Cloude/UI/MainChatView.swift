@@ -18,6 +18,7 @@ struct MainChatView: View {
     @State var gitBranches: [UUID: String] = [:]
     @State var pendingGitChecks: [UUID] = []
     @State var showIntervalPicker = false
+    @State var fileSearchResults: [String] = []
 
     private var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
@@ -78,9 +79,11 @@ struct MainChatView: View {
                     isTranscribing: connection.isTranscribing,
                     isRunning: activeConversationIsRunning,
                     skills: connection.skills,
+                    fileSearchResults: fileSearchResults,
                     onSend: sendMessage,
                     onStop: stopActiveConversation,
-                    onTranscribe: transcribeAudio
+                    onTranscribe: transcribeAudio,
+                    onFileSearch: searchFiles
                 )
 
                 pageIndicator()
@@ -94,6 +97,7 @@ struct MainChatView: View {
         .onAppear {
             initializeFirstWindow()
             setupGitStatusHandler()
+            setupFileSearchHandler()
             checkGitForAllProjects()
             connection.onTranscription = { text in
                 let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -772,6 +776,20 @@ struct MainChatView: View {
               conversation.isEmpty else { return }
         projectStore.deleteConversation(conversation, from: project)
         windowManager.unlinkConversation(windowId)
+    }
+
+    func searchFiles(_ query: String) {
+        guard let workingDir = activeWindowWorkingDirectory(), !workingDir.isEmpty else {
+            fileSearchResults = []
+            return
+        }
+        connection.searchFiles(query: query, workingDirectory: workingDir)
+    }
+
+    func setupFileSearchHandler() {
+        connection.onFileSearchResults = { files, _ in
+            fileSearchResults = files
+        }
     }
 }
 
