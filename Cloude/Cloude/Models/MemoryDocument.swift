@@ -37,6 +37,7 @@ struct MemoryItem: Identifiable {
 struct ParsedMemorySection: Identifiable {
     let id: String
     let title: String
+    let icon: String?
     let items: [MemoryItem]
     let subsections: [ParsedMemorySection]
     let rawContent: String
@@ -50,9 +51,10 @@ struct ParsedMemorySection: Identifiable {
         items.count + subsections.reduce(0) { $0 + $1.childCount + 1 }
     }
 
-    init(id: String, title: String, items: [MemoryItem], subsections: [ParsedMemorySection] = [], rawContent: String = "", isExpanded: Bool = false) {
+    init(id: String, title: String, icon: String? = nil, items: [MemoryItem], subsections: [ParsedMemorySection] = [], rawContent: String = "", isExpanded: Bool = false) {
         self.id = id
         self.title = title
+        self.icon = icon
         self.items = items
         self.subsections = subsections
         self.rawContent = rawContent
@@ -62,6 +64,7 @@ struct ParsedMemorySection: Identifiable {
     init(from section: MemorySection, items: [MemoryItem], subsections: [ParsedMemorySection] = []) {
         self.id = section.id
         self.title = section.title
+        self.icon = nil
         self.items = items
         self.subsections = subsections
         self.rawContent = section.content
