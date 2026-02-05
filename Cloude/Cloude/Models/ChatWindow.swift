@@ -30,12 +30,21 @@ struct ChatWindow: Identifiable, Codable {
     let id: UUID
     var type: WindowType
     var conversationId: UUID?
-    var projectId: UUID?
 
-    init(id: UUID = UUID(), type: WindowType = .chat, conversationId: UUID? = nil, projectId: UUID? = nil) {
+    init(id: UUID = UUID(), type: WindowType = .chat, conversationId: UUID? = nil) {
         self.id = id
         self.type = type
         self.conversationId = conversationId
-        self.projectId = projectId
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        type = try container.decode(WindowType.self, forKey: .type)
+        conversationId = try container.decodeIfPresent(UUID.self, forKey: .conversationId)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, type, conversationId
     }
 }

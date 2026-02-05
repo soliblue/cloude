@@ -63,13 +63,13 @@ extension ConnectionManager {
         case .output(let text, let conversationId):
             if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
                 let out = output(for: convId)
-                out.text += text
+                out.appendText(text)
                 if !out.isRunning {
                     out.isRunning = true
                     runningConversationId = convId
                 }
             } else if let convId = runningConversationId {
-                output(for: convId).text += text
+                output(for: convId).appendText(text)
             }
 
         case .fileChange:
@@ -79,6 +79,9 @@ extension ConnectionManager {
             if agentState != state { agentState = state }
             if let convId = targetConversationId(from: conversationId) {
                 let out = output(for: convId)
+                if state == .idle {
+                    out.flushBuffer()
+                }
                 out.isRunning = (state == .running || state == .compacting)
                 out.isCompacting = (state == .compacting)
                 if state == .idle {
@@ -162,9 +165,11 @@ extension ConnectionManager {
             if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
                 interruptedConvId = interrupted.conversationId
                 interruptedMsgId = interrupted.messageId
-                output(for: interrupted.conversationId).text = text
-                output(for: interrupted.conversationId).toolCalls = toolCalls
-                output(for: interrupted.conversationId).isRunning = false
+                let missedOutput = output(for: interrupted.conversationId)
+                missedOutput.fullText = text
+                missedOutput.text = text
+                missedOutput.toolCalls = toolCalls
+                missedOutput.isRunning = false
                 interruptedSession = nil
             }
             events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: storedToolCalls))
@@ -298,6 +303,14 @@ extension ConnectionManager {
 
         case .fileSearchResults(let files, let query):
             onFileSearchResults?(files, query)
+
+        case .remoteSessionList(let sessions):
+            onRemoteSessionList?(sessions)
+
+        case .messageUUID(let uuid, let conversationId):
+            if let convId = targetConversationId(from: conversationId) {
+                output(for: convId).messageUUID = uuid
+            }
         }
     }
 
@@ -388,5 +401,10 @@ extension ConnectionManager {
     func syncHistory(sessionId: String, workingDirectory: String) {
         if !isAuthenticated { reconnectIfNeeded() }
         send(.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory))
+    }
+
+    func listRemoteSessions(workingDirectory: String) {
+        if !isAuthenticated { reconnectIfNeeded() }
+        send(.listRemoteSessions(workingDirectory: workingDirectory))
     }
 }

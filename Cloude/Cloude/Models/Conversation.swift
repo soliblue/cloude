@@ -102,8 +102,9 @@ struct ChatMessage: Codable, Identifiable {
     var isQueued: Bool
     var wasInterrupted: Bool
     var imageBase64: String?
+    var serverUUID: String?
 
-    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil) {
+    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil, serverUUID: String? = nil) {
         self.id = UUID()
         self.isUser = isUser
         self.text = text
@@ -114,9 +115,10 @@ struct ChatMessage: Codable, Identifiable {
         self.isQueued = isQueued
         self.wasInterrupted = wasInterrupted
         self.imageBase64 = imageBase64
+        self.serverUUID = serverUUID
     }
 
-    init(isUser: Bool, text: String, timestamp: Date, toolCalls: [ToolCall] = []) {
+    init(isUser: Bool, text: String, timestamp: Date, toolCalls: [ToolCall] = [], serverUUID: String? = nil) {
         self.id = UUID()
         self.isUser = isUser
         self.text = text
@@ -127,6 +129,7 @@ struct ChatMessage: Codable, Identifiable {
         self.isQueued = false
         self.wasInterrupted = false
         self.imageBase64 = nil
+        self.serverUUID = serverUUID
     }
 
     init(from decoder: Decoder) throws {
@@ -141,9 +144,10 @@ struct ChatMessage: Codable, Identifiable {
         isQueued = try container.decodeIfPresent(Bool.self, forKey: .isQueued) ?? false
         wasInterrupted = try container.decodeIfPresent(Bool.self, forKey: .wasInterrupted) ?? false
         imageBase64 = try container.decodeIfPresent(String.self, forKey: .imageBase64)
+        serverUUID = try container.decodeIfPresent(String.self, forKey: .serverUUID)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64
+        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, serverUUID
     }
 }

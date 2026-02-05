@@ -89,15 +89,14 @@ class WindowManager: ObservableObject {
         save()
     }
 
-    func updateWindow(_ id: UUID, conversationId: UUID?, projectId: UUID?) {
+    func updateWindow(_ id: UUID, conversationId: UUID?) {
         guard let index = windows.firstIndex(where: { $0.id == id }) else { return }
         windows[index].conversationId = conversationId
-        windows[index].projectId = projectId
         save()
     }
 
-    func linkToCurrentConversation(_ windowId: UUID, project: Project?, conversation: Conversation?) {
-        updateWindow(windowId, conversationId: conversation?.id, projectId: project?.id)
+    func linkToCurrentConversation(_ windowId: UUID, conversation: Conversation?) {
+        updateWindow(windowId, conversationId: conversation?.id)
     }
 
     func unlinkConversation(_ windowId: UUID) {

@@ -3,12 +3,11 @@ import UIKit
 import CloudeShared
 
 struct WindowHeaderView: View {
-    let project: Project?
     let conversation: Conversation?
     let onSelectConversation: (() -> Void)?
 
     private var folderName: String? {
-        let path = conversation?.workingDirectory ?? project?.rootDirectory ?? ""
+        let path = conversation?.workingDirectory ?? ""
         guard !path.isEmpty else { return nil }
         return (path as NSString).lastPathComponent
     }
@@ -51,7 +50,7 @@ struct WindowHeaderView: View {
     }
 }
 
-struct ProjectChatMessageList: View {
+struct ChatMessageList: View {
     let messages: [ChatMessage]
     var queuedMessages: [ChatMessage] = []
     let currentOutput: String
@@ -64,9 +63,8 @@ struct ProjectChatMessageList: View {
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
     var onDeleteQueued: ((UUID) -> Void)?
-    var project: Project?
     var conversation: Conversation?
-    var projectStore: ProjectStore?
+    var conversationStore: ConversationStore?
     var connection: ConnectionManager?
     var window: ChatWindow?
     var windowManager: WindowManager?
@@ -79,6 +77,8 @@ struct ProjectChatMessageList: View {
     @State private var showScrollToBottom = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isInitialLoad = true
+    @State private var isPinnedToBottom = true
+    @State private var userIsDragging = false
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -97,7 +97,7 @@ struct ProjectChatMessageList: View {
     }
 
     private var hasRequiredDependencies: Bool {
-        window != nil && projectStore != nil && windowManager != nil && connection != nil
+        window != nil && conversationStore != nil && windowManager != nil && connection != nil
     }
 
     var body: some View {
@@ -117,7 +117,7 @@ struct ProjectChatMessageList: View {
                 ScrollView {
                     WindowEditForm(
                         window: window!,
-                        projectStore: projectStore!,
+                        conversationStore: conversationStore!,
                         windowManager: windowManager!,
                         connection: connection!,
                         onSelectConversation: { conv in onSelectConversation?(conv) },
@@ -147,19 +147,19 @@ struct ProjectChatMessageList: View {
                             streamingView
                         }
 
-                        if let pending = projectStore?.pendingQuestion,
+                        if let pending = conversationStore?.pendingQuestion,
                            pending.conversationId == conversationId {
                             QuestionView(
                                 questions: pending.questions,
                                 isStreaming: agentState == .running || agentState == .compacting,
                                 onSubmit: { answer in
-                                    projectStore?.pendingQuestion = nil
-                                    projectStore?.questionInputFocused = false
-                                    if let conv = conversation, let proj = project, let store = projectStore {
+                                    conversationStore?.pendingQuestion = nil
+                                    conversationStore?.questionInputFocused = false
+                                    if let conv = conversation, let store = conversationStore {
                                         let userMessage = ChatMessage(isUser: true, text: answer)
-                                        store.addMessage(userMessage, to: conv, in: proj)
+                                        store.addMessage(userMessage, to: conv)
                                         let sessionId = conv.sessionId
-                                        let workingDir = conv.workingDirectory ?? proj.rootDirectory
+                                        let workingDir = conv.workingDirectory
                                         connection?.sendChat(
                                             answer,
                                             workingDirectory: workingDir,
@@ -172,15 +172,15 @@ struct ProjectChatMessageList: View {
                                     }
                                 },
                                 onDismiss: {
-                                    projectStore?.questionInputFocused = false
-                                    if let conv = conversation, let proj = project, let store = projectStore {
+                                    conversationStore?.questionInputFocused = false
+                                    if let conv = conversation, let store = conversationStore {
                                         let skipMessage = ChatMessage(isUser: true, text: "(skipped question)")
-                                        store.addMessage(skipMessage, to: conv, in: proj)
+                                        store.addMessage(skipMessage, to: conv)
                                     }
-                                    projectStore?.pendingQuestion = nil
+                                    conversationStore?.pendingQuestion = nil
                                 },
                                 onFocusChange: { focused in
-                                    projectStore?.questionInputFocused = focused
+                                    conversationStore?.questionInputFocused = focused
                                     if focused {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                             withAnimation {
@@ -218,7 +218,11 @@ struct ProjectChatMessageList: View {
                 .coordinateSpace(name: "scrollArea")
                 .onPreferenceChange(ScrollOffsetKey.self) { offset in
                     scrollOffset = offset
+                    let nearBottom = offset > -80
                     showScrollToBottom = offset < -200
+                    if !userIsDragging && nearBottom {
+                        isPinnedToBottom = true
+                    }
                 }
                 .scrollDismissesKeyboard(.immediately)
                 .simultaneousGesture(
@@ -227,7 +231,17 @@ struct ProjectChatMessageList: View {
                 )
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 5)
-                        .onChanged { _ in onInteraction?() }
+                        .onChanged { _ in
+                            onInteraction?()
+                            userIsDragging = true
+                            isPinnedToBottom = false
+                        }
+                        .onEnded { _ in
+                            userIsDragging = false
+                            if scrollOffset > -80 {
+                                isPinnedToBottom = true
+                            }
+                        }
                 )
                 .onAppear {
                     scrollProxy = proxy
@@ -239,9 +253,12 @@ struct ProjectChatMessageList: View {
                     }
                 }
                 .onChange(of: userMessageCount) { oldCount, newCount in
-                    if newCount > oldCount, let lastUserMessage = messages.last(where: { $0.isUser }) {
-                        withAnimation(.easeOut(duration: 0.25)) {
-                            scrollToMessage(lastUserMessage.id, anchor: .top)
+                    if newCount > oldCount {
+                        isPinnedToBottom = true
+                        if let lastUserMessage = messages.last(where: { $0.isUser }) {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                scrollToMessage(lastUserMessage.id, anchor: .top)
+                            }
                         }
                     }
                     lastUserMessageCount = newCount
@@ -252,6 +269,9 @@ struct ProjectChatMessageList: View {
                     }
                     if !newValue.isEmpty && isInitialLoad {
                         isInitialLoad = false
+                    }
+                    if isPinnedToBottom && !newValue.isEmpty {
+                        proxy.scrollTo(bottomId, anchor: .bottom)
                     }
                 }
                 .onChange(of: messages.count) { _, newCount in
@@ -280,6 +300,7 @@ struct ProjectChatMessageList: View {
                     .highPriorityGesture(
                         TapGesture()
                             .onEnded {
+                                isPinnedToBottom = true
                                 withAnimation(.easeOut(duration: 0.2)) {
                                     scrollProxy?.scrollTo(bottomId, anchor: .bottom)
                                 }
@@ -378,7 +399,7 @@ struct SwipeToDeleteBubble: View {
                                 }
                             }
                         }
-                )
+            )
         }
         .clipped()
     }

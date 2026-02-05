@@ -3,7 +3,7 @@ import UIKit
 import CloudeShared
 
 struct HeartbeatSheet: View {
-    @ObservedObject var heartbeatStore: HeartbeatStore
+    @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var connection: ConnectionManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) var scenePhase
@@ -12,8 +12,12 @@ struct HeartbeatSheet: View {
     @State private var inputText = ""
     @State private var selectedImageData: Data?
 
+    private var heartbeat: Conversation {
+        conversationStore.heartbeatConversation
+    }
+
     private var convOutput: ConversationOutput {
-        connection.output(for: heartbeatStore.conversation.id)
+        connection.output(for: Heartbeat.conversationId)
     }
 
     private let intervalOptions: [(label: String, minutes: Int)] = [
@@ -31,14 +35,14 @@ struct HeartbeatSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                ProjectChatMessageList(
-                    messages: heartbeatStore.conversation.messages + heartbeatStore.conversation.pendingMessages,
+                ChatMessageList(
+                    messages: heartbeat.messages + heartbeat.pendingMessages,
                     currentOutput: convOutput.text,
                     currentToolCalls: convOutput.toolCalls,
                     currentRunStats: convOutput.runStats,
                     scrollProxy: $scrollProxy,
                     agentState: convOutput.isRunning ? .running : .idle,
-                    conversationId: heartbeatStore.conversation.id
+                    conversationId: Heartbeat.conversationId
                 )
 
                 GlobalInputBar(
@@ -74,7 +78,7 @@ struct HeartbeatSheet: View {
                                 .font(.caption2)
                                 .foregroundColor(.orange)
                         } else {
-                            Text("Last: \(heartbeatStore.lastTriggeredDisplayText)")
+                            Text("Last: \(conversationStore.heartbeatConfig.lastTriggeredDisplayText)")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -109,14 +113,14 @@ struct HeartbeatSheet: View {
                 ForEach(intervalOptions, id: \.minutes) { option in
                     Button(option.label) {
                         let minutes = option.minutes == 0 ? nil : option.minutes
-                        heartbeatStore.intervalMinutes = minutes
+                        conversationStore.heartbeatConfig.intervalMinutes = minutes
                         connection.send(.setHeartbeatInterval(minutes: minutes))
                     }
                 }
             }
             .onAppear {
                 connection.send(.markHeartbeatRead)
-                heartbeatStore.markRead()
+                conversationStore.markHeartbeatRead()
                 if !convOutput.isRunning {
                     sendQueuedMessages()
                 }
@@ -136,27 +140,22 @@ struct HeartbeatSheet: View {
             text: convOutput.text.trimmingCharacters(in: .whitespacesAndNewlines),
             toolCalls: convOutput.toolCalls,
             durationMs: convOutput.runStats?.durationMs,
-            costUsd: convOutput.runStats?.costUsd
+            costUsd: convOutput.runStats?.costUsd,
+            serverUUID: convOutput.messageUUID
         )
-        heartbeatStore.conversation.messages.append(message)
-        heartbeatStore.conversation.lastMessageAt = Date()
-        heartbeatStore.save()
+        conversationStore.addMessage(message, to: heartbeat)
         convOutput.reset()
-
         sendQueuedMessages()
     }
 
     private func sendQueuedMessages() {
-        let pending = heartbeatStore.conversation.pendingMessages
+        let pending = conversationStore.popPendingMessages(from: heartbeat)
         guard !pending.isEmpty else { return }
-
-        heartbeatStore.conversation.pendingMessages = []
 
         for var msg in pending {
             msg.isQueued = false
-            heartbeatStore.conversation.messages.append(msg)
+            conversationStore.addMessage(msg, to: heartbeat)
         }
-        heartbeatStore.save()
 
         let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
         connection.sendChat(
@@ -172,10 +171,10 @@ struct HeartbeatSheet: View {
 
     @ViewBuilder
     private var intervalLabel: some View {
-        if heartbeatStore.intervalMinutes == nil {
+        if conversationStore.heartbeatConfig.intervalMinutes == nil {
             Image(systemName: "clock.badge.xmark")
         } else {
-            Text(heartbeatStore.intervalDisplayText)
+            Text(conversationStore.heartbeatConfig.intervalDisplayText)
                 .font(.subheadline)
                 .fontWeight(.medium)
         }
@@ -184,7 +183,7 @@ struct HeartbeatSheet: View {
     private func triggerHeartbeat() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
-        heartbeatStore.recordTrigger()
+        conversationStore.recordHeartbeatTrigger()
         connection.send(.triggerHeartbeat)
     }
 
@@ -195,12 +194,10 @@ struct HeartbeatSheet: View {
 
         if convOutput.isRunning {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: imageBase64)
-            heartbeatStore.conversation.pendingMessages.append(userMessage)
-            heartbeatStore.save()
+            conversationStore.queueMessage(userMessage, to: heartbeat)
         } else {
             let userMessage = ChatMessage(isUser: true, text: text, imageBase64: imageBase64)
-            heartbeatStore.conversation.messages.append(userMessage)
-            heartbeatStore.save()
+            conversationStore.addMessage(userMessage, to: heartbeat)
 
             connection.sendChat(
                 text,

@@ -5,9 +5,8 @@ import CloudeShared
 
 struct MainChatView: View {
     @ObservedObject var connection: ConnectionManager
-    @ObservedObject var projectStore: ProjectStore
+    @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
-    @ObservedObject var heartbeatStore: HeartbeatStore
     @State var selectingWindow: ChatWindow?
     @State var editingWindow: ChatWindow?
     @State var currentPageIndex: Int = 0
@@ -15,8 +14,8 @@ struct MainChatView: View {
     @State var inputText = ""
     @State var selectedImageData: Data?
     @State var drafts: [UUID: (text: String, imageData: Data?)] = [:]
-    @State var gitBranches: [UUID: String] = [:]
-    @State var pendingGitChecks: [UUID] = []
+    @State var gitBranches: [String: String] = [:]
+    @State var pendingGitChecks: [String] = []
     @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
 
@@ -39,12 +38,10 @@ struct MainChatView: View {
                     let oldWindowIndex = oldIndex - 1
                     if oldWindowIndex < windowManager.windows.count {
                         let oldWindow = windowManager.windows[oldWindowIndex]
-                        if let projectId = oldWindow.projectId,
-                           let project = projectStore.projects.first(where: { $0.id == projectId }),
-                           let convId = oldWindow.conversationId,
-                           let conv = project.conversations.first(where: { $0.id == convId }),
+                        if let convId = oldWindow.conversationId,
+                           let conv = conversationStore.conversation(withId: convId),
                            conv.isEmpty {
-                            projectStore.deleteConversation(conv, from: project)
+                            conversationStore.deleteConversation(conv)
                             windowManager.removeWindow(oldWindow.id)
                         }
                     }
@@ -98,7 +95,7 @@ struct MainChatView: View {
             initializeFirstWindow()
             setupGitStatusHandler()
             setupFileSearchHandler()
-            checkGitForAllProjects()
+            checkGitForAllDirectories()
             connection.onTranscription = { text in
                 let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
                 let isBlank = trimmed.isEmpty ||
@@ -137,28 +134,26 @@ struct MainChatView: View {
             }
             if windowManager.windows.count == 1 { syncActiveWindowToStore() }
         }
-        .onChange(of: projectStore.currentConversation?.id) { _, _ in
+        .onChange(of: conversationStore.currentConversation?.id) { _, _ in
             if windowManager.windows.count == 1 { updateActiveWindowLink() }
         }
         .sheet(item: $selectingWindow) { window in
             WindowConversationPicker(
-                projectStore: projectStore,
+                conversationStore: conversationStore,
                 windowManager: windowManager,
                 connection: connection,
                 currentWindowId: window.id,
-                onSelect: { project, conversation in
-                    if let oldProjectId = window.projectId,
-                       let oldProject = projectStore.projects.first(where: { $0.id == oldProjectId }),
-                       let oldConvId = window.conversationId,
-                       let oldConv = oldProject.conversations.first(where: { $0.id == oldConvId }),
+                onSelect: { conversation in
+                    if let oldConvId = window.conversationId,
+                       let oldConv = conversationStore.conversation(withId: oldConvId),
                        oldConv.isEmpty {
-                        projectStore.deleteConversation(oldConv, from: oldProject)
+                        conversationStore.deleteConversation(oldConv)
                     }
-                    windowManager.linkToCurrentConversation(window.id, project: project, conversation: conversation)
+                    windowManager.linkToCurrentConversation(window.id, conversation: conversation)
                     selectingWindow = nil
-                    if gitBranches[project.id] == nil, !project.rootDirectory.isEmpty {
-                        pendingGitChecks = [project.id]
-                        checkNextGitProject()
+                    if let dir = conversation.workingDirectory, !dir.isEmpty, gitBranches[dir] == nil {
+                        pendingGitChecks = [dir]
+                        checkNextGitDirectory()
                     }
                 }
             )
@@ -166,19 +161,16 @@ struct MainChatView: View {
         .sheet(item: $editingWindow) { window in
             WindowEditSheet(
                 window: window,
-                projectStore: projectStore,
+                conversationStore: conversationStore,
                 windowManager: windowManager,
                 connection: connection,
                 onSelectConversation: { conv in
-                    if let projectId = window.projectId,
-                       let project = projectStore.projects.first(where: { $0.id == projectId }) {
-                        if let oldConvId = window.conversationId,
-                           let oldConv = project.conversations.first(where: { $0.id == oldConvId }),
-                           oldConv.isEmpty, oldConv.id != conv.id {
-                            projectStore.deleteConversation(oldConv, from: project)
-                        }
-                        windowManager.linkToCurrentConversation(window.id, project: project, conversation: conv)
+                    if let oldConvId = window.conversationId,
+                       let oldConv = conversationStore.conversation(withId: oldConvId),
+                       oldConv.isEmpty, oldConv.id != conv.id {
+                        conversationStore.deleteConversation(oldConv)
                     }
+                    windowManager.linkToCurrentConversation(window.id, conversation: conv)
                     editingWindow = nil
                 },
                 onShowAllConversations: {
@@ -188,36 +180,27 @@ struct MainChatView: View {
                     }
                 },
                 onNewConversation: {
-                    if let projectId = window.projectId,
-                       let project = projectStore.projects.first(where: { $0.id == projectId }) {
-                        if let oldConvId = window.conversationId,
-                           let oldConv = project.conversations.first(where: { $0.id == oldConvId }),
-                           oldConv.isEmpty {
-                            projectStore.deleteConversation(oldConv, from: project)
-                        }
-                        let workingDir = activeWindowWorkingDirectory()
-                        let newConv = projectStore.newConversation(in: project, workingDirectory: workingDir)
-                        windowManager.linkToCurrentConversation(window.id, project: project, conversation: newConv)
+                    if let oldConvId = window.conversationId,
+                       let oldConv = conversationStore.conversation(withId: oldConvId),
+                       oldConv.isEmpty {
+                        conversationStore.deleteConversation(oldConv)
                     }
+                    let workingDir = activeWindowWorkingDirectory()
+                    let newConv = conversationStore.newConversation(workingDirectory: workingDir)
+                    windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     editingWindow = nil
                 },
                 onDismiss: { editingWindow = nil },
                 onRefresh: {
-                    guard let projectId = window.projectId,
-                          let project = projectStore.projects.first(where: { $0.id == projectId }),
-                          let convId = window.conversationId,
-                          let conv = project.conversations.first(where: { $0.id == convId }),
-                          let sessionId = conv.sessionId else { return }
-                    let workingDir = conv.workingDirectory ?? project.rootDirectory
-                    guard !workingDir.isEmpty else { return }
+                    guard let convId = window.conversationId,
+                          let conv = conversationStore.conversation(withId: convId),
+                          let sessionId = conv.sessionId,
+                          let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
                     connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
                 },
                 onDuplicate: { newConv in
-                    if let projectId = window.projectId,
-                       let project = projectStore.projects.first(where: { $0.id == projectId }) {
-                        windowManager.linkToCurrentConversation(window.id, project: project, conversation: newConv)
-                    }
+                    windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     editingWindow = nil
                 }
             )
@@ -231,23 +214,14 @@ struct MainChatView: View {
         .onChange(of: currentPageIndex) { oldIndex, newIndex in
             if oldIndex == 0 && newIndex != 0 {
                 connection.send(.markHeartbeatRead)
-                heartbeatStore.markRead()
+                conversationStore.markHeartbeatRead()
             }
         }
-        .confirmationDialog("Heartbeat Interval", isPresented: $showIntervalPicker, titleVisibility: .visible) {
-            ForEach([(0, "Off"), (5, "5 min"), (10, "10 min"), (30, "30 min"), (60, "1 hour"), (120, "2 hours"), (240, "4 hours"), (480, "8 hours"), (1440, "1 day")], id: \.0) { minutes, label in
-                Button(label) {
-                    let value = minutes == 0 ? nil : minutes
-                    heartbeatStore.intervalMinutes = value
-                    connection.send(.setHeartbeatInterval(minutes: value))
-                }
-            }
-        }
-        .onAppear {
-            connection.onHeartbeatConfig = { intervalMinutes, unreadCount in
-                heartbeatStore.handleConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount)
-            }
-        }
+        .modifier(HeartbeatIntervalModifier(
+            showIntervalPicker: $showIntervalPicker,
+            conversationStore: conversationStore,
+            connection: connection
+        ))
     }
 
     @ViewBuilder
@@ -258,7 +232,7 @@ struct MainChatView: View {
             heartbeatHeader(isRunning: convOutput.isRunning)
 
             HeartbeatChatView(
-                heartbeatStore: heartbeatStore,
+                conversationStore: conversationStore,
                 connection: connection,
                 inputText: $inputText,
                 selectedImageData: $selectedImageData,
@@ -290,7 +264,7 @@ struct MainChatView: View {
                     Text("Running...")
                         .foregroundColor(.orange)
                 } else {
-                    Text(heartbeatStore.lastTriggeredDisplayText)
+                    Text(conversationStore.heartbeatConfig.lastTriggeredDisplayText)
                 }
                 Text("•")
                     .foregroundColor(.secondary)
@@ -302,11 +276,11 @@ struct MainChatView: View {
             Spacer()
 
             Button(action: { showIntervalPicker = true }) {
-                if heartbeatStore.intervalMinutes == nil {
+                if conversationStore.heartbeatConfig.intervalMinutes == nil {
                     Image(systemName: "clock.badge.xmark")
                         .font(.system(size: 17))
                 } else {
-                    Text(heartbeatStore.intervalDisplayText)
+                    Text(conversationStore.heartbeatConfig.intervalDisplayText)
                         .font(.caption)
                         .fontWeight(.medium)
                 }
@@ -322,26 +296,22 @@ struct MainChatView: View {
     private func triggerHeartbeat() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
-        heartbeatStore.recordTrigger()
+        conversationStore.recordHeartbeatTrigger()
         connection.send(.triggerHeartbeat)
     }
 
     @ViewBuilder
     func pagedWindowContent(for window: ChatWindow) -> some View {
-        let project = window.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
-        let conversation = project.flatMap { proj in
-            window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
-        }
+        let conversation = window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
 
         VStack(spacing: 0) {
-            windowHeader(for: window, project: project, conversation: conversation)
+            windowHeader(for: window, conversation: conversation)
 
             switch window.type {
             case .chat:
-                ProjectChatView(
+                ConversationView(
                     connection: connection,
-                    store: projectStore,
-                    project: project,
+                    store: conversationStore,
                     conversation: conversation,
                     window: window,
                     windowManager: windowManager,
@@ -349,37 +319,34 @@ struct MainChatView: View {
                     isKeyboardVisible: isKeyboardVisible,
                     onInteraction: { dismissKeyboard() },
                     onSelectRecentConversation: { conv in
-                        if let proj = project {
-                            windowManager.linkToCurrentConversation(window.id, project: proj, conversation: conv)
-                        }
+                        windowManager.linkToCurrentConversation(window.id, conversation: conv)
                     },
                     onShowAllConversations: {
                         selectingWindow = window
                     },
                     onNewConversation: {
-                        if let proj = project {
-                            let workingDir = activeWindowWorkingDirectory()
-                            let newConv = projectStore.newConversation(in: proj, workingDirectory: workingDir)
-                            windowManager.linkToCurrentConversation(window.id, project: proj, conversation: newConv)
-                        }
+                        let workingDir = activeWindowWorkingDirectory()
+                        let newConv = conversationStore.newConversation(workingDirectory: workingDir)
+                        windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
             case .files:
                 FileBrowserView(
                     connection: connection,
-                    rootPath: project?.rootDirectory
+                    rootPath: conversation?.workingDirectory
                 )
             case .gitChanges:
                 GitChangesView(
                     connection: connection,
-                    rootPath: project?.rootDirectory
+                    rootPath: conversation?.workingDirectory
                 )
             }
         }
     }
 
-    func windowHeader(for window: ChatWindow, project: Project?, conversation: Conversation?) -> some View {
-        let gitBranch = project.flatMap { gitBranches[$0.id] }
+    func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
+        let workingDir = conversation?.workingDirectory ?? ""
+        let gitBranch = workingDir.isEmpty ? nil : gitBranches[workingDir]
         let availableTypes = WindowType.allCases.filter { type in
             if type == .gitChanges { return gitBranch != nil }
             return true
@@ -426,7 +393,7 @@ struct MainChatView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    if let folder = (conversation?.workingDirectory ?? project?.rootDirectory).flatMap({ path in
+                    if let folder = conversation?.workingDirectory.flatMap({ path in
                         path.isEmpty ? nil : (path as NSString).lastPathComponent
                     }) {
                         Text("• \(folder)")
@@ -495,8 +462,8 @@ struct MainChatView: View {
                     .foregroundStyle(Color.accentColor)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
 
-                if heartbeatStore.unreadCount > 0 && !isHeartbeatActive {
-                    Text(heartbeatStore.unreadCount > 9 ? "9+" : "\(heartbeatStore.unreadCount)")
+                if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
+                    Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundColor(.white)
                         .frame(minWidth: 14, minHeight: 14)
@@ -522,11 +489,7 @@ struct MainChatView: View {
             let isActive = currentPageIndex == index + 1
             let convId = window.conversationId
             let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
-            let conversation = window.projectId.flatMap { pid in
-                projectStore.projects.first { $0.id == pid }
-            }.flatMap { proj in
-                window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
-            }
+            let conversation = window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
 
             Button {
                 withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index + 1 }
@@ -585,7 +548,7 @@ struct MainChatView: View {
         if isHeartbeatActive {
             sendHeartbeatMessage(text: text, imageBase64: fullImageBase64, thumbnailBase64: thumbnailBase64)
         } else {
-            sendProjectMessage(text: text, imageBase64: fullImageBase64, thumbnailBase64: thumbnailBase64)
+            sendConversationMessage(text: text, imageBase64: fullImageBase64, thumbnailBase64: thumbnailBase64)
         }
 
         inputText = ""
@@ -597,15 +560,14 @@ struct MainChatView: View {
 
     private func sendHeartbeatMessage(text: String, imageBase64: String?, thumbnailBase64: String?) {
         let convOutput = connection.output(for: Heartbeat.conversationId)
+        let heartbeat = conversationStore.heartbeatConversation
 
         if convOutput.isRunning {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnailBase64)
-            heartbeatStore.conversation.pendingMessages.append(userMessage)
-            heartbeatStore.save()
+            conversationStore.queueMessage(userMessage, to: heartbeat)
         } else {
             let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnailBase64)
-            heartbeatStore.conversation.messages.append(userMessage)
-            heartbeatStore.save()
+            conversationStore.addMessage(userMessage, to: heartbeat)
 
             connection.sendChat(
                 text,
@@ -620,23 +582,17 @@ struct MainChatView: View {
         }
     }
 
-    private func sendProjectMessage(text: String, imageBase64: String?, thumbnailBase64: String?) {
+    private func sendConversationMessage(text: String, imageBase64: String?, thumbnailBase64: String?) {
         if windowManager.activeWindow == nil {
             windowManager.addWindow()
         }
         guard let activeWindow = windowManager.activeWindow else { return }
 
-        var project = activeWindow.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
-        if project == nil {
-            project = projectStore.createProject(name: "Default Project")
-        }
-        guard let proj = project else { return }
-
-        var conversation = proj.conversations.first { $0.id == activeWindow.conversationId }
+        var conversation = activeWindow.conversationId.flatMap { conversationStore.conversation(withId: $0) }
         if conversation == nil {
             let workingDir = activeWindowWorkingDirectory()
-            conversation = projectStore.newConversation(in: proj, workingDirectory: workingDir)
-            windowManager.linkToCurrentConversation(activeWindow.id, project: proj, conversation: conversation)
+            conversation = conversationStore.newConversation(workingDirectory: workingDir)
+            windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         }
         guard let conv = conversation else { return }
 
@@ -644,18 +600,18 @@ struct MainChatView: View {
 
         if isRunning {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnailBase64)
-            projectStore.queueMessage(userMessage, to: conv, in: proj)
+            conversationStore.queueMessage(userMessage, to: conv)
         } else {
             let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnailBase64)
-            projectStore.addMessage(userMessage, to: conv, in: proj)
+            conversationStore.addMessage(userMessage, to: conv)
 
             let isFork = conv.pendingFork
             let isNewSession = conv.sessionId == nil && !isFork
-            let workingDir = conv.workingDirectory ?? (proj.rootDirectory.isEmpty ? nil : proj.rootDirectory)
+            let workingDir = conv.workingDirectory
             connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork)
 
             if isFork {
-                projectStore.clearPendingFork(conv, in: proj)
+                conversationStore.clearPendingFork(conv)
             }
         }
     }
@@ -691,90 +647,70 @@ struct MainChatView: View {
     func initializeFirstWindow() {
         guard let firstWindow = windowManager.windows.first,
               firstWindow.conversationId == nil,
-              let project = projectStore.currentProject,
-              let conversation = projectStore.currentConversation else { return }
-        windowManager.linkToCurrentConversation(firstWindow.id, project: project, conversation: conversation)
+              let conversation = conversationStore.currentConversation else { return }
+        windowManager.linkToCurrentConversation(firstWindow.id, conversation: conversation)
     }
 
     func addWindowWithNewChat() {
-        var project = projectStore.currentProject
-        if project == nil {
-            project = projectStore.createProject(name: "Default Project")
-        }
-        guard let proj = project else { return }
-
         let activeWorkingDir = activeWindowWorkingDirectory()
         let newWindowId = windowManager.addWindow()
-        let newConv = projectStore.newConversation(in: proj, workingDirectory: activeWorkingDir)
-        windowManager.linkToCurrentConversation(newWindowId, project: proj, conversation: newConv)
+        let newConv = conversationStore.newConversation(workingDirectory: activeWorkingDir)
+        windowManager.linkToCurrentConversation(newWindowId, conversation: newConv)
     }
 
     func activeWindowWorkingDirectory() -> String? {
         guard let activeWindow = windowManager.activeWindow,
-              let projectId = activeWindow.projectId,
-              let project = projectStore.projects.first(where: { $0.id == projectId }),
               let convId = activeWindow.conversationId,
-              let conv = project.conversations.first(where: { $0.id == convId }) else {
-            return projectStore.currentProject?.rootDirectory
+              let conv = conversationStore.conversation(withId: convId) else {
+            return conversationStore.currentConversation?.workingDirectory
         }
-        return conv.workingDirectory ?? project.rootDirectory
+        return conv.workingDirectory
     }
 
     func syncActiveWindowToStore() {
-        guard let activeWindow = windowManager.activeWindow else { return }
-        if let projectId = activeWindow.projectId,
-           let project = projectStore.projects.first(where: { $0.id == projectId }) {
-            if let convId = activeWindow.conversationId,
-               let conv = project.conversations.first(where: { $0.id == convId }) {
-                projectStore.selectConversation(conv, in: project)
-            } else {
-                projectStore.selectProject(project)
-            }
-        }
+        guard let activeWindow = windowManager.activeWindow,
+              let convId = activeWindow.conversationId,
+              let conv = conversationStore.conversation(withId: convId) else { return }
+        conversationStore.selectConversation(conv)
     }
 
     func updateActiveWindowLink() {
         guard let activeId = windowManager.activeWindowId else { return }
         windowManager.linkToCurrentConversation(
             activeId,
-            project: projectStore.currentProject,
-            conversation: projectStore.currentConversation
+            conversation: conversationStore.currentConversation
         )
     }
 
     func setupGitStatusHandler() {
         connection.onGitStatus = { status in
-            if let projectId = pendingGitChecks.first {
+            if let dir = pendingGitChecks.first {
                 pendingGitChecks.removeFirst()
                 if !status.branch.isEmpty {
-                    gitBranches[projectId] = status.branch
+                    gitBranches[dir] = status.branch
                 }
-                checkNextGitProject()
+                checkNextGitDirectory()
             }
         }
     }
 
-    func checkGitForAllProjects() {
-        pendingGitChecks = projectStore.projects
-            .filter { !$0.rootDirectory.isEmpty && gitBranches[$0.id] == nil }
-            .map { $0.id }
-        checkNextGitProject()
+    func checkGitForAllDirectories() {
+        pendingGitChecks = conversationStore.uniqueWorkingDirectories
+            .filter { gitBranches[$0] == nil }
+        checkNextGitDirectory()
     }
 
-    func checkNextGitProject() {
-        guard let projectId = pendingGitChecks.first,
-              let project = projectStore.projects.first(where: { $0.id == projectId }) else { return }
-        connection.gitStatus(path: project.rootDirectory)
+    func checkNextGitDirectory() {
+        guard let dir = pendingGitChecks.first, !dir.isEmpty else { return }
+        connection.gitStatus(path: dir)
     }
 
     func cleanupEmptyConversation(for windowId: UUID) {
         guard let window = windowManager.windows.first(where: { $0.id == windowId }),
-              let projectId = window.projectId,
-              let project = projectStore.projects.first(where: { $0.id == projectId }),
               let convId = window.conversationId,
-              let conversation = project.conversations.first(where: { $0.id == convId }),
+              let conversation = conversationStore.conversation(withId: convId),
               conversation.isEmpty else { return }
-        projectStore.deleteConversation(conversation, from: project)
+        conversationStore.deleteConversation(conversation)
         windowManager.unlinkConversation(windowId)
     }
 
@@ -790,6 +726,30 @@ struct MainChatView: View {
         connection.onFileSearchResults = { files, _ in
             fileSearchResults = files
         }
+    }
+}
+
+struct HeartbeatIntervalModifier: ViewModifier {
+    @Binding var showIntervalPicker: Bool
+    var conversationStore: ConversationStore
+    var connection: ConnectionManager
+
+    func body(content: Content) -> some View {
+        content
+            .confirmationDialog("Heartbeat Interval", isPresented: $showIntervalPicker, titleVisibility: .visible) {
+                ForEach([(0, "Off"), (5, "5 min"), (10, "10 min"), (30, "30 min"), (60, "1 hour"), (120, "2 hours"), (240, "4 hours"), (480, "8 hours"), (1440, "1 day")], id: \.0) { minutes, label in
+                    Button(label) {
+                        let value = minutes == 0 ? nil : minutes
+                        conversationStore.heartbeatConfig.intervalMinutes = value
+                        connection.send(.setHeartbeatInterval(minutes: value))
+                    }
+                }
+            }
+            .onAppear {
+                connection.onHeartbeatConfig = { [conversationStore] intervalMinutes, unreadCount in
+                    conversationStore.handleHeartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount)
+                }
+            }
     }
 }
 

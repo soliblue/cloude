@@ -20,6 +20,7 @@ class ClaudeCodeRunner: ObservableObject {
     var onRunStats: ((Int, Double) -> Void)?
     var onCloudeCommand: ((String, String) -> Void)?
     var onStatus: ((AgentState) -> Void)?
+    var onMessageUUID: ((String) -> Void)?
 
     var accumulatedOutput = ""
     var lineBuffer = ""

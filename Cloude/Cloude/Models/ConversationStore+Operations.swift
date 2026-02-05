@@ -1,120 +1,92 @@
-//
-//  ProjectStore+Conversation.swift
-//  Cloude
-
 import Foundation
 
-extension ProjectStore {
-    func findConversation(withId id: UUID) -> (Project, Conversation)? {
-        for project in projects {
-            if let conv = project.conversations.first(where: { $0.id == id }) {
-                return (project, conv)
-            }
-        }
-        return nil
+extension ConversationStore {
+    func findConversation(withId id: UUID) -> Conversation? {
+        conversations.first { $0.id == id }
     }
 
-    func findConversation(withSessionId sessionId: String) -> (Project, Conversation)? {
-        for project in projects {
-            if let conv = project.conversations.first(where: { $0.sessionId == sessionId }) {
-                return (project, conv)
-            }
-        }
-        return nil
+    func findConversation(withSessionId sessionId: String) -> Conversation? {
+        conversations.first { $0.sessionId == sessionId }
     }
 
-    func selectConversation(_ conversation: Conversation, in project: Project) {
-        currentProject = project
-        currentConversation = conversation
+    func selectConversation(_ conversation: Conversation) {
+        currentConversation = conversations.first { $0.id == conversation.id }
     }
 
-    func newConversation(in project: Project, workingDirectory: String? = nil) -> Conversation {
-        guard let index = projects.firstIndex(where: { $0.id == project.id }) else {
-            return Conversation()
-        }
+    func newConversation(workingDirectory: String? = nil) -> Conversation {
         let conversation = Conversation(workingDirectory: workingDirectory)
-        projects[index].addConversation(conversation)
-        currentProject = projects[index]
+        conversations.insert(conversation, at: 0)
         currentConversation = conversation
         save()
         return conversation
     }
 
-    func addMessage(_ message: ChatMessage, to conversation: Conversation, in project: Project) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
+    func addConversation(_ conversation: Conversation) {
+        conversations.insert(conversation, at: 0)
+        currentConversation = conversation
+        save()
+    }
 
-        projects[projectIndex].conversations[convIndex].messages.append(message)
-        projects[projectIndex].conversations[convIndex].lastMessageAt = Date()
-        projects[projectIndex].lastMessageAt = Date()
-
-        let updated = projects[projectIndex].conversations.remove(at: convIndex)
-        projects[projectIndex].conversations.insert(updated, at: 0)
-
-        currentProject = projects[projectIndex]
+    func addMessage(_ message: ChatMessage, to conversation: Conversation) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].messages.append(message)
+        conversations[idx].lastMessageAt = Date()
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[0]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func updateSessionId(_ conversation: Conversation, in project: Project, sessionId: String, workingDirectory: String?) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        let conv = projects[projectIndex].conversations[convIndex]
-        guard conv.sessionId != sessionId || conv.workingDirectory != workingDirectory else { return }
-        projects[projectIndex].conversations[convIndex].sessionId = sessionId
-        if conv.workingDirectory == nil, let wd = workingDirectory {
-            projects[projectIndex].conversations[convIndex].workingDirectory = wd
+    func updateSessionId(_ conversation: Conversation, sessionId: String, workingDirectory: String?) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        guard conversations[idx].sessionId != sessionId || conversations[idx].workingDirectory != workingDirectory else { return }
+        conversations[idx].sessionId = sessionId
+        if conversations[idx].workingDirectory == nil, let wd = workingDirectory {
+            conversations[idx].workingDirectory = wd
         }
-        currentProject = projects[projectIndex]
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func renameConversation(_ conversation: Conversation, in project: Project, to name: String) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        projects[projectIndex].conversations[convIndex].name = name
-        currentProject = projects[projectIndex]
+    func renameConversation(_ conversation: Conversation, to name: String) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].name = name
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func setConversationSymbol(_ conversation: Conversation, in project: Project, symbol: String?) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        projects[projectIndex].conversations[convIndex].symbol = symbol
-        currentProject = projects[projectIndex]
+    func setConversationSymbol(_ conversation: Conversation, symbol: String?) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].symbol = symbol
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func setWorkingDirectory(_ conversation: Conversation, in project: Project, path: String) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        projects[projectIndex].conversations[convIndex].workingDirectory = path
-        currentProject = projects[projectIndex]
+    func setWorkingDirectory(_ conversation: Conversation, path: String) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].workingDirectory = path
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func deleteConversation(_ conversation: Conversation, from project: Project) {
-        guard let index = projects.firstIndex(where: { $0.id == project.id }) else { return }
-        projects[index].removeConversation(conversation)
-        currentProject = projects[index]
+    func deleteConversation(_ conversation: Conversation) {
+        conversations.removeAll { $0.id == conversation.id }
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[index].conversations.first
+            currentConversation = listableConversations.first
         }
         save()
     }
 
-    func duplicateConversation(_ conversation: Conversation, in project: Project) -> Conversation? {
-        guard let index = projects.firstIndex(where: { $0.id == project.id }),
-              conversation.sessionId != nil else { return nil }
+    func duplicateConversation(_ conversation: Conversation) -> Conversation? {
+        guard conversation.sessionId != nil else { return nil }
         let newConversation = Conversation(
             name: conversation.name,
             symbol: conversation.symbol,
@@ -122,101 +94,91 @@ extension ProjectStore {
             workingDirectory: conversation.workingDirectory,
             pendingFork: true
         )
-        projects[index].addConversation(newConversation)
-        currentProject = projects[index]
+        conversations.insert(newConversation, at: 0)
         currentConversation = newConversation
         save()
         return newConversation
     }
 
-    func clearPendingFork(_ conversation: Conversation, in project: Project) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        projects[projectIndex].conversations[convIndex].pendingFork = false
-        currentProject = projects[projectIndex]
+    func clearPendingFork(_ conversation: Conversation) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].pendingFork = false
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func updateMessage(_ messageId: UUID, in conversation: Conversation, in project: Project, update: (inout ChatMessage) -> Void) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation),
-              let msgIndex = projects[projectIndex].conversations[convIndex].messages.firstIndex(where: { $0.id == messageId }) else {
-            return
-        }
-        update(&projects[projectIndex].conversations[convIndex].messages[msgIndex])
-        currentProject = projects[projectIndex]
+    func updateMessage(_ messageId: UUID, in conversation: Conversation, update: (inout ChatMessage) -> Void) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }),
+              let msgIdx = conversations[idx].messages.firstIndex(where: { $0.id == messageId }) else { return }
+        update(&conversations[idx].messages[msgIdx])
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func queueMessage(_ message: ChatMessage, to conversation: Conversation, in project: Project) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        projects[projectIndex].conversations[convIndex].pendingMessages.append(message)
-        currentProject = projects[projectIndex]
+    func queueMessage(_ message: ChatMessage, to conversation: Conversation) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].pendingMessages.append(message)
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func popPendingMessages(from conversation: Conversation, in project: Project) -> [ChatMessage] {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return [] }
-        let pending = projects[projectIndex].conversations[convIndex].pendingMessages
-        projects[projectIndex].conversations[convIndex].pendingMessages = []
-        currentProject = projects[projectIndex]
+    func popPendingMessages(from conversation: Conversation) -> [ChatMessage] {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return [] }
+        let pending = conversations[idx].pendingMessages
+        conversations[idx].pendingMessages = []
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
         return pending
     }
 
-    func pendingMessageCount(in conversation: Conversation, in project: Project) -> Int {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return 0 }
-        return projects[projectIndex].conversations[convIndex].pendingMessages.count
+    func pendingMessageCount(in conversation: Conversation) -> Int {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return 0 }
+        return conversations[idx].pendingMessages.count
     }
 
-    func removePendingMessage(_ messageId: UUID, from conversation: Conversation, in project: Project) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        projects[projectIndex].conversations[convIndex].pendingMessages.removeAll { $0.id == messageId }
-        currentProject = projects[projectIndex]
+    func removePendingMessage(_ messageId: UUID, from conversation: Conversation) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].pendingMessages.removeAll { $0.id == messageId }
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func getQueuedMessages(in conversation: Conversation, in project: Project) -> [ChatMessage] {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return [] }
-        return projects[projectIndex].conversations[convIndex].messages.filter { $0.isQueued }
+    func getQueuedMessages(in conversation: Conversation) -> [ChatMessage] {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return [] }
+        return conversations[idx].messages.filter { $0.isQueued }
     }
 
-    func clearQueuedFlags(in conversation: Conversation, in project: Project) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        for i in projects[projectIndex].conversations[convIndex].messages.indices {
-            if projects[projectIndex].conversations[convIndex].messages[i].isQueued {
-                projects[projectIndex].conversations[convIndex].messages[i].isQueued = false
+    func clearQueuedFlags(in conversation: Conversation) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        for i in conversations[idx].messages.indices {
+            if conversations[idx].messages[i].isQueued {
+                conversations[idx].messages[i].isQueued = false
             }
         }
-        currentProject = projects[projectIndex]
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }
 
-    func replaceMessages(_ conversation: Conversation, in project: Project, with messages: [ChatMessage]) {
-        guard let (projectIndex, convIndex) = findIndices(for: project, conversation: conversation) else { return }
-        projects[projectIndex].conversations[convIndex].messages = messages
+    func replaceMessages(_ conversation: Conversation, with messages: [ChatMessage]) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].messages = messages
         if let lastTimestamp = messages.last?.timestamp {
-            projects[projectIndex].conversations[convIndex].lastMessageAt = lastTimestamp
+            conversations[idx].lastMessageAt = lastTimestamp
         }
-        currentProject = projects[projectIndex]
         if currentConversation?.id == conversation.id {
-            currentConversation = projects[projectIndex].conversations[convIndex]
+            currentConversation = conversations[idx]
         }
         save()
     }

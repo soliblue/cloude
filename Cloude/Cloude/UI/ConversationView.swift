@@ -1,12 +1,11 @@
 import SwiftUI
 import CloudeShared
 
-struct ProjectChatView: View {
+struct ConversationView: View {
     @ObservedObject var connection: ConnectionManager
-    @ObservedObject var store: ProjectStore
+    @ObservedObject var store: ConversationStore
     @Environment(\.scenePhase) var scenePhase
 
-    let project: Project?
     let conversation: Conversation?
     var window: ChatWindow?
     var windowManager: WindowManager?
@@ -21,16 +20,9 @@ struct ProjectChatView: View {
 
     @State private var scrollProxy: ScrollViewProxy?
 
-    private var effectiveProject: Project? {
-        if let project = project {
-            return store.projects.first { $0.id == project.id } ?? project
-        }
-        return store.currentProject
-    }
-
     private var effectiveConversation: Conversation? {
-        if let conversation = conversation, let proj = effectiveProject {
-            return proj.conversations.first { $0.id == conversation.id } ?? conversation
+        if let conversation = conversation {
+            return store.conversation(withId: conversation.id) ?? conversation
         }
         return store.currentConversation
     }
@@ -58,13 +50,12 @@ struct ProjectChatView: View {
         VStack(spacing: 0) {
             if showHeader {
                 WindowHeaderView(
-                    project: effectiveProject,
                     conversation: effectiveConversation,
                     onSelectConversation: onSelectConversation
                 )
                 Divider()
             }
-            ProjectChatMessageList(
+            ChatMessageList(
                 messages: messages,
                 queuedMessages: queuedMessages,
                 currentOutput: output?.text ?? "",
@@ -77,13 +68,12 @@ struct ProjectChatView: View {
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction,
                 onDeleteQueued: { messageId in
-                    if let proj = effectiveProject, let conv = effectiveConversation {
-                        store.removePendingMessage(messageId, from: conv, in: proj)
+                    if let conv = effectiveConversation {
+                        store.removePendingMessage(messageId, from: conv)
                     }
                 },
-                project: effectiveProject,
                 conversation: effectiveConversation,
-                projectStore: store,
+                conversationStore: store,
                 connection: connection,
                 window: window,
                 windowManager: windowManager,
@@ -109,11 +99,10 @@ struct ProjectChatView: View {
             NotificationManager.showCompletionNotification(preview: output.text)
         }
 
-        if let proj = effectiveProject, var conv = effectiveConversation {
+        if var conv = effectiveConversation {
             if let newSessionId = output.newSessionId {
-                let workingDir = proj.rootDirectory.isEmpty ? nil : proj.rootDirectory
-                store.updateSessionId(conv, in: proj, sessionId: newSessionId, workingDirectory: workingDir)
-                conv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
+                store.updateSessionId(conv, sessionId: newSessionId, workingDirectory: conv.workingDirectory)
+                conv = store.conversation(withId: conv.id) ?? conv
             }
 
             let messageId = UUID()
@@ -124,46 +113,50 @@ struct ProjectChatView: View {
                 text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
                 toolCalls: output.toolCalls,
                 durationMs: output.runStats?.durationMs,
-                costUsd: output.runStats?.costUsd
+                costUsd: output.runStats?.costUsd,
+                serverUUID: output.messageUUID
             )
 
-            let freshConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
-            let isDuplicate = freshConv.messages.contains { !$0.isUser && $0.text == message.text && abs($0.timestamp.timeIntervalSinceNow) < 5 }
+            let freshConv = store.conversation(withId: conv.id) ?? conv
+            let isDuplicate: Bool
+            if let uuid = output.messageUUID {
+                isDuplicate = freshConv.messages.contains { $0.serverUUID == uuid }
+            } else {
+                isDuplicate = freshConv.messages.contains { !$0.isUser && $0.text == message.text && abs($0.timestamp.timeIntervalSinceNow) < 5 }
+            }
             guard !isDuplicate else {
                 output.reset()
                 return
             }
 
             output.lastSavedMessageId = messageId
-            store.addMessage(message, to: conv, in: proj)
+            store.addMessage(message, to: conv)
             output.reset()
 
-            sendQueuedMessages(proj: proj, conv: conv)
+            sendQueuedMessages(conv: conv)
         }
     }
 
-    private func sendQueuedMessages(proj: Project, conv: Conversation) {
-        let freshConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
-        let pending = store.popPendingMessages(from: freshConv, in: proj)
+    private func sendQueuedMessages(conv: Conversation) {
+        let freshConv = store.conversation(withId: conv.id) ?? conv
+        let pending = store.popPendingMessages(from: freshConv)
         guard !pending.isEmpty else { return }
 
         for var msg in pending {
             msg.isQueued = false
-            store.addMessage(msg, to: freshConv, in: proj)
+            store.addMessage(msg, to: freshConv)
         }
 
         let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
-        let updatedConv = store.projects.first { $0.id == proj.id }?.conversations.first { $0.id == conv.id } ?? conv
-        let workingDir = updatedConv.workingDirectory ?? (proj.rootDirectory.isEmpty ? nil : proj.rootDirectory)
+        let updatedConv = store.conversation(withId: conv.id) ?? conv
+        let workingDir = updatedConv.workingDirectory
         connection.sendChat(combinedText, workingDirectory: workingDir, sessionId: updatedConv.sessionId, isNewSession: false, conversationId: updatedConv.id, conversationName: updatedConv.name, conversationSymbol: updatedConv.symbol)
     }
 
     private func refreshMissedResponse() async {
         guard let conv = effectiveConversation,
               let sessionId = conv.sessionId,
-              let proj = effectiveProject else { return }
-        let workingDir = conv.workingDirectory ?? proj.rootDirectory
-        guard !workingDir.isEmpty else { return }
+              let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
         connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
         try? await Task.sleep(nanoseconds: 1_000_000_000)
     }

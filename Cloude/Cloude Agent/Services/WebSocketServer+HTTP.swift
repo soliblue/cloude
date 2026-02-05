@@ -73,7 +73,7 @@ extension WebSocketServer {
     private func handleTextMessage(_ text: String, from connection: NWConnection) {
         guard let data = text.data(using: .utf8),
               let message = try? JSONDecoder().decode(ClientMessage.self, from: data) else {
-            print("Failed to decode message: \(text)")
+            Log.error("Failed to decode message: \(text)")
             return
         }
 
