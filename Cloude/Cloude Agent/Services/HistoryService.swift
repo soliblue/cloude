@@ -117,7 +117,25 @@ struct HistoryService {
             }
 
             let sorted = allMessages.sorted { $0.timestamp < $1.timestamp }
-            return .success(sorted.map { $0.message })
+
+            var merged: [HistoryMessage] = []
+            for entry in sorted {
+                let msg = entry.message
+                if !msg.isUser, let lastIdx = merged.indices.last, !merged[lastIdx].isUser {
+                    let prev = merged[lastIdx]
+                    let separator = (!prev.text.isEmpty && !msg.text.isEmpty) ? "\n\n" : ""
+                    let combinedText = prev.text + separator + msg.text
+                    let textOffset = prev.text.count + separator.count
+                    let adjustedTools = msg.toolCalls.map { tool in
+                        StoredToolCall(name: tool.name, input: tool.input, toolId: tool.toolId, parentToolId: tool.parentToolId, textPosition: (tool.textPosition ?? 0) + textOffset)
+                    }
+                    merged[lastIdx] = HistoryMessage(isUser: false, text: combinedText, timestamp: prev.timestamp, toolCalls: prev.toolCalls + adjustedTools, serverUUID: prev.serverUUID ?? msg.serverUUID)
+                } else {
+                    merged.append(msg)
+                }
+            }
+
+            return .success(merged)
         } catch {
             return .failure(.readFailed(error.localizedDescription))
         }
