@@ -74,11 +74,10 @@ struct ChatMessageList: View {
 
     @State private var hasScrolledToStreaming = false
     @State private var lastUserMessageCount = 0
-    @State private var showScrollToBottom = false
-    @State private var scrollOffset: CGFloat = 0
     @State private var isInitialLoad = true
     @State private var isPinnedToBottom = true
     @State private var userIsDragging = false
+    @State private var isBottomVisible = true
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -205,25 +204,11 @@ struct ChatMessageList: View {
                         Color.clear
                             .frame(height: 1)
                             .id(bottomId)
-
-                        GeometryReader { geo in
-                            let frame = geo.frame(in: .named("scrollArea"))
-                            Color.clear
-                                .preference(key: ScrollOffsetKey.self, value: frame.minY)
-                        }
-                        .frame(height: 1)
+                            .onAppear { isBottomVisible = true }
+                            .onDisappear { isBottomVisible = false }
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .coordinateSpace(name: "scrollArea")
-                .onPreferenceChange(ScrollOffsetKey.self) { offset in
-                    scrollOffset = offset
-                    let nearBottom = offset > -80
-                    showScrollToBottom = offset < -200
-                    if !userIsDragging && nearBottom {
-                        isPinnedToBottom = true
-                    }
-                }
                 .scrollDismissesKeyboard(.immediately)
                 .simultaneousGesture(
                     TapGesture()
@@ -238,7 +223,7 @@ struct ChatMessageList: View {
                         }
                         .onEnded { _ in
                             userIsDragging = false
-                            if scrollOffset > -80 {
+                            if isBottomVisible {
                                 isPinnedToBottom = true
                             }
                         }
@@ -287,7 +272,7 @@ struct ChatMessageList: View {
                 }
             }
 
-            if showScrollToBottom {
+            if !isBottomVisible && !messages.isEmpty {
                 Circle()
                     .fill(Color(.secondarySystemBackground))
                     .frame(width: 44, height: 44)
@@ -312,7 +297,7 @@ struct ChatMessageList: View {
             }
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: showScrollToBottom)
+        .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = true
         }
@@ -340,13 +325,6 @@ struct ChatMessageList: View {
         withAnimation(.easeOut(duration: 0.2)) {
             scrollProxy?.scrollTo(id, anchor: anchor)
         }
-    }
-}
-
-private struct ScrollOffsetKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
     }
 }
 
