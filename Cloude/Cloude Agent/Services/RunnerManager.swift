@@ -22,6 +22,7 @@ class RunnerManager: ObservableObject {
     var onComplete: ((String, String?) -> Void)?
     var onStatusChange: ((AgentState, String) -> Void)?
     var onCloudeCommand: ((String, String, String) -> Void)?
+    var onMessageUUID: ((String, String) -> Void)?
 
     var isAnyRunning: Bool {
         activeRunners.values.contains { $0.runner.isRunning }
@@ -122,6 +123,10 @@ class RunnerManager: ObservableObject {
 
         runner.onStatus = { [weak self] state in
             self?.onStatusChange?(state, conversationId)
+        }
+
+        runner.onMessageUUID = { [weak self] uuid in
+            self?.onMessageUUID?(uuid, conversationId)
         }
 
         runner.onComplete = { [weak self] in

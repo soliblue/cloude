@@ -1,13 +1,9 @@
-//
-//  WindowEditForm.swift
-//  Cloude
-
 import SwiftUI
 import CloudeShared
 
 struct WindowEditForm: View {
     let window: ChatWindow
-    @ObservedObject var projectStore: ProjectStore
+    @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
     let onSelectConversation: (Conversation) -> Void
@@ -24,14 +20,8 @@ struct WindowEditForm: View {
     @State private var showFolderPicker = false
     @State private var isRefreshing = false
 
-    private var project: Project? {
-        window.projectId.flatMap { pid in projectStore.projects.first { $0.id == pid } }
-    }
-
     private var conversation: Conversation? {
-        project.flatMap { proj in
-            window.conversationId.flatMap { cid in proj.conversations.first { $0.id == cid } }
-        }
+        window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
     }
 
     private var openInOtherWindows: Set<UUID> {
@@ -39,8 +29,10 @@ struct WindowEditForm: View {
     }
 
     private var recentConversations: [Conversation] {
-        guard let proj = project else { return [] }
-        return proj.conversations
+        guard let conv = conversation else { return [] }
+        let sameDir = conv.workingDirectory
+        return conversationStore.listableConversations
+            .filter { $0.workingDirectory == sameDir }
             .sorted { $0.lastMessageAt > $1.lastMessageAt }
             .filter { $0.id != conversation?.id && !openInOtherWindows.contains($0.id) }
             .prefix(5)
@@ -53,7 +45,7 @@ struct WindowEditForm: View {
     }
 
     private var currentFolderPath: String {
-        conversation?.workingDirectory ?? project?.rootDirectory ?? ""
+        conversation?.workingDirectory ?? ""
     }
 
     private var folderDisplayName: String {
@@ -82,8 +74,8 @@ struct WindowEditForm: View {
                     .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .onChange(of: name) { _, newValue in
-                        if let proj = project, let conv = conversation, !newValue.isEmpty {
-                            projectStore.renameConversation(conv, in: proj, to: newValue)
+                        if let conv = conversation, !newValue.isEmpty {
+                            conversationStore.renameConversation(conv, to: newValue)
                         }
                     }
             }
@@ -188,9 +180,9 @@ struct WindowEditForm: View {
                 }
                 .buttonStyle(.plain)
 
-                if let conv = conversation, conv.sessionId != nil, let proj = project {
+                if let conv = conversation, conv.sessionId != nil {
                     Button {
-                        if let newConv = projectStore.duplicateConversation(conv, in: proj) {
+                        if let newConv = conversationStore.duplicateConversation(conv) {
                             onDuplicate?(newConv)
                         }
                     } label: {
@@ -250,14 +242,14 @@ struct WindowEditForm: View {
             SymbolPickerSheet(selectedSymbol: $symbol)
         }
         .onChange(of: symbol) { _, newValue in
-            if let proj = project, let conv = conversation {
-                projectStore.setConversationSymbol(conv, in: proj, symbol: newValue.isEmpty ? nil : newValue)
+            if let conv = conversation {
+                conversationStore.setConversationSymbol(conv, symbol: newValue.isEmpty ? nil : newValue)
             }
         }
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(connection: connection) { path in
-                if let proj = project, let conv = conversation {
-                    projectStore.setWorkingDirectory(conv, in: proj, path: path)
+                if let conv = conversation {
+                    conversationStore.setWorkingDirectory(conv, path: path)
                 }
             }
         }

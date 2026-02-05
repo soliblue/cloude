@@ -1,10 +1,5 @@
-//
-//  ProjectStore.swift
-//  Cloude
-
 import Foundation
 import Combine
-
 import CloudeShared
 
 struct PendingQuestion: Equatable {
@@ -12,80 +7,142 @@ struct PendingQuestion: Equatable {
     let questions: [Question]
 }
 
+struct HeartbeatConfig {
+    var intervalMinutes: Int?
+    var unreadCount: Int = 0
+    var lastTriggeredAt: Date?
+
+    var intervalDisplayText: String {
+        guard let minutes = intervalMinutes else { return "Off" }
+        switch minutes {
+        case 5: return "5min"
+        case 10: return "10min"
+        case 30: return "30min"
+        case 60: return "1hr"
+        case 120: return "2hr"
+        case 240: return "4hr"
+        case 480: return "8hr"
+        case 1440: return "1 day"
+        default: return "\(minutes)min"
+        }
+    }
+
+    var nextHeartbeatAt: Date? {
+        guard let interval = intervalMinutes, interval > 0,
+              let lastTriggered = lastTriggeredAt else { return nil }
+        return lastTriggered.addingTimeInterval(TimeInterval(interval * 60))
+    }
+
+    var lastTriggeredDisplayText: String {
+        guard let date = lastTriggeredAt else { return "Never" }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    var nextHeartbeatDisplayText: String? {
+        guard let next = nextHeartbeatAt else { return nil }
+        if next <= Date() { return "Soon" }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: next, relativeTo: Date())
+    }
+}
+
 @MainActor
-class ProjectStore: ObservableObject {
-    @Published var projects: [Project] = []
-    @Published var currentProject: Project?
+class ConversationStore: ObservableObject {
+    @Published var conversations: [Conversation] = []
     @Published var currentConversation: Conversation?
     @Published var pendingQuestion: PendingQuestion?
     @Published var questionInputFocused: Bool = false
+    @Published var heartbeatConfig = HeartbeatConfig()
 
-    private let saveKey = "saved_projects"
+    private let saveKey = "saved_conversations_v2"
+    private let heartbeatTriggeredKey = "heartbeatLastTriggered"
+
+    var heartbeatConversation: Conversation {
+        conversations.first(where: { $0.id == Heartbeat.conversationId })
+            ?? Conversation(name: "Heartbeat", symbol: "heart.fill", id: Heartbeat.conversationId, sessionId: Heartbeat.sessionId)
+    }
+
+    func isHeartbeat(_ id: UUID) -> Bool {
+        id == Heartbeat.conversationId
+    }
+
+    var listableConversations: [Conversation] {
+        conversations.filter { $0.id != Heartbeat.conversationId }
+    }
+
+    func conversation(withId id: UUID) -> Conversation? {
+        conversations.first { $0.id == id }
+    }
+
+    var conversationsByDirectory: [(directory: String, conversations: [Conversation])] {
+        let grouped = Dictionary(grouping: listableConversations) { conv in
+            conv.workingDirectory ?? ""
+        }
+        return grouped.map { dir, convs in
+            (directory: dir, conversations: convs.sorted { $0.lastMessageAt > $1.lastMessageAt })
+        }.sorted { lhs, rhs in
+            let lhsDate = lhs.conversations.first?.lastMessageAt ?? .distantPast
+            let rhsDate = rhs.conversations.first?.lastMessageAt ?? .distantPast
+            return lhsDate > rhsDate
+        }
+    }
+
+    var uniqueWorkingDirectories: [String] {
+        Array(Set(listableConversations.compactMap { $0.workingDirectory })).filter { !$0.isEmpty }
+    }
 
     init() {
         load()
     }
 
-    func findIndices(for project: Project, conversation: Conversation) -> (projectIndex: Int, convIndex: Int)? {
-        guard let pIdx = projects.firstIndex(where: { $0.id == project.id }),
-              let cIdx = projects[pIdx].conversations.firstIndex(where: { $0.id == conversation.id }) else {
-            return nil
-        }
-        return (pIdx, cIdx)
-    }
-
-    func createProject(name: String, rootDirectory: String = "") -> Project {
-        let project = Project(name: name, rootDirectory: rootDirectory)
-        projects.insert(project, at: 0)
-        currentProject = project
-        save()
-        return project
-    }
-
-    func selectProject(_ project: Project) {
-        currentProject = project
-        currentConversation = project.conversations.first
-    }
-
-    func renameProject(_ project: Project, to name: String) {
-        guard let index = projects.firstIndex(where: { $0.id == project.id }) else { return }
-        projects[index].name = name
-        if currentProject?.id == project.id {
-            currentProject = projects[index]
-        }
-        save()
-    }
-
-    func updateRootDirectory(_ project: Project, to path: String) {
-        guard let index = projects.firstIndex(where: { $0.id == project.id }) else { return }
-        projects[index].rootDirectory = path
-        if currentProject?.id == project.id {
-            currentProject = projects[index]
-        }
-        save()
-    }
-
-    func deleteProject(_ project: Project) {
-        projects.removeAll { $0.id == project.id }
-        if currentProject?.id == project.id {
-            currentProject = projects.first
-            currentConversation = currentProject?.conversations.first
-        }
-        save()
-    }
-
     func save() {
-        if let data = try? JSONEncoder().encode(projects) {
+        if let data = try? JSONEncoder().encode(conversations) {
             UserDefaults.standard.set(data, forKey: saveKey)
+        }
+        if let triggeredAt = heartbeatConfig.lastTriggeredAt {
+            UserDefaults.standard.set(triggeredAt, forKey: heartbeatTriggeredKey)
         }
     }
 
     private func load() {
         if let data = UserDefaults.standard.data(forKey: saveKey),
-           let decoded = try? JSONDecoder().decode([Project].self, from: data) {
-            projects = decoded
-            currentProject = projects.first
-            currentConversation = currentProject?.conversations.first
+           let decoded = try? JSONDecoder().decode([Conversation].self, from: data) {
+            conversations = decoded
         }
+
+        ensureHeartbeatExists()
+        currentConversation = listableConversations.first
+
+        if let timestamp = UserDefaults.standard.object(forKey: heartbeatTriggeredKey) as? Date {
+            heartbeatConfig.lastTriggeredAt = timestamp
+        }
+    }
+
+    private func ensureHeartbeatExists() {
+        if !conversations.contains(where: { $0.id == Heartbeat.conversationId }) {
+            conversations.append(Conversation(
+                name: "Heartbeat",
+                symbol: "heart.fill",
+                id: Heartbeat.conversationId,
+                sessionId: Heartbeat.sessionId
+            ))
+        }
+    }
+
+    func handleHeartbeatConfig(intervalMinutes: Int?, unreadCount: Int) {
+        heartbeatConfig.intervalMinutes = intervalMinutes
+        heartbeatConfig.unreadCount = unreadCount
+    }
+
+    func recordHeartbeatTrigger() {
+        heartbeatConfig.lastTriggeredAt = Date()
+        UserDefaults.standard.set(heartbeatConfig.lastTriggeredAt, forKey: heartbeatTriggeredKey)
+    }
+
+    func markHeartbeatRead() {
+        heartbeatConfig.unreadCount = 0
     }
 }

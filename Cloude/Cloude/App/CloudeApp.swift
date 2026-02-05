@@ -11,9 +11,8 @@ extension String: @retroactive Identifiable {
 @main
 struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
-    @StateObject private var projectStore = ProjectStore()
+    @StateObject private var conversationStore = ConversationStore()
     @StateObject private var windowManager = WindowManager()
-    @StateObject private var heartbeatStore = HeartbeatStore()
     @State private var showSettings = false
     @State private var showMemories = false
     @State private var memorySections: [MemorySection] = []
@@ -41,7 +40,7 @@ struct CloudeApp: App {
 
     private var mainContent: some View {
         NavigationStack {
-            MainChatView(connection: connection, projectStore: projectStore, windowManager: windowManager, heartbeatStore: heartbeatStore)
+            MainChatView(connection: connection, conversationStore: conversationStore, windowManager: windowManager)
             .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -93,7 +92,7 @@ struct CloudeApp: App {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 wasBackgrounded = true
-                lastActiveSessionId = projectStore.currentConversation?.sessionId
+                lastActiveSessionId = conversationStore.currentConversation?.sessionId
                 if requireBiometricAuth {
                     isUnlocked = false
                 }
@@ -122,33 +121,32 @@ struct CloudeApp: App {
             return
         }
 
-        connection.onMissedResponse = { [projectStore] _, text, toolCalls, _, interruptedConvId, interruptedMsgId in
+        connection.onMissedResponse = { [conversationStore] _, text, toolCalls, _, interruptedConvId, interruptedMsgId in
             if let convId = interruptedConvId,
                let msgId = interruptedMsgId,
-               let (project, conv) = projectStore.findConversation(withId: convId) {
-                projectStore.updateMessage(msgId, in: conv, in: project) { msg in
+               let conv = conversationStore.findConversation(withId: convId) {
+                conversationStore.updateMessage(msgId, in: conv) { msg in
                     msg.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     msg.toolCalls = toolCalls
                     msg.wasInterrupted = false
                 }
-                projectStore.objectWillChange.send()
-            } else if let project = projectStore.currentProject,
-                      let conversation = projectStore.currentConversation {
+                conversationStore.objectWillChange.send()
+            } else if let conversation = conversationStore.currentConversation {
                 let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
-                projectStore.addMessage(message, to: conversation, in: project)
+                conversationStore.addMessage(message, to: conversation)
             }
         }
 
-        connection.onDisconnect = { [projectStore, connection] convId, output in
+        connection.onDisconnect = { [conversationStore, connection] convId, output in
             guard !output.text.isEmpty else { return }
-            if let (project, conv) = projectStore.findConversation(withId: convId) {
+            if let conv = conversationStore.findConversation(withId: convId) {
                 let message = ChatMessage(
                     isUser: false,
                     text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
                     toolCalls: output.toolCalls,
                     wasInterrupted: true
                 )
-                projectStore.addMessage(message, to: conv, in: project)
+                conversationStore.addMessage(message, to: conv)
                 if let sessionId = output.newSessionId {
                     connection.interruptedSession = (convId, sessionId, message.id)
                 }
@@ -161,38 +159,37 @@ struct CloudeApp: App {
             isLoadingMemories = false
         }
 
-        connection.onRenameConversation = { [projectStore] convId, name in
-            if let (project, conv) = projectStore.findConversation(withId: convId) {
-                projectStore.renameConversation(conv, in: project, to: name)
+        connection.onRenameConversation = { [conversationStore] convId, name in
+            if let conv = conversationStore.findConversation(withId: convId) {
+                conversationStore.renameConversation(conv, to: name)
             }
         }
 
-        connection.onSetConversationSymbol = { [projectStore] convId, symbol in
-            if let (project, conv) = projectStore.findConversation(withId: convId) {
-                projectStore.setConversationSymbol(conv, in: project, symbol: symbol)
+        connection.onSetConversationSymbol = { [conversationStore] convId, symbol in
+            if let conv = conversationStore.findConversation(withId: convId) {
+                conversationStore.setConversationSymbol(conv, symbol: symbol)
             }
         }
 
-        connection.onSessionIdReceived = { [projectStore] convId, sessionId in
-            if let (project, conv) = projectStore.findConversation(withId: convId) {
-                let workingDir = project.rootDirectory.isEmpty ? nil : project.rootDirectory
-                projectStore.updateSessionId(conv, in: project, sessionId: sessionId, workingDirectory: workingDir)
+        connection.onSessionIdReceived = { [conversationStore] convId, sessionId in
+            if let conv = conversationStore.findConversation(withId: convId) {
+                conversationStore.updateSessionId(conv, sessionId: sessionId, workingDirectory: conv.workingDirectory)
             }
         }
 
-        connection.onHistorySync = { [projectStore] sessionId, historyMessages in
-            if let (project, conv) = projectStore.findConversation(withSessionId: sessionId) {
+        connection.onHistorySync = { [conversationStore] sessionId, historyMessages in
+            if let conv = conversationStore.findConversation(withSessionId: sessionId) {
                 let newMessages = historyMessages.map { msg in
                     let toolCalls = msg.toolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition) }
-                    return ChatMessage(isUser: msg.isUser, text: msg.text, timestamp: msg.timestamp, toolCalls: toolCalls)
+                    return ChatMessage(isUser: msg.isUser, text: msg.text, timestamp: msg.timestamp, toolCalls: toolCalls, serverUUID: msg.serverUUID)
                 }
-                projectStore.replaceMessages(conv, in: project, with: newMessages)
+                conversationStore.replaceMessages(conv, with: newMessages)
             }
         }
 
-        connection.onDeleteConversation = { [projectStore] convId in
-            if let (project, conv) = projectStore.findConversation(withId: convId) {
-                projectStore.deleteConversation(conv, from: project)
+        connection.onDeleteConversation = { [conversationStore] convId in
+            if let conv = conversationStore.findConversation(withId: convId) {
+                conversationStore.deleteConversation(conv)
             }
         }
 
@@ -228,17 +225,17 @@ struct CloudeApp: App {
             AVSpeechSynthesizer().speak(utterance)
         }
 
-        connection.onSwitchConversation = { [projectStore] convId in
-            if let (project, conv) = projectStore.findConversation(withId: convId) {
-                projectStore.selectConversation(conv, in: project)
+        connection.onSwitchConversation = { [conversationStore] convId in
+            if let conv = conversationStore.findConversation(withId: convId) {
+                conversationStore.selectConversation(conv)
             }
         }
 
-        connection.onQuestion = { [projectStore] questions, convId in
+        connection.onQuestion = { [conversationStore] questions, convId in
             if let convId = convId {
-                projectStore.pendingQuestion = PendingQuestion(conversationId: convId, questions: questions)
-            } else if let currentId = projectStore.currentConversation?.id {
-                projectStore.pendingQuestion = PendingQuestion(conversationId: currentId, questions: questions)
+                conversationStore.pendingQuestion = PendingQuestion(conversationId: convId, questions: questions)
+            } else if let currentId = conversationStore.currentConversation?.id {
+                conversationStore.pendingQuestion = PendingQuestion(conversationId: currentId, questions: questions)
             }
         }
 
