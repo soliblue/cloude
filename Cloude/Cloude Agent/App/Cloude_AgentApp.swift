@@ -168,6 +168,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.server.broadcast(.status(state: state, conversationId: conversationId))
         }
 
+        runnerManager.onMessageUUID = { [weak self] uuid, conversationId in
+            self?.server.broadcast(.messageUUID(uuid: uuid, conversationId: conversationId))
+        }
+
         runnerManager.onComplete = { [weak self] conversationId, _ in
             if conversationId == Heartbeat.sessionId {
                 let runner = self?.runnerManager.activeRunners[conversationId]
@@ -314,6 +318,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 Log.error("History sync failed: \(errorMsg)")
                 server.sendMessage(.historySyncError(sessionId: sessionId, error: errorMsg), to: connection)
             }
+
+        case .listRemoteSessions(let workingDirectory):
+            Log.info("Listing remote sessions for \(workingDirectory)")
+            let sessions = HistoryService.listSessions(workingDirectory: workingDirectory)
+            Log.info("Found \(sessions.count) sessions")
+            server.sendMessage(.remoteSessionList(sessions: sessions), to: connection)
         }
     }
 

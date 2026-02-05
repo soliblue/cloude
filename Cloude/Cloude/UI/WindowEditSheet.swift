@@ -6,7 +6,7 @@ import SwiftUI
 
 struct WindowEditSheet: View {
     let window: ChatWindow
-    @ObservedObject var projectStore: ProjectStore
+    @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
     let onSelectConversation: (Conversation) -> Void
@@ -20,7 +20,7 @@ struct WindowEditSheet: View {
         NavigationStack {
             WindowEditForm(
                 window: window,
-                projectStore: projectStore,
+                conversationStore: conversationStore,
                 windowManager: windowManager,
                 connection: connection,
                 onSelectConversation: onSelectConversation,

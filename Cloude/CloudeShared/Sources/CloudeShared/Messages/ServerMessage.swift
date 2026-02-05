@@ -42,9 +42,11 @@ public enum ServerMessage: Codable {
     case switchConversation(conversationId: String)
     case question(questions: [Question], conversationId: String?)
     case fileSearchResults(files: [String], query: String)
+    case remoteSessionList(sessions: [RemoteSession])
+    case messageUUID(uuid: String, conversationId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid
     }
 
     public init(from decoder: Decoder) throws {
@@ -217,6 +219,13 @@ public enum ServerMessage: Codable {
             let files = try container.decode([String].self, forKey: .files)
             let query = try container.decode(String.self, forKey: .query)
             self = .fileSearchResults(files: files, query: query)
+        case "remote_session_list":
+            let sessions = try container.decode([RemoteSession].self, forKey: .sessions)
+            self = .remoteSessionList(sessions: sessions)
+        case "message_uuid":
+            let uuid = try container.decode(String.self, forKey: .uuid)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .messageUUID(uuid: uuid, conversationId: conversationId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

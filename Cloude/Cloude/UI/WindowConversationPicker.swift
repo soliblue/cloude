@@ -1,28 +1,37 @@
-//
-//  WindowConversationPicker.swift
-//  Cloude
-
 import SwiftUI
+import CloudeShared
 
 struct WindowConversationPicker: View {
-    @ObservedObject var projectStore: ProjectStore
+    @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
     let currentWindowId: UUID
-    let onSelect: (Project, Conversation) -> Void
+    let onSelect: (Conversation) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var showFolderPicker = false
+    @State private var remoteSessions: [RemoteSession] = []
+    @State private var isLoadingRemote = false
 
     private var openInOtherWindows: Set<UUID> {
         windowManager.conversationIds(excludingWindow: currentWindowId)
     }
 
-    private var recentConversations: [(Project, Conversation)] {
-        projectStore.projects
-            .flatMap { project in project.conversations.map { (project, $0) } }
-            .filter { !openInOtherWindows.contains($0.1.id) }
-            .sorted { $0.1.lastMessageAt > $1.1.lastMessageAt }
+    private var recentConversations: [Conversation] {
+        conversationStore.listableConversations
+            .filter { !openInOtherWindows.contains($0.id) }
+            .sorted { $0.lastMessageAt > $1.lastMessageAt }
             .prefix(5)
+            .map { $0 }
+    }
+
+    private var existingSessionIds: Set<String> {
+        Set(conversationStore.listableConversations.compactMap { $0.sessionId })
+    }
+
+    private var laptopOnlySessions: [RemoteSession] {
+        remoteSessions
+            .filter { !existingSessionIds.contains($0.sessionId) }
+            .prefix(3)
             .map { $0 }
     }
 
@@ -31,13 +40,13 @@ struct WindowConversationPicker: View {
             List {
                 if !recentConversations.isEmpty {
                     Section("Recent") {
-                        ForEach(recentConversations, id: \.1.id) { project, conversation in
+                        ForEach(recentConversations, id: \.id) { conversation in
                             conversationRow(conversation, showFolder: true)
                                 .contentShape(Rectangle())
-                                .onTapGesture { onSelect(project, conversation) }
+                                .onTapGesture { onSelect(conversation) }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                        deleteConversation(conversation, from: project)
+                                        deleteConversation(conversation)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -46,22 +55,42 @@ struct WindowConversationPicker: View {
                     }
                 }
 
-                ForEach(projectStore.projects) { project in
-                    Section(folderName(for: project)) {
-                        ForEach(project.conversations.filter { !openInOtherWindows.contains($0.id) }) { conversation in
+                if !laptopOnlySessions.isEmpty {
+                    Section("From Laptop") {
+                        ForEach(laptopOnlySessions) { session in
+                            remoteSessionRow(session)
+                                .contentShape(Rectangle())
+                                .onTapGesture { importSession(session) }
+                        }
+                    }
+                } else if isLoadingRemote {
+                    Section("From Laptop") {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Loading...")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
+                ForEach(conversationStore.conversationsByDirectory, id: \.directory) { group in
+                    Section(folderName(for: group.directory)) {
+                        ForEach(group.conversations.filter { !openInOtherWindows.contains($0.id) }) { conversation in
                             conversationRow(conversation)
                                 .contentShape(Rectangle())
-                                .onTapGesture { onSelect(project, conversation) }
+                                .onTapGesture { onSelect(conversation) }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                        deleteConversation(conversation, from: project)
+                                        deleteConversation(conversation)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
                                 }
                         }
 
-                        Button(action: { createNewConversation(in: project) }) {
+                        Button(action: { createNewConversation(workingDirectory: group.directory) }) {
                             Label("New Chat", systemImage: "plus")
                                 .foregroundColor(.accentColor)
                         }
@@ -89,9 +118,10 @@ struct WindowConversationPicker: View {
             }
             .sheet(isPresented: $showFolderPicker) {
                 FolderPickerView(connection: connection) { path in
-                    createNewProject(at: path)
+                    createNewFolder(at: path)
                 }
             }
+            .onAppear { fetchRemoteSessions() }
         }
         .presentationBackground(.ultraThinMaterial)
     }
@@ -125,33 +155,80 @@ struct WindowConversationPicker: View {
         }
     }
 
-    private func folderName(for project: Project) -> String {
-        if !project.rootDirectory.isEmpty {
-            return (project.rootDirectory as NSString).lastPathComponent
+    private func folderName(for directory: String) -> String {
+        if !directory.isEmpty {
+            return (directory as NSString).lastPathComponent
         }
-        return project.name
+        return "Default"
     }
 
-    private func createNewConversation(in project: Project) {
-        let workingDir = project.rootDirectory.isEmpty ? nil : project.rootDirectory
-        let newConv = projectStore.newConversation(in: project, workingDirectory: workingDir)
-        onSelect(project, newConv)
+    private func createNewConversation(workingDirectory: String) {
+        let wd = workingDirectory.isEmpty ? nil : workingDirectory
+        let newConv = conversationStore.newConversation(workingDirectory: wd)
+        onSelect(newConv)
     }
 
-    private func createNewProject(at path: String) {
-        let folderName = (path as NSString).lastPathComponent
-        let project = projectStore.createProject(name: folderName, rootDirectory: path)
-        let conversation = projectStore.newConversation(in: project, workingDirectory: path)
-        onSelect(project, conversation)
+    private func createNewFolder(at path: String) {
+        let conversation = conversationStore.newConversation(workingDirectory: path)
+        onSelect(conversation)
     }
 
-    private func deleteConversation(_ conversation: Conversation, from project: Project) {
+    private func deleteConversation(_ conversation: Conversation) {
         let isCurrentWindowConversation = windowManager.windows
             .first(where: { $0.id == currentWindowId })?.conversationId == conversation.id
-        projectStore.deleteConversation(conversation, from: project)
+        conversationStore.deleteConversation(conversation)
         if isCurrentWindowConversation {
             windowManager.removeWindow(currentWindowId)
             dismiss()
         }
+    }
+
+    @ViewBuilder
+    private func remoteSessionRow(_ session: RemoteSession) -> some View {
+        HStack {
+            Image(systemName: "laptopcomputer")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(timeAgo(session.lastModified))
+                    .font(.body)
+                Text("\(session.messageCount) messages")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            Image(systemName: "arrow.down.circle")
+                .font(.caption)
+                .foregroundColor(.accentColor)
+        }
+    }
+
+    private func timeAgo(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    private func fetchRemoteSessions() {
+        let firstDir = conversationStore.uniqueWorkingDirectories.first
+        guard let dir = firstDir else { return }
+
+        isLoadingRemote = true
+        connection.onRemoteSessionList = { sessions in
+            self.remoteSessions = sessions
+            self.isLoadingRemote = false
+        }
+        connection.listRemoteSessions(workingDirectory: dir)
+    }
+
+    private func importSession(_ session: RemoteSession) {
+        var newConv = Conversation(name: "Imported Chat", symbol: "laptopcomputer")
+        newConv.sessionId = session.sessionId
+        newConv.workingDirectory = session.workingDirectory
+
+        conversationStore.addConversation(newConv)
+        connection.syncHistory(sessionId: session.sessionId, workingDirectory: session.workingDirectory)
+        onSelect(newConv)
     }
 }
