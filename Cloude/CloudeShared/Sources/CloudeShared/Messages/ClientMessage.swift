@@ -22,6 +22,7 @@ public enum ClientMessage: Codable {
     case killAllProcesses
     case syncHistory(sessionId: String, workingDirectory: String)
     case searchFiles(query: String, workingDirectory: String)
+    case listRemoteSessions(workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
         case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query
@@ -101,6 +102,9 @@ public enum ClientMessage: Codable {
             let query = try container.decode(String.self, forKey: .query)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .searchFiles(query: query, workingDirectory: workingDirectory)
+        case "list_remote_sessions":
+            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
+            self = .listRemoteSessions(workingDirectory: workingDirectory)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -177,6 +181,9 @@ public enum ClientMessage: Codable {
         case .searchFiles(let query, let workingDirectory):
             try container.encode("search_files", forKey: .type)
             try container.encode(query, forKey: .query)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
+        case .listRemoteSessions(let workingDirectory):
+            try container.encode("list_remote_sessions", forKey: .type)
             try container.encode(workingDirectory, forKey: .workingDirectory)
         }
     }

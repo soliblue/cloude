@@ -21,11 +21,13 @@ public struct HistoryMessage: Codable {
     public let text: String
     public let timestamp: Date
     public let toolCalls: [StoredToolCall]
+    public let serverUUID: String?
 
-    public init(isUser: Bool, text: String, timestamp: Date, toolCalls: [StoredToolCall] = []) {
+    public init(isUser: Bool, text: String, timestamp: Date, toolCalls: [StoredToolCall] = [], serverUUID: String? = nil) {
         self.isUser = isUser
         self.text = text
         self.timestamp = timestamp
         self.toolCalls = toolCalls
+        self.serverUUID = serverUUID
     }
 }

@@ -1,14 +1,7 @@
-//
-//  NewProjectSheet.swift
-//  Cloude
-//
-//  Sheet for creating a new project
-//
-
 import SwiftUI
 
-struct NewProjectSheet: View {
-    @ObservedObject var store: ProjectStore
+struct NewFolderSheet: View {
+    @ObservedObject var store: ConversationStore
     @ObservedObject var connection: ConnectionManager
     @Binding var isPresented: Bool
 
@@ -58,8 +51,7 @@ struct NewProjectSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: {
-                        let projectName = name.isEmpty ? folderDisplayName : name
-                        _ = store.createProject(name: projectName, rootDirectory: rootDirectory)
+                        _ = store.newConversation(workingDirectory: rootDirectory)
                         isPresented = false
                     }) {
                         Image(systemName: "checkmark")
