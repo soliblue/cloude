@@ -202,7 +202,7 @@ struct ChatMessageList: View {
                         }
 
                         Color.clear
-                            .frame(height: 1)
+                            .frame(height: 80)
                             .id(bottomId)
                             .onAppear { isBottomVisible = true }
                             .onDisappear { isBottomVisible = false }
@@ -255,7 +255,7 @@ struct ChatMessageList: View {
                     if !newValue.isEmpty && isInitialLoad {
                         isInitialLoad = false
                     }
-                    if isPinnedToBottom && !newValue.isEmpty {
+                    if isBottomVisible && !newValue.isEmpty {
                         proxy.scrollTo(bottomId, anchor: .bottom)
                     }
                 }
