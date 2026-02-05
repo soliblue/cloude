@@ -11,6 +11,12 @@ struct WindowConversationPicker: View {
     @State private var showFolderPicker = false
     @State private var remoteSessions: [RemoteSession] = []
     @State private var isLoadingRemote = false
+    @State private var sortBy: SortOption = .recency
+
+    enum SortOption: String, CaseIterable {
+        case recency = "Recent"
+        case messages = "Messages"
+    }
 
     private var openInOtherWindows: Set<UUID> {
         windowManager.conversationIds(excludingWindow: currentWindowId)
@@ -24,8 +30,25 @@ struct WindowConversationPicker: View {
             .map { $0 }
     }
 
+    private var recentConversationIds: Set<UUID> {
+        Set(recentConversations.map(\.id))
+    }
+
     private var existingSessionIds: Set<String> {
         Set(conversationStore.listableConversations.compactMap { $0.sessionId })
+    }
+
+    private var totalConversationCount: Int {
+        conversationStore.listableConversations.count
+    }
+
+    private func sortedConversations(_ conversations: [Conversation]) -> [Conversation] {
+        switch sortBy {
+        case .recency:
+            return conversations.sorted { $0.lastMessageAt > $1.lastMessageAt }
+        case .messages:
+            return conversations.sorted { $0.messages.count > $1.messages.count }
+        }
     }
 
     private var laptopOnlySessions: [RemoteSession] {
@@ -77,7 +100,7 @@ struct WindowConversationPicker: View {
 
                 ForEach(conversationStore.conversationsByDirectory, id: \.directory) { group in
                     Section(folderName(for: group.directory)) {
-                        ForEach(group.conversations.filter { !openInOtherWindows.contains($0.id) }) { conversation in
+                        ForEach(sortedConversations(group.conversations.filter { !openInOtherWindows.contains($0.id) && !recentConversationIds.contains($0.id) })) { conversation in
                             conversationRow(conversation)
                                 .contentShape(Rectangle())
                                 .onTapGesture { onSelect(conversation) }
@@ -104,15 +127,27 @@ struct WindowConversationPicker: View {
                     }
                 }
             }
-            .background(.ultraThinMaterial)
             .scrollContentBackground(.hidden)
-            .navigationTitle("Select Chat")
+            .navigationTitle("\(totalConversationCount) Chats")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Picker("Sort", selection: $sortBy) {
+                            ForEach(SortOption.allCases, id: \.self) { option in
+                                Label(option.rawValue, systemImage: option == .recency ? "clock" : "bubble.left.and.bubble.right")
+                                    .tag(option)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: sortBy == .recency ? "clock" : "bubble.left.and.bubble.right")
                     }
                 }
             }
@@ -138,15 +173,15 @@ struct WindowConversationPicker: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(conversation.name)
                     .font(.body)
-                if showFolder, let path = conversation.workingDirectory, !path.isEmpty {
-                    Text((path as NSString).lastPathComponent)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
+                HStack(spacing: 4) {
+                    if showFolder, let path = conversation.workingDirectory, !path.isEmpty {
+                        Text((path as NSString).lastPathComponent)
+                        Text("·")
+                    }
                     Text("\(conversation.messages.count) messages")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
+                .font(.caption)
+                .foregroundColor(.secondary)
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -176,7 +211,9 @@ struct WindowConversationPicker: View {
     private func deleteConversation(_ conversation: Conversation) {
         let isCurrentWindowConversation = windowManager.windows
             .first(where: { $0.id == currentWindowId })?.conversationId == conversation.id
-        conversationStore.deleteConversation(conversation)
+        withAnimation {
+            conversationStore.deleteConversation(conversation)
+        }
         if isCurrentWindowConversation {
             windowManager.removeWindow(currentWindowId)
             dismiss()
