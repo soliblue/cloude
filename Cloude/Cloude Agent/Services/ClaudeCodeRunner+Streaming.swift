@@ -69,6 +69,9 @@ extension ClaudeCodeRunner {
             if type == "assistant",
                let message = json["message"] as? [String: Any],
                let content = message["content"] as? [[String: Any]] {
+                if let uuid = json["uuid"] as? String {
+                    onMessageUUID?(uuid)
+                }
                 for block in content {
                     if block["type"] as? String == "text",
                        let blockText = block["text"] as? String {
