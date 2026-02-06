@@ -15,7 +15,7 @@ class ClaudeCodeRunner: ObservableObject {
 
     var onOutput: ((String) -> Void)?
     var onToolCall: ((String, String?, String, String?, Int) -> Void)?
-    var onToolResult: ((String) -> Void)?
+    var onToolResult: ((String, String?) -> Void)?
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double) -> Void)?

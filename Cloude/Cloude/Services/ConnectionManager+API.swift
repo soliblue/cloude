@@ -195,11 +195,12 @@ extension ConnectionManager {
                 LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name, toolDetail: detail)
             }
 
-        case .toolResult(let toolId, let conversationId):
+        case .toolResult(let toolId, let summary, let conversationId):
             if let convId = targetConversationId(from: conversationId) {
                 let out = output(for: convId)
                 if let idx = out.toolCalls.firstIndex(where: { $0.toolId == toolId }) {
                     out.toolCalls[idx].state = .complete
+                    out.toolCalls[idx].resultSummary = summary
                 }
             }
 
