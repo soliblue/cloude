@@ -174,6 +174,8 @@ struct StreamingMarkdownParser {
             return parse(text)
         }
 
+        let childTools = toolCalls.filter { $0.parentToolId != nil }
+
         var result: [StreamingBlock] = []
         var currentPosition = 0
         var pendingTools: [ToolCall] = []
@@ -183,7 +185,8 @@ struct StreamingMarkdownParser {
 
             if toolPosition > currentPosition && toolPosition <= text.count {
                 if !pendingTools.isEmpty {
-                    result.append(.toolGroup(id: "tools-\(currentPosition)", tools: pendingTools))
+                    let groupWithChildren = includeChildren(parents: pendingTools, allChildren: childTools)
+                    result.append(.toolGroup(id: "tools-\(currentPosition)", tools: groupWithChildren))
                     pendingTools = []
                 }
                 let startIdx = text.index(text.startIndex, offsetBy: currentPosition)
@@ -198,7 +201,8 @@ struct StreamingMarkdownParser {
         }
 
         if !pendingTools.isEmpty {
-            result.append(.toolGroup(id: "tools-\(currentPosition)", tools: pendingTools))
+            let groupWithChildren = includeChildren(parents: pendingTools, allChildren: childTools)
+            result.append(.toolGroup(id: "tools-\(currentPosition)", tools: groupWithChildren))
         }
 
         if currentPosition < text.count {
@@ -210,5 +214,11 @@ struct StreamingMarkdownParser {
         }
 
         return result
+    }
+
+    private static func includeChildren(parents: [ToolCall], allChildren: [ToolCall]) -> [ToolCall] {
+        let parentIds = Set(parents.map(\.toolId))
+        let matchedChildren = allChildren.filter { parentIds.contains($0.parentToolId ?? "") }
+        return parents + matchedChildren
     }
 }

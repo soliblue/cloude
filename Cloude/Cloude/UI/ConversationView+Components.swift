@@ -69,7 +69,6 @@ struct ChatMessageList: View {
     var window: ChatWindow?
     var windowManager: WindowManager?
     var onSelectConversation: ((Conversation) -> Void)?
-    var onShowAllConversations: (() -> Void)?
     var onNewConversation: (() -> Void)?
 
     @State private var hasScrolledToStreaming = false
@@ -121,7 +120,6 @@ struct ChatMessageList: View {
                         windowManager: windowManager!,
                         connection: connection!,
                         onSelectConversation: { conv in onSelectConversation?(conv) },
-                        onShowAllConversations: { onShowAllConversations?() },
                         onNewConversation: { onNewConversation?() },
                         showRemoveButton: false
                     )

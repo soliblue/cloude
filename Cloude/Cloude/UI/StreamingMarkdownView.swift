@@ -30,8 +30,7 @@ struct StreamingMarkdownView: View {
     }
 
     private var blocks: [StreamingBlock] {
-        let topLevelToolCount = toolCalls.filter { $0.parentToolId == nil }.count
-        if cachedText == text && cachedToolCount == topLevelToolCount {
+        if cachedText == text && cachedToolCount == toolCalls.count {
             return cachedBlocks
         }
         if toolCalls.isEmpty {
@@ -41,15 +40,14 @@ struct StreamingMarkdownView: View {
     }
 
     private func updateCacheIfNeeded() {
-        let topLevelToolCount = toolCalls.filter { $0.parentToolId == nil }.count
-        if cachedText != text || cachedToolCount != topLevelToolCount {
+        if cachedText != text || cachedToolCount != toolCalls.count {
             if toolCalls.isEmpty {
                 cachedBlocks = StreamingMarkdownParser.parse(text)
             } else {
                 cachedBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
             }
             cachedText = text
-            cachedToolCount = topLevelToolCount
+            cachedToolCount = toolCalls.count
         }
     }
 

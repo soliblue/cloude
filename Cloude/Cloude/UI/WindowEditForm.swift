@@ -7,7 +7,6 @@ struct WindowEditForm: View {
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
     let onSelectConversation: (Conversation) -> Void
-    let onShowAllConversations: () -> Void
     let onNewConversation: () -> Void
     var showRemoveButton: Bool = true
     var onRemove: (() -> Void)?
@@ -18,7 +17,6 @@ struct WindowEditForm: View {
     @State private var symbol: String = ""
     @State private var showSymbolPicker = false
     @State private var showFolderPicker = false
-    @State private var isRefreshing = false
 
     private var conversation: Conversation? {
         window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
@@ -28,15 +26,10 @@ struct WindowEditForm: View {
         windowManager.conversationIds(excludingWindow: window.id)
     }
 
-    private var recentConversations: [Conversation] {
-        guard let conv = conversation else { return [] }
-        let sameDir = conv.workingDirectory
-        return conversationStore.listableConversations
-            .filter { $0.workingDirectory == sameDir }
-            .sorted { $0.lastMessageAt > $1.lastMessageAt }
+    private var allConversations: [Conversation] {
+        conversationStore.listableConversations
             .filter { $0.id != conversation?.id && !openInOtherWindows.contains($0.id) }
-            .prefix(5)
-            .map { $0 }
+            .sorted { $0.lastMessageAt > $1.lastMessageAt }
     }
 
     private var canChangeFolder: Bool {
@@ -59,10 +52,10 @@ struct WindowEditForm: View {
             HStack(spacing: 12) {
                 Button(action: { showSymbolPicker = true }) {
                     Image.safeSymbol(symbol.isEmpty ? nil : symbol, fallback: "circle.dashed")
-                        .font(.system(size: 30))
-                        .frame(width: 56, height: 56)
+                        .font(.system(size: 24))
+                        .frame(width: 48, height: 48)
                         .background(.regularMaterial)
-                        .clipShape(Circle())
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)
 
@@ -70,7 +63,7 @@ struct WindowEditForm: View {
                     .font(.title3)
                     .textFieldStyle(.plain)
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                    .frame(height: 48)
                     .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .onChange(of: name) { _, newValue in
@@ -113,154 +106,49 @@ struct WindowEditForm: View {
                 .buttonStyle(.plain)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Thinking Effort")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 4)
-
-                Picker("", selection: Binding(
-                    get: { conversation?.defaultEffort ?? .high },
-                    set: { newValue in
-                        if let conv = conversation {
-                            conversationStore.setDefaultEffort(conv, effort: newValue)
-                        }
-                    }
-                )) {
-                    ForEach(EffortLevel.allCases, id: \.self) { level in
-                        Text(level.displayName).tag(level)
-                    }
-                }
-                .pickerStyle(.segmented)
-            }
-
-            if !recentConversations.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Recent")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Button(action: onShowAllConversations) {
-                            Text("See All")
-                                .font(.caption)
-                                .foregroundColor(.accentColor)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, 4)
-
-                    VStack(spacing: 0) {
-                        ForEach(recentConversations) { conv in
-                            Button(action: { onSelectConversation(conv) }) {
-                                HStack(spacing: 10) {
-                                    Image.safeSymbol(conv.symbol)
-                                        .font(.system(size: 17))
-                                        .foregroundColor(.secondary)
-                                        .frame(width: 24)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(conv.name)
-                                            .font(.subheadline)
-                                            .lineLimit(1)
-                                        if let dir = conv.workingDirectory {
+            if !allConversations.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(allConversations) { conv in
+                        Button(action: { onSelectConversation(conv) }) {
+                            HStack(spacing: 10) {
+                                Image.safeSymbol(conv.symbol)
+                                    .font(.system(size: 17))
+                                    .foregroundColor(.secondary)
+                                    .frame(width: 24)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(conv.name)
+                                        .font(.subheadline)
+                                        .lineLimit(1)
+                                    HStack(spacing: 4) {
+                                        if let dir = conv.workingDirectory, !dir.isEmpty {
                                             Text((dir as NSString).lastPathComponent)
-                                                .font(.caption2)
-                                                .foregroundColor(.accentColor)
-                                                .lineLimit(1)
                                         }
-                                    }
-                                    Spacer()
-                                    VStack(alignment: .trailing, spacing: 2) {
-                                        Text(relativeTime(conv.lastMessageAt))
+                                        Text("·")
                                         Text("\(conv.messages.count) msgs")
                                     }
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                                 }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 10)
+                                Spacer()
+                                Text(relativeTime(conv.lastMessageAt))
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
                             }
-                            .buttonStyle(.plain)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.plain)
 
-                            if conv.id != recentConversations.last?.id {
-                                Divider()
-                                    .padding(.leading, 46)
-                            }
+                        if conv.id != allConversations.last?.id {
+                            Divider()
+                                .padding(.leading, 46)
                         }
                     }
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
 
-            HStack(spacing: 12) {
-                Button(action: onNewConversation) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 20))
-                        .foregroundColor(.primary)
-                        .frame(width: 44, height: 44)
-                        .background(.regularMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-                .buttonStyle(.plain)
-
-                if let conv = conversation, conv.sessionId != nil {
-                    Button {
-                        if let newConv = conversationStore.duplicateConversation(conv) {
-                            onDuplicate?(newConv)
-                        }
-                    } label: {
-                        Image(systemName: "arrow.triangle.branch")
-                            .font(.system(size: 20))
-                            .foregroundColor(.primary)
-                            .frame(width: 44, height: 44)
-                            .background(.regularMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                if onRefresh != nil {
-                    Button {
-                        guard !isRefreshing else { return }
-                        isRefreshing = true
-                        Task {
-                            await onRefresh?()
-                            isRefreshing = false
-                        }
-                    } label: {
-                        Group {
-                            if isRefreshing {
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                            } else {
-                                Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 20))
-                            }
-                        }
-                        .foregroundColor(.primary)
-                        .frame(width: 44, height: 44)
-                        .background(.regularMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(isRefreshing)
-                }
-
-                Spacer()
-
-                if showRemoveButton && windowManager.canRemoveWindow {
-                    Button(action: { onRemove?() }) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 20))
-                            .foregroundColor(.red)
-                            .frame(width: 44, height: 44)
-                            .background(.regularMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
         }
         .sheet(isPresented: $showSymbolPicker) {
             SymbolPickerSheet(selectedSymbol: $symbol)
