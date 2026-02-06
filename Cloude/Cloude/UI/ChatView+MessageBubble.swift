@@ -262,6 +262,11 @@ struct InlineToolPill: View {
         }
     }
 
+    private func truncatedSummary(_ text: String) -> String {
+        guard text.count > 40 else { return text }
+        return String(text.prefix(37)) + "..."
+    }
+
     private var isTaskTool: Bool {
         toolCall.name == "Task"
     }
@@ -365,7 +370,7 @@ struct InlineToolPill: View {
                 HStack(spacing: 3) {
                     Text("↳")
                         .font(.system(size: 10))
-                    Text(summary)
+                    Text(truncatedSummary(summary))
                         .font(.system(size: 10, design: .monospaced))
                         .lineLimit(1)
                 }
