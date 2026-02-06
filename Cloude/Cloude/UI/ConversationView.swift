@@ -15,7 +15,6 @@ struct ConversationView: View {
     var onSelectConversation: (() -> Void)?
     var onInteraction: (() -> Void)?
     var onSelectRecentConversation: ((Conversation) -> Void)?
-    var onShowAllConversations: (() -> Void)?
     var onNewConversation: (() -> Void)?
 
     @State private var scrollProxy: ScrollViewProxy?
@@ -78,7 +77,6 @@ struct ConversationView: View {
                 window: window,
                 windowManager: windowManager,
                 onSelectConversation: onSelectRecentConversation,
-                onShowAllConversations: onShowAllConversations,
                 onNewConversation: onNewConversation
             )
         }
