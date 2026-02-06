@@ -14,6 +14,7 @@ public enum ServerMessage: Codable {
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall])
     case noMissedResponse(sessionId: String)
     case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?)
+    case toolResult(toolId: String, conversationId: String?)
     case runStats(durationMs: Int, costUsd: Double, conversationId: String?)
     case gitStatusResult(status: GitStatusInfo)
     case gitDiffResult(path: String, diff: String)
@@ -112,6 +113,10 @@ public enum ServerMessage: Codable {
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             let textPosition = try container.decodeIfPresent(Int.self, forKey: .textPosition)
             self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition)
+        case "tool_result":
+            let toolId = try container.decode(String.self, forKey: .toolId)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .toolResult(toolId: toolId, conversationId: conversationId)
         case "run_stats":
             let durationMs = try container.decode(Int.self, forKey: .durationMs)
             let costUsd = try container.decode(Double.self, forKey: .costUsd)

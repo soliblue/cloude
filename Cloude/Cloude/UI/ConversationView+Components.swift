@@ -78,6 +78,7 @@ struct ChatMessageList: View {
     @State private var isPinnedToBottom = true
     @State private var userIsDragging = false
     @State private var isBottomVisible = true
+    @State private var isCostBannerDismissed = false
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -137,6 +138,22 @@ struct ChatMessageList: View {
                 ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: 0) {
+                        if let conv = conversation,
+                           let limit = conv.costLimitUsd,
+                           !isCostBannerDismissed,
+                           conv.totalCost > limit {
+                            CostBanner(
+                                currentCost: conv.totalCost,
+                                limit: limit,
+                                onDismiss: {
+                                    isCostBannerDismissed = true
+                                },
+                                onNewChat: {
+                                    onNewConversation?()
+                                }
+                            )
+                        }
+
                         ForEach(messages) { message in
                             MessageBubble(message: message)
                                 .id("\(message.id)-\(message.isQueued)")
@@ -300,6 +317,7 @@ struct ChatMessageList: View {
         .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = true
+            isCostBannerDismissed = false
         }
     }
 
