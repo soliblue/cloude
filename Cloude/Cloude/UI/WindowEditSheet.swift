@@ -18,25 +18,26 @@ struct WindowEditSheet: View {
 
     var body: some View {
         NavigationStack {
-            WindowEditForm(
-                window: window,
-                conversationStore: conversationStore,
-                windowManager: windowManager,
-                connection: connection,
-                onSelectConversation: onSelectConversation,
-                onShowAllConversations: onShowAllConversations,
-                onNewConversation: onNewConversation,
-                showRemoveButton: true,
-                onRemove: {
-                    windowManager.removeWindow(window.id)
-                    onDismiss()
-                },
-                onRefresh: onRefresh,
-                onDuplicate: onDuplicate
-            )
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .navigationTitle("Edit Chat")
+            ScrollView {
+                WindowEditForm(
+                    window: window,
+                    conversationStore: conversationStore,
+                    windowManager: windowManager,
+                    connection: connection,
+                    onSelectConversation: onSelectConversation,
+                    onShowAllConversations: onShowAllConversations,
+                    onNewConversation: onNewConversation,
+                    showRemoveButton: true,
+                    onRemove: {
+                        windowManager.removeWindow(window.id)
+                        onDismiss()
+                    },
+                    onRefresh: onRefresh,
+                    onDuplicate: onDuplicate
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
