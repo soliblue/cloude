@@ -44,24 +44,23 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 ### Plans Directory
 
-The `plans/` directory is for multi-session and multi-agent coordination:
+The `plans/` directory is the single source of truth for tracking work. Every change gets a ticket.
 
-- **When starting significant work**, create a plan file (e.g., `plans/my-feature.md`) documenting your approach, progress, and open questions
-- **Other agents can read plans** to understand what's in progress and avoid conflicts
-- **Delete your plan file** once the work is complete and deployed
-- Plans are a communication channel between agents across sessions - use them to leave context for your future self or other agents
+**Lifecycle**: `backlog/ → next/ → active/ → testing/ → done/`
+
+**Rules:**
+- **Every code change needs a plan ticket** — if a plan already exists, move it. If not, create one.
+- After implementing a change, move/create the plan in `testing/`
+- When Soli confirms it works, move to `done/`
+- At **5+ items in testing/**, stop adding features — tell Soli to test first
+- Other agents can read plans to understand what's in progress and avoid conflicts
+- Only move your own plans (multi-agent coordination)
 - Don't modify another agent's plan unless collaborating explicitly
+- Plans are a communication channel between agents across sessions
 
-### Staging Section (in CLAUDE.local.md)
+**Ad-hoc requests** (no existing ticket): When Soli asks for a quick change that has no plan, create a small plan file directly in `testing/` after implementing it. This ensures nothing gets lost.
 
-Track changes since last deploy to coordinate testing:
-
-1. **After completing a feature**, add it to "Awaiting test" in CLAUDE.local.md
-2. **When Soli confirms testing**, move items to "Tested & ready"
-3. **At 5+ untested items**, stop adding features - tell Soli to test first
-4. **After deploy**, clear the staging section and update "Last deploy" timestamp
-
-This prevents features from piling up untested and keeps everyone aligned.
+**The `testing/` folder replaces the CLAUDE.local.md staging section** — don't duplicate tracking in both places.
 
 ## Git Workflow
 
