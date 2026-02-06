@@ -19,10 +19,11 @@ struct MessageBubble: View {
         return message.text.hasPrefix("/") || message.text.contains("<command-name>")
     }
 
-    private var slashCommandInfo: (name: String, icon: String, isBuiltIn: Bool)? {
+    private var slashCommandInfo: (name: String, args: String?, icon: String, isBuiltIn: Bool)? {
         guard isSlashCommand else { return nil }
 
         let commandName: String
+        var commandArgs: String?
         if message.text.contains("<command-name>") {
             if let start = message.text.range(of: "<command-name>"),
                let end = message.text.range(of: "</command-name>") {
@@ -31,17 +32,27 @@ struct MessageBubble: View {
             } else {
                 return nil
             }
+            if let argsStart = message.text.range(of: "<command-args>"),
+               let argsEnd = message.text.range(of: "</command-args>") {
+                let args = String(message.text[argsStart.upperBound..<argsEnd.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !args.isEmpty { commandArgs = args }
+            }
         } else {
             let text = message.text.dropFirst()
-            commandName = String(text.split(separator: " ").first ?? Substring(text))
+            let parts = text.split(separator: " ", maxSplits: 1)
+            commandName = String(parts.first ?? Substring(text))
+            if parts.count > 1 {
+                let args = String(parts[1]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !args.isEmpty { commandArgs = args }
+            }
         }
 
         switch commandName {
-        case "clear": return (commandName, "trash", true)
-        case "compact": return (commandName, "arrow.triangle.2.circlepath", true)
-        case "context": return (commandName, "chart.pie", true)
-        case "cost": return (commandName, "dollarsign.circle", true)
-        default: return (commandName, "command", false)
+        case "clear": return (commandName, commandArgs, "trash", true)
+        case "compact": return (commandName, commandArgs, "arrow.triangle.2.circlepath", true)
+        case "context": return (commandName, commandArgs, "chart.pie", true)
+        case "cost": return (commandName, commandArgs, "dollarsign.circle", true)
+        default: return (commandName, commandArgs, "command", false)
         }
     }
 
@@ -85,7 +96,7 @@ struct MessageBubble: View {
 
                 Group {
                     if isSlashCommand, let info = slashCommandInfo {
-                        SlashCommandBubble(command: "/\(info.name)", icon: info.icon, isSkill: !info.isBuiltIn)
+                        SlashCommandBubble(command: "/\(info.name)", args: info.args, icon: info.icon, isSkill: !info.isBuiltIn)
                     } else if message.isUser {
                         if !message.text.isEmpty {
                             Text(message.text)
@@ -173,6 +184,7 @@ struct InlineToolPill: View {
     @Environment(\.openURL) private var openURL
     @State private var showDetail = false
     @State private var isExpanded = false
+    @State private var shimmerPhase: CGFloat = -1
 
     private var isMemoryCommand: Bool {
         toolCall.name == "Bash" && (toolCall.input?.hasPrefix("cloude memory ") ?? false)
@@ -285,6 +297,10 @@ struct InlineToolPill: View {
         }
     }
 
+    private var isExecuting: Bool {
+        toolCall.state == .executing
+    }
+
     private var pillContent: some View {
         HStack(spacing: 4) {
             if !chainedCommands.isEmpty {
@@ -308,7 +324,28 @@ struct InlineToolPill: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
+        .overlay {
+            if isExecuting {
+                ShimmerOverlay(phase: shimmerPhase)
+                    .transition(.opacity)
+            }
+        }
         .cornerRadius(14)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .onChange(of: toolCall.state) { _, newState in
+            if newState == .complete {
+                withAnimation(.easeOut(duration: 0.3)) {
+                    shimmerPhase = -1
+                }
+            }
+        }
+        .onAppear {
+            if isExecuting {
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
+                    shimmerPhase = 2
+                }
+            }
+        }
     }
 
     private var chainedPillContent: some View {
@@ -333,8 +370,32 @@ struct InlineToolPill: View {
     }
 }
 
+struct ShimmerOverlay: View {
+    let phase: CGFloat
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            LinearGradient(
+                stops: [
+                    .init(color: .clear, location: 0),
+                    .init(color: .white.opacity(0.25), location: 0.4),
+                    .init(color: .white.opacity(0.25), location: 0.6),
+                    .init(color: .clear, location: 1)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: width * 0.6)
+            .offset(x: width * phase)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
 struct SlashCommandBubble: View {
     let command: String
+    var args: String? = nil
     let icon: String
     var isSkill: Bool = true
 
@@ -344,6 +405,12 @@ struct SlashCommandBubble: View {
                 .font(.system(size: 14, weight: .semibold))
             Text(command)
                 .font(.system(size: 12, weight: .semibold, design: .monospaced))
+            if let args = args {
+                Text(args)
+                    .font(.system(size: 12, design: .monospaced))
+                    .opacity(0.7)
+                    .lineLimit(1)
+            }
         }
         .foregroundStyle(isSkill ? skillGradient : builtInGradient)
         .padding(.horizontal, 10)

@@ -113,6 +113,27 @@ struct WindowEditForm: View {
                 .buttonStyle(.plain)
             }
 
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Thinking Effort")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 4)
+
+                Picker("", selection: Binding(
+                    get: { conversation?.defaultEffort ?? .high },
+                    set: { newValue in
+                        if let conv = conversation {
+                            conversationStore.setDefaultEffort(conv, effort: newValue)
+                        }
+                    }
+                )) {
+                    ForEach(EffortLevel.allCases, id: \.self) { level in
+                        Text(level.displayName).tag(level)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
             if !recentConversations.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -149,9 +170,12 @@ struct WindowEditForm: View {
                                         }
                                     }
                                     Spacer()
-                                    Text(relativeTime(conv.lastMessageAt))
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
+                                    VStack(alignment: .trailing, spacing: 2) {
+                                        Text(relativeTime(conv.lastMessageAt))
+                                        Text("\(conv.messages.count) msgs")
+                                    }
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
                                 }
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 10)

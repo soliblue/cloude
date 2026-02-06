@@ -19,9 +19,15 @@ struct Conversation: Codable, Identifiable {
     var messages: [ChatMessage]
     var pendingMessages: [ChatMessage]
     var pendingFork: Bool
+    var costLimitUsd: Double?
+    var defaultEffort: EffortLevel?
 
     var isEmpty: Bool {
         messages.isEmpty && pendingMessages.isEmpty && sessionId == nil
+    }
+
+    var totalCost: Double {
+        messages.compactMap(\.costUsd).reduce(0, +)
     }
 
     static let randomNames = [
@@ -52,6 +58,8 @@ struct Conversation: Codable, Identifiable {
         self.messages = []
         self.pendingMessages = []
         self.pendingFork = pendingFork
+        self.costLimitUsd = nil
+        self.defaultEffort = nil
         self.name = name ?? Self.randomNames.randomElement() ?? "Chat"
         self.symbol = symbol ?? Self.randomSymbols.randomElement()
     }
@@ -68,11 +76,18 @@ struct Conversation: Codable, Identifiable {
         messages = try container.decode([ChatMessage].self, forKey: .messages)
         pendingMessages = try container.decodeIfPresent([ChatMessage].self, forKey: .pendingMessages) ?? []
         pendingFork = try container.decodeIfPresent(Bool.self, forKey: .pendingFork) ?? false
+        costLimitUsd = try container.decodeIfPresent(Double.self, forKey: .costLimitUsd)
+        defaultEffort = try container.decodeIfPresent(EffortLevel.self, forKey: .defaultEffort)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, costLimitUsd, defaultEffort
     }
+}
+
+enum ToolCallState: String, Codable {
+    case executing
+    case complete
 }
 
 struct ToolCall: Codable {
@@ -81,13 +96,32 @@ struct ToolCall: Codable {
     let toolId: String
     let parentToolId: String?
     var textPosition: Int?
+    var state: ToolCallState
+    var resultSummary: String?
 
-    init(name: String, input: String?, toolId: String = UUID().uuidString, parentToolId: String? = nil, textPosition: Int? = nil) {
+    init(name: String, input: String?, toolId: String = UUID().uuidString, parentToolId: String? = nil, textPosition: Int? = nil, state: ToolCallState = .complete) {
         self.name = name
         self.input = input
         self.toolId = toolId
         self.parentToolId = parentToolId
         self.textPosition = textPosition
+        self.state = state
+        self.resultSummary = nil
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        input = try container.decodeIfPresent(String.self, forKey: .input)
+        toolId = try container.decode(String.self, forKey: .toolId)
+        parentToolId = try container.decodeIfPresent(String.self, forKey: .parentToolId)
+        textPosition = try container.decodeIfPresent(Int.self, forKey: .textPosition)
+        state = try container.decodeIfPresent(ToolCallState.self, forKey: .state) ?? .complete
+        resultSummary = try container.decodeIfPresent(String.self, forKey: .resultSummary)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case name, input, toolId, parentToolId, textPosition, state, resultSummary
     }
 }
 
@@ -149,5 +183,21 @@ struct ChatMessage: Codable, Identifiable {
 
     private enum CodingKeys: String, CodingKey {
         case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, serverUUID
+    }
+}
+
+enum EffortLevel: String, Codable, CaseIterable {
+    case low
+    case medium
+    case high
+    case max
+
+    var displayName: String {
+        switch self {
+        case .low: return "Low"
+        case .medium: return "Medium"
+        case .high: return "High"
+        case .max: return "Max"
+        }
     }
 }
