@@ -81,6 +81,12 @@ extension ConnectionManager {
                 let out = output(for: convId)
                 if state == .idle {
                     out.flushBuffer()
+                    for i in out.toolCalls.indices where out.toolCalls[i].state == .executing {
+                        out.toolCalls[i].state = .complete
+                    }
+                    if let (_, costUsd) = out.runStats {
+                        onLastAssistantMessageCostUpdate?(convId, costUsd)
+                    }
                 }
                 out.isRunning = (state == .running || state == .compacting)
                 out.isCompacting = (state == .compacting)
@@ -184,9 +190,17 @@ extension ConnectionManager {
             if let convId = targetConversationId(from: conversationId) {
                 let currentTextLength = output(for: convId).text.count
                 let position = textPosition ?? currentTextLength
-                output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position))
+                output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing))
                 let detail = input.flatMap { extractToolDetail(name: name, input: $0) }
                 LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name, toolDetail: detail)
+            }
+
+        case .toolResult(let toolId, let conversationId):
+            if let convId = targetConversationId(from: conversationId) {
+                let out = output(for: convId)
+                if let idx = out.toolCalls.firstIndex(where: { $0.toolId == toolId }) {
+                    out.toolCalls[idx].state = .complete
+                }
             }
 
         case .runStats(let durationMs, let costUsd, let conversationId):
@@ -319,7 +333,7 @@ extension ConnectionManager {
         send(.searchFiles(query: query, workingDirectory: workingDirectory))
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false) {
+    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false, effort: String? = nil) {
         if !isAuthenticated {
             reconnectIfNeeded()
         }
@@ -334,7 +348,7 @@ extension ConnectionManager {
             )
         }
         let effectiveWorkingDir = workingDirectory ?? defaultWorkingDirectory
-        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString, conversationName: conversationName, forkSession: forkSession))
+        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString, conversationName: conversationName, forkSession: forkSession, effort: effort))
     }
 
     func abort(conversationId: UUID? = nil) {

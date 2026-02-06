@@ -77,6 +77,15 @@ extension ConversationStore {
         save()
     }
 
+    func setDefaultEffort(_ conversation: Conversation, effort: EffortLevel) {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
+        conversations[idx].defaultEffort = effort
+        if currentConversation?.id == conversation.id {
+            currentConversation = conversations[idx]
+        }
+        save()
+    }
+
     func deleteConversation(_ conversation: Conversation) {
         conversations.removeAll { $0.id == conversation.id }
         if currentConversation?.id == conversation.id {

@@ -18,6 +18,7 @@ class RunnerManager: ObservableObject {
     var onOutput: ((String, String) -> Void)?
     var onSessionId: ((String, String) -> Void)?
     var onToolCall: ((String, String?, String, String?, String, Int?) -> Void)?
+    var onToolResult: ((String, String) -> Void)?
     var onRunStats: ((Int, Double, String) -> Void)?
     var onComplete: ((String, String?) -> Void)?
     var onStatusChange: ((AgentState, String) -> Void)?
@@ -48,7 +49,7 @@ class RunnerManager: ObservableObject {
         }
     }
 
-    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil) {
+    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
         if let existing = activeRunners[conversationId], existing.runner.isRunning {
             Log.info("Runner for \(conversationId.prefix(8)) already running, aborting old one")
             existing.runner.abort()
@@ -63,8 +64,8 @@ class RunnerManager: ObservableObject {
         activeRunners[conversationId] = convRunner
         onStatusChange?(.running, conversationId)
 
-        Log.info("Starting runner for conversation \(conversationId.prefix(8))... (fork=\(forkSession), model=\(model ?? "default"))")
-        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, useFixedSessionId: useFixedSessionId, forkSession: forkSession, model: model)
+        Log.info("Starting runner for conversation \(conversationId.prefix(8))... (fork=\(forkSession), model=\(model ?? "default"), effort=\(effort ?? "nil"))")
+        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, useFixedSessionId: useFixedSessionId, forkSession: forkSession, model: model, effort: effort)
     }
 
     func abort(conversationId: String) {
@@ -111,6 +112,10 @@ class RunnerManager: ObservableObject {
                 self.activeRunners[conversationId] = convRunner
             }
             self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition)
+        }
+
+        runner.onToolResult = { [weak self] toolId in
+            self?.onToolResult?(toolId, conversationId)
         }
 
         runner.onRunStats = { [weak self] durationMs, costUsd in

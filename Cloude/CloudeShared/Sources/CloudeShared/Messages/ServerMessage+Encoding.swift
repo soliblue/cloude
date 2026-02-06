@@ -62,6 +62,10 @@ extension ServerMessage {
             try container.encodeIfPresent(parentToolId, forKey: .parentToolId)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
             try container.encodeIfPresent(textPosition, forKey: .textPosition)
+        case .toolResult(let toolId, let conversationId):
+            try container.encode("tool_result", forKey: .type)
+            try container.encode(toolId, forKey: .toolId)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .runStats(let durationMs, let costUsd, let conversationId):
             try container.encode("run_stats", forKey: .type)
             try container.encode(durationMs, forKey: .durationMs)

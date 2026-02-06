@@ -15,6 +15,7 @@ class ClaudeCodeRunner: ObservableObject {
 
     var onOutput: ((String) -> Void)?
     var onToolCall: ((String, String?, String, String?, Int) -> Void)?
+    var onToolResult: ((String) -> Void)?
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double) -> Void)?
@@ -46,7 +47,7 @@ class ClaudeCodeRunner: ObservableObject {
 
     var tempImagePath: String?
 
-    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imageBase64: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil) {
+    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imageBase64: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
         guard !isRunning else {
             onOutput?("Claude is already running. Use abort to cancel.\n")
             return
@@ -75,8 +76,11 @@ class ClaudeCodeRunner: ObservableObject {
         errorPipe = Pipe()
 
         var finalPrompt = prompt
+        if let effortLevel = effort {
+            finalPrompt = "/effort \(effortLevel)\n\n\(prompt)"
+        }
         if let imagePath = tempImagePath {
-            finalPrompt = "First, read the image at \(imagePath)\n\n\(prompt)"
+            finalPrompt = "First, read the image at \(imagePath)\n\n\(finalPrompt)"
         }
 
         var command = claudePath

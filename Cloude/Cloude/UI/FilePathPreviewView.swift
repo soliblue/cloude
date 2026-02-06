@@ -1,7 +1,3 @@
-//
-//  FilePathPreviewView.swift
-//  Cloude
-
 import SwiftUI
 import CloudeShared
 import HighlightSwift
@@ -12,173 +8,84 @@ struct FilePathPreviewView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
 
-    @State private var isLoading = true
-    @State private var fileData: Data?
-    @State private var mimeType: String?
-    @State private var errorMessage: String?
-    @State private var highlightedCode: AttributedString?
-    @State private var directoryEntries: [FileEntry]?
+    @State var isLoading = true
+    @State var fileData: Data?
+    @State var mimeType: String?
+    @State var errorMessage: String?
+    @State var highlightedCode: AttributedString?
+    @State var directoryEntries: [FileEntry]?
+    @State var browsingFolder: String?
+    @State var showDiff = false
+    @State var diffText: String?
+    @State var isDiffLoading = false
 
-    private var fileName: String {
+    var fileName: String {
         (path as NSString).lastPathComponent
     }
 
-    private var fileExtension: String {
+    var fileExtension: String {
         (path as NSString).pathExtension.lowercased()
-    }
-
-    private var isImage: Bool {
-        ["png", "jpg", "jpeg", "gif", "webp", "heic", "svg"].contains(fileExtension)
-    }
-
-    private var isCode: Bool {
-        ["swift", "py", "js", "ts", "jsx", "tsx", "go", "rs", "rb", "java", "kt", "c", "cpp", "h", "m", "cs", "php", "sh", "bash", "zsh"].contains(fileExtension)
-    }
-
-    private var isMarkup: Bool {
-        ["html", "css", "scss", "xml", "json", "yaml", "yml", "toml", "plist", "md"].contains(fileExtension)
-    }
-
-    private var isText: Bool {
-        ["txt", "log", "rtf"].contains(fileExtension) || isCode || isMarkup
-    }
-
-    private var highlightLanguage: String? {
-        let langMap: [String: String] = [
-            "swift": "swift", "py": "python", "js": "javascript", "ts": "typescript",
-            "jsx": "javascript", "tsx": "typescript", "go": "go", "rs": "rust",
-            "rb": "ruby", "java": "java", "kt": "kotlin", "c": "c", "cpp": "cpp",
-            "h": "c", "m": "objectivec", "cs": "csharp", "php": "php",
-            "sh": "bash", "bash": "bash", "zsh": "bash",
-            "html": "html", "css": "css", "scss": "scss", "xml": "xml",
-            "json": "json", "yaml": "yaml", "yml": "yaml", "toml": "ini",
-            "plist": "xml", "md": "markdown"
-        ]
-        return langMap[fileExtension]
     }
 
     var body: some View {
         NavigationStack {
-            content
-                .navigationTitle(fileName)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "xmark")
-                        }
+            VStack(spacing: 0) {
+                if let folder = browsingFolder {
+                    FileBrowserView(connection: connection, rootPath: folder)
+                } else {
+                    FileViewerBreadcrumb(path: path) { folderPath in
+                        browsingFolder = folderPath
+                    }
+                    Divider()
+                    content
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(browsingFolder != nil ? .hidden : .automatic, for: .navigationBar)
+            .overlay(alignment: .topTrailing) {
+                if browsingFolder != nil {
+                    Button(action: { browsingFolder = nil }) {
+                        Image(systemName: "doc.text")
+                            .padding(12)
                     }
                 }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    FileViewerActions(
+                        path: path,
+                        fileData: fileData,
+                        isCodeFile: isText,
+                        onGitDiff: isText ? { loadGitDiff() } : nil
+                    )
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+            .sheet(isPresented: $showDiff) {
+                FileDiffSheet(
+                    fileName: fileName,
+                    diff: diffText,
+                    isLoading: isDiffLoading
+                )
+            }
         }
         .onAppear { loadFile() }
     }
 
-    @ViewBuilder
-    private var content: some View {
-        if isLoading {
-            VStack(spacing: 16) {
-                ProgressView()
-                    .scaleEffect(1.2)
-                Text("Loading...")
-                    .foregroundColor(.secondary)
-            }
-        } else if directoryEntries != nil {
-            FileBrowserView(connection: connection, rootPath: path)
-        } else if let error = errorMessage {
-            ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
-        } else if let data = fileData {
-            fileContent(data)
+    func loadGitDiff() {
+        isDiffLoading = true
+        diffText = nil
+        showDiff = true
+
+        let dir = (path as NSString).deletingLastPathComponent
+        connection.onGitDiff = { _, text in
+            diffText = text
+            isDiffLoading = false
         }
-    }
-
-    @ViewBuilder
-    private func fileContent(_ data: Data) -> some View {
-        if isImage, let image = UIImage(data: data) {
-            ScrollView {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .padding()
-            }
-        } else if isText, let text = String(data: data, encoding: .utf8) {
-            ScrollView(.horizontal) {
-                ScrollView(.vertical) {
-                    if let highlighted = highlightedCode {
-                        Text(highlighted)
-                            .textSelection(.enabled)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        Text(text)
-                            .font(.system(size: 13, design: .monospaced))
-                            .textSelection(.enabled)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-            }
-            .background(Color(.systemBackground))
-        } else {
-            VStack(spacing: 16) {
-                Image(systemName: "doc")
-                    .font(.system(size: 60))
-                    .foregroundColor(.secondary)
-                Text(fileName)
-                    .font(.headline)
-                Text("\(data.count.formatted(.byteCount(style: .file)))")
-                    .foregroundColor(.secondary)
-            }
-        }
-    }
-
-    private func loadFile() {
-        isLoading = true
-        connection.getFile(path: path)
-
-        connection.onFileContent = { responsePath, data, mime, _, _ in
-            guard responsePath == path else { return }
-            mimeType = mime
-
-            if let decoded = Data(base64Encoded: data) {
-                fileData = decoded
-                if isCode || isMarkup, let text = String(data: decoded, encoding: .utf8) {
-                    highlightCode(text)
-                } else {
-                    isLoading = false
-                }
-            } else {
-                errorMessage = "Failed to decode file"
-                isLoading = false
-            }
-        }
-
-        connection.onDirectoryListing = { responsePath, entries in
-            guard responsePath == path else { return }
-            directoryEntries = entries
-            isLoading = false
-        }
-    }
-
-    private func highlightCode(_ code: String) {
-        Task {
-            let highlight = Highlight()
-            let colors: HighlightColors = colorScheme == .dark ? .dark(.xcode) : .light(.xcode)
-            do {
-                let result: AttributedString
-                if let lang = highlightLanguage {
-                    result = try await highlight.attributedText(code, language: lang, colors: colors)
-                } else {
-                    result = try await highlight.attributedText(code, colors: colors)
-                }
-                await MainActor.run {
-                    highlightedCode = result
-                    isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                }
-            }
-        }
+        connection.gitDiff(path: dir, file: path)
     }
 }

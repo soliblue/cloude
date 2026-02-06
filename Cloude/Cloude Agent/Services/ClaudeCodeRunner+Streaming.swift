@@ -92,15 +92,24 @@ extension ClaudeCodeRunner {
             }
 
             if type == "user",
-               let message = json["message"] as? [String: Any],
-               let content = message["content"] as? String {
-                if content.hasPrefix("<local-command-stdout>") && content.hasSuffix("</local-command-stdout>") {
-                    let start = content.index(content.startIndex, offsetBy: "<local-command-stdout>".count)
-                    let end = content.index(content.endIndex, offsetBy: -"</local-command-stdout>".count)
-                    let extracted = String(content[start..<end])
-                    accumulatedOutput += extracted
-                    events.send(.output(extracted))
-                    onOutput?(extracted)
+               let message = json["message"] as? [String: Any] {
+                if let content = message["content"] as? String {
+                    if content.hasPrefix("<local-command-stdout>") && content.hasSuffix("</local-command-stdout>") {
+                        let start = content.index(content.startIndex, offsetBy: "<local-command-stdout>".count)
+                        let end = content.index(content.endIndex, offsetBy: -"</local-command-stdout>".count)
+                        let extracted = String(content[start..<end])
+                        accumulatedOutput += extracted
+                        events.send(.output(extracted))
+                        onOutput?(extracted)
+                    }
+                } else if let contentBlocks = message["content"] as? [[String: Any]] {
+                    for block in contentBlocks {
+                        if block["type"] as? String == "tool_result",
+                           let toolUseId = block["tool_use_id"] as? String {
+                            events.send(.toolResult(toolId: toolUseId))
+                            onToolResult?(toolUseId)
+                        }
+                    }
                 }
             }
 
@@ -185,6 +194,14 @@ extension ClaudeCodeRunner {
             let agentType = input?["subagent_type"] as? String ?? "agent"
             let description = input?["description"] as? String ?? ""
             return "\(agentType): \(description)"
+        case "Skill":
+            Log.info("Skill tool input: \(input?.description ?? "nil")")
+            let skill = input?["skill"] as? String ?? ""
+            let args = input?["args"] as? String
+            if let args = args, !args.isEmpty {
+                return "\(skill):\(args)"
+            }
+            return skill.isEmpty ? nil : skill
         default:
             return nil
         }

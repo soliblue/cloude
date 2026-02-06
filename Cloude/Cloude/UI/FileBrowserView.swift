@@ -22,7 +22,9 @@ struct FileBrowserView: View {
             fileList
         }
         .sheet(item: $selectedFile) { file in
-            FilePreviewView(file: file, connection: connection)
+            FilePreviewView(file: file, connection: connection) { folderPath in
+                navigateTo(folderPath)
+            }
         }
         .onAppear {
             loadDirectory()
