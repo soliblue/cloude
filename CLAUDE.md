@@ -322,6 +322,7 @@ JSON format for `--questions`:
 ### iOS UI Conventions
 - Use SF Symbols instead of text for toolbar buttons (e.g., `xmark` for Cancel, `checkmark` for Done/Save, `trash` for Delete)
 - Sheets should use NavigationStack with `.toolbar` for header buttons, not custom HStacks
+- When placing multiple buttons in a toolbar (e.g., trailing), add a `Divider().frame(height: 20)` between them for visual separation
 
 ### App Terminology
 Use these terms consistently in code and conversation:
