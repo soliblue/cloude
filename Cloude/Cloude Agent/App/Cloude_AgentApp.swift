@@ -160,6 +160,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition))
         }
 
+        runnerManager.onToolResult = { [weak self] toolId, conversationId in
+            self?.server.broadcast(.toolResult(toolId: toolId, conversationId: conversationId))
+        }
+
         runnerManager.onRunStats = { [weak self] durationMs, costUsd, conversationId in
             self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, conversationId: conversationId))
         }
@@ -208,13 +212,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
-        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId, let conversationName, let forkSession):
-            Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), hasImage=\(imageBase64 != nil), isNew=\(isNewSession), fork=\(forkSession))")
+        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId, let conversationName, let forkSession, let effort):
+            Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), hasImage=\(imageBase64 != nil), isNew=\(isNewSession), fork=\(forkSession), effort=\(effort ?? "nil"))")
             if let wd = workingDirectory, !wd.isEmpty {
                 HeartbeatService.shared.projectDirectory = wd
             }
             let convId = conversationId ?? UUID().uuidString
-            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId, conversationName: conversationName, forkSession: forkSession)
+            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: convId, conversationName: conversationName, forkSession: forkSession, effort: effort)
 
         case .abort(let conversationId):
             if let convId = conversationId {

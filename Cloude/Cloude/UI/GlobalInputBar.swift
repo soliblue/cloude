@@ -53,7 +53,9 @@ struct GlobalInputBar: View {
     let isRunning: Bool
     let skills: [Skill]
     let fileSearchResults: [String]
+    let conversationDefaultEffort: EffortLevel?
     let onSend: () -> Void
+    let onEffortChange: ((EffortLevel?) -> Void)?
     var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
     var onFileSearch: ((String) -> Void)?
@@ -71,6 +73,7 @@ struct GlobalInputBar: View {
     @State private var idleTime: Date = Date()
     @State private var showStopButton = false
     @State private var fileSearchDebounce: Task<Void, Never>?
+    @State private var currentEffort: EffortLevel?
 
     private let swipeThreshold: CGFloat = 60
     private let transitionDuration: Double = 0.15
@@ -228,12 +231,30 @@ struct GlobalInputBar: View {
                                 Label("Record", systemImage: "mic.fill")
                             }
                             .disabled(!canRecord)
+
+                            Divider()
+
+                            Menu {
+                                Button(action: { setEffort(nil) }) {
+                                    Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
+                                }
+                                ForEach(EffortLevel.allCases, id: \.self) { level in
+                                    Button(action: { setEffort(level) }) {
+                                        Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
+                                    }
+                                }
+                            } label: {
+                                Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
+                            }
                         } label: {
-                            Image(systemName: "paperplane.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
-                                .frame(height: 44)
-                                .contentShape(Rectangle())
+                            ZStack {
+                                Image(systemName: willQueue ? "clock.fill" : "paperplane.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+                                    .frame(height: 44)
+                                    .contentShape(Rectangle())
+                                    .animation(.easeInOut(duration: 0.2), value: willQueue)
+                            }
                         } primaryAction: {
                             onSend()
                         }
@@ -362,6 +383,10 @@ struct GlobalInputBar: View {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImageData != nil
     }
 
+    private var willQueue: Bool {
+        isRunning && canSend
+    }
+
     private var shouldShowStopButton: Bool {
         isRunning && showStopButton && !isInputFocused
     }
@@ -417,6 +442,19 @@ struct GlobalInputBar: View {
         let spaceIndex = afterQuery.firstIndex(where: { $0 == " " || $0 == "\n" })
         let afterMention = spaceIndex.map { String(afterQuery[$0...]) } ?? ""
         inputText = beforeAt + "@" + fileName + afterMention
+    }
+
+    private func setEffort(_ level: EffortLevel?) {
+        currentEffort = level
+        onEffortChange?(level)
+    }
+}
+
+extension GlobalInputBar {
+    func configureEffort(from conversation: EffortLevel?) {
+        if currentEffort == nil {
+            currentEffort = conversation
+        }
     }
 }
 
