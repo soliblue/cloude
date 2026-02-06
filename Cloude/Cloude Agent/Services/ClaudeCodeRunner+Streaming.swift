@@ -106,8 +106,9 @@ extension ClaudeCodeRunner {
                     for block in contentBlocks {
                         if block["type"] as? String == "tool_result",
                            let toolUseId = block["tool_use_id"] as? String {
-                            events.send(.toolResult(toolId: toolUseId))
-                            onToolResult?(toolUseId)
+                            let summary = extractResultSummary(from: block)
+                            events.send(.toolResult(toolId: toolUseId, summary: summary))
+                            onToolResult?(toolUseId, summary)
                         }
                     }
                 }
@@ -174,6 +175,32 @@ extension ClaudeCodeRunner {
             try? FileManager.default.removeItem(atPath: imagePath)
             tempImagePath = nil
         }
+    }
+
+    private func extractResultSummary(from block: [String: Any]) -> String? {
+        if let content = block["content"] as? String {
+            let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty { return nil }
+            let firstLine = trimmed.components(separatedBy: .newlines).first ?? trimmed
+            if firstLine.count > 80 {
+                return String(firstLine.prefix(77)) + "..."
+            }
+            return firstLine
+        }
+        if let contentBlocks = block["content"] as? [[String: Any]] {
+            for sub in contentBlocks {
+                if sub["type"] as? String == "text", let text = sub["text"] as? String {
+                    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if trimmed.isEmpty { continue }
+                    let firstLine = trimmed.components(separatedBy: .newlines).first ?? trimmed
+                    if firstLine.count > 80 {
+                        return String(firstLine.prefix(77)) + "..."
+                    }
+                    return firstLine
+                }
+            }
+        }
+        return nil
     }
 
     private func extractToolInput(name: String, input: [String: Any]?) -> String? {
