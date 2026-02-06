@@ -62,20 +62,18 @@ extension FilePathPreviewView {
                     .padding()
             }
         } else if isText, let text = String(data: data, encoding: .utf8) {
-            ScrollView(.horizontal) {
-                ScrollView(.vertical) {
-                    if let highlighted = highlightedCode {
-                        Text(highlighted)
-                            .textSelection(.enabled)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        Text(text)
-                            .font(.system(size: 13, design: .monospaced))
-                            .textSelection(.enabled)
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
+            ScrollView(.vertical) {
+                if let highlighted = highlightedCode {
+                    Text(highlighted)
+                        .textSelection(.enabled)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    Text(text)
+                        .font(.system(size: 13, design: .monospaced))
+                        .textSelection(.enabled)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .background(Color(.systemBackground))

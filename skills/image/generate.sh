@@ -95,15 +95,16 @@ echo "Model: $MODEL"
 [[ -n "$EDIT_IMAGE" ]] && echo "Editing: $EDIT_IMAGE"
 
 RESPONSE_FILE=$(mktemp)
-trap "rm -f '$RESPONSE_FILE'" EXIT
+REQUEST_FILE=$(mktemp)
+trap "rm -f '$RESPONSE_FILE' '$REQUEST_FILE'" EXIT
 
-REQUEST_BODY="$(build_request_body)"
+build_request_body > "$REQUEST_FILE"
 
 HTTP_CODE=$(curl -s -w "%{http_code}" -o "$RESPONSE_FILE" \
     -X POST \
     -H "Content-Type: application/json" \
     "${API_BASE}/${MODEL}:generateContent?key=${GOOGLE_API_KEY}" \
-    -d "$REQUEST_BODY")
+    -d @"$REQUEST_FILE")
 
 if [[ "$HTTP_CODE" != "200" ]]; then
     echo "Error: API returned HTTP $HTTP_CODE"
