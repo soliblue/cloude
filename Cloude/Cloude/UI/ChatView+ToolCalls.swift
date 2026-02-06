@@ -553,6 +553,10 @@ struct ToolCallLabel: View {
     }
 
     private var displayName: String {
+        if name == "Skill", let input = input, !input.isEmpty {
+            let skillName = input.split(separator: ":", maxSplits: 1).first.map(String.init) ?? input
+            return "/\(skillName)"
+        }
         guard name == "Bash", let input = input, !input.isEmpty else { return name }
         if isMemoryCommand { return "Memory" }
         if isScript { return "Script" }
@@ -591,6 +595,14 @@ struct ToolCallLabel: View {
         case "Glob", "Grep":
             let truncated = input.prefix(16)
             return truncated.count < input.count ? "\(truncated)..." : String(input)
+        case "Skill":
+            let parts = input.split(separator: ":", maxSplits: 1)
+            if parts.count >= 2 {
+                let args = String(parts[1]).trimmingCharacters(in: .whitespaces)
+                let truncated = args.prefix(32)
+                return truncated.count < args.count ? "\(truncated)..." : args
+            }
+            return nil
         case "Task":
             let parts = input.split(separator: ":", maxSplits: 1)
             return parts.first.map(String.init)
@@ -778,6 +790,7 @@ struct ToolCallLabel: View {
         case "TodoWrite": return "checklist"
         case "AskUserQuestion": return "questionmark.bubble"
         case "NotebookEdit": return "text.book.closed"
+        case "Skill": return "command"
         case "Memory": return "brain"
         default: return "gear"
         }
@@ -826,6 +839,7 @@ func toolCallColor(for name: String, input: String? = nil) -> Color {
     case "Task": return .cyan
     case "WebFetch", "WebSearch": return .indigo
     case "TodoWrite": return .mint
+    case "Skill": return .purple
     case "NotebookEdit": return .purple
     case "AskUserQuestion": return .orange
     case "Memory": return .pink

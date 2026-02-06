@@ -18,8 +18,17 @@ struct MainChatView: View {
     @State var pendingGitChecks: [String] = []
     @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
+    @State var currentEffort: EffortLevel?
 
     private var isHeartbeatActive: Bool { currentPageIndex == 0 }
+
+    private var currentConversation: Conversation? {
+        if isHeartbeatActive {
+            return conversationStore.heartbeatConversation
+        } else {
+            return windowManager.activeWindow?.conversationId.flatMap { conversationStore.conversation(withId: $0) }
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -77,7 +86,9 @@ struct MainChatView: View {
                     isRunning: activeConversationIsRunning,
                     skills: connection.skills,
                     fileSearchResults: fileSearchResults,
+                    conversationDefaultEffort: currentConversation?.defaultEffort,
                     onSend: sendMessage,
+                    onEffortChange: { currentEffort = $0 },
                     onStop: stopActiveConversation,
                     onTranscribe: transcribeAudio,
                     onFileSearch: searchFiles
@@ -95,6 +106,7 @@ struct MainChatView: View {
             initializeFirstWindow()
             setupGitStatusHandler()
             setupFileSearchHandler()
+            setupCostHandler()
             checkGitForAllDirectories()
             connection.onTranscription = { text in
                 let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -402,6 +414,12 @@ struct MainChatView: View {
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
+                    if let conv = conversation, conv.totalCost > 0 {
+                        Text("• $\(String(format: "%.2f", conv.totalCost))")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
                     Image(systemName: "chevron.down")
                         .font(.system(size: 15))
                         .foregroundColor(.secondary)
@@ -608,7 +626,8 @@ struct MainChatView: View {
             let isFork = conv.pendingFork
             let isNewSession = conv.sessionId == nil && !isFork
             let workingDir = conv.workingDirectory
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork)
+            let effortValue = (currentEffort ?? conv.defaultEffort)?.rawValue
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue)
 
             if isFork {
                 conversationStore.clearPendingFork(conv)
@@ -725,6 +744,16 @@ struct MainChatView: View {
     func setupFileSearchHandler() {
         connection.onFileSearchResults = { files, _ in
             fileSearchResults = files
+        }
+    }
+
+    func setupCostHandler() {
+        connection.onLastAssistantMessageCostUpdate = { [conversationStore] convId, costUsd in
+            guard let conversation = conversationStore.conversation(withId: convId),
+                  let lastAssistantMsg = conversation.messages.last(where: { !$0.isUser }) else { return }
+            conversationStore.updateMessage(lastAssistantMsg.id, in: conversation) { msg in
+                msg.costUsd = costUsd
+            }
         }
     }
 }
