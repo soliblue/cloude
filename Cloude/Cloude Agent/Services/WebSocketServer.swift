@@ -24,8 +24,11 @@ class WebSocketServer: ObservableObject {
         self.authToken = authToken
     }
 
+    private var startRetryCount = 0
+    private let maxStartRetries = 5
+
     func start() {
-        Log.startup("WebSocketServer.start() called")
+        Log.startup("WebSocketServer.start() called (attempt \(startRetryCount + 1)/\(maxStartRetries + 1))")
         Log.startup("  Configuring TCP parameters...")
 
         do {
@@ -44,12 +47,14 @@ class WebSocketServer: ObservableObject {
                     case .ready:
                         self.isRunning = true
                         self.lastError = nil
+                        self.startRetryCount = 0
                         Log.startup("  ★ SERVER READY - Listening on port \(self.port)")
                     case .failed(let error):
                         self.isRunning = false
                         self.lastError = error.localizedDescription
                         Log.startup("  ✗ SERVER FAILED: \(error)")
                         Log.error("Server failed: \(error)")
+                        self.retryStartIfNeeded()
                     case .cancelled:
                         self.isRunning = false
                         Log.startup("  ○ Server cancelled")
@@ -77,6 +82,22 @@ class WebSocketServer: ObservableObject {
             lastError = error.localizedDescription
             Log.startup("  ✗ FAILED TO START SERVER: \(error)")
             Log.error("Failed to start server: \(error)")
+            retryStartIfNeeded()
+        }
+    }
+
+    private func retryStartIfNeeded() {
+        guard startRetryCount < maxStartRetries else {
+            Log.error("Server failed to start after \(maxStartRetries + 1) attempts, giving up")
+            return
+        }
+        startRetryCount += 1
+        let delay = Double(startRetryCount) * 2.0
+        Log.startup("  ↻ Retrying server start in \(delay)s (attempt \(startRetryCount + 1)/\(maxStartRetries + 1))...")
+        listener?.cancel()
+        listener = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            self?.start()
         }
     }
 
