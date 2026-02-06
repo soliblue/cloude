@@ -30,7 +30,7 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 - Run as **two separate Bash commands** (not combined with `&&`)
 - Pass the name/symbol directly with NO quotes: `cloude rename Memory Fix` not `cloude rename "Memory Fix"`
 
-**Rebuilding the Mac agent** - You CAN rebuild the agent using `source .env && fastlane mac build_agent`. The build process will kill the old agent and launch the new one. **CRITICAL:** Always run this as the LAST thing in your response. Say everything important first, then trigger the build. The connection will drop briefly but the iOS app will reconnect automatically.
+**Rebuilding the Mac agent** - You CAN rebuild the agent using `source .env && fastlane mac build_agent`. The build process will SIGKILL the old agent, wait 3s, and launch the new one. The WebSocket server has retry logic (up to 5 attempts) if the port is still in use. Deploying both agent + iOS together (`fastlane deploy`) is safe. **CRITICAL:** Always run this as the LAST thing in your response. Say everything important first, then trigger the build. The connection will drop briefly but the iOS app will reconnect automatically.
 
 ## Multi-Agent Workflow
 
