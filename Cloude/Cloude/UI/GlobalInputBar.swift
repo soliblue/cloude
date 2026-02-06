@@ -61,6 +61,7 @@ struct GlobalInputBar: View {
     var onFileSearch: ((String) -> Void)?
 
     @State private var selectedItem: PhotosPickerItem?
+    @State private var showPhotoPicker = false
     @FocusState private var isInputFocused: Bool
     @StateObject private var audioRecorder = AudioRecorder()
     @State private var placeholderIndex = Int.random(in: 0..<20)
@@ -169,14 +170,6 @@ struct GlobalInputBar: View {
 
             ZStack(alignment: .bottom) {
                 HStack(spacing: 12) {
-                    PhotosPicker(selection: $selectedItem, matching: .images) {
-                        Image(systemName: "photo")
-                            .font(.system(size: 22))
-                            .foregroundColor(.accentColor)
-                            .frame(height: 44)
-                            .contentShape(Rectangle())
-                    }
-
                     HStack(spacing: 8) {
                         ZStack(alignment: .leading) {
                             if inputText.isEmpty {
@@ -227,6 +220,10 @@ struct GlobalInputBar: View {
                         }
                     } else {
                         Menu {
+                            Button(action: { showPhotoPicker = true }) {
+                                Label("Photo", systemImage: "photo")
+                            }
+
                             Button(action: startRecording) {
                                 Label("Record", systemImage: "mic.fill")
                             }
@@ -258,7 +255,6 @@ struct GlobalInputBar: View {
                         } primaryAction: {
                             onSend()
                         }
-                        .disabled(!canSend && !canRecord)
                     }
                 }
                 .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
@@ -317,6 +313,7 @@ struct GlobalInputBar: View {
                     }
                 }
         )
+        .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
         .onChange(of: selectedItem) { _, newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
