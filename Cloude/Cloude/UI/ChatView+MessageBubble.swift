@@ -262,6 +262,24 @@ struct InlineToolPill: View {
         }
     }
 
+    private var isTaskTool: Bool {
+        toolCall.name == "Task"
+    }
+
+    private var visibleChildren: [ToolCall] {
+        if children.count > 5 && isExecuting {
+            return Array(children.suffix(3))
+        }
+        return children
+    }
+
+    private var hiddenChildCount: Int {
+        if children.count > 5 && isExecuting {
+            return children.count - 3
+        }
+        return 0
+    }
+
     var body: some View {
         Group {
             if children.isEmpty {
@@ -271,11 +289,31 @@ struct InlineToolPill: View {
                     pillContent
 
                     if isExpanded {
-                        ForEach(children, id: \.toolId) { child in
+                        if hiddenChildCount > 0 {
+                            Text("\(hiddenChildCount) earlier tools...")
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 16)
+                        }
+                        ForEach(visibleChildren, id: \.toolId) { child in
                             InlineToolPill(toolCall: child)
                                 .padding(.leading, 16)
                         }
                     }
+                }
+            }
+        }
+        .onChange(of: children.count) { _, count in
+            if count > 0 && isExecuting {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded = true
+                }
+            }
+        }
+        .onChange(of: toolCall.state) { _, newState in
+            if newState == .complete && isTaskTool {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded = false
                 }
             }
         }
@@ -302,23 +340,36 @@ struct InlineToolPill: View {
     }
 
     private var pillContent: some View {
-        HStack(spacing: 4) {
-            if !chainedCommands.isEmpty {
-                chainedPillContent
-            } else {
-                ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                if !chainedCommands.isEmpty {
+                    chainedPillContent
+                } else {
+                    ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
+                        .lineLimit(1)
+                }
+
+                if !children.isEmpty {
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isExpanded.toggle()
+                            }
+                        }
+                }
             }
 
-            if !children.isEmpty {
-                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            isExpanded.toggle()
-                        }
-                    }
+            if let summary = toolCall.resultSummary, toolCall.state == .complete {
+                HStack(spacing: 3) {
+                    Text("↳")
+                        .font(.system(size: 10))
+                    Text(summary)
+                        .font(.system(size: 10, design: .monospaced))
+                        .lineLimit(1)
+                }
+                .foregroundColor(.secondary)
             }
         }
         .padding(.horizontal, 10)

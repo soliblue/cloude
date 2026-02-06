@@ -18,7 +18,7 @@ class RunnerManager: ObservableObject {
     var onOutput: ((String, String) -> Void)?
     var onSessionId: ((String, String) -> Void)?
     var onToolCall: ((String, String?, String, String?, String, Int?) -> Void)?
-    var onToolResult: ((String, String) -> Void)?
+    var onToolResult: ((String, String?, String) -> Void)?
     var onRunStats: ((Int, Double, String) -> Void)?
     var onComplete: ((String, String?) -> Void)?
     var onStatusChange: ((AgentState, String) -> Void)?
@@ -114,8 +114,8 @@ class RunnerManager: ObservableObject {
             self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition)
         }
 
-        runner.onToolResult = { [weak self] toolId in
-            self?.onToolResult?(toolId, conversationId)
+        runner.onToolResult = { [weak self] toolId, summary in
+            self?.onToolResult?(toolId, summary, conversationId)
         }
 
         runner.onRunStats = { [weak self] durationMs, costUsd in
