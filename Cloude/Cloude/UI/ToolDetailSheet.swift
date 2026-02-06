@@ -6,6 +6,7 @@ import SwiftUI
 
 struct ToolDetailSheet: View {
     let toolCall: ToolCall
+    var children: [ToolCall] = []
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
@@ -67,8 +68,6 @@ struct ToolDetailSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    headerSection
-
                     if !chainedCommands.isEmpty {
                         chainSection
                     } else if let input = toolCall.input, !input.isEmpty {
@@ -78,17 +77,32 @@ struct ToolDetailSheet: View {
                     if let path = filePath {
                         fileSection(path)
                     }
+
+                    if !children.isEmpty {
+                        childrenSection
+                    }
                 }
                 .padding()
             }
             .background(Color.oceanBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    HStack(spacing: 6) {
+                        Image(systemName: iconName)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
+                        Text(displayName)
+                            .font(.subheadline.weight(.medium))
+                            .lineLimit(1)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -97,27 +111,6 @@ struct ToolDetailSheet: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .presentationBackground(.ultraThinMaterial)
-    }
-
-    private var headerSection: some View {
-        HStack(spacing: 12) {
-            Image(systemName: iconName)
-                .font(.system(size: 28, weight: .semibold))
-                .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
-                .frame(width: 48, height: 48)
-                .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.15))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(displayName)
-                    .font(.headline)
-                Text(toolCall.name)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-        }
     }
 
     private func inputSection(_ input: String) -> some View {
@@ -164,6 +157,56 @@ struct ToolDetailSheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    private var childrenSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Tools (\(children.count))", systemImage: "square.stack")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.secondary)
+
+            VStack(spacing: 0) {
+                ForEach(Array(children.enumerated()), id: \.element.toolId) { index, child in
+                    HStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            ToolCallLabel(name: child.name, input: child.input, size: .small)
+                                .lineLimit(1)
+
+                            if let summary = child.resultSummary {
+                                HStack(spacing: 3) {
+                                    Text("↳")
+                                        .font(.system(size: 10))
+                                    Text(summary)
+                                        .font(.system(size: 10, design: .monospaced))
+                                        .lineLimit(1)
+                                }
+                                .foregroundColor(.secondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        if child.state == .executing {
+                            ProgressView()
+                                .scaleEffect(0.6)
+                        } else {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+
+                    if index < children.count - 1 {
+                        Divider()
+                            .padding(.leading, 12)
+                    }
+                }
+            }
+            .background(Color.oceanGray6.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
     }
 

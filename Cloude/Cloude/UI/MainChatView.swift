@@ -9,7 +9,6 @@ struct MainChatView: View {
     @ObservedObject var connection: ConnectionManager
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
-    @State var selectingWindow: ChatWindow?
     @State var editingWindow: ChatWindow?
     @State var currentPageIndex: Int = 0
     @State var isKeyboardVisible = false
@@ -151,27 +150,6 @@ struct MainChatView: View {
         .onChange(of: conversationStore.currentConversation?.id) { _, _ in
             if windowManager.windows.count == 1 { updateActiveWindowLink() }
         }
-        .sheet(item: $selectingWindow) { window in
-            WindowConversationPicker(
-                conversationStore: conversationStore,
-                windowManager: windowManager,
-                connection: connection,
-                currentWindowId: window.id,
-                onSelect: { conversation in
-                    if let oldConvId = window.conversationId,
-                       let oldConv = conversationStore.conversation(withId: oldConvId),
-                       oldConv.isEmpty {
-                        conversationStore.deleteConversation(oldConv)
-                    }
-                    windowManager.linkToCurrentConversation(window.id, conversation: conversation)
-                    selectingWindow = nil
-                    if let dir = conversation.workingDirectory, !dir.isEmpty, gitBranches[dir] == nil {
-                        pendingGitChecks = [dir]
-                        checkNextGitDirectory()
-                    }
-                }
-            )
-        }
         .sheet(item: $editingWindow) { window in
             WindowEditSheet(
                 window: window,
@@ -186,12 +164,6 @@ struct MainChatView: View {
                     }
                     windowManager.linkToCurrentConversation(window.id, conversation: conv)
                     editingWindow = nil
-                },
-                onShowAllConversations: {
-                    editingWindow = nil
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        selectingWindow = window
-                    }
                 },
                 onNewConversation: {
                     if let oldConvId = window.conversationId,
@@ -258,9 +230,6 @@ struct MainChatView: View {
                     onInteraction: { dismissKeyboard() },
                     onSelectRecentConversation: { conv in
                         windowManager.linkToCurrentConversation(window.id, conversation: conv)
-                    },
-                    onShowAllConversations: {
-                        selectingWindow = window
                     },
                     onNewConversation: {
                         let workingDir = activeWindowWorkingDirectory()
