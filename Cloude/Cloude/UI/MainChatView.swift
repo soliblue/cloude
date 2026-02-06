@@ -372,18 +372,11 @@ struct MainChatView: View {
                     windowManager.setActive(window.id)
                     windowManager.setWindowType(window.id, type: type)
                 }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: type.icon)
-                            .font(.system(size: 17))
-                        if type == .gitChanges, let branch = gitBranch {
-                            Text(branch)
-                                .font(.system(size: 12))
-                                .lineLimit(1)
-                        }
-                    }
-                    .foregroundColor(window.type == type ? .accentColor : .secondary)
-                    .opacity(window.type == type && isStreaming ? 0.4 : 1.0)
-                    .padding(7)
+                    Image(systemName: type.icon)
+                        .font(.system(size: 17))
+                        .foregroundColor(window.type == type ? .accentColor : .secondary)
+                        .opacity(window.type == type && isStreaming ? 0.4 : 1.0)
+                        .padding(4)
                 }
                 .buttonStyle(.plain)
             }
