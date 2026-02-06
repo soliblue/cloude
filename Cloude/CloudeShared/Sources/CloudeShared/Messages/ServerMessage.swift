@@ -14,7 +14,7 @@ public enum ServerMessage: Codable {
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall])
     case noMissedResponse(sessionId: String)
     case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?)
-    case toolResult(toolId: String, conversationId: String?)
+    case toolResult(toolId: String, summary: String?, conversationId: String?)
     case runStats(durationMs: Int, costUsd: Double, conversationId: String?)
     case gitStatusResult(status: GitStatusInfo)
     case gitDiffResult(path: String, diff: String)
@@ -47,7 +47,7 @@ public enum ServerMessage: Codable {
     case messageUUID(uuid: String, conversationId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary
     }
 
     public init(from decoder: Decoder) throws {
@@ -115,8 +115,9 @@ public enum ServerMessage: Codable {
             self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition)
         case "tool_result":
             let toolId = try container.decode(String.self, forKey: .toolId)
+            let summary = try container.decodeIfPresent(String.self, forKey: .summary)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .toolResult(toolId: toolId, conversationId: conversationId)
+            self = .toolResult(toolId: toolId, summary: summary, conversationId: conversationId)
         case "run_stats":
             let durationMs = try container.decode(Int.self, forKey: .durationMs)
             let costUsd = try container.decode(Double.self, forKey: .costUsd)
