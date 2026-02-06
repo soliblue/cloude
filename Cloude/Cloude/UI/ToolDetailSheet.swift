@@ -60,7 +60,7 @@ struct ToolDetailSheet: View {
         if !chainedCommands.isEmpty {
             return "link"
         }
-        return ToolCallLabel(name: toolCall.name, input: toolCall.input).iconNameForDetail
+        return ToolCallLabel(name: toolCall.name, input: toolCall.input).iconName
     }
 
     var body: some View {
@@ -177,7 +177,7 @@ struct ToolDetailSheet: View {
                 ForEach(Array(chainedCommands.enumerated()), id: \.offset) { index, cmd in
                     VStack(spacing: 0) {
                         HStack(spacing: 10) {
-                            Image(systemName: ToolCallLabel(name: "Bash", input: cmd).iconNameForDetail)
+                            Image(systemName: ToolCallLabel(name: "Bash", input: cmd).iconName)
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: cmd))
                                 .frame(width: 20)
