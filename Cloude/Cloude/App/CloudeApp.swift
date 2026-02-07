@@ -17,6 +17,9 @@ struct CloudeApp: App {
     @State private var showMemories = false
     @State private var memorySections: [MemorySection] = []
     @State private var isLoadingMemories = false
+    @State private var showPlans = false
+    @State private var planStages: [String: [PlanItem]] = [:]
+    @State private var isLoadingPlans = false
     @State private var wasBackgrounded = false
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
@@ -44,13 +47,26 @@ struct CloudeApp: App {
             .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button(action: {
-                            isLoadingMemories = true
-                            memorySections = []
-                            connection.send(.getMemories)
-                            showMemories = true
-                        }) {
-                            Image(systemName: "brain")
+                        HStack(spacing: 0) {
+                            Button(action: {
+                                isLoadingPlans = true
+                                planStages = [:]
+                                if let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+                                    connection.getPlans(workingDirectory: wd)
+                                }
+                                showPlans = true
+                            }) {
+                                Image(systemName: "list.bullet.clipboard")
+                            }
+                            Divider().frame(height: 20).padding(.horizontal, 6)
+                            Button(action: {
+                                isLoadingMemories = true
+                                memorySections = []
+                                connection.send(.getMemories)
+                                showMemories = true
+                            }) {
+                                Image(systemName: "brain")
+                            }
                         }
                     }
                     ToolbarItem(placement: .principal) {
@@ -69,6 +85,23 @@ struct CloudeApp: App {
         }
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories)
+        }
+        .sheet(isPresented: $showPlans) {
+            PlansSheet(
+                stages: planStages,
+                isLoading: isLoadingPlans,
+                onDelete: { stage, filename in
+                    if let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+                        connection.deletePlan(stage: stage, filename: filename, workingDirectory: wd)
+                    }
+                },
+                onOpenFile: { path in
+                    showPlans = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        filePathToPreview = path
+                    }
+                }
+            )
         }
         .sheet(item: $filePathToPreview) { path in
             FilePathPreviewView(path: path, connection: connection)
@@ -157,6 +190,15 @@ struct CloudeApp: App {
         connection.onMemories = { sections in
             memorySections = sections
             isLoadingMemories = false
+        }
+
+        connection.onPlans = { stages in
+            planStages = stages
+            isLoadingPlans = false
+        }
+
+        connection.onPlanDeleted = { stage, filename in
+            planStages[stage]?.removeAll { $0.filename == filename }
         }
 
         connection.onRenameConversation = { [conversationStore] convId, name in

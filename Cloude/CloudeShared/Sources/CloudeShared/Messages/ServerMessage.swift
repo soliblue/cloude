@@ -14,7 +14,7 @@ public enum ServerMessage: Codable {
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall])
     case noMissedResponse(sessionId: String)
     case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?)
-    case toolResult(toolId: String, summary: String?, conversationId: String?)
+    case toolResult(toolId: String, summary: String?, output: String?, conversationId: String?)
     case runStats(durationMs: Int, costUsd: Double, conversationId: String?)
     case gitStatusResult(status: GitStatusInfo)
     case gitDiffResult(path: String, diff: String)
@@ -23,8 +23,8 @@ public enum ServerMessage: Codable {
     case whisperReady(ready: Bool)
     case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories(sections: [MemorySection])
-    case renameConversation(conversationId: String, name: String)
-    case setConversationSymbol(conversationId: String, symbol: String?)
+    case renameConversation(name: String, conversationId: String)
+    case setConversationSymbol(symbol: String?, conversationId: String)
     case processList(processes: [AgentProcessInfo])
     case memoryAdded(target: String, section: String, text: String, conversationId: String?)
     case defaultWorkingDirectory(path: String)
@@ -52,9 +52,11 @@ public enum ServerMessage: Codable {
     case teamDeleted(conversationId: String?)
     case autocompleteResult(text: String, requestText: String)
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
+    case plans(stages: [String: [PlanItem]])
+    case planDeleted(stage: String, filename: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, requestText
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, requestText, stages, stage, filename
     }
 
     public init(from decoder: Decoder) throws {
@@ -123,8 +125,9 @@ public enum ServerMessage: Codable {
         case "tool_result":
             let toolId = try container.decode(String.self, forKey: .toolId)
             let summary = try container.decodeIfPresent(String.self, forKey: .summary)
+            let output = try container.decodeIfPresent(String.self, forKey: .output)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .toolResult(toolId: toolId, summary: summary, conversationId: conversationId)
+            self = .toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId)
         case "run_stats":
             let durationMs = try container.decode(Int.self, forKey: .durationMs)
             let costUsd = try container.decode(Double.self, forKey: .costUsd)
@@ -155,13 +158,13 @@ public enum ServerMessage: Codable {
             let sections = try container.decode([MemorySection].self, forKey: .sections)
             self = .memories(sections: sections)
         case "rename_conversation":
-            let conversationId = try container.decode(String.self, forKey: .conversationId)
             let name = try container.decode(String.self, forKey: .name)
-            self = .renameConversation(conversationId: conversationId, name: name)
-        case "set_conversation_symbol":
             let conversationId = try container.decode(String.self, forKey: .conversationId)
+            self = .renameConversation(name: name, conversationId: conversationId)
+        case "set_conversation_symbol":
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
-            self = .setConversationSymbol(conversationId: conversationId, symbol: symbol)
+            let conversationId = try container.decode(String.self, forKey: .conversationId)
+            self = .setConversationSymbol(symbol: symbol, conversationId: conversationId)
         case "process_list":
             let processes = try container.decode([AgentProcessInfo].self, forKey: .processes)
             self = .processList(processes: processes)
@@ -270,6 +273,13 @@ public enum ServerMessage: Codable {
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             self = .nameSuggestion(name: name, symbol: symbol, conversationId: conversationId)
+        case "plans":
+            let stages = try container.decode([String: [PlanItem]].self, forKey: .stages)
+            self = .plans(stages: stages)
+        case "plan_deleted":
+            let stage = try container.decode(String.self, forKey: .stage)
+            let filename = try container.decode(String.self, forKey: .filename)
+            self = .planDeleted(stage: stage, filename: filename)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

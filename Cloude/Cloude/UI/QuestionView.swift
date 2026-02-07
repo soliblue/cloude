@@ -25,7 +25,7 @@ struct QuestionView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             ForEach(questions) { question in
                 QuestionCard(
                     question: question,
@@ -44,37 +44,38 @@ struct QuestionView: View {
             HStack {
                 Button(action: onDismiss) {
                     Text("Skip")
-                        .font(.subheadline)
+                        .font(.footnote)
                         .foregroundColor(.secondary)
                 }
 
                 Spacer()
 
                 Button(action: submit) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 4) {
                         if isSubmitting {
                             ProgressView()
-                                .scaleEffect(0.8)
+                                .scaleEffect(0.7)
                         } else if isStreaming {
                             ProgressView()
-                                .scaleEffect(0.8)
+                                .scaleEffect(0.7)
                         }
                         Text(isStreaming ? "Receiving..." : "Submit")
+                            .font(.footnote)
                             .fontWeight(.semibold)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 6)
                     .background(canSubmit ? Color.accentColor : Color.secondary.opacity(0.3))
                     .foregroundColor(.white)
                     .cornerRadius(20)
                 }
                 .disabled(!canSubmit)
             }
-            .padding(.top, 4)
+            .padding(.top, 2)
         }
-        .padding(16)
+        .padding(12)
         .background(Color(.secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .cornerRadius(14)
         .onChange(of: focusedQuestionId) { _, newValue in
             onFocusChange(newValue != nil)
         }
@@ -110,12 +111,12 @@ struct QuestionCard: View {
     var focusBinding: FocusState<String?>.Binding
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(question.text)
-                .font(.subheadline)
+                .font(.footnote)
                 .fontWeight(.medium)
 
-            VStack(spacing: 8) {
+            VStack(spacing: 4) {
                 ForEach(question.options) { option in
                     OptionRow(
                         option: option,
@@ -139,11 +140,11 @@ struct QuestionCard: View {
             }
 
             TextField("Add details (optional)", text: $context, axis: .vertical)
-                .font(.system(size: 14))
-                .lineLimit(1...4)
-                .padding(10)
+                .font(.system(size: 13))
+                .lineLimit(1...3)
+                .padding(8)
                 .background(Color(.tertiarySystemGroupedBackground))
-                .cornerRadius(10)
+                .cornerRadius(8)
                 .focused(focusBinding, equals: question.id)
         }
     }
@@ -157,19 +158,19 @@ struct OptionRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
+            HStack(spacing: 6) {
                 Image(systemName: isSelected ? (multiSelect ? "checkmark.circle.fill" : "circle.inset.filled") : "circle")
-                    .font(.system(size: 20))
+                    .font(.system(size: 14))
                     .foregroundColor(isSelected ? .accentColor : .secondary.opacity(0.5))
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(option.label)
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.primary)
 
                     if let desc = option.description, !desc.isEmpty {
                         Text(desc)
-                            .font(.system(size: 13))
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
                             .lineLimit(2)
                     }
@@ -177,12 +178,12 @@ struct OptionRow: View {
 
                 Spacer()
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
             .background(isSelected ? Color.accentColor.opacity(0.1) : Color(.tertiarySystemGroupedBackground))
-            .cornerRadius(12)
+            .cornerRadius(8)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(isSelected ? Color.accentColor : Color.secondary.opacity(0.15), lineWidth: 1)
             )
         }

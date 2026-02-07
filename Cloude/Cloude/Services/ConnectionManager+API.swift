@@ -2,52 +2,6 @@ import Foundation
 import Combine
 import CloudeShared
 
-private func extractToolDetail(name: String, input: String) -> String? {
-    switch name {
-    case "Bash":
-        if let data = input.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let command = json["command"] as? String {
-            let firstLine = command.components(separatedBy: .newlines).first ?? command
-            let trimmed = firstLine.trimmingCharacters(in: .whitespaces)
-            if trimmed.count > 40 {
-                return String(trimmed.prefix(37)) + "..."
-            }
-            return trimmed
-        }
-    case "Read", "Write", "Edit":
-        if let data = input.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let path = json["file_path"] as? String {
-            return path.lastPathComponent
-        }
-    case "Grep":
-        if let data = input.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let pattern = json["pattern"] as? String {
-            if pattern.count > 30 {
-                return String(pattern.prefix(27)) + "..."
-            }
-            return pattern
-        }
-    case "Glob":
-        if let data = input.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let pattern = json["pattern"] as? String {
-            return pattern
-        }
-    case "Task":
-        if let data = input.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let desc = json["description"] as? String {
-            return desc
-        }
-    default:
-        break
-    }
-    return nil
-}
-
 extension ConnectionManager {
     private func targetConversationId(from conversationId: String?) -> UUID? {
         conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
@@ -66,56 +20,199 @@ extension ConnectionManager {
         case .authResult(let success, let msg):           handleAuthResult(success: success, errorMessage: msg)
         case .error(let msg):                             handleError(msg)
         case .toolCall(let n, let i, let t, let p, let c, let pos): handleToolCall(name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos)
-        case .toolResult(let id, let sum, let c):         handleToolResult(toolId: id, summary: sum, conversationId: c)
+        case .toolResult(let id, let sum, let out, let c):  handleToolResult(toolId: id, summary: sum, output: out, conversationId: c)
         case .runStats(let ms, let cost, let c):          handleRunStats(durationMs: ms, costUsd: cost, conversationId: c)
         case .missedResponse(let sid, let t, _, let tc):  handleMissedResponse(sessionId: sid, text: t, storedToolCalls: tc)
         case .noMissedResponse(let sid):                  handleNoMissedResponse(sessionId: sid)
         case .sessionId(let id, let c):                   handleSessionId(id, conversationId: c)
         case .messageUUID(let uuid, let c):               handleMessageUUID(uuid, conversationId: c)
-
-        case .directoryListing(let path, let entries):    events.send(.directoryListing(path: path, entries: entries)); onDirectoryListing?(path, entries)
-        case .fileContent(let p, let d, let m, let s, let t): events.send(.fileContent(path: p, data: d, mimeType: m, size: s, truncated: t)); onFileContent?(p, d, m, s, t)
+        case .directoryListing(let path, let entries):    handleDirectoryListing(path: path, entries: entries)
+        case .fileContent(let p, let d, let m, let s, let t): handleFileContent(path: p, data: d, mimeType: m, size: s, truncated: t)
         case .fileChunk(let p, let ci, let tc, let d, let m, let s): handleFileChunk(path: p, chunkIndex: ci, totalChunks: tc, data: d, mimeType: m, size: s)
-        case .fileThumbnail(let p, let d, let fs):        events.send(.fileThumbnail(path: p, data: d, fullSize: fs))
-        case .fileSearchResults(let files, let query):    onFileSearchResults?(files, query)
-
-        case .gitStatusResult(let status):                events.send(.gitStatus(status)); onGitStatus?(status)
-        case .gitDiffResult(let path, let diff):          events.send(.gitDiff(path: path, diff: diff)); onGitDiff?(path, diff)
-
-        case .transcription(let text):                    isTranscribing = false; events.send(.transcription(text)); onTranscription?(text)
-        case .whisperReady(let ready):                    isWhisperReady = ready
-        case .heartbeatConfig(let min, let count):        events.send(.heartbeatConfig(intervalMinutes: min, unreadCount: count)); onHeartbeatConfig?(min, count)
+        case .fileThumbnail(let p, let d, let fs):        handleFileThumbnail(path: p, data: d, fullSize: fs)
+        case .fileSearchResults(let files, let query):    handleFileSearchResults(files: files, query: query)
+        case .gitStatusResult(let status):                handleGitStatusResult(status)
+        case .gitDiffResult(let path, let diff):          handleGitDiffResult(path: path, diff: diff)
+        case .transcription(let text):                    handleTranscription(text)
+        case .whisperReady(let ready):                    handleWhisperReady(ready)
+        case .heartbeatConfig(let min, let count):        handleHeartbeatConfig(intervalMinutes: min, unreadCount: count)
         case .heartbeatSkipped(let c):                    handleHeartbeatSkipped(conversationId: c)
-        case .memories(let sections):                     events.send(.memories(sections)); onMemories?(sections)
+        case .memories(let sections):                     handleMemories(sections)
         case .memoryAdded(let t, let s, let txt, let c):  handleMemoryAdded(target: t, section: s, text: txt, conversationId: c)
-        case .skills(let s):                              skills = s; events.send(.skills(s)); onSkills?(s)
-        case .defaultWorkingDirectory(let path):          defaultWorkingDirectory = path
-        case .processList(let procs):                     processes = procs; onProcessList?(procs)
-        case .historySync(let sid, let msgs):             events.send(.historySync(sessionId: sid, messages: msgs)); onHistorySync?(sid, msgs)
-        case .historySyncError(let sid, let err):          events.send(.historySyncError(sessionId: sid, error: err)); onHistorySyncError?(sid, err)
-        case .remoteSessionList(let sessions):            onRemoteSessionList?(sessions)
-
-        case .renameConversation(let c, let name):        if let id = UUID(uuidString: c) { onRenameConversation?(id, name) }
-        case .setConversationSymbol(let c, let sym):      if let id = UUID(uuidString: c) { onSetConversationSymbol?(id, sym) }
-        case .deleteConversation(let c):                  if let id = UUID(uuidString: c) { onDeleteConversation?(id) }
-        case .switchConversation(let c):                  if let id = UUID(uuidString: c) { onSwitchConversation?(id) }
-        case .notify(let title, let body, _):             onNotify?(title, body)
-        case .clipboard(let text):                        onClipboard?(text)
-        case .openURL(let url):                           onOpenURL?(url)
-        case .haptic(let style):                          onHaptic?(style)
-        case .speak(let text):                            onSpeak?(text)
-        case .question(let qs, let c):                    onQuestion?(qs, c.flatMap { UUID(uuidString: $0) })
-        case .screenshot(let c):                          onScreenshot?(c.flatMap { UUID(uuidString: $0) })
-
-        case .teamCreated(let name, _, let c):            if let id = targetConversationId(from: c) { output(for: id).teamName = name }
-        case .teammateSpawned(let mate, let c):           if let id = targetConversationId(from: c) { output(for: id).teammates.append(mate) }
+        case .skills(let s):                              handleSkills(s)
+        case .defaultWorkingDirectory(let path):          handleDefaultWorkingDirectory(path)
+        case .processList(let procs):                     handleProcessList(procs)
+        case .historySync(let sid, let msgs):             handleHistorySync(sessionId: sid, messages: msgs)
+        case .historySyncError(let sid, let err):          handleHistorySyncError(sessionId: sid, error: err)
+        case .remoteSessionList(let sessions):            handleRemoteSessionList(sessions)
+        case .renameConversation(let name, let c):        handleRenameConversation(conversationId: c, name: name)
+        case .setConversationSymbol(let sym, let c):      handleSetConversationSymbol(conversationId: c, symbol: sym)
+        case .deleteConversation(let c):                  handleDeleteConversation(conversationId: c)
+        case .switchConversation(let c):                  handleSwitchConversation(conversationId: c)
+        case .notify(let title, let body, _):             handleNotify(title: title, body: body)
+        case .clipboard(let text):                        handleClipboard(text)
+        case .openURL(let url):                           handleOpenURL(url)
+        case .haptic(let style):                          handleHaptic(style)
+        case .speak(let text):                            handleSpeak(text)
+        case .question(let qs, let c):                    handleQuestion(questions: qs, conversationId: c)
+        case .screenshot(let c):                          handleScreenshot(conversationId: c)
+        case .teamCreated(let name, _, let c):            handleTeamCreated(teamName: name, conversationId: c)
+        case .teammateSpawned(let mate, let c):           handleTeammateSpawned(teammate: mate, conversationId: c)
         case .teammateUpdate(let tid, let st, let msg, let at, let c): handleTeammateUpdate(teammateId: tid, status: st, lastMessage: msg, lastMessageAt: at, conversationId: c)
-        case .teamDeleted(let c):                         if let id = targetConversationId(from: c) { let o = output(for: id); o.teamName = nil; o.teammates = [] }
-
-        case .autocompleteResult(let text, let req):       onAutocompleteResult?(text, req)
-        case .nameSuggestion(let name, let sym, let c):  if let id = UUID(uuidString: c) { onRenameConversation?(id, name); if let s = sym { onSetConversationSymbol?(id, s) } }
-
+        case .teamDeleted(let c):                         handleTeamDeleted(conversationId: c)
+        case .autocompleteResult(let text, let req):      handleAutocompleteResult(text: text, requestText: req)
+        case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(name: name, symbol: sym, conversationId: c)
+        case .plans(let stages):                          handlePlans(stages)
+        case .planDeleted(let stage, let filename):       handlePlanDeleted(stage: stage, filename: filename)
         case .fileChange, .image, .gitCommitResult:       break
+        }
+    }
+
+    private func handleDirectoryListing(path: String, entries: [FileEntry]) {
+        events.send(.directoryListing(path: path, entries: entries))
+        onDirectoryListing?(path, entries)
+    }
+
+    private func handleFileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool) {
+        events.send(.fileContent(path: path, data: data, mimeType: mimeType, size: size, truncated: truncated))
+        onFileContent?(path, data, mimeType, size, truncated)
+    }
+
+    private func handleFileThumbnail(path: String, data: String, fullSize: Int64) {
+        events.send(.fileThumbnail(path: path, data: data, fullSize: fullSize))
+    }
+
+    private func handleFileSearchResults(files: [String], query: String) {
+        onFileSearchResults?(files, query)
+    }
+
+    private func handleGitStatusResult(_ status: GitStatusInfo) {
+        events.send(.gitStatus(status))
+        onGitStatus?(status)
+    }
+
+    private func handleGitDiffResult(path: String, diff: String) {
+        events.send(.gitDiff(path: path, diff: diff))
+        onGitDiff?(path, diff)
+    }
+
+    private func handleTranscription(_ text: String) {
+        isTranscribing = false
+        events.send(.transcription(text))
+        onTranscription?(text)
+    }
+
+    private func handleWhisperReady(_ ready: Bool) {
+        isWhisperReady = ready
+    }
+
+    private func handleHeartbeatConfig(intervalMinutes: Int?, unreadCount: Int) {
+        events.send(.heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount))
+        onHeartbeatConfig?(intervalMinutes, unreadCount)
+    }
+
+    private func handleMemories(_ sections: [MemorySection]) {
+        events.send(.memories(sections))
+        onMemories?(sections)
+    }
+
+    private func handleSkills(_ newSkills: [Skill]) {
+        skills = newSkills
+        events.send(.skills(newSkills))
+        onSkills?(newSkills)
+    }
+
+    private func handleDefaultWorkingDirectory(_ path: String) {
+        defaultWorkingDirectory = path
+    }
+
+    private func handleProcessList(_ procs: [AgentProcessInfo]) {
+        processes = procs
+        onProcessList?(procs)
+    }
+
+    private func handleHistorySync(sessionId: String, messages: [HistoryMessage]) {
+        events.send(.historySync(sessionId: sessionId, messages: messages))
+        onHistorySync?(sessionId, messages)
+    }
+
+    private func handleHistorySyncError(sessionId: String, error: String) {
+        events.send(.historySyncError(sessionId: sessionId, error: error))
+        onHistorySyncError?(sessionId, error)
+    }
+
+    private func handleRemoteSessionList(_ sessions: [RemoteSession]) {
+        onRemoteSessionList?(sessions)
+    }
+
+    private func handleRenameConversation(conversationId: String, name: String) {
+        if let id = UUID(uuidString: conversationId) { onRenameConversation?(id, name) }
+    }
+
+    private func handleSetConversationSymbol(conversationId: String, symbol: String?) {
+        if let id = UUID(uuidString: conversationId) { onSetConversationSymbol?(id, symbol) }
+    }
+
+    private func handleDeleteConversation(conversationId: String) {
+        if let id = UUID(uuidString: conversationId) { onDeleteConversation?(id) }
+    }
+
+    private func handleSwitchConversation(conversationId: String) {
+        if let id = UUID(uuidString: conversationId) { onSwitchConversation?(id) }
+    }
+
+    private func handleNotify(title: String?, body: String) {
+        onNotify?(title, body)
+    }
+
+    private func handleClipboard(_ text: String) {
+        onClipboard?(text)
+    }
+
+    private func handleOpenURL(_ url: String) {
+        onOpenURL?(url)
+    }
+
+    private func handleHaptic(_ style: String) {
+        onHaptic?(style)
+    }
+
+    private func handleSpeak(_ text: String) {
+        onSpeak?(text)
+    }
+
+    private func handleQuestion(questions: [Question], conversationId: String?) {
+        onQuestion?(questions, conversationId.flatMap { UUID(uuidString: $0) })
+    }
+
+    private func handleScreenshot(conversationId: String?) {
+        onScreenshot?(conversationId.flatMap { UUID(uuidString: $0) })
+    }
+
+    private func handleTeamCreated(teamName: String, conversationId: String?) {
+        if let id = targetConversationId(from: conversationId) { output(for: id).teamName = teamName }
+    }
+
+    private func handleTeammateSpawned(teammate: TeammateInfo, conversationId: String?) {
+        if let id = targetConversationId(from: conversationId) { output(for: id).teammates.append(teammate) }
+    }
+
+    private func handleTeamDeleted(conversationId: String?) {
+        if let id = targetConversationId(from: conversationId) {
+            let o = output(for: id)
+            o.teamName = nil
+            o.teammates = []
+        }
+    }
+
+    private func handleAutocompleteResult(text: String, requestText: String) {
+        onAutocompleteResult?(text, requestText)
+    }
+
+    private func handleNameSuggestion(name: String, symbol: String?, conversationId: String) {
+        if let id = UUID(uuidString: conversationId) {
+            onRenameConversation?(id, name)
+            if let s = symbol { onSetConversationSymbol?(id, s) }
         }
     }
 
@@ -178,16 +275,17 @@ extension ConnectionManager {
         let currentTextLength = output(for: convId).fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
         output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing))
-        let detail = input.flatMap { extractToolDetail(name: name, input: $0) }
+        let detail = input.flatMap { ToolInputExtractor.extractDisplayDetail(name: name, jsonString: $0) }
         LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name, toolDetail: detail)
     }
 
-    private func handleToolResult(toolId: String, summary: String?, conversationId: String?) {
+    private func handleToolResult(toolId: String, summary: String?, output: String?, conversationId: String?) {
         guard let convId = targetConversationId(from: conversationId) else { return }
-        let out = output(for: convId)
+        let out = self.output(for: convId)
         if let idx = out.toolCalls.firstIndex(where: { $0.toolId == toolId }) {
             out.toolCalls[idx].state = .complete
             out.toolCalls[idx].resultSummary = summary
+            out.toolCalls[idx].resultOutput = output
         }
     }
 
@@ -278,8 +376,14 @@ extension ConnectionManager {
         let out = output(for: convId)
         if let idx = out.teammates.firstIndex(where: { $0.id == teammateId || $0.name == teammateId }) {
             if let status { out.teammates[idx].status = status }
-            if let msg = lastMessage { out.teammates[idx].lastMessage = msg }
-            if let ts = lastMessageAt { out.teammates[idx].lastMessageAt = ts }
+            if let msg = lastMessage {
+                let ts = lastMessageAt ?? Date()
+                out.teammates[idx].lastMessage = msg
+                out.teammates[idx].lastMessageAt = ts
+                out.teammates[idx].appendMessage(msg, at: ts)
+            } else if let ts = lastMessageAt {
+                out.teammates[idx].lastMessageAt = ts
+            }
         }
     }
 
@@ -311,6 +415,17 @@ extension ConnectionManager {
     func abort(conversationId: UUID? = nil) {
         send(.abort(conversationId: conversationId?.uuidString))
     }
+
+    private func handlePlans(_ stages: [String: [PlanItem]]) {
+        onPlans?(stages)
+    }
+
+    private func handlePlanDeleted(stage: String, filename: String) {
+        onPlanDeleted?(stage, filename)
+    }
+
+    func getPlans(workingDirectory: String)                        { ensureAuthenticated(); send(.getPlans(workingDirectory: workingDirectory)) }
+    func deletePlan(stage: String, filename: String, workingDirectory: String) { ensureAuthenticated(); send(.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)) }
 
     func listDirectory(path: String)                              { ensureAuthenticated(); send(.listDirectory(path: path)) }
     func getFile(path: String)                                    { ensureAuthenticated(); send(.getFile(path: path)) }

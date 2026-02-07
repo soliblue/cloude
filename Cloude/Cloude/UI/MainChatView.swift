@@ -2,7 +2,6 @@
 
 import SwiftUI
 import UIKit
-import Photos
 import Combine
 import CloudeShared
 
@@ -264,66 +263,36 @@ struct MainChatView: View {
     }
 
     func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
-        let workingDir = conversation?.workingDirectory ?? ""
-        let gitBranch = workingDir.nilIfEmpty.flatMap { gitBranches[$0] }
-        let availableTypes = WindowType.allCases.filter { type in
-            if type == .gitChanges { return gitBranch != nil }
-            return true
-        }
-        let conversationId = window.conversationId
-        let isStreaming = conversationId.map { connection.output(for: $0).isRunning } ?? false
-
         return HStack(spacing: 9) {
-            ForEach(availableTypes, id: \.self) { type in
-                Button(action: {
-                    windowManager.setActive(window.id)
-                    windowManager.setWindowType(window.id, type: type)
-                }) {
-                    Image(systemName: type.icon)
-                        .font(.system(size: 17))
-                        .foregroundColor(window.type == type ? .accentColor : .secondary)
-                        .opacity(window.type == type && isStreaming ? 0.4 : 1.0)
-                        .padding(4)
-                }
-                .buttonStyle(.plain)
-            }
-            Spacer()
             Button(action: {
                 windowManager.setActive(window.id)
                 editingWindow = window
             }) {
-                HStack(spacing: 5) {
-                    Image.safeSymbol(conversation?.symbol)
-                        .font(.system(size: 15))
-                    if let conv = conversation {
-                        Text(conv.name)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .lineLimit(1)
-                    } else {
-                        Text("Select chat...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    if let folder = conversation?.workingDirectory?.nilIfEmpty?.lastPathComponent {
-                        Text("• \(folder)")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-                    if let conv = conversation, conv.totalCost > 0 {
-                        Text("• $\(String(format: "%.2f", conv.totalCost))")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 15))
-                        .foregroundColor(.secondary)
-                }
+                ConversationInfoLabel(
+                    conversation: conversation,
+                    showCost: true,
+                    placeholderText: "Select chat..."
+                )
+                .padding(.horizontal, 7)
+                .padding(.vertical, 7)
             }
             .buttonStyle(.plain)
+
+            Spacer()
+
+            Button(action: {
+                windowManager.setActive(window.id)
+                refreshConversation(for: window)
+            }) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .padding(7)
+            }
+            .buttonStyle(.plain)
+
+            Divider()
+                .frame(height: 20)
 
             Button(action: {
                 windowManager.setActive(window.id)
@@ -340,6 +309,14 @@ struct MainChatView: View {
         .padding(.vertical, 7)
         .background(Color.oceanSecondary)
     }
+
+    private func refreshConversation(for window: ChatWindow) {
+        guard let convId = window.conversationId,
+              let conv = conversationStore.conversation(withId: convId),
+              let sessionId = conv.sessionId,
+              let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
+        connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
+    }
 }
 
 struct HeartbeatIntervalModifier: ViewModifier {
@@ -350,9 +327,9 @@ struct HeartbeatIntervalModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .confirmationDialog("Heartbeat Interval", isPresented: $showIntervalPicker, titleVisibility: .visible) {
-                ForEach([(0, "Off"), (5, "5 min"), (10, "10 min"), (30, "30 min"), (60, "1 hour"), (120, "2 hours"), (240, "4 hours"), (480, "8 hours"), (1440, "1 day")], id: \.0) { minutes, label in
-                    Button(label) {
-                        let value = minutes == 0 ? nil : minutes
+                ForEach(HeartbeatConfig.intervalOptions, id: \.minutes) { option in
+                    Button(option.label) {
+                        let value = option.minutes == 0 ? nil : option.minutes
                         conversationStore.heartbeatConfig.intervalMinutes = value
                         connection.send(.setHeartbeatInterval(minutes: value))
                     }
