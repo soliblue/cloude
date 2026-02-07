@@ -62,7 +62,7 @@ struct GitDiffView: View {
     }
 
     private var fileName: String {
-        (file.path as NSString).lastPathComponent
+        file.path.lastPathComponent
     }
 
     private var statusIcon: String {

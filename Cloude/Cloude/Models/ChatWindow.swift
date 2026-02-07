@@ -1,7 +1,3 @@
-//
-//  ChatWindow.swift
-//  Cloude
-
 import Foundation
 
 enum WindowType: String, CaseIterable, Codable {

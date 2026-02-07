@@ -7,11 +7,6 @@ struct WindowEditForm: View {
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
     let onSelectConversation: (Conversation) -> Void
-    let onNewConversation: () -> Void
-    var showRemoveButton: Bool = true
-    var onRemove: (() -> Void)?
-    var onRefresh: (() async -> Void)?
-    var onDuplicate: ((Conversation) -> Void)?
 
     @State private var name: String = ""
     @State private var symbol: String = ""
@@ -44,14 +39,14 @@ struct WindowEditForm: View {
     private var folderDisplayName: String {
         let path = currentFolderPath
         if path.isEmpty { return "No folder selected" }
-        return (path as NSString).lastPathComponent
+        return path.lastPathComponent
     }
 
     var body: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
                 Button(action: { showSymbolPicker = true }) {
-                    Image.safeSymbol(symbol.isEmpty ? nil : symbol, fallback: "circle.dashed")
+                    Image.safeSymbol(symbol.nilIfEmpty, fallback: "circle.dashed")
                         .font(.system(size: 24))
                         .frame(width: 48, height: 48)
                         .background(.regularMaterial)
@@ -119,15 +114,15 @@ struct WindowEditForm: View {
                                     Text(conv.name)
                                         .font(.subheadline)
                                         .lineLimit(1)
-                                    HStack(spacing: 4) {
+                                    HStack(spacing: 6) {
                                         if let dir = conv.workingDirectory, !dir.isEmpty {
-                                            Text((dir as NSString).lastPathComponent)
+                                            Text(dir.lastPathComponent)
+                                                .foregroundColor(.accentColor)
                                         }
-                                        Text("·")
                                         Text("\(conv.messages.count) msgs")
+                                            .foregroundColor(.secondary)
                                     }
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
                                 }
                                 Spacer()
                                 Text(relativeTime(conv.lastMessageAt))
@@ -155,7 +150,7 @@ struct WindowEditForm: View {
         }
         .onChange(of: symbol) { _, newValue in
             if let conv = conversation {
-                conversationStore.setConversationSymbol(conv, symbol: newValue.isEmpty ? nil : newValue)
+                conversationStore.setConversationSymbol(conv, symbol: newValue.nilIfEmpty)
             }
         }
         .sheet(isPresented: $showFolderPicker) {

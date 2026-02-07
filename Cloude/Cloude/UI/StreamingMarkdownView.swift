@@ -1,7 +1,3 @@
-//
-//  StreamingMarkdownView.swift
-//  Cloude
-
 import SwiftUI
 
 struct StreamingMarkdownView: View {

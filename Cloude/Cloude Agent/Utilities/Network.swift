@@ -1,10 +1,3 @@
-//
-//  Network.swift
-//  Cloude Agent
-//
-//  Network utilities for IP address detection
-//
-
 import Foundation
 
 enum NetworkHelper {

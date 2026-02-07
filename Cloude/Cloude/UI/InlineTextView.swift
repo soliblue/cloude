@@ -1,9 +1,6 @@
-//
-//  InlineTextView.swift
-//  Cloude
-
 import SwiftUI
 import UIKit
+import CloudeShared
 
 enum InlineSegment: Identifiable, Equatable {
     case text(id: UUID = UUID(), AttributedString)
@@ -41,7 +38,7 @@ struct InlineTextView: View {
                 attr.backgroundColor = Color(.secondarySystemFill)
                 result.append(attr)
             case .filePath(_, let path):
-                let filename = (path as NSString).lastPathComponent
+                let filename = path.lastPathComponent
                 let icon = fileIconChar(for: filename)
                 let nbsp = "\u{00A0}"
                 let pillText = "\(nbsp)\(icon)\(nbsp)\(filename.replacingOccurrences(of: " ", with: nbsp))\(nbsp)"
@@ -63,7 +60,7 @@ struct InlineTextView: View {
 }
 
 private func fileIconChar(for filename: String) -> String {
-    let ext = (filename as NSString).pathExtension.lowercased()
+    let ext = filename.pathExtension.lowercased()
     switch ext {
     case "swift": return "◆"
     case "py": return "◇"

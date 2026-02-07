@@ -1,7 +1,3 @@
-//
-//  SyntaxHighlighter.swift
-//  Cloude
-
 import SwiftUI
 
 struct SyntaxHighlighter {
