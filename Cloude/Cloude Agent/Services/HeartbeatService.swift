@@ -102,7 +102,7 @@ class HeartbeatService: ObservableObject {
             workingDirectory: workingDir,
             sessionId: Heartbeat.sessionId,
             isNewSession: needsCreate,
-            imageBase64: nil,
+            imagesBase64: nil,
             conversationId: Heartbeat.sessionId,
             useFixedSessionId: true,
             model: model

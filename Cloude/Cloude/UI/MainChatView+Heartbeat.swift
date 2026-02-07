@@ -15,7 +15,7 @@ extension MainChatView {
                 conversationStore: conversationStore,
                 connection: connection,
                 inputText: $inputText,
-                selectedImageData: $selectedImageData,
+                attachedImages: $attachedImages,
                 isKeyboardVisible: isKeyboardVisible
             )
         }

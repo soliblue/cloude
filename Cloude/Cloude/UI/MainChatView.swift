@@ -2,6 +2,7 @@
 
 import SwiftUI
 import UIKit
+import Photos
 import Combine
 import CloudeShared
 
@@ -13,8 +14,8 @@ struct MainChatView: View {
     @State var currentPageIndex: Int = 0
     @State var isKeyboardVisible = false
     @State var inputText = ""
-    @State var selectedImageData: Data?
-    @State var drafts: [UUID: (text: String, imageData: Data?)] = [:]
+    @State var attachedImages: [AttachedImage] = []
+    @State var drafts: [UUID: (text: String, images: [AttachedImage])] = [:]
     @State var gitBranches: [String: String] = [:]
     @State var pendingGitChecks: [String] = []
     @State var showIntervalPicker = false
@@ -80,7 +81,7 @@ struct MainChatView: View {
             VStack(spacing: 0) {
                 GlobalInputBar(
                     inputText: $inputText,
-                    selectedImageData: $selectedImageData,
+                    attachedImages: $attachedImages,
                     isConnected: connection.isAuthenticated,
                     isWhisperReady: connection.isWhisperReady,
                     isTranscribing: connection.isTranscribing,
@@ -131,8 +132,8 @@ struct MainChatView: View {
         }
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
             if let oldId = oldId {
-                if !inputText.isEmpty || selectedImageData != nil {
-                    drafts[oldId] = (inputText, selectedImageData)
+                if !inputText.isEmpty || !attachedImages.isEmpty {
+                    drafts[oldId] = (inputText, attachedImages)
                 } else {
                     drafts.removeValue(forKey: oldId)
                 }
@@ -140,10 +141,10 @@ struct MainChatView: View {
             }
             if let newId = newId, let draft = drafts[newId] {
                 inputText = draft.text
-                selectedImageData = draft.imageData
+                attachedImages = draft.images
             } else {
                 inputText = ""
-                selectedImageData = nil
+                attachedImages = []
             }
             if windowManager.windows.count == 1 { syncActiveWindowToStore() }
         }
@@ -196,6 +197,9 @@ struct MainChatView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             isKeyboardVisible = false
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
+            fetchLatestScreenshot()
         }
         .onChange(of: currentPageIndex) { oldIndex, newIndex in
             if oldIndex == 0 && newIndex != 0 {

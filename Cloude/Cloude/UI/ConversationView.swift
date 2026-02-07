@@ -54,31 +54,45 @@ struct ConversationView: View {
                 )
                 Divider()
             }
-            ChatMessageList(
-                messages: messages,
-                queuedMessages: queuedMessages,
-                currentOutput: output?.text ?? "",
-                currentToolCalls: output?.toolCalls ?? [],
-                currentRunStats: isCompact ? nil : output?.runStats,
-                scrollProxy: $scrollProxy,
-                agentState: isThisConversationRunning ? .running : .idle,
-                conversationId: effectiveConversation?.id,
-                isCompacting: output?.isCompacting ?? false,
-                onRefresh: refreshMissedResponse,
-                onInteraction: onInteraction,
-                onDeleteQueued: { messageId in
-                    if let conv = effectiveConversation {
-                        store.removePendingMessage(messageId, from: conv)
-                    }
-                },
-                conversation: effectiveConversation,
-                conversationStore: store,
-                connection: connection,
-                window: window,
-                windowManager: windowManager,
-                onSelectConversation: onSelectRecentConversation,
-                onNewConversation: onNewConversation
-            )
+
+            if let teamName = output?.teamName, !(output?.teammates.isEmpty ?? true) {
+                TeamBannerView(
+                    teamName: teamName,
+                    teammates: output?.teammates ?? []
+                )
+            }
+
+            ZStack(alignment: .trailing) {
+                ChatMessageList(
+                    messages: messages,
+                    queuedMessages: queuedMessages,
+                    currentOutput: output?.text ?? "",
+                    currentToolCalls: output?.toolCalls ?? [],
+                    currentRunStats: isCompact ? nil : output?.runStats,
+                    scrollProxy: $scrollProxy,
+                    agentState: isThisConversationRunning ? .running : .idle,
+                    conversationId: effectiveConversation?.id,
+                    isCompacting: output?.isCompacting ?? false,
+                    onRefresh: refreshMissedResponse,
+                    onInteraction: onInteraction,
+                    onDeleteQueued: { messageId in
+                        if let conv = effectiveConversation {
+                            store.removePendingMessage(messageId, from: conv)
+                        }
+                    },
+                    conversation: effectiveConversation,
+                    conversationStore: store,
+                    connection: connection,
+                    window: window,
+                    windowManager: windowManager,
+                    onSelectConversation: onSelectRecentConversation,
+                    onNewConversation: onNewConversation
+                )
+
+                if let mates = output?.teammates, !mates.isEmpty {
+                    TeamOrbsOverlay(teammates: mates)
+                }
+            }
         }
         .onChange(of: output?.isRunning) { oldValue, newValue in
             if oldValue == true && newValue == false {
