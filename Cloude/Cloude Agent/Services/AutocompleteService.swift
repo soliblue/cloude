@@ -19,20 +19,21 @@ class AutocompleteService {
         return "claude"
     }
 
-    func complete(text: String, context: [String], workingDirectory: String?, completion: @escaping (String?) -> Void) {
+    func suggest(context: [String], workingDirectory: String?, completion: @escaping ([String]) -> Void) {
         cancel()
 
         var contextBlock = ""
         if !context.isEmpty {
-            contextBlock = "Recent conversation:\n" + context.enumerated().map { i, msg in
+            contextBlock = context.enumerated().map { i, msg in
                 (i % 2 == 0 ? "User: " : "Assistant: ") + msg
-            }.joined(separator: "\n") + "\n\n"
+            }.joined(separator: "\n")
         }
 
         let prompt = """
-        \(contextBlock)The user is typing a message and has written: "\(text)"
+        Given this conversation:
+        \(contextBlock)
 
-        Complete their message naturally. Output ONLY the remaining text that would come after what they've already typed. Do not repeat what they typed. Keep it concise — just finish their thought in a few words. If you can't think of a good completion, output nothing.
+        Suggest exactly 2 short follow-up messages the user might send next. Each should be 2-6 words, natural and actionable. Output ONLY a JSON array of 2 strings, nothing else. Example: ["Push to git", "Looks good"]
         """
 
         let process = Process()
@@ -61,25 +62,42 @@ class AutocompleteService {
                 }
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: timeoutWork)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: timeoutWork)
 
         process.terminationHandler = { [weak self] _ in
             timeoutWork.cancel()
             let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !output.isEmpty else {
+                Task { @MainActor in self?.currentProcess = nil }
+                return
+            }
+
+            var jsonString = output
+            if let start = jsonString.firstIndex(of: "["), let end = jsonString.lastIndex(of: "]") {
+                jsonString = String(jsonString[start...end])
+            }
+
+            guard let jsonData = jsonString.data(using: .utf8),
+                  let suggestions = try? JSONDecoder().decode([String].self, from: jsonData),
+                  !suggestions.isEmpty else {
+                Task { @MainActor in self?.currentProcess = nil }
+                return
+            }
+
+            let filtered = Array(suggestions.prefix(2).filter { !$0.isEmpty })
             Task { @MainActor in
                 guard self?.currentProcess === process else { return }
                 self?.currentProcess = nil
-                completion(output?.isEmpty == true ? nil : output)
+                if !filtered.isEmpty { completion(filtered) }
             }
         }
 
         do {
             try process.run()
         } catch {
-            Log.error("Autocomplete failed to start: \(error)")
+            Log.error("Suggestions failed to start: \(error)")
             currentProcess = nil
-            completion(nil)
         }
     }
 

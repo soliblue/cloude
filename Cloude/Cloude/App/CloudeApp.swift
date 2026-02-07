@@ -68,6 +68,7 @@ struct CloudeApp: App {
                                 Image(systemName: "brain")
                             }
                         }
+                        .padding(.horizontal, 8)
                     }
                     ToolbarItem(placement: .principal) {
                         ConnectionStatusLogo(connection: connection)
