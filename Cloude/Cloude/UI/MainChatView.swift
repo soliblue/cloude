@@ -135,6 +135,21 @@ struct MainChatView: View {
                 }
                 AudioRecorder.clearPendingAudioFile()
             }
+            connection.onAuthenticated = { [conversationStore, connection] in
+                for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
+                    let output = connection.output(for: conv.id)
+                    if !output.isRunning {
+                        conversationStore.replayQueuedMessages(conversation: conv, connection: connection)
+                    }
+                }
+                let heartbeat = conversationStore.heartbeatConversation
+                if !heartbeat.pendingMessages.isEmpty {
+                    let output = connection.output(for: Heartbeat.conversationId)
+                    if !output.isRunning {
+                        conversationStore.replayQueuedMessages(conversation: heartbeat, connection: connection)
+                    }
+                }
+            }
         }
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
             if let oldId = oldId {

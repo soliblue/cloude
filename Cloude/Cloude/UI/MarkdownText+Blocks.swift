@@ -45,25 +45,25 @@ struct MarkdownTableView: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
+            Grid(alignment: .leading, horizontalSpacing: 0, verticalSpacing: 0) {
                 ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
                     if rowIndex > 0 {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(height: 1)
+                        Divider()
                     }
-                    HStack(spacing: 0) {
+                    GridRow {
                         ForEach(0..<columnCount, id: \.self) { colIndex in
-                            if colIndex > 0 {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.2))
-                                    .frame(width: 1)
-                            }
                             TableCell(
                                 text: colIndex < row.count ? row[colIndex].trimmingCharacters(in: .whitespaces) : "",
                                 isHeader: rowIndex == 0
                             )
                             .frame(minWidth: 60, alignment: .leading)
+                            .overlay(alignment: .leading) {
+                                if colIndex > 0 {
+                                    Rectangle()
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(width: 1)
+                                }
+                            }
                         }
                     }
                     .background(rowIndex == 0 ? Color.gray.opacity(0.08) : Color.clear)
