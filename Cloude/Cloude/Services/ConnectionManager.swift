@@ -139,6 +139,7 @@ struct ChunkProgress: Equatable {
     var onGitStatus: ((GitStatusInfo) -> Void)?
     var onGitDiff: ((String, String) -> Void)?
     var onDisconnect: ((UUID, ConversationOutput) -> Void)?
+    var onAuthenticated: (() -> Void)?
     var onTranscription: ((String) -> Void)?
     var onHeartbeatConfig: ((Int?, Int) -> Void)?
     var onMemories: (([MemorySection]) -> Void)?
