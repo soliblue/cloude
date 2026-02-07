@@ -164,7 +164,7 @@ struct ChunkProgress: Equatable {
     var onFileSearchResults: (([String], String) -> Void)?
     var onRemoteSessionList: (([RemoteSession]) -> Void)?
     var onLastAssistantMessageCostUpdate: ((UUID, Double) -> Void)?
-    var onAutocompleteResult: ((String, String) -> Void)?
+    var onSuggestionsResult: (([String], UUID?) -> Void)?
     var onPlans: (([String: [PlanItem]]) -> Void)?
     var onPlanDeleted: ((String, String) -> Void)?
 

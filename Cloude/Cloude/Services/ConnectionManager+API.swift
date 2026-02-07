@@ -60,7 +60,7 @@ extension ConnectionManager {
         case .teammateSpawned(let mate, let c):           handleTeammateSpawned(teammate: mate, conversationId: c)
         case .teammateUpdate(let tid, let st, let msg, let at, let c): handleTeammateUpdate(teammateId: tid, status: st, lastMessage: msg, lastMessageAt: at, conversationId: c)
         case .teamDeleted(let c):                         handleTeamDeleted(conversationId: c)
-        case .autocompleteResult(let text, let req):      handleAutocompleteResult(text: text, requestText: req)
+        case .suggestionsResult(let s, let c):              handleSuggestionsResult(suggestions: s, conversationId: c)
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(name: name, symbol: sym, conversationId: c)
         case .plans(let stages):                          handlePlans(stages)
         case .planDeleted(let stage, let filename):       handlePlanDeleted(stage: stage, filename: filename)
@@ -205,8 +205,8 @@ extension ConnectionManager {
         }
     }
 
-    private func handleAutocompleteResult(text: String, requestText: String) {
-        onAutocompleteResult?(text, requestText)
+    private func handleSuggestionsResult(suggestions: [String], conversationId: String?) {
+        onSuggestionsResult?(suggestions, conversationId.flatMap { UUID(uuidString: $0) })
     }
 
     private func handleNameSuggestion(name: String, symbol: String?, conversationId: String) {
@@ -447,9 +447,9 @@ extension ConnectionManager {
         send(.transcribe(audioBase64: audioBase64))
     }
 
-    func requestAutocomplete(text: String, context: [String], workingDirectory: String?) {
+    func requestSuggestions(context: [String], workingDirectory: String?, conversationId: UUID?) {
         ensureAuthenticated()
-        send(.autocomplete(text: text, context: context, workingDirectory: workingDirectory))
+        send(.requestSuggestions(context: context, workingDirectory: workingDirectory, conversationId: conversationId?.uuidString))
     }
 
     func requestNameSuggestion(text: String, context: [String], conversationId: UUID) {

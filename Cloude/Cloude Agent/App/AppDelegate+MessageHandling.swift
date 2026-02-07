@@ -122,13 +122,11 @@ extension AppDelegate {
             Log.info("Found \(sessions.count) sessions")
             server.sendMessage(.remoteSessionList(sessions: sessions), to: connection)
 
-        case .autocomplete(let text, let context, let workingDirectory):
-            Log.info("Autocomplete request: \"\(text.prefix(30))\"")
-            autocompleteService.complete(text: text, context: context, workingDirectory: workingDirectory) { [weak self] result in
-                if let suggestion = result {
-                    Log.info("Autocomplete result: \"\(suggestion.prefix(40))\"")
-                    self?.server.sendMessage(.autocompleteResult(text: suggestion, requestText: text), to: connection)
-                }
+        case .requestSuggestions(let context, let workingDirectory, let conversationId):
+            Log.info("Suggestions request")
+            autocompleteService.suggest(context: context, workingDirectory: workingDirectory) { [weak self] suggestions in
+                Log.info("Suggestions result: \(suggestions)")
+                self?.server.sendMessage(.suggestionsResult(suggestions: suggestions, conversationId: conversationId), to: connection)
             }
 
         case .suggestName(let text, let context, let conversationId):

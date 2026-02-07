@@ -23,7 +23,7 @@ public enum ClientMessage: Codable {
     case syncHistory(sessionId: String, workingDirectory: String)
     case searchFiles(query: String, workingDirectory: String)
     case listRemoteSessions(workingDirectory: String)
-    case autocomplete(text: String, context: [String], workingDirectory: String?)
+    case requestSuggestions(context: [String], workingDirectory: String?, conversationId: String?)
     case suggestName(text: String, context: [String], conversationId: String)
     case getPlans(workingDirectory: String)
     case deletePlan(stage: String, filename: String, workingDirectory: String)
@@ -114,11 +114,11 @@ public enum ClientMessage: Codable {
         case "list_remote_sessions":
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .listRemoteSessions(workingDirectory: workingDirectory)
-        case "autocomplete":
-            let text = try container.decode(String.self, forKey: .text)
+        case "request_suggestions":
             let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
             let workingDirectory = try container.decodeIfPresent(String.self, forKey: .workingDirectory)
-            self = .autocomplete(text: text, context: context, workingDirectory: workingDirectory)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .requestSuggestions(context: context, workingDirectory: workingDirectory, conversationId: conversationId)
         case "suggest_name":
             let text = try container.decode(String.self, forKey: .text)
             let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
@@ -214,11 +214,11 @@ public enum ClientMessage: Codable {
         case .listRemoteSessions(let workingDirectory):
             try container.encode("list_remote_sessions", forKey: .type)
             try container.encode(workingDirectory, forKey: .workingDirectory)
-        case .autocomplete(let text, let context, let workingDirectory):
-            try container.encode("autocomplete", forKey: .type)
-            try container.encode(text, forKey: .text)
+        case .requestSuggestions(let context, let workingDirectory, let conversationId):
+            try container.encode("request_suggestions", forKey: .type)
             try container.encode(context, forKey: .context)
             try container.encodeIfPresent(workingDirectory, forKey: .workingDirectory)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .suggestName(let text, let context, let conversationId):
             try container.encode("suggest_name", forKey: .type)
             try container.encode(text, forKey: .text)
