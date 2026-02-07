@@ -156,7 +156,7 @@ struct HeartbeatSheet: View {
         let thumbnails = ImageEncoder.encodeThumbnails(attachedImages)
         guard !text.isEmpty || allImagesBase64 != nil else { return }
 
-        if convOutput.isRunning {
+        if convOutput.isRunning || !connection.isAuthenticated {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.queueMessage(userMessage, to: heartbeat)
         } else {
