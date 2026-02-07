@@ -79,12 +79,13 @@ extension FilePathPreviewView {
         ScrollView(.vertical) {
             if let highlighted = highlightedCode {
                 Text(highlighted)
+                    .font(.system(size: 12, design: .monospaced))
                     .textSelection(.enabled)
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 Text(text)
-                    .font(.system(size: 13, design: .monospaced))
+                    .font(.system(size: 12, design: .monospaced))
                     .textSelection(.enabled)
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)

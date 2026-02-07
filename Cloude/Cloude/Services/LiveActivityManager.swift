@@ -42,9 +42,7 @@ class LiveActivityManager {
                 pushType: nil
             )
             activities[convIdString] = activity
-        } catch {
-            print("[LiveActivity] Failed to start: \(error)")
-        }
+        } catch { }
     }
 
     func updateActivity(

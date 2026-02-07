@@ -5,13 +5,13 @@ import CloudeShared
 extension AppDelegate {
     func handleMessage(_ message: ClientMessage, from connection: NWConnection) {
         switch message {
-        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imagesBase64, let conversationId, let conversationName, let forkSession, let effort):
-            Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), images=\(imagesBase64?.count ?? 0), isNew=\(isNewSession), fork=\(forkSession), effort=\(effort ?? "nil"))")
+        case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imagesBase64, let conversationId, let conversationName, let forkSession, let effort, let model):
+            Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), images=\(imagesBase64?.count ?? 0), isNew=\(isNewSession), fork=\(forkSession), effort=\(effort ?? "nil"), model=\(model ?? "nil"))")
             if let wd = workingDirectory, !wd.isEmpty {
                 HeartbeatService.shared.projectDirectory = wd
             }
             let convId = conversationId ?? UUID().uuidString
-            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, conversationId: convId, conversationName: conversationName, forkSession: forkSession, effort: effort)
+            runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, conversationId: convId, conversationName: conversationName, forkSession: forkSession, model: model, effort: effort)
 
         case .abort(let conversationId):
             if let convId = conversationId {

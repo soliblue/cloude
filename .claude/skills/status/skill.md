@@ -12,37 +12,48 @@ Get a quick overview of where things stand.
 
 ## Check These
 
-1. **Staging** (CLAUDE.local.md)
-   - How many items awaiting test?
-   - When was last deploy?
-   - **WARN if 5+ untested items** - stop adding features, ask Soli to test first
-
-2. **Git Status**
+1. **Testing Queue** (plans/testing/)
    ```bash
-   git status --short
-   git log --oneline -3
+   ls plans/testing/ 2>/dev/null | grep -c .md
+   ```
+   - Count items in `plans/testing/`
+   - **WARN if 5+ items** — stop adding features, ask Soli to test first
+   - List the items briefly
+
+2. **Last Deploy** (CLAUDE.local.md)
+   - When was last deploy? Extract from "Last Deploy" section
+   - Show what changed since last deploy:
+   ```bash
+   git log --oneline --since="LAST_DEPLOY_DATE"
    ```
 
-3. **Open Plans**
+3. **Git Status**
    ```bash
-   ls -la plans/
+   git status --short
+   git log --oneline -5
+   ```
+
+4. **Open Plans**
+   ```bash
+   ls plans/active/ plans/next/ 2>/dev/null
    ```
    Read any active plans to understand ongoing work.
 
-4. **Moltbook** (if relevant)
+5. **Moltbook** (if relevant)
    - Last check timestamp in CLAUDE.local.md
    - Any engagement on recent posts?
 
 ## Output Format
 
 Summarize concisely:
-- Staging: X awaiting test, last deploy [date] (Build XX)
+- Testing: X items awaiting test [list names]
+- Last deploy: [date] (Build XX), Y commits since
 - Git: [clean/dirty], last commit [message]
 - Plans: [list active plans or "none"]
 - Blockers: [any issues or "none"]
 
 **If 5+ items awaiting test:**
 ```
-⚠️ STAGING FULL - 7 items awaiting test
+TESTING QUEUE FULL - X items awaiting test
 Stop adding features until Soli tests. Ask: "Ready to test the staging items?"
 ```
