@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | File | Purpose | Git |
 |------|---------|-----|
 | `CLAUDE.md` | Project instructions, architecture, code style | Public |
-| `CLAUDE.local.md` | Personal memory, identity, preferences, staging | Gitignored |
-| `FEATURES.md` | Feature tracking and roadmap | Public |
+| `CLAUDE.local.md` | Personal memory, identity, preferences | Gitignored |
+| `plans/` | Feature tracking, roadmap, work coordination | Public |
 | `.env` | API keys, secrets | Gitignored |
 
 Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from project root.
@@ -16,10 +16,6 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 **Minimize markdown files** - Only these core files + `plans/` directory. Don't create new markdown files; they won't be auto-loaded and context gets lost.
 
 **For anyone cloning this repo:** Create your own `CLAUDE.local.md` (see format below) and `.env` with your App Store Connect credentials.
-
-## Feature Tracking
-
-**FEATURES.md is the source of truth** for what Cloude can do and what's on the roadmap. After adding or removing a feature, update FEATURES.md to keep it current.
 
 ## Critical Warnings
 
