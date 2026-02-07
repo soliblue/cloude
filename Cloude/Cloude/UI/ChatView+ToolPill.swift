@@ -103,12 +103,12 @@ struct InlineToolPill: View {
             ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, cmd in
                 if index > 0 {
                     Text("›")
-                        .font(.system(size: 14, weight: .light))
+                        .font(.system(size: 12, weight: .light))
                         .foregroundColor(.secondary)
                 }
                 let parsed = BashCommandParser.parse(cmd)
                 Text(parsed.command.isEmpty ? "cmd" : parsed.command)
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundColor(toolCallColor(for: "Bash", input: cmd))
             }
             if chainedCommands.count > 3 {
