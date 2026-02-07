@@ -1,10 +1,3 @@
-//
-//  SettingsView.swift
-//  Cloude
-//
-//  Connection settings
-//
-
 import SwiftUI
 import CloudeShared
 

@@ -1,8 +1,3 @@
-//
-//  PulsingBorder.swift
-//  Cloude
-//
-
 import SwiftUI
 
 struct PulsingBorder: View {

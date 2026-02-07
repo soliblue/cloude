@@ -1,7 +1,3 @@
-//
-//  MarkdownText+Blocks.swift
-//  Cloude
-
 import SwiftUI
 
 struct CodeBlock: View {

@@ -247,9 +247,6 @@ struct MemoryItemCard: View {
     }
 
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter.string(from: date)
+        DateFormatters.mediumDate(date)
     }
 }

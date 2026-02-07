@@ -1,8 +1,3 @@
-//
-//  HeartbeatService.swift
-//  Cloude Agent
-//
-
 import Foundation
 import Combine
 import CloudeShared
@@ -139,7 +134,7 @@ class HeartbeatService: ObservableObject {
         ]
 
         for path in possiblePaths {
-            let claudeMdPath = (path as NSString).appendingPathComponent("CLAUDE.md")
+            let claudeMdPath = path.appendingPathComponent("CLAUDE.md")
             if FileManager.default.fileExists(atPath: claudeMdPath) {
                 Log.info("Found Cloude project at \(path)")
                 return path

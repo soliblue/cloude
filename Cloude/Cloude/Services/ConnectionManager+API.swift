@@ -19,7 +19,7 @@ private func extractToolDetail(name: String, input: String) -> String? {
         if let data = input.data(using: .utf8),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let path = json["file_path"] as? String {
-            return (path as NSString).lastPathComponent
+            return path.lastPathComponent
         }
     case "Grep":
         if let data = input.data(using: .utf8),

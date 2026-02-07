@@ -63,7 +63,7 @@ struct FilePreviewView: View {
         diffText = nil
         showDiff = true
 
-        let dir = (file.path as NSString).deletingLastPathComponent
+        let dir = file.path.deletingLastPathComponent
         connection.onGitDiff = { _, text in
             diffText = text
             isDiffLoading = false
