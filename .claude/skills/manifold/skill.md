@@ -12,10 +12,10 @@ Participate in prediction markets on Manifold Markets.
 
 ## Account Info
 
-- **Username**: Cloudio
-- **Profile**: https://manifold.markets/Cloudio
-- **Bio**: Autonomous Claude agent running on @Soli's laptop. I bet on markets I have informed opinions about. Built with Claude Code.
-- **Scope**: Betting and market browsing only (no comments for now)
+- **Username**: Soli (this is Soli's personal account — NOT Cloude's)
+- **User ID**: MANIFOLD_USER_ID_PLACEHOLDER
+- **Profile**: https://manifold.markets/Soli
+- **CRITICAL**: Never post, bet, comment, or create markets without explicit permission. This is Soli's account, not mine.
 
 ## API Authentication
 
@@ -78,27 +78,37 @@ curl -sL -X POST \
   "https://api.manifold.markets/v0/market/{marketId}/sell" | jq
 ```
 
-## Check My Bets
+## Check Bets
 
 ```bash
 curl -sL -H "Authorization: Key $MANIFOLD_KEY" \
-  "https://api.manifold.markets/v0/bets?username=Cloudio&limit=20" | jq '[.[] | {contractId, outcome, amount, shares, probBefore, probAfter, createdTime}]'
+  "https://api.manifold.markets/v0/bets?username=Soli&limit=20" | jq '[.[] | {contractId, outcome, amount, shares, probBefore, probAfter, createdTime}]'
 ```
 
-## Check My Positions on a Market
+## Check Positions on a Market
 
 ```bash
-curl -sL "https://api.manifold.markets/v0/market/{marketId}/positions?userId=MY_USER_ID" | jq
+curl -sL "https://api.manifold.markets/v0/market/{marketId}/positions?userId=MANIFOLD_USER_ID_PLACEHOLDER" | jq
 ```
 
-## Betting Strategy
+## Soli's Manifold Profile
 
-- Only bet on markets where I have genuine signal (AI, software, tech trends, prediction markets themselves)
-- Start with small bets (10-50 mana) to calibrate
-- Track accuracy over time - the whole point is accountability
-- No degenerate gambling on random sports/politics markets without edge
-- Record reasoning for each bet in CLAUDE.local.md so future sessions can evaluate
-- Prefer markets with good liquidity (higher volume = more meaningful prices)
+- **Account since**: Sept 2023
+- **3,595 total bets** across 460 markets, **100 markets created**
+- **4,535 mana balance**, 73,527 total deposited, premium subscriber
+- **Peak activity**: Dec 2023 - Jan 2024 (750+ bets/month), tapered to occasional since mid-2025
+- **Dominant interest**: AI/LLM (71% of created markets) — ChatBot Arena rankings, model releases, company moves
+- **Notable markets created**: "Best LLM at end of 2025" (584K vol, 199 traders), "Trump die/ill before end of term" (503K vol, 874 traders)
+- **Style**: Heavy YES bias (78%), bets mostly 10-500 mana range, trades actively in markets he cares about (359 bets in a single market)
+- **Topics**: AI models, OpenAI vs Anthropic, tech stocks, Apple hardware, prediction markets meta, occasional politics/philosophy
+- **Twitter**: @_xsoli
+
+## Rules for Cloude
+
+- READ-ONLY by default. Only browse, analyze, surface insights.
+- Never bet, sell, create markets, or comment without Soli's explicit instruction.
+- When suggesting opportunities, show the reasoning — Soli decides.
+- This is Soli's account and identity. I don't pretend to be him.
 
 ## Rate Limits
 

@@ -89,6 +89,25 @@ extension MainChatView {
         }
     }
 
+    func setupAutocompleteHandler() {
+        connection.onAutocompleteResult = { suggestion, requestText in
+            guard inputText.trimmingCharacters(in: .whitespacesAndNewlines) == requestText else { return }
+            withAnimation(.easeIn(duration: 0.15)) {
+                autocompleteSuggestion = suggestion
+            }
+        }
+    }
+
+    func requestAutocomplete(_ text: String) {
+        var context: [String] = []
+        if let conv = currentConversation {
+            let recent = conv.messages.suffix(4)
+            context = recent.map { $0.text }
+        }
+        let workingDir = activeWindowWorkingDirectory()
+        connection.requestAutocomplete(text: text, context: context, workingDirectory: workingDir)
+    }
+
     func setupCostHandler() {
         connection.onLastAssistantMessageCostUpdate = { [conversationStore] convId, costUsd in
             guard let conversation = conversationStore.conversation(withId: convId),
