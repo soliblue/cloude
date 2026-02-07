@@ -13,10 +13,11 @@ struct InlineToolPill: View {
         return commands.count > 1 ? commands : []
     }
 
-    private func truncatedSummary(_ text: String) -> String {
-        guard text.count > 40 else { return text }
-        return String(text.prefix(37)) + "..."
-    }
+    // TODO: Re-enable when live tool updates are ready
+    // private func truncatedSummary(_ text: String) -> String {
+    //     guard text.count > 40 else { return text }
+    //     return String(text.prefix(37)) + "..."
+    // }
 
     var body: some View {
         pillContent
@@ -59,16 +60,16 @@ struct InlineToolPill: View {
                 }
             }
 
-            if let summary = toolCall.resultSummary, toolCall.state == .complete {
-                HStack(spacing: 3) {
-                    Text("↳")
-                        .font(.system(size: 10))
-                    Text(truncatedSummary(summary))
-                        .font(.system(size: 10, design: .monospaced))
-                        .lineLimit(1)
-                }
-                .foregroundColor(.secondary)
-            }
+            // TODO: Re-enable when live tool updates are ready
+            // HStack(spacing: 3) {
+            //     Text("↳")
+            //         .font(.system(size: 10))
+            //     Text(truncatedSummary(toolCall.resultSummary ?? " "))
+            //         .font(.system(size: 10, design: .monospaced))
+            //         .lineLimit(1)
+            // }
+            // .foregroundColor(.secondary)
+            // .opacity(toolCall.resultSummary != nil ? 1 : 0)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)

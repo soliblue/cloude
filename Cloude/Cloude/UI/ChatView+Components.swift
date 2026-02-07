@@ -120,7 +120,7 @@ struct StreamingInterleavedOutput: View {
                             case .tools(let tools):
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 8) {
-                                        ForEach(Array(tools.reversed().enumerated()), id: \.offset) { _, tool in
+                                        ForEach(tools, id: \.toolId) { tool in
                                             InlineToolPill(toolCall: tool)
                                         }
                                     }

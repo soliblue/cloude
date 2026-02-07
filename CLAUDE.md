@@ -254,6 +254,7 @@ cloude haptic <style>        # Trigger haptic feedback (light/medium/heavy/rigid
 cloude speak Hello world     # Text-to-speech on iOS
 cloude switch <conv-id>      # Switch to a different conversation by UUID
 cloude ask --q "Question?" --options "A,B,C"  # Ask user a multiple-choice question
+cloude screenshot              # Capture iOS screen and send back as image
 ```
 
 **Asking Questions (`cloude ask`):**
