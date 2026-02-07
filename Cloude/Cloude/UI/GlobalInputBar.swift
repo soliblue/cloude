@@ -7,6 +7,7 @@ import CloudeShared
 struct GlobalInputBar: View {
     @Binding var inputText: String
     @Binding var attachedImages: [AttachedImage]
+    @Binding var autocompleteSuggestion: String
     let isConnected: Bool
     let isWhisperReady: Bool
     let isTranscribing: Bool
@@ -21,6 +22,7 @@ struct GlobalInputBar: View {
     var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
     var onFileSearch: ((String) -> Void)?
+    var onAutocomplete: ((String) -> Void)?
 
     @State private var selectedItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
@@ -36,6 +38,7 @@ struct GlobalInputBar: View {
     @State private var idleTime: Date = Date()
     @State private var showStopButton = false
     @State private var fileSearchDebounce: Task<Void, Never>?
+    @State private var autocompleteDebounce: Task<Void, Never>?
     @State private var currentEffort: EffortLevel?
     @State private var currentModel: ModelSelection?
 
@@ -171,6 +174,7 @@ struct GlobalInputBar: View {
                 .onChanged { value in
                     let verticalDrag = -value.translation.height
                     let horizontalDrag = -value.translation.width
+                    let rightSwipe = value.translation.width
 
                     if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
                         isSwipingToRecord = true
@@ -180,11 +184,16 @@ struct GlobalInputBar: View {
                         horizontalSwipeOffset = horizontalDrag
                         swipeOffset = 0
                         isSwipingToRecord = false
+                    } else if rightSwipe > abs(-value.translation.height) && !autocompleteSuggestion.isEmpty {
+                        horizontalSwipeOffset = -rightSwipe
+                        swipeOffset = 0
+                        isSwipingToRecord = false
                     }
                 }
                 .onEnded { value in
                     let verticalDrag = -value.translation.height
                     let horizontalDrag = -value.translation.width
+                    let rightSwipe = value.translation.width
 
                     if verticalDrag >= swipeThreshold && canRecord && isSwipingToRecord {
                         startRecording()
@@ -193,6 +202,9 @@ struct GlobalInputBar: View {
                             inputText = ""
                             attachedImages = []
                         }
+                    } else if rightSwipe >= swipeThreshold && !autocompleteSuggestion.isEmpty {
+                        inputText += autocompleteSuggestion
+                        autocompleteSuggestion = ""
                     }
 
                     withAnimation(.easeOut(duration: 0.2)) {
@@ -224,6 +236,17 @@ struct GlobalInputBar: View {
                     try? await Task.sleep(nanoseconds: 150_000_000)
                     if !Task.isCancelled {
                         onFileSearch?(query)
+                    }
+                }
+            }
+            autocompleteSuggestion = ""
+            autocompleteDebounce?.cancel()
+            let trimmed = new.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.count >= 3 && trimmed.count <= 90 && !trimmed.hasPrefix("/") && !trimmed.contains("@") && !isRunning {
+                autocompleteDebounce = Task {
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                    if !Task.isCancelled {
+                        onAutocomplete?(trimmed)
                     }
                 }
             }
@@ -290,6 +313,14 @@ struct GlobalInputBar: View {
                             .id(placeholderIndex)
                             .transition(.opacity)
                     }
+                    if !autocompleteSuggestion.isEmpty && !inputText.isEmpty {
+                        Text(inputText + autocompleteSuggestion)
+                            .foregroundColor(.secondary.opacity(0.4))
+                            .lineLimit(1...4)
+                            .truncationMode(.tail)
+                            .fixedSize(horizontal: false, vertical: false)
+                            .allowsHitTesting(false)
+                    }
                     TextField("", text: $inputText, axis: .vertical)
                         .textFieldStyle(.plain)
                         .lineLimit(1...4)
@@ -310,15 +341,17 @@ struct GlobalInputBar: View {
         }
     }
 
+    private var actionButtonIcon: String {
+        if shouldShowStopButton { return "stop.fill" }
+        if willQueue { return "clock.fill" }
+        return "paperplane.fill"
+    }
+
     @ViewBuilder
     private var actionButton: some View {
         if shouldShowStopButton {
             Button(action: { onStop?() }) {
-                Image(systemName: "stop.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(.accentColor.opacity(0.9))
-                    .frame(height: 44)
-                    .contentShape(Rectangle())
+                actionButtonLabel
             }
         } else {
             Menu {
@@ -359,18 +392,23 @@ struct GlobalInputBar: View {
                     Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
                 }
             } label: {
-                ZStack {
-                    Image(systemName: willQueue ? "clock.fill" : "paperplane.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
-                        .frame(height: 44)
-                        .contentShape(Rectangle())
-                        .animation(.easeInOut(duration: 0.2), value: willQueue)
-                }
+                actionButtonLabel
             } primaryAction: {
                 onSend()
             }
         }
+    }
+
+    private var actionButtonLabel: some View {
+        Image(systemName: actionButtonIcon)
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundColor(canSend || shouldShowStopButton ? .white : .accentColor.opacity(0.4))
+            .frame(width: 36, height: 36)
+            .background(canSend || shouldShowStopButton ? Color.accentColor : Color.clear)
+            .clipShape(Circle())
+            .contentShape(Circle().inset(by: -8))
+            .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
+            .animation(.easeInOut(duration: 0.2), value: canSend)
     }
 
     private var canRecord: Bool {

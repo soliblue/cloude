@@ -231,6 +231,7 @@ struct ChatMessageList: View {
                     scrollProxy = proxy
                     lastUserMessageCount = userMessageCount
                     if !messages.isEmpty {
+                        isInitialLoad = false
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                             proxy.scrollTo(bottomId, anchor: .bottom)
                         }
@@ -263,8 +264,12 @@ struct ChatMessageList: View {
                         isInitialLoad = false
                     }
                 }
-                .task {
-                    try? await Task.sleep(nanoseconds: 500_000_000)
+                .task(id: conversationId) {
+                    if !messages.isEmpty {
+                        isInitialLoad = false
+                        return
+                    }
+                    try? await Task.sleep(nanoseconds: 300_000_000)
                     if isInitialLoad {
                         isInitialLoad = false
                     }
@@ -298,7 +303,7 @@ struct ChatMessageList: View {
         }
         .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
         .onChange(of: conversationId) { _, _ in
-            isInitialLoad = true
+            isInitialLoad = messages.isEmpty
             isCostBannerDismissed = false
         }
     }
