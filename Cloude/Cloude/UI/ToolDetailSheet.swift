@@ -6,32 +6,18 @@ struct ToolDetailSheet: View {
     var children: [ToolCall] = []
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @State private var outputExpanded = false
 
-    private var isMemoryCommand: Bool {
-        toolCall.name == "Bash" && (toolCall.input?.hasPrefix("cloude memory ") ?? false)
-    }
-
-    private var isScript: Bool {
-        guard toolCall.name == "Bash", let input = toolCall.input else { return false }
-        return BashCommandParser.isScript(input)
-    }
+    private let outputPreviewLineCount = 15
 
     private var chainedCommands: [String] {
         guard toolCall.name == "Bash", let input = toolCall.input else { return [] }
         return BashCommandParser.chainedCommands(for: input)
     }
 
-    private var filePath: String? {
-        guard let input = toolCall.input else { return nil }
-        if ["Read", "Write", "Edit"].contains(toolCall.name) {
-            return input
-        }
-        return nil
-    }
-
     private var displayName: String {
-        if isMemoryCommand { return "Memory" }
-        if isScript { return "Script" }
+        if toolCall.isMemoryCommand { return "Memory" }
+        if toolCall.isScript { return "Script" }
         if toolCall.name == "Bash", let input = toolCall.input {
             let commands = BashCommandParser.splitChainedCommands(input)
             if commands.count > 1 {
@@ -73,10 +59,30 @@ struct ToolDetailSheet: View {
         return ToolCallLabel(name: toolCall.name, input: toolCall.input).iconName
     }
 
+    private var outputLines: [String]? {
+        guard let output = toolCall.resultOutput, !output.isEmpty else { return nil }
+        return output.components(separatedBy: "\n")
+    }
+
+    private var outputNeedsTruncation: Bool {
+        guard let lines = outputLines else { return false }
+        return lines.count > outputPreviewLineCount
+    }
+
+    private var displayedOutput: String? {
+        guard let lines = outputLines else { return nil }
+        if outputExpanded || !outputNeedsTruncation {
+            return lines.joined(separator: "\n")
+        }
+        return lines.prefix(outputPreviewLineCount).joined(separator: "\n")
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    statusBanner
+
                     if let todos = todoItems {
                         todoSection(todos)
                     } else if !chainedCommands.isEmpty {
@@ -85,8 +91,12 @@ struct ToolDetailSheet: View {
                         inputSection(input)
                     }
 
-                    if let path = filePath {
+                    if let path = toolCall.filePath {
                         fileSection(path)
+                    }
+
+                    if let output = displayedOutput {
+                        outputSection(output)
                     }
 
                     if !children.isEmpty {
@@ -128,6 +138,24 @@ struct ToolDetailSheet: View {
         .presentationBackground(.ultraThinMaterial)
     }
 
+    @ViewBuilder
+    private var statusBanner: some View {
+        if toolCall.state == .executing {
+            HStack(spacing: 8) {
+                ProgressView()
+                    .scaleEffect(0.8)
+                Text("Executing")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.oceanGray6.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+    }
+
     private func inputSection(_ input: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Input", systemImage: "arrow.right.circle")
@@ -141,6 +169,43 @@ struct ToolDetailSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.oceanGray6.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+    }
+
+    private func outputSection(_ output: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Output", systemImage: "arrow.left.circle")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.secondary)
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text(output)
+                    .font(.system(.body, design: .monospaced))
+                    .textSelection(.enabled)
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if outputNeedsTruncation {
+                    Divider()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            outputExpanded.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(outputExpanded ? "Show less" : "Show all \(outputLines?.count ?? 0) lines")
+                                .font(.subheadline.weight(.medium))
+                            Image(systemName: outputExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 10, weight: .semibold))
+                        }
+                        .foregroundColor(.accentColor)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                    }
+                }
+            }
+            .background(Color.oceanGray6.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
     }
 

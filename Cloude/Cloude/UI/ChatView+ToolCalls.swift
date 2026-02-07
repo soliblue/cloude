@@ -22,15 +22,12 @@ struct ToolCallLabel: View {
         .foregroundColor(toolCallColor(for: name, input: input))
     }
 
-    private var isMemoryCommand: Bool {
-        guard name == "Bash", let input = input else { return false }
-        return input.hasPrefix("cloude memory ")
+    private var toolCallProxy: ToolCall {
+        ToolCall(name: name, input: input)
     }
 
-    private var isScript: Bool {
-        guard name == "Bash", let input = input else { return false }
-        return BashCommandParser.isScript(input)
-    }
+    private var isMemoryCommand: Bool { toolCallProxy.isMemoryCommand }
+    private var isScript: Bool { toolCallProxy.isScript }
 
     private var displayName: String {
         if name == "TodoWrite" { return "Tasks" }
@@ -139,7 +136,7 @@ struct ToolCallLabel: View {
 
     private func moveDetail(_ parsed: BashCommandParser) -> String {
         let args = parsed.allArgs
-        if args.count >= 2 { return "→ \(truncatePath(args.last!, maxLength: 7))" }
+        if args.count >= 2, let last = args.last { return "→ \(truncatePath(last, maxLength: 7))" }
         return args.first.map { truncatePath($0, maxLength: 9) } ?? ""
     }
 
@@ -157,10 +154,9 @@ struct ToolCallLabel: View {
     private func truncatePath(_ path: String, maxLength: Int) -> String {
         guard path.count > maxLength else { return path }
         let components = path.split(separator: "/")
-        if components.count <= 1 {
+        guard components.count > 1, let last = components.last else {
             return String(path.suffix(maxLength - 1)) + "…"
         }
-        let last = components.last!
         if last.count >= maxLength - 3 {
             return "…/\(last.suffix(maxLength - 3))"
         }

@@ -12,6 +12,7 @@ struct WindowEditForm: View {
     @State private var symbol: String = ""
     @State private var showSymbolPicker = false
     @State private var showFolderPicker = false
+    @State private var costLimitSelection: Double = 0
 
     private var conversation: Conversation? {
         window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
@@ -101,6 +102,31 @@ struct WindowEditForm: View {
                 .buttonStyle(.plain)
             }
 
+            if conversation != nil {
+                HStack(spacing: 10) {
+                    Image(systemName: "dollarsign.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.green)
+                        .frame(width: 32)
+                    Text("Cost Limit")
+                        .font(.subheadline)
+                    Spacer()
+                    Picker("", selection: $costLimitSelection) {
+                        Text("Off").tag(0.0)
+                        Text("$1").tag(1.0)
+                        Text("$5").tag(5.0)
+                        Text("$10").tag(10.0)
+                        Text("$25").tag(25.0)
+                        Text("$50").tag(50.0)
+                    }
+                    .pickerStyle(.menu)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+
             if !allConversations.isEmpty {
                 VStack(spacing: 0) {
                     ForEach(allConversations) { conv in
@@ -153,6 +179,11 @@ struct WindowEditForm: View {
                 conversationStore.setConversationSymbol(conv, symbol: newValue.nilIfEmpty)
             }
         }
+        .onChange(of: costLimitSelection) { _, newValue in
+            if let conv = conversation {
+                conversationStore.setCostLimit(conv, limit: newValue > 0 ? newValue : nil)
+            }
+        }
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(connection: connection) { path in
                 if let conv = conversation {
@@ -163,10 +194,12 @@ struct WindowEditForm: View {
         .onAppear {
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
+            costLimitSelection = conversation?.costLimitUsd ?? 0
         }
         .onChange(of: conversation?.id) { _, _ in
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
+            costLimitSelection = conversation?.costLimitUsd ?? 0
         }
     }
 
