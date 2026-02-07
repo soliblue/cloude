@@ -1,8 +1,5 @@
-//
-//  ToolDetailSheet.swift
-//  Cloude
-
 import SwiftUI
+import CloudeShared
 
 struct ToolDetailSheet: View {
     let toolCall: ToolCall
@@ -54,7 +51,21 @@ struct ToolDetailSheet: View {
                 return parsed.command
             }
         }
+        if toolCall.name == "TodoWrite" { return "Tasks" }
         return toolCall.name
+    }
+
+    private var todoItems: [[String: String]]? {
+        guard toolCall.name == "TodoWrite",
+              let input = toolCall.input,
+              let data = input.data(using: .utf8),
+              let items = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return nil }
+        return items.map { item in
+            [
+                "content": item["content"] as? String ?? "",
+                "status": item["status"] as? String ?? "pending"
+            ]
+        }
     }
 
     private var iconName: String {
@@ -68,7 +79,9 @@ struct ToolDetailSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    if !chainedCommands.isEmpty {
+                    if let todos = todoItems {
+                        todoSection(todos)
+                    } else if !chainedCommands.isEmpty {
                         chainSection
                     } else if let input = toolCall.input, !input.isEmpty {
                         inputSection(input)
@@ -143,9 +156,9 @@ struct ToolDetailSheet: View {
                 }
             } label: {
                 HStack {
-                    Image(systemName: fileIconName(for: (path as NSString).lastPathComponent))
-                        .foregroundColor(fileIconColor(for: (path as NSString).lastPathComponent))
-                    Text((path as NSString).lastPathComponent)
+                    Image(systemName: fileIconName(for: path.lastPathComponent))
+                        .foregroundColor(fileIconColor(for: path.lastPathComponent))
+                    Text(path.lastPathComponent)
                         .font(.system(.body, design: .monospaced))
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -207,6 +220,56 @@ struct ToolDetailSheet: View {
             }
             .background(Color.oceanGray6.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+    }
+
+    private func todoSection(_ todos: [[String: String]]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            let completed = todos.filter { $0["status"] == "completed" }.count
+            Label("\(completed)/\(todos.count) tasks", systemImage: "checklist")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.secondary)
+
+            VStack(spacing: 0) {
+                ForEach(Array(todos.enumerated()), id: \.offset) { index, todo in
+                    HStack(spacing: 10) {
+                        Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
+                            .frame(width: 20)
+
+                        Text(todo["content"] ?? "")
+                            .font(.system(.body))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .foregroundColor(todo["status"] == "completed" ? .secondary : .primary)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+
+                    if index < todos.count - 1 {
+                        Divider()
+                            .padding(.leading, 42)
+                    }
+                }
+            }
+            .background(Color.oceanGray6.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+    }
+
+    private func todoStatusIcon(_ status: String) -> String {
+        switch status {
+        case "completed": return "checkmark.circle.fill"
+        case "in_progress": return "circle.dotted.circle"
+        default: return "circle"
+        }
+    }
+
+    private func todoStatusColor(_ status: String) -> Color {
+        switch status {
+        case "completed": return .green
+        case "in_progress": return .mint
+        default: return .secondary
         }
     }
 

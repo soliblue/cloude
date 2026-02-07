@@ -101,8 +101,8 @@ struct InlineToolPill: View {
         HStack(spacing: 6) {
             ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, cmd in
                 if index > 0 {
-                    Image(systemName: "link")
-                        .font(.system(size: 8))
+                    Text("›")
+                        .font(.system(size: 14, weight: .light))
                         .foregroundColor(.secondary)
                 }
                 let parsed = BashCommandParser.parse(cmd)

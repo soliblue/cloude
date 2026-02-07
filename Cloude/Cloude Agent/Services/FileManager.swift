@@ -81,7 +81,7 @@ class FileService {
     private let thumbnailMaxSize = 200 * 1024 // 200KB thumbnail target
 
     func isImage(at path: String) -> Bool {
-        let ext = (path as NSString).pathExtension.lowercased()
+        let ext = path.pathExtension.lowercased()
         return imageExtensions.contains(ext)
     }
 

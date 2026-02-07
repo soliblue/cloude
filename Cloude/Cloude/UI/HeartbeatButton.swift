@@ -1,8 +1,3 @@
-//
-//  HeartbeatButton.swift
-//  Cloude
-//
-
 import SwiftUI
 
 struct HeartbeatButton: View {

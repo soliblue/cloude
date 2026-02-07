@@ -71,7 +71,7 @@ struct FolderPickerView: View {
     }
 
     private var currentFolderName: String {
-        (currentPath as NSString).lastPathComponent
+        currentPath.lastPathComponent
     }
 
     private func selectCurrentFolder() {

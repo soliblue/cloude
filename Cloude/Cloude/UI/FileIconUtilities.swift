@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 private let fileExtensionIcons: [String: String] = [
     "swift": "swift",
@@ -74,8 +75,8 @@ private let fileExtensionIcons: [String: String] = [
 ]
 
 func fileIconName(for filename: String) -> String {
-    let ext = (filename as NSString).pathExtension.lowercased()
-    let basename = (filename as NSString).deletingPathExtension.lowercased()
+    let ext = filename.pathExtension.lowercased()
+    let basename = filename.deletingPathExtension.lowercased()
 
     if basename == "dockerfile" { return "shippingbox" }
     if basename == "makefile" { return "hammer" }
@@ -85,7 +86,7 @@ func fileIconName(for filename: String) -> String {
 }
 
 func fileIconColor(for filename: String) -> Color {
-    let ext = (filename as NSString).pathExtension.lowercased()
+    let ext = filename.pathExtension.lowercased()
     switch ext {
     case "swift", "xcodeproj", "xcworkspace": return .orange
     case "py": return .yellow

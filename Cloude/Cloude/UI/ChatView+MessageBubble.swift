@@ -52,18 +52,7 @@ struct MessageBubble: View {
     }
 
     private func formatTimestamp(_ date: Date) -> String {
-        let calendar = Calendar.current
-        let formatter = DateFormatter()
-        if calendar.isDateInToday(date) {
-            formatter.dateFormat = "HH:mm"
-        } else if calendar.isDateInYesterday(date) {
-            formatter.dateFormat = "'Yesterday' HH:mm"
-        } else if calendar.isDate(date, equalTo: Date(), toGranularity: .year) {
-            formatter.dateFormat = "MMM d, HH:mm"
-        } else {
-            formatter.dateFormat = "MMM d yyyy, HH:mm"
-        }
-        return formatter.string(from: date)
+        DateFormatters.messageTimestamp(date)
     }
 
     private var backgroundColor: Color {

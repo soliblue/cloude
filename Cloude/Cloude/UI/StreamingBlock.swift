@@ -1,7 +1,3 @@
-//
-//  StreamingBlock.swift
-//  Cloude
-
 import Foundation
 
 enum StreamingBlock: Identifiable {

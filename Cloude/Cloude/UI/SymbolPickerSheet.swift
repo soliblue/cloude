@@ -1,7 +1,3 @@
-//
-//  SymbolPickerSheet.swift
-//  Cloude
-
 import SwiftUI
 
 struct SymbolPickerSheet: View {

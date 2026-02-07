@@ -1,8 +1,3 @@
-//
-//  AudioWaveformView.swift
-//  Cloude
-//
-
 import SwiftUI
 
 struct AudioWaveformView: View {

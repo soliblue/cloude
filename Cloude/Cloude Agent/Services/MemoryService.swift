@@ -31,7 +31,7 @@ struct MemoryService {
     }
 
     static func addMemory(target: MemoryTarget, section: String, text: String) -> Bool {
-        let path = (projectRoot as NSString).appendingPathComponent(target.filename)
+        let path = projectRoot.appendingPathComponent(target.filename)
 
         var content: String
         if let data = FileManager.default.contents(atPath: path),
@@ -75,7 +75,7 @@ struct MemoryService {
     }
 
     static func parseMemories() -> [MemorySection] {
-        let path = (projectRoot as NSString).appendingPathComponent("CLAUDE.local.md")
+        let path = projectRoot.appendingPathComponent("CLAUDE.local.md")
 
         guard let data = FileManager.default.contents(atPath: path),
               let text = String(data: data, encoding: .utf8) else {

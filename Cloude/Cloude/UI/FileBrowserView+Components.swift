@@ -38,9 +38,9 @@ extension FileBrowserView {
         var path = currentPath
 
         while path != "/" && !path.isEmpty {
-            let name = (path as NSString).lastPathComponent
+            let name = path.lastPathComponent
             components.insert(PathComponent(name: name, path: path), at: 0)
-            path = (path as NSString).deletingLastPathComponent
+            path = path.deletingLastPathComponent
         }
         components.insert(PathComponent(name: "/", path: "/"), at: 0)
 

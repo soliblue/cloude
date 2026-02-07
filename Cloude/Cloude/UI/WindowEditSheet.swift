@@ -1,7 +1,3 @@
-//
-//  WindowEditSheet.swift
-//  Cloude
-
 import SwiftUI
 
 struct WindowEditSheet: View {
@@ -29,15 +25,7 @@ struct WindowEditSheet: View {
                     conversationStore: conversationStore,
                     windowManager: windowManager,
                     connection: connection,
-                    onSelectConversation: onSelectConversation,
-                    onNewConversation: onNewConversation,
-                    showRemoveButton: true,
-                    onRemove: {
-                        windowManager.removeWindow(window.id)
-                        onDismiss()
-                    },
-                    onRefresh: onRefresh,
-                    onDuplicate: onDuplicate
+                    onSelectConversation: onSelectConversation
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 16)

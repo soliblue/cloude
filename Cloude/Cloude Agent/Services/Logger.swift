@@ -1,9 +1,5 @@
-//
-//  Logger.swift
-//  Cloude Agent
-//
-
 import Foundation
+import CloudeShared
 
 struct Log {
     private static let logFile: URL = {
@@ -55,7 +51,7 @@ struct Log {
 
     private static func log(_ level: String, _ message: String, file: String, function: String) {
         let timestamp = dateFormatter.string(from: Date())
-        let filename = (file as NSString).lastPathComponent.replacingOccurrences(of: ".swift", with: "")
+        let filename = file.lastPathComponent.replacingOccurrences(of: ".swift", with: "")
         let line = "[\(timestamp)] [\(level)] [\(filename).\(function)] \(message)\n"
 
         print(line, terminator: "")

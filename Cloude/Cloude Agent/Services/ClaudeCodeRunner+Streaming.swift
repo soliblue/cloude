@@ -228,7 +228,14 @@ extension ClaudeCodeRunner {
             if let args = args, !args.isEmpty {
                 return "\(skill):\(args)"
             }
-            return skill.isEmpty ? nil : skill
+            return skill.nilIfEmpty
+        case "TodoWrite":
+            guard let todos = input?["todos"] as? [[String: Any]] else { return nil }
+            if let data = try? JSONSerialization.data(withJSONObject: todos),
+               let json = String(data: data, encoding: .utf8) {
+                return json
+            }
+            return nil
         default:
             return nil
         }

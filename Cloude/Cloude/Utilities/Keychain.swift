@@ -1,10 +1,3 @@
-//
-//  Keychain.swift
-//  Cloude
-//
-//  Keychain helper for secure storage
-//
-
 import Foundation
 import Security
 

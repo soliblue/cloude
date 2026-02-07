@@ -1,10 +1,3 @@
-//
-//  Conversation.swift
-//  Cloude
-//
-//  Conversation model and persistence
-//
-
 import Foundation
 import Combine
 

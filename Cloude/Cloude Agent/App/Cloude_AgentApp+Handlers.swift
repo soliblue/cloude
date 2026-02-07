@@ -4,7 +4,7 @@ import CloudeShared
 
 extension AppDelegate {
     func handleListDirectory(_ path: String, connection: NWConnection) {
-        let expandedPath = path == "~" || path.isEmpty ? NSHomeDirectory() : (path as NSString).expandingTildeInPath
+        let expandedPath = path == "~" || path.isEmpty ? NSHomeDirectory() : path.expandingTildeInPath
 
         switch FileService.shared.listDirectory(at: expandedPath) {
         case .success(let entries):
@@ -63,7 +63,7 @@ extension AppDelegate {
     }
 
     func handleGitStatus(_ path: String, connection: NWConnection) {
-        let expandedPath = (path as NSString).expandingTildeInPath
+        let expandedPath = path.expandingTildeInPath
         switch GitService.getStatus(at: expandedPath) {
         case .success(let status):
             server.sendMessage(.gitStatusResult(status: status), to: connection)
@@ -73,7 +73,7 @@ extension AppDelegate {
     }
 
     func handleGitDiff(_ path: String, file: String?, connection: NWConnection) {
-        let expandedPath = (path as NSString).expandingTildeInPath
+        let expandedPath = path.expandingTildeInPath
         switch GitService.getDiff(at: expandedPath, file: file) {
         case .success(let diff):
             server.sendMessage(.gitDiffResult(path: expandedPath, diff: diff), to: connection)
@@ -83,7 +83,7 @@ extension AppDelegate {
     }
 
     func handleGitCommit(_ path: String, message: String, files: [String], connection: NWConnection) {
-        let expandedPath = (path as NSString).expandingTildeInPath
+        let expandedPath = path.expandingTildeInPath
         switch GitService.commit(at: expandedPath, message: message, files: files) {
         case .success(let output):
             server.sendMessage(.gitCommitResult(success: true, message: output), to: connection)

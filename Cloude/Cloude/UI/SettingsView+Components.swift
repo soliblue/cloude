@@ -1,10 +1,3 @@
-//
-//  SettingsView+Components.swift
-//  Cloude
-//
-//  Settings view UI components
-//
-
 import SwiftUI
 
 struct SettingsRow<Content: View>: View {

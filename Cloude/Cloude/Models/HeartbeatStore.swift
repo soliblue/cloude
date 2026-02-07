@@ -1,8 +1,3 @@
-//
-//  HeartbeatStore.swift
-//  Cloude
-//
-
 import Foundation
 import Combine
 import CloudeShared

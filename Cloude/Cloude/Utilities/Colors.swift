@@ -1,7 +1,3 @@
-//
-//  Colors.swift
-//  Cloude
-
 import SwiftUI
 import UIKit
 

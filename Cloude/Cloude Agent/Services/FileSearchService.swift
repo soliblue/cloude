@@ -1,4 +1,5 @@
 import Foundation
+import CloudeShared
 
 struct FileSearchService {
     static func search(query: String, in directory: String, maxResults: Int = 20) -> [String] {
@@ -34,8 +35,8 @@ struct FileSearchService {
         }
 
         return results.sorted { a, b in
-            let aName = (a as NSString).lastPathComponent.lowercased()
-            let bName = (b as NSString).lastPathComponent.lowercased()
+            let aName = a.lastPathComponent.lowercased()
+            let bName = b.lastPathComponent.lowercased()
             let aExact = aName == lowercaseQuery
             let bExact = bName == lowercaseQuery
             if aExact != bExact { return aExact }
@@ -47,7 +48,7 @@ struct FileSearchService {
     }
 
     private static func loadGitignore(in directory: String) -> [String] {
-        let gitignorePath = (directory as NSString).appendingPathComponent(".gitignore")
+        let gitignorePath = directory.appendingPathComponent(".gitignore")
         guard let content = try? String(contentsOfFile: gitignorePath, encoding: .utf8) else {
             return defaultIgnorePatterns
         }

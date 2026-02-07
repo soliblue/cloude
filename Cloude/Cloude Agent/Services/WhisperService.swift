@@ -1,9 +1,5 @@
-//
-//  WhisperService.swift
-//  Cloude Agent
-//
-
 import Foundation
+import CloudeShared
 import WhisperKit
 import AVFoundation
 import Combine

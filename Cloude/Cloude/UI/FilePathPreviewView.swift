@@ -20,11 +20,11 @@ struct FilePathPreviewView: View {
     @State var isDiffLoading = false
 
     var fileName: String {
-        (path as NSString).lastPathComponent
+        path.lastPathComponent
     }
 
     var fileExtension: String {
-        (path as NSString).pathExtension.lowercased()
+        path.pathExtension.lowercased()
     }
 
     var body: some View {
@@ -81,7 +81,7 @@ struct FilePathPreviewView: View {
         diffText = nil
         showDiff = true
 
-        let dir = (path as NSString).deletingLastPathComponent
+        let dir = path.deletingLastPathComponent
         connection.onGitDiff = { _, text in
             diffText = text
             isDiffLoading = false

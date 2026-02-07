@@ -5,18 +5,18 @@ struct SkillService {
     static func loadSkills(from projectRoot: String?) -> [Skill] {
         guard let root = projectRoot else { return [] }
 
-        let skillsDir = (root as NSString).appendingPathComponent(".claude/skills")
+        let skillsDir = root.appendingPathComponent(".claude/skills")
         guard FileManager.default.fileExists(atPath: skillsDir) else { return [] }
 
         do {
             let entries = try FileManager.default.contentsOfDirectory(atPath: skillsDir)
             return entries.compactMap { entry -> Skill? in
-                let entryPath = (skillsDir as NSString).appendingPathComponent(entry)
+                let entryPath = skillsDir.appendingPathComponent(entry)
                 var isDir: ObjCBool = false
                 guard FileManager.default.fileExists(atPath: entryPath, isDirectory: &isDir) else { return nil }
 
                 if isDir.boolValue {
-                    let skillFile = (entryPath as NSString).appendingPathComponent("SKILL.md")
+                    let skillFile = entryPath.appendingPathComponent("SKILL.md")
                     return parseSkillFile(at: skillFile)
                 } else if entry.hasSuffix(".md") {
                     return parseSkillFile(at: entryPath)

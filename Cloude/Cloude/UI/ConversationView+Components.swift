@@ -9,7 +9,7 @@ struct WindowHeaderView: View {
     private var folderName: String? {
         let path = conversation?.workingDirectory ?? ""
         guard !path.isEmpty else { return nil }
-        return (path as NSString).lastPathComponent
+        return path.lastPathComponent
     }
 
     var body: some View {
@@ -112,24 +112,8 @@ struct ChatMessageList: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if showEmptyState && hasRequiredDependencies {
-                ScrollView {
-                    WindowEditForm(
-                        window: window!,
-                        conversationStore: conversationStore!,
-                        windowManager: windowManager!,
-                        connection: connection!,
-                        onSelectConversation: { conv in onSelectConversation?(conv) },
-                        onNewConversation: { onNewConversation?() },
-                        showRemoveButton: false
-                    )
-                    .padding(20)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .padding(.horizontal, 16)
-                    .padding(.top, 40)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if showEmptyState {
+                EmptyConversationView()
             }
 
             if !showEmptyState || !hasRequiredDependencies {

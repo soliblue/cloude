@@ -1,10 +1,3 @@
-//
-//  AuthManager.swift
-//  Cloude Agent
-//
-//  Manages auth token in Keychain
-//
-
 import Foundation
 import Security
 

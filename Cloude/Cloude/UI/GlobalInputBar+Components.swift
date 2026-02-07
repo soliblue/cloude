@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 struct PendingAudioBanner: View {
     let onResend: () -> Void
@@ -98,7 +99,7 @@ struct FilePill: View {
     let path: String
 
     private var fileName: String {
-        (path as NSString).lastPathComponent
+        path.lastPathComponent
     }
 
     private var icon: String {
