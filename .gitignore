@@ -13,7 +13,8 @@ xcuserdata/
 ._*
 
 # Claude Code
-.claude/
+.claude/settings.local.json
+.claude/credentials.json
 CLAUDE.local.md
 moltbook.local.json
 
