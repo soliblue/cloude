@@ -3,36 +3,6 @@ import CloudeShared
 import HighlightSwift
 
 extension FilePathPreviewView {
-    var isImage: Bool {
-        ["png", "jpg", "jpeg", "gif", "webp", "heic", "svg"].contains(fileExtension)
-    }
-
-    var isCode: Bool {
-        ["swift", "py", "js", "ts", "jsx", "tsx", "go", "rs", "rb", "java", "kt", "c", "cpp", "h", "m", "cs", "php", "sh", "bash", "zsh"].contains(fileExtension)
-    }
-
-    var isMarkup: Bool {
-        ["html", "css", "scss", "xml", "json", "yaml", "yml", "toml", "plist", "md"].contains(fileExtension)
-    }
-
-    var isText: Bool {
-        ["txt", "log", "rtf"].contains(fileExtension) || isCode || isMarkup
-    }
-
-    var highlightLanguage: String? {
-        let langMap: [String: String] = [
-            "swift": "swift", "py": "python", "js": "javascript", "ts": "typescript",
-            "jsx": "javascript", "tsx": "typescript", "go": "go", "rs": "rust",
-            "rb": "ruby", "java": "java", "kt": "kotlin", "c": "c", "cpp": "cpp",
-            "h": "c", "m": "objectivec", "cs": "csharp", "php": "php",
-            "sh": "bash", "bash": "bash", "zsh": "bash",
-            "html": "html", "css": "css", "scss": "scss", "xml": "xml",
-            "json": "json", "yaml": "yaml", "yml": "yaml", "toml": "ini",
-            "plist": "xml", "md": "markdown"
-        ]
-        return langMap[fileExtension]
-    }
-
     @ViewBuilder
     var content: some View {
         if isLoading {
@@ -54,39 +24,85 @@ extension FilePathPreviewView {
 
     @ViewBuilder
     func fileContent(_ data: Data) -> some View {
-        if isImage, let image = UIImage(data: data) {
+        if case .image = contentType, let image = UIImage(data: data) {
             ScrollView {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
                     .padding()
             }
-        } else if isText, let text = String(data: data, encoding: .utf8) {
-            ScrollView(.vertical) {
-                if let highlighted = highlightedCode {
-                    Text(highlighted)
-                        .textSelection(.enabled)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    Text(text)
-                        .font(.system(size: 13, design: .monospaced))
-                        .textSelection(.enabled)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+        } else if contentType.isTextBased, let text = String(data: data, encoding: .utf8) {
+            if contentType.hasRenderedView && !showSource, let rendered = renderedView(text: text, data: data) {
+                rendered
+            } else {
+                sourceTextView(text)
             }
-            .background(Color(.systemBackground))
         } else {
-            VStack(spacing: 16) {
-                Image(systemName: "doc")
-                    .font(.system(size: 60))
-                    .foregroundColor(.secondary)
-                Text(fileName)
-                    .font(.headline)
-                Text("\(data.count.formatted(.byteCount(style: .file)))")
-                    .foregroundColor(.secondary)
+            binaryPlaceholder(data)
+        }
+    }
+
+    @ViewBuilder
+    private func renderedView(text: String, data: Data) -> (some View)? {
+        switch contentType {
+        case .markdown:
+            scrollingContent { StreamingMarkdownView(text: text) }
+        case .yaml:
+            if let jsonValue = YAMLParser.parse(text) {
+                scrollingContent { JSONTreeView(value: jsonValue, label: fileName) }
             }
+        case .csv:
+            scrollingContent { CSVTableView(text: text, delimiter: fileExtension == "tsv" ? "\t" : ",") }
+        case .html:
+            HTMLRenderedView(html: text)
+        case .json:
+            if let jsonValue = try? JSONSerialization.jsonObject(with: data) {
+                scrollingContent { JSONTreeView(value: jsonValue, label: fileName) }
+            }
+        default:
+            nil as EmptyView?
+        }
+    }
+
+    @ViewBuilder
+    private func scrollingContent<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        ScrollView(.vertical) {
+            content()
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(Color(.systemBackground))
+    }
+
+    @ViewBuilder
+    private func sourceTextView(_ text: String) -> some View {
+        ScrollView(.vertical) {
+            if let highlighted = highlightedCode {
+                Text(highlighted)
+                    .textSelection(.enabled)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Text(text)
+                    .font(.system(size: 13, design: .monospaced))
+                    .textSelection(.enabled)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .background(Color(.systemBackground))
+    }
+
+    @ViewBuilder
+    private func binaryPlaceholder(_ data: Data) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "doc")
+                .font(.system(size: 60))
+                .foregroundColor(.secondary)
+            Text(fileName)
+                .font(.headline)
+            Text("\(data.count.formatted(.byteCount(style: .file)))")
+                .foregroundColor(.secondary)
         }
     }
 
@@ -100,7 +116,7 @@ extension FilePathPreviewView {
 
             if let decoded = Data(base64Encoded: data) {
                 fileData = decoded
-                if isCode || isMarkup, let text = String(data: decoded, encoding: .utf8) {
+                if contentType.highlightLanguage != nil, let text = String(data: decoded, encoding: .utf8) {
                     highlightCode(text)
                 } else {
                     isLoading = false
@@ -124,7 +140,7 @@ extension FilePathPreviewView {
             let colors: HighlightColors = colorScheme == .dark ? .dark(.xcode) : .light(.xcode)
             do {
                 let result: AttributedString
-                if let lang = highlightLanguage {
+                if let lang = contentType.highlightLanguage {
                     result = try await highlight.attributedText(code, language: lang, colors: colors)
                 } else {
                     result = try await highlight.attributedText(code, colors: colors)

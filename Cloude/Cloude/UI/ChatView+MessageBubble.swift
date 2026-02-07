@@ -68,9 +68,22 @@ struct MessageBubble: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             VStack(alignment: .leading, spacing: 8) {
-                if let imageBase64 = message.imageBase64,
-                   let imageData = Data(base64Encoded: imageBase64),
-                   let uiImage = UIImage(data: imageData) {
+                if let thumbnails = message.imageThumbnails, thumbnails.count > 1 {
+                    HStack(spacing: 4) {
+                        ForEach(thumbnails.indices, id: \.self) { index in
+                            if let imageData = Data(base64Encoded: thumbnails[index]),
+                               let uiImage = UIImage(data: imageData) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 36, height: 36)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
+                    }
+                } else if let imageBase64 = message.imageBase64,
+                          let imageData = Data(base64Encoded: imageBase64),
+                          let uiImage = UIImage(data: imageData) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()

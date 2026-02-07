@@ -187,7 +187,7 @@ struct ToolDetailSheet: View {
                 ForEach(Array(children.enumerated()), id: \.element.toolId) { index, child in
                     HStack(spacing: 10) {
                         VStack(alignment: .leading, spacing: 2) {
-                            ToolCallLabel(name: child.name, input: child.input, size: .small)
+                            ToolCallLabel(name: child.name, input: child.input)
                                 .lineLimit(1)
 
                             // TODO: Re-enable when live tool updates are ready
