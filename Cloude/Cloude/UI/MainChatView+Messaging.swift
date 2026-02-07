@@ -27,7 +27,7 @@ extension MainChatView {
         let convOutput = connection.output(for: Heartbeat.conversationId)
         let heartbeat = conversationStore.heartbeatConversation
 
-        if convOutput.isRunning {
+        if convOutput.isRunning || !connection.isAuthenticated {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.queueMessage(userMessage, to: heartbeat)
         } else {
@@ -67,7 +67,7 @@ extension MainChatView {
 
         let isRunning = connection.output(for: conv.id).isRunning
 
-        if isRunning {
+        if isRunning || !connection.isAuthenticated {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.queueMessage(userMessage, to: conv)
         } else {

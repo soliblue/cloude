@@ -257,6 +257,7 @@ extension ConnectionManager {
         if success {
             checkForMissedResponse()
             send(.getHeartbeatConfig)
+            onAuthenticated?()
         } else {
             lastError = errorMessage ?? "Authentication failed"
         }

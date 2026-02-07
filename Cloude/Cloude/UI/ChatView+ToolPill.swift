@@ -53,7 +53,7 @@ struct InlineToolPill: View {
             }
 
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
         .overlay {

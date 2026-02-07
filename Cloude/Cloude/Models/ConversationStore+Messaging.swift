@@ -53,6 +53,8 @@ extension ConversationStore {
     }
 
     func replayQueuedMessages(conversation: Conversation, connection: ConnectionManager) {
+        guard connection.isAuthenticated else { return }
+
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
 
         if let limit = freshConv.costLimitUsd, limit > 0, freshConv.totalCost >= limit {
