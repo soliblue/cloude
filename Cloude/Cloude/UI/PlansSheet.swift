@@ -4,7 +4,6 @@ import CloudeShared
 struct PlansSheet: View {
     let stages: [String: [PlanItem]]
     var isLoading: Bool = false
-    var onDelete: ((String, String) -> Void)?
     var onOpenFile: ((String) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var selectedStage = "active"
@@ -41,20 +40,17 @@ struct PlansSheet: View {
                         .foregroundColor(.secondary)
                     Spacer()
                 } else {
-                    List {
-                        ForEach(currentPlans) { plan in
-                            PlanCard(
-                                plan: plan,
-                                onTap: { onOpenFile?(plan.path) },
-                                onDelete: { onDelete?(selectedStage, plan.filename) }
-                            )
-                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(currentPlans) { plan in
+                                PlanCard(plan: plan) {
+                                    onOpenFile?(plan.path)
+                                }
+                            }
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
                 }
             }
             .background(.ultraThinMaterial)
@@ -110,12 +106,6 @@ struct PlansSheet: View {
 struct PlanCard: View {
     let plan: PlanItem
     var onTap: () -> Void
-    var onDelete: () -> Void
-
-    @State private var offset: CGFloat = 0
-    @State private var showDelete = false
-
-    private let deleteThreshold: CGFloat = -60
 
     private var previewText: String {
         let lines = plan.content.components(separatedBy: .newlines)
@@ -128,63 +118,24 @@ struct PlanCard: View {
     }
 
     var body: some View {
-        ZStack(alignment: .trailing) {
-            if showDelete {
-                Button(action: {
-                    withAnimation(.easeOut(duration: 0.2)) { offset = -400 }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { onDelete() }
-                }) {
-                    Image(systemName: "trash.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(width: 60)
-                        .frame(maxHeight: .infinity)
-                        .background(Color.red)
-                }
-                .transition(.opacity)
-            }
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(plan.title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
 
-            Button(action: onTap) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(plan.title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
-
-                    Text(previewText)
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                        .lineLimit(4)
-                        .multilineTextAlignment(.leading)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(14)
-                .background(Color(.secondarySystemGroupedBackground))
-                .cornerRadius(12)
+                Text(previewText)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+                    .lineLimit(4)
+                    .multilineTextAlignment(.leading)
             }
-            .buttonStyle(.plain)
-            .offset(x: offset)
-            .gesture(
-                DragGesture(minimumDistance: 10)
-                    .onChanged { value in
-                        if value.translation.width < 0 {
-                            offset = value.translation.width
-                            showDelete = value.translation.width < deleteThreshold
-                        }
-                    }
-                    .onEnded { value in
-                        if value.translation.width < deleteThreshold {
-                            withAnimation(.easeOut(duration: 0.2)) { offset = -400 }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { onDelete() }
-                        } else {
-                            withAnimation(.spring(response: 0.3)) {
-                                offset = 0
-                                showDelete = false
-                            }
-                        }
-                    }
-            )
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(Color(.secondarySystemGroupedBackground))
+            .cornerRadius(12)
         }
-        .clipped()
+        .buttonStyle(.plain)
     }
 }
