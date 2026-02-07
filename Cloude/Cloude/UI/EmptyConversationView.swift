@@ -1,34 +1,29 @@
 import SwiftUI
 
 struct EmptyConversationView: View {
-    private static let characters: [(image: String, greeting: String)] = [
-        ("baby-claude", "goo goo ga ga"),
-        ("chef-claude", "what are we cooking?"),
-        ("grandpa-claude", "back in my day..."),
-        ("cowboy-claude", "howdy, partner"),
-        ("wizard-claude", "cast a prompt"),
-        ("ninja-claude", "lurking in the shadows"),
-        ("artist-claude", "let's make something"),
+    private static let characters = [
+        "baby-claude",
+        "chef-claude",
+        "grandpa-claude",
+        "cowboy-claude",
+        "wizard-claude",
+        "ninja-claude",
+        "artist-claude",
     ]
 
-    @State private var character: (image: String, greeting: String)
+    @State private var character: String
 
     init() {
-        let c = Self.characters.randomElement()!
-        _character = State(initialValue: c)
+        _character = State(initialValue: Self.characters.randomElement()!)
     }
 
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
-            Image(character.image)
+            Image(character)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 160, height: 160)
-            Text(character.greeting)
-                .font(.subheadline)
-                .foregroundStyle(.tertiary)
-                .italic()
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

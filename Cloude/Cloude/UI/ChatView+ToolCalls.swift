@@ -10,8 +10,8 @@ struct ToolCallLabel: View {
         case regular
         case small
 
-        var iconSize: CGFloat { self == .regular ? 15 : 14 }
-        var textSize: CGFloat { self == .regular ? 13 : 12 }
+        var iconSize: CGFloat { self == .regular ? 13 : 12 }
+        var textSize: CGFloat { self == .regular ? 11 : 10 }
     }
 
     var body: some View {
@@ -56,9 +56,9 @@ struct ToolCallLabel: View {
         }
         if let sub = parsed.subcommand, ["git", "npm", "yarn", "pnpm", "bun", "cargo", "docker", "kubectl", "pip", "pip3", "swift", "claude"].contains(cmd) {
             let combined = "\(cmd) \(sub)"
-            return midTruncate(combined, maxLength: 24)
+            return midTruncate(combined, maxLength: 12)
         }
-        return midTruncate(cmd, maxLength: 20)
+        return midTruncate(cmd, maxLength: 10)
     }
 
     private var displayDetail: String? {
@@ -67,13 +67,13 @@ struct ToolCallLabel: View {
         switch name {
         case "Read", "Write", "Edit":
             let filename = input.lastPathComponent
-            return truncateFilename(filename, maxLength: 16)
+            return truncateFilename(filename, maxLength: 8)
         case "Bash":
             if isMemoryCommand {
                 let parts = input.split(separator: " ", maxSplits: 3)
                 if parts.count >= 4 {
                     let text = String(parts[3])
-                    let truncated = text.prefix(24)
+                    let truncated = text.prefix(12)
                     return truncated.count < text.count ? "\(truncated)..." : text
                 }
                 return nil
@@ -81,13 +81,13 @@ struct ToolCallLabel: View {
             if isScript { return nil }
             return bashDisplayDetail(input)
         case "Glob", "Grep":
-            let truncated = input.prefix(16)
+            let truncated = input.prefix(8)
             return truncated.count < input.count ? "\(truncated)..." : String(input)
         case "Skill":
             let parts = input.split(separator: ":", maxSplits: 1)
             if parts.count >= 2 {
                 let args = String(parts[1]).trimmingCharacters(in: .whitespaces)
-                let truncated = args.prefix(32)
+                let truncated = args.prefix(16)
                 return truncated.count < args.count ? "\(truncated)..." : args
             }
             return nil
@@ -112,21 +112,21 @@ struct ToolCallLabel: View {
         case "ls":                          return pathDetail(parsed, fallback: ".")
         case "cd":                          return pathDetail(parsed, fallback: "~")
         case "mkdir", "rm", "find":         return pathDetail(parsed, fallback: parsed.command == "find" ? "." : "")
-        case "git", "claude":               return parsed.allArgs.first.map { midTruncate($0, maxLength: 20) } ?? ""
+        case "git", "claude":               return parsed.allArgs.first.map { midTruncate($0, maxLength: 10) } ?? ""
         case "npm", "yarn", "pnpm", "bun",
              "cargo", "pip", "pip3",
              "swift", "docker", "kubectl":  return parsed.allArgs.first ?? ""
         case "make":                        return parsed.firstArg ?? "all"
         case "python", "python3", "node":   return fileDetail(parsed)
-        case "cat", "head", "tail":         return parsed.firstArg.map { truncateFilename($0.lastPathComponent, maxLength: 16) } ?? ""
-        case "source":                      return parsed.firstArg.map { truncateFilename($0.lastPathComponent, maxLength: 16) } ?? ""
+        case "cat", "head", "tail":         return parsed.firstArg.map { truncateFilename($0.lastPathComponent, maxLength: 8) } ?? ""
+        case "source":                      return parsed.firstArg.map { truncateFilename($0.lastPathComponent, maxLength: 8) } ?? ""
         case "xcodebuild":                  return parsed.flagValue("-scheme") ?? parsed.subcommand ?? "build"
         case "fastlane":                    return parsed.allArgs.prefix(2).joined(separator: " ")
         case "cp", "mv":                    return moveDetail(parsed)
         case "chmod":                       return chmodDetail(parsed)
-        case "curl", "wget":               return parsed.firstArg.map { truncateURL($0, maxLength: 20) } ?? ""
-        case "grep", "rg":                 return parsed.firstArg.map { truncateText($0, maxLength: 16) } ?? ""
-        case "echo":                        return truncateText(parsed.allArgs.joined(separator: " "), maxLength: 18)
+        case "curl", "wget":               return parsed.firstArg.map { truncateURL($0, maxLength: 10) } ?? ""
+        case "grep", "rg":                 return parsed.firstArg.map { truncateText($0, maxLength: 8) } ?? ""
+        case "echo":                        return truncateText(parsed.allArgs.joined(separator: " "), maxLength: 9)
         case "export":                      return parsed.firstArg.map { $0.split(separator: "=").first.map(String.init) ?? $0 } ?? ""
         case "cloude":                      return parsed.subcommand ?? ""
         default:                            return ""
@@ -134,23 +134,23 @@ struct ToolCallLabel: View {
     }
 
     private func pathDetail(_ parsed: BashCommandParser, fallback: String) -> String {
-        parsed.firstArg.map { truncatePath($0, maxLength: 18) } ?? fallback
+        parsed.firstArg.map { truncatePath($0, maxLength: 9) } ?? fallback
     }
 
     private func fileDetail(_ parsed: BashCommandParser) -> String {
-        parsed.firstArg.map { truncateFilename($0, maxLength: 16) } ?? ""
+        parsed.firstArg.map { truncateFilename($0, maxLength: 8) } ?? ""
     }
 
     private func moveDetail(_ parsed: BashCommandParser) -> String {
         let args = parsed.allArgs
-        if args.count >= 2 { return "→ \(truncatePath(args.last!, maxLength: 14))" }
-        return args.first.map { truncatePath($0, maxLength: 18) } ?? ""
+        if args.count >= 2 { return "→ \(truncatePath(args.last!, maxLength: 7))" }
+        return args.first.map { truncatePath($0, maxLength: 9) } ?? ""
     }
 
     private func chmodDetail(_ parsed: BashCommandParser) -> String {
         let args = parsed.allArgs
         guard args.count >= 2 else { return "" }
-        return "\(args[0]) \(truncatePath(args[1], maxLength: 12))"
+        return "\(args[0]) \(truncatePath(args[1], maxLength: 6))"
     }
 
     private func truncateText(_ text: String, maxLength: Int) -> String {

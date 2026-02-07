@@ -188,7 +188,7 @@ extension ConnectionManager {
 
         case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition):
             if let convId = targetConversationId(from: conversationId) {
-                let currentTextLength = output(for: convId).text.count
+                let currentTextLength = output(for: convId).fullText.count
                 let position = textPosition ?? currentTextLength
                 output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing))
                 let detail = input.flatMap { extractToolDetail(name: name, input: $0) }
@@ -315,6 +315,10 @@ extension ConnectionManager {
         case .question(let questions, let conversationId):
             let convId = conversationId.flatMap { UUID(uuidString: $0) }
             onQuestion?(questions, convId)
+
+        case .screenshot(let conversationId):
+            let convId = conversationId.flatMap { UUID(uuidString: $0) }
+            onScreenshot?(convId)
 
         case .fileSearchResults(let files, let query):
             onFileSearchResults?(files, query)
