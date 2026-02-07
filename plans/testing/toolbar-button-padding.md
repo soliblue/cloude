@@ -1,10 +1,6 @@
 # Toolbar Button Padding
 
-Added `.padding(.horizontal, 8)` to the plans/memory toolbar button group in `CloudeApp.swift` to match the existing pattern in `WindowEditSheet.swift`.
+Increased horizontal padding on the Plans/Memories toolbar buttons (top-left of home screen) from 8 → 14 for more breathing room from the edge.
 
-Also documented the toolbar button group rule in CLAUDE.md under iOS UI Conventions:
-- `HStack(spacing: 12)` for button groups
-- `.padding(.horizontal, 8)` for edge breathing room
-- `Divider().frame(height: 20)` between buttons as separators
-
-Added a full UI Component Map to CLAUDE.md so screenshot-based references map to exact files.
+**File**: `CloudeApp.swift` line 71
+**Change**: `.padding(.horizontal, 8)` → `.padding(.horizontal, 14)`

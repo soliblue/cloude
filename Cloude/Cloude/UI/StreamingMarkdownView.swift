@@ -168,8 +168,6 @@ private struct HeaderSectionView: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.secondary)
                         .frame(width: 16)
-                        .contentShape(Rectangle())
-                        .onTapGesture { onToggle(block.id) }
                 }
 
                 if hasSpecialSegments {
@@ -177,6 +175,12 @@ private struct HeaderSectionView: View {
                 } else {
                     Text(headerContent)
                         .textSelection(.enabled)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if isComplete && !children.isEmpty {
+                    onToggle(block.id)
                 }
             }
 
