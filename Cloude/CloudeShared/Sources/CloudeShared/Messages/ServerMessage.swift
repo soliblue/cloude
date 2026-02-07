@@ -50,13 +50,13 @@ public enum ServerMessage: Codable {
     case teammateSpawned(teammate: TeammateInfo, conversationId: String?)
     case teammateUpdate(teammateId: String, status: TeammateStatus?, lastMessage: String?, lastMessageAt: Date?, conversationId: String?)
     case teamDeleted(conversationId: String?)
-    case autocompleteResult(text: String, requestText: String)
+    case suggestionsResult(suggestions: [String], conversationId: String?)
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
     case plans(stages: [String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, requestText, stages, stage, filename
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename
     }
 
     public init(from decoder: Decoder) throws {
@@ -264,10 +264,10 @@ public enum ServerMessage: Codable {
         case "team_deleted":
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .teamDeleted(conversationId: conversationId)
-        case "autocomplete_result":
-            let text = try container.decode(String.self, forKey: .text)
-            let requestText = try container.decode(String.self, forKey: .requestText)
-            self = .autocompleteResult(text: text, requestText: requestText)
+        case "suggestions_result":
+            let suggestions = try container.decode([String].self, forKey: .suggestions)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .suggestionsResult(suggestions: suggestions, conversationId: conversationId)
         case "name_suggestion":
             let name = try container.decode(String.self, forKey: .name)
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)

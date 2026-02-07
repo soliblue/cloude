@@ -19,7 +19,7 @@ struct MainChatView: View {
     @State var pendingGitChecks: [String] = []
     @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
-    @State var autocompleteSuggestion: String = ""
+    @State var suggestions: [String] = []
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?
 
@@ -83,7 +83,7 @@ struct MainChatView: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     attachedImages: $attachedImages,
-                    autocompleteSuggestion: $autocompleteSuggestion,
+                    suggestions: $suggestions,
                     isConnected: connection.isAuthenticated,
                     isWhisperReady: connection.isWhisperReady,
                     isTranscribing: connection.isTranscribing,
@@ -97,8 +97,7 @@ struct MainChatView: View {
                     onModelChange: { currentModel = $0 },
                     onStop: stopActiveConversation,
                     onTranscribe: transcribeAudio,
-                    onFileSearch: searchFiles,
-                    onAutocomplete: requestAutocomplete
+                    onFileSearch: searchFiles
                 )
 
                 pageIndicator()
@@ -113,7 +112,7 @@ struct MainChatView: View {
             initializeFirstWindow()
             setupGitStatusHandler()
             setupFileSearchHandler()
-            setupAutocompleteHandler()
+            setupSuggestionsHandler()
             setupCostHandler()
             checkGitForAllDirectories()
             connection.onTranscription = { text in
@@ -160,7 +159,7 @@ struct MainChatView: View {
                 }
                 cleanupEmptyConversation(for: oldId)
             }
-            autocompleteSuggestion = ""
+            suggestions = []
             if let newId = newId, let draft = drafts[newId] {
                 inputText = draft.text
                 attachedImages = draft.images
@@ -227,6 +226,12 @@ struct MainChatView: View {
             if oldIndex == 0 && newIndex != 0 {
                 connection.send(.markHeartbeatRead)
                 conversationStore.markHeartbeatRead()
+            }
+            suggestions = []
+        }
+        .onChange(of: connection.agentState) { oldState, newState in
+            if oldState != .idle && newState == .idle && !isHeartbeatActive {
+                requestSuggestions()
             }
         }
         .modifier(HeartbeatIntervalModifier(

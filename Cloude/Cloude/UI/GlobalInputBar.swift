@@ -7,7 +7,7 @@ import CloudeShared
 struct GlobalInputBar: View {
     @Binding var inputText: String
     @Binding var attachedImages: [AttachedImage]
-    @Binding var autocompleteSuggestion: String
+    @Binding var suggestions: [String]
     let isConnected: Bool
     let isWhisperReady: Bool
     let isTranscribing: Bool
@@ -22,7 +22,6 @@ struct GlobalInputBar: View {
     var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
     var onFileSearch: ((String) -> Void)?
-    var onAutocomplete: ((String) -> Void)?
 
     @State private var selectedItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
@@ -38,7 +37,6 @@ struct GlobalInputBar: View {
     @State private var idleTime: Date = Date()
     @State private var showStopButton = false
     @State private var fileSearchDebounce: Task<Void, Never>?
-    @State private var autocompleteDebounce: Task<Void, Never>?
     @State private var currentEffort: EffortLevel?
     @State private var currentModel: ModelSelection?
 
@@ -47,10 +45,7 @@ struct GlobalInputBar: View {
         static let transitionDuration: Double = 0.15
         static let stopButtonDelay: TimeInterval = 3.0
         static let fileSearchDebounceNanos: UInt64 = 150_000_000
-        static let autocompleteDebounceNanos: UInt64 = 500_000_000
         static let maxImageAttachments = 5
-        static let autocompleteMinLength = 3
-        static let autocompleteMaxLength = 90
         static let placeholderRotationInterval: TimeInterval = 8
     }
 
@@ -142,6 +137,29 @@ struct GlobalInputBar: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
+            if !suggestions.isEmpty && inputText.isEmpty && !isRunning {
+                HStack(spacing: 8) {
+                    ForEach(suggestions, id: \.self) { suggestion in
+                        Button(action: {
+                            inputText = suggestion
+                            suggestions = []
+                        }) {
+                            Text(suggestion)
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
             if !attachedImages.isEmpty {
                 ImageAttachmentStrip(
                     images: attachedImages,
@@ -177,6 +195,7 @@ struct GlobalInputBar: View {
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))
+        .animation(.easeOut(duration: 0.2), value: suggestions)
         .gesture(inputBarDragGesture)
         .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
         .onChange(of: selectedItem) { _, newItem in
@@ -207,15 +226,9 @@ struct GlobalInputBar: View {
                     }
                 }
             }
-            autocompleteSuggestion = ""
-            autocompleteDebounce?.cancel()
-            let trimmed = new.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed.count >= Constants.autocompleteMinLength && trimmed.count <= Constants.autocompleteMaxLength && !trimmed.hasPrefix("/") && !trimmed.contains("@") && !isRunning {
-                autocompleteDebounce = Task {
-                    try? await Task.sleep(nanoseconds: Constants.autocompleteDebounceNanos)
-                    if !Task.isCancelled {
-                        onAutocomplete?(trimmed)
-                    }
+            if !new.isEmpty && !suggestions.isEmpty {
+                withAnimation(.easeOut(duration: 0.15)) {
+                    suggestions = []
                 }
             }
         }
@@ -276,13 +289,6 @@ struct GlobalInputBar: View {
                             .foregroundColor(.secondary)
                             .id(placeholderIndex)
                             .transition(.opacity)
-                    }
-                    if !autocompleteSuggestion.isEmpty && !inputText.isEmpty {
-                        Text(inputText + autocompleteSuggestion)
-                            .foregroundColor(.secondary.opacity(0.4))
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                            .allowsHitTesting(false)
                     }
                     TextField("", text: $inputText, axis: .vertical)
                         .textFieldStyle(.plain)
@@ -379,7 +385,6 @@ struct GlobalInputBar: View {
             .onChanged { value in
                 let verticalDrag = -value.translation.height
                 let horizontalDrag = -value.translation.width
-                let rightSwipe = value.translation.width
 
                 if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
                     isSwipingToRecord = true
@@ -389,16 +394,11 @@ struct GlobalInputBar: View {
                     horizontalSwipeOffset = horizontalDrag
                     swipeOffset = 0
                     isSwipingToRecord = false
-                } else if rightSwipe > abs(-value.translation.height) && !autocompleteSuggestion.isEmpty {
-                    horizontalSwipeOffset = -rightSwipe
-                    swipeOffset = 0
-                    isSwipingToRecord = false
                 }
             }
             .onEnded { value in
                 let verticalDrag = -value.translation.height
                 let horizontalDrag = -value.translation.width
-                let rightSwipe = value.translation.width
 
                 if verticalDrag >= Constants.swipeThreshold && canRecord && isSwipingToRecord {
                     startRecording()
@@ -407,9 +407,6 @@ struct GlobalInputBar: View {
                         inputText = ""
                         attachedImages = []
                     }
-                } else if rightSwipe >= Constants.swipeThreshold && !autocompleteSuggestion.isEmpty {
-                    inputText += autocompleteSuggestion
-                    autocompleteSuggestion = ""
                 }
 
                 withAnimation(.easeOut(duration: 0.2)) {

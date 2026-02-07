@@ -11,6 +11,7 @@ struct HeartbeatSheet: View {
     @State private var scrollProxy: ScrollViewProxy?
     @State private var inputText = ""
     @State private var attachedImages: [AttachedImage] = []
+    @State private var isRefreshing = false
 
     private var heartbeat: Conversation {
         conversationStore.heartbeatConversation
@@ -36,7 +37,7 @@ struct HeartbeatSheet: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     attachedImages: $attachedImages,
-                    autocompleteSuggestion: .constant(""),
+                    suggestions: .constant([]),
                     isConnected: connection.isConnected,
                     isWhisperReady: connection.isWhisperReady,
                     isTranscribing: connection.isTranscribing,
@@ -92,6 +93,31 @@ struct HeartbeatSheet: View {
                         }
                         .buttonStyle(.plain)
                         .disabled(convOutput.isRunning)
+
+                        Divider()
+                            .frame(height: 20)
+
+                        Button {
+                            guard !isRefreshing else { return }
+                            isRefreshing = true
+                            guard let workingDir = connection.defaultWorkingDirectory else {
+                                isRefreshing = false
+                                return
+                            }
+                            connection.syncHistory(sessionId: Heartbeat.sessionId, workingDirectory: workingDir)
+                            Task {
+                                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                                isRefreshing = false
+                            }
+                        } label: {
+                            if isRefreshing {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                        }
+                        .disabled(isRefreshing)
 
                         Divider()
                             .frame(height: 20)
