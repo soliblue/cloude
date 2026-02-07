@@ -12,6 +12,18 @@ struct HeartbeatConfig {
     var unreadCount: Int = 0
     var lastTriggeredAt: Date?
 
+    static let intervalOptions: [(label: String, minutes: Int)] = [
+        ("Off", 0),
+        ("5 min", 5),
+        ("10 min", 10),
+        ("30 min", 30),
+        ("1 hour", 60),
+        ("2 hours", 120),
+        ("4 hours", 240),
+        ("8 hours", 480),
+        ("1 day", 1440)
+    ]
+
     var intervalDisplayText: String {
         guard let minutes = intervalMinutes else { return "Off" }
         switch minutes {

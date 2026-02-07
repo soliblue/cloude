@@ -25,7 +25,11 @@ extension ConversationStore {
     }
 
     func newConversation(workingDirectory: String? = nil) -> Conversation {
-        let conversation = Conversation(workingDirectory: workingDirectory)
+        var conversation = Conversation(workingDirectory: workingDirectory)
+        let defaultLimit = UserDefaults.standard.double(forKey: "defaultCostLimitUsd")
+        if defaultLimit > 0 {
+            conversation.costLimitUsd = defaultLimit
+        }
         conversations.insert(conversation, at: 0)
         currentConversation = conversation
         save()
@@ -74,6 +78,10 @@ extension ConversationStore {
 
     func setDefaultModel(_ conversation: Conversation, model: ModelSelection?) {
         mutate(conversation.id) { $0.defaultModel = model }
+    }
+
+    func setCostLimit(_ conversation: Conversation, limit: Double?) {
+        mutate(conversation.id) { $0.costLimitUsd = limit }
     }
 
     func deleteConversation(_ conversation: Conversation) {

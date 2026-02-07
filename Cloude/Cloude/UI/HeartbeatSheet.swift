@@ -20,18 +20,6 @@ struct HeartbeatSheet: View {
         connection.output(for: Heartbeat.conversationId)
     }
 
-    private let intervalOptions: [(label: String, minutes: Int)] = [
-        ("Off", 0),
-        ("5 min", 5),
-        ("10 min", 10),
-        ("30 min", 30),
-        ("1 hour", 60),
-        ("2 hours", 120),
-        ("4 hours", 240),
-        ("8 hours", 480),
-        ("1 day", 1440)
-    ]
-
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -115,7 +103,7 @@ struct HeartbeatSheet: View {
                 }
             }
             .confirmationDialog("Heartbeat Interval", isPresented: $showIntervalPicker, titleVisibility: .visible) {
-                ForEach(intervalOptions, id: \.minutes) { option in
+                ForEach(HeartbeatConfig.intervalOptions, id: \.minutes) { option in
                     Button(option.label) {
                         let minutes = option.minutes == 0 ? nil : option.minutes
                         conversationStore.heartbeatConfig.intervalMinutes = minutes
@@ -127,7 +115,7 @@ struct HeartbeatSheet: View {
                 connection.send(.markHeartbeatRead)
                 conversationStore.markHeartbeatRead()
                 if !convOutput.isRunning {
-                    sendQueuedMessages()
+                    conversationStore.replayQueuedMessages(conversation: heartbeat, connection: connection)
                 }
             }
             .onChange(of: convOutput.isRunning) { wasRunning, isRunning in
@@ -140,38 +128,8 @@ struct HeartbeatSheet: View {
     }
 
     private func handleChatCompletion() {
-        let message = ChatMessage(
-            isUser: false,
-            text: convOutput.text.trimmingCharacters(in: .whitespacesAndNewlines),
-            toolCalls: convOutput.toolCalls,
-            durationMs: convOutput.runStats?.durationMs,
-            costUsd: convOutput.runStats?.costUsd,
-            serverUUID: convOutput.messageUUID
-        )
-        conversationStore.addMessage(message, to: heartbeat)
-        convOutput.reset()
-        sendQueuedMessages()
-    }
-
-    private func sendQueuedMessages() {
-        let pending = conversationStore.popPendingMessages(from: heartbeat)
-        guard !pending.isEmpty else { return }
-
-        for var msg in pending {
-            msg.isQueued = false
-            conversationStore.addMessage(msg, to: heartbeat)
-        }
-
-        let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
-        connection.sendChat(
-            combinedText,
-            workingDirectory: nil,
-            sessionId: Heartbeat.sessionId,
-            isNewSession: false,
-            conversationId: Heartbeat.conversationId,
-            conversationName: "Heartbeat",
-            conversationSymbol: "heart.fill"
-        )
+        conversationStore.finalizeStreamingMessage(output: convOutput, conversation: heartbeat)
+        conversationStore.replayQueuedMessages(conversation: heartbeat, connection: connection)
     }
 
     @ViewBuilder
@@ -194,15 +152,9 @@ struct HeartbeatSheet: View {
 
     private func sendMessage() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let allImagesBase64: [String]? = attachedImages.isEmpty ? nil : attachedImages.map { $0.data.base64EncodedString() }
+        let allImagesBase64 = ImageEncoder.encodeFullImages(attachedImages)
+        let thumbnails = ImageEncoder.encodeThumbnails(attachedImages)
         guard !text.isEmpty || allImagesBase64 != nil else { return }
-
-        let thumbnails: [String]? = attachedImages.isEmpty ? nil : attachedImages.compactMap { attached in
-            guard let image = UIImage(data: attached.data),
-                  let thumbnail = image.preparingThumbnail(of: CGSize(width: 200, height: 200)),
-                  let thumbData = thumbnail.jpegData(compressionQuality: 0.7) else { return nil }
-            return thumbData.base64EncodedString()
-        }
 
         if convOutput.isRunning {
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)

@@ -16,75 +16,20 @@ struct StreamingMarkdownParser {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
 
             if line.hasPrefix("```") {
-                let startLine = i
-                let language = String(line.dropFirst(3)).trimmingCharacters(in: .whitespaces)
-                var codeLines: [String] = []
-                i += 1
-                var foundClose = false
-
-                while i < lines.count {
-                    if lines[i].hasPrefix("```") {
-                        foundClose = true
-                        break
-                    }
-                    codeLines.append(lines[i])
-                    i += 1
-                }
-
-                blocks.append(.code(
-                    id: "code-L\(startLine)",
-                    content: codeLines.joined(separator: "\n"),
-                    language: language.nilIfEmpty,
-                    isComplete: foundClose
-                ))
-                if foundClose && i < lines.count { i += 1 }
+                blocks.append(parseCodeBlock(lines: lines, index: &i))
                 continue
             }
 
             if trimmed.hasPrefix("|") && line.contains("|") {
-                let startLine = i
-                var tableRows: [[String]] = []
-
-                while i < lines.count {
-                    let tableLine = lines[i]
-                    let tableTrimmed = tableLine.trimmingCharacters(in: .whitespaces)
-
-                    if !tableTrimmed.hasPrefix("|") && !tableLine.contains("|") { break }
-
-                    let isSeparator = tableLine.contains("-") && !tableLine.contains(where: { $0.isLetter })
-                    if isSeparator {
-                        i += 1
-                        continue
-                    }
-
-                    let originalHasTrailingNewline = text.hasSuffix("\n") || text.hasSuffix("\n ")
-                    let isStreamingLine = (i == lines.count - 1) && !originalHasTrailingNewline
-                    if !isStreamingLine {
-                        let cells = tableLine.split(separator: "|").map { String($0).trimmingCharacters(in: .whitespaces) }
-                        if !cells.isEmpty { tableRows.append(cells) }
-                    }
-                    i += 1
-                }
-
-                if !tableRows.isEmpty {
-                    blocks.append(.table(id: "table-L\(startLine)", rows: tableRows))
+                if let table = parseTable(lines: lines, index: &i, originalText: text) {
+                    blocks.append(table)
                 }
                 continue
             }
 
             if trimmed.hasPrefix(">") {
-                let startLine = i
-                var quoteLines: [String] = []
-
-                while i < lines.count {
-                    let quoteLine = lines[i].trimmingCharacters(in: .whitespaces)
-                    if !quoteLine.hasPrefix(">") { break }
-                    quoteLines.append(String(quoteLine.dropFirst()).trimmingCharacters(in: .whitespaces))
-                    i += 1
-                }
-
-                if !quoteLines.isEmpty {
-                    blocks.append(.blockquote(id: "quote-L\(startLine)", content: quoteLines.joined(separator: "\n")))
+                if let quote = parseBlockquote(lines: lines, index: &i) {
+                    blocks.append(quote)
                 }
                 continue
             }
@@ -95,39 +40,113 @@ struct StreamingMarkdownParser {
                 continue
             }
 
-            if let headerInfo = Self.parseHeaderLine(trimmed) {
+            if let headerInfo = parseHeaderLine(trimmed) {
                 let (level, headerText) = headerInfo
-                let segments = Self.parseLineToSegments(headerText, font: Self.headerFont(for: level))
+                let segments = parseLineToSegments(headerText, font: headerFont(for: level))
                 let attributed = segmentsToAttributedString(segments)
                 blocks.append(.header(id: "header-L\(i)", level: level, content: attributed, segments: segments))
                 i += 1
                 continue
             }
 
-            let textStartLine = i
-            var textLines: [String] = []
-            while i < lines.count {
-                let l = lines[i]
-                let lt = l.trimmingCharacters(in: .whitespaces)
-                if l.hasPrefix("```") { break }
-                if lt.hasPrefix("|") && l.contains("|") { break }
-                if lt.hasPrefix(">") { break }
-                if isHorizontalRule(lt) && i < lines.count - 1 { break }
-                if Self.parseHeaderLine(lt) != nil { break }
-                textLines.append(l)
-                i += 1
-            }
-
-            if !textLines.isEmpty {
-                let content = textLines.joined(separator: "\n")
-                if !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    let segments = parseToSegments(content)
-                    blocks.append(.text(id: "text-L\(textStartLine)", segmentsToAttributedString(segments), segments: segments))
-                }
+            if let textBlock = parseTextBlock(lines: lines, index: &i) {
+                blocks.append(textBlock)
             }
         }
 
         return blocks
+    }
+
+    private static func parseCodeBlock(lines: [String], index i: inout Int) -> StreamingBlock {
+        let startLine = i
+        let language = String(lines[i].dropFirst(3)).trimmingCharacters(in: .whitespaces)
+        var codeLines: [String] = []
+        i += 1
+        var foundClose = false
+
+        while i < lines.count {
+            if lines[i].hasPrefix("```") {
+                foundClose = true
+                break
+            }
+            codeLines.append(lines[i])
+            i += 1
+        }
+
+        let block = StreamingBlock.code(
+            id: "code-L\(startLine)",
+            content: codeLines.joined(separator: "\n"),
+            language: language.nilIfEmpty,
+            isComplete: foundClose
+        )
+        if foundClose && i < lines.count { i += 1 }
+        return block
+    }
+
+    private static func parseTable(lines: [String], index i: inout Int, originalText: String) -> StreamingBlock? {
+        let startLine = i
+        var tableRows: [[String]] = []
+
+        while i < lines.count {
+            let tableLine = lines[i]
+            let tableTrimmed = tableLine.trimmingCharacters(in: .whitespaces)
+
+            if !tableTrimmed.hasPrefix("|") && !tableLine.contains("|") { break }
+
+            let isSeparator = tableLine.contains("-") && !tableLine.contains(where: { $0.isLetter })
+            if isSeparator {
+                i += 1
+                continue
+            }
+
+            let originalHasTrailingNewline = originalText.hasSuffix("\n") || originalText.hasSuffix("\n ")
+            let isStreamingLine = (i == lines.count - 1) && !originalHasTrailingNewline
+            if !isStreamingLine {
+                let cells = tableLine.split(separator: "|").map { String($0).trimmingCharacters(in: .whitespaces) }
+                if !cells.isEmpty { tableRows.append(cells) }
+            }
+            i += 1
+        }
+
+        guard !tableRows.isEmpty else { return nil }
+        return .table(id: "table-L\(startLine)", rows: tableRows)
+    }
+
+    private static func parseBlockquote(lines: [String], index i: inout Int) -> StreamingBlock? {
+        let startLine = i
+        var quoteLines: [String] = []
+
+        while i < lines.count {
+            let quoteLine = lines[i].trimmingCharacters(in: .whitespaces)
+            if !quoteLine.hasPrefix(">") { break }
+            quoteLines.append(String(quoteLine.dropFirst()).trimmingCharacters(in: .whitespaces))
+            i += 1
+        }
+
+        guard !quoteLines.isEmpty else { return nil }
+        return .blockquote(id: "quote-L\(startLine)", content: quoteLines.joined(separator: "\n"))
+    }
+
+    private static func parseTextBlock(lines: [String], index i: inout Int) -> StreamingBlock? {
+        let textStartLine = i
+        var textLines: [String] = []
+        while i < lines.count {
+            let l = lines[i]
+            let lt = l.trimmingCharacters(in: .whitespaces)
+            if l.hasPrefix("```") { break }
+            if lt.hasPrefix("|") && l.contains("|") { break }
+            if lt.hasPrefix(">") { break }
+            if isHorizontalRule(lt) && i < lines.count - 1 { break }
+            if parseHeaderLine(lt) != nil { break }
+            textLines.append(l)
+            i += 1
+        }
+
+        guard !textLines.isEmpty else { return nil }
+        let content = textLines.joined(separator: "\n")
+        guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        let segments = parseToSegments(content)
+        return .text(id: "text-L\(textStartLine)", segmentsToAttributedString(segments), segments: segments)
     }
 
     static func isHorizontalRule(_ line: String) -> Bool {

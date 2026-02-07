@@ -1,7 +1,5 @@
 import SwiftUI
-import UIKit
 import Photos
-import Combine
 import CloudeShared
 
 extension MainChatView {
@@ -123,12 +121,16 @@ extension MainChatView {
         guard status == .authorized || status == .limited else {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
                 if newStatus == .authorized || newStatus == .limited {
-                    self.loadLatestPhoto()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.loadLatestPhoto()
+                    }
                 }
             }
             return
         }
-        loadLatestPhoto()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.loadLatestPhoto()
+        }
     }
 
     private func loadLatestPhoto() {

@@ -10,27 +10,35 @@ struct CostBanner: View {
         currentCost / limit
     }
 
+    private var isExceeded: Bool {
+        percentUsed >= 1.0
+    }
+
     private var bannerColor: Color {
-        if percentUsed >= 0.9 {
+        if percentUsed >= 1.0 {
             return .red
-        } else if percentUsed >= 0.75 {
+        } else if percentUsed >= 0.9 {
             return .orange
         } else {
             return .yellow
         }
     }
 
+    private var titleText: String {
+        isExceeded ? "Cost Limit Reached" : "Approaching Cost Limit"
+    }
+
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
+            Image(systemName: isExceeded ? "hand.raised.fill" : "exclamationmark.triangle.fill")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(bannerColor)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Context Window Cost Limit")
+                Text(titleText)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.primary)
-                Text(String(format: "$%.2f / $%.2f limit", currentCost, limit))
+                Text(String(format: "$%.2f / $%.2f", currentCost, limit))
                     .font(.system(size: 12, weight: .medium, design: .monospaced))
                     .foregroundColor(.secondary)
             }
@@ -48,15 +56,17 @@ struct CostBanner: View {
             }
             .buttonStyle(.plain)
 
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(Color(uiColor: .systemGray5))
-                    .clipShape(Circle())
+            if !isExceeded {
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(Color(uiColor: .systemGray5))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

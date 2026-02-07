@@ -137,6 +137,16 @@ extension AppDelegate {
                 Log.info("Name suggestion: \"\(name)\" symbol=\(symbol ?? "nil")")
                 self?.server.broadcast(.nameSuggestion(name: name, symbol: symbol, conversationId: conversationId))
             }
+
+        case .getPlans(let workingDirectory):
+            Log.info("Received getPlans request for \(workingDirectory)")
+            let stages = PlansService.readPlans(workingDirectory: workingDirectory)
+            server.sendMessage(.plans(stages: stages), to: connection)
+
+        case .deletePlan(let stage, let filename, let workingDirectory):
+            Log.info("Received deletePlan: \(stage)/\(filename)")
+            PlansService.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
+            server.sendMessage(.planDeleted(stage: stage, filename: filename), to: connection)
         }
     }
 }

@@ -91,6 +91,38 @@ curl -sL -H "Authorization: Key $MANIFOLD_KEY" \
 curl -sL "https://api.manifold.markets/v0/market/{marketId}/positions?userId=MANIFOLD_USER_ID_PLACEHOLDER" | jq
 ```
 
+## Check Comments on My Markets
+
+Get all open markets Soli created and check for new comments from other users. Use the helper script:
+
+```bash
+node /path/to/check_comments.js <marketId1> <marketId2> ...
+```
+
+To get all open market IDs:
+```bash
+curl -sL "https://api.manifold.markets/v0/search-markets?term=&sort=newest&filter=open&creatorId=MANIFOLD_USER_ID_PLACEHOLDER&limit=20" | jq -r '.[].id'
+```
+
+To check comments on a specific market:
+```bash
+curl -sL "https://api.manifold.markets/v0/comments?contractId={marketId}&limit=10" | jq '[.[] | {userName, date: (.createdTime / 1000 | todate), text: [(.content.content // [])[] | [(.content // [])[] | select(.type == "text" or .type == "mention") | (if .type == "mention" then "@" + .attrs.label else .text end)] | join("")] | join(" ")}]'
+```
+
+Filter to only show comments from the last N days by checking dates. When reporting, skip comments from "Soli" (that's us) and highlight any unanswered questions.
+
+## Post a Comment
+
+```bash
+curl -sL -X POST \
+  -H "Authorization: Key $MANIFOLD_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"contractId": "MARKET_ID", "markdown": "Your comment here"}' \
+  "https://api.manifold.markets/v0/comment" | jq
+```
+
+**CRITICAL**: Never post comments without Soli's explicit permission.
+
 ## Soli's Manifold Profile
 
 - **Account since**: Sept 2023

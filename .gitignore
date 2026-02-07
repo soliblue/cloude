@@ -30,6 +30,9 @@ fastlane/README.md
 *.ipa
 *.dSYM.zip
 
+# Tweet archive data (personal, never commit)
+.claude/skills/tweets/data/
+
 # Swift Package Manager
 .build/
 .swiftpm/

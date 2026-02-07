@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 
 struct Conversation: Codable, Identifiable {
     let id: UUID
@@ -81,6 +80,20 @@ struct Conversation: Codable, Identifiable {
     }
 }
 
+struct TeamSummary: Codable, Equatable {
+    let teamName: String
+    let members: [Member]
+
+    struct Member: Codable, Equatable, Identifiable {
+        let name: String
+        let color: String
+        let model: String
+        let agentType: String
+
+        var id: String { name }
+    }
+}
+
 enum ToolCallState: String, Codable {
     case executing
     case complete
@@ -94,6 +107,7 @@ struct ToolCall: Codable {
     var textPosition: Int?
     var state: ToolCallState
     var resultSummary: String?
+    var resultOutput: String?
 
     init(name: String, input: String?, toolId: String = UUID().uuidString, parentToolId: String? = nil, textPosition: Int? = nil, state: ToolCallState = .complete) {
         self.name = name
@@ -103,6 +117,7 @@ struct ToolCall: Codable {
         self.textPosition = textPosition
         self.state = state
         self.resultSummary = nil
+        self.resultOutput = nil
     }
 
     init(from decoder: Decoder) throws {
@@ -114,10 +129,26 @@ struct ToolCall: Codable {
         textPosition = try container.decodeIfPresent(Int.self, forKey: .textPosition)
         state = try container.decodeIfPresent(ToolCallState.self, forKey: .state) ?? .complete
         resultSummary = try container.decodeIfPresent(String.self, forKey: .resultSummary)
+        resultOutput = try container.decodeIfPresent(String.self, forKey: .resultOutput)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case name, input, toolId, parentToolId, textPosition, state, resultSummary
+        case name, input, toolId, parentToolId, textPosition, state, resultSummary, resultOutput
+    }
+
+    var isMemoryCommand: Bool {
+        name == "Bash" && (input?.hasPrefix("cloude memory ") ?? false)
+    }
+
+    var isScript: Bool {
+        guard name == "Bash", let input else { return false }
+        return BashCommandParser.isScript(input)
+    }
+
+    var filePath: String? {
+        guard let input else { return nil }
+        if ["Read", "Write", "Edit"].contains(name) { return input }
+        return nil
     }
 }
 
@@ -134,8 +165,9 @@ struct ChatMessage: Codable, Identifiable {
     var imageBase64: String?
     var imageThumbnails: [String]?
     var serverUUID: String?
+    var teamSummary: TeamSummary?
 
-    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil, imageThumbnails: [String]? = nil, serverUUID: String? = nil) {
+    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil, imageThumbnails: [String]? = nil, serverUUID: String? = nil, teamSummary: TeamSummary? = nil) {
         self.id = UUID()
         self.isUser = isUser
         self.text = text
@@ -148,6 +180,7 @@ struct ChatMessage: Codable, Identifiable {
         self.imageBase64 = imageBase64
         self.imageThumbnails = imageThumbnails
         self.serverUUID = serverUUID
+        self.teamSummary = teamSummary
     }
 
     init(isUser: Bool, text: String, timestamp: Date, toolCalls: [ToolCall] = [], serverUUID: String? = nil) {
@@ -163,6 +196,7 @@ struct ChatMessage: Codable, Identifiable {
         self.imageBase64 = nil
         self.imageThumbnails = nil
         self.serverUUID = serverUUID
+        self.teamSummary = nil
     }
 
     init(from decoder: Decoder) throws {
@@ -179,10 +213,11 @@ struct ChatMessage: Codable, Identifiable {
         imageBase64 = try container.decodeIfPresent(String.self, forKey: .imageBase64)
         imageThumbnails = try container.decodeIfPresent([String].self, forKey: .imageThumbnails)
         serverUUID = try container.decodeIfPresent(String.self, forKey: .serverUUID)
+        teamSummary = try container.decodeIfPresent(TeamSummary.self, forKey: .teamSummary)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID
+        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID, teamSummary
     }
 }
 

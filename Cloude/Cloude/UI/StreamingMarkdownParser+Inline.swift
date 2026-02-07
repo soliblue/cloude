@@ -137,8 +137,8 @@ extension StreamingMarkdownParser {
     }
 
     private static func parseItalic(_ remaining: inout Substring, font: Font?) -> [InlineSegment]? {
-        guard remaining.hasPrefix("*") || remaining.hasPrefix("_") else { return nil }
-        let marker = remaining.first!
+        guard remaining.hasPrefix("*") || remaining.hasPrefix("_"),
+              let marker = remaining.first else { return nil }
         let nextIdx = remaining.index(after: remaining.startIndex)
         guard nextIdx < remaining.endIndex && remaining[nextIdx] != " " else { return nil }
         remaining = remaining.dropFirst()
@@ -178,8 +178,7 @@ extension StreamingMarkdownParser {
     private static func parseFilePath(_ remaining: inout Substring, font: Font?) -> InlineSegment? {
         guard remaining.hasPrefix("/Users/") || remaining.hasPrefix("/tmp/") || remaining.hasPrefix("/var/") else { return nil }
         var pathText = ""
-        while !remaining.isEmpty {
-            let ch = remaining.first!
+        while let ch = remaining.first {
             if ch.isWhitespace || ch == ")" || ch == "]" || ch == "," || ch == ";" { break }
             pathText.append(remaining.removeFirst())
         }

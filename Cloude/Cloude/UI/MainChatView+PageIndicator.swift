@@ -1,6 +1,4 @@
 import SwiftUI
-import UIKit
-import Combine
 import CloudeShared
 
 extension MainChatView {

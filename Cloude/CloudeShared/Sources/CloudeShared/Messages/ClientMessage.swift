@@ -25,9 +25,11 @@ public enum ClientMessage: Codable {
     case listRemoteSessions(workingDirectory: String)
     case autocomplete(text: String, context: [String], workingDirectory: String?)
     case suggestName(text: String, context: [String], conversationId: String)
+    case getPlans(workingDirectory: String)
+    case deletePlan(stage: String, filename: String, workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename
     }
 
     public init(from decoder: Decoder) throws {
@@ -122,6 +124,14 @@ public enum ClientMessage: Codable {
             let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             self = .suggestName(text: text, context: context, conversationId: conversationId)
+        case "get_plans":
+            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
+            self = .getPlans(workingDirectory: workingDirectory)
+        case "delete_plan":
+            let stage = try container.decode(String.self, forKey: .stage)
+            let filename = try container.decode(String.self, forKey: .filename)
+            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
+            self = .deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -214,6 +224,14 @@ public enum ClientMessage: Codable {
             try container.encode(text, forKey: .text)
             try container.encode(context, forKey: .context)
             try container.encode(conversationId, forKey: .conversationId)
+        case .getPlans(let workingDirectory):
+            try container.encode("get_plans", forKey: .type)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
+        case .deletePlan(let stage, let filename, let workingDirectory):
+            try container.encode("delete_plan", forKey: .type)
+            try container.encode(stage, forKey: .stage)
+            try container.encode(filename, forKey: .filename)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
         }
     }
 }

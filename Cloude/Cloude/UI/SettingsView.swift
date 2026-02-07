@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage("serverPort") private var serverPort = "8765"
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
+    @AppStorage("defaultCostLimitUsd") private var defaultCostLimitUsd: Double = 0
     @State private var authToken = ""
     @State private var showToken = false
     @State private var ipCopied = false
@@ -28,6 +29,7 @@ struct SettingsView: View {
                 connectionSection
                 tailscaleSection
                 processesSection
+                costLimitsSection
                 securitySection
                 aboutSection
             }
@@ -166,6 +168,26 @@ struct SettingsView: View {
             }
         } footer: {
             Text("Running Claude Code processes on the Mac agent")
+        }
+    }
+
+    private var costLimitsSection: some View {
+        Section {
+            SettingsRow(icon: "dollarsign.circle.fill", color: .green) {
+                Picker("Default Cost Limit", selection: $defaultCostLimitUsd) {
+                    Text("Off").tag(0.0)
+                    Text("$1").tag(1.0)
+                    Text("$5").tag(5.0)
+                    Text("$10").tag(10.0)
+                    Text("$25").tag(25.0)
+                    Text("$50").tag(50.0)
+                }
+                .pickerStyle(.menu)
+            }
+        } header: {
+            Text("Cost Limits")
+        } footer: {
+            Text("Default cost warning for new conversations. Per-conversation limits can be set from the chat header.")
         }
     }
 

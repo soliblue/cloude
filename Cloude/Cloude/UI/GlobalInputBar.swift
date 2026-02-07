@@ -28,7 +28,7 @@ struct GlobalInputBar: View {
     @State private var showPhotoPicker = false
     @FocusState private var isInputFocused: Bool
     @StateObject private var audioRecorder = AudioRecorder()
-    @State private var placeholderIndex = Int.random(in: 0..<20)
+    @State private var placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
     @State private var textFieldId = UUID()
     @State private var swipeOffset: CGFloat = 0
     @State private var horizontalSwipeOffset: CGFloat = 0
@@ -42,9 +42,17 @@ struct GlobalInputBar: View {
     @State private var currentEffort: EffortLevel?
     @State private var currentModel: ModelSelection?
 
-    private let swipeThreshold: CGFloat = 60
-    private let transitionDuration: Double = 0.15
-    private let stopButtonDelay: TimeInterval = 3.0
+    private enum Constants {
+        static let swipeThreshold: CGFloat = 60
+        static let transitionDuration: Double = 0.15
+        static let stopButtonDelay: TimeInterval = 3.0
+        static let fileSearchDebounceNanos: UInt64 = 150_000_000
+        static let autocompleteDebounceNanos: UInt64 = 500_000_000
+        static let maxImageAttachments = 5
+        static let autocompleteMinLength = 3
+        static let autocompleteMaxLength = 90
+        static let placeholderRotationInterval: TimeInterval = 8
+    }
 
     private static let placeholders = [
         "Swipe up to record a voice note",
@@ -64,7 +72,7 @@ struct GlobalInputBar: View {
     }
 
     private var primaryCommands: [SlashCommand] {
-        builtInCommands + skills.map { SlashCommand.fromSkill($0).first! }
+        builtInCommands + skills.compactMap { SlashCommand.fromSkill($0).first }
     }
 
     private var allCommandsWithAliases: [SlashCommand] {
@@ -148,9 +156,9 @@ struct GlobalInputBar: View {
 
             ZStack(alignment: .bottom) {
                 inputRow
-                    .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
-                    .animation(.easeOut(duration: transitionDuration), value: showInputBar)
-                    .animation(.easeOut(duration: transitionDuration), value: isTranscribing)
+                    .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.7 : 0)
+                    .animation(.easeOut(duration: Constants.transitionDuration), value: showInputBar)
+                    .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
 
                 if showRecordingOverlay || isSwipingToRecord || isTranscribing {
                     RecordingOverlayView(
@@ -158,10 +166,10 @@ struct GlobalInputBar: View {
                         isTranscribing: isTranscribing,
                         onStop: stopRecording
                     )
-                    .offset(y: (showRecordingOverlay || isTranscribing) ? 0 : max(0, swipeThreshold - swipeOffset))
-                    .opacity((showRecordingOverlay || isTranscribing) ? 1 : Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold))
-                    .animation(.easeOut(duration: transitionDuration), value: showRecordingOverlay)
-                    .animation(.easeOut(duration: transitionDuration), value: isTranscribing)
+                    .offset(y: (showRecordingOverlay || isTranscribing) ? 0 : max(0, Constants.swipeThreshold - swipeOffset))
+                    .opacity((showRecordingOverlay || isTranscribing) ? 1 : Double(min(swipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold))
+                    .animation(.easeOut(duration: Constants.transitionDuration), value: showRecordingOverlay)
+                    .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
                 }
             }
             .padding(.horizontal, 16)
@@ -169,63 +177,23 @@ struct GlobalInputBar: View {
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))
-        .gesture(
-            DragGesture(minimumDistance: 10)
-                .onChanged { value in
-                    let verticalDrag = -value.translation.height
-                    let horizontalDrag = -value.translation.width
-                    let rightSwipe = value.translation.width
-
-                    if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
-                        isSwipingToRecord = true
-                        swipeOffset = verticalDrag
-                        horizontalSwipeOffset = 0
-                    } else if horizontalDrag > abs(verticalDrag) && !inputText.isEmpty {
-                        horizontalSwipeOffset = horizontalDrag
-                        swipeOffset = 0
-                        isSwipingToRecord = false
-                    } else if rightSwipe > abs(-value.translation.height) && !autocompleteSuggestion.isEmpty {
-                        horizontalSwipeOffset = -rightSwipe
-                        swipeOffset = 0
-                        isSwipingToRecord = false
-                    }
-                }
-                .onEnded { value in
-                    let verticalDrag = -value.translation.height
-                    let horizontalDrag = -value.translation.width
-                    let rightSwipe = value.translation.width
-
-                    if verticalDrag >= swipeThreshold && canRecord && isSwipingToRecord {
-                        startRecording()
-                    } else if horizontalDrag >= swipeThreshold && !inputText.isEmpty {
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            inputText = ""
-                            attachedImages = []
-                        }
-                    } else if rightSwipe >= swipeThreshold && !autocompleteSuggestion.isEmpty {
-                        inputText += autocompleteSuggestion
-                        autocompleteSuggestion = ""
-                    }
-
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        swipeOffset = 0
-                        horizontalSwipeOffset = 0
-                        isSwipingToRecord = false
-                    }
-                }
-        )
+        .gesture(inputBarDragGesture)
         .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
         .onChange(of: selectedItem) { _, newItem in
+            guard let newItem else { return }
             Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                    guard attachedImages.count < 5 else { return }
+                if let data = try? await newItem.loadTransferable(type: Data.self) {
+                    guard attachedImages.count < Constants.maxImageAttachments else { return }
                     withAnimation(.easeOut(duration: 0.15)) {
                         attachedImages.append(AttachedImage(data: data, isScreenshot: false))
                     }
                 }
+                selectedItem = nil
             }
         }
         .onChange(of: inputText) { old, new in
+            idleTime = Date()
+            showStopButton = false
             if !old.isEmpty && new.isEmpty {
                 placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
                 textFieldId = UUID()
@@ -233,7 +201,7 @@ struct GlobalInputBar: View {
             if let query = atMentionQuery, query.count >= 1 {
                 fileSearchDebounce?.cancel()
                 fileSearchDebounce = Task {
-                    try? await Task.sleep(nanoseconds: 150_000_000)
+                    try? await Task.sleep(nanoseconds: Constants.fileSearchDebounceNanos)
                     if !Task.isCancelled {
                         onFileSearch?(query)
                     }
@@ -242,25 +210,21 @@ struct GlobalInputBar: View {
             autocompleteSuggestion = ""
             autocompleteDebounce?.cancel()
             let trimmed = new.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed.count >= 3 && trimmed.count <= 90 && !trimmed.hasPrefix("/") && !trimmed.contains("@") && !isRunning {
+            if trimmed.count >= Constants.autocompleteMinLength && trimmed.count <= Constants.autocompleteMaxLength && !trimmed.hasPrefix("/") && !trimmed.contains("@") && !isRunning {
                 autocompleteDebounce = Task {
-                    try? await Task.sleep(nanoseconds: 500_000_000)
+                    try? await Task.sleep(nanoseconds: Constants.autocompleteDebounceNanos)
                     if !Task.isCancelled {
                         onAutocomplete?(trimmed)
                     }
                 }
             }
         }
-        .onReceive(Timer.publish(every: 8, on: .main, in: .common).autoconnect()) { _ in
+        .onReceive(Timer.publish(every: Constants.placeholderRotationInterval, on: .main, in: .common).autoconnect()) { _ in
             if inputText.isEmpty {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     placeholderIndex = (placeholderIndex + 1) % Self.placeholders.count
                 }
             }
-        }
-        .onChange(of: inputText) { _, _ in
-            idleTime = Date()
-            showStopButton = false
         }
         .onChange(of: isInputFocused) { _, focused in
             if focused {
@@ -270,7 +234,7 @@ struct GlobalInputBar: View {
             }
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-            if isRunning && !isInputFocused && Date().timeIntervalSince(idleTime) >= stopButtonDelay {
+            if isRunning && !isInputFocused && Date().timeIntervalSince(idleTime) >= Constants.stopButtonDelay {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     showStopButton = true
                 }
@@ -316,9 +280,8 @@ struct GlobalInputBar: View {
                     if !autocompleteSuggestion.isEmpty && !inputText.isEmpty {
                         Text(inputText + autocompleteSuggestion)
                             .foregroundColor(.secondary.opacity(0.4))
-                            .lineLimit(1...4)
+                            .lineLimit(1)
                             .truncationMode(.tail)
-                            .fixedSize(horizontal: false, vertical: false)
                             .allowsHitTesting(false)
                     }
                     TextField("", text: $inputText, axis: .vertical)
@@ -335,7 +298,7 @@ struct GlobalInputBar: View {
             .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .offset(x: -horizontalSwipeOffset * 0.3)
-            .opacity(1 - Double(min(horizontalSwipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.5)
+            .opacity(1 - Double(min(horizontalSwipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.5)
 
             actionButton
         }
@@ -411,6 +374,52 @@ struct GlobalInputBar: View {
             .animation(.easeInOut(duration: 0.2), value: canSend)
     }
 
+    private var inputBarDragGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                let verticalDrag = -value.translation.height
+                let horizontalDrag = -value.translation.width
+                let rightSwipe = value.translation.width
+
+                if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
+                    isSwipingToRecord = true
+                    swipeOffset = verticalDrag
+                    horizontalSwipeOffset = 0
+                } else if horizontalDrag > abs(verticalDrag) && !inputText.isEmpty {
+                    horizontalSwipeOffset = horizontalDrag
+                    swipeOffset = 0
+                    isSwipingToRecord = false
+                } else if rightSwipe > abs(-value.translation.height) && !autocompleteSuggestion.isEmpty {
+                    horizontalSwipeOffset = -rightSwipe
+                    swipeOffset = 0
+                    isSwipingToRecord = false
+                }
+            }
+            .onEnded { value in
+                let verticalDrag = -value.translation.height
+                let horizontalDrag = -value.translation.width
+                let rightSwipe = value.translation.width
+
+                if verticalDrag >= Constants.swipeThreshold && canRecord && isSwipingToRecord {
+                    startRecording()
+                } else if horizontalDrag >= Constants.swipeThreshold && !inputText.isEmpty {
+                    withAnimation(.easeOut(duration: 0.15)) {
+                        inputText = ""
+                        attachedImages = []
+                    }
+                } else if rightSwipe >= Constants.swipeThreshold && !autocompleteSuggestion.isEmpty {
+                    inputText += autocompleteSuggestion
+                    autocompleteSuggestion = ""
+                }
+
+                withAnimation(.easeOut(duration: 0.2)) {
+                    swipeOffset = 0
+                    horizontalSwipeOffset = 0
+                    isSwipingToRecord = false
+                }
+            }
+    }
+
     private var canRecord: Bool {
         isConnected && isWhisperReady && !audioRecorder.isTranscribing
     }
@@ -419,12 +428,12 @@ struct GlobalInputBar: View {
         audioRecorder.requestPermission { granted in
             if granted {
                 UIApplication.shared.isIdleTimerDisabled = true
-                withAnimation(.easeOut(duration: transitionDuration)) {
+                withAnimation(.easeOut(duration: Constants.transitionDuration)) {
                     showInputBar = false
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + transitionDuration) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
                     audioRecorder.startRecording()
-                    withAnimation(.easeOut(duration: transitionDuration)) {
+                    withAnimation(.easeOut(duration: Constants.transitionDuration)) {
                         showRecordingOverlay = true
                     }
                 }
@@ -435,11 +444,11 @@ struct GlobalInputBar: View {
     private func stopRecording() {
         UIApplication.shared.isIdleTimerDisabled = false
         let data = audioRecorder.stopRecording()
-        withAnimation(.easeOut(duration: transitionDuration)) {
+        withAnimation(.easeOut(duration: Constants.transitionDuration)) {
             showRecordingOverlay = false
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + transitionDuration) {
-            withAnimation(.easeOut(duration: transitionDuration)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
+            withAnimation(.easeOut(duration: Constants.transitionDuration)) {
                 showInputBar = true
             }
             if let data = data {

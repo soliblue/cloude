@@ -1,6 +1,5 @@
 import SwiftUI
 import UIKit
-import Combine
 import CloudeShared
 
 extension MainChatView {
@@ -36,6 +35,7 @@ extension MainChatView {
             }
             .disabled(isRunning)
             .buttonStyle(.plain)
+            .padding(7)
 
             Spacer()
 

@@ -90,7 +90,11 @@ struct ConversationView: View {
                 )
 
                 if let mates = output?.teammates, !mates.isEmpty {
-                    TeamOrbsOverlay(teammates: mates)
+                    TeamOrbsOverlay(teammates: mates, onClearUnread: { mateId in
+                        if let idx = output?.teammates.firstIndex(where: { $0.id == mateId }) {
+                            output?.teammates[idx].unreadCount = 0
+                        }
+                    })
                 }
             }
         }
@@ -102,86 +106,30 @@ struct ConversationView: View {
     }
 
     private func handleCompletion() {
-        guard effectiveConversation?.id != nil else { return }
-        guard let output = convOutput else { return }
-        guard !output.text.isEmpty else { return }
-        guard output.isRunning == false else { return }
+        guard let output = convOutput, !output.text.isEmpty, !output.isRunning else { return }
 
         if scenePhase != .active {
             NotificationManager.showCompletionNotification(preview: output.text)
         }
 
-        if var conv = effectiveConversation {
-            if let newSessionId = output.newSessionId {
-                store.updateSessionId(conv, sessionId: newSessionId, workingDirectory: conv.workingDirectory)
-                conv = store.conversation(withId: conv.id) ?? conv
-            }
+        guard var conv = effectiveConversation else { return }
 
-            let messageId = UUID()
-            if output.lastSavedMessageId == messageId { return }
-
-            let rawText = output.text
-            let trimmedText = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
-            let leadingTrimmed = rawText.count - rawText.drop(while: { $0.isWhitespace || $0.isNewline }).count
-            let adjustedToolCalls = leadingTrimmed > 0 ? output.toolCalls.map { tool in
-                var adjusted = tool
-                if let pos = adjusted.textPosition {
-                    adjusted.textPosition = max(0, pos - leadingTrimmed)
-                }
-                return adjusted
-            } : output.toolCalls
-
-            let message = ChatMessage(
-                isUser: false,
-                text: trimmedText,
-                toolCalls: adjustedToolCalls,
-                durationMs: output.runStats?.durationMs,
-                costUsd: output.runStats?.costUsd,
-                serverUUID: output.messageUUID
-            )
-
-            let freshConv = store.conversation(withId: conv.id) ?? conv
-            let isDuplicate: Bool
-            if let uuid = output.messageUUID {
-                isDuplicate = freshConv.messages.contains { $0.serverUUID == uuid }
-            } else {
-                isDuplicate = freshConv.messages.contains { !$0.isUser && $0.text == message.text && abs($0.timestamp.timeIntervalSinceNow) < 5 }
-            }
-            guard !isDuplicate else {
-                output.reset()
-                return
-            }
-
-            output.lastSavedMessageId = messageId
-            store.addMessage(message, to: conv)
-            output.reset()
-
-            let updatedConv = store.conversation(withId: conv.id) ?? conv
-            let assistantCount = updatedConv.messages.filter { !$0.isUser }.count
-            if assistantCount > 0 && assistantCount % 5 == 0 {
-                let recentMessages = updatedConv.messages.suffix(6).map { $0.text }
-                let lastUserMsg = updatedConv.messages.last(where: { $0.isUser })?.text ?? ""
-                connection.requestNameSuggestion(text: lastUserMsg, context: recentMessages, conversationId: conv.id)
-            }
-
-            sendQueuedMessages(conv: conv)
-        }
-    }
-
-    private func sendQueuedMessages(conv: Conversation) {
-        let freshConv = store.conversation(withId: conv.id) ?? conv
-        let pending = store.popPendingMessages(from: freshConv)
-        guard !pending.isEmpty else { return }
-
-        for var msg in pending {
-            msg.isQueued = false
-            store.addMessage(msg, to: freshConv)
+        if let newSessionId = output.newSessionId {
+            store.updateSessionId(conv, sessionId: newSessionId, workingDirectory: conv.workingDirectory)
+            conv = store.conversation(withId: conv.id) ?? conv
         }
 
-        let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
+        store.finalizeStreamingMessage(output: output, conversation: conv)
+
         let updatedConv = store.conversation(withId: conv.id) ?? conv
-        let workingDir = updatedConv.workingDirectory
-        connection.sendChat(combinedText, workingDirectory: workingDir, sessionId: updatedConv.sessionId, isNewSession: false, conversationId: updatedConv.id, conversationName: updatedConv.name, conversationSymbol: updatedConv.symbol)
+        let assistantCount = updatedConv.messages.filter { !$0.isUser }.count
+        if assistantCount > 0 && assistantCount % 5 == 0 {
+            let recentMessages = updatedConv.messages.suffix(6).map { $0.text }
+            let lastUserMsg = updatedConv.messages.last(where: { $0.isUser })?.text ?? ""
+            connection.requestNameSuggestion(text: lastUserMsg, context: recentMessages, conversationId: conv.id)
+        }
+
+        store.replayQueuedMessages(conversation: conv, connection: connection)
     }
 
     private func refreshMissedResponse() async {

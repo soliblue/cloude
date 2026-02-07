@@ -11,6 +11,12 @@ struct ConversationRunner {
     var sessionId: String?
 }
 
+struct ActiveTeam {
+    let teamName: String
+    var teammates: [String: TeammateInfo] = [:]
+    var lastInboxState: [String: Int] = [:]
+}
+
 @MainActor
 class RunnerManager: ObservableObject {
     @Published var activeRunners: [String: ConversationRunner] = [:]
@@ -18,7 +24,7 @@ class RunnerManager: ObservableObject {
     var onOutput: ((String, String) -> Void)?
     var onSessionId: ((String, String) -> Void)?
     var onToolCall: ((String, String?, String, String?, String, Int?) -> Void)?
-    var onToolResult: ((String, String?, String) -> Void)?
+    var onToolResult: ((String, String?, String?, String) -> Void)?
     var onRunStats: ((Int, Double, String) -> Void)?
     var onComplete: ((String, String?) -> Void)?
     var onStatusChange: ((AgentState, String) -> Void)?
@@ -29,7 +35,7 @@ class RunnerManager: ObservableObject {
     var onTeamDeleted: ((String) -> Void)?
 
     private var inboxTimers: [String: Timer] = [:]
-    private var activeTeams: [String: (teamName: String, teammates: [String: TeammateInfo], lastInboxState: [String: Int])] = [:]
+    private var activeTeams: [String: ActiveTeam] = [:]
 
     var isAnyRunning: Bool {
         activeRunners.values.contains { $0.runner.isRunning }
@@ -120,8 +126,8 @@ class RunnerManager: ObservableObject {
             self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition)
         }
 
-        runner.onToolResult = { [weak self] toolId, summary in
-            self?.onToolResult?(toolId, summary, conversationId)
+        runner.onToolResult = { [weak self] toolId, summary, output in
+            self?.onToolResult?(toolId, summary, output, conversationId)
         }
 
         runner.onRunStats = { [weak self] durationMs, costUsd in
@@ -142,7 +148,7 @@ class RunnerManager: ObservableObject {
 
         runner.onTeamCreated = { [weak self] teamName, leadAgentId in
             guard let self else { return }
-            self.activeTeams[conversationId] = (teamName: teamName, teammates: [:], lastInboxState: [:])
+            self.activeTeams[conversationId] = ActiveTeam(teamName: teamName)
             self.startInboxPolling(conversationId: conversationId, teamName: teamName)
             self.onTeamCreated?(teamName, leadAgentId, conversationId)
         }

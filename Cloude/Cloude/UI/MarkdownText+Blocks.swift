@@ -39,37 +39,50 @@ struct BlockquoteView: View {
 struct MarkdownTableView: View {
     let rows: [[String]]
 
+    private var columnCount: Int {
+        rows.map(\.count).max() ?? 0
+    }
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
+                    if rowIndex > 0 {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(height: 1)
+                    }
                     HStack(spacing: 0) {
-                        ForEach(Array(row.enumerated()), id: \.offset) { _, cell in
-                            TableCell(text: cell.trimmingCharacters(in: .whitespaces), isHeader: rowIndex == 0)
-                                .frame(minWidth: 60, alignment: .leading)
+                        ForEach(0..<columnCount, id: \.self) { colIndex in
+                            if colIndex > 0 {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .frame(width: 1)
+                            }
+                            TableCell(
+                                text: colIndex < row.count ? row[colIndex].trimmingCharacters(in: .whitespaces) : "",
+                                isHeader: rowIndex == 0
+                            )
+                            .frame(minWidth: 60, alignment: .leading)
                         }
                     }
-                    if rowIndex == 0 {
-                        Divider()
-                    }
+                    .background(rowIndex == 0 ? Color.gray.opacity(0.08) : Color.clear)
                 }
             }
         }
-        .padding(8)
-        .background(Color.oceanSecondary)
-        .cornerRadius(6)
     }
 }
 
-struct TableCell: View {
+private struct TableCell: View {
     let text: String
     let isHeader: Bool
 
     var body: some View {
         Text(parseInlineMarkdown())
             .font(isHeader ? .caption.bold() : .caption)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .textSelection(.enabled)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
     }
 
     private func parseInlineMarkdown() -> AttributedString {

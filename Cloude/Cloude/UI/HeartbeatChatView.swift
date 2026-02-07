@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 import CloudeShared
 
 struct HeartbeatChatView: View {
@@ -34,7 +33,7 @@ struct HeartbeatChatView: View {
         )
         .onAppear {
             if !convOutput.isRunning {
-                sendQueuedMessages()
+                conversationStore.replayQueuedMessages(conversation: heartbeat, connection: connection)
             }
         }
         .onChange(of: convOutput.isRunning) { wasRunning, isRunning in
@@ -45,37 +44,7 @@ struct HeartbeatChatView: View {
     }
 
     private func handleChatCompletion() {
-        let message = ChatMessage(
-            isUser: false,
-            text: convOutput.text.trimmingCharacters(in: .whitespacesAndNewlines),
-            toolCalls: convOutput.toolCalls,
-            durationMs: convOutput.runStats?.durationMs,
-            costUsd: convOutput.runStats?.costUsd,
-            serverUUID: convOutput.messageUUID
-        )
-        conversationStore.addMessage(message, to: heartbeat)
-        convOutput.reset()
-        sendQueuedMessages()
-    }
-
-    private func sendQueuedMessages() {
-        let pending = conversationStore.popPendingMessages(from: heartbeat)
-        guard !pending.isEmpty else { return }
-
-        for var msg in pending {
-            msg.isQueued = false
-            conversationStore.addMessage(msg, to: heartbeat)
-        }
-
-        let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
-        connection.sendChat(
-            combinedText,
-            workingDirectory: nil,
-            sessionId: Heartbeat.sessionId,
-            isNewSession: false,
-            conversationId: Heartbeat.conversationId,
-            conversationName: "Heartbeat",
-            conversationSymbol: "heart.fill"
-        )
+        conversationStore.finalizeStreamingMessage(output: convOutput, conversation: heartbeat)
+        conversationStore.replayQueuedMessages(conversation: heartbeat, connection: connection)
     }
 }

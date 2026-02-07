@@ -31,37 +31,32 @@ extension ClaudeCodeRunner {
                 }
             }
 
-            if type == "stream_event",
-               let event = json["event"] as? [String: Any],
-               let eventType = event["type"] as? String {
-                if eventType == "content_block_start" {
+            let contentBlock: (type: String, json: [String: Any])? = {
+                if type == "stream_event",
+                   let event = json["event"] as? [String: Any],
+                   let eventType = event["type"] as? String {
+                    return (eventType, event)
+                }
+                if type == "content_block_start" || type == "content_block_delta" {
+                    return (type, json)
+                }
+                return nil
+            }()
+
+            if let cb = contentBlock {
+                if cb.type == "content_block_start" {
                     if !accumulatedOutput.isEmpty && !accumulatedOutput.hasSuffix("\n") {
                         accumulatedOutput += "\n\n"
                         onOutput?("\n\n")
                     }
                 }
-                if eventType == "content_block_delta",
-                   let delta = event["delta"] as? [String: Any],
+                if cb.type == "content_block_delta",
+                   let delta = cb.json["delta"] as? [String: Any],
                    let deltaText = delta["text"] as? String {
                     accumulatedOutput += deltaText
                     events.send(.output(deltaText))
                     onOutput?(deltaText)
                 }
-            }
-
-            if type == "content_block_start" {
-                if !accumulatedOutput.isEmpty && !accumulatedOutput.hasSuffix("\n") {
-                    accumulatedOutput += "\n\n"
-                    onOutput?("\n\n")
-                }
-            }
-
-            if type == "content_block_delta",
-               let delta = json["delta"] as? [String: Any],
-               let deltaText = delta["text"] as? String {
-                accumulatedOutput += deltaText
-                events.send(.output(deltaText))
-                onOutput?(deltaText)
             }
 
             let parentToolUseId = json["parent_tool_use_id"] as? String
@@ -106,9 +101,9 @@ extension ClaudeCodeRunner {
                     for block in contentBlocks {
                         if block["type"] as? String == "tool_result",
                            let toolUseId = block["tool_use_id"] as? String {
-                            let summary = extractResultSummary(from: block)
-                            events.send(.toolResult(toolId: toolUseId, summary: summary))
-                            onToolResult?(toolUseId, summary)
+                            let (summary, output) = extractResultInfo(from: block)
+                            events.send(.toolResult(toolId: toolUseId, summary: summary, output: output))
+                            onToolResult?(toolUseId, summary, output)
                             parseTeamResult(from: block)
                         }
                     }
@@ -154,7 +149,6 @@ extension ClaudeCodeRunner {
         isRunning = false
         accumulatedOutput = ""
         lineBuffer = ""
-        commandBuffer = ""
 
         if let stats = pendingRunStats {
             events.send(.runStats(durationMs: stats.durationMs, costUsd: stats.costUsd))
@@ -175,7 +169,6 @@ extension ClaudeCodeRunner {
         isRunning = false
         accumulatedOutput = ""
         lineBuffer = ""
-        commandBuffer = ""
         pendingRunStats = nil
 
         for imagePath in tempImagePaths {
@@ -241,127 +234,46 @@ extension ClaudeCodeRunner {
         return members.first { ($0["agentId"] as? String) == agentId }
     }
 
-    private func extractResultSummary(from block: [String: Any]) -> String? {
-        if let content = block["content"] as? String {
-            let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed.isEmpty { return nil }
-            let firstLine = trimmed.components(separatedBy: .newlines).first ?? trimmed
-            if firstLine.count > 80 {
-                return String(firstLine.prefix(77)) + "..."
+    private func extractResultInfo(from block: [String: Any]) -> (summary: String?, output: String?) {
+        let fullText: String? = {
+            if let content = block["content"] as? String {
+                let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                return trimmed.isEmpty ? nil : trimmed
             }
-            return firstLine
-        }
-        if let contentBlocks = block["content"] as? [[String: Any]] {
-            for sub in contentBlocks {
-                if sub["type"] as? String == "text", let text = sub["text"] as? String {
+            if let contentBlocks = block["content"] as? [[String: Any]] {
+                let texts = contentBlocks.compactMap { sub -> String? in
+                    guard sub["type"] as? String == "text", let text = sub["text"] as? String else { return nil }
                     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if trimmed.isEmpty { continue }
-                    let firstLine = trimmed.components(separatedBy: .newlines).first ?? trimmed
-                    if firstLine.count > 80 {
-                        return String(firstLine.prefix(77)) + "..."
-                    }
-                    return firstLine
+                    return trimmed.isEmpty ? nil : trimmed
                 }
+                return texts.isEmpty ? nil : texts.joined(separator: "\n")
             }
+            return nil
+        }()
+
+        guard let text = fullText else { return (nil, nil) }
+
+        let firstLine = text.components(separatedBy: .newlines).first ?? text
+        let summary: String
+        if firstLine.count > 80 {
+            summary = String(firstLine.prefix(77)) + "..."
+        } else {
+            summary = firstLine
         }
-        return nil
+
+        let maxOutputLength = 5000
+        let output: String
+        if text.count > maxOutputLength {
+            output = String(text.prefix(maxOutputLength))
+        } else {
+            output = text
+        }
+
+        return (summary, output)
     }
 
     private func extractToolInput(name: String, input: [String: Any]?) -> String? {
-        extractToolInputString(name: name, input: input)
-    }
-
-    private func extractCloudeCommands(_ text: String) -> String {
-        commandBuffer += text
-
-        let pattern = #"\[\[cloude:(\w+):([^\]]*)\]\]"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else {
-            let output = commandBuffer
-            commandBuffer = ""
-            return output
-        }
-
-        var result = ""
-        var lastEnd = commandBuffer.startIndex
-
-        let range = NSRange(commandBuffer.startIndex..., in: commandBuffer)
-        let matches = regex.matches(in: commandBuffer, range: range)
-
-        if !matches.isEmpty {
-            Log.info("Found \(matches.count) cloude command(s) in buffer")
-        }
-
-        for match in matches {
-            guard let fullRange = Range(match.range, in: commandBuffer),
-                  let actionRange = Range(match.range(at: 1), in: commandBuffer),
-                  let valueRange = Range(match.range(at: 2), in: commandBuffer) else { continue }
-
-            result += commandBuffer[lastEnd..<fullRange.lowerBound]
-
-            let action = String(commandBuffer[actionRange])
-            let value = String(commandBuffer[valueRange])
-            Log.info("Executing cloude command: \(action) = \(value)")
-            onCloudeCommand?(action, value)
-
-            lastEnd = fullRange.upperBound
-        }
-
-        if commandBuffer.contains("[[cloude:") && !commandBuffer.contains("]]") {
-            if let startIdx = commandBuffer.range(of: "[[cloude:")?.lowerBound {
-                result += commandBuffer[lastEnd..<startIdx]
-                commandBuffer = String(commandBuffer[startIdx...])
-                Log.info("Buffering partial command: \(commandBuffer)")
-                return result
-            }
-        }
-
-        result += commandBuffer[lastEnd...]
-        commandBuffer = ""
-        return result
+        ToolInputExtractor.extract(name: name, input: input)
     }
 }
 
-func extractToolInputString(name: String, input: [String: Any]?) -> String? {
-    switch name {
-    case "Bash":
-        return input?["command"] as? String
-    case "Read", "Write", "Edit":
-        return input?["file_path"] as? String
-    case "Glob":
-        return input?["pattern"] as? String
-    case "Grep":
-        return input?["pattern"] as? String
-    case "WebFetch":
-        return input?["url"] as? String
-    case "WebSearch":
-        return input?["query"] as? String
-    case "Task":
-        let agentType = input?["subagent_type"] as? String ?? "agent"
-        let description = input?["description"] as? String ?? ""
-        return "\(agentType): \(description)"
-    case "Skill":
-        let skill = input?["skill"] as? String ?? ""
-        let args = input?["args"] as? String
-        if let args = args, !args.isEmpty {
-            return "\(skill):\(args)"
-        }
-        return skill.nilIfEmpty
-    case "TodoWrite":
-        guard let todos = input?["todos"] as? [[String: Any]] else { return nil }
-        if let data = try? JSONSerialization.data(withJSONObject: todos),
-           let json = String(data: data, encoding: .utf8) {
-            return json
-        }
-        return nil
-    case "TeamCreate":
-        return input?["team_name"] as? String
-    case "TeamDelete":
-        return input?["team_name"] as? String
-    case "SendMessage":
-        let target = input?["target"] as? String ?? ""
-        let msgType = input?["type"] as? String ?? "message"
-        return "\(msgType) → \(target)"
-    default:
-        return nil
-    }
-}

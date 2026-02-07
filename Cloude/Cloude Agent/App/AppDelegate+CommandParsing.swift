@@ -41,13 +41,13 @@ extension AppDelegate {
         case "rename":
             guard let convId = conversationId, parts.count >= 2 else { return }
             let name = parts[1]
-            server.broadcast(.renameConversation(conversationId: convId, name: name))
+            server.broadcast(.renameConversation(name: name, conversationId: convId))
             Log.info("Renamed conversation \(convId.prefix(8)) to '\(name)'")
 
         case "symbol":
             guard let convId = conversationId else { return }
             let symbol = parts.count >= 2 ? parts[1] : nil
-            server.broadcast(.setConversationSymbol(conversationId: convId, symbol: symbol))
+            server.broadcast(.setConversationSymbol(symbol: symbol, conversationId: convId))
             Log.info("Set symbol for \(convId.prefix(8)) to '\(symbol ?? "nil")'")
 
         case "memory":

@@ -187,6 +187,6 @@ struct HistoryService {
     }
 
     private static func extractToolInput(name: String, input: [String: Any]?) -> String? {
-        extractToolInputString(name: name, input: input)
+        ToolInputExtractor.extract(name: name, input: input)
     }
 }

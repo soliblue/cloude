@@ -1,9 +1,11 @@
 import SwiftUI
 import UIKit
+import CloudeShared
 
 struct MessageBubble: View {
     let message: ChatMessage
     @State private var showCopiedToast = false
+    @State private var showTeamDashboard = false
 
     private var hasToolCalls: Bool {
         !message.toolCalls.filter { $0.parentToolId == nil }.isEmpty
@@ -115,10 +117,16 @@ struct MessageBubble: View {
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
-            } else if let durationMs = message.durationMs, let costUsd = message.costUsd {
+            } else {
                 HStack(spacing: 10) {
-                    StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
-                    RunStatsView(durationMs: durationMs, costUsd: costUsd)
+                    if let durationMs = message.durationMs, let costUsd = message.costUsd {
+                        StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
+                        RunStatsView(durationMs: durationMs, costUsd: costUsd)
+                    }
+                    if let team = message.teamSummary {
+                        if message.durationMs != nil { Spacer() }
+                        TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
+                    }
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -128,6 +136,16 @@ struct MessageBubble: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
+            .sheet(isPresented: $showTeamDashboard) {
+                if let team = message.teamSummary {
+                    TeamDashboardSheet(
+                        teamName: team.teamName,
+                        teammates: team.members.map {
+                            TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
+                        }
+                    )
+                }
+            }
             .contextMenu {
                 Button {
                     UIPasteboard.general.string = message.text
@@ -172,6 +190,38 @@ struct InterleavedMessageContent: View {
 
     var body: some View {
         StreamingMarkdownView(text: text, toolCalls: toolCalls)
+    }
+}
+
+struct TeamSummaryBadge: View {
+    let summary: TeamSummary
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 4) {
+                HStack(spacing: -4) {
+                    ForEach(summary.members) { member in
+                        Circle()
+                            .fill(teammateColor(member.color).opacity(0.6))
+                            .frame(width: 14, height: 14)
+                            .overlay {
+                                Text(String(member.name.prefix(1)).uppercased())
+                                    .font(.system(size: 7, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                            }
+                    }
+                }
+                Text(summary.teamName)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color.secondary.opacity(0.1))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 }
 

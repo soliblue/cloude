@@ -53,10 +53,20 @@ Provide actionable improvements:
 
 ## Second Opinion (Codex)
 
-After completing your analysis, ask Codex for its take:
+**IMPORTANT: Sequential, not parallel.** Randomly pick one of these two orderings each time:
+
+**Option A** — You go first, Codex reviews:
+1. Complete your full analysis first
+2. Then ask Codex to review your findings and add anything you missed
+
+**Option B** — Codex goes first, you review:
+1. Ask Codex to do the initial analysis
+2. Then review Codex's findings, add your own, and filter out bad suggestions
+
+Either way, **never run Codex in parallel with your own analysis**. One leads, the other reviews. This produces better results than two independent analyses.
 
 ```bash
-codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "Review this codebase for refactoring opportunities. Focus on dead code, unclear naming, duplicated logic, and overly complex functions. Be specific about files and line numbers."
+codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "You are being asked for a second opinion on refactoring this codebase. Read .claude/skills/refactor/SKILL.md first — it contains the analysis criteria and philosophy you should follow. Then review the codebase and suggest specific improvements with file paths and line numbers."
 ```
 
-Compare Codex's suggestions with your own and present a unified list, noting where you agree and where you differ.
+Present a unified list, noting where you agree and where you differ.

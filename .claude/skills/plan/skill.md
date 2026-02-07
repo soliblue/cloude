@@ -37,22 +37,25 @@ backlog/ → next/ → active/ → testing/ → done/
 
 Filename: `kebab-case-description.md` (e.g., `compact-input-fields.md`)
 
-Scale detail to complexity:
+**Detail scales with stage** — backlog is scannable, detail grows as plans move forward:
 
-### Small (backlog idea, ~10 lines)
+### Backlog (problem + desired outcome, <10 lines)
+Backlog items describe the **problem** and **desired outcome** only. No implementation details, no open questions, no code sketches. A sentence or two of approach is fine but keep it concise. The goal is scannability — anyone should understand what this is and why it matters in 5 seconds. Detail gets added when moving to `next/` or `active/`.
+
 ```markdown
 # Feature Name
 
-One-line description of what and why.
+One or two sentences describing the problem.
 
-## Files
-- List of files affected
+## Desired Outcome
+What success looks like in one or two sentences. Can mention approach briefly.
 
-## Notes
-- Any constraints or context
+**Files:** `relevant-file.swift`, `other-file.swift`
 ```
 
-### Medium (next/active, ~50-150 lines)
+### Next (scoped, ~20-50 lines)
+When promoting from backlog, flesh out the approach: goals, rough plan, files, open questions. This is where you scope the work.
+
 ```markdown
 # Feature Name
 
@@ -70,6 +73,9 @@ Background and motivation.
 ## Open Questions
 - Decisions not yet made
 ```
+
+### Active (detailed, ~50-150 lines)
+Full implementation detail. Code snippets, edge cases, step-by-step plan. This is the working document.
 
 ### Large (architectural, 150+ lines)
 ```markdown
