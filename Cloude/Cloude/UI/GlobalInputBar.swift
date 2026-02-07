@@ -137,7 +137,7 @@ struct GlobalInputBar: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            if !suggestions.isEmpty && inputText.isEmpty && !isRunning {
+            if !suggestions.isEmpty && inputText.count < 10 && !isRunning && filteredCommands.isEmpty && !showFileSuggestions {
                 HStack(spacing: 8) {
                     ForEach(suggestions, id: \.self) { suggestion in
                         Button(action: {
@@ -227,7 +227,7 @@ struct GlobalInputBar: View {
                     }
                 }
             }
-            if !new.isEmpty && !suggestions.isEmpty {
+            if new.count >= 10 && !suggestions.isEmpty {
                 withAnimation(.easeOut(duration: 0.15)) {
                     suggestions = []
                 }
