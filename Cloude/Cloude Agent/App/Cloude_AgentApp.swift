@@ -140,6 +140,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.server.broadcast(.messageUUID(uuid: uuid, conversationId: conversationId))
         }
 
+        runnerManager.onTeamCreated = { [weak self] teamName, leadAgentId, conversationId in
+            self?.server.broadcast(.teamCreated(teamName: teamName, leadAgentId: leadAgentId, conversationId: conversationId))
+        }
+
+        runnerManager.onTeammateSpawned = { [weak self] teammate, conversationId in
+            self?.server.broadcast(.teammateSpawned(teammate: teammate, conversationId: conversationId))
+        }
+
+        runnerManager.onTeamDeleted = { [weak self] conversationId in
+            self?.server.broadcast(.teamDeleted(conversationId: conversationId))
+        }
+
+        runnerManager.onTeammateInboxUpdate = { [weak self] teammateId, status, lastMessage, lastMessageAt, conversationId in
+            self?.server.broadcast(.teammateUpdate(teammateId: teammateId, status: status, lastMessage: lastMessage, lastMessageAt: lastMessageAt, conversationId: conversationId))
+        }
+
         runnerManager.onComplete = { [weak self] conversationId, _ in
             if conversationId == Heartbeat.sessionId {
                 let runner = self?.runnerManager.activeRunners[conversationId]

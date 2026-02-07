@@ -45,7 +45,7 @@ struct InlineToolPill: View {
                 if !chainedCommands.isEmpty {
                     chainedPillContent
                 } else {
-                    ToolCallLabel(name: toolCall.name, input: toolCall.input, size: .small)
+                    ToolCallLabel(name: toolCall.name, input: toolCall.input)
                         .lineLimit(1)
                 }
 
@@ -103,17 +103,17 @@ struct InlineToolPill: View {
             ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, cmd in
                 if index > 0 {
                     Text("›")
-                        .font(.system(size: 12, weight: .light))
+                        .font(.system(size: 11, weight: .light))
                         .foregroundColor(.secondary)
                 }
                 let parsed = BashCommandParser.parse(cmd)
                 Text(parsed.command.isEmpty ? "cmd" : parsed.command)
-                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .foregroundColor(toolCallColor(for: "Bash", input: cmd))
             }
             if chainedCommands.count > 3 {
                 Text("+\(chainedCommands.count - 3)")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
             }
         }

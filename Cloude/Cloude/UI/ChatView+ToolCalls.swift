@@ -4,25 +4,18 @@ import CloudeShared
 struct ToolCallLabel: View {
     let name: String
     let input: String?
-    var size: Size = .regular
-
-    enum Size {
-        case regular
-        case small
-
-        var iconSize: CGFloat { self == .regular ? 13 : 12 }
-        var textSize: CGFloat { self == .regular ? 11 : 10 }
-    }
+    private let iconSize: CGFloat = 12
+    private let textSize: CGFloat = 11
 
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: iconName)
-                .font(.system(size: size.iconSize, weight: .semibold))
+                .font(.system(size: iconSize, weight: .semibold))
             Text(displayName)
-                .font(.system(size: size.textSize, weight: .semibold, design: .monospaced))
+                .font(.system(size: textSize, weight: .semibold, design: .monospaced))
             if let detail = displayDetail {
                 Text(detail)
-                    .font(.system(size: size.textSize, design: .monospaced))
+                    .font(.system(size: textSize, design: .monospaced))
                     .opacity(0.85)
             }
         }
@@ -41,6 +34,9 @@ struct ToolCallLabel: View {
 
     private var displayName: String {
         if name == "TodoWrite" { return "Tasks" }
+        if name == "TeamCreate" { return "Team" }
+        if name == "TeamDelete" { return "Team End" }
+        if name == "SendMessage" { return "Message" }
         if name == "Skill", let input = input, !input.isEmpty {
             let skillName = input.split(separator: ":", maxSplits: 1).first.map(String.init) ?? input
             return "/\(skillName)"
@@ -216,6 +212,9 @@ struct ToolCallLabel: View {
         case "NotebookEdit": return "text.book.closed"
         case "Skill": return "command"
         case "Memory": return "brain"
+        case "TeamCreate": return "person.3.fill"
+        case "TeamDelete": return "person.3.fill"
+        case "SendMessage": return "paperplane.fill"
         default: return "gear"
         }
     }
@@ -267,6 +266,8 @@ func toolCallColor(for name: String, input: String? = nil) -> Color {
     case "NotebookEdit": return .purple
     case "AskUserQuestion": return .orange
     case "Memory": return .pink
+    case "TeamCreate", "TeamDelete": return .cyan
+    case "SendMessage": return .teal
     default: return .secondary
     }
 }

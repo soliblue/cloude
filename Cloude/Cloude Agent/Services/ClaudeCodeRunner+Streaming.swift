@@ -109,6 +109,7 @@ extension ClaudeCodeRunner {
                             let summary = extractResultSummary(from: block)
                             events.send(.toolResult(toolId: toolUseId, summary: summary))
                             onToolResult?(toolUseId, summary)
+                            parseTeamResult(from: block)
                         }
                     }
                 }
@@ -121,8 +122,7 @@ extension ClaudeCodeRunner {
                 }
                 if let durationMs = json["duration_ms"] as? Int,
                    let costUsd = json["total_cost_usd"] as? Double {
-                    events.send(.runStats(durationMs: durationMs, costUsd: costUsd))
-                    onRunStats?(durationMs, costUsd)
+                    pendingRunStats = (durationMs, costUsd)
                 }
                 if let result = json["result"] as? String, accumulatedOutput.isEmpty {
                     events.send(.output(result))
@@ -156,6 +156,12 @@ extension ClaudeCodeRunner {
         lineBuffer = ""
         commandBuffer = ""
 
+        if let stats = pendingRunStats {
+            events.send(.runStats(durationMs: stats.durationMs, costUsd: stats.costUsd))
+            onRunStats?(stats.durationMs, stats.costUsd)
+            pendingRunStats = nil
+        }
+
         events.send(.complete)
         onComplete?()
     }
@@ -170,11 +176,69 @@ extension ClaudeCodeRunner {
         accumulatedOutput = ""
         lineBuffer = ""
         commandBuffer = ""
+        pendingRunStats = nil
 
-        if let imagePath = tempImagePath {
+        for imagePath in tempImagePaths {
             try? FileManager.default.removeItem(atPath: imagePath)
-            tempImagePath = nil
         }
+        tempImagePaths = []
+    }
+
+    private func parseTeamResult(from block: [String: Any]) {
+        guard let contentBlocks = block["content"] as? [[String: Any]] else { return }
+        for sub in contentBlocks {
+            guard sub["type"] as? String == "text", let text = sub["text"] as? String else { continue }
+
+            if let data = text.data(using: .utf8),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let teamName = json["team_name"] as? String,
+                   let leadAgentId = json["lead_agent_id"] as? String,
+                   json["team_file_path"] != nil {
+                    onTeamCreated?(teamName, leadAgentId)
+                }
+
+                if let success = json["success"] as? Bool, success,
+                   let message = json["message"] as? String,
+                   message.contains("Cleaned up") {
+                    onTeamDeleted?()
+                }
+                continue
+            }
+
+            if text.contains("Spawned successfully") && text.contains("agent_id:") {
+                let fields = parseKeyValueLines(text)
+                guard let agentId = fields["agent_id"],
+                      let name = fields["name"],
+                      let teamName = fields["team_name"] else { continue }
+                let member = lookupTeamMember(agentId: agentId, teamName: teamName)
+                let model = member?["model"] as? String ?? "unknown"
+                let color = member?["color"] as? String ?? "gray"
+                let agentType = member?["agentType"] as? String ?? "general-purpose"
+                let teammate = TeammateInfo(id: agentId, name: name, agentType: agentType, model: model, color: color)
+                onTeammateSpawned?(teammate)
+            }
+        }
+    }
+
+    private func parseKeyValueLines(_ text: String) -> [String: String] {
+        var result: [String: String] = [:]
+        for line in text.components(separatedBy: "\n") {
+            let parts = line.split(separator: ":", maxSplits: 1)
+            guard parts.count == 2 else { continue }
+            let key = parts[0].trimmingCharacters(in: .whitespaces)
+            let value = parts[1].trimmingCharacters(in: .whitespaces)
+            result[key] = value
+        }
+        return result
+    }
+
+    private func lookupTeamMember(agentId: String, teamName: String) -> [String: Any]? {
+        let configPath = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent(".claude/teams/\(teamName)/config.json")
+        guard let data = try? Data(contentsOf: configPath),
+              let config = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let members = config["members"] as? [[String: Any]] else { return nil }
+        return members.first { ($0["agentId"] as? String) == agentId }
     }
 
     private func extractResultSummary(from block: [String: Any]) -> String? {
@@ -289,6 +353,14 @@ func extractToolInputString(name: String, input: [String: Any]?) -> String? {
             return json
         }
         return nil
+    case "TeamCreate":
+        return input?["team_name"] as? String
+    case "TeamDelete":
+        return input?["team_name"] as? String
+    case "SendMessage":
+        let target = input?["target"] as? String ?? ""
+        let msgType = input?["type"] as? String ?? "message"
+        return "\(msgType) → \(target)"
     default:
         return nil
     }
