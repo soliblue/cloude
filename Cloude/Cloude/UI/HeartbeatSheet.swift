@@ -48,6 +48,7 @@ struct HeartbeatSheet: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     attachedImages: $attachedImages,
+                    autocompleteSuggestion: .constant(""),
                     isConnected: connection.isConnected,
                     isWhisperReady: connection.isWhisperReady,
                     isTranscribing: connection.isTranscribing,
