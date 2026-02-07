@@ -12,24 +12,27 @@ struct TeamBannerView: View {
 
     var body: some View {
         Button { showDashboard = true } label: {
-            HStack(spacing: 6) {
-                HStack(spacing: -4) {
-                    ForEach(activeTeammates) { mate in
-                        Circle()
-                            .fill(teammateColor(mate.color).opacity(0.7))
-                            .frame(width: 8, height: 8)
-                    }
-                }
+            HStack(spacing: 0) {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundColor(.secondary.opacity(0.5))
 
                 Text(teamName)
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundColor(.secondary)
+                    .padding(.leading, 4)
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 8, weight: .semibold))
-                    .foregroundColor(.secondary.opacity(0.5))
+                Spacer()
+
+                HStack(spacing: -2) {
+                    ForEach(activeTeammates) { mate in
+                        Circle()
+                            .fill(teammateColor(mate.color).opacity(0.7))
+                            .frame(width: 12, height: 12)
+                    }
+                }
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
             .padding(.vertical, 5)
         }
         .buttonStyle(.plain)

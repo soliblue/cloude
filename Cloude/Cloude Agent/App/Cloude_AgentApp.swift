@@ -125,8 +125,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition))
         }
 
-        runnerManager.onToolResult = { [weak self] toolId, summary, conversationId in
-            self?.server.broadcast(.toolResult(toolId: toolId, summary: summary, conversationId: conversationId))
+        runnerManager.onToolResult = { [weak self] toolId, summary, output, conversationId in
+            self?.server.broadcast(.toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId))
         }
 
         runnerManager.onRunStats = { [weak self] durationMs, costUsd, conversationId in

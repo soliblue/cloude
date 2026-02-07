@@ -15,7 +15,7 @@ class ClaudeCodeRunner: ObservableObject {
 
     var onOutput: ((String) -> Void)?
     var onToolCall: ((String, String?, String, String?, Int) -> Void)?
-    var onToolResult: ((String, String?) -> Void)?
+    var onToolResult: ((String, String?, String?) -> Void)?
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double) -> Void)?
@@ -29,8 +29,6 @@ class ClaudeCodeRunner: ObservableObject {
     var pendingRunStats: (durationMs: Int, costUsd: Double)?
     var accumulatedOutput = ""
     var lineBuffer = ""
-    var commandBuffer = ""
-    var processedCommandRanges: [Range<String.Index>] = []
 
     private var claudePath: String {
         let paths = [

@@ -5,7 +5,7 @@ enum RunnerEvent {
     case output(String)
     case sessionId(String)
     case toolCall(name: String, input: String?, toolId: String, parentToolId: String?)
-    case toolResult(toolId: String, summary: String?)
+    case toolResult(toolId: String, summary: String?, output: String?)
     case runStats(durationMs: Int, costUsd: Double)
     case status(AgentState)
     case complete

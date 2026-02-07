@@ -62,10 +62,11 @@ extension ServerMessage {
             try container.encodeIfPresent(parentToolId, forKey: .parentToolId)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
             try container.encodeIfPresent(textPosition, forKey: .textPosition)
-        case .toolResult(let toolId, let summary, let conversationId):
+        case .toolResult(let toolId, let summary, let output, let conversationId):
             try container.encode("tool_result", forKey: .type)
             try container.encode(toolId, forKey: .toolId)
             try container.encodeIfPresent(summary, forKey: .summary)
+            try container.encodeIfPresent(output, forKey: .output)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .runStats(let durationMs, let costUsd, let conversationId):
             try container.encode("run_stats", forKey: .type)
@@ -96,14 +97,14 @@ extension ServerMessage {
         case .memories(let sections):
             try container.encode("memories", forKey: .type)
             try container.encode(sections, forKey: .sections)
-        case .renameConversation(let conversationId, let name):
+        case .renameConversation(let name, let conversationId):
             try container.encode("rename_conversation", forKey: .type)
-            try container.encode(conversationId, forKey: .conversationId)
             try container.encode(name, forKey: .name)
-        case .setConversationSymbol(let conversationId, let symbol):
-            try container.encode("set_conversation_symbol", forKey: .type)
             try container.encode(conversationId, forKey: .conversationId)
+        case .setConversationSymbol(let symbol, let conversationId):
+            try container.encode("set_conversation_symbol", forKey: .type)
             try container.encodeIfPresent(symbol, forKey: .symbol)
+            try container.encode(conversationId, forKey: .conversationId)
         case .processList(let processes):
             try container.encode("process_list", forKey: .type)
             try container.encode(processes, forKey: .processes)
@@ -212,6 +213,13 @@ extension ServerMessage {
             try container.encode(name, forKey: .name)
             try container.encodeIfPresent(symbol, forKey: .symbol)
             try container.encode(conversationId, forKey: .conversationId)
+        case .plans(let stages):
+            try container.encode("plans", forKey: .type)
+            try container.encode(stages, forKey: .stages)
+        case .planDeleted(let stage, let filename):
+            try container.encode("plan_deleted", forKey: .type)
+            try container.encode(stage, forKey: .stage)
+            try container.encode(filename, forKey: .filename)
         }
     }
 }

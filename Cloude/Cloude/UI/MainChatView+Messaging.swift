@@ -1,20 +1,12 @@
 import SwiftUI
 import UIKit
-import Combine
 import CloudeShared
 
 extension MainChatView {
     func sendMessage() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        let allImagesBase64: [String]? = attachedImages.isEmpty ? nil : attachedImages.map { $0.data.base64EncodedString() }
-
-        let thumbnails: [String]? = attachedImages.isEmpty ? nil : attachedImages.compactMap { attached in
-            guard let image = UIImage(data: attached.data),
-                  let thumbnail = image.preparingThumbnail(of: CGSize(width: 200, height: 200)),
-                  let thumbData = thumbnail.jpegData(compressionQuality: 0.7) else { return nil }
-            return thumbData.base64EncodedString()
-        }
+        let allImagesBase64 = ImageEncoder.encodeFullImages(attachedImages)
+        let thumbnails = ImageEncoder.encodeThumbnails(attachedImages)
 
         guard !text.isEmpty || allImagesBase64 != nil else { return }
 
@@ -68,6 +60,10 @@ extension MainChatView {
             windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         }
         guard let conv = conversation else { return }
+
+        if let limit = conv.costLimitUsd, limit > 0, conv.totalCost >= limit {
+            return
+        }
 
         let isRunning = connection.output(for: conv.id).isRunning
 
