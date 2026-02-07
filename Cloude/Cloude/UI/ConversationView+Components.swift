@@ -1,46 +1,54 @@
 import SwiftUI
-import UIKit
 import CloudeShared
+
+struct ConversationInfoLabel: View {
+    let conversation: Conversation?
+    var showCost: Bool = false
+    var placeholderText: String = "Select conversation..."
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image.safeSymbol(conversation?.symbol)
+                .font(.system(size: 15))
+            if let conv = conversation {
+                Text(conv.name)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+            } else {
+                Text(placeholderText)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            if let folder = conversation?.workingDirectory?.nilIfEmpty?.lastPathComponent {
+                Text("• \(folder)")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            if showCost, let conv = conversation, conv.totalCost > 0 {
+                Text("• $\(String(format: "%.2f", conv.totalCost))")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            Image(systemName: "chevron.down")
+                .font(.system(size: 15))
+                .foregroundColor(.secondary)
+        }
+    }
+}
 
 struct WindowHeaderView: View {
     let conversation: Conversation?
     let onSelectConversation: (() -> Void)?
 
-    private var folderName: String? {
-        let path = conversation?.workingDirectory ?? ""
-        guard !path.isEmpty else { return nil }
-        return path.lastPathComponent
-    }
-
     var body: some View {
         Button(action: { onSelectConversation?() }) {
             HStack(spacing: 6) {
-                if let conv = conversation {
-                    if conv.symbol.isValidSFSymbol {
-                        Image.safeSymbol(conv.symbol)
-                            .font(.caption)
-                            .foregroundColor(.accentColor)
-                    }
-                    Text(conv.name)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                    if let folder = folderName {
-                        Text("• \(folder)")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-                } else {
-                    Text("Select conversation...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                ConversationInfoLabel(conversation: conversation)
                 Spacer()
-                Image(systemName: "chevron.down")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
@@ -71,11 +79,8 @@ struct ChatMessageList: View {
     var onSelectConversation: ((Conversation) -> Void)?
     var onNewConversation: (() -> Void)?
 
-    @State private var hasScrolledToStreaming = false
     @State private var lastUserMessageCount = 0
     @State private var isInitialLoad = true
-    @State private var isPinnedToBottom = true
-    @State private var userIsDragging = false
     @State private var isBottomVisible = true
     @State private var isCostBannerDismissed = false
 
@@ -118,187 +123,10 @@ struct ChatMessageList: View {
 
             if !showEmptyState || !hasRequiredDependencies {
                 ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        if let conv = conversation,
-                           let limit = conv.costLimitUsd,
-                           !isCostBannerDismissed,
-                           conv.totalCost > limit {
-                            CostBanner(
-                                currentCost: conv.totalCost,
-                                limit: limit,
-                                onDismiss: {
-                                    isCostBannerDismissed = true
-                                },
-                                onNewChat: {
-                                    onNewConversation?()
-                                }
-                            )
-                        }
-
-                        ForEach(messages) { message in
-                            MessageBubble(message: message)
-                                .id("\(message.id)-\(message.isQueued)")
-                        }
-
-                        if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
-                            streamingView
-                        }
-
-                        if let pending = conversationStore?.pendingQuestion,
-                           pending.conversationId == conversationId {
-                            QuestionView(
-                                questions: pending.questions,
-                                isStreaming: agentState == .running || agentState == .compacting,
-                                onSubmit: { answer in
-                                    conversationStore?.pendingQuestion = nil
-                                    conversationStore?.questionInputFocused = false
-                                    if let conv = conversation, let store = conversationStore {
-                                        let userMessage = ChatMessage(isUser: true, text: answer)
-                                        store.addMessage(userMessage, to: conv)
-                                        let sessionId = conv.sessionId
-                                        let workingDir = conv.workingDirectory
-                                        connection?.sendChat(
-                                            answer,
-                                            workingDirectory: workingDir,
-                                            sessionId: sessionId,
-                                            isNewSession: false,
-                                            conversationId: conv.id,
-                                            conversationName: conv.name,
-                                            conversationSymbol: conv.symbol
-                                        )
-                                    }
-                                },
-                                onDismiss: {
-                                    conversationStore?.questionInputFocused = false
-                                    if let conv = conversation, let store = conversationStore {
-                                        let skipMessage = ChatMessage(isUser: true, text: "(skipped question)")
-                                        store.addMessage(skipMessage, to: conv)
-                                    }
-                                    conversationStore?.pendingQuestion = nil
-                                },
-                                onFocusChange: { focused in
-                                    conversationStore?.questionInputFocused = focused
-                                    if focused {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                            withAnimation {
-                                                scrollProxy?.scrollTo("question-input", anchor: .bottom)
-                                            }
-                                        }
-                                    }
-                                }
-                            )
-                            .id("question-input")
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                        }
-
-                        ForEach(queuedMessages) { message in
-                            SwipeToDeleteBubble(message: message) {
-                                onDeleteQueued?(message.id)
-                            }
-                            .id("\(message.id)-queued")
-                        }
-
-                        Color.clear
-                            .frame(height: 80)
-                            .id(bottomId)
-                            .onAppear { isBottomVisible = true }
-                            .onDisappear { isBottomVisible = false }
-                    }
+                    scrollableContent(proxy: proxy, userMessageCount: userMessageCount)
                 }
-                .scrollContentBackground(.hidden)
-                .scrollDismissesKeyboard(.immediately)
-                .simultaneousGesture(
-                    TapGesture()
-                        .onEnded { onInteraction?() }
-                )
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 5)
-                        .onChanged { _ in
-                            onInteraction?()
-                            userIsDragging = true
-                            isPinnedToBottom = false
-                        }
-                        .onEnded { _ in
-                            userIsDragging = false
-                            if isBottomVisible {
-                                isPinnedToBottom = true
-                            }
-                        }
-                )
-                .onAppear {
-                    scrollProxy = proxy
-                    lastUserMessageCount = userMessageCount
-                    if !messages.isEmpty {
-                        isInitialLoad = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                            proxy.scrollTo(bottomId, anchor: .bottom)
-                        }
-                    }
-                }
-                .onChange(of: userMessageCount) { oldCount, newCount in
-                    if newCount > oldCount {
-                        isPinnedToBottom = true
-                        if let lastUserMessage = messages.last(where: { $0.isUser }) {
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                scrollToMessage(lastUserMessage.id, anchor: .top)
-                            }
-                        }
-                    }
-                    lastUserMessageCount = newCount
-                }
-                .onChange(of: currentOutput) { oldValue, newValue in
-                    if newValue.isEmpty {
-                        hasScrolledToStreaming = false
-                    }
-                    if !newValue.isEmpty && isInitialLoad {
-                        isInitialLoad = false
-                    }
-                    if isBottomVisible && !newValue.isEmpty {
-                        proxy.scrollTo(bottomId, anchor: .bottom)
-                    }
-                }
-                .onChange(of: messages.count) { _, newCount in
-                    if newCount > 0 && isInitialLoad {
-                        isInitialLoad = false
-                    }
-                }
-                .task(id: conversationId) {
-                    if !messages.isEmpty {
-                        isInitialLoad = false
-                        return
-                    }
-                    try? await Task.sleep(nanoseconds: 300_000_000)
-                    if isInitialLoad {
-                        isInitialLoad = false
-                    }
-                }
-            }
 
-            if !isBottomVisible && !messages.isEmpty {
-                Circle()
-                    .fill(Color(.secondarySystemBackground))
-                    .frame(width: 44, height: 44)
-                    .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-                    .overlay {
-                        Image(systemName: "arrow.down")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
-                    .highPriorityGesture(
-                        TapGesture()
-                            .onEnded {
-                                isPinnedToBottom = true
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    scrollProxy?.scrollTo(bottomId, anchor: .bottom)
-                                }
-                            }
-                    )
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 8)
-                    .transition(.opacity.combined(with: .scale(scale: 0.8)))
-            }
+                scrollToBottomButton
             }
         }
         .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
@@ -308,7 +136,108 @@ struct ChatMessageList: View {
         }
     }
 
-    private var streamingView: some View {
+    private func scrollableContent(proxy: ScrollViewProxy, userMessageCount: Int) -> some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                costBannerSection
+                messageListSection
+                if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
+                    streamingSection
+                }
+                questionSection
+                queuedMessagesSection
+
+                Color.clear
+                    .frame(height: 80)
+                    .id(bottomId)
+                    .onAppear { isBottomVisible = true }
+                    .onDisappear { isBottomVisible = false }
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.immediately)
+        .simultaneousGesture(
+            TapGesture()
+                .onEnded { onInteraction?() }
+        )
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 5)
+                .onChanged { _ in
+                    onInteraction?()
+                }
+                .onEnded { _ in }
+        )
+        .onAppear {
+            scrollProxy = proxy
+            lastUserMessageCount = userMessageCount
+            if !messages.isEmpty {
+                isInitialLoad = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    proxy.scrollTo(bottomId, anchor: .bottom)
+                }
+            }
+        }
+        .onChange(of: userMessageCount) { oldCount, newCount in
+            if newCount > oldCount {
+                if let lastUserMessage = messages.last(where: { $0.isUser }) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        scrollToMessage(lastUserMessage.id, anchor: .top)
+                    }
+                }
+            }
+            lastUserMessageCount = newCount
+        }
+        .onChange(of: currentOutput) { oldValue, newValue in
+            if !newValue.isEmpty && isInitialLoad {
+                isInitialLoad = false
+            }
+            if isBottomVisible && !newValue.isEmpty {
+                proxy.scrollTo(bottomId, anchor: .bottom)
+            }
+        }
+        .onChange(of: messages.count) { _, newCount in
+            if newCount > 0 && isInitialLoad {
+                isInitialLoad = false
+            }
+        }
+        .task(id: conversationId) {
+            if !messages.isEmpty {
+                isInitialLoad = false
+                return
+            }
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            if isInitialLoad {
+                isInitialLoad = false
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var costBannerSection: some View {
+        if let conv = conversation,
+           let limit = conv.costLimitUsd,
+           limit > 0,
+           conv.totalCost >= limit * 0.75 {
+            let isExceeded = conv.totalCost >= limit
+            if isExceeded || !isCostBannerDismissed {
+                CostBanner(
+                    currentCost: conv.totalCost,
+                    limit: limit,
+                    onDismiss: { isCostBannerDismissed = true },
+                    onNewChat: { onNewConversation?() }
+                )
+            }
+        }
+    }
+
+    private var messageListSection: some View {
+        ForEach(messages) { message in
+            MessageBubble(message: message)
+                .id("\(message.id)-\(message.isQueued)")
+        }
+    }
+
+    private var streamingSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             if isCompacting {
                 CompactingIndicator()
@@ -324,6 +253,90 @@ struct ChatMessageList: View {
             }
         }
         .id(streamingId)
+    }
+
+    @ViewBuilder
+    private var questionSection: some View {
+        if let pending = conversationStore?.pendingQuestion,
+           pending.conversationId == conversationId {
+            QuestionView(
+                questions: pending.questions,
+                isStreaming: agentState == .running || agentState == .compacting,
+                onSubmit: { answer in
+                    conversationStore?.pendingQuestion = nil
+                    conversationStore?.questionInputFocused = false
+                    if let conv = conversation, let store = conversationStore {
+                        let userMessage = ChatMessage(isUser: true, text: answer)
+                        store.addMessage(userMessage, to: conv)
+                        connection?.sendChat(
+                            answer,
+                            workingDirectory: conv.workingDirectory,
+                            sessionId: conv.sessionId,
+                            isNewSession: false,
+                            conversationId: conv.id,
+                            conversationName: conv.name,
+                            conversationSymbol: conv.symbol
+                        )
+                    }
+                },
+                onDismiss: {
+                    conversationStore?.questionInputFocused = false
+                    if let conv = conversation, let store = conversationStore {
+                        let skipMessage = ChatMessage(isUser: true, text: "(skipped question)")
+                        store.addMessage(skipMessage, to: conv)
+                    }
+                    conversationStore?.pendingQuestion = nil
+                },
+                onFocusChange: { focused in
+                    conversationStore?.questionInputFocused = focused
+                    if focused {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation {
+                                scrollProxy?.scrollTo("question-input", anchor: .bottom)
+                            }
+                        }
+                    }
+                }
+            )
+            .id("question-input")
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+    }
+
+    private var queuedMessagesSection: some View {
+        ForEach(queuedMessages) { message in
+            SwipeToDeleteBubble(message: message) {
+                onDeleteQueued?(message.id)
+            }
+            .id("\(message.id)-queued")
+        }
+    }
+
+    @ViewBuilder
+    private var scrollToBottomButton: some View {
+        if !isBottomVisible && !messages.isEmpty {
+            Circle()
+                .fill(Color(.secondarySystemBackground))
+                .frame(width: 44, height: 44)
+                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                .overlay {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.primary)
+                }
+                .highPriorityGesture(
+                    TapGesture()
+                        .onEnded {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                scrollProxy?.scrollTo(bottomId, anchor: .bottom)
+                            }
+                        }
+                )
+                .padding(.trailing, 16)
+                .padding(.bottom, 8)
+                .transition(.opacity.combined(with: .scale(scale: 0.8)))
+        }
     }
 
     private func scrollToMessage(_ id: UUID, anchor: UnitPoint = .top) {

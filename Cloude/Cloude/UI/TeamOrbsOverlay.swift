@@ -3,164 +3,133 @@ import CloudeShared
 
 struct TeamOrbsOverlay: View {
     let teammates: [TeammateInfo]
+    var onClearUnread: ((String) -> Void)?
     @State private var selectedTeammate: TeammateInfo?
 
+    private var activeTeammates: [TeammateInfo] {
+        teammates.filter { $0.status != .shutdown }
+    }
+
     var body: some View {
-        VStack(spacing: 8) {
-            ForEach(teammates.filter { $0.status != .shutdown }) { mate in
-                TeammateOrb(teammate: mate)
-                    .onTapGesture { selectedTeammate = mate }
-                    .transition(.scale.combined(with: .opacity))
+        VStack(spacing: 12) {
+            ForEach(activeTeammates) { mate in
+                TeammateOrbRow(
+                    teammate: mate,
+                    onTap: {
+                        onClearUnread?(mate.id)
+                        selectedTeammate = mate
+                    }
+                )
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .padding(.trailing, 6)
         .padding(.vertical, 16)
-        .animation(.spring(duration: 0.35), value: teammates.map(\.status))
+        .animation(.spring(duration: 0.35), value: activeTeammates.map(\.status))
         .sheet(item: $selectedTeammate) { mate in
             TeammateDetailSheet(teammate: mate)
         }
     }
 }
 
-struct TeammateOrb: View {
+struct TeammateOrbRow: View {
     let teammate: TeammateInfo
-    @State private var isPulsing = false
+    let onTap: () -> Void
+    @State private var showBubble = false
+    @State private var collapseWork: DispatchWorkItem?
+    @State private var trackedMessage: String?
 
-    private var orbColor: Color {
-        teammateColor(teammate.color)
-    }
+    private var orbColor: Color { teammateColor(teammate.color) }
 
     var body: some View {
-        ZStack {
-            if teammate.status == .working {
-                Circle()
-                    .stroke(orbColor.opacity(0.3), lineWidth: 1.5)
-                    .frame(width: 34, height: 34)
-                    .scaleEffect(isPulsing ? 1.4 : 1.0)
-                    .opacity(isPulsing ? 0 : 0.5)
-                    .animation(.easeOut(duration: 1.5).repeatForever(autoreverses: false), value: isPulsing)
+        HStack(spacing: 6) {
+            if showBubble, let msg = teammate.lastMessage {
+                speechBubble(msg)
+                    .transition(.asymmetric(
+                        insertion: .scale(scale: 0.6, anchor: .trailing).combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
 
+            VStack(spacing: 3) {
+                orbCircle
+                Text(teammate.name)
+                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .frame(width: 40)
+            }
+        }
+        .onTapGesture(perform: onTap)
+        .onChange(of: teammate.lastMessage) { _, newMsg in
+            guard let newMsg, newMsg != trackedMessage else { return }
+            trackedMessage = newMsg
+            collapseWork?.cancel()
+            withAnimation(.spring(duration: 0.35)) { showBubble = true }
+            let work = DispatchWorkItem {
+                withAnimation(.easeOut(duration: 0.3)) { showBubble = false }
+            }
+            collapseWork = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: work)
+        }
+    }
+
+    private var orbCircle: some View {
+        ZStack {
+            pulseRing
             Circle()
                 .fill(orbColor.opacity(0.6))
                 .frame(width: 30, height: 30)
-
             Text(String(teammate.name.prefix(1)).uppercased())
                 .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
+            if !showBubble && teammate.unreadCount > 0 {
+                unreadBadge
+            }
         }
         .frame(width: 36, height: 36)
         .opacity(teammate.status == .idle ? 0.5 : 1.0)
-        .onAppear {
-            if teammate.status == .working { isPulsing = true }
-        }
-        .onChange(of: teammate.status) { _, newStatus in
-            isPulsing = (newStatus == .working)
-        }
-    }
-}
-
-struct TeammateDetailSheet: View {
-    let teammate: TeammateInfo
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                Circle()
-                    .fill(teammateColor(teammate.color).opacity(0.7))
-                    .frame(width: 48, height: 48)
-                    .overlay {
-                        Text(String(teammate.name.prefix(1)).uppercased())
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-
-                Text(teammate.name)
-                    .font(.title3.bold())
-
-                HStack(spacing: 12) {
-                    Label(modelBadge(teammate.model), systemImage: "cpu")
-                    Label(teammate.agentType, systemImage: "terminal")
-                }
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-                statusBadge
-
-                if let msg = teammate.lastMessage {
-                    Text(msg)
-                        .font(.callout)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(12)
-                        .background(Color.oceanSecondary)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                }
-
-                if let spawnTime = timeSinceSpawn {
-                    Label(spawnTime, systemImage: "clock")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 20)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            .background(.ultraThinMaterial)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-        }
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-        .presentationBackground(.ultraThinMaterial)
     }
 
-    private var statusBadge: some View {
-        HStack(spacing: 5) {
+    @State private var isPulsing = false
+
+    @ViewBuilder
+    private var pulseRing: some View {
+        if teammate.status == .working {
             Circle()
-                .fill(statusColor)
-                .frame(width: 6, height: 6)
-            Text(statusText)
-                .font(.caption.weight(.medium))
-        }
-        .foregroundColor(.secondary)
-    }
-
-    private var statusColor: Color {
-        switch teammate.status {
-        case .spawning: return .orange
-        case .working: return .green
-        case .idle: return .secondary
-        case .shutdown: return .red
+                .stroke(orbColor.opacity(0.3), lineWidth: 1.5)
+                .frame(width: 34, height: 34)
+                .scaleEffect(isPulsing ? 1.4 : 1.0)
+                .opacity(isPulsing ? 0 : 0.5)
+                .animation(.easeOut(duration: 1.5).repeatForever(autoreverses: false), value: isPulsing)
+                .onAppear { isPulsing = true }
+                .onChange(of: teammate.status) { _, s in isPulsing = (s == .working) }
         }
     }
 
-    private var statusText: String {
-        switch teammate.status {
-        case .spawning: return "Spawning"
-        case .working: return "Working"
-        case .idle: return "Idle"
-        case .shutdown: return "Shut down"
-        }
+    private var unreadBadge: some View {
+        Circle()
+            .fill(orbColor)
+            .frame(width: 8, height: 8)
+            .offset(x: 12, y: -12)
     }
 
-    private var timeSinceSpawn: String? {
-        let elapsed = Date().timeIntervalSince(teammate.spawnedAt)
-        if elapsed < 60 { return "\(Int(elapsed))s" }
-        let mins = Int(elapsed / 60)
-        let secs = Int(elapsed.truncatingRemainder(dividingBy: 60))
-        return "\(mins)m \(secs)s"
+    private func speechBubble(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 12))
+            .foregroundColor(.primary)
+            .lineLimit(3)
+            .multilineTextAlignment(.leading)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(.ultraThinMaterial)
+            .background(orbColor.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(orbColor.opacity(0.2), lineWidth: 0.5)
+            )
+            .frame(maxWidth: 200, alignment: .trailing)
     }
 }
 
