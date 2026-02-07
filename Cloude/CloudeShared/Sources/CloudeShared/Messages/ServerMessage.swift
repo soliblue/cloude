@@ -45,6 +45,7 @@ public enum ServerMessage: Codable {
     case fileSearchResults(files: [String], query: String)
     case remoteSessionList(sessions: [RemoteSession])
     case messageUUID(uuid: String, conversationId: String?)
+    case screenshot(conversationId: String?)
 
     enum CodingKeys: String, CodingKey {
         case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary
@@ -232,6 +233,9 @@ public enum ServerMessage: Codable {
             let uuid = try container.decode(String.self, forKey: .uuid)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .messageUUID(uuid: uuid, conversationId: conversationId)
+        case "screenshot":
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .screenshot(conversationId: conversationId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
