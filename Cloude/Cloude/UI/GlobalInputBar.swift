@@ -393,7 +393,7 @@ struct GlobalInputBar: View {
 
     private func selectFile(_ file: String) {
         guard let atIndex = inputText.lastIndex(of: "@") else { return }
-        let fileName = (file as NSString).lastPathComponent
+        let fileName = file.lastPathComponent
         let beforeAt = String(inputText[..<atIndex])
         let afterQuery = inputText[inputText.index(after: atIndex)...]
         let spaceIndex = afterQuery.firstIndex(where: { $0 == " " || $0 == "\n" })

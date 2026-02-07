@@ -49,11 +49,11 @@ struct GitFileRow: View {
     }
 
     private var fileName: String {
-        (file.path as NSString).lastPathComponent
+        file.path.lastPathComponent
     }
 
     private var filePath: String {
-        let dir = (file.path as NSString).deletingLastPathComponent
+        let dir = file.path.deletingLastPathComponent
         return dir.isEmpty ? "." : dir
     }
 }

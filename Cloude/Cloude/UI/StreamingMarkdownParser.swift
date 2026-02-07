@@ -1,9 +1,6 @@
-//
-//  StreamingMarkdownParser.swift
-//  Cloude
-
 import Foundation
 import SwiftUI
+import CloudeShared
 
 struct StreamingMarkdownParser {
     static func parse(_ text: String) -> [StreamingBlock] {
@@ -37,7 +34,7 @@ struct StreamingMarkdownParser {
                 blocks.append(.code(
                     id: "code-L\(startLine)",
                     content: codeLines.joined(separator: "\n"),
-                    language: language.isEmpty ? nil : language,
+                    language: language.nilIfEmpty,
                     isComplete: foundClose
                 ))
                 if foundClose && i < lines.count { i += 1 }

@@ -3,7 +3,7 @@ import CloudeShared
 
 struct GitService {
     static func isGitRepository(at path: String) -> Bool {
-        let gitDir = (path as NSString).appendingPathComponent(".git")
+        let gitDir = path.appendingPathComponent(".git")
         return FileManager.default.fileExists(atPath: gitDir)
     }
 

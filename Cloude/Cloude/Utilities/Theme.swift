@@ -1,10 +1,3 @@
-//
-//  Theme.swift
-//  Cloude
-//
-//  App theme configuration
-//
-
 import SwiftUI
 
 enum AppTheme: String, CaseIterable {

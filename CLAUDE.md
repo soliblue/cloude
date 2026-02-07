@@ -370,7 +370,3 @@ Anything else worth remembering
 - Use consistent date format: `YYYY-MM-DD HH:MM` for timestamps
 - Freely add, update, or remove entries - this is your identity, manage it as you see fit
 - Claude can also update CLAUDE.md with project-relevant changes (architecture, workflows, code style)
-
-- **2026-02-01**: For Read/Write/Edit tool calls, the input is already the file path string (extracted by Mac agent), not JSON. Use it directly.
-- **2026-02-01**: Tool call input for Read/Write/Edit is the raw file path string not JSON
-- **2026-02-01**: To show a clickable file pill in responses, reference the full absolute path starting with /Users/ - it renders as icon + filename

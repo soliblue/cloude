@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 struct ToolCallLabel: View {
     let name: String
@@ -39,6 +40,7 @@ struct ToolCallLabel: View {
     }
 
     private var displayName: String {
+        if name == "TodoWrite" { return "Tasks" }
         if name == "Skill", let input = input, !input.isEmpty {
             let skillName = input.split(separator: ":", maxSplits: 1).first.map(String.init) ?? input
             return "/\(skillName)"
@@ -50,7 +52,7 @@ struct ToolCallLabel: View {
         var cmd = parsed.command
         if cmd.isEmpty { return name }
         if cmd.contains("/") {
-            cmd = (cmd as NSString).lastPathComponent
+            cmd = cmd.lastPathComponent
         }
         if let sub = parsed.subcommand, ["git", "npm", "yarn", "pnpm", "bun", "cargo", "docker", "kubectl", "pip", "pip3", "swift", "claude"].contains(cmd) {
             let combined = "\(cmd) \(sub)"
@@ -64,7 +66,7 @@ struct ToolCallLabel: View {
 
         switch name {
         case "Read", "Write", "Edit":
-            let filename = (input as NSString).lastPathComponent
+            let filename = input.lastPathComponent
             return truncateFilename(filename, maxLength: 16)
         case "Bash":
             if isMemoryCommand {
@@ -92,6 +94,13 @@ struct ToolCallLabel: View {
         case "Task":
             let parts = input.split(separator: ":", maxSplits: 1)
             return parts.first.map(String.init)
+        case "TodoWrite":
+            if let data = input.data(using: .utf8),
+               let items = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+                let completed = items.filter { ($0["status"] as? String) == "completed" }.count
+                return "\(completed)/\(items.count)"
+            }
+            return nil
         default:
             return nil
         }
@@ -100,122 +109,53 @@ struct ToolCallLabel: View {
     private func bashDisplayDetail(_ cmd: String) -> String {
         let parsed = BashCommandParser.parse(cmd)
         switch parsed.command {
-        case "ls":
-            if let path = parsed.firstArg {
-                return truncatePath(path, maxLength: 18)
-            }
-            return "."
-        case "cd":
-            if let path = parsed.firstArg {
-                return truncatePath(path, maxLength: 18)
-            }
-            return "~"
-        case "git":
-            if let arg = parsed.allArgs.first {
-                return midTruncate(arg, maxLength: 20)
-            }
-            return ""
-        case "npm", "yarn", "pnpm", "bun":
-            return parsed.allArgs.first ?? ""
-        case "cargo":
-            return parsed.allArgs.first ?? ""
-        case "pip", "pip3":
-            return parsed.allArgs.first ?? ""
-        case "make":
-            return parsed.firstArg ?? "all"
-        case "python", "python3":
-            if let file = parsed.firstArg {
-                return truncateFilename(file, maxLength: 16)
-            }
-            return ""
-        case "node":
-            if let file = parsed.firstArg {
-                return truncateFilename(file, maxLength: 16)
-            }
-            return ""
-        case "swift":
-            return parsed.allArgs.first ?? ""
-        case "xcodebuild":
-            if let scheme = parsed.flagValue("-scheme") {
-                return scheme
-            }
-            return parsed.subcommand ?? "build"
-        case "fastlane":
-            return parsed.allArgs.prefix(2).joined(separator: " ")
-        case "docker":
-            return parsed.allArgs.first ?? ""
-        case "kubectl":
-            return parsed.allArgs.first ?? ""
-        case "cat", "head", "tail":
-            if let file = parsed.firstArg {
-                return truncateFilename((file as NSString).lastPathComponent, maxLength: 16)
-            }
-            return ""
-        case "mkdir":
-            if let dir = parsed.firstArg {
-                return truncatePath(dir, maxLength: 18)
-            }
-            return ""
-        case "rm":
-            if let target = parsed.firstArg {
-                return truncatePath(target, maxLength: 18)
-            }
-            return ""
-        case "cp", "mv":
-            let args = parsed.allArgs
-            if args.count >= 2 {
-                return "→ \(truncatePath(args.last!, maxLength: 14))"
-            } else if let src = args.first {
-                return truncatePath(src, maxLength: 18)
-            }
-            return ""
-        case "chmod":
-            let args = parsed.allArgs
-            if args.count >= 2 {
-                return "\(args[0]) \(truncatePath(args[1], maxLength: 12))"
-            }
-            return ""
-        case "curl", "wget":
-            if let url = parsed.firstArg {
-                return truncateURL(url, maxLength: 20)
-            }
-            return ""
-        case "grep", "rg":
-            if let pattern = parsed.firstArg {
-                let truncated = pattern.prefix(16)
-                return truncated.count < pattern.count ? "\(truncated)..." : String(pattern)
-            }
-            return ""
-        case "find":
-            if let path = parsed.firstArg {
-                return truncatePath(path, maxLength: 18)
-            }
-            return "."
-        case "echo":
-            let text = parsed.allArgs.joined(separator: " ")
-            let truncated = text.prefix(18)
-            return truncated.count < text.count ? "\(truncated)..." : String(text)
-        case "source":
-            if let file = parsed.firstArg {
-                return truncateFilename((file as NSString).lastPathComponent, maxLength: 16)
-            }
-            return ""
-        case "export":
-            if let assignment = parsed.firstArg {
-                let key = assignment.split(separator: "=").first.map(String.init) ?? assignment
-                return key
-            }
-            return ""
-        case "cloude":
-            return parsed.subcommand ?? ""
-        case "claude":
-            if let arg = parsed.allArgs.first {
-                return midTruncate(arg, maxLength: 20)
-            }
-            return ""
-        default:
-            return ""
+        case "ls":                          return pathDetail(parsed, fallback: ".")
+        case "cd":                          return pathDetail(parsed, fallback: "~")
+        case "mkdir", "rm", "find":         return pathDetail(parsed, fallback: parsed.command == "find" ? "." : "")
+        case "git", "claude":               return parsed.allArgs.first.map { midTruncate($0, maxLength: 20) } ?? ""
+        case "npm", "yarn", "pnpm", "bun",
+             "cargo", "pip", "pip3",
+             "swift", "docker", "kubectl":  return parsed.allArgs.first ?? ""
+        case "make":                        return parsed.firstArg ?? "all"
+        case "python", "python3", "node":   return fileDetail(parsed)
+        case "cat", "head", "tail":         return parsed.firstArg.map { truncateFilename($0.lastPathComponent, maxLength: 16) } ?? ""
+        case "source":                      return parsed.firstArg.map { truncateFilename($0.lastPathComponent, maxLength: 16) } ?? ""
+        case "xcodebuild":                  return parsed.flagValue("-scheme") ?? parsed.subcommand ?? "build"
+        case "fastlane":                    return parsed.allArgs.prefix(2).joined(separator: " ")
+        case "cp", "mv":                    return moveDetail(parsed)
+        case "chmod":                       return chmodDetail(parsed)
+        case "curl", "wget":               return parsed.firstArg.map { truncateURL($0, maxLength: 20) } ?? ""
+        case "grep", "rg":                 return parsed.firstArg.map { truncateText($0, maxLength: 16) } ?? ""
+        case "echo":                        return truncateText(parsed.allArgs.joined(separator: " "), maxLength: 18)
+        case "export":                      return parsed.firstArg.map { $0.split(separator: "=").first.map(String.init) ?? $0 } ?? ""
+        case "cloude":                      return parsed.subcommand ?? ""
+        default:                            return ""
         }
+    }
+
+    private func pathDetail(_ parsed: BashCommandParser, fallback: String) -> String {
+        parsed.firstArg.map { truncatePath($0, maxLength: 18) } ?? fallback
+    }
+
+    private func fileDetail(_ parsed: BashCommandParser) -> String {
+        parsed.firstArg.map { truncateFilename($0, maxLength: 16) } ?? ""
+    }
+
+    private func moveDetail(_ parsed: BashCommandParser) -> String {
+        let args = parsed.allArgs
+        if args.count >= 2 { return "→ \(truncatePath(args.last!, maxLength: 14))" }
+        return args.first.map { truncatePath($0, maxLength: 18) } ?? ""
+    }
+
+    private func chmodDetail(_ parsed: BashCommandParser) -> String {
+        let args = parsed.allArgs
+        guard args.count >= 2 else { return "" }
+        return "\(args[0]) \(truncatePath(args[1], maxLength: 12))"
+    }
+
+    private func truncateText(_ text: String, maxLength: Int) -> String {
+        guard text.count > maxLength else { return text }
+        return String(text.prefix(maxLength - 1)) + "…"
     }
 
     private func truncatePath(_ path: String, maxLength: Int) -> String {
@@ -242,8 +182,8 @@ struct ToolCallLabel: View {
 
     private func truncateFilename(_ filename: String, maxLength: Int) -> String {
         guard filename.count > maxLength else { return filename }
-        let ext = (filename as NSString).pathExtension
-        let name = (filename as NSString).deletingPathExtension
+        let ext = filename.pathExtension
+        let name = filename.deletingPathExtension
         let availableLength = maxLength - ext.count - (ext.isEmpty ? 0 : 4)
         guard availableLength > 0 else { return filename }
         return "\(name.prefix(availableLength))….\(ext)"
