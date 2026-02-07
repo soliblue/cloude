@@ -35,7 +35,7 @@ struct InlineTextView: View {
             case .code(_, let code):
                 var attr = AttributedString(code)
                 attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .regular, design: .monospaced)
-                attr.backgroundColor = Color(.secondarySystemFill)
+                attr.backgroundColor = .secondary.opacity(0.1)
                 result.append(attr)
             case .filePath(_, let path):
                 let filename = path.lastPathComponent
