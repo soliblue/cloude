@@ -317,7 +317,7 @@ JSON format for `--questions`:
 ### iOS UI Conventions
 - Use SF Symbols instead of text for toolbar buttons (e.g., `xmark` for Cancel, `checkmark` for Done/Save, `trash` for Delete)
 - Sheets should use NavigationStack with `.toolbar` for header buttons, not custom HStacks
-- When placing multiple buttons in a toolbar (e.g., trailing), add a `Divider().frame(height: 20)` between them for visual separation
+- **Toolbar button groups**: When placing multiple buttons in a toolbar, wrap them in `HStack(spacing: 12)` with `.padding(.horizontal, 8)` for edge breathing room. Use `Divider().frame(height: 20)` between buttons as separators.
 
 ### App Terminology
 Use these terms consistently in code and conversation:
@@ -329,6 +329,102 @@ Use these terms consistently in code and conversation:
 - **Input bar** - Bottom prompt/message input area
 - **Project** - Group of conversations + root directory
 - **Conversation** - Chat thread with messages
+
+### UI Component Map
+When the user screenshots the app and says "change this", use this map to find the right file.
+
+**Screen-level views:**
+| Name | File | What it is |
+|------|------|------------|
+| Main view | `MainChatView.swift` | Top-level pager with windows + heartbeat |
+| Chat feed | `ConversationView.swift` | Scrollable message list |
+| File browser | `FileBrowserView.swift` | Directory navigator |
+| Git view | `GitChangesView.swift` | Branch info + changed files |
+| Settings | `SettingsView.swift` | Connection, processes, config |
+| Lock screen | `LockScreenView.swift` | Biometric unlock |
+
+**Header & navigation:**
+| Name | File | What it is |
+|------|------|------------|
+| Window header | `MainChatView.swift` (windowHeader) | Title pill + refresh/close buttons |
+| Title pill | `ConversationView+Components.swift:ConversationInfoLabel` | SF Symbol + name + cost |
+| Switcher | `MainChatView+PageIndicator.swift` | Heart button + window dots + plus button |
+| Heartbeat button | `MainChatView+PageIndicator.swift:heartbeatIndicatorButton` | Heart icon with unread badge |
+| Window dot | `MainChatView+PageIndicator.swift:windowIndicatorButton` | Dot/symbol per window |
+| Breadcrumb | `FileViewerBreadcrumb.swift` | Clickable path segments |
+| Team banner | `TeamBannerView.swift` | Team name + colored dots |
+
+**Chat components:**
+| Name | File | What it is |
+|------|------|------------|
+| Bubble | `ChatView+MessageBubble.swift:MessageBubble` | Single message container |
+| Message list | `ConversationView+Components.swift:ChatMessageList` | All bubbles + cost banner |
+| Tool pill | `ChatView+ToolPill.swift:InlineToolPill` | Colored tool call indicator |
+| Tool sheet | `ToolDetailSheet.swift` | Full tool detail popup |
+| Cost banner | `ConversationView+Components.swift:costBannerSection` | Warning when cost is high |
+| Queued bubble | `ConversationView+Components.swift:SwipeToDeleteBubble` | Swipeable pending message |
+| Scroll button | `ConversationView+Components.swift:scrollToBottomButton` | Floating down-arrow button |
+| Run stats | `ChatView+MessageBubble.swift:RunStatsView` | Duration + cost inline |
+| Slash bubble | `ChatView+MessageBubble.swift:SlashCommandBubble` | /command display |
+| Empty state | `EmptyConversationView.swift` | Pixel art character |
+
+**Input bar:**
+| Name | File | What it is |
+|------|------|------------|
+| Input bar | `GlobalInputBar.swift` | Text field + action button |
+| Action button | `GlobalInputBar.swift:actionButton` | Send/stop + menu (photos, record, model) |
+| Image strip | `GlobalInputBar+Components.swift:ImageAttachmentStrip` | Attached image thumbnails |
+| Slash suggestions | `GlobalInputBar+Components.swift:SlashCommandSuggestions` | Command pills when typing / |
+| Skill pill | `GlobalInputBar+Components.swift:SkillPill` | /command suggestion button |
+| File suggestions | `GlobalInputBar+Components.swift:FileSuggestionsList` | File pills when typing @ |
+| Recording overlay | `GlobalInputBar.swift:RecordingOverlayView` | Waveform + mic during recording |
+| Audio banner | `GlobalInputBar+Components.swift:PendingAudioBanner` | Unsent voice note bar |
+
+**Markdown & content:**
+| Name | File | What it is |
+|------|------|------------|
+| Markdown view | `StreamingMarkdownView.swift` | Rendered markdown with collapsible headers |
+| Code block | `MarkdownText+Blocks.swift:CodeBlock` | Syntax-highlighted code |
+| Table | `MarkdownText+Blocks.swift:MarkdownTableView` | Bordered data table |
+| File link | `FilePathPreviewView.swift` / `InlineTextView.swift:FilePathPill` | Clickable absolute path |
+| Collapsible header | `StreamingMarkdownView.swift:HeaderSectionView` | Expandable section |
+
+**Sheets & modals:**
+| Name | File | What it is |
+|------|------|------------|
+| File preview | `FilePreviewView.swift` | Full file viewer sheet |
+| File diff | `FileDiffSheet.swift` | Git diff for a file |
+| Heartbeat sheet | `HeartbeatSheet.swift` | Heartbeat chat + controls |
+| Memories sheet | `MemoriesSheet.swift` | Tree of memory sections |
+| Plans sheet | `PlansSheet.swift` | Plan cards by stage |
+| Window edit | `WindowEditSheet.swift` | Edit window conversation/name/symbol |
+| Symbol picker | `SymbolPickerSheet.swift` | SF Symbol grid search |
+| Question view | `QuestionView.swift` | Multiple-choice question cards |
+| Team dashboard | `TeamBannerView.swift:TeamDashboardSheet` | Teammate list + messages |
+| Teammate detail | `TeamOrbsOverlay+Detail.swift:TeammateDetailSheet` | Single teammate info |
+
+**Team UI:**
+| Name | File | What it is |
+|------|------|------------|
+| Team orbs | `TeamOrbsOverlay.swift` | Floating teammate circles on right edge |
+| Orb | `TeamOrbsOverlay.swift:TeammateOrbRow` | Colored circle with initials + speech bubble |
+| Team summary | `ChatView+MessageBubble.swift:TeamSummaryBadge` | Overlapping circles in chat |
+
+**Settings components:**
+| Name | File | What it is |
+|------|------|------------|
+| Connection card | `SettingsView+Components.swift:ConnectionStatusCard` | Status dot + connect button |
+| Process list | `SettingsView.swift:processesSection` | Running processes + kill buttons |
+
+**Shared utilities:**
+| Name | File | What it is |
+|------|------|------------|
+| Status logo | `ConnectionStatusLogo.swift` | Logo with pulse during runs |
+| Shimmer | `ChatView+ToolPill.swift:ShimmerOverlay` | Gradient shimmer on executing tools |
+| CSV table | `CSVTableView.swift` | Scrollable data table |
+| JSON tree | `JSONTreeView.swift` | Collapsible JSON hierarchy |
+| Diff text | `GitDiffView+Components.swift:DiffTextView` | Colored diff lines |
+| Waveform | `AudioWaveformView.swift` | Animated audio bars |
 
 ---
 

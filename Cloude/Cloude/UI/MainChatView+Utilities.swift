@@ -87,23 +87,24 @@ extension MainChatView {
         }
     }
 
-    func setupAutocompleteHandler() {
-        connection.onAutocompleteResult = { suggestion, requestText in
-            guard inputText.trimmingCharacters(in: .whitespacesAndNewlines) == requestText else { return }
-            withAnimation(.easeIn(duration: 0.15)) {
-                autocompleteSuggestion = suggestion
+    func setupSuggestionsHandler() {
+        connection.onSuggestionsResult = { newSuggestions, convId in
+            guard let activeWindow = windowManager.activeWindow,
+                  activeWindow.conversationId == convId,
+                  inputText.isEmpty else { return }
+            withAnimation(.easeIn(duration: 0.2)) {
+                suggestions = newSuggestions
             }
         }
     }
 
-    func requestAutocomplete(_ text: String) {
-        var context: [String] = []
-        if let conv = currentConversation {
-            let recent = conv.messages.suffix(4)
-            context = recent.map { $0.text }
-        }
+    func requestSuggestions() {
+        guard let conv = currentConversation,
+              !conv.messages.isEmpty else { return }
+        let recent = conv.messages.suffix(6)
+        let context = recent.map { $0.text }
         let workingDir = activeWindowWorkingDirectory()
-        connection.requestAutocomplete(text: text, context: context, workingDirectory: workingDir)
+        connection.requestSuggestions(context: context, workingDirectory: workingDir, conversationId: conv.id)
     }
 
     func setupCostHandler() {
