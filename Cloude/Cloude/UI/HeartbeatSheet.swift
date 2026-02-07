@@ -55,8 +55,10 @@ struct HeartbeatSheet: View {
                     skills: connection.skills,
                     fileSearchResults: [],
                     conversationDefaultEffort: nil,
+                    conversationDefaultModel: nil,
                     onSend: sendMessage,
                     onEffortChange: nil,
+                    onModelChange: nil,
                     onStop: { connection.abort(conversationId: Heartbeat.conversationId) },
                     onTranscribe: transcribeAudio,
                     onFileSearch: nil

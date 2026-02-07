@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 extension StatusView {
     var header: some View {
