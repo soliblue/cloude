@@ -23,9 +23,11 @@ public enum ClientMessage: Codable {
     case syncHistory(sessionId: String, workingDirectory: String)
     case searchFiles(query: String, workingDirectory: String)
     case listRemoteSessions(workingDirectory: String)
+    case autocomplete(text: String, context: [String], workingDirectory: String?)
+    case suggestName(text: String, context: [String], conversationId: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context
     }
 
     public init(from decoder: Decoder) throws {
@@ -110,6 +112,16 @@ public enum ClientMessage: Codable {
         case "list_remote_sessions":
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .listRemoteSessions(workingDirectory: workingDirectory)
+        case "autocomplete":
+            let text = try container.decode(String.self, forKey: .text)
+            let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
+            let workingDirectory = try container.decodeIfPresent(String.self, forKey: .workingDirectory)
+            self = .autocomplete(text: text, context: context, workingDirectory: workingDirectory)
+        case "suggest_name":
+            let text = try container.decode(String.self, forKey: .text)
+            let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
+            let conversationId = try container.decode(String.self, forKey: .conversationId)
+            self = .suggestName(text: text, context: context, conversationId: conversationId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -192,6 +204,16 @@ public enum ClientMessage: Codable {
         case .listRemoteSessions(let workingDirectory):
             try container.encode("list_remote_sessions", forKey: .type)
             try container.encode(workingDirectory, forKey: .workingDirectory)
+        case .autocomplete(let text, let context, let workingDirectory):
+            try container.encode("autocomplete", forKey: .type)
+            try container.encode(text, forKey: .text)
+            try container.encode(context, forKey: .context)
+            try container.encodeIfPresent(workingDirectory, forKey: .workingDirectory)
+        case .suggestName(let text, let context, let conversationId):
+            try container.encode("suggest_name", forKey: .type)
+            try container.encode(text, forKey: .text)
+            try container.encode(context, forKey: .context)
+            try container.encode(conversationId, forKey: .conversationId)
         }
     }
 }

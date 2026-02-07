@@ -121,6 +121,22 @@ extension AppDelegate {
             let sessions = HistoryService.listSessions(workingDirectory: workingDirectory)
             Log.info("Found \(sessions.count) sessions")
             server.sendMessage(.remoteSessionList(sessions: sessions), to: connection)
+
+        case .autocomplete(let text, let context, let workingDirectory):
+            Log.info("Autocomplete request: \"\(text.prefix(30))\"")
+            autocompleteService.complete(text: text, context: context, workingDirectory: workingDirectory) { [weak self] result in
+                if let suggestion = result {
+                    Log.info("Autocomplete result: \"\(suggestion.prefix(40))\"")
+                    self?.server.sendMessage(.autocompleteResult(text: suggestion, requestText: text), to: connection)
+                }
+            }
+
+        case .suggestName(let text, let context, let conversationId):
+            Log.info("Name suggestion request for \(conversationId.prefix(8))")
+            autocompleteService.suggestName(text: text, context: context) { [weak self] name, symbol in
+                Log.info("Name suggestion: \"\(name)\" symbol=\(symbol ?? "nil")")
+                self?.server.broadcast(.nameSuggestion(name: name, symbol: symbol, conversationId: conversationId))
+            }
         }
     }
 }
