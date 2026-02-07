@@ -6,40 +6,40 @@ import CloudeShared
 extension MainChatView {
     func sendMessage() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let fullImageBase64 = selectedImageData?.base64EncodedString()
 
-        var thumbnailBase64: String? = nil
-        if let imageData = selectedImageData,
-           let image = UIImage(data: imageData),
-           let thumbnail = image.preparingThumbnail(of: CGSize(width: 200, height: 200)),
-           let thumbData = thumbnail.jpegData(compressionQuality: 0.7) {
-            thumbnailBase64 = thumbData.base64EncodedString()
+        let allImagesBase64: [String]? = attachedImages.isEmpty ? nil : attachedImages.map { $0.data.base64EncodedString() }
+
+        let thumbnails: [String]? = attachedImages.isEmpty ? nil : attachedImages.compactMap { attached in
+            guard let image = UIImage(data: attached.data),
+                  let thumbnail = image.preparingThumbnail(of: CGSize(width: 200, height: 200)),
+                  let thumbData = thumbnail.jpegData(compressionQuality: 0.7) else { return nil }
+            return thumbData.base64EncodedString()
         }
 
-        guard !text.isEmpty || fullImageBase64 != nil else { return }
+        guard !text.isEmpty || allImagesBase64 != nil else { return }
 
         if isHeartbeatActive {
-            sendHeartbeatMessage(text: text, imageBase64: fullImageBase64, thumbnailBase64: thumbnailBase64)
+            sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, thumbnails: thumbnails)
         } else {
-            sendConversationMessage(text: text, imageBase64: fullImageBase64, thumbnailBase64: thumbnailBase64)
+            sendConversationMessage(text: text, imagesBase64: allImagesBase64, thumbnails: thumbnails)
         }
 
         inputText = ""
-        selectedImageData = nil
+        attachedImages = []
         if let activeId = windowManager.activeWindowId {
             drafts.removeValue(forKey: activeId)
         }
     }
 
-    func sendHeartbeatMessage(text: String, imageBase64: String?, thumbnailBase64: String?) {
+    func sendHeartbeatMessage(text: String, imagesBase64: [String]?, thumbnails: [String]?) {
         let convOutput = connection.output(for: Heartbeat.conversationId)
         let heartbeat = conversationStore.heartbeatConversation
 
         if convOutput.isRunning {
-            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnailBase64)
+            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.queueMessage(userMessage, to: heartbeat)
         } else {
-            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnailBase64)
+            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.addMessage(userMessage, to: heartbeat)
 
             connection.sendChat(
@@ -48,14 +48,14 @@ extension MainChatView {
                 sessionId: Heartbeat.sessionId,
                 isNewSession: false,
                 conversationId: Heartbeat.conversationId,
-                imageBase64: imageBase64,
+                imagesBase64: imagesBase64,
                 conversationName: "Heartbeat",
                 conversationSymbol: "heart.fill"
             )
         }
     }
 
-    func sendConversationMessage(text: String, imageBase64: String?, thumbnailBase64: String?) {
+    func sendConversationMessage(text: String, imagesBase64: [String]?, thumbnails: [String]?) {
         if windowManager.activeWindow == nil {
             windowManager.addWindow()
         }
@@ -72,17 +72,17 @@ extension MainChatView {
         let isRunning = connection.output(for: conv.id).isRunning
 
         if isRunning {
-            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnailBase64)
+            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.queueMessage(userMessage, to: conv)
         } else {
-            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnailBase64)
+            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.addMessage(userMessage, to: conv)
 
             let isFork = conv.pendingFork
             let isNewSession = conv.sessionId == nil && !isFork
             let workingDir = conv.workingDirectory
             let effortValue = (currentEffort ?? conv.defaultEffort)?.rawValue
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imageBase64: imageBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue)
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue)
 
             if isFork {
                 conversationStore.clearPendingFork(conv)

@@ -21,6 +21,8 @@
 	<string>Cloude uses Face ID to protect your conversations</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Cloude uses the microphone for voice-to-text input</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Cloude needs photo access to attach screenshots to your conversations</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

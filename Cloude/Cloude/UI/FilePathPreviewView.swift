@@ -18,6 +18,7 @@ struct FilePathPreviewView: View {
     @State var showDiff = false
     @State var diffText: String?
     @State var isDiffLoading = false
+    @State var showSource = false
 
     var fileName: String {
         path.lastPathComponent
@@ -25,6 +26,10 @@ struct FilePathPreviewView: View {
 
     var fileExtension: String {
         path.pathExtension.lowercased()
+    }
+
+    var contentType: FileContentType {
+        .from(extension: fileExtension)
     }
 
     var body: some View {
@@ -38,6 +43,7 @@ struct FilePathPreviewView: View {
                     }
                     Divider()
                     content
+                    Spacer(minLength: 0)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -55,14 +61,25 @@ struct FilePathPreviewView: View {
                     FileViewerActions(
                         path: path,
                         fileData: fileData,
-                        isCodeFile: isText,
-                        onGitDiff: isText ? { loadGitDiff() } : nil
+                        isCodeFile: contentType.isTextBased,
+                        onGitDiff: contentType.isTextBased ? { loadGitDiff() } : nil
                     )
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
+                    HStack(spacing: 12) {
+                        if contentType.hasRenderedView && fileData != nil {
+                            Button(action: { showSource.toggle() }) {
+                                Image(systemName: showSource ? "doc.richtext" : "curlybraces")
+                            }
+                            Divider()
+                                .frame(height: 20)
+                        }
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark")
+                        }
                     }
+                    .padding(.horizontal, 12)
+                    .font(.body)
                 }
             }
             .sheet(isPresented: $showDiff) {

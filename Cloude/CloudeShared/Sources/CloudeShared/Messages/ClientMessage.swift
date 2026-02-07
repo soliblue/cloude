@@ -1,7 +1,7 @@
 import Foundation
 
 public enum ClientMessage: Codable {
-    case chat(message: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String?, conversationName: String?, forkSession: Bool, effort: String?)
+    case chat(message: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imagesBase64: [String]?, conversationId: String?, conversationName: String?, forkSession: Bool, effort: String?)
     case abort(conversationId: String?)
     case auth(token: String)
     case listDirectory(path: String)
@@ -25,7 +25,7 @@ public enum ClientMessage: Codable {
     case listRemoteSessions(workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort
     }
 
     public init(from decoder: Decoder) throws {
@@ -38,12 +38,15 @@ public enum ClientMessage: Codable {
             let workingDirectory = try container.decodeIfPresent(String.self, forKey: .workingDirectory)
             let sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
             let isNewSession = try container.decodeIfPresent(Bool.self, forKey: .isNewSession) ?? true
-            let imageBase64 = try container.decodeIfPresent(String.self, forKey: .imageBase64)
+            var imagesBase64 = try container.decodeIfPresent([String].self, forKey: .imagesBase64)
+            if imagesBase64 == nil, let single = try container.decodeIfPresent(String.self, forKey: .imageBase64) {
+                imagesBase64 = [single]
+            }
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             let conversationName = try container.decodeIfPresent(String.self, forKey: .conversationName)
             let forkSession = try container.decodeIfPresent(Bool.self, forKey: .forkSession) ?? false
             let effort = try container.decodeIfPresent(String.self, forKey: .effort)
-            self = .chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId, conversationName: conversationName, forkSession: forkSession, effort: effort)
+            self = .chat(message: message, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, conversationId: conversationId, conversationName: conversationName, forkSession: forkSession, effort: effort)
         case "abort":
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .abort(conversationId: conversationId)
@@ -114,13 +117,13 @@ public enum ClientMessage: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .chat(let message, let workingDirectory, let sessionId, let isNewSession, let imageBase64, let conversationId, let conversationName, let forkSession, let effort):
+        case .chat(let message, let workingDirectory, let sessionId, let isNewSession, let imagesBase64, let conversationId, let conversationName, let forkSession, let effort):
             try container.encode("chat", forKey: .type)
             try container.encode(message, forKey: .message)
             try container.encodeIfPresent(workingDirectory, forKey: .workingDirectory)
             try container.encodeIfPresent(sessionId, forKey: .sessionId)
             try container.encode(isNewSession, forKey: .isNewSession)
-            try container.encodeIfPresent(imageBase64, forKey: .imageBase64)
+            try container.encodeIfPresent(imagesBase64, forKey: .imagesBase64)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
             try container.encodeIfPresent(conversationName, forKey: .conversationName)
             try container.encode(forkSession, forKey: .forkSession)
