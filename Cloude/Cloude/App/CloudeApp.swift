@@ -91,11 +91,6 @@ struct CloudeApp: App {
             PlansSheet(
                 stages: planStages,
                 isLoading: isLoadingPlans,
-                onDelete: { stage, filename in
-                    if let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
-                        connection.deletePlan(stage: stage, filename: filename, workingDirectory: wd)
-                    }
-                },
                 onOpenFile: { path in
                     showPlans = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {

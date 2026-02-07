@@ -56,7 +56,9 @@ struct MarkdownTableView: View {
                                 text: colIndex < row.count ? row[colIndex].trimmingCharacters(in: .whitespaces) : "",
                                 isHeader: rowIndex == 0
                             )
-                            .frame(minWidth: 60, alignment: .leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(minWidth: 60)
+                            .background(rowIndex == 0 ? Color.gray.opacity(0.08) : Color.clear)
                             .overlay(alignment: .leading) {
                                 if colIndex > 0 {
                                     Rectangle()
@@ -66,7 +68,6 @@ struct MarkdownTableView: View {
                             }
                         }
                     }
-                    .background(rowIndex == 0 ? Color.gray.opacity(0.08) : Color.clear)
                 }
             }
         }
