@@ -239,6 +239,39 @@ struct CloudeApp: App {
             }
         }
 
+        connection.onScreenshot = { [conversationStore, connection] convId in
+            DispatchQueue.main.async {
+                guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                      let window = windowScene.windows.first(where: { $0.isKeyWindow }) else { return }
+
+                let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
+                let image = renderer.image { _ in
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                }
+
+                guard let jpegData = image.jpegData(compressionQuality: 0.7) else { return }
+                let base64 = jpegData.base64EncodedString()
+
+                let targetConvId = convId ?? conversationStore.currentConversation?.id
+                guard let targetConvId else { return }
+                guard let conv = conversationStore.findConversation(withId: targetConvId) else { return }
+
+                let userMessage = ChatMessage(isUser: true, text: "[screenshot]", imageBase64: base64)
+                conversationStore.addMessage(userMessage, to: conv)
+
+                connection.sendChat(
+                    "[screenshot]",
+                    workingDirectory: conv.workingDirectory,
+                    sessionId: conv.sessionId,
+                    isNewSession: false,
+                    conversationId: targetConvId,
+                    imageBase64: base64,
+                    conversationName: conv.name,
+                    conversationSymbol: conv.symbol
+                )
+            }
+        }
+
         connection.connect(host: host, port: port, token: token)
     }
 }
