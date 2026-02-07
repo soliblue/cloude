@@ -21,6 +21,7 @@ struct MainChatView: View {
     @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
     @State var currentEffort: EffortLevel?
+    @State var currentModel: ModelSelection?
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
@@ -89,8 +90,10 @@ struct MainChatView: View {
                     skills: connection.skills,
                     fileSearchResults: fileSearchResults,
                     conversationDefaultEffort: currentConversation?.defaultEffort,
+                    conversationDefaultModel: currentConversation?.defaultModel,
                     onSend: sendMessage,
                     onEffortChange: { currentEffort = $0 },
+                    onModelChange: { currentModel = $0 },
                     onStop: stopActiveConversation,
                     onTranscribe: transcribeAudio,
                     onFileSearch: searchFiles

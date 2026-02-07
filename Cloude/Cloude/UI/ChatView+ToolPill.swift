@@ -8,16 +8,8 @@ struct InlineToolPill: View {
 
     private var chainedCommands: [String] {
         guard toolCall.name == "Bash", let input = toolCall.input else { return [] }
-        if BashCommandParser.isScript(input) { return [] }
-        let commands = BashCommandParser.splitChainedCommands(input)
-        return commands.count > 1 ? commands : []
+        return BashCommandParser.chainedCommands(for: input)
     }
-
-    // TODO: Re-enable when live tool updates are ready
-    // private func truncatedSummary(_ text: String) -> String {
-    //     guard text.count > 40 else { return text }
-    //     return String(text.prefix(37)) + "..."
-    // }
 
     var body: some View {
         pillContent
@@ -60,16 +52,6 @@ struct InlineToolPill: View {
                 }
             }
 
-            // TODO: Re-enable when live tool updates are ready
-            // HStack(spacing: 3) {
-            //     Text("↳")
-            //         .font(.system(size: 10))
-            //     Text(truncatedSummary(toolCall.resultSummary ?? " "))
-            //         .font(.system(size: 10, design: .monospaced))
-            //         .lineLimit(1)
-            // }
-            // .foregroundColor(.secondary)
-            // .opacity(toolCall.resultSummary != nil ? 1 : 0)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)

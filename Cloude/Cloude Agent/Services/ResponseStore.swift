@@ -58,16 +58,10 @@ struct ResponseStore {
     }
 
     private static func load() -> [String: StoredResponse] {
-        guard let data = UserDefaults.standard.data(forKey: storageKey),
-              let decoded = try? JSONDecoder().decode([String: StoredResponse].self, from: data) else {
-            return [:]
-        }
-        return decoded
+        UserDefaults.standard.codable([String: StoredResponse].self, forKey: storageKey, default: [:])
     }
 
     private static func save() {
-        if let data = try? JSONEncoder().encode(responses) {
-            UserDefaults.standard.set(data, forKey: storageKey)
-        }
+        UserDefaults.standard.setCodable(responses, forKey: storageKey)
     }
 }

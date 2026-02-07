@@ -73,6 +73,30 @@ struct WindowEditSheet: View {
                             Image(systemName: "brain.head.profile")
                         }
 
+                        Divider()
+                            .frame(height: 20)
+
+                        Menu {
+                            Button {
+                                if let conv = conversation {
+                                    conversationStore.setDefaultModel(conv, model: nil)
+                                }
+                            } label: {
+                                Label("Auto", systemImage: conversation?.defaultModel == nil ? "checkmark" : "circle")
+                            }
+                            ForEach(ModelSelection.allCases, id: \.self) { model in
+                                Button {
+                                    if let conv = conversation {
+                                        conversationStore.setDefaultModel(conv, model: model)
+                                    }
+                                } label: {
+                                    Label(model.displayName, systemImage: conversation?.defaultModel == model ? "checkmark" : "circle")
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "cpu")
+                        }
+
                         if onRefresh != nil {
                             Divider()
                                 .frame(height: 20)

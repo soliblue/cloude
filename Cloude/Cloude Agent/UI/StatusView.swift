@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 struct StatusView: View {
     @ObservedObject var server: WebSocketServer

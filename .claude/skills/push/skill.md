@@ -22,34 +22,46 @@ If unsure, ASK before committing.
 
 ## Steps
 
-1. **Review changes**
+1. **Check testing gate**
+   ```bash
+   ls plans/testing/ 2>/dev/null | grep -c .md
+   ```
+   - If **5+ items** in `plans/testing/`, warn: "Testing queue is full (X items). Consider running /test before adding more."
+   - Don't block the push, just warn.
+
+2. **Review changes**
    ```bash
    git status
    git diff --stat
    git log --oneline -3
    ```
 
-2. **Stage all changes**
+3. **Stage all changes**
    ```bash
    git add .
    ```
 
-3. **Commit** with conventional prefix (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`):
+4. **Commit** with conventional prefix (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`):
    ```bash
    git commit -m "$(cat <<'EOF'
    feat: Short description
 
    - Details if needed
 
-   Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+   Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
    EOF
    )"
    ```
 
-4. **Push**
+5. **Push**
    ```bash
    git push
    ```
+
+6. **Plan ticket check**
+   After pushing, check if there's a matching plan in `plans/` for the work just committed:
+   - If no matching plan exists, create a small plan file directly in `plans/testing/` describing what was just pushed
+   - Every code change needs a plan ticket — this ensures nothing gets lost
 
 ## Important
 

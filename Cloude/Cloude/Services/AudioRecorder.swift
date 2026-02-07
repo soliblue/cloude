@@ -45,7 +45,6 @@ class AudioRecorder: ObservableObject {
             try session.setCategory(.playAndRecord, mode: .default)
             try session.setActive(true)
         } catch {
-            print("Failed to set up audio session: \(error)")
             return
         }
 
@@ -64,9 +63,7 @@ class AudioRecorder: ObservableObject {
             audioRecorder?.record()
             isRecording = true
             startMetering()
-        } catch {
-            print("Failed to start recording: \(error)")
-        }
+        } catch { }
     }
 
     private func startMetering() {
@@ -97,7 +94,6 @@ class AudioRecorder: ObservableObject {
             let data = try Data(contentsOf: Self.pendingAudioURL)
             return data
         } catch {
-            print("Failed to read recording: \(error)")
             return nil
         }
     }

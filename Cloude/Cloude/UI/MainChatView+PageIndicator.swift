@@ -31,14 +31,15 @@ extension MainChatView {
     @ViewBuilder
     func heartbeatIndicatorButton() -> some View {
         let isStreaming = connection.output(for: Heartbeat.conversationId).isRunning
+        let isScheduled = conversationStore.heartbeatConfig.intervalMinutes != nil
 
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
             ZStack(alignment: .topTrailing) {
-                Image(systemName: isHeartbeatActive ? "heart.circle.fill" : "heart.fill")
+                Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
                     .font(.system(size: 22))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
 
                 if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
@@ -88,6 +89,14 @@ extension MainChatView {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    func heartbeatIconName(active: Bool, scheduled: Bool) -> String {
+        if scheduled {
+            return active ? "heart.circle.fill" : "heart.fill"
+        } else {
+            return active ? "heart.slash.fill" : "heart.slash"
         }
     }
 

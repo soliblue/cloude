@@ -82,7 +82,8 @@ extension MainChatView {
             let isNewSession = conv.sessionId == nil && !isFork
             let workingDir = conv.workingDirectory
             let effortValue = (currentEffort ?? conv.defaultEffort)?.rawValue
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue)
+            let modelValue = (currentModel ?? conv.defaultModel)?.rawValue
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue, model: modelValue)
 
             if isFork {
                 conversationStore.clearPendingFork(conv)

@@ -35,17 +35,13 @@ struct HeartbeatConfig {
 
     var lastTriggeredDisplayText: String {
         guard let date = lastTriggeredAt else { return "Never" }
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
+        return DateFormatters.relativeTime(date)
     }
 
     var nextHeartbeatDisplayText: String? {
         guard let next = nextHeartbeatAt else { return nil }
         if next <= Date() { return "Soon" }
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: next, relativeTo: Date())
+        return DateFormatters.relativeTime(next)
     }
 }
 
@@ -99,19 +95,14 @@ class ConversationStore: ObservableObject {
     }
 
     func save() {
-        if let data = try? JSONEncoder().encode(conversations) {
-            UserDefaults.standard.set(data, forKey: saveKey)
-        }
+        UserDefaults.standard.setCodable(conversations, forKey: saveKey)
         if let triggeredAt = heartbeatConfig.lastTriggeredAt {
             UserDefaults.standard.set(triggeredAt, forKey: heartbeatTriggeredKey)
         }
     }
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: saveKey),
-           let decoded = try? JSONDecoder().decode([Conversation].self, from: data) {
-            conversations = decoded
-        }
+        conversations = UserDefaults.standard.codable([Conversation].self, forKey: saveKey, default: [])
 
         ensureHeartbeatExists()
         currentConversation = listableConversations.first

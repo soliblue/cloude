@@ -10,6 +10,14 @@ aliases: [distribute, ship, release]
 
 Smart deployment workflow for Cloude. Deploys only what has changes (or everything if in doubt).
 
+## Flags
+
+- `/deploy` — auto-detect what changed and deploy accordingly
+- `/deploy --mac-only` — force Mac agent build only (skip TestFlight)
+- `/deploy --ios-only` — force iOS TestFlight build only (skip Mac agent)
+
+When a flag is provided, skip the auto-detection logic and deploy the specified component directly.
+
 ## Pre-Deployment Checklist
 
 **CRITICAL: This is a PUBLIC repo. Before committing, review for:**
@@ -68,7 +76,7 @@ feat: Short description of changes
 
 - Bullet point details if needed
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 EOF
 )"
 git push
@@ -103,18 +111,11 @@ cd Cloude && agvtool what-version -terse
 
 Report it clearly: "Deployed Build XX to TestFlight"
 
-### 2. Update Staging in CLAUDE.local.md
+### 2. Update Tracking
 
 After successful deploy:
-1. Update "Last deploy" timestamp with date and build number
-2. Add build number to features that were just deployed
-
-**Feature states:**
-- `- Feature description` (no build number) = in development, not yet deployed
-- `- Feature description (Build XX)` = deployed, awaiting test
-- Delete from list = Soli confirmed it works
-
-Items stay until Soli confirms they work. The build number tells you when it shipped.
+1. Update "Last deploy" line in CLAUDE.local.md Notes section with date, build number, and brief description
+2. Ensure any features just deployed have a corresponding plan in `plans/testing/` (the source of truth for what needs testing)
 
 ## How Deploy Works (Mac Agent Restart)
 

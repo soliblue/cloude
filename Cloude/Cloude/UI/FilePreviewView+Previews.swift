@@ -55,7 +55,7 @@ struct TextPreview: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             Text(text)
-                .font(.system(.body, design: .monospaced))
+                .font(.system(size: 12, design: .monospaced))
                 .textSelection(.enabled)
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)

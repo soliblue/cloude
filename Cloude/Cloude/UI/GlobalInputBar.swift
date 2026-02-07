@@ -14,8 +14,10 @@ struct GlobalInputBar: View {
     let skills: [Skill]
     let fileSearchResults: [String]
     let conversationDefaultEffort: EffortLevel?
+    let conversationDefaultModel: ModelSelection?
     let onSend: () -> Void
     let onEffortChange: ((EffortLevel?) -> Void)?
+    let onModelChange: ((ModelSelection?) -> Void)?
     var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
     var onFileSearch: ((String) -> Void)?
@@ -35,6 +37,7 @@ struct GlobalInputBar: View {
     @State private var showStopButton = false
     @State private var fileSearchDebounce: Task<Void, Never>?
     @State private var currentEffort: EffortLevel?
+    @State private var currentModel: ModelSelection?
 
     private let swipeThreshold: CGFloat = 60
     private let transitionDuration: Double = 0.15
@@ -141,82 +144,10 @@ struct GlobalInputBar: View {
             }
 
             ZStack(alignment: .bottom) {
-                HStack(spacing: 12) {
-                    HStack(spacing: 8) {
-                        ZStack(alignment: .leading) {
-                            if inputText.isEmpty {
-                                Text(placeholder)
-                                    .foregroundColor(.secondary)
-                                    .id(placeholderIndex)
-                                    .transition(.opacity)
-                            }
-                            TextField("", text: $inputText, axis: .vertical)
-                                .textFieldStyle(.plain)
-                                .lineLimit(1...4)
-                                .focused($isInputFocused)
-                                .foregroundColor(isSlashCommand ? .cyan : .primary)
-                                .onSubmit { if canSend { onSend() } }
-                                .id(textFieldId)
-                        }
-
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .offset(x: -horizontalSwipeOffset * 0.3)
-                    .opacity(1 - Double(min(horizontalSwipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.5)
-
-                    if shouldShowStopButton {
-                        Button(action: { onStop?() }) {
-                            Image(systemName: "stop.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundColor(.accentColor.opacity(0.9))
-                                .frame(height: 44)
-                                .contentShape(Rectangle())
-                        }
-                    } else {
-                        Menu {
-                            Button(action: { showPhotoPicker = true }) {
-                                Label("Photo", systemImage: "photo")
-                            }
-
-                            Button(action: startRecording) {
-                                Label("Record", systemImage: "mic.fill")
-                            }
-                            .disabled(!canRecord)
-
-                            Divider()
-
-                            Menu {
-                                Button(action: { setEffort(nil) }) {
-                                    Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
-                                }
-                                ForEach(EffortLevel.allCases, id: \.self) { level in
-                                    Button(action: { setEffort(level) }) {
-                                        Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
-                                    }
-                                }
-                            } label: {
-                                Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
-                            }
-                        } label: {
-                            ZStack {
-                                Image(systemName: willQueue ? "clock.fill" : "paperplane.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
-                                    .frame(height: 44)
-                                    .contentShape(Rectangle())
-                                    .animation(.easeInOut(duration: 0.2), value: willQueue)
-                            }
-                        } primaryAction: {
-                            onSend()
-                        }
-                    }
-                }
-                .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
-                .animation(.easeOut(duration: transitionDuration), value: showInputBar)
-                .animation(.easeOut(duration: transitionDuration), value: isTranscribing)
+                inputRow
+                    .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.7 : 0)
+                    .animation(.easeOut(duration: transitionDuration), value: showInputBar)
+                    .animation(.easeOut(duration: transitionDuration), value: isTranscribing)
 
                 if showRecordingOverlay || isSwipingToRecord || isTranscribing {
                     RecordingOverlayView(
@@ -349,6 +280,99 @@ struct GlobalInputBar: View {
         isRunning && showStopButton && !isInputFocused
     }
 
+    private var inputRow: some View {
+        HStack(spacing: 12) {
+            HStack(spacing: 8) {
+                ZStack(alignment: .leading) {
+                    if inputText.isEmpty {
+                        Text(placeholder)
+                            .foregroundColor(.secondary)
+                            .id(placeholderIndex)
+                            .transition(.opacity)
+                    }
+                    TextField("", text: $inputText, axis: .vertical)
+                        .textFieldStyle(.plain)
+                        .lineLimit(1...4)
+                        .focused($isInputFocused)
+                        .foregroundColor(isSlashCommand ? .cyan : .primary)
+                        .onSubmit { if canSend { onSend() } }
+                        .id(textFieldId)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .offset(x: -horizontalSwipeOffset * 0.3)
+            .opacity(1 - Double(min(horizontalSwipeOffset, swipeThreshold)) / Double(swipeThreshold) * 0.5)
+
+            actionButton
+        }
+    }
+
+    @ViewBuilder
+    private var actionButton: some View {
+        if shouldShowStopButton {
+            Button(action: { onStop?() }) {
+                Image(systemName: "stop.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(.accentColor.opacity(0.9))
+                    .frame(height: 44)
+                    .contentShape(Rectangle())
+            }
+        } else {
+            Menu {
+                Button(action: { showPhotoPicker = true }) {
+                    Label("Photo", systemImage: "photo")
+                }
+
+                Button(action: startRecording) {
+                    Label("Record", systemImage: "mic.fill")
+                }
+                .disabled(!canRecord)
+
+                Divider()
+
+                Menu {
+                    Button(action: { setEffort(nil) }) {
+                        Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
+                    }
+                    ForEach(EffortLevel.allCases, id: \.self) { level in
+                        Button(action: { setEffort(level) }) {
+                            Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
+                        }
+                    }
+                } label: {
+                    Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
+                }
+
+                Menu {
+                    Button(action: { setModel(nil) }) {
+                        Label("Auto", systemImage: currentModel == nil ? "checkmark" : "circle")
+                    }
+                    ForEach(ModelSelection.allCases, id: \.self) { model in
+                        Button(action: { setModel(model) }) {
+                            Label(model.displayName, systemImage: currentModel == model ? "checkmark" : "circle")
+                        }
+                    }
+                } label: {
+                    Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
+                }
+            } label: {
+                ZStack {
+                    Image(systemName: willQueue ? "clock.fill" : "paperplane.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(canSend ? .accentColor : .accentColor.opacity(0.4))
+                        .frame(height: 44)
+                        .contentShape(Rectangle())
+                        .animation(.easeInOut(duration: 0.2), value: willQueue)
+                }
+            } primaryAction: {
+                onSend()
+            }
+        }
+    }
+
     private var canRecord: Bool {
         isConnected && isWhisperReady && !audioRecorder.isTranscribing
     }
@@ -405,5 +429,10 @@ struct GlobalInputBar: View {
     private func setEffort(_ level: EffortLevel?) {
         currentEffort = level
         onEffortChange?(level)
+    }
+
+    private func setModel(_ model: ModelSelection?) {
+        currentModel = model
+        onModelChange?(model)
     }
 }

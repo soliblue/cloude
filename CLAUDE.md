@@ -28,6 +28,7 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 **FIRST MESSAGE = RENAME + SYMBOL** - On the VERY FIRST user message of ANY conversation, BEFORE writing any text response, you MUST immediately run both `cloude rename` and `cloude symbol` commands. This is non-negotiable. No text output first. Tool calls first. Every. Single. Time.
 
 - Run as **two separate Bash commands** (not combined with `&&`)
+- **NEVER chain `cloude` commands** with `&&` or `;` — always run each `cloude` command as its own separate Bash call
 - Pass the name/symbol directly with NO quotes: `cloude rename Memory Fix` not `cloude rename "Memory Fix"`
 
 **Rebuilding the Mac agent** - You CAN rebuild the agent using `source .env && fastlane mac build_agent`. The build process will SIGKILL the old agent, wait 3s, and launch the new one. The WebSocket server has retry logic (up to 5 attempts) if the port is still in use. Deploying both agent + iOS together (`fastlane deploy`) is safe. **CRITICAL:** Always run this as the LAST thing in your response. Say everything important first, then trigger the build. The connection will drop briefly but the iOS app will reconnect automatically.
@@ -50,7 +51,8 @@ The `plans/` directory is the single source of truth for tracking work. Every ch
 
 **Rules:**
 - **Every code change needs a plan ticket** — if a plan already exists, move it. If not, create one.
-- After implementing a change, move/create the plan in `testing/`
+- **Create the ticket in `plans/active/` BEFORE writing any code** — this is non-negotiable. Plan first, implement second.
+- After implementing a change, move the plan to `testing/`
 - When Soli confirms it works, move to `done/`
 - At **5+ items in testing/**, stop adding features — tell Soli to test first
 - Other agents can read plans to understand what's in progress and avoid conflicts
@@ -371,3 +373,4 @@ Anything else worth remembering
 - Use consistent date format: `YYYY-MM-DD HH:MM` for timestamps
 - Freely add, update, or remove entries - this is your identity, manage it as you see fit
 - Claude can also update CLAUDE.md with project-relevant changes (architecture, workflows, code style)
+

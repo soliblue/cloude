@@ -20,6 +20,12 @@ enum DateFormatters {
         return shared.string(from: date)
     }
 
+    static func relativeTime(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
     static func mediumDate(_ date: Date) -> String {
         shared.dateStyle = .medium
         shared.timeStyle = .none

@@ -18,9 +18,7 @@ struct ToolDetailSheet: View {
 
     private var chainedCommands: [String] {
         guard toolCall.name == "Bash", let input = toolCall.input else { return [] }
-        if isScript { return [] }
-        let commands = BashCommandParser.splitChainedCommands(input)
-        return commands.count > 1 ? commands : []
+        return BashCommandParser.chainedCommands(for: input)
     }
 
     private var filePath: String? {
@@ -186,22 +184,8 @@ struct ToolDetailSheet: View {
             VStack(spacing: 0) {
                 ForEach(Array(children.enumerated()), id: \.element.toolId) { index, child in
                     HStack(spacing: 10) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            ToolCallLabel(name: child.name, input: child.input)
-                                .lineLimit(1)
-
-                            // TODO: Re-enable when live tool updates are ready
-                            // if let summary = child.resultSummary {
-                            //     HStack(spacing: 3) {
-                            //         Text("↳")
-                            //             .font(.system(size: 10))
-                            //         Text(summary)
-                            //             .font(.system(size: 10, design: .monospaced))
-                            //             .lineLimit(1)
-                            //     }
-                            //     .foregroundColor(.secondary)
-                            // }
-                        }
+                        ToolCallLabel(name: child.name, input: child.input)
+                            .lineLimit(1)
 
                         Spacer()
 

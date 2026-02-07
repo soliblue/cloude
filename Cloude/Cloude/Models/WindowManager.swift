@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CloudeShared
 
 @MainActor
 class WindowManager: ObservableObject {
@@ -20,19 +21,14 @@ class WindowManager: ObservableObject {
     }
 
     private func save() {
-        if let data = try? JSONEncoder().encode(windows) {
-            UserDefaults.standard.set(data, forKey: windowsKey)
-        }
+        UserDefaults.standard.setCodable(windows, forKey: windowsKey)
         if let activeId = activeWindowId {
             UserDefaults.standard.set(activeId.uuidString, forKey: activeKey)
         }
     }
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: windowsKey),
-           let decoded = try? JSONDecoder().decode([ChatWindow].self, from: data) {
-            windows = decoded
-        }
+        windows = UserDefaults.standard.codable([ChatWindow].self, forKey: windowsKey, default: [])
         if let idString = UserDefaults.standard.string(forKey: activeKey),
            let id = UUID(uuidString: idString),
            windows.contains(where: { $0.id == id }) {

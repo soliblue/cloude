@@ -1,7 +1,7 @@
 import Foundation
 
-enum NetworkHelper {
-    static func getIPAddress() -> String? {
+public enum NetworkHelper {
+    public static func getIPAddress() -> String? {
         var address: String?
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
 

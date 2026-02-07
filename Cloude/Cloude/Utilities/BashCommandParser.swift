@@ -7,6 +7,12 @@ struct BashCommandParser {
     let allArgs: [String]
     private let flags: [String: String]
 
+    static func chainedCommands(for input: String) -> [String] {
+        guard !isScript(input) else { return [] }
+        let commands = splitChainedCommands(input)
+        return commands.count > 1 ? commands : []
+    }
+
     static func isScript(_ input: String) -> Bool {
         let scriptPatterns = [
             "\\bfor\\b.*\\bdo\\b",
