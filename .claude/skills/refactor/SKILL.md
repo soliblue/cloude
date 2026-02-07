@@ -48,3 +48,15 @@ Provide actionable improvements:
 1. Specific files/functions to change
 2. Why the change improves the code
 3. What the change looks like
+
+**Present suggestions to Soli and wait for approval.** Do NOT implement any changes until Soli says to. When Soli approves specific suggestions, create a plan ticket in `plans/active/` (or `plans/testing/` if implementing immediately) for each approved change.
+
+## Second Opinion (Codex)
+
+After completing your analysis, ask Codex for its take:
+
+```bash
+codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "Review this codebase for refactoring opportunities. Focus on dead code, unclear naming, duplicated logic, and overly complex functions. Be specific about files and line numbers."
+```
+
+Compare Codex's suggestions with your own and present a unified list, noting where you agree and where you differ.

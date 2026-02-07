@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 struct SettingsRow<Content: View>: View {
     let icon: String

@@ -14,6 +14,7 @@ struct Conversation: Codable, Identifiable {
     var pendingFork: Bool
     var costLimitUsd: Double?
     var defaultEffort: EffortLevel?
+    var defaultModel: ModelSelection?
 
     var isEmpty: Bool {
         messages.isEmpty && pendingMessages.isEmpty && sessionId == nil
@@ -53,6 +54,7 @@ struct Conversation: Codable, Identifiable {
         self.pendingFork = pendingFork
         self.costLimitUsd = nil
         self.defaultEffort = nil
+        self.defaultModel = nil
         self.name = name ?? Self.randomNames.randomElement() ?? "Chat"
         self.symbol = symbol ?? Self.randomSymbols.randomElement()
     }
@@ -71,10 +73,11 @@ struct Conversation: Codable, Identifiable {
         pendingFork = try container.decodeIfPresent(Bool.self, forKey: .pendingFork) ?? false
         costLimitUsd = try container.decodeIfPresent(Double.self, forKey: .costLimitUsd)
         defaultEffort = try container.decodeIfPresent(EffortLevel.self, forKey: .defaultEffort)
+        defaultModel = try container.decodeIfPresent(ModelSelection.self, forKey: .defaultModel)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, costLimitUsd, defaultEffort
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, costLimitUsd, defaultEffort, defaultModel
     }
 }
 
@@ -195,6 +198,28 @@ enum EffortLevel: String, Codable, CaseIterable {
         case .medium: return "Medium"
         case .high: return "High"
         case .max: return "Max"
+        }
+    }
+}
+
+enum ModelSelection: String, Codable, CaseIterable {
+    case opus = "claude-opus-4-6"
+    case sonnet = "claude-sonnet-4-5-20250929"
+    case haiku = "claude-haiku-4-5-20251001"
+
+    var displayName: String {
+        switch self {
+        case .opus: return "Opus"
+        case .sonnet: return "Sonnet"
+        case .haiku: return "Haiku"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .opus: return "crown"
+        case .sonnet: return "hare"
+        case .haiku: return "leaf"
         }
     }
 }
