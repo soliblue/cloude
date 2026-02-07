@@ -157,6 +157,7 @@ struct GlobalInputBar: View {
                     Spacer()
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 8)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
