@@ -1,8 +1,3 @@
-//
-//  GitDiffView+Components.swift
-//  Cloude
-//
-
 import SwiftUI
 
 struct DiffTextView: View {

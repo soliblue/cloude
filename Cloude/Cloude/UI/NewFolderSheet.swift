@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 struct NewFolderSheet: View {
     @ObservedObject var store: ConversationStore
@@ -64,7 +65,7 @@ struct NewFolderSheet: View {
             FolderPickerView(connection: connection) { selectedPath in
                 rootDirectory = selectedPath
                 if name.isEmpty {
-                    name = (selectedPath as NSString).lastPathComponent
+                    name = selectedPath.lastPathComponent
                 }
             }
         }
@@ -72,6 +73,6 @@ struct NewFolderSheet: View {
     }
 
     private var folderDisplayName: String {
-        (rootDirectory as NSString).lastPathComponent
+        rootDirectory.lastPathComponent
     }
 }

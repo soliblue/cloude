@@ -1,7 +1,3 @@
-//
-//  WindowManager.swift
-//  Cloude
-
 import Foundation
 import Combine
 

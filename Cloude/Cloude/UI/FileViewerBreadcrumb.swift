@@ -44,11 +44,11 @@ struct FileViewerBreadcrumb: View {
     }
 
     private var fileName: String {
-        (path as NSString).lastPathComponent
+        path.lastPathComponent
     }
 
     private var parentPath: String {
-        (path as NSString).deletingLastPathComponent
+        path.deletingLastPathComponent
     }
 
     private var components: [PathComponent] {
@@ -56,9 +56,9 @@ struct FileViewerBreadcrumb: View {
         var current = parentPath
 
         while current != "/" && !current.isEmpty {
-            let name = (current as NSString).lastPathComponent
+            let name = current.lastPathComponent
             result.insert(PathComponent(name: name, path: current), at: 0)
-            current = (current as NSString).deletingLastPathComponent
+            current = current.deletingLastPathComponent
         }
         result.insert(PathComponent(name: "/", path: "/"), at: 0)
 
@@ -79,11 +79,14 @@ struct FileViewerActions: View {
     let onGitDiff: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             if let data = fileData {
                 ShareLink(item: data, preview: SharePreview(fileName)) {
                     Image(systemName: "square.and.arrow.up")
                 }
+
+                Divider()
+                    .frame(height: 20)
 
                 Button(action: { copyToClipboard(data) }) {
                     Image(systemName: "doc.on.doc")
@@ -91,16 +94,20 @@ struct FileViewerActions: View {
             }
 
             if isCodeFile, let onGitDiff {
+                Divider()
+                    .frame(height: 20)
+
                 Button(action: onGitDiff) {
                     Image(systemName: "chevron.left.forwardslash.chevron.right")
                 }
             }
         }
+        .padding(.horizontal, 12)
         .font(.body)
     }
 
     private var fileName: String {
-        (path as NSString).lastPathComponent
+        path.lastPathComponent
     }
 
     private func copyToClipboard(_ data: Data) {

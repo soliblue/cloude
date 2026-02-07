@@ -1,8 +1,3 @@
-//
-//  ChatView+Input.swift
-//  Cloude
-//
-
 import SwiftUI
 
 struct ToolCallRow: View {

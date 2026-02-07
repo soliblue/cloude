@@ -253,7 +253,7 @@ struct MainChatView: View {
 
     func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
         let workingDir = conversation?.workingDirectory ?? ""
-        let gitBranch = workingDir.isEmpty ? nil : gitBranches[workingDir]
+        let gitBranch = workingDir.nilIfEmpty.flatMap { gitBranches[$0] }
         let availableTypes = WindowType.allCases.filter { type in
             if type == .gitChanges { return gitBranch != nil }
             return true
@@ -293,9 +293,7 @@ struct MainChatView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    if let folder = conversation?.workingDirectory.flatMap({ path in
-                        path.isEmpty ? nil : (path as NSString).lastPathComponent
-                    }) {
+                    if let folder = conversation?.workingDirectory?.nilIfEmpty?.lastPathComponent {
                         Text("• \(folder)")
                             .font(.system(size: 12))
                             .foregroundColor(.secondary)

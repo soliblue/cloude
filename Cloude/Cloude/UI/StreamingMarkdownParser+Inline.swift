@@ -1,7 +1,3 @@
-//
-//  StreamingMarkdownParser+Inline.swift
-//  Cloude
-
 import Foundation
 import SwiftUI
 
@@ -53,26 +49,11 @@ extension StreamingMarkdownParser {
         var segments: [InlineSegment] = []
         var remaining = text[...]
         var currentText = ""
-        let currentIntents: InlinePresentationIntent = []
-        let currentStrikethrough = false
-        let currentLink: URL? = nil
 
         func flushText() {
             guard !currentText.isEmpty else { return }
             var attr = AttributedString(currentText)
-            if let font = font {
-                attr.font = font
-            }
-            if !currentIntents.isEmpty {
-                attr.inlinePresentationIntent = currentIntents
-            }
-            if currentStrikethrough {
-                attr.strikethroughStyle = .single
-            }
-            if let url = currentLink {
-                attr.link = url
-                attr.foregroundColor = .blue
-            }
+            if let font = font { attr.font = font }
             segments.append(.text(attr))
             currentText = ""
         }
@@ -84,176 +65,46 @@ extension StreamingMarkdownParser {
                 continue
             }
 
-            if remaining.hasPrefix("***") || remaining.hasPrefix("___") {
+            if let result = parseBoldItalic(&remaining, font: font) {
                 flushText()
-                let marker = String(remaining.prefix(3))
-                remaining = remaining.dropFirst(3)
-                var innerText = ""
-                while !remaining.isEmpty {
-                    if remaining.hasPrefix(marker) {
-                        remaining = remaining.dropFirst(3)
-                        break
-                    }
-                    innerText.append(remaining.removeFirst())
-                }
-                let innerSegments = parseLineToSegments(innerText, font: font)
-                for segment in innerSegments {
-                    if case .text(_, var attr) = segment {
-                        for run in attr.runs {
-                            let existing = attr[run.range].inlinePresentationIntent ?? []
-                            attr[run.range].inlinePresentationIntent = existing.union([.stronglyEmphasized, .emphasized])
-                        }
-                        segments.append(.text(attr))
-                    } else {
-                        segments.append(segment)
-                    }
-                }
+                segments.append(contentsOf: result)
                 continue
             }
 
-            if remaining.hasPrefix("**") || remaining.hasPrefix("__") {
+            if let result = parseBold(&remaining, font: font) {
                 flushText()
-                let marker = String(remaining.prefix(2))
-                remaining = remaining.dropFirst(2)
-                var innerText = ""
-                while !remaining.isEmpty {
-                    if remaining.hasPrefix(marker) {
-                        remaining = remaining.dropFirst(2)
-                        break
-                    }
-                    innerText.append(remaining.removeFirst())
-                }
-                let innerSegments = parseLineToSegments(innerText, font: font)
-                for segment in innerSegments {
-                    if case .text(_, var attr) = segment {
-                        for run in attr.runs {
-                            let existing = attr[run.range].inlinePresentationIntent ?? []
-                            attr[run.range].inlinePresentationIntent = existing.union(.stronglyEmphasized)
-                        }
-                        segments.append(.text(attr))
-                    } else {
-                        segments.append(segment)
-                    }
-                }
+                segments.append(contentsOf: result)
                 continue
             }
 
-            if remaining.hasPrefix("~~") {
+            if let result = parseStrikethrough(&remaining, font: font) {
                 flushText()
-                remaining = remaining.dropFirst(2)
-                var innerText = ""
-                while !remaining.isEmpty {
-                    if remaining.hasPrefix("~~") {
-                        remaining = remaining.dropFirst(2)
-                        break
-                    }
-                    innerText.append(remaining.removeFirst())
-                }
-                let innerSegments = parseLineToSegments(innerText, font: font)
-                for segment in innerSegments {
-                    if case .text(_, var attr) = segment {
-                        for run in attr.runs {
-                            attr[run.range].strikethroughStyle = .single
-                        }
-                        segments.append(.text(attr))
-                    } else {
-                        segments.append(segment)
-                    }
-                }
+                segments.append(contentsOf: result)
                 continue
             }
 
-            if remaining.hasPrefix("*") || remaining.hasPrefix("_") {
-                let marker = remaining.first!
-                let nextIdx = remaining.index(after: remaining.startIndex)
-                if nextIdx < remaining.endIndex && remaining[nextIdx] != " " {
-                    flushText()
-                    remaining = remaining.dropFirst()
-                    var innerText = ""
-                    while !remaining.isEmpty {
-                        if remaining.first == marker {
-                            remaining = remaining.dropFirst()
-                            break
-                        }
-                        innerText.append(remaining.removeFirst())
-                    }
-                    let innerSegments = parseLineToSegments(innerText, font: font)
-                    for segment in innerSegments {
-                        if case .text(_, var attr) = segment {
-                            for run in attr.runs {
-                                let existing = attr[run.range].inlinePresentationIntent ?? []
-                                attr[run.range].inlinePresentationIntent = existing.union(.emphasized)
-                            }
-                            segments.append(.text(attr))
-                        } else {
-                            segments.append(segment)
-                        }
-                    }
-                    continue
-                }
-            }
-
-            if remaining.hasPrefix("`") {
+            if let result = parseItalic(&remaining, font: font) {
                 flushText()
-                remaining = remaining.dropFirst()
-                var codeText = ""
-                while !remaining.isEmpty {
-                    if remaining.first == "`" {
-                        remaining = remaining.dropFirst()
-                        break
-                    }
-                    codeText.append(remaining.removeFirst())
-                }
-                if looksLikeFilePath(codeText) {
-                    segments.append(.filePath(codeText))
-                } else {
-                    segments.append(.code(codeText))
-                }
+                segments.append(contentsOf: result)
                 continue
             }
 
-            if remaining.hasPrefix("/Users/") || remaining.hasPrefix("/tmp/") || remaining.hasPrefix("/var/") {
+            if let result = parseInlineCode(&remaining) {
                 flushText()
-                var pathText = ""
-                while !remaining.isEmpty {
-                    let ch = remaining.first!
-                    if ch.isWhitespace || ch == ")" || ch == "]" || ch == "," || ch == ";" {
-                        break
-                    }
-                    pathText.append(remaining.removeFirst())
-                }
-                if looksLikeFilePath(pathText) {
-                    segments.append(.filePath(pathText))
-                } else {
-                    var attr = AttributedString(pathText)
-                    if let font = font { attr.font = font }
-                    segments.append(.text(attr))
-                }
+                segments.append(result)
                 continue
             }
 
-            if remaining.hasPrefix("[") {
-                if let closeIdx = remaining.firstIndex(of: "]"),
-                   remaining.index(after: closeIdx) < remaining.endIndex,
-                   remaining[remaining.index(after: closeIdx)...].hasPrefix("("),
-                   let urlEndIdx = remaining[closeIdx...].firstIndex(of: ")") {
-                    flushText()
-                    let linkText = String(remaining[remaining.index(after: remaining.startIndex)..<closeIdx])
-                    let urlStart = remaining.index(closeIdx, offsetBy: 2)
-                    let urlString = String(remaining[urlStart..<urlEndIdx])
-                    remaining = remaining[remaining.index(after: urlEndIdx)...]
+            if let result = parseFilePath(&remaining, font: font) {
+                flushText()
+                segments.append(result)
+                continue
+            }
 
-                    var attr = AttributedString(linkText)
-                    if let font = font {
-                        attr.font = font
-                    }
-                    if let url = URL(string: urlString) {
-                        attr.link = url
-                        attr.foregroundColor = .blue
-                    }
-                    segments.append(.text(attr))
-                    continue
-                }
+            if let result = parseLink(&remaining, font: font) {
+                flushText()
+                segments.append(result)
+                continue
             }
 
             currentText.append(remaining.removeFirst())
@@ -261,6 +112,129 @@ extension StreamingMarkdownParser {
 
         flushText()
         return segments
+    }
+
+    private static func parseBoldItalic(_ remaining: inout Substring, font: Font?) -> [InlineSegment]? {
+        guard remaining.hasPrefix("***") || remaining.hasPrefix("___") else { return nil }
+        let marker = String(remaining.prefix(3))
+        remaining = remaining.dropFirst(3)
+        let innerText = extractUntil(&remaining, marker: marker)
+        return applyIntent(parseLineToSegments(innerText, font: font), intents: [.stronglyEmphasized, .emphasized])
+    }
+
+    private static func parseStrikethrough(_ remaining: inout Substring, font: Font?) -> [InlineSegment]? {
+        guard remaining.hasPrefix("~~") else { return nil }
+        remaining = remaining.dropFirst(2)
+        let innerText = extractUntil(&remaining, marker: "~~")
+        let innerSegments = parseLineToSegments(innerText, font: font)
+        return innerSegments.map { segment in
+            if case .text(_, var attr) = segment {
+                for run in attr.runs { attr[run.range].strikethroughStyle = .single }
+                return .text(attr)
+            }
+            return segment
+        }
+    }
+
+    private static func parseItalic(_ remaining: inout Substring, font: Font?) -> [InlineSegment]? {
+        guard remaining.hasPrefix("*") || remaining.hasPrefix("_") else { return nil }
+        let marker = remaining.first!
+        let nextIdx = remaining.index(after: remaining.startIndex)
+        guard nextIdx < remaining.endIndex && remaining[nextIdx] != " " else { return nil }
+        remaining = remaining.dropFirst()
+        var innerText = ""
+        while !remaining.isEmpty {
+            if remaining.first == marker {
+                remaining = remaining.dropFirst()
+                break
+            }
+            innerText.append(remaining.removeFirst())
+        }
+        return applyIntent(parseLineToSegments(innerText, font: font), intents: .emphasized)
+    }
+
+    private static func parseBold(_ remaining: inout Substring, font: Font?) -> [InlineSegment]? {
+        guard remaining.hasPrefix("**") || remaining.hasPrefix("__") else { return nil }
+        let marker = String(remaining.prefix(2))
+        remaining = remaining.dropFirst(2)
+        let innerText = extractUntil(&remaining, marker: marker)
+        return applyIntent(parseLineToSegments(innerText, font: font), intents: .stronglyEmphasized)
+    }
+
+    private static func parseInlineCode(_ remaining: inout Substring) -> InlineSegment? {
+        guard remaining.hasPrefix("`") else { return nil }
+        remaining = remaining.dropFirst()
+        var codeText = ""
+        while !remaining.isEmpty {
+            if remaining.first == "`" {
+                remaining = remaining.dropFirst()
+                break
+            }
+            codeText.append(remaining.removeFirst())
+        }
+        return looksLikeFilePath(codeText) ? .filePath(codeText) : .code(codeText)
+    }
+
+    private static func parseFilePath(_ remaining: inout Substring, font: Font?) -> InlineSegment? {
+        guard remaining.hasPrefix("/Users/") || remaining.hasPrefix("/tmp/") || remaining.hasPrefix("/var/") else { return nil }
+        var pathText = ""
+        while !remaining.isEmpty {
+            let ch = remaining.first!
+            if ch.isWhitespace || ch == ")" || ch == "]" || ch == "," || ch == ";" { break }
+            pathText.append(remaining.removeFirst())
+        }
+        if looksLikeFilePath(pathText) {
+            return .filePath(pathText)
+        }
+        var attr = AttributedString(pathText)
+        if let font = font { attr.font = font }
+        return .text(attr)
+    }
+
+    private static func parseLink(_ remaining: inout Substring, font: Font?) -> InlineSegment? {
+        guard remaining.hasPrefix("["),
+              let closeIdx = remaining.firstIndex(of: "]"),
+              remaining.index(after: closeIdx) < remaining.endIndex,
+              remaining[remaining.index(after: closeIdx)...].hasPrefix("("),
+              let urlEndIdx = remaining[closeIdx...].firstIndex(of: ")") else { return nil }
+
+        let linkText = String(remaining[remaining.index(after: remaining.startIndex)..<closeIdx])
+        let urlStart = remaining.index(closeIdx, offsetBy: 2)
+        let urlString = String(remaining[urlStart..<urlEndIdx])
+        remaining = remaining[remaining.index(after: urlEndIdx)...]
+
+        var attr = AttributedString(linkText)
+        if let font = font { attr.font = font }
+        if let url = URL(string: urlString) {
+            attr.link = url
+            attr.foregroundColor = .blue
+        }
+        return .text(attr)
+    }
+
+    private static func extractUntil(_ remaining: inout Substring, marker: String) -> String {
+        var innerText = ""
+        while !remaining.isEmpty {
+            if remaining.hasPrefix(marker) {
+                remaining = remaining.dropFirst(marker.count)
+                break
+            }
+            innerText.append(remaining.removeFirst())
+        }
+        return innerText
+    }
+
+    private static func applyIntent(_ segments: [InlineSegment], intents: InlinePresentationIntent) -> [InlineSegment] {
+        segments.map { segment in
+            if case .text(_, var attr) = segment {
+                for run in attr.runs {
+                    let existing = attr[run.range].inlinePresentationIntent ?? []
+                    attr[run.range].inlinePresentationIntent = existing.union(intents)
+                }
+                return .text(attr)
+            }
+            return segment
+        }
     }
 
     static func segmentsToAttributedString(_ segments: [InlineSegment]) -> AttributedString {
