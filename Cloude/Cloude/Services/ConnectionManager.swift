@@ -155,6 +155,7 @@ struct ChunkProgress: Equatable {
     var onSpeak: ((String) -> Void)?
     var onSwitchConversation: ((UUID) -> Void)?
     var onQuestion: (([Question], UUID?) -> Void)?
+    var onScreenshot: ((UUID?) -> Void)?
     var onFileSearchResults: (([String], String) -> Void)?
     var onRemoteSessionList: (([RemoteSession]) -> Void)?
     var onLastAssistantMessageCostUpdate: ((UUID, Double) -> Void)?

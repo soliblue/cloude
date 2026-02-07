@@ -259,7 +259,7 @@ struct ToolGroupView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(Array(toolHierarchy.reversed().enumerated()), id: \.offset) { _, item in
+                ForEach(toolHierarchy, id: \.parent.toolId) { item in
                     InlineToolPill(toolCall: item.parent, children: item.children)
                 }
             }

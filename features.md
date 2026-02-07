@@ -11,7 +11,7 @@ Source of truth for what Cloude can do and what's coming next.
 - Heartbeat (background session, 5 min to 1 day intervals)
 - Skills system (/deploy, /icongen, /refactor, etc.)
 - Stop button (cancel running processes)
-- cloude CLI (rename, symbol, memory, delete, notify, clipboard, open, haptic, speak, switch, ask)
+- cloude CLI (rename, symbol, memory, delete, notify, clipboard, open, haptic, speak, switch, ask, screenshot)
 - Run stats (duration and cost on messages)
 - Proactive execution (heartbeat intervals)
 
@@ -22,6 +22,7 @@ Source of truth for what Cloude can do and what's coming next.
 - Voice input (Whisper transcription)
 - Live Activities (Lock Screen tracking)
 - Text-to-speech (`cloude speak`)
+- Screenshot capture (`cloude screenshot` - captures app view, sends as image to conversation)
 - Screen awake during recording
 - Voice message resilience (pending_audio.wav, resend banner)
 - Swipe to clear input

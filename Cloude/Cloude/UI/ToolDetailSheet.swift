@@ -100,15 +100,19 @@ struct ToolDetailSheet: View {
             .background(Color.oceanBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    HStack(spacing: 6) {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 5) {
                         Image(systemName: iconName)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
+                            .font(.system(size: 12, weight: .semibold))
                         Text(displayName)
-                            .font(.subheadline.weight(.medium))
+                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
                             .lineLimit(1)
                     }
+                    .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
+                    .clipShape(Capsule())
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -186,16 +190,17 @@ struct ToolDetailSheet: View {
                             ToolCallLabel(name: child.name, input: child.input, size: .small)
                                 .lineLimit(1)
 
-                            if let summary = child.resultSummary {
-                                HStack(spacing: 3) {
-                                    Text("↳")
-                                        .font(.system(size: 10))
-                                    Text(summary)
-                                        .font(.system(size: 10, design: .monospaced))
-                                        .lineLimit(1)
-                                }
-                                .foregroundColor(.secondary)
-                            }
+                            // TODO: Re-enable when live tool updates are ready
+                            // if let summary = child.resultSummary {
+                            //     HStack(spacing: 3) {
+                            //         Text("↳")
+                            //             .font(.system(size: 10))
+                            //         Text(summary)
+                            //             .font(.system(size: 10, design: .monospaced))
+                            //             .lineLimit(1)
+                            //     }
+                            //     .foregroundColor(.secondary)
+                            // }
                         }
 
                         Spacer()
@@ -282,11 +287,12 @@ struct ToolDetailSheet: View {
             VStack(spacing: 0) {
                 ForEach(Array(chainedCommands.enumerated()), id: \.offset) { index, cmd in
                     VStack(spacing: 0) {
-                        HStack(spacing: 10) {
+                        HStack(alignment: .top, spacing: 10) {
                             Image(systemName: ToolCallLabel(name: "Bash", input: cmd).iconName)
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: cmd))
                                 .frame(width: 20)
+                                .padding(.top, 2)
 
                             Text(cmd)
                                 .font(.system(.body, design: .monospaced))

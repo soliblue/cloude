@@ -187,25 +187,6 @@ struct HistoryService {
     }
 
     private static func extractToolInput(name: String, input: [String: Any]?) -> String? {
-        switch name {
-        case "Bash":
-            return input?["command"] as? String
-        case "Read", "Write", "Edit":
-            return input?["file_path"] as? String
-        case "Glob":
-            return input?["pattern"] as? String
-        case "Grep":
-            return input?["pattern"] as? String
-        case "WebFetch":
-            return input?["url"] as? String
-        case "WebSearch":
-            return input?["query"] as? String
-        case "Task":
-            let agentType = input?["subagent_type"] as? String ?? "agent"
-            let description = input?["description"] as? String ?? ""
-            return "\(agentType): \(description)"
-        default:
-            return nil
-        }
+        extractToolInputString(name: name, input: input)
     }
 }

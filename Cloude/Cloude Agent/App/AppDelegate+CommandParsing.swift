@@ -130,6 +130,10 @@ extension AppDelegate {
             server.broadcast(.question(questions: questions, conversationId: conversationId))
             Log.info("Ask: \(questions.count) question(s)")
 
+        case "screenshot":
+            server.broadcast(.screenshot(conversationId: conversationId))
+            Log.info("Screenshot requested for \(conversationId?.prefix(8) ?? "nil")")
+
         default:
             Log.info("Unknown cloude command: \(action)")
         }

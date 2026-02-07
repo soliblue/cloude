@@ -181,6 +181,9 @@ extension ServerMessage {
             try container.encode("message_uuid", forKey: .type)
             try container.encode(uuid, forKey: .uuid)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .screenshot(let conversationId):
+            try container.encode("screenshot", forKey: .type)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         }
     }
 }
