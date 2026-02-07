@@ -50,9 +50,11 @@ public enum ServerMessage: Codable {
     case teammateSpawned(teammate: TeammateInfo, conversationId: String?)
     case teammateUpdate(teammateId: String, status: TeammateStatus?, lastMessage: String?, lastMessageAt: Date?, conversationId: String?)
     case teamDeleted(conversationId: String?)
+    case autocompleteResult(text: String, requestText: String)
+    case nameSuggestion(name: String, symbol: String?, conversationId: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, requestText
     }
 
     public init(from decoder: Decoder) throws {
@@ -259,6 +261,15 @@ public enum ServerMessage: Codable {
         case "team_deleted":
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .teamDeleted(conversationId: conversationId)
+        case "autocomplete_result":
+            let text = try container.decode(String.self, forKey: .text)
+            let requestText = try container.decode(String.self, forKey: .requestText)
+            self = .autocompleteResult(text: text, requestText: requestText)
+        case "name_suggestion":
+            let name = try container.decode(String.self, forKey: .name)
+            let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
+            let conversationId = try container.decode(String.self, forKey: .conversationId)
+            self = .nameSuggestion(name: name, symbol: symbol, conversationId: conversationId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

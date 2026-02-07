@@ -15,10 +15,10 @@ extension FileBrowserView {
                     Button(action: { navigateTo(component.path) }) {
                         HStack(spacing: 2) {
                             Text(component.name)
-                                .font(.caption)
+                                .font(.caption2)
                             if component.path != currentPath {
                                 Image(systemName: "chevron.right")
-                                    .font(.caption2)
+                                    .font(.system(size: 8))
                                     .foregroundColor(.secondary)
                             }
                         }

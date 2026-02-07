@@ -12,12 +12,12 @@ struct FileViewerBreadcrumb: View {
                     ForEach(components) { component in
                         if component.path.isEmpty {
                             Text(component.name)
-                                .font(.caption)
+                                .font(.caption2)
                                 .foregroundColor(.secondary)
                         } else {
                             Button(action: { onNavigate(component.path) }) {
                                 Text(component.name)
-                                    .font(.caption)
+                                    .font(.caption2)
                                     .foregroundColor(.accentColor)
                             }
                             .buttonStyle(.plain)
@@ -29,7 +29,7 @@ struct FileViewerBreadcrumb: View {
                     }
 
                     Text(fileName)
-                        .font(.caption.bold())
+                        .font(.caption2.bold())
                         .foregroundColor(.primary)
                         .id("current-file")
                 }

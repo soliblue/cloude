@@ -112,6 +112,9 @@ extension ConnectionManager {
         case .teammateUpdate(let tid, let st, let msg, let at, let c): handleTeammateUpdate(teammateId: tid, status: st, lastMessage: msg, lastMessageAt: at, conversationId: c)
         case .teamDeleted(let c):                         if let id = targetConversationId(from: c) { let o = output(for: id); o.teamName = nil; o.teammates = [] }
 
+        case .autocompleteResult(let text, let req):       onAutocompleteResult?(text, req)
+        case .nameSuggestion(let name, let sym, let c):  if let id = UUID(uuidString: c) { onRenameConversation?(id, name); if let s = sym { onSetConversationSymbol?(id, s) } }
+
         case .fileChange, .image, .gitCommitResult:       break
         }
     }
@@ -173,7 +176,7 @@ extension ConnectionManager {
     private func handleToolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?) {
         guard let convId = targetConversationId(from: conversationId) else { return }
         let currentTextLength = output(for: convId).fullText.count
-        let position = textPosition ?? currentTextLength
+        let position = min(textPosition ?? currentTextLength, currentTextLength)
         output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing))
         let detail = input.flatMap { extractToolDetail(name: name, input: $0) }
         LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: .running, currentTool: name, toolDetail: detail)
@@ -326,5 +329,15 @@ extension ConnectionManager {
         ensureAuthenticated()
         isTranscribing = true
         send(.transcribe(audioBase64: audioBase64))
+    }
+
+    func requestAutocomplete(text: String, context: [String], workingDirectory: String?) {
+        ensureAuthenticated()
+        send(.autocomplete(text: text, context: context, workingDirectory: workingDirectory))
+    }
+
+    func requestNameSuggestion(text: String, context: [String], conversationId: UUID) {
+        ensureAuthenticated()
+        send(.suggestName(text: text, context: context, conversationId: conversationId.uuidString))
     }
 }

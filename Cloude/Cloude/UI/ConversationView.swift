@@ -120,10 +120,21 @@ struct ConversationView: View {
             let messageId = UUID()
             if output.lastSavedMessageId == messageId { return }
 
+            let rawText = output.text
+            let trimmedText = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let leadingTrimmed = rawText.count - rawText.drop(while: { $0.isWhitespace || $0.isNewline }).count
+            let adjustedToolCalls = leadingTrimmed > 0 ? output.toolCalls.map { tool in
+                var adjusted = tool
+                if let pos = adjusted.textPosition {
+                    adjusted.textPosition = max(0, pos - leadingTrimmed)
+                }
+                return adjusted
+            } : output.toolCalls
+
             let message = ChatMessage(
                 isUser: false,
-                text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
-                toolCalls: output.toolCalls,
+                text: trimmedText,
+                toolCalls: adjustedToolCalls,
                 durationMs: output.runStats?.durationMs,
                 costUsd: output.runStats?.costUsd,
                 serverUUID: output.messageUUID
@@ -144,6 +155,14 @@ struct ConversationView: View {
             output.lastSavedMessageId = messageId
             store.addMessage(message, to: conv)
             output.reset()
+
+            let updatedConv = store.conversation(withId: conv.id) ?? conv
+            let assistantCount = updatedConv.messages.filter { !$0.isUser }.count
+            if assistantCount > 0 && assistantCount % 5 == 0 {
+                let recentMessages = updatedConv.messages.suffix(6).map { $0.text }
+                let lastUserMsg = updatedConv.messages.last(where: { $0.isUser })?.text ?? ""
+                connection.requestNameSuggestion(text: lastUserMsg, context: recentMessages, conversationId: conv.id)
+            }
 
             sendQueuedMessages(conv: conv)
         }

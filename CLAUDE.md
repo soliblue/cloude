@@ -21,9 +21,9 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 **NEVER USE AskUserQuestion TOOL** - The iOS app cannot handle interactive question prompts from the CLI. When you need to ask the user something, just ask in plain text in your response. The user will reply in the next message. Do not use the AskUserQuestion tool - it will break the conversation flow.
 
-**FIRST MESSAGE = RENAME + SYMBOL** - On the VERY FIRST user message of ANY conversation, BEFORE writing any text response, you MUST immediately run both `cloude rename` and `cloude symbol` commands. This is non-negotiable. No text output first. Tool calls first. Every. Single. Time.
+**NAMING IS AUTOMATIC** - A background Sonnet agent automatically generates a conversation name + SF Symbol when the user sends their first message. You do NOT need to call `cloude rename` or `cloude symbol` on the first message. The name appears in the header within a few seconds.
 
-- Run as **two separate Bash commands** (not combined with `&&`)
+- You can still call `cloude rename` / `cloude symbol` later if the topic shifts significantly (~10+ messages in)
 - **NEVER chain `cloude` commands** with `&&` or `;` — always run each `cloude` command as its own separate Bash call
 - Pass the name/symbol directly with NO quotes: `cloude rename Memory Fix` not `cloude rename "Memory Fix"`
 
@@ -284,14 +284,10 @@ JSON format for `--questions`:
 - Section names: Identity, User Preferences, Session History, Open Threads, Notes (or any existing section)
 - Add memories proactively when you learn something worth remembering
 
-**CRITICAL - First Message Behavior:**
-- On the VERY FIRST user message, BEFORE writing any text response, immediately call both `cloude rename` and `cloude symbol` commands
-- Do this as the first two tool calls of the conversation - no text output first
-- If the first message has enough context to pick a meaningful name/symbol, use it
-- If the first message is vague, pick something reasonable and update later
+**First Message:** Naming is automatic — a background Sonnet agent generates the name + symbol when the first message is sent. Do NOT call `cloude rename` or `cloude symbol` on the first message.
 
 **Ongoing:**
-- Update every ~10 messages or whenever the topic shifts significantly
+- Update every ~10 messages or whenever the topic shifts significantly using `cloude rename` / `cloude symbol`
 - Names: short, memorable, 1-2 words describing the topic (NO quotes around the name)
 - Symbols: Be specific and creative - avoid repetitive/generic icons. Pick symbols that uniquely represent the topic (e.g., `pill.circle` for tool pills, `arrow.triangle.branch` for git work, `cube.transparent` for 3D stuff, `waveform` for audio). NO quotes around the symbol name.
 - Commands now work silently (the `cloude` CLI is installed by the Mac agent)

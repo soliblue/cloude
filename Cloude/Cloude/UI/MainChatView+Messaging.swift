@@ -85,6 +85,10 @@ extension MainChatView {
             let modelValue = (currentModel ?? conv.defaultModel)?.rawValue
             connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue, model: modelValue)
 
+            if isNewSession {
+                connection.requestNameSuggestion(text: text, context: [], conversationId: conv.id)
+            }
+
             if isFork {
                 conversationStore.clearPendingFork(conv)
             }

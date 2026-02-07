@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     var server: WebSocketServer!
     var runnerManager: RunnerManager!
+    let autocompleteService = AutocompleteService()
     private var popover: NSPopover!
 
     func applicationDidFinishLaunching(_ notification: Notification) {

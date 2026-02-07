@@ -20,6 +20,7 @@ struct MainChatView: View {
     @State var pendingGitChecks: [String] = []
     @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
+    @State var autocompleteSuggestion: String = ""
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?
 
@@ -83,6 +84,7 @@ struct MainChatView: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     attachedImages: $attachedImages,
+                    autocompleteSuggestion: $autocompleteSuggestion,
                     isConnected: connection.isAuthenticated,
                     isWhisperReady: connection.isWhisperReady,
                     isTranscribing: connection.isTranscribing,
@@ -96,7 +98,8 @@ struct MainChatView: View {
                     onModelChange: { currentModel = $0 },
                     onStop: stopActiveConversation,
                     onTranscribe: transcribeAudio,
-                    onFileSearch: searchFiles
+                    onFileSearch: searchFiles,
+                    onAutocomplete: requestAutocomplete
                 )
 
                 pageIndicator()
@@ -111,6 +114,7 @@ struct MainChatView: View {
             initializeFirstWindow()
             setupGitStatusHandler()
             setupFileSearchHandler()
+            setupAutocompleteHandler()
             setupCostHandler()
             checkGitForAllDirectories()
             connection.onTranscription = { text in
@@ -142,6 +146,7 @@ struct MainChatView: View {
                 }
                 cleanupEmptyConversation(for: oldId)
             }
+            autocompleteSuggestion = ""
             if let newId = newId, let draft = drafts[newId] {
                 inputText = draft.text
                 attachedImages = draft.images

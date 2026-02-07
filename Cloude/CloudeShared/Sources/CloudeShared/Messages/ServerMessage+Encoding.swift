@@ -203,6 +203,15 @@ extension ServerMessage {
         case .teamDeleted(let conversationId):
             try container.encode("team_deleted", forKey: .type)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .autocompleteResult(let text, let requestText):
+            try container.encode("autocomplete_result", forKey: .type)
+            try container.encode(text, forKey: .text)
+            try container.encode(requestText, forKey: .requestText)
+        case .nameSuggestion(let name, let symbol, let conversationId):
+            try container.encode("name_suggestion", forKey: .type)
+            try container.encode(name, forKey: .name)
+            try container.encodeIfPresent(symbol, forKey: .symbol)
+            try container.encode(conversationId, forKey: .conversationId)
         }
     }
 }

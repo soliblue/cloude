@@ -163,6 +163,7 @@ struct ChunkProgress: Equatable {
     var onFileSearchResults: (([String], String) -> Void)?
     var onRemoteSessionList: (([RemoteSession]) -> Void)?
     var onLastAssistantMessageCostUpdate: ((UUID, Double) -> Void)?
+    var onAutocompleteResult: ((String, String) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
