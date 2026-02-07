@@ -113,7 +113,9 @@ Parse the worker's JSON output and present to user:
 **Promotions:**
 - Moltbook workflow in CLAUDE.local.md → formalized in `/moltbook`
 
-### 5. Offer to Implement
+### 5. Present and Wait for Approval
+
+**Present all suggestions to Soli and wait for explicit approval.** Do NOT implement any changes until Soli says which ones to do.
 
 **Priority order** (always prefer higher options):
 1. **Extend existing skill** - Add a flag, variant, or small feature
@@ -122,7 +124,7 @@ Parse the worker's JSON output and present to user:
 
 Be skeptical of new skill suggestions. Ask: "Could this just be an extension to /deploy, /status, /push, or /refactor?"
 
-Use AskUserQuestion to let user pick which suggestions to implement.
+When Soli approves specific suggestions, create a plan ticket in `plans/active/` (or `plans/testing/` if implementing immediately) for each approved item before starting work.
 
 ## Guidelines
 
@@ -174,6 +176,16 @@ Create which skills? [Select multiple]
 □ Extend /deploy with --mac-only
 □ Extend /status with tool stats
 ```
+
+## Second Opinion (Codex)
+
+After completing your analysis, ask Codex for its perspective on the skill ecosystem:
+
+```bash
+codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "Review all skills in .claude/skills/ and recent session history. Suggest new skills, extensions to existing ones, or skills that should be merged or deprecated. Focus on practical automation gaps, not theoretical improvements. Be specific."
+```
+
+Compare Codex's suggestions with the Sonnet worker's analysis. Present a unified view noting where both agree (high confidence) and where they differ (worth discussing).
 
 ## Future Enhancements
 

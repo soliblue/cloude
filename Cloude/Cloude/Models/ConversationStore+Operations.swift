@@ -1,6 +1,17 @@
 import Foundation
 
 extension ConversationStore {
+    @discardableResult
+    private func mutate(_ conversationId: UUID, _ mutation: (inout Conversation) -> Void) -> Bool {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversationId }) else { return false }
+        mutation(&conversations[idx])
+        if currentConversation?.id == conversationId {
+            currentConversation = conversations[idx]
+        }
+        save()
+        return true
+    }
+
     func findConversation(withId id: UUID) -> Conversation? {
         conversations.first { $0.id == id }
     }
@@ -28,62 +39,41 @@ extension ConversationStore {
     }
 
     func addMessage(_ message: ChatMessage, to conversation: Conversation) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].messages.append(message)
-        conversations[idx].lastMessageAt = Date()
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
+        mutate(conversation.id) {
+            $0.messages.append(message)
+            $0.lastMessageAt = Date()
         }
-        save()
     }
 
     func updateSessionId(_ conversation: Conversation, sessionId: String, workingDirectory: String?) {
         guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
         guard conversations[idx].sessionId != sessionId || conversations[idx].workingDirectory != workingDirectory else { return }
-        conversations[idx].sessionId = sessionId
-        if conversations[idx].workingDirectory == nil, let wd = workingDirectory {
-            conversations[idx].workingDirectory = wd
+        mutate(conversation.id) {
+            $0.sessionId = sessionId
+            if $0.workingDirectory == nil, let wd = workingDirectory {
+                $0.workingDirectory = wd
+            }
         }
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
     }
 
     func renameConversation(_ conversation: Conversation, to name: String) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].name = name
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.name = name }
     }
 
     func setConversationSymbol(_ conversation: Conversation, symbol: String?) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].symbol = symbol
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.symbol = symbol }
     }
 
     func setWorkingDirectory(_ conversation: Conversation, path: String) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].workingDirectory = path
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.workingDirectory = path }
     }
 
     func setDefaultEffort(_ conversation: Conversation, effort: EffortLevel) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].defaultEffort = effort
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.defaultEffort = effort }
+    }
+
+    func setDefaultModel(_ conversation: Conversation, model: ModelSelection?) {
+        mutate(conversation.id) { $0.defaultModel = model }
     }
 
     func deleteConversation(_ conversation: Conversation) {
@@ -110,85 +100,54 @@ extension ConversationStore {
     }
 
     func clearPendingFork(_ conversation: Conversation) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].pendingFork = false
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.pendingFork = false }
     }
 
     func updateMessage(_ messageId: UUID, in conversation: Conversation, update: (inout ChatMessage) -> Void) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }),
-              let msgIdx = conversations[idx].messages.firstIndex(where: { $0.id == messageId }) else { return }
-        update(&conversations[idx].messages[msgIdx])
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
+        mutate(conversation.id) {
+            if let msgIdx = $0.messages.firstIndex(where: { $0.id == messageId }) {
+                update(&$0.messages[msgIdx])
+            }
         }
-        save()
     }
 
     func queueMessage(_ message: ChatMessage, to conversation: Conversation) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].pendingMessages.append(message)
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.pendingMessages.append(message) }
     }
 
     func popPendingMessages(from conversation: Conversation) -> [ChatMessage] {
         guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return [] }
         let pending = conversations[idx].pendingMessages
-        conversations[idx].pendingMessages = []
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.pendingMessages = [] }
         return pending
     }
 
     func pendingMessageCount(in conversation: Conversation) -> Int {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return 0 }
-        return conversations[idx].pendingMessages.count
+        conversations.first(where: { $0.id == conversation.id })?.pendingMessages.count ?? 0
     }
 
     func removePendingMessage(_ messageId: UUID, from conversation: Conversation) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].pendingMessages.removeAll { $0.id == messageId }
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
+        mutate(conversation.id) { $0.pendingMessages.removeAll { $0.id == messageId } }
     }
 
     func getQueuedMessages(in conversation: Conversation) -> [ChatMessage] {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return [] }
-        return conversations[idx].messages.filter { $0.isQueued }
+        conversations.first(where: { $0.id == conversation.id })?.messages.filter { $0.isQueued } ?? []
     }
 
     func clearQueuedFlags(in conversation: Conversation) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        for i in conversations[idx].messages.indices {
-            if conversations[idx].messages[i].isQueued {
-                conversations[idx].messages[i].isQueued = false
+        mutate(conversation.id) {
+            for i in $0.messages.indices where $0.messages[i].isQueued {
+                $0.messages[i].isQueued = false
             }
         }
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
     }
 
     func replaceMessages(_ conversation: Conversation, with messages: [ChatMessage]) {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
-        conversations[idx].messages = messages
-        if let lastTimestamp = messages.last?.timestamp {
-            conversations[idx].lastMessageAt = lastTimestamp
+        mutate(conversation.id) {
+            $0.messages = messages
+            if let lastTimestamp = messages.last?.timestamp {
+                $0.lastMessageAt = lastTimestamp
+            }
         }
-        if currentConversation?.id == conversation.id {
-            currentConversation = conversations[idx]
-        }
-        save()
     }
 }

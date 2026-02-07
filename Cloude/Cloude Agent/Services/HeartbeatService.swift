@@ -95,7 +95,7 @@ class HeartbeatService: ObservableObject {
 
         let workingDir = projectDirectory ?? Self.findCloudeProjectRoot() ?? MemoryService.projectRoot
         let needsCreate = !sessionInitialized
-        let model = automatic ? "sonnet" : nil
+        let model = "sonnet"
 
         runnerManager.run(
             prompt: prompt,
