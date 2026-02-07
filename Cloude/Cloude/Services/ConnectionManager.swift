@@ -13,6 +13,8 @@ class ConversationOutput: ObservableObject {
     @Published var isCompacting: Bool = false { didSet { if isCompacting != oldValue { parent?.objectWillChange.send() } } }
     @Published var newSessionId: String? { didSet { if newSessionId != oldValue { parent?.objectWillChange.send() } } }
     @Published var skipped: Bool = false { didSet { if skipped != oldValue { parent?.objectWillChange.send() } } }
+    @Published var teamName: String? { didSet { if teamName != oldValue { parent?.objectWillChange.send() } } }
+    @Published var teammates: [TeammateInfo] = [] { didSet { parent?.objectWillChange.send() } }
     var lastSavedMessageId: UUID?
     var messageUUID: String?
 
@@ -94,6 +96,8 @@ class ConversationOutput: ObservableObject {
         messageUUID = nil
         isCompacting = false
         skipped = false
+        teamName = nil
+        teammates = []
     }
 }
 

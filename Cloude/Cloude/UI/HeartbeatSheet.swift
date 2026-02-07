@@ -10,7 +10,7 @@ struct HeartbeatSheet: View {
     @State private var showIntervalPicker = false
     @State private var scrollProxy: ScrollViewProxy?
     @State private var inputText = ""
-    @State private var selectedImageData: Data?
+    @State private var attachedImages: [AttachedImage] = []
 
     private var heartbeat: Conversation {
         conversationStore.heartbeatConversation
@@ -47,7 +47,7 @@ struct HeartbeatSheet: View {
 
                 GlobalInputBar(
                     inputText: $inputText,
-                    selectedImageData: $selectedImageData,
+                    attachedImages: $attachedImages,
                     isConnected: connection.isConnected,
                     isWhisperReady: connection.isWhisperReady,
                     isTranscribing: connection.isTranscribing,
@@ -191,14 +191,21 @@ struct HeartbeatSheet: View {
 
     private func sendMessage() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let imageBase64 = selectedImageData?.base64EncodedString()
-        guard !text.isEmpty || imageBase64 != nil else { return }
+        let allImagesBase64: [String]? = attachedImages.isEmpty ? nil : attachedImages.map { $0.data.base64EncodedString() }
+        guard !text.isEmpty || allImagesBase64 != nil else { return }
+
+        let thumbnails: [String]? = attachedImages.isEmpty ? nil : attachedImages.compactMap { attached in
+            guard let image = UIImage(data: attached.data),
+                  let thumbnail = image.preparingThumbnail(of: CGSize(width: 200, height: 200)),
+                  let thumbData = thumbnail.jpegData(compressionQuality: 0.7) else { return nil }
+            return thumbData.base64EncodedString()
+        }
 
         if convOutput.isRunning {
-            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: imageBase64)
+            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.queueMessage(userMessage, to: heartbeat)
         } else {
-            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: imageBase64)
+            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.addMessage(userMessage, to: heartbeat)
 
             connection.sendChat(
@@ -207,14 +214,14 @@ struct HeartbeatSheet: View {
                 sessionId: Heartbeat.sessionId,
                 isNewSession: false,
                 conversationId: Heartbeat.conversationId,
-                imageBase64: imageBase64,
+                imagesBase64: allImagesBase64,
                 conversationName: "Heartbeat",
                 conversationSymbol: "heart.fill"
             )
         }
 
         inputText = ""
-        selectedImageData = nil
+        attachedImages = []
     }
 
     private func transcribeAudio(_ audioData: Data) {

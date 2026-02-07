@@ -265,7 +265,7 @@ struct CloudeApp: App {
                     sessionId: conv.sessionId,
                     isNewSession: false,
                     conversationId: targetConvId,
-                    imageBase64: base64,
+                    imagesBase64: [base64],
                     conversationName: conv.name,
                     conversationSymbol: conv.symbol
                 )

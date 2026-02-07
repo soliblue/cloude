@@ -46,9 +46,13 @@ public enum ServerMessage: Codable {
     case remoteSessionList(sessions: [RemoteSession])
     case messageUUID(uuid: String, conversationId: String?)
     case screenshot(conversationId: String?)
+    case teamCreated(teamName: String, leadAgentId: String, conversationId: String?)
+    case teammateSpawned(teammate: TeammateInfo, conversationId: String?)
+    case teammateUpdate(teammateId: String, status: TeammateStatus?, lastMessage: String?, lastMessageAt: Date?, conversationId: String?)
+    case teamDeleted(conversationId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt
     }
 
     public init(from decoder: Decoder) throws {
@@ -236,6 +240,25 @@ public enum ServerMessage: Codable {
         case "screenshot":
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .screenshot(conversationId: conversationId)
+        case "team_created":
+            let teamName = try container.decode(String.self, forKey: .teamName)
+            let leadAgentId = try container.decode(String.self, forKey: .leadAgentId)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .teamCreated(teamName: teamName, leadAgentId: leadAgentId, conversationId: conversationId)
+        case "teammate_spawned":
+            let teammate = try container.decode(TeammateInfo.self, forKey: .teammate)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .teammateSpawned(teammate: teammate, conversationId: conversationId)
+        case "teammate_update":
+            let teammateId = try container.decode(String.self, forKey: .teammateId)
+            let status = try container.decodeIfPresent(TeammateStatus.self, forKey: .status)
+            let lastMessage = try container.decodeIfPresent(String.self, forKey: .lastMessage)
+            let lastMessageAt = try container.decodeIfPresent(Date.self, forKey: .lastMessageAt)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .teammateUpdate(teammateId: teammateId, status: status, lastMessage: lastMessage, lastMessageAt: lastMessageAt, conversationId: conversationId)
+        case "team_deleted":
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            self = .teamDeleted(conversationId: conversationId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

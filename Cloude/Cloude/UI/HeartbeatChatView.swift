@@ -6,7 +6,7 @@ struct HeartbeatChatView: View {
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var connection: ConnectionManager
     @Binding var inputText: String
-    @Binding var selectedImageData: Data?
+    @Binding var attachedImages: [AttachedImage]
     var isKeyboardVisible: Bool
     @State private var scrollProxy: ScrollViewProxy?
 

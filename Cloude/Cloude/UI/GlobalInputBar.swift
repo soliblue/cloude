@@ -6,7 +6,7 @@ import CloudeShared
 
 struct GlobalInputBar: View {
     @Binding var inputText: String
-    @Binding var selectedImageData: Data?
+    @Binding var attachedImages: [AttachedImage]
     let isConnected: Bool
     let isWhisperReady: Bool
     let isTranscribing: Bool
@@ -128,6 +128,18 @@ struct GlobalInputBar: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
+            if !attachedImages.isEmpty {
+                ImageAttachmentStrip(
+                    images: attachedImages,
+                    onRemove: { id in
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            attachedImages.removeAll { $0.id == id }
+                        }
+                    }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
             ZStack(alignment: .bottom) {
                 HStack(spacing: 12) {
                     HStack(spacing: 8) {
@@ -147,21 +159,6 @@ struct GlobalInputBar: View {
                                 .id(textFieldId)
                         }
 
-                        if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
-                            ZStack(alignment: .topTrailing) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 36, height: 36)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                Button(action: { selectedImageData = nil }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(.accentColor)
-                                }
-                                .offset(x: 6, y: -6)
-                            }
-                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
@@ -237,6 +234,7 @@ struct GlobalInputBar: View {
             .padding(.vertical, 12)
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
+        .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))
         .gesture(
             DragGesture(minimumDistance: 10)
                 .onChanged { value in
@@ -262,7 +260,7 @@ struct GlobalInputBar: View {
                     } else if horizontalDrag >= swipeThreshold && !inputText.isEmpty {
                         withAnimation(.easeOut(duration: 0.15)) {
                             inputText = ""
-                            selectedImageData = nil
+                            attachedImages = []
                         }
                     }
 
@@ -277,7 +275,10 @@ struct GlobalInputBar: View {
         .onChange(of: selectedItem) { _, newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                    selectedImageData = data
+                    guard attachedImages.count < 5 else { return }
+                    withAnimation(.easeOut(duration: 0.15)) {
+                        attachedImages.append(AttachedImage(data: data, isScreenshot: false))
+                    }
                 }
             }
         }
@@ -337,7 +338,7 @@ struct GlobalInputBar: View {
     }
 
     private var canSend: Bool {
-        !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImageData != nil
+        !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachedImages.isEmpty
     }
 
     private var willQueue: Bool {

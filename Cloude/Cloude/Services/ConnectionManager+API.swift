@@ -330,6 +330,33 @@ extension ConnectionManager {
             if let convId = targetConversationId(from: conversationId) {
                 output(for: convId).messageUUID = uuid
             }
+
+        case .teamCreated(let teamName, _, let conversationId):
+            if let convId = targetConversationId(from: conversationId) {
+                output(for: convId).teamName = teamName
+            }
+
+        case .teammateSpawned(let teammate, let conversationId):
+            if let convId = targetConversationId(from: conversationId) {
+                output(for: convId).teammates.append(teammate)
+            }
+
+        case .teammateUpdate(let teammateId, let status, let lastMessage, let lastMessageAt, let conversationId):
+            if let convId = targetConversationId(from: conversationId) {
+                let out = output(for: convId)
+                if let idx = out.teammates.firstIndex(where: { $0.id == teammateId || $0.name == teammateId }) {
+                    if let status { out.teammates[idx].status = status }
+                    if let msg = lastMessage { out.teammates[idx].lastMessage = msg }
+                    if let ts = lastMessageAt { out.teammates[idx].lastMessageAt = ts }
+                }
+            }
+
+        case .teamDeleted(let conversationId):
+            if let convId = targetConversationId(from: conversationId) {
+                let out = output(for: convId)
+                out.teamName = nil
+                out.teammates = []
+            }
         }
     }
 
@@ -338,7 +365,7 @@ extension ConnectionManager {
         send(.searchFiles(query: query, workingDirectory: workingDirectory))
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imageBase64: String? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false, effort: String? = nil) {
+    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imagesBase64: [String]? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false, effort: String? = nil) {
         if !isAuthenticated {
             reconnectIfNeeded()
         }
@@ -353,7 +380,7 @@ extension ConnectionManager {
             )
         }
         let effectiveWorkingDir = workingDirectory ?? defaultWorkingDirectory
-        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, conversationId: conversationId?.uuidString, conversationName: conversationName, forkSession: forkSession, effort: effort))
+        send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, conversationId: conversationId?.uuidString, conversationName: conversationName, forkSession: forkSession, effort: effort))
     }
 
     func abort(conversationId: UUID? = nil) {

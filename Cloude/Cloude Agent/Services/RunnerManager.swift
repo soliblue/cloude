@@ -24,6 +24,12 @@ class RunnerManager: ObservableObject {
     var onStatusChange: ((AgentState, String) -> Void)?
     var onCloudeCommand: ((String, String, String) -> Void)?
     var onMessageUUID: ((String, String) -> Void)?
+    var onTeamCreated: ((String, String, String) -> Void)?
+    var onTeammateSpawned: ((TeammateInfo, String) -> Void)?
+    var onTeamDeleted: ((String) -> Void)?
+
+    private var inboxTimers: [String: Timer] = [:]
+    private var activeTeams: [String: (teamName: String, teammates: [String: TeammateInfo], lastInboxState: [String: Int])] = [:]
 
     var isAnyRunning: Bool {
         activeRunners.values.contains { $0.runner.isRunning }
@@ -49,7 +55,7 @@ class RunnerManager: ObservableObject {
         }
     }
 
-    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imageBase64: String?, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
+    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imagesBase64: [String]?, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
         if let existing = activeRunners[conversationId], existing.runner.isRunning {
             Log.info("Runner for \(conversationId.prefix(8)) already running, aborting old one")
             existing.runner.abort()
@@ -65,7 +71,7 @@ class RunnerManager: ObservableObject {
         onStatusChange?(.running, conversationId)
 
         Log.info("Starting runner for conversation \(conversationId.prefix(8))... (fork=\(forkSession), model=\(model ?? "default"), effort=\(effort ?? "nil"))")
-        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imageBase64: imageBase64, useFixedSessionId: useFixedSessionId, forkSession: forkSession, model: model, effort: effort)
+        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, useFixedSessionId: useFixedSessionId, forkSession: forkSession, model: model, effort: effort)
     }
 
     func abort(conversationId: String) {
@@ -134,6 +140,26 @@ class RunnerManager: ObservableObject {
             self?.onMessageUUID?(uuid, conversationId)
         }
 
+        runner.onTeamCreated = { [weak self] teamName, leadAgentId in
+            guard let self else { return }
+            self.activeTeams[conversationId] = (teamName: teamName, teammates: [:], lastInboxState: [:])
+            self.startInboxPolling(conversationId: conversationId, teamName: teamName)
+            self.onTeamCreated?(teamName, leadAgentId, conversationId)
+        }
+
+        runner.onTeammateSpawned = { [weak self] teammate in
+            guard let self else { return }
+            self.activeTeams[conversationId]?.teammates[teammate.id] = teammate
+            self.onTeammateSpawned?(teammate, conversationId)
+        }
+
+        runner.onTeamDeleted = { [weak self] in
+            guard let self else { return }
+            self.stopInboxPolling(conversationId: conversationId)
+            self.activeTeams.removeValue(forKey: conversationId)
+            self.onTeamDeleted?(conversationId)
+        }
+
         runner.onComplete = { [weak self] in
             guard let self else { return }
             let convRunner = self.activeRunners[conversationId]
@@ -150,6 +176,9 @@ class RunnerManager: ObservableObject {
             self.onComplete?(conversationId, sessionId)
             self.onStatusChange?(.idle, conversationId)
 
+            self.stopInboxPolling(conversationId: conversationId)
+            self.activeTeams.removeValue(forKey: conversationId)
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 300) { [weak self] in
                 if let runner = self?.activeRunners[conversationId], !runner.runner.isRunning {
                     self?.activeRunners.removeValue(forKey: conversationId)
@@ -157,5 +186,75 @@ class RunnerManager: ObservableObject {
                 }
             }
         }
+    }
+
+    var onTeammateInboxUpdate: ((String, TeammateStatus?, String?, Date?, String) -> Void)?
+
+    private func startInboxPolling(conversationId: String, teamName: String) {
+        stopInboxPolling(conversationId: conversationId)
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.pollInbox(conversationId: conversationId, teamName: teamName)
+            }
+        }
+        inboxTimers[conversationId] = timer
+    }
+
+    private func stopInboxPolling(conversationId: String) {
+        inboxTimers[conversationId]?.invalidate()
+        inboxTimers.removeValue(forKey: conversationId)
+    }
+
+    private func pollInbox(conversationId: String, teamName: String) {
+        let teamsDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/teams/\(teamName)/inboxes")
+        let leadInbox = teamsDir.appendingPathComponent("team-lead.json")
+
+        guard let data = try? Data(contentsOf: leadInbox),
+              let messages = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return }
+
+        let currentCount = messages.count
+        let lastCount = activeTeams[conversationId]?.lastInboxState["team-lead"] ?? 0
+        guard currentCount > lastCount else { return }
+        activeTeams[conversationId]?.lastInboxState["team-lead"] = currentCount
+
+        for i in lastCount..<currentCount {
+            let msg = messages[i]
+            guard let from = msg["from"] as? String,
+                  let text = msg["text"] as? String else { continue }
+
+            let summary = msg["summary"] as? String
+            let color = msg["color"] as? String
+            let timestampStr = msg["timestamp"] as? String
+
+            let timestamp: Date
+            if let ts = timestampStr {
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                timestamp = formatter.date(from: ts) ?? Date()
+            } else {
+                timestamp = Date()
+            }
+
+            if text.contains("\"type\":\"idle_notification\"") {
+                let teammateId = findTeammateId(named: from, conversationId: conversationId)
+                onTeammateInboxUpdate?(teammateId, .idle, nil, nil, conversationId)
+            } else if text.contains("\"type\":\"shutdown_approved\"") {
+                let teammateId = findTeammateId(named: from, conversationId: conversationId)
+                onTeammateInboxUpdate?(teammateId, .shutdown, nil, nil, conversationId)
+            } else {
+                let teammateId = findTeammateId(named: from, conversationId: conversationId)
+                let displayText = summary ?? String(text.prefix(100))
+                onTeammateInboxUpdate?(teammateId, .working, displayText, timestamp, conversationId)
+            }
+        }
+    }
+
+    private func findTeammateId(named name: String, conversationId: String) -> String {
+        if let teammates = activeTeams[conversationId]?.teammates {
+            for (id, info) in teammates where info.name == name {
+                return id
+            }
+        }
+        return name
     }
 }

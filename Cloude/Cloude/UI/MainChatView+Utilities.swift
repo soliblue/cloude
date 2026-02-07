@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import Photos
 import Combine
 import CloudeShared
 
@@ -94,6 +95,45 @@ extension MainChatView {
                   let lastAssistantMsg = conversation.messages.last(where: { !$0.isUser }) else { return }
             conversationStore.updateMessage(lastAssistantMsg.id, in: conversation) { msg in
                 msg.costUsd = costUsd
+            }
+        }
+    }
+
+    func fetchLatestScreenshot() {
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        guard status == .authorized || status == .limited else {
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
+                if newStatus == .authorized || newStatus == .limited {
+                    self.loadLatestPhoto()
+                }
+            }
+            return
+        }
+        loadLatestPhoto()
+    }
+
+    private func loadLatestPhoto() {
+        let options = PHFetchOptions()
+        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        options.fetchLimit = 1
+        options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
+
+        let result = PHAsset.fetchAssets(with: options)
+        guard let asset = result.firstObject else { return }
+
+        let imageOptions = PHImageRequestOptions()
+        imageOptions.isSynchronous = false
+        imageOptions.deliveryMode = .highQualityFormat
+        imageOptions.resizeMode = .exact
+
+        let targetSize = CGSize(width: 600, height: 600)
+        PHImageManager.default().requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFit, options: imageOptions) { image, _ in
+            guard let image = image, let data = image.jpegData(compressionQuality: 0.8) else { return }
+            DispatchQueue.main.async {
+                guard self.attachedImages.count < 5 else { return }
+                withAnimation(.easeOut(duration: 0.15)) {
+                    self.attachedImages.append(AttachedImage(data: data, isScreenshot: true))
+                }
             }
         }
     }

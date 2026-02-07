@@ -22,7 +22,11 @@ class ClaudeCodeRunner: ObservableObject {
     var onCloudeCommand: ((String, String) -> Void)?
     var onStatus: ((AgentState) -> Void)?
     var onMessageUUID: ((String) -> Void)?
+    var onTeamCreated: ((String, String) -> Void)?
+    var onTeammateSpawned: ((TeammateInfo) -> Void)?
+    var onTeamDeleted: (() -> Void)?
 
+    var pendingRunStats: (durationMs: Int, costUsd: Double)?
     var accumulatedOutput = ""
     var lineBuffer = ""
     var commandBuffer = ""
@@ -45,9 +49,9 @@ class ClaudeCodeRunner: ObservableObject {
         return "claude"
     }
 
-    var tempImagePath: String?
+    var tempImagePaths: [String] = []
 
-    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imageBase64: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
+    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imagesBase64: [String]? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
         guard !isRunning else {
             onOutput?("Claude is already running. Use abort to cancel.\n")
             return
@@ -59,13 +63,16 @@ class ClaudeCodeRunner: ObservableObject {
             currentDirectory = wd
         }
 
-        if let base64 = imageBase64, let imageData = Data(base64Encoded: base64) {
+        tempImagePaths = []
+        if let images = imagesBase64 {
             let tempDir = FileManager.default.temporaryDirectory
-            let imagePath = tempDir.appendingPathComponent("cloude_image_\(UUID().uuidString).png").path
-            FileManager.default.createFile(atPath: imagePath, contents: imageData)
-            tempImagePath = imagePath
-        } else {
-            tempImagePath = nil
+            for base64 in images {
+                if let imageData = Data(base64Encoded: base64) {
+                    let imagePath = tempDir.appendingPathComponent("cloude_image_\(UUID().uuidString).png").path
+                    FileManager.default.createFile(atPath: imagePath, contents: imageData)
+                    tempImagePaths.append(imagePath)
+                }
+            }
         }
 
         isRunning = true
@@ -79,8 +86,9 @@ class ClaudeCodeRunner: ObservableObject {
         if let effortLevel = effort {
             finalPrompt = "/effort \(effortLevel)\n\n\(prompt)"
         }
-        if let imagePath = tempImagePath {
-            finalPrompt = "First, read the image at \(imagePath)\n\n\(finalPrompt)"
+        if !tempImagePaths.isEmpty {
+            let readLines = tempImagePaths.map { "First, read the image at \($0)" }.joined(separator: "\n")
+            finalPrompt = "\(readLines)\n\n\(finalPrompt)"
         }
 
         var command = claudePath
@@ -111,6 +119,7 @@ class ClaudeCodeRunner: ObservableObject {
         var env = ProcessInfo.processInfo.environment
         env["TERM"] = "xterm-256color"
         env["NO_COLOR"] = "1"
+        env["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"] = "1"
         process?.environment = env
 
         outputPipe?.fileHandleForReading.readabilityHandler = { [weak self] handle in
