@@ -11,6 +11,7 @@ struct HeartbeatSheet: View {
     @State private var scrollProxy: ScrollViewProxy?
     @State private var inputText = ""
     @State private var attachedImages: [AttachedImage] = []
+    @State private var attachedFiles: [AttachedFile] = []
     @State private var isRefreshing = false
     @State private var currentEffort: EffortLevel?
     @State private var currentModel: ModelSelection?
@@ -39,6 +40,7 @@ struct HeartbeatSheet: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     attachedImages: $attachedImages,
+                    attachedFiles: $attachedFiles,
                     suggestions: .constant([]),
                     isConnected: connection.isConnected,
                     isWhisperReady: connection.isWhisperReady,

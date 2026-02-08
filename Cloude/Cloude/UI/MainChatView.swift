@@ -14,6 +14,7 @@ struct MainChatView: View {
     @State var isKeyboardVisible = false
     @State var inputText = ""
     @State var attachedImages: [AttachedImage] = []
+    @State var attachedFiles: [AttachedFile] = []
     @State var drafts: [UUID: (text: String, images: [AttachedImage], effort: EffortLevel?, model: ModelSelection?)] = [:]
     @State var gitBranches: [String: String] = [:]
     @State var pendingGitChecks: [String] = []
@@ -84,6 +85,7 @@ struct MainChatView: View {
                 GlobalInputBar(
                     inputText: $inputText,
                     attachedImages: $attachedImages,
+                    attachedFiles: $attachedFiles,
                     suggestions: $suggestions,
                     isConnected: connection.isAuthenticated,
                     isWhisperReady: connection.isWhisperReady,
@@ -356,7 +358,7 @@ struct MainChatView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 11)
+        .padding(.horizontal, 7)
         .padding(.vertical, 7)
         .background(Color.oceanSecondary)
     }

@@ -1,4 +1,5 @@
 # Fix: @ autocomplete doesn't dismiss after space
+<!-- build: 67 -->
 
 ## Problem
 File suggestions from `@` autocomplete stayed visible even after typing a space and continuing to type. E.g., `@ajsifb wjdj` would still show suggestions.

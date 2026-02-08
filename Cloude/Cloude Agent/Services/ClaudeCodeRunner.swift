@@ -48,8 +48,9 @@ class ClaudeCodeRunner: ObservableObject {
     }
 
     var tempImagePaths: [String] = []
+    var tempFilePaths: [String] = []
 
-    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imagesBase64: [String]? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
+    func run(prompt: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, imagesBase64: [String]? = nil, filesBase64: [AttachedFilePayload]? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
         guard !isRunning else {
             onOutput?("Claude is already running. Use abort to cancel.\n")
             return
@@ -73,6 +74,19 @@ class ClaudeCodeRunner: ObservableObject {
             }
         }
 
+        tempFilePaths = []
+        if let files = filesBase64 {
+            let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("cloude_files_\(UUID().uuidString)")
+            try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            for file in files {
+                if let fileData = Data(base64Encoded: file.data) {
+                    let filePath = tempDir.appendingPathComponent(file.name).path
+                    FileManager.default.createFile(atPath: filePath, contents: fileData)
+                    tempFilePaths.append(filePath)
+                }
+            }
+        }
+
         isRunning = true
         accumulatedOutput = ""
 
@@ -83,6 +97,10 @@ class ClaudeCodeRunner: ObservableObject {
         var finalPrompt = prompt
         if let effortLevel = effort {
             finalPrompt = "/effort \(effortLevel)\n\n\(prompt)"
+        }
+        if !tempFilePaths.isEmpty {
+            let readLines = tempFilePaths.map { "Read the file at \($0)" }.joined(separator: "\n")
+            finalPrompt = "\(readLines)\n\n\(finalPrompt)"
         }
         if !tempImagePaths.isEmpty {
             let readLines = tempImagePaths.map { "First, read the image at \($0)" }.joined(separator: "\n")
