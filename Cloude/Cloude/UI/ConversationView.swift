@@ -123,10 +123,13 @@ struct ConversationView: View {
 
         let updatedConv = store.conversation(withId: conv.id) ?? conv
         let assistantCount = updatedConv.messages.filter { !$0.isUser }.count
-        if assistantCount > 0 && assistantCount % 5 == 0 {
-            let recentMessages = updatedConv.messages.suffix(6).map { $0.text }
+        let shouldRename = assistantCount == 2 || (assistantCount > 0 && assistantCount % 5 == 0)
+        if shouldRename {
+            let contextMessages = updatedConv.messages.suffix(10).map {
+                ($0.isUser ? "User: " : "Assistant: ") + String($0.text.prefix(300))
+            }
             let lastUserMsg = updatedConv.messages.last(where: { $0.isUser })?.text ?? ""
-            connection.requestNameSuggestion(text: lastUserMsg, context: recentMessages, conversationId: conv.id)
+            connection.requestNameSuggestion(text: lastUserMsg, context: contextMessages, conversationId: conv.id)
         }
 
         store.replayQueuedMessages(conversation: conv, connection: connection)

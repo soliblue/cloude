@@ -52,7 +52,9 @@ extension FilePathPreviewView {
                 scrollingContent { JSONTreeView(value: jsonValue, label: fileName) }
             }
         case .csv:
-            scrollingContent { CSVTableView(text: text, delimiter: fileExtension == "tsv" ? "\t" : ",") }
+            CSVTableView(text: text, delimiter: fileExtension == "tsv" ? "\t" : ",")
+                .padding(.vertical)
+                .background(Color(.systemBackground))
         case .html:
             HTMLRenderedView(html: text)
         case .json:

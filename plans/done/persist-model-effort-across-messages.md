@@ -1,6 +1,7 @@
 # Persist Model & Effort Across Messages
 <!-- priority: 3 -->
 <!-- tags: input, messages, ui -->
+<!-- build: 56 -->
 
 **Problem**: When you change model/effort in the send button menu, the selection doesn't persist:
 - Selections reset after sending a message

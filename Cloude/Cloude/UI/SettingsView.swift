@@ -9,6 +9,7 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
     @AppStorage("defaultCostLimitUsd") private var defaultCostLimitUsd: Double = 0
+    @AppStorage("enableSuggestions") private var enableSuggestions = false
     @State private var authToken = ""
     @State private var showToken = false
     @State private var ipCopied = false
@@ -30,6 +31,7 @@ struct SettingsView: View {
                 tailscaleSection
                 processesSection
                 costLimitsSection
+                featuresSection
                 securitySection
                 aboutSection
             }
@@ -188,6 +190,18 @@ struct SettingsView: View {
             Text("Cost Limits")
         } footer: {
             Text("Default cost warning for new conversations. Per-conversation limits can be set from the chat header.")
+        }
+    }
+
+    private var featuresSection: some View {
+        Section {
+            SettingsRow(icon: "text.bubble", color: .indigo) {
+                Toggle("Smart Suggestions", isOn: $enableSuggestions)
+            }
+        } header: {
+            Text("Features")
+        } footer: {
+            Text("Show a suggested reply after each response")
         }
     }
 

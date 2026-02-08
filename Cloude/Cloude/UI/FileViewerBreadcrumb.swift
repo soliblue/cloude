@@ -64,10 +64,10 @@ struct FileViewerBreadcrumb: View {
         }
         result.insert(PathComponent(name: "/", path: "/"), at: 0)
 
-        if result.count > 5 {
-            let first2 = Array(result.prefix(2))
-            let last3 = Array(result.suffix(3))
-            return first2 + [PathComponent(name: "…", path: "")] + last3
+        if result.count > 4 {
+            let first = Array(result.prefix(1))
+            let last2 = Array(result.suffix(2))
+            return first + [PathComponent(name: "…", path: "")] + last2
         }
 
         return result
