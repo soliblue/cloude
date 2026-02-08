@@ -4,6 +4,7 @@ import CloudeShared
 
 struct MessageBubble: View {
     let message: ChatMessage
+    var skills: [Skill] = []
     var onRefresh: (() -> Void)?
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
@@ -50,7 +51,9 @@ struct MessageBubble: View {
         case "compact": return (commandName, commandArgs, "arrow.triangle.2.circlepath", true)
         case "context": return (commandName, commandArgs, "chart.pie", true)
         case "cost": return (commandName, commandArgs, "dollarsign.circle", true)
-        default: return (commandName, commandArgs, "command", false)
+        default:
+            let skillIcon = skills.first(where: { $0.name == commandName })?.icon ?? "command"
+            return (commandName, commandArgs, skillIcon, false)
         }
     }
 

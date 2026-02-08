@@ -234,6 +234,7 @@ struct ChatMessageList: View {
         ForEach(messages) { message in
             MessageBubble(
                 message: message,
+                skills: connection?.skills ?? [],
                 onRefresh: message.isUser ? nil : { refreshMessage(message) }
             )
             .id("\(message.id)-\(message.isQueued)")
@@ -318,7 +319,7 @@ struct ChatMessageList: View {
 
     private var queuedMessagesSection: some View {
         ForEach(queuedMessages) { message in
-            SwipeToDeleteBubble(message: message) {
+            SwipeToDeleteBubble(message: message, skills: connection?.skills ?? []) {
                 onDeleteQueued?(message.id)
             }
             .id("\(message.id)-queued")
@@ -360,6 +361,7 @@ struct ChatMessageList: View {
 
 struct SwipeToDeleteBubble: View {
     let message: ChatMessage
+    var skills: [Skill] = []
     let onDelete: () -> Void
 
     @State private var offset: CGFloat = 0
@@ -381,7 +383,7 @@ struct SwipeToDeleteBubble: View {
                 .transition(.opacity)
             }
 
-            MessageBubble(message: message)
+            MessageBubble(message: message, skills: skills)
                 .offset(x: offset)
                 .gesture(
                     DragGesture(minimumDistance: 10)
