@@ -1,4 +1,7 @@
 # Pill Style Consolidation
+<!-- priority: 10 -->
+<!-- tags: refactor, tools -->
+<!-- build: 56 -->
 
 ## Changes
 - Created `PillStyles.swift` with shared `skillGradient`, `builtInGradient`, `SkillPillBackground`

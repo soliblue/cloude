@@ -47,22 +47,47 @@ struct TeamDashboardSheet: View {
     let teamName: String
     let teammates: [TeammateInfo]
     @Environment(\.dismiss) private var dismiss
+    @State private var expandedTeammates: Set<String> = []
+
+    private var allMembers: [TeammateInfo] {
+        let lead = TeammateInfo(
+            id: "team-lead",
+            name: "You (Lead)",
+            agentType: "team-lead",
+            model: "claude-opus-4-6",
+            color: "gray",
+            status: .working
+        )
+        return [lead] + teammates
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    ForEach(teammates) { mate in
-                        teammateRow(mate)
-                    }
+                    ForEach(allMembers) { mate in
+                        VStack(spacing: 0) {
+                            Button(action: {
+                                if expandedTeammates.contains(mate.id) {
+                                    expandedTeammates.remove(mate.id)
+                                } else {
+                                    expandedTeammates.insert(mate.id)
+                                }
+                            }) {
+                                teammateRow(mate)
+                            }
+                            .buttonStyle(.plain)
 
-                    if !recentMessages.isEmpty {
-                        Divider()
-                            .padding(.horizontal)
-
-                        ForEach(recentMessages, id: \.name) { mate in
-                            if let msg = mate.lastMessage {
-                                messageRow(mate: mate, message: msg)
+                            if expandedTeammates.contains(mate.id) && !mate.messageHistory.isEmpty {
+                                VStack(spacing: 8) {
+                                    ForEach(mate.messageHistory.suffix(10).reversed()) { msg in
+                                        messageRow(mate: mate, message: msg)
+                                    }
+                                }
+                                .padding(.top, 8)
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 8)
+                                .background(Color(.tertiarySystemGroupedBackground))
                             }
                         }
                     }
@@ -88,22 +113,22 @@ struct TeamDashboardSheet: View {
         .presentationBackground(.ultraThinMaterial)
     }
 
-    private var recentMessages: [TeammateInfo] {
-        teammates
-            .filter { $0.lastMessage != nil }
-            .sorted { ($0.lastMessageAt ?? .distantPast) > ($1.lastMessageAt ?? .distantPast) }
-    }
-
     private func teammateRow(_ mate: TeammateInfo) -> some View {
         HStack(spacing: 12) {
-            Circle()
-                .fill(teammateColor(mate.color).opacity(0.7))
-                .frame(width: 28, height: 28)
-                .overlay {
+            ZStack {
+                Circle()
+                    .fill(teammateColor(mate.color).opacity(0.7))
+                    .frame(width: 28, height: 28)
+                if mate.id == "team-lead" {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(.white)
+                } else {
                     Text(String(mate.name.prefix(1)).uppercased())
                         .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                 }
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(mate.name)
@@ -119,7 +144,17 @@ struct TeamDashboardSheet: View {
 
             Spacer()
 
-            statusDot(mate.status)
+            HStack(spacing: 8) {
+                if !mate.messageHistory.isEmpty {
+                    Text("\(mate.messageHistory.count)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                statusDot(mate.status)
+                Image(systemName: expandedTeammates.contains(mate.id) ? "chevron.up" : "chevron.down")
+                    .font(.system(size: 11))
+                    .foregroundColor(Color(.tertiaryLabel))
+            }
         }
         .padding(.horizontal)
     }
@@ -144,31 +179,23 @@ struct TeamDashboardSheet: View {
         }
     }
 
-    private func messageRow(mate: TeammateInfo, message: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Circle()
-                .fill(teammateColor(mate.color).opacity(0.7))
-                .frame(width: 6, height: 6)
-                .padding(.top, 5)
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text(mate.name)
-                        .font(.caption.bold())
-                    Spacer()
-                    if let ts = mate.lastMessageAt {
-                        Text(timeAgo(ts))
-                            .font(.system(size: 10))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                Text(message)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
+    private func messageRow(mate: TeammateInfo, message: TeammateMessage) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Circle()
+                    .fill(teammateColor(mate.color).opacity(0.7))
+                    .frame(width: 4, height: 4)
+                Text(timeAgo(message.timestamp))
+                    .font(.system(size: 10))
+                    .foregroundColor(Color(.tertiaryLabel))
+                Spacer()
             }
+            Text(message.text)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(3)
+                .padding(.leading, 8)
         }
-        .padding(.horizontal)
     }
 
     private func timeAgo(_ date: Date) -> String {

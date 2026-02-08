@@ -1,4 +1,7 @@
 # Toolbar Button Padding
+<!-- priority: 10 -->
+<!-- tags: tools -->
+<!-- build: 56 -->
 
 Increased horizontal padding on the Plans/Memories toolbar buttons (top-left of home screen) from 8 → 14 for more breathing room from the edge.
 

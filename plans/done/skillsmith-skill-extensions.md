@@ -1,4 +1,7 @@
 # Skillsmith-Driven Skill Extensions
+<!-- priority: 10 -->
+<!-- tags: skills -->
+<!-- build: 56 -->
 
 ## What
 Extended 4 skills and resolved 1 cleanup item based on /skillsmith analysis:

@@ -1,4 +1,7 @@
 # Split ChatView+MessageBubble.swift
+<!-- priority: 10 -->
+<!-- tags: messages, refactor, tools -->
+<!-- build: 56 -->
 
 ## Changes
 505 lines → 2 files:

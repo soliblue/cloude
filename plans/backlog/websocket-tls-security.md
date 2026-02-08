@@ -1,4 +1,6 @@
 # WebSocket TLS Security {lock.shield}
+<!-- priority: 7 -->
+<!-- tags: agent, ui -->
 
 > Without Tailscale, all WebSocket traffic (including auth token) is plaintext. Anyone on the same network can sniff it. Add TLS encryption with a pairing flow.
 

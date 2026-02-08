@@ -1,4 +1,7 @@
 # Collapsible Header Tap Area
+<!-- priority: 10 -->
+<!-- tags: ui, windows -->
+<!-- build: 56 -->
 
 ## Problem
 Collapsible section headers only collapsed when tapping the small chevron arrow — too small a hit target.

@@ -1,4 +1,7 @@
 # Smart Reply Bubbles
+<!-- priority: 10 -->
+<!-- tags: input, messages, ui -->
+<!-- build: 56 -->
 
 Replace inline ghost-text autocomplete with contextual suggestion bubbles.
 

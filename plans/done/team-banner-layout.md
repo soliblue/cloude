@@ -1,4 +1,7 @@
 # Team Banner Layout Tweak
+<!-- priority: 10 -->
+<!-- tags: teams, ui -->
+<!-- build: 56 -->
 
 ## Changes
 - Circles: 8px → 12px (bigger)

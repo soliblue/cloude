@@ -1,4 +1,7 @@
 # Memory UI Plan
+<!-- priority: 10 -->
+<!-- tags: ui -->
+<!-- build: 56 -->
 
 Structured memory display instead of raw markdown rendering.
 

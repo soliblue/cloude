@@ -1,4 +1,7 @@
 # Split MainChatView.swift
+<!-- priority: 10 -->
+<!-- tags: refactor, ui -->
+<!-- build: 56 -->
 
 ## Changes
 795 lines → 5 files:

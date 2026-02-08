@@ -1,4 +1,7 @@
 # Tailscale Info Display
+<!-- priority: 10 -->
+<!-- tags: agent, ui -->
+<!-- build: 56 -->
 
 Show users that Tailscale is required for secure connection. Add info section in iOS Settings with link to tailscale.com/download, and a menu item in Mac agent status view.
 

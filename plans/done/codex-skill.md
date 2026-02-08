@@ -1,4 +1,7 @@
 # Codex Skill
+<!-- priority: 10 -->
+<!-- tags: skills -->
+<!-- build: 56 -->
 
 ## Summary
 Add a `/codex` skill to get second opinions from OpenAI's Codex CLI on code questions.

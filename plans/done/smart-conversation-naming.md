@@ -1,4 +1,7 @@
 # Smart Conversation Naming
+<!-- priority: 10 -->
+<!-- tags: conversations -->
+<!-- build: 56 -->
 
 ## Summary
 When a user sends their first message in a new conversation, fire a separate background CLI call (Sonnet) to generate a conversation name + SF Symbol. This runs in parallel with the actual agent — the name appears almost immediately instead of waiting for the agent to call `cloude rename`.

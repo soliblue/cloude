@@ -1,4 +1,7 @@
 # Compact Question Options
+<!-- priority: 10 -->
+<!-- tags: ui -->
+<!-- build: 56 -->
 
 ## Status: Testing
 

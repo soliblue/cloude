@@ -1,4 +1,6 @@
 # Smart Reply: Persist While Typing {text.bubble.fill}
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 > Keep smart reply suggestions visible while typing up to 10 characters instead of disappearing on first keystroke.
 
