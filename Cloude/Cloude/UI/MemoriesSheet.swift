@@ -24,16 +24,6 @@ struct MemoriesSheet: View {
         return .accentColor
     }
 
-    private var formattedUsed: String {
-        if totalCharacters >= 1000 {
-            return String(format: "%.1fK", Double(totalCharacters) / 1000)
-        }
-        return "\(totalCharacters)"
-    }
-
-    private var formattedMax: String {
-        "\(maxCharacters / 1000)K"
-    }
 
     var body: some View {
         NavigationStack {
@@ -68,22 +58,6 @@ struct MemoriesSheet: View {
                     .padding(.vertical, 12)
                 }
             }
-            .background {
-                GeometryReader { geo in
-                    let fillHeight = geo.size.height * usagePercent
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 0)
-                        LinearGradient(
-                            colors: [usageColor.opacity(0), usageColor.opacity(0.1)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .frame(height: fillHeight)
-                    }
-                }
-                .ignoresSafeArea()
-            }
-            .background(.ultraThinMaterial)
             .scrollContentBackground(.hidden)
             .navigationTitle("Memories")
             .navigationBarTitleDisplayMode(.inline)
@@ -94,15 +68,25 @@ struct MemoriesSheet: View {
                             .fontWeight(.medium)
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Text("\(formattedUsed) / \(formattedMax)")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         }
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground {
+            ZStack {
+                Rectangle().fill(.ultraThinMaterial)
+                GeometryReader { geo in
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        LinearGradient(
+                            colors: [usageColor.opacity(0), usageColor.opacity(0.12)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: geo.size.height * usagePercent)
+                    }
+                }
+            }
+        }
         .onAppear {
             parsedSections = MemoryParser.parse(sections: sections)
         }
@@ -127,9 +111,9 @@ struct MemorySectionCard: View {
 
     private var backgroundColor: Color {
         switch depth {
-        case 0: return Color(.secondarySystemGroupedBackground)
-        case 1: return Color(.tertiarySystemGroupedBackground)
-        default: return Color(.quaternarySystemFill)
+        case 0: return Color.oceanSecondary
+        case 1: return Color.oceanTertiary
+        default: return Color.oceanFill
         }
     }
 
@@ -205,9 +189,9 @@ struct MemoryItemCard: View {
 
     private var backgroundColor: Color {
         switch depth {
-        case 0: return Color(.tertiarySystemGroupedBackground)
-        case 1: return Color(.quaternarySystemFill)
-        default: return Color(.systemFill)
+        case 0: return Color.oceanTertiary
+        case 1: return Color.oceanFill
+        default: return Color.oceanSurface
         }
     }
 

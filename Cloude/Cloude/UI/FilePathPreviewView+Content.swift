@@ -56,7 +56,7 @@ extension FilePathPreviewView {
                 CSVTableView(text: text, delimiter: fileExtension == "tsv" ? "\t" : ",")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .background(Color(.systemBackground))
+            .background(Color.oceanSystemBackground)
         case .html:
             HTMLRenderedView(html: text)
         case .json:
@@ -75,7 +75,7 @@ extension FilePathPreviewView {
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color(.systemBackground))
+        .background(Color.oceanSystemBackground)
     }
 
     @ViewBuilder
@@ -95,7 +95,7 @@ extension FilePathPreviewView {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .background(Color(.systemBackground))
+        .background(Color.oceanSystemBackground)
     }
 
     @ViewBuilder
