@@ -32,6 +32,25 @@ struct PlansService {
         return result
     }
 
+    static func writePlan(stage: String, filename: String, content: String, workingDirectory: String) -> PlanItem? {
+        guard stages.contains(stage) else { return nil }
+        guard !filename.contains("/") && !filename.contains("..") else { return nil }
+        let stageDir = (workingDirectory as NSString)
+            .appendingPathComponent("plans")
+            .appending("/\(stage)")
+        let fm = FileManager.default
+        if !fm.fileExists(atPath: stageDir) {
+            try? fm.createDirectory(atPath: stageDir, withIntermediateDirectories: true)
+        }
+        let filePath = (stageDir as NSString).appendingPathComponent(filename)
+        guard (try? content.write(toFile: filePath, atomically: true, encoding: .utf8)) != nil else { return nil }
+        let rawTitle = extractTitle(from: content) ?? filename.replacingOccurrences(of: ".md", with: "")
+        let (title, icon) = extractIcon(from: rawTitle)
+        let description = extractDescription(from: content)
+        let (priority, tags, build) = extractMetadata(from: content)
+        return PlanItem(filename: filename, title: title, icon: icon, description: description, priority: priority, tags: tags, build: build, content: content, path: filePath)
+    }
+
     static func deletePlan(stage: String, filename: String, workingDirectory: String) {
         guard stages.contains(stage) else { return }
         guard !filename.contains("/") && !filename.contains("..") else { return }

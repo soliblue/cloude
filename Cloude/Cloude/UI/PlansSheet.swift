@@ -5,9 +5,11 @@ struct PlansSheet: View {
     let stages: [String: [PlanItem]]
     var isLoading: Bool = false
     var onOpenFile: ((String) -> Void)?
+    var onUploadPlan: ((String, String, String) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var selectedStage = "active"
     @State private var selectedTags: Set<String> = []
+    @State private var showCreateSheet = false
 
     private let stageOrder = ["backlog", "next", "active", "testing", "done"]
 
@@ -92,6 +94,13 @@ struct PlansSheet: View {
                             .foregroundColor(.secondary)
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { showCreateSheet = true }) {
+                        Image(systemName: "plus")
+                            .fontWeight(.medium)
+                            .foregroundColor(.accentColor)
+                    }
+                }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
         }
@@ -102,6 +111,11 @@ struct PlansSheet: View {
                 if let first = stageOrder.first(where: { !(stages[$0]?.isEmpty ?? true) }) {
                     selectedStage = first
                 }
+            }
+        }
+        .sheet(isPresented: $showCreateSheet) {
+            CreatePlanSheet(initialStage: selectedStage) { stage, filename, content in
+                onUploadPlan?(stage, filename, content)
             }
         }
     }
@@ -194,6 +208,143 @@ struct PlansSheet: View {
         case "performance": return .red
         default: return .secondary
         }
+    }
+}
+
+struct CreatePlanSheet: View {
+    let initialStage: String
+    let onSave: (String, String, String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var title = ""
+    @State private var stage: String
+    @State private var description = ""
+    @State private var tags = ""
+    @FocusState private var titleFocused: Bool
+
+    private let stageOrder = ["backlog", "next", "active", "testing", "done"]
+
+    init(initialStage: String, onSave: @escaping (String, String, String) -> Void) {
+        self.initialStage = initialStage
+        self.onSave = onSave
+        _stage = State(initialValue: initialStage == "done" ? "backlog" : initialStage)
+    }
+
+    private var filename: String {
+        title.lowercased()
+            .replacingOccurrences(of: " ", with: "-")
+            .filter { $0.isLetter || $0.isNumber || $0 == "-" }
+            .appending(".md")
+    }
+
+    private var markdownContent: String {
+        var lines: [String] = ["# \(title)"]
+        if !description.isEmpty {
+            lines.append("")
+            for line in description.components(separatedBy: .newlines) {
+                lines.append("> \(line)")
+            }
+        }
+        let trimmedTags = tags.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedTags.isEmpty {
+            lines.append("")
+            lines.append("<!-- tags: \(trimmedTags) -->")
+        }
+        lines.append("")
+        return lines.joined(separator: "\n")
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Title")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                    TextField("Plan title", text: $title)
+                        .textFieldStyle(.plain)
+                        .padding(12)
+                        .background(.white.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
+                        .focused($titleFocused)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Stage")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 8) {
+                        ForEach(stageOrder.filter { $0 != "done" }, id: \.self) { s in
+                            Button(action: { stage = s }) {
+                                Text(s)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 7)
+                                    .background(stage == s ? Color.accentColor.opacity(0.15) : .white.opacity(0.06))
+                                    .foregroundColor(stage == s ? .accentColor : .secondary.opacity(0.7))
+                                    .clipShape(Capsule())
+                                    .overlay(Capsule().strokeBorder(stage == s ? Color.accentColor.opacity(0.3) : .white.opacity(0.1), lineWidth: 0.5))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Description")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                    TextField("Brief description (optional)", text: $description, axis: .vertical)
+                        .textFieldStyle(.plain)
+                        .lineLimit(3...5)
+                        .padding(12)
+                        .background(.white.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Tags")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                    TextField("ui, agent, security (optional)", text: $tags)
+                        .textFieldStyle(.plain)
+                        .padding(12)
+                        .background(.white.opacity(0.08))
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
+                }
+
+                Spacer()
+            }
+            .padding(16)
+            .navigationTitle("New Plan")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        onSave(stage, filename, markdownContent)
+                        dismiss()
+                    }) {
+                        Image(systemName: "checkmark")
+                            .fontWeight(.semibold)
+                            .foregroundColor(title.isEmpty ? .secondary.opacity(0.3) : .accentColor)
+                    }
+                    .disabled(title.isEmpty)
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+        .presentationDetents([.medium])
+        .presentationBackground(Color.oceanBackground)
+        .onAppear { titleFocused = true }
     }
 }
 

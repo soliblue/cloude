@@ -109,6 +109,11 @@ struct CloudeApp: App {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         filePathToPreview = path
                     }
+                },
+                onUploadPlan: { stage, filename, content in
+                    if let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+                        connection.uploadPlan(stage: stage, filename: filename, content: content, workingDirectory: wd)
+                    }
                 }
             )
         }
@@ -208,6 +213,14 @@ struct CloudeApp: App {
 
         connection.onPlanDeleted = { stage, filename in
             planStages[stage]?.removeAll { $0.filename == filename }
+        }
+
+        connection.onPlanUploaded = { stage, plan in
+            if planStages[stage] != nil {
+                planStages[stage]?.append(plan)
+            } else {
+                planStages[stage] = [plan]
+            }
         }
 
         connection.onRenameConversation = { [conversationStore] convId, name in

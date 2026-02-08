@@ -170,6 +170,7 @@ struct ChunkProgress: Equatable {
     var onSuggestionsResult: (([String], UUID?) -> Void)?
     var onPlans: (([String: [PlanItem]]) -> Void)?
     var onPlanDeleted: ((String, String) -> Void)?
+    var onPlanUploaded: ((String, PlanItem) -> Void)?
     var onConversationOutputStarted: ((UUID) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
