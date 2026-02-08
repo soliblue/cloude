@@ -69,11 +69,11 @@ struct MemoriesSheet: View {
                     }
                 }
             }
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
         }
         .presentationBackground {
             ZStack {
-                Rectangle().fill(.ultraThinMaterial)
+                Rectangle().fill(Color.oceanBackground)
                 GeometryReader { geo in
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)

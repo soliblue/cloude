@@ -39,11 +39,11 @@ struct NewFolderSheet: View {
                     Text("The working directory for Claude Code in this project.")
                 }
             }
-            .background(.ultraThinMaterial)
+            .background(Color.oceanBackground)
             .scrollContentBackground(.hidden)
             .navigationTitle("New Project")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { isPresented = false }) {
@@ -69,7 +69,7 @@ struct NewFolderSheet: View {
                 }
             }
         }
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground(Color.oceanBackground)
     }
 
     private var folderDisplayName: String {
