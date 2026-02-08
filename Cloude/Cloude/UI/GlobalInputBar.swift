@@ -17,11 +17,11 @@ struct GlobalInputBar: View {
     let conversationDefaultEffort: EffortLevel?
     let conversationDefaultModel: ModelSelection?
     let onSend: () -> Void
-    let onEffortChange: ((EffortLevel?) -> Void)?
-    let onModelChange: ((ModelSelection?) -> Void)?
     var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
     var onFileSearch: ((String) -> Void)?
+    @Binding var currentEffort: EffortLevel?
+    @Binding var currentModel: ModelSelection?
 
     @State private var selectedItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
@@ -37,8 +37,6 @@ struct GlobalInputBar: View {
     @State private var idleTime: Date = Date()
     @State private var showStopButton = false
     @State private var fileSearchDebounce: Task<Void, Never>?
-    @State private var currentEffort: EffortLevel?
-    @State private var currentModel: ModelSelection?
 
     private enum Constants {
         static let swipeThreshold: CGFloat = 60
@@ -137,7 +135,7 @@ struct GlobalInputBar: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            if !suggestions.isEmpty && inputText.count < 10 && !isRunning && filteredCommands.isEmpty && !showFileSuggestions {
+            if !suggestions.isEmpty && inputText.count < 20 && !isRunning && filteredCommands.isEmpty && !showFileSuggestions {
                 HStack(spacing: 8) {
                     ForEach(suggestions, id: \.self) { suggestion in
                         Button(action: {
@@ -227,7 +225,7 @@ struct GlobalInputBar: View {
                     }
                 }
             }
-            if new.count >= 10 && !suggestions.isEmpty {
+            if new.count >= 20 && !suggestions.isEmpty {
                 withAnimation(.easeOut(duration: 0.15)) {
                     suggestions = []
                 }
@@ -473,11 +471,9 @@ struct GlobalInputBar: View {
 
     private func setEffort(_ level: EffortLevel?) {
         currentEffort = level
-        onEffortChange?(level)
     }
 
     private func setModel(_ model: ModelSelection?) {
         currentModel = model
-        onModelChange?(model)
     }
 }

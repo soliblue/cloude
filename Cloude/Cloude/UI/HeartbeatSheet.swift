@@ -12,6 +12,8 @@ struct HeartbeatSheet: View {
     @State private var inputText = ""
     @State private var attachedImages: [AttachedImage] = []
     @State private var isRefreshing = false
+    @State private var currentEffort: EffortLevel?
+    @State private var currentModel: ModelSelection?
 
     private var heartbeat: Conversation {
         conversationStore.heartbeatConversation
@@ -47,11 +49,11 @@ struct HeartbeatSheet: View {
                     conversationDefaultEffort: nil,
                     conversationDefaultModel: nil,
                     onSend: sendMessage,
-                    onEffortChange: nil,
-                    onModelChange: nil,
                     onStop: { connection.abort(conversationId: Heartbeat.conversationId) },
                     onTranscribe: transcribeAudio,
-                    onFileSearch: nil
+                    onFileSearch: nil,
+                    currentEffort: $currentEffort,
+                    currentModel: $currentModel
                 )
             }
             .background(.ultraThinMaterial)
