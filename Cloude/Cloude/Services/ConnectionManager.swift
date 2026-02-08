@@ -136,6 +136,7 @@ struct ChunkProgress: Equatable {
 
     var onDirectoryListing: ((String, [FileEntry]) -> Void)?
     var onFileContent: ((String, String, String, Int64, Bool) -> Void)?
+    var onFileError: ((String) -> Void)?
     var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
     var onMissedResponse: ((String, String, [ToolCall], Date, UUID?, UUID?) -> Void)?
     var onGitStatus: ((GitStatusInfo) -> Void)?

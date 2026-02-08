@@ -135,6 +135,11 @@ extension FilePathPreviewView {
             directoryEntries = entries
             isLoading = false
         }
+
+        connection.onFileError = { message in
+            errorMessage = message
+            isLoading = false
+        }
     }
 
     func highlightCode(_ code: String) {
