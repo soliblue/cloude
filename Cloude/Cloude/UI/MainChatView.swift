@@ -107,7 +107,7 @@ struct MainChatView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { }
-            .background(Color.oceanBackground)
+            .background(.ultraThinMaterial)
         }
         .onAppear {
             initializeFirstWindow()
@@ -366,6 +366,10 @@ struct MainChatView: View {
               let conv = conversationStore.conversation(withId: convId),
               let sessionId = conv.sessionId,
               let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
+        let messages = conversationStore.messages(for: conv)
+        if let lastUserIndex = messages.lastIndex(where: { $0.isUser }) {
+            conversationStore.truncateMessages(for: conv, from: lastUserIndex + 1)
+        }
         connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
     }
 }
