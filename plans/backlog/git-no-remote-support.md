@@ -1,5 +1,5 @@
-# Git No-Remote Support
+# Git No-Remote Support {arrow.triangle.branch}
 
-Git status currently relies on `origin/HEAD`, which fails for repos without a remote. Use `git status -sb` and parse ahead/behind from status. Add staged vs unstaged diffs and rename handling.
+> Git status currently relies on `origin/HEAD`, which fails for repos without a remote. Use `git status -sb` and parse ahead/behind from status. Add staged vs unstaged diffs and rename handling.
 
 **Files:** `GitService.swift`

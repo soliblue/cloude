@@ -21,7 +21,8 @@ struct PlansService {
                 guard let content = try? String(contentsOfFile: filePath, encoding: .utf8) else { return nil }
                 let rawTitle = extractTitle(from: content) ?? filename.replacingOccurrences(of: ".md", with: "")
                 let (title, icon) = extractIcon(from: rawTitle)
-                return PlanItem(filename: filename, title: title, icon: icon, content: content, path: filePath)
+                let description = extractDescription(from: content)
+                return PlanItem(filename: filename, title: title, icon: icon, description: description, content: content, path: filePath)
             }
 
             result[stage] = plans
@@ -47,6 +48,29 @@ struct PlansService {
             }
         }
         return nil
+    }
+
+    private static func extractDescription(from content: String) -> String? {
+        let lines = content.components(separatedBy: .newlines)
+        var pastHeading = false
+        var quoteLines: [String] = []
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if !pastHeading {
+                if trimmed.hasPrefix("# ") { pastHeading = true }
+                continue
+            }
+            if trimmed.isEmpty && quoteLines.isEmpty { continue }
+            if trimmed.hasPrefix("> ") {
+                quoteLines.append(String(trimmed.dropFirst(2)))
+            } else {
+                break
+            }
+        }
+
+        let result = quoteLines.prefix(3).joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+        return result.isEmpty ? nil : result
     }
 
     private static func extractIcon(from title: String) -> (String, String?) {

@@ -1,6 +1,6 @@
-# Granular Post-Conversation Reflections
+# Granular Post-Conversation Reflections {brain.head.profile}
 
-The current `/reflect` skill analyzes everything at once. The most useful insights come right after specific work — suggested skills from repeated patterns, refactor targets from touched files, small memory updates from new context.
+> The current `/reflect` skill analyzes everything at once. The most useful insights come right after specific work. After each conversation, a lightweight analysis checks for instant skill suggestions, targeted refactor opportunities, and memory drip updates.
 
 ## Desired Outcome
 After each conversation, a lightweight analysis (Haiku) checks for: instant skill suggestions, targeted refactor opportunities, and memory drip updates. Presented for approval, not auto-applied. Depends on conversation summaries.

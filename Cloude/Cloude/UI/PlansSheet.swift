@@ -118,37 +118,26 @@ struct PlanCard: View {
     let plan: PlanItem
     var onTap: () -> Void
 
-    private var previewText: String {
-        let lines = plan.content.components(separatedBy: .newlines)
-        let bodyLines = lines.drop { line in
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            return trimmed.isEmpty || trimmed.hasPrefix("# ")
-        }
-        let preview = bodyLines.prefix(5).joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
-        return preview.isEmpty ? plan.content.prefix(200).description : String(preview.prefix(200))
-    }
-
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: 12) {
-                if let icon = plan.icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 18))
-                        .foregroundColor(.accentColor)
-                        .frame(width: 24, alignment: .center)
-                        .padding(.top, 2)
-                }
-
-                VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    if let icon = plan.icon {
+                        Image(systemName: icon)
+                            .font(.system(size: 14))
+                            .foregroundColor(.accentColor)
+                    }
                     Text(plan.title)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
                         .lineLimit(1)
+                }
 
-                    Text(previewText)
-                        .font(.system(size: 13))
+                if let description = plan.description {
+                    Text(description)
+                        .font(.caption)
                         .foregroundColor(.secondary)
-                        .lineLimit(4)
+                        .lineLimit(3)
                         .multilineTextAlignment(.leading)
                 }
             }
