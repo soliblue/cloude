@@ -119,14 +119,16 @@ platform :mac do
         f.puts "Killing old agent..."
       end
 
+      sh("pkill -TERM -x 'Cloude Agent' || true")
+      sh("sleep 2")
       sh("pkill -9 -x 'Cloude Agent' || true")
-      sh("sleep 3")
+      sh("sleep 2")
 
       File.open(deploy_log, "a") do |f|
         f.puts "Launching new agent: #{Time.now}"
       end
 
-      sh("open ../build/Build/Products/Debug/Cloude\\ Agent.app")
+      sh("open -n ../build/Build/Products/Debug/Cloude\\ Agent.app")
 
       File.open(deploy_log, "a") do |f|
         f.puts "LAUNCH COMMAND SENT: #{Time.now}"

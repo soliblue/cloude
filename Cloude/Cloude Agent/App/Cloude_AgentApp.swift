@@ -27,40 +27,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         Log.startup("PID: \(ProcessInfo.processInfo.processIdentifier)")
         Log.startup("Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
         Log.startup("Bundle: \(Bundle.main.bundlePath)")
+        Log.startup("Code signing: \(Self.codeSigningIdentity())")
 
-        Log.startup("[1/8] Checking for other agents...")
+        Log.startup("[1/9] Checking for other agents...")
         let killedAgents = ProcessMonitor.killOtherAgents()
         if killedAgents > 0 {
-            Log.startup("       Killed \(killedAgents) existing agent process(es), waiting 500ms...")
-            Thread.sleep(forTimeInterval: 0.5)
+            Log.startup("       Killed \(killedAgents) existing agent process(es), waiting 2s for cleanup...")
+            Thread.sleep(forTimeInterval: 2.0)
         }
         Log.startup("       ✓ Other agents check complete")
 
-        Log.startup("[2/8] Installing CLI...")
+        Log.startup("[2/9] Installing CLI...")
         CLIInstaller.installIfNeeded()
         Log.startup("       ✓ CLI installed")
 
-        Log.startup("[3/8] Setting activation policy...")
+        Log.startup("[3/9] Setting activation policy...")
         NSApp.setActivationPolicy(.accessory)
         Log.startup("       ✓ Activation policy set to accessory")
 
-        Log.startup("[4/8] Setting up menu bar...")
+        Log.startup("[4/9] Setting up menu bar...")
         setupMenuBar()
         Log.startup("       ✓ Menu bar ready")
 
-        Log.startup("[5/8] Setting up services (WebSocket, RunnerManager)...")
+        Log.startup("[5/9] Setting up services (WebSocket, RunnerManager)...")
         setupServices()
         Log.startup("       ✓ Services configured")
 
-        Log.startup("[6/8] Setting up popover...")
+        Log.startup("[6/9] Installing signal handlers...")
+        installSignalHandlers()
+        Log.startup("       ✓ Signal handlers installed")
+
+        Log.startup("[7/9] Setting up popover...")
         setupPopover()
         Log.startup("       ✓ Popover ready")
 
-        Log.startup("[7/8] Setting up heartbeat...")
+        Log.startup("[8/9] Setting up heartbeat...")
         setupHeartbeat()
         Log.startup("       ✓ Heartbeat configured")
 
-        Log.startup("[8/8] Starting WebSocket server on port \(server.port)...")
+        Log.startup("[9/9] Starting WebSocket server on port \(server.port)...")
+        if let portOwner = ProcessMonitor.checkPortOwner(server.port) {
+            Log.startup("       ⚠️ Port \(server.port) already in use:\n\(portOwner)")
+        } else {
+            Log.startup("       ✓ Port \(server.port) is free")
+        }
         server.start()
         Log.startup("       Server.start() called - waiting for state update...")
 
@@ -188,6 +198,49 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             popover.performClose(nil)
         } else {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        }
+    }
+
+    private func installSignalHandlers() {
+        let signalCallback: @convention(c) (Int32) -> Void = { sig in
+            let sigName = sig == SIGTERM ? "SIGTERM" : "SIGINT"
+            Log.info("Received \(sigName), shutting down gracefully...")
+            DispatchQueue.main.async {
+                guard let delegate = NSApp.delegate as? AppDelegate else {
+                    exit(0)
+                }
+                delegate.server.stop()
+                Log.info("Server stopped, killing Claude processes...")
+                let killed = ProcessMonitor.killAllClaudeProcesses()
+                Log.info("Killed \(killed) Claude process(es), exiting")
+                exit(0)
+            }
+        }
+        signal(SIGTERM, signalCallback)
+        signal(SIGINT, signalCallback)
+    }
+
+    static func codeSigningIdentity() -> String {
+        let pipe = Pipe()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
+        process.arguments = ["-dvv", Bundle.main.bundlePath]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = pipe
+        do {
+            try process.run()
+            process.waitUntilExit()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let output = String(data: data, encoding: .utf8) ?? ""
+            let authority = output.components(separatedBy: "\n")
+                .first { $0.hasPrefix("Authority=") }?
+                .replacingOccurrences(of: "Authority=", with: "") ?? "unknown"
+            let teamId = output.components(separatedBy: "\n")
+                .first { $0.hasPrefix("TeamIdentifier=") }?
+                .replacingOccurrences(of: "TeamIdentifier=", with: "") ?? "unknown"
+            return "\(authority) (Team: \(teamId))"
+        } catch {
+            return "failed to read: \(error.localizedDescription)"
         }
     }
 

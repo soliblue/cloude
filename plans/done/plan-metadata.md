@@ -1,6 +1,7 @@
 # Plan Metadata {tag.fill}
 <!-- priority: 1 -->
 <!-- tags: ui, plans -->
+<!-- build: 56 -->
 
 > Unified plan metadata system: priority ordering, tags/categories, build tagging, and drag-and-drop reordering in the Plans UI.
 
