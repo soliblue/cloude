@@ -104,13 +104,18 @@ class AutocompleteService {
     func suggestName(text: String, context: [String], completion: @escaping (String, String?) -> Void) {
         var contextBlock = ""
         if !context.isEmpty {
-            contextBlock = "\nRecent messages:\n" + context.suffix(4).map { "- \($0.prefix(200))" }.joined(separator: "\n") + "\n"
+            contextBlock = "\nConversation so far:\n" + context.map { "- \($0.prefix(300))" }.joined(separator: "\n") + "\n"
         }
 
         let prompt = """
-        Given this conversation, suggest a short conversation name (1-2 words, catchy/memorable) and an SF Symbol icon name that fits.
+        You are naming a chat window in a mobile app. The user needs to glance at the name and instantly know what this conversation is about.
+
         \(contextBlock)
-        Latest message: "\(text)"
+        Latest user message: "\(text)"
+
+        Suggest a short conversation name (1-3 words) that describes what's being worked on or discussed. Be specific and descriptive, not generic or catchy. Good examples: "Auth Bug Fix", "Dark Mode", "Rename Logic", "Memory System". Bad examples: "Spark", "New Chat", "Quick Fix".
+
+        Also suggest an SF Symbol icon that fits the topic.
 
         Respond with ONLY a JSON object like: {"name": "Short Name", "symbol": "star.fill"}
         The symbol must be a valid SF Symbol name. Pick something specific and creative, not generic.

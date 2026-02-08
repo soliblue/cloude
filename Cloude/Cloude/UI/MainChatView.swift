@@ -20,6 +20,7 @@ struct MainChatView: View {
     @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
     @State var suggestions: [String] = []
+    @AppStorage("enableSuggestions") var enableSuggestions = false
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?
 
@@ -236,7 +237,7 @@ struct MainChatView: View {
             suggestions = []
         }
         .onChange(of: connection.agentState) { oldState, newState in
-            if oldState != .idle && newState == .idle && !isHeartbeatActive {
+            if oldState != .idle && newState == .idle && !isHeartbeatActive && enableSuggestions {
                 requestSuggestions()
             }
         }
@@ -305,6 +306,24 @@ struct MainChatView: View {
             .buttonStyle(.plain)
 
             Spacer()
+
+            if let conv = conversation, conv.sessionId != nil {
+                Button(action: {
+                    windowManager.setActive(window.id)
+                    if let newConv = conversationStore.duplicateConversation(conv) {
+                        windowManager.linkToCurrentConversation(window.id, conversation: newConv)
+                    }
+                }) {
+                    Image(systemName: "arrow.triangle.branch")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(7)
+                }
+                .buttonStyle(.plain)
+
+                Divider()
+                    .frame(height: 20)
+            }
 
             Button(action: {
                 windowManager.setActive(window.id)

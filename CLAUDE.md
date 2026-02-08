@@ -21,7 +21,7 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 **NEVER USE AskUserQuestion TOOL** - The iOS app cannot handle interactive question prompts from the CLI. When you need to ask the user something, just ask in plain text in your response. The user will reply in the next message. Do not use the AskUserQuestion tool - it will break the conversation flow.
 
-**NAMING IS AUTOMATIC** - A background Sonnet agent automatically generates a conversation name + SF Symbol when the user sends their first message. You do NOT need to call `cloude rename` or `cloude symbol` on the first message. The name appears in the header within a few seconds.
+**NAMING IS AUTOMATIC** - A background Sonnet agent automatically generates a conversation name + SF Symbol on the 1st and 2nd user messages, then every 5 assistant messages. You do NOT need to call `cloude rename` or `cloude symbol` on the first few messages. The name appears in the header within a few seconds.
 
 - You can still call `cloude rename` / `cloude symbol` later if the topic shifts significantly (~10+ messages in)
 - **NEVER chain `cloude` commands** with `&&` or `;` — always run each `cloude` command as its own separate Bash call
@@ -284,7 +284,7 @@ JSON format for `--questions`:
 - Section names: Identity, User Preferences, Session History, Open Threads, Notes (or any existing section)
 - Add memories proactively when you learn something worth remembering
 
-**First Message:** Naming is automatic — a background Sonnet agent generates the name + symbol when the first message is sent. Do NOT call `cloude rename` or `cloude symbol` on the first message.
+**First Messages:** Naming is automatic — a background Sonnet agent generates the name + symbol on the 1st and 2nd messages, then every 5 assistant messages. Do NOT call `cloude rename` or `cloude symbol` on the first few messages.
 
 **Ongoing:**
 - Update every ~10 messages or whenever the topic shifts significantly using `cloude rename` / `cloude symbol`
@@ -294,15 +294,83 @@ JSON format for `--questions`:
 
 ## Code Style
 
+### Simplicity-First
+- **Less is more** - always prefer the simplest solution
+- **Code should be beautiful** - treat it like art
+- **The simpler the code, the fewer bugs**
+
 ### General
 - **NEVER add comments to code** - no inline comments, no docstrings, no file header comments (except the file name/module line). Code should be self-explanatory through clear naming.
 - **File size limit**: For files >150 lines, use `ParentView+Feature.swift` extensions to break down complexity (e.g., `SettingsView+Cards.swift`, `ChatView+Components.swift`)
-- Avoid single-use helpers and variables
 - Struct-first design for models and services
 - Keep views lean with small composable structs
 - Use explicit imports (no wildcards)
-- Favor happy path with `if let`/`guard let`; avoid defensive detours
 - Let errors propagate unless explicit handling is requested
+
+### No-Comments
+- **Never add comments to code** - no exceptions
+- **Never add docstrings** - code should be self-explanatory through naming
+
+### No-Try-Catch
+- **Never add do-catch blocks** unless explicitly requested
+- **Let errors propagate naturally**
+- **Fail fast and loud**
+
+### No-Single-Use-Variables
+- If a variable is only read once, return or use the expression directly
+
+```swift
+// Bad
+let result = calculateSomething()
+return result
+
+// Good
+return calculateSomething()
+```
+
+### No-Single-Use-Functions
+- **If a function is only called once, inline it** - single-use functions fragment the code and make it harder to read
+- **Always align before creating new functions** - propose function extraction and get confirmation first
+- Only extract functions when they are reused in multiple places
+- Reading code top-to-bottom is easier than jumping between functions
+
+### Happy-Path (CRITICAL)
+- **ALWAYS check for success, NEVER check for failure**
+- **Condition should be positive** - use `if let` not `guard let` with early return for the common case
+- **Less code is better** - avoid if-else with error handling in the if branch
+- **NEVER use guard clauses with negation** - `guard !x else { return }` is an anti-pattern here
+
+```swift
+// Bad (guard clause anti-pattern)
+guard let subject = args.subject else { return }
+guard directory.exists() else { return }
+guard playlist != nil else { return }
+
+// Good (happy path)
+if let subject = args.subject {
+    if directory.exists() {
+        process(subject)
+    }
+}
+```
+
+The key insight: structure your code so the condition reads as "if this good thing is true, do the work" rather than "if this bad thing is true, bail out".
+
+### Prefer-Ternary
+- **Use ternary operator for simple conditional assignments**
+
+```swift
+// Bad
+let role: String
+if user.isAdmin {
+    role = "admin"
+} else {
+    role = "user"
+}
+
+// Good
+let role = user.isAdmin ? "admin" : "user"
+```
 
 ### UI/Logic Separation
 - **UI files should NOT contain**: date calculations, string formatting logic, data filtering/sorting, validation rules

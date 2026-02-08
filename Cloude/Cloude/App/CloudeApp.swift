@@ -74,10 +74,23 @@ struct CloudeApp: App {
                         ConnectionStatusLogo(connection: connection)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: { showSettings = true }) {
-                            Image(systemName: "gearshape")
-                                .padding(4)
+                        HStack(spacing: 0) {
+                            Button(action: {
+                                if connection.isAuthenticated || connection.isConnected {
+                                    connection.disconnect(clearCredentials: false)
+                                } else {
+                                    connection.reconnectIfNeeded()
+                                }
+                            }) {
+                                Image(systemName: connection.isAuthenticated ? "power" : "power.circle")
+                                    .foregroundStyle(connection.isAuthenticated ? Color.red.opacity(0.7) : Color.green.opacity(0.7))
+                            }
+                            Divider().frame(height: 20).padding(.horizontal, 6)
+                            Button(action: { showSettings = true }) {
+                                Image(systemName: "gearshape")
+                            }
                         }
+                        .padding(.horizontal, 14)
                     }
                 }
         }

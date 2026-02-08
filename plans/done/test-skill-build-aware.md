@@ -1,5 +1,6 @@
 # Test Skill: Build-Aware Testing
 <!-- priority: 2 -->
+<!-- build: 56 -->
 
 **Feature**: Test skill automatically filters testable features based on build number comparison.
 

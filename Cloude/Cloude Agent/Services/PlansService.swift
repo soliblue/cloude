@@ -62,7 +62,7 @@ struct PlansService {
                 if trimmed.hasPrefix("# ") { pastHeading = true }
                 continue
             }
-            if trimmed.isEmpty && quoteLines.isEmpty { continue }
+            if (trimmed.isEmpty || (trimmed.hasPrefix("<!--") && trimmed.hasSuffix("-->"))) && quoteLines.isEmpty { continue }
             if trimmed.hasPrefix("> ") {
                 quoteLines.append(String(trimmed.dropFirst(2)))
             } else {

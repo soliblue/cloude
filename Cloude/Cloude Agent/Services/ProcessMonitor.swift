@@ -81,11 +81,12 @@ class ProcessMonitor {
     static func killProcess(_ pid: Int32) -> Bool {
         kill(pid, SIGTERM)
 
-        usleep(100_000)
+        usleep(1_000_000)
 
         let checkResult = kill(pid, 0)
         if checkResult == 0 {
             kill(pid, SIGKILL)
+            usleep(500_000)
         }
 
         return true
@@ -170,6 +171,26 @@ class ProcessMonitor {
         }
 
         return results
+    }
+
+    static func checkPortOwner(_ port: UInt16) -> String? {
+        let pipe = Pipe()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/sbin/lsof")
+        process.arguments = ["-i", ":\(port)", "-sTCP:LISTEN", "-P", "-n"]
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let output = String(data: data, encoding: .utf8) ?? ""
+            let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+            guard lines.count > 1 else { return nil }
+            return lines.dropFirst().joined(separator: "\n")
+        } catch {
+            return nil
+        }
     }
 
     static func killOtherAgents() -> Int {
