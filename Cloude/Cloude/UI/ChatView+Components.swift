@@ -111,7 +111,7 @@ struct StreamingInterleavedOutput: View {
                                 StreamingMarkdownView(text: content, isComplete: false)
                             case .tools(let tools):
                                 ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 8) {
+                                    HStack(spacing: 6) {
                                         ForEach(tools, id: \.toolId) { tool in
                                             InlineToolPill(toolCall: tool)
                                         }
@@ -125,7 +125,7 @@ struct StreamingInterleavedOutput: View {
                 }
 
                 if let stats = runStats {
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         Text(Date(), style: .time)
                             .font(.caption2)
                         RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd)
