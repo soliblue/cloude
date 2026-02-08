@@ -74,7 +74,7 @@ struct MemoriesSheet: View {
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
                         Rectangle()
-                            .fill(Color.accentColor.opacity(0.08))
+                            .fill(Color.accentColor)
                             .frame(height: geo.size.height * usagePercent)
                     }
                 }
