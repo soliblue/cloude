@@ -1,4 +1,6 @@
-# Header Compact Layout
+# Header Compact Layout {rectangle.compress.vertical}
+
+> Fix header truncation by removing branch text and reducing tab padding.
 
 Reduce header cramping when cost info is shown. Right side content (conversation name, folder, cost) was getting truncated.
 

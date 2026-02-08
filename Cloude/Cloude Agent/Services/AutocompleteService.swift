@@ -33,7 +33,7 @@ class AutocompleteService {
         Given this conversation:
         \(contextBlock)
 
-        Suggest exactly 2 short follow-up messages the user might send next. Each should be 2-6 words, natural and actionable. Output ONLY a JSON array of 2 strings, nothing else. Example: ["Push to git", "Looks good"]
+        Suggest exactly 1 short follow-up message the user might send next. It should be 2-6 words, natural and actionable. Output ONLY a JSON array of 1 string, nothing else. Example: ["Push to git"]
         """
 
         let process = Process()
@@ -85,7 +85,7 @@ class AutocompleteService {
                 return
             }
 
-            let filtered = Array(suggestions.prefix(2).filter { !$0.isEmpty })
+            let filtered = Array(suggestions.prefix(1).filter { !$0.isEmpty })
             Task { @MainActor in
                 guard self?.currentProcess === process else { return }
                 self?.currentProcess = nil
