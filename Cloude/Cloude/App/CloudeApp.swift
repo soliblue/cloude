@@ -67,6 +67,10 @@ struct CloudeApp: App {
                             }) {
                                 Image(systemName: "brain")
                             }
+                            Divider().frame(height: 20).padding(.horizontal, 6)
+                            Button(action: { showSettings = true }) {
+                                Image(systemName: "gearshape")
+                            }
                         }
                         .padding(.horizontal, 14)
                     }
@@ -74,21 +78,15 @@ struct CloudeApp: App {
                         ConnectionStatusLogo(connection: connection)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: 0) {
-                            Button(action: {
-                                if connection.isAuthenticated || connection.isConnected {
-                                    connection.disconnect(clearCredentials: false)
-                                } else {
-                                    connection.reconnectIfNeeded()
-                                }
-                            }) {
-                                Image(systemName: connection.isAuthenticated ? "power" : "power.circle")
-                                    .foregroundStyle(connection.isAuthenticated ? Color.red.opacity(0.7) : Color.green.opacity(0.7))
+                        Button(action: {
+                            if connection.isAuthenticated || connection.isConnected {
+                                connection.disconnect(clearCredentials: false)
+                            } else {
+                                connection.reconnectIfNeeded()
                             }
-                            Divider().frame(height: 20).padding(.horizontal, 6)
-                            Button(action: { showSettings = true }) {
-                                Image(systemName: "gearshape")
-                            }
+                        }) {
+                            Image(systemName: "power")
+                                .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
                         }
                         .padding(.horizontal, 14)
                     }
@@ -320,6 +318,13 @@ struct CloudeApp: App {
                     conversationName: conv.name,
                     conversationSymbol: conv.symbol
                 )
+            }
+        }
+
+        connection.onConversationOutputStarted = { [windowManager] convId in
+            if let window = windowManager.windowForConversation(convId),
+               window.id != windowManager.activeWindowId {
+                windowManager.markUnread(window.id)
             }
         }
 
