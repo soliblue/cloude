@@ -53,8 +53,8 @@ struct InlineToolPill: View {
             }
 
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
         .background(.clear)
         .overlay {
             if isExecuting {

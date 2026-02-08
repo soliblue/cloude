@@ -1,4 +1,5 @@
 # Remove Streaming Message Background
+<!-- build: 63 -->
 
 **Status:** testing
 **Tags:** ui, chat
