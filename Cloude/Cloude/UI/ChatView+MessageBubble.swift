@@ -129,6 +129,19 @@ struct MessageBubble: View {
                         TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
                     }
                     Spacer()
+                    Button {
+                        UIPasteboard.general.string = message.text
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        withAnimation { showCopiedToast = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation { showCopiedToast = false }
+                        }
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")

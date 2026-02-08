@@ -101,11 +101,33 @@ class AutocompleteService {
         }
     }
 
+    private static let availableSymbols = [
+        "message", "message.fill", "bubble.left", "bubble.left.fill", "bubble.right", "bubble.right.fill", "bubble.left.and.bubble.right", "bubble.left.and.bubble.right.fill", "phone", "phone.fill", "video", "video.fill", "envelope", "envelope.fill", "paperplane", "paperplane.fill", "bell", "bell.fill", "megaphone", "megaphone.fill",
+        "sun.max", "sun.max.fill", "moon", "moon.fill", "moon.stars", "moon.stars.fill", "cloud", "cloud.fill", "cloud.sun", "cloud.sun.fill", "cloud.moon", "cloud.moon.fill", "cloud.bolt", "cloud.bolt.fill", "cloud.rain", "cloud.rain.fill", "cloud.snow", "cloud.snow.fill", "snowflake", "thermometer.sun", "thermometer.snowflake",
+        "pencil", "pencil.circle.fill", "folder", "folder.fill", "paperclip", "link", "book", "book.fill", "bookmark", "bookmark.fill", "tag", "tag.fill", "camera", "camera.fill", "photo", "photo.fill", "film", "film.fill", "music.note", "music.note.list", "headphones", "lightbulb", "lightbulb.fill", "lamp.desk", "flashlight.on.fill", "battery.100", "cpu", "memorychip", "keyboard", "printer", "tv", "display",
+        "iphone", "ipad", "laptopcomputer", "desktopcomputer", "server.rack", "externaldrive", "internaldrive", "opticaldiscdrive", "pc", "macpro.gen3", "applewatch", "airpods", "homepod", "hifispeaker", "gamecontroller", "gamecontroller.fill",
+        "wifi", "antenna.radiowaves.left.and.right", "dot.radiowaves.left.and.right", "network", "globe", "globe.americas", "globe.europe.africa", "globe.asia.australia", "airplane", "car", "car.fill", "bus", "tram", "bicycle", "scooter", "fuelpump", "bolt.car", "location", "location.fill", "map", "map.fill", "mappin", "mappin.circle.fill",
+        "leaf", "leaf.fill", "tree", "tree.fill", "mountain.2", "mountain.2.fill", "flame", "flame.fill", "drop", "drop.fill", "bolt", "bolt.fill", "tornado", "hurricane", "rainbow", "sparkles", "star", "star.fill", "sun.horizon", "sun.horizon.fill",
+        "heart", "heart.fill", "heart.circle", "heart.circle.fill", "bolt.heart", "bolt.heart.fill", "cross", "cross.fill", "pills", "pills.fill", "medical.thermometer", "bandage", "bandage.fill", "syringe", "facemask", "lungs", "lungs.fill", "brain.head.profile", "figure.walk", "figure.run", "figure.yoga", "dumbbell", "dumbbell.fill", "sportscourt", "tennisball",
+        "cart", "cart.fill", "bag", "bag.fill", "creditcard", "creditcard.fill", "dollarsign.circle", "dollarsign.circle.fill", "giftcard", "giftcard.fill", "banknote", "banknote.fill", "building.columns", "building.columns.fill", "storefront", "storefront.fill", "basket", "basket.fill", "barcode", "qrcode",
+        "clock", "clock.fill", "alarm", "alarm.fill", "stopwatch", "stopwatch.fill", "timer", "hourglass", "hourglass.bottomhalf.filled", "hourglass.tophalf.filled", "calendar", "calendar.circle", "calendar.circle.fill", "calendar.badge.plus", "calendar.badge.clock",
+        "play", "play.fill", "play.circle", "play.circle.fill", "pause", "pause.fill", "stop", "stop.fill", "record.circle", "record.circle.fill", "backward", "backward.fill", "forward", "forward.fill", "shuffle", "repeat", "speaker", "speaker.fill", "speaker.wave.3", "speaker.wave.3.fill", "music.mic", "guitars", "pianokeys", "theatermasks", "theatermasks.fill", "ticket", "ticket.fill",
+        "pencil.circle", "square.and.pencil", "highlighter", "scribble", "lasso", "trash", "trash.fill", "doc", "doc.fill", "doc.text", "doc.text.fill", "clipboard", "clipboard.fill", "list.bullet", "list.number", "checklist", "text.alignleft", "text.aligncenter", "text.alignright", "bold", "italic", "underline",
+        "arrow.up", "arrow.down", "arrow.left", "arrow.right", "arrow.up.circle.fill", "arrow.down.circle.fill", "arrow.left.circle.fill", "arrow.right.circle.fill", "arrow.clockwise", "arrow.counterclockwise", "arrow.triangle.2.circlepath", "arrow.up.arrow.down", "arrow.left.arrow.right", "arrow.uturn.left", "arrow.uturn.right", "chevron.up", "chevron.down", "chevron.left", "chevron.right",
+        "circle", "circle.fill", "square", "square.fill", "triangle", "triangle.fill", "diamond", "diamond.fill", "hexagon", "hexagon.fill", "pentagon", "pentagon.fill", "seal", "seal.fill", "shield", "shield.fill", "app", "app.fill",
+        "plus", "minus", "multiply", "divide", "equal", "lessthan", "greaterthan", "number", "percent", "sum", "x.squareroot", "function", "plusminus", "chevron.left.forwardslash.chevron.right",
+        "lock", "lock.fill", "lock.open", "lock.open.fill", "key", "key.fill", "eye", "eye.fill", "eye.slash", "eye.slash.fill", "hand.raised", "hand.raised.fill", "hand.thumbsup", "hand.thumbsup.fill", "hand.thumbsdown", "hand.thumbsdown.fill", "exclamationmark.shield", "exclamationmark.shield.fill", "checkmark.shield", "checkmark.shield.fill",
+        "terminal", "terminal.fill", "apple.terminal", "apple.terminal.fill", "hammer", "hammer.fill", "wrench", "wrench.fill", "screwdriver", "screwdriver.fill", "wrench.and.screwdriver", "wrench.and.screwdriver.fill", "gearshape", "gearshape.fill", "gearshape.2", "gearshape.2.fill", "ant", "ant.fill", "ladybug", "ladybug.fill",
+        "checkmark", "checkmark.circle", "checkmark.circle.fill", "xmark", "xmark.circle", "xmark.circle.fill", "exclamationmark.triangle", "exclamationmark.triangle.fill", "info.circle", "info.circle.fill", "questionmark.circle", "questionmark.circle.fill", "plus.circle", "plus.circle.fill", "minus.circle", "minus.circle.fill", "flag", "flag.fill", "bell.badge", "bell.badge.fill"
+    ]
+
     func suggestName(text: String, context: [String], completion: @escaping (String, String?) -> Void) {
         var contextBlock = ""
         if !context.isEmpty {
             contextBlock = "\nConversation so far:\n" + context.map { "- \($0.prefix(300))" }.joined(separator: "\n") + "\n"
         }
+
+        let symbolList = Self.availableSymbols.joined(separator: ", ")
 
         let prompt = """
         You are naming a chat window in a mobile app. The user needs to glance at the name and instantly know what this conversation is about.
@@ -115,10 +137,11 @@ class AutocompleteService {
 
         Suggest a short conversation name (1-3 words) that describes what's being worked on or discussed. Be specific and descriptive, not generic or catchy. Good examples: "Auth Bug Fix", "Dark Mode", "Rename Logic", "Memory System". Bad examples: "Spark", "New Chat", "Quick Fix".
 
-        Also suggest an SF Symbol icon that fits the topic.
+        Also pick an SF Symbol icon from this list that best fits the topic:
+        \(symbolList)
 
         Respond with ONLY a JSON object like: {"name": "Short Name", "symbol": "star.fill"}
-        The symbol must be a valid SF Symbol name. Pick something specific and creative, not generic.
+        You MUST pick a symbol from the list above. Pick something specific and creative, not generic.
         """
 
         let process = Process()

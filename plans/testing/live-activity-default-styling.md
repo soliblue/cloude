@@ -1,4 +1,5 @@
 # Live Activity Default Styling
+<!-- build: 67 -->
 
 Removed custom orange accent color and forced backgrounds from Live Activity indicators. Now uses system default colors throughout.
 

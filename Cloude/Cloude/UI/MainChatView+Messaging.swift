@@ -7,23 +7,30 @@ extension MainChatView {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         let allImagesBase64 = ImageEncoder.encodeFullImages(attachedImages)
         let thumbnails = ImageEncoder.encodeThumbnails(attachedImages)
+        let allFilesBase64 = encodeFiles(attachedFiles)
 
-        guard !text.isEmpty || allImagesBase64 != nil else { return }
+        guard !text.isEmpty || allImagesBase64 != nil || allFilesBase64 != nil else { return }
 
         if isHeartbeatActive {
-            sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, thumbnails: thumbnails)
+            sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
         } else {
-            sendConversationMessage(text: text, imagesBase64: allImagesBase64, thumbnails: thumbnails)
+            sendConversationMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
         }
 
         inputText = ""
         attachedImages = []
+        attachedFiles = []
         if let activeId = windowManager.activeWindowId {
             drafts.removeValue(forKey: activeId)
         }
     }
 
-    func sendHeartbeatMessage(text: String, imagesBase64: [String]?, thumbnails: [String]?) {
+    private func encodeFiles(_ files: [AttachedFile]) -> [AttachedFilePayload]? {
+        guard !files.isEmpty else { return nil }
+        return files.map { AttachedFilePayload(name: $0.name, data: $0.data.base64EncodedString()) }
+    }
+
+    func sendHeartbeatMessage(text: String, imagesBase64: [String]?, filesBase64: [AttachedFilePayload]?, thumbnails: [String]?) {
         let convOutput = connection.output(for: Heartbeat.conversationId)
         let heartbeat = conversationStore.heartbeatConversation
 
@@ -41,13 +48,14 @@ extension MainChatView {
                 isNewSession: false,
                 conversationId: Heartbeat.conversationId,
                 imagesBase64: imagesBase64,
+                filesBase64: filesBase64,
                 conversationName: "Heartbeat",
                 conversationSymbol: "heart.fill"
             )
         }
     }
 
-    func sendConversationMessage(text: String, imagesBase64: [String]?, thumbnails: [String]?) {
+    func sendConversationMessage(text: String, imagesBase64: [String]?, filesBase64: [AttachedFilePayload]?, thumbnails: [String]?) {
         if windowManager.activeWindow == nil {
             windowManager.addWindow()
         }
@@ -79,7 +87,7 @@ extension MainChatView {
             let workingDir = conv.workingDirectory
             let effortValue = (currentEffort ?? conv.defaultEffort)?.rawValue
             let modelValue = (currentModel ?? conv.defaultModel)?.rawValue
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue, model: modelValue)
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, filesBase64: filesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue, model: modelValue)
 
             if isNewSession {
                 connection.requestNameSuggestion(text: text, context: [], conversationId: conv.id)

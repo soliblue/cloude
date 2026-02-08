@@ -4,9 +4,14 @@ import CloudeShared
 struct FileSearchService {
     static func search(query: String, in directory: String, maxResults: Int = 20) -> [String] {
         let gitignorePatterns = loadGitignore(in: directory)
+        let fileManager = FileManager.default
+
+        if query.isEmpty {
+            return recentFiles(in: directory, patterns: gitignorePatterns, max: maxResults)
+        }
+
         var results: [String] = []
         let lowercaseQuery = query.lowercased()
-        let fileManager = FileManager.default
 
         let enumerator = fileManager.enumerator(
             at: URL(fileURLWithPath: directory),
@@ -45,6 +50,39 @@ struct FileSearchService {
             if aStarts != bStarts { return aStarts }
             return a.count < b.count
         }
+    }
+
+    private static func recentFiles(in directory: String, patterns: [String], max: Int) -> [String] {
+        let fileManager = FileManager.default
+        var files: [(path: String, modified: Date)] = []
+
+        let enumerator = fileManager.enumerator(
+            at: URL(fileURLWithPath: directory),
+            includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey, .contentModificationDateKey],
+            options: [.skipsHiddenFiles]
+        )
+
+        while let url = enumerator?.nextObject() as? URL {
+            let relativePath = url.path.replacingOccurrences(of: directory + "/", with: "")
+
+            if shouldIgnore(path: relativePath, patterns: patterns) {
+                if url.hasDirectoryPath {
+                    enumerator?.skipDescendants()
+                }
+                continue
+            }
+
+            guard !url.hasDirectoryPath else { continue }
+
+            if let modDate = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate {
+                files.append((url.path, modDate))
+            }
+        }
+
+        return files
+            .sorted { $0.modified > $1.modified }
+            .prefix(max)
+            .map(\.path)
     }
 
     private static func loadGitignore(in directory: String) -> [String] {

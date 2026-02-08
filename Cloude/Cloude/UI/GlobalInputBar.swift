@@ -1,12 +1,20 @@
 import SwiftUI
 import UIKit
 import PhotosUI
+import UniformTypeIdentifiers
 import Combine
 import CloudeShared
+
+struct AttachedFile: Identifiable {
+    let id = UUID()
+    let name: String
+    let data: Data
+}
 
 struct GlobalInputBar: View {
     @Binding var inputText: String
     @Binding var attachedImages: [AttachedImage]
+    @Binding var attachedFiles: [AttachedFile]
     @Binding var suggestions: [String]
     let isConnected: Bool
     let isWhisperReady: Bool
@@ -25,6 +33,7 @@ struct GlobalInputBar: View {
 
     @State private var selectedItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
+    @State private var showFilePicker = false
     @FocusState private var isInputFocused: Bool
     @StateObject private var audioRecorder = AudioRecorder()
     @State private var placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
@@ -93,7 +102,6 @@ struct GlobalInputBar: View {
         let afterAt = inputText[inputText.index(after: atIndex)...]
         if afterAt.contains(where: { $0 == " " || $0 == "\n" }) { return nil }
         let mention = String(afterAt)
-        if mention.isEmpty { return nil }
         let hasExtension = mention.contains(".") && !mention.hasSuffix(".")
         if hasExtension { return nil }
         return mention
@@ -171,6 +179,18 @@ struct GlobalInputBar: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
+            if !attachedFiles.isEmpty {
+                FileAttachmentStrip(
+                    files: attachedFiles,
+                    onRemove: { id in
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            attachedFiles.removeAll { $0.id == id }
+                        }
+                    }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
             ZStack(alignment: .bottom) {
                 inputRow
                     .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.7 : 0)
@@ -194,6 +214,7 @@ struct GlobalInputBar: View {
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))
+        .animation(.easeOut(duration: 0.15), value: attachedFiles.map(\.id))
         .animation(.easeOut(duration: 0.2), value: suggestions)
         .gesture(inputBarDragGesture)
         .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
@@ -209,6 +230,19 @@ struct GlobalInputBar: View {
                 selectedItem = nil
             }
         }
+        .fileImporter(isPresented: $showFilePicker, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
+            if let urls = try? result.get() {
+                for url in urls {
+                    guard url.startAccessingSecurityScopedResource() else { continue }
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    if let data = try? Data(contentsOf: url) {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            attachedFiles.append(AttachedFile(name: url.lastPathComponent, data: data))
+                        }
+                    }
+                }
+            }
+        }
         .onChange(of: inputText) { old, new in
             idleTime = Date()
             showStopButton = false
@@ -216,7 +250,7 @@ struct GlobalInputBar: View {
                 placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
                 textFieldId = UUID()
             }
-            if let query = atMentionQuery, query.count >= 1 {
+            if let query = atMentionQuery {
                 fileSearchDebounce?.cancel()
                 fileSearchDebounce = Task {
                     try? await Task.sleep(nanoseconds: Constants.fileSearchDebounceNanos)
@@ -268,7 +302,7 @@ struct GlobalInputBar: View {
     }
 
     private var canSend: Bool {
-        !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachedImages.isEmpty
+        !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachedImages.isEmpty || !attachedFiles.isEmpty
     }
 
     private var willQueue: Bool {
@@ -325,6 +359,10 @@ struct GlobalInputBar: View {
             Menu {
                 Button(action: { showPhotoPicker = true }) {
                     Label("Photo", systemImage: "photo")
+                }
+
+                Button(action: { showFilePicker = true }) {
+                    Label("File", systemImage: "doc")
                 }
 
                 Button(action: startRecording) {
@@ -405,6 +443,7 @@ struct GlobalInputBar: View {
                     withAnimation(.easeOut(duration: 0.15)) {
                         inputText = ""
                         attachedImages = []
+                        attachedFiles = []
                     }
                 }
 

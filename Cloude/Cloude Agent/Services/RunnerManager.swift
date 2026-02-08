@@ -61,7 +61,7 @@ class RunnerManager: ObservableObject {
         }
     }
 
-    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imagesBase64: [String]?, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
+    func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imagesBase64: [String]?, filesBase64: [AttachedFilePayload]? = nil, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
         if let existing = activeRunners[conversationId], existing.runner.isRunning {
             Log.info("Runner for \(conversationId.prefix(8)) already running, aborting old one")
             existing.runner.abort()
@@ -77,7 +77,7 @@ class RunnerManager: ObservableObject {
         onStatusChange?(.running, conversationId)
 
         Log.info("Starting runner for conversation \(conversationId.prefix(8))... (fork=\(forkSession), model=\(model ?? "default"), effort=\(effort ?? "nil"))")
-        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, useFixedSessionId: useFixedSessionId, forkSession: forkSession, model: model, effort: effort)
+        runner.run(prompt: prompt, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, filesBase64: filesBase64, useFixedSessionId: useFixedSessionId, forkSession: forkSession, model: model, effort: effort)
     }
 
     func abort(conversationId: String) {
