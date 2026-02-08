@@ -124,6 +124,11 @@ struct MessageBubble: View {
                         StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
                         RunStatsView(durationMs: durationMs, costUsd: costUsd)
                     }
+                    if let team = message.teamSummary {
+                        if message.durationMs != nil { Spacer() }
+                        TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
+                    }
+                    Spacer()
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
@@ -131,10 +136,6 @@ struct MessageBubble: View {
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)
-                    }
-                    if let team = message.teamSummary {
-                        if message.durationMs != nil { Spacer() }
-                        TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
                     }
                 }
                 .font(.caption)
