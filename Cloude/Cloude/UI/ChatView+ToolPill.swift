@@ -55,7 +55,7 @@ struct InlineToolPill: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
-        .background(.clear)
+        .background(.ultraThinMaterial)
         .overlay {
             if isExecuting {
                 ShimmerOverlay(phase: shimmerPhase)
