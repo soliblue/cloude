@@ -1,6 +1,6 @@
-# Compact Input Fields
+# Compact Input Fields {rectangle.compress.vertical}
 
-Pill-style text inputs with label inside the field instead of above it. Saves vertical space in Settings.
+> Pill-style text inputs with label inside the field instead of above it. Saves vertical space in Settings.
 
 ```
 ┌──────────────────────────────┐
