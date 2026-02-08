@@ -1,5 +1,5 @@
-# Agent Diagnostics View
+# Agent Diagnostics View {stethoscope}
 
-Add diagnostics panel to the existing Mac agent status view: rolling log buffer viewer, health checks, performance stats (memory, disk), and per-run trace info for debugging dropped connections.
+> Add diagnostics panel to the existing Mac agent status view: rolling log buffer viewer, health checks, performance stats (memory, disk), and per-run trace info for debugging dropped connections.
 
 **Files:** `StatusView.swift`

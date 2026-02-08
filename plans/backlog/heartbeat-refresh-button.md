@@ -1,4 +1,6 @@
-# Heartbeat Refresh Button
+# Heartbeat Refresh Button {arrow.clockwise}
+
+> Add a refresh button to the heartbeat sheet toolbar that re-fetches messages.
 
 ## Problem
 No way to manually refresh/sync heartbeat messages if something was missed.
