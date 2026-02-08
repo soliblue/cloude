@@ -24,6 +24,17 @@ struct MemoriesSheet: View {
         return .accentColor
     }
 
+    private var formattedUsed: String {
+        if totalCharacters >= 1000 {
+            return String(format: "%.1fK", Double(totalCharacters) / 1000)
+        }
+        return "\(totalCharacters)"
+    }
+
+    private var formattedMax: String {
+        "\(maxCharacters / 1000)K"
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -57,6 +68,21 @@ struct MemoriesSheet: View {
                     .padding(.vertical, 12)
                 }
             }
+            .background {
+                GeometryReader { geo in
+                    let fillHeight = geo.size.height * usagePercent
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        LinearGradient(
+                            colors: [usageColor.opacity(0), usageColor.opacity(0.1)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: fillHeight)
+                    }
+                }
+                .ignoresSafeArea()
+            }
             .background(.ultraThinMaterial)
             .scrollContentBackground(.hidden)
             .navigationTitle("Memories")
@@ -69,12 +95,9 @@ struct MemoriesSheet: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    MemoryUsageIndicator(
-                        used: totalCharacters,
-                        max: maxCharacters,
-                        percent: usagePercent,
-                        color: usageColor
-                    )
+                    Text("\(formattedUsed) / \(formattedMax)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
             }
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
@@ -175,41 +198,6 @@ struct MemorySectionCard: View {
     }
 }
 
-struct MemoryUsageIndicator: View {
-    let used: Int
-    let max: Int
-    let percent: Double
-    let color: Color
-
-    private var formattedUsed: String {
-        if used >= 1000 {
-            return String(format: "%.1fK", Double(used) / 1000)
-        }
-        return "\(used)"
-    }
-
-    private var formattedMax: String {
-        "\(max / 1000)K"
-    }
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Text("\(formattedUsed) / \(formattedMax)")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.secondary.opacity(0.2))
-                    .frame(width: 40, height: 6)
-
-                Capsule()
-                    .fill(color)
-                    .frame(width: 40 * percent, height: 6)
-            }
-        }
-    }
-}
 
 struct MemoryItemCard: View {
     let item: MemoryItem
