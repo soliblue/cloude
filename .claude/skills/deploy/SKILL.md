@@ -15,6 +15,7 @@ Smart deployment workflow for Cloude. Deploys only what has changes (or everythi
 - `/deploy` — auto-detect what changed and deploy accordingly
 - `/deploy --mac-only` — force Mac agent build only (skip TestFlight)
 - `/deploy --ios-only` — force iOS TestFlight build only (skip Mac agent)
+- `/deploy --phone` — force direct-to-phone install (skip TestFlight)
 
 When a flag is provided, skip the auto-detection logic and deploy the specified component directly.
 
@@ -82,12 +83,30 @@ EOF
 git push
 ```
 
-### 2. Deploy Based on What Changed
+### 2. iOS Deploy: Check for Connected iPhone First
+
+Before deploying iOS via TestFlight, check if My iPhone is connected (USB or Wi-Fi):
+
+```bash
+xcrun devicectl list devices 2>&1 | grep "My iPhone"
+```
+
+If the phone is **connected** (state = `connected`):
+1. Build the app: `xcodebuild -project Cloude/Cloude.xcodeproj -scheme Cloude -destination "platform=iOS,name=My iPhone" build 2>&1 | tail -5`
+2. Install directly: `xcrun devicectl device install app --device <DEVICE_UUID> /Users/soli/Library/Developer/Xcode/DerivedData/Cloude-drgeixundgtalkdkjnittevjxsyt/Build/Products/Debug-iphoneos/Cloude.app`
+3. Report: "Installed directly to iPhone"
+
+If the phone is **not connected** or `unavailable`:
+1. Fall back to TestFlight: `source .env && fastlane ios beta_local`
+2. If TestFlight fails with **upload limit error (409)** — Apple limits ~50-70 builds/day per app — tell Soli and suggest plugging in or enabling Wi-Fi debugging in Xcode to install directly next time.
+
+### 3. Deploy Based on What Changed
 
 **Both (default when in doubt):**
 ```bash
 source .env && fastlane deploy
 ```
+Note: For the iOS portion, still check for connected phone first (step 2 above). If phone is connected, use `fastlane mac build_agent` for the Mac side and direct install for iOS.
 
 **Mac agent only:**
 ```bash
@@ -95,9 +114,7 @@ source .env && fastlane mac build_agent
 ```
 
 **iOS only:**
-```bash
-source .env && fastlane ios beta_local
-```
+Use the connected phone check from step 2 above. Direct install if connected, TestFlight if not.
 
 ## Post-Deployment
 
@@ -109,7 +126,7 @@ Always extract and report the build number after successful deploy:
 cd Cloude && agvtool what-version -terse
 ```
 
-Report it clearly: "Deployed Build XX to TestFlight"
+Report it clearly: "Deployed Build XX to TestFlight" or "Installed Build XX directly to iPhone"
 
 ### 2. Tag Testing Plans with Build Number (REQUIRED)
 
