@@ -35,8 +35,12 @@ struct SettingsView: View {
                 securitySection
                 aboutSection
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.oceanBackground)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {

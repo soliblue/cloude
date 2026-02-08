@@ -45,6 +45,8 @@ struct CloudeApp: App {
         NavigationStack {
             MainChatView(connection: connection, conversationStore: conversationStore, windowManager: windowManager)
             .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         HStack(spacing: 0) {

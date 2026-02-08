@@ -152,7 +152,23 @@ extension ConversationStore {
 
     func replaceMessages(_ conversation: Conversation, with messages: [ChatMessage]) {
         mutate(conversation.id) {
-            $0.messages = messages
+            let existingByServerUUID = Dictionary(
+                $0.messages.compactMap { msg in msg.serverUUID.map { ($0, msg) } },
+                uniquingKeysWith: { first, _ in first }
+            )
+            var merged = messages
+            for i in merged.indices {
+                if let serverUUID = merged[i].serverUUID,
+                   let existing = existingByServerUUID[serverUUID] {
+                    merged[i].id = existing.id
+                    if merged[i].durationMs == nil { merged[i].durationMs = existing.durationMs }
+                    if merged[i].costUsd == nil { merged[i].costUsd = existing.costUsd }
+                    if merged[i].imageBase64 == nil { merged[i].imageBase64 = existing.imageBase64 }
+                    if merged[i].imageThumbnails == nil { merged[i].imageThumbnails = existing.imageThumbnails }
+                    if merged[i].teamSummary == nil { merged[i].teamSummary = existing.teamSummary }
+                }
+            }
+            $0.messages = merged
             if let lastTimestamp = messages.last?.timestamp {
                 $0.lastMessageAt = lastTimestamp
             }

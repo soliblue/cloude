@@ -178,7 +178,7 @@ struct ChatMessageList: View {
             }
         }
         .onChange(of: userMessageCount) { oldCount, newCount in
-            if newCount > oldCount {
+            if newCount == oldCount + 1 {
                 if let lastUserMessage = messages.last(where: { $0.isUser }) {
                     withAnimation(.easeOut(duration: 0.25)) {
                         scrollToMessage(lastUserMessage.id, anchor: .top)
