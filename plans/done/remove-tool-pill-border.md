@@ -1,4 +1,5 @@
 # Remove Tool Pill Border
+<!-- build: 63 -->
 
 **Status:** testing
 **Tags:** ui, chat

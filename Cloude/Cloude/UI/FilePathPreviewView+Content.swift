@@ -54,7 +54,6 @@ extension FilePathPreviewView {
         case .csv:
             ScrollView(.vertical) {
                 CSVTableView(text: text, delimiter: fileExtension == "tsv" ? "\t" : ",")
-                    .padding(.vertical)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .background(Color(.systemBackground))
