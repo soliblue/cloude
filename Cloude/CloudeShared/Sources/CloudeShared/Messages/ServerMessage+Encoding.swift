@@ -220,10 +220,6 @@ extension ServerMessage {
             try container.encode("plan_deleted", forKey: .type)
             try container.encode(stage, forKey: .stage)
             try container.encode(filename, forKey: .filename)
-        case .planUploaded(let stage, let plan):
-            try container.encode("plan_uploaded", forKey: .type)
-            try container.encode(stage, forKey: .stage)
-            try container.encode(plan, forKey: .plan)
         }
     }
 }

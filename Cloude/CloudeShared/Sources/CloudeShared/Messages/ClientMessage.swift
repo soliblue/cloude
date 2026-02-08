@@ -37,7 +37,6 @@ public enum ClientMessage: Codable {
     case suggestName(text: String, context: [String], conversationId: String)
     case getPlans(workingDirectory: String)
     case deletePlan(stage: String, filename: String, workingDirectory: String)
-    case uploadPlan(stage: String, filename: String, content: String, workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
         case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content
@@ -144,12 +143,6 @@ public enum ClientMessage: Codable {
             let filename = try container.decode(String.self, forKey: .filename)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
-        case "upload_plan":
-            let stage = try container.decode(String.self, forKey: .stage)
-            let filename = try container.decode(String.self, forKey: .filename)
-            let content = try container.decode(String.self, forKey: .content)
-            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
-            self = .uploadPlan(stage: stage, filename: filename, content: content, workingDirectory: workingDirectory)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -250,12 +243,6 @@ public enum ClientMessage: Codable {
             try container.encode("delete_plan", forKey: .type)
             try container.encode(stage, forKey: .stage)
             try container.encode(filename, forKey: .filename)
-            try container.encode(workingDirectory, forKey: .workingDirectory)
-        case .uploadPlan(let stage, let filename, let content, let workingDirectory):
-            try container.encode("upload_plan", forKey: .type)
-            try container.encode(stage, forKey: .stage)
-            try container.encode(filename, forKey: .filename)
-            try container.encode(content, forKey: .content)
             try container.encode(workingDirectory, forKey: .workingDirectory)
         }
     }

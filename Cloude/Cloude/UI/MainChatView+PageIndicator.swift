@@ -35,22 +35,21 @@ extension MainChatView {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
             VStack(spacing: 4) {
-                ZStack(alignment: .topTrailing) {
-                    Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                        .font(.system(size: 22))
-                        .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
-                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-
-                    if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
-                        Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(minWidth: 14, minHeight: 14)
-                            .background(Circle().fill(Color.accentColor))
-                            .offset(x: 8, y: -8)
+                Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
+                    .font(.system(size: 22))
+                    .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                    .frame(height: 22)
+                    .overlay(alignment: .topTrailing) {
+                        if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
+                            Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(minWidth: 14, minHeight: 14)
+                                .background(Circle().fill(Color.accentColor))
+                                .offset(x: 8, y: -8)
+                        }
                     }
-                }
-                .frame(height: 22)
 
                 Circle()
                     .fill(Color.clear)

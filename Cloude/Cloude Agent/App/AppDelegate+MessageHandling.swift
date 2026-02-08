@@ -145,14 +145,6 @@ extension AppDelegate {
             Log.info("Received deletePlan: \(stage)/\(filename)")
             PlansService.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
             server.sendMessage(.planDeleted(stage: stage, filename: filename), to: connection)
-
-        case .uploadPlan(let stage, let filename, let content, let workingDirectory):
-            Log.info("Received uploadPlan: \(stage)/\(filename)")
-            if let plan = PlansService.writePlan(stage: stage, filename: filename, content: content, workingDirectory: workingDirectory) {
-                server.sendMessage(.planUploaded(stage: stage, plan: plan), to: connection)
-            } else {
-                server.sendMessage(.error(message: "Failed to write plan \(filename)"), to: connection)
-            }
         }
     }
 }
