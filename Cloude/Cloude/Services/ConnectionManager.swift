@@ -15,6 +15,7 @@ class ConversationOutput: ObservableObject {
     @Published var skipped: Bool = false { didSet { if skipped != oldValue { parent?.objectWillChange.send() } } }
     @Published var teamName: String? { didSet { if teamName != oldValue { parent?.objectWillChange.send() } } }
     @Published var teammates: [TeammateInfo] = [] { didSet { parent?.objectWillChange.send() } }
+    var teamSnapshot: (name: String, members: [TeammateInfo])?
     var lastSavedMessageId: UUID?
     var messageUUID: String?
 
@@ -98,6 +99,7 @@ class ConversationOutput: ObservableObject {
         skipped = false
         teamName = nil
         teammates = []
+        teamSnapshot = nil
     }
 }
 
