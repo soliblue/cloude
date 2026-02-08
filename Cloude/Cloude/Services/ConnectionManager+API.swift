@@ -269,6 +269,7 @@ extension ConnectionManager {
 
     private func handleError(_ errorMessage: String) {
         lastError = errorMessage
+        onFileError?(errorMessage)
         if errorMessage.lowercased().contains("transcription") && isTranscribing {
             isTranscribing = false
             AudioRecorder.markTranscriptionFailed()
