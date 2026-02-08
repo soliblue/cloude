@@ -5,9 +5,20 @@ extension MainChatView {
     @ViewBuilder
     func pageIndicator() -> some View {
         let maxIndex = windowManager.windows.count
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             heartbeatIndicatorButton()
+
+            Divider()
+                .frame(height: 24)
+                .opacity(0.3)
+
             windowIndicatorButtons()
+
+            Divider()
+                .frame(height: 24)
+                .opacity(0.3)
+
+            searchIndicatorButton()
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
@@ -34,29 +45,32 @@ extension MainChatView {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
-            VStack(spacing: 4) {
-                Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                    .font(.system(size: 22))
-                    .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                    .offset(y: -1)
-                    .frame(width: 22, height: 22)
-                    .overlay(alignment: .topTrailing) {
-                        if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
-                            Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 14, minHeight: 14)
-                                .background(Circle().fill(Color.accentColor))
-                                .offset(x: 8, y: -8)
-                        }
+            Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
+                .font(.system(size: 18))
+                .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
+                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [Color.accentColor, Color.accentColor.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                )
+                .overlay(alignment: .topTrailing) {
+                    if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
+                        Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(minWidth: 14, minHeight: 14)
+                            .background(Circle().fill(Color.accentColor))
+                            .offset(x: 4, y: -4)
                     }
-
-                Circle()
-                    .fill(Color.clear)
-                    .frame(width: 5, height: 5)
-            }
-            .frame(height: 31)
+                }
         }
         .buttonStyle(.plain)
     }
@@ -94,18 +108,41 @@ extension MainChatView {
             Button(action: addWindowWithNewChat) {
                 VStack(spacing: 4) {
                     Image(systemName: "plus")
-                        .font(.system(size: 20, weight: .medium))
+                        .font(.system(size: 25, weight: .medium))
                         .foregroundStyle(.secondary)
-                        .frame(width: 22, height: 22)
+                        .frame(width: 28, height: 28)
 
                     Circle()
                         .fill(Color.clear)
-                        .frame(width: 5, height: 5)
+                        .frame(width: 6, height: 6)
                 }
-                .frame(height: 31)
+                .frame(height: 39)
             }
             .buttonStyle(.plain)
         }
+    }
+
+    @ViewBuilder
+    func searchIndicatorButton() -> some View {
+        Button {
+        } label: {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 18))
+                .foregroundStyle(.secondary)
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [Color.accentColor, Color.accentColor.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                )
+        }
+        .buttonStyle(.plain)
     }
 
     func heartbeatIconName(active: Bool, scheduled: Bool) -> String {
@@ -125,24 +162,24 @@ extension MainChatView {
             Group {
                 if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
                     Image(systemName: symbol)
-                        .font(.system(size: 22, weight: weight))
+                        .font(.system(size: 28, weight: weight))
                         .foregroundStyle(color)
                         .modifier(StreamingPulseModifier(isStreaming: isStreaming))
                 } else {
-                    let size: CGFloat = isActive || isStreaming ? 12 : 8
+                    let size: CGFloat = isActive || isStreaming ? 15 : 10
                     Circle()
                         .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
                         .frame(width: size, height: size)
                         .modifier(StreamingPulseModifier(isStreaming: isStreaming))
                 }
             }
-            .frame(height: 22)
+            .frame(height: 28)
 
             Circle()
                 .fill(Color.accentColor)
-                .frame(width: 5, height: 5)
+                .frame(width: 6, height: 6)
                 .opacity(hasUnread && !isActive ? 1 : 0)
         }
-        .frame(height: 31)
+        .frame(height: 39)
     }
 }
