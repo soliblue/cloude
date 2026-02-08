@@ -74,7 +74,7 @@ struct QuestionView: View {
             .padding(.top, 2)
         }
         .padding(12)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color.oceanSecondary)
         .cornerRadius(14)
         .onChange(of: focusedQuestionId) { _, newValue in
             onFocusChange(newValue != nil)
@@ -143,7 +143,7 @@ struct QuestionCard: View {
                 .font(.system(size: 13))
                 .lineLimit(1...3)
                 .padding(8)
-                .background(Color(.tertiarySystemGroupedBackground))
+                .background(Color.oceanTertiary)
                 .cornerRadius(8)
                 .focused(focusBinding, equals: question.id)
         }
@@ -180,7 +180,7 @@ struct OptionRow: View {
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .background(isSelected ? Color.accentColor.opacity(0.1) : Color(.tertiarySystemGroupedBackground))
+            .background(isSelected ? Color.accentColor.opacity(0.1) : Color.oceanTertiary)
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
