@@ -64,7 +64,6 @@ extension ConnectionManager {
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(name: name, symbol: sym, conversationId: c)
         case .plans(let stages):                          handlePlans(stages)
         case .planDeleted(let stage, let filename):       handlePlanDeleted(stage: stage, filename: filename)
-        case .planUploaded(let stage, let plan):          handlePlanUploaded(stage: stage, plan: plan)
         case .fileChange, .image, .gitCommitResult:       break
         }
     }
@@ -431,13 +430,8 @@ extension ConnectionManager {
         onPlanDeleted?(stage, filename)
     }
 
-    private func handlePlanUploaded(stage: String, plan: PlanItem) {
-        onPlanUploaded?(stage, plan)
-    }
-
     func getPlans(workingDirectory: String)                        { ensureAuthenticated(); send(.getPlans(workingDirectory: workingDirectory)) }
     func deletePlan(stage: String, filename: String, workingDirectory: String) { ensureAuthenticated(); send(.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)) }
-    func uploadPlan(stage: String, filename: String, content: String, workingDirectory: String) { ensureAuthenticated(); send(.uploadPlan(stage: stage, filename: filename, content: content, workingDirectory: workingDirectory)) }
 
     func listDirectory(path: String)                              { ensureAuthenticated(); send(.listDirectory(path: path)) }
     func getFile(path: String)                                    { ensureAuthenticated(); send(.getFile(path: path)) }

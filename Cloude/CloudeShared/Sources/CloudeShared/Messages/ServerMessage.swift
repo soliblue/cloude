@@ -54,7 +54,6 @@ public enum ServerMessage: Codable {
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
     case plans(stages: [String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
-    case planUploaded(stage: String, plan: PlanItem)
 
     enum CodingKeys: String, CodingKey {
         case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan
@@ -281,10 +280,6 @@ public enum ServerMessage: Codable {
             let stage = try container.decode(String.self, forKey: .stage)
             let filename = try container.decode(String.self, forKey: .filename)
             self = .planDeleted(stage: stage, filename: filename)
-        case "plan_uploaded":
-            let stage = try container.decode(String.self, forKey: .stage)
-            let plan = try container.decode(PlanItem.self, forKey: .plan)
-            self = .planUploaded(stage: stage, plan: plan)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
