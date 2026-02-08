@@ -1,4 +1,6 @@
-# Adaptive Thinking Support
+# Adaptive Thinking Support {brain.head.profile}
+
+> Expose effort level controls for Opus 4.6 adaptive thinking, letting users pick low/medium/high/max per conversation or message.
 
 Expose Claude Opus 4.6's adaptive thinking effort levels in Cloude, letting users control how hard Claude thinks per request.
 
