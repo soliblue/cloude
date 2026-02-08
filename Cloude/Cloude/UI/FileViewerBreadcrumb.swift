@@ -1,6 +1,8 @@
 import SwiftUI
 import CloudeShared
 
+private let maxComponentLength = 20
+
 struct FileViewerBreadcrumb: View {
     let path: String
     let onNavigate: (String) -> Void
@@ -44,7 +46,7 @@ struct FileViewerBreadcrumb: View {
     }
 
     private var fileName: String {
-        path.lastPathComponent
+        path.lastPathComponent.truncatedBreadcrumb
     }
 
     private var parentPath: String {
@@ -56,7 +58,7 @@ struct FileViewerBreadcrumb: View {
         var current = parentPath
 
         while current != "/" && !current.isEmpty {
-            let name = current.lastPathComponent
+            let name = current.lastPathComponent.truncatedBreadcrumb
             result.insert(PathComponent(name: name, path: current), at: 0)
             current = current.deletingLastPathComponent
         }
@@ -116,5 +118,11 @@ struct FileViewerActions: View {
         } else {
             UIPasteboard.general.setData(data, forPasteboardType: "public.data")
         }
+    }
+}
+
+private extension String {
+    var truncatedBreadcrumb: String {
+        count <= maxComponentLength ? self : String(prefix(maxComponentLength - 1)) + "…"
     }
 }
