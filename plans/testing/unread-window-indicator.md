@@ -1,4 +1,5 @@
 # Unread Window Notification Indicator
+<!-- build: 60 -->
 
 ## Problem
 When a window has unread messages (including streaming content with unread parts), there's no visual indicator on the window dot in the switcher. Users miss new information in other windows.
