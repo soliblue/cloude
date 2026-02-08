@@ -107,7 +107,7 @@ struct MainChatView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { }
-            .background(.ultraThinMaterial)
+            .background(Color.oceanBackground)
         }
         .onAppear {
             initializeFirstWindow()
