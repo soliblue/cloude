@@ -137,8 +137,7 @@ print(f'Tagged {count} testing plans with Build {build}')
 
 After successful deploy, update ALL of these:
 1. Update "Last deploy" line in CLAUDE.local.md Notes section with date, build number, and brief description
-2. Update the auto memory file (`~/.claude/projects/-Users-soli-Desktop-CODING-cloude/memory/MEMORY.md`) — add or update a "## Last Deploy" section with the build number, date, and what changed
-3. Ensure any features just deployed have a corresponding plan in `plans/testing/` (the source of truth for what needs testing)
+2. Ensure any features just deployed have a corresponding plan in `plans/testing/` (the source of truth for what needs testing)
 
 ## How Deploy Works (Mac Agent Restart)
 

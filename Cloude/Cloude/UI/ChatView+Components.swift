@@ -16,7 +16,6 @@ struct StatLabel: View {
 
 struct StreamingOutput: View {
     let text: String
-    @State private var pulse = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -39,12 +38,6 @@ struct StreamingOutput: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .background(
-            Color.accentColor
-                .opacity(pulse ? 0.06 : 0.02)
-        )
-        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
-        .onAppear { pulse = true }
     }
 }
 
@@ -52,7 +45,6 @@ struct StreamingInterleavedOutput: View {
     let text: String
     let toolCalls: [ToolCall]
     var runStats: (durationMs: Int, costUsd: Double)? = nil
-    @State private var pulse = false
 
     private var groupedSegments: [StreamingSegment] {
         let topLevelTools = toolCalls
@@ -145,12 +137,6 @@ struct StreamingInterleavedOutput: View {
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(
-            Color.accentColor
-                .opacity(pulse ? 0.06 : 0.02)
-        )
-        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulse)
-        .onAppear { pulse = true }
     }
 }
 

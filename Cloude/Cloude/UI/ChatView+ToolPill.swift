@@ -56,10 +56,6 @@ struct InlineToolPill: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(.clear)
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.35), lineWidth: 1.5)
-        )
         .overlay {
             if isExecuting {
                 ShimmerOverlay(phase: shimmerPhase)
