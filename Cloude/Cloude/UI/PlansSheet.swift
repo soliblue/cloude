@@ -8,7 +8,18 @@ struct PlansSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedStage = "active"
 
-    private let stageOrder = ["active", "testing", "next", "backlog"]
+    private let stageOrder = ["backlog", "next", "active", "testing", "done"]
+
+    private func stageIcon(_ stage: String) -> String {
+        switch stage {
+        case "backlog": return "tray.full"
+        case "next": return "arrow.right.circle"
+        case "active": return "hammer"
+        case "testing": return "flask"
+        case "done": return "checkmark.circle"
+        default: return "circle"
+        }
+    }
 
     private var stagesWithCounts: [(String, Int)] {
         stageOrder.map { ($0, stages[$0]?.count ?? 0) }
@@ -82,8 +93,8 @@ struct PlansSheet: View {
             ForEach(stagesWithCounts, id: \.0) { stage, count in
                 Button(action: { withAnimation(.easeInOut(duration: 0.15)) { selectedStage = stage } }) {
                     VStack(spacing: 3) {
-                        Text(stage.capitalized)
-                            .font(.system(size: 13, weight: selectedStage == stage ? .semibold : .regular))
+                        Image(systemName: stageIcon(stage))
+                            .font(.system(size: 14, weight: selectedStage == stage ? .semibold : .regular))
                         Text("\(count)")
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
@@ -119,17 +130,27 @@ struct PlanCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(plan.title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
+            HStack(alignment: .top, spacing: 12) {
+                if let icon = plan.icon {
+                    Image(systemName: icon)
+                        .font(.system(size: 18))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 24, alignment: .center)
+                        .padding(.top, 2)
+                }
 
-                Text(previewText)
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondary)
-                    .lineLimit(4)
-                    .multilineTextAlignment(.leading)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(plan.title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+
+                    Text(previewText)
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .lineLimit(4)
+                        .multilineTextAlignment(.leading)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)

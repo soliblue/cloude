@@ -2,7 +2,7 @@ import Foundation
 import CloudeShared
 
 struct PlansService {
-    static let stages = ["active", "testing", "next", "backlog"]
+    static let stages = ["backlog", "next", "active", "testing", "done"]
 
     static func readPlans(workingDirectory: String) -> [String: [PlanItem]] {
         let plansDir = (workingDirectory as NSString).appendingPathComponent("plans")
@@ -19,8 +19,9 @@ struct PlansService {
             let plans = files.filter { $0.hasSuffix(".md") }.sorted().compactMap { filename -> PlanItem? in
                 let filePath = (stageDir as NSString).appendingPathComponent(filename)
                 guard let content = try? String(contentsOfFile: filePath, encoding: .utf8) else { return nil }
-                let title = extractTitle(from: content) ?? filename.replacingOccurrences(of: ".md", with: "")
-                return PlanItem(filename: filename, title: title, content: content, path: filePath)
+                let rawTitle = extractTitle(from: content) ?? filename.replacingOccurrences(of: ".md", with: "")
+                let (title, icon) = extractIcon(from: rawTitle)
+                return PlanItem(filename: filename, title: title, icon: icon, content: content, path: filePath)
             }
 
             result[stage] = plans
@@ -46,5 +47,16 @@ struct PlansService {
             }
         }
         return nil
+    }
+
+    private static func extractIcon(from title: String) -> (String, String?) {
+        let pattern = "^(.+?)\\s*\\{([a-z0-9.]+)\\}$"
+        if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
+           let match = regex.firstMatch(in: title, range: NSRange(title.startIndex..., in: title)) {
+            let titleRange = Range(match.range(at: 1), in: title)!
+            let iconRange = Range(match.range(at: 2), in: title)!
+            return (String(title[titleRange]).trimmingCharacters(in: .whitespaces), String(title[iconRange]))
+        }
+        return (title, nil)
     }
 }

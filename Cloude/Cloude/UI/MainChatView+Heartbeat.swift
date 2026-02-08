@@ -21,7 +21,10 @@ extension MainChatView {
     }
 
     func heartbeatHeader(isRunning: Bool) -> some View {
-        HStack(spacing: 9) {
+        let heartbeat = conversationStore.heartbeatConversation
+        let hasCustomName = heartbeat.name != "Heartbeat"
+
+        return HStack(spacing: 9) {
             Button(action: triggerHeartbeat) {
                 Image(systemName: "bolt.heart.fill")
                     .font(.system(size: 14))
@@ -48,29 +51,53 @@ extension MainChatView {
                 }
                 Text("•")
                     .foregroundColor(.secondary)
-                Text("Heartbeat")
+                if hasCustomName {
+                    Image.safeSymbol(heartbeat.symbol)
+                        .font(.system(size: 12))
+                    Text(heartbeat.name)
+                } else {
+                    Text("Heartbeat")
+                }
             }
             .font(.caption)
             .fontWeight(.medium)
 
             Spacer()
 
-            Button(action: { showIntervalPicker = true }) {
-                if conversationStore.heartbeatConfig.intervalMinutes == nil {
-                    Image(systemName: "clock.badge.xmark")
-                        .font(.system(size: 17))
-                } else {
-                    Text(conversationStore.heartbeatConfig.intervalDisplayText)
-                        .font(.caption)
-                        .fontWeight(.medium)
+            HStack(spacing: 0) {
+                Button(action: refreshHeartbeat) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(7)
                 }
+                .buttonStyle(.plain)
+
+                Divider()
+                    .frame(height: 20)
+
+                Button(action: { showIntervalPicker = true }) {
+                    if conversationStore.heartbeatConfig.intervalMinutes == nil {
+                        Image(systemName: "clock.badge.xmark")
+                            .font(.system(size: 17))
+                    } else {
+                        Text(conversationStore.heartbeatConfig.intervalDisplayText)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(7)
             }
-            .buttonStyle(.plain)
-            .padding(7)
         }
         .padding(.horizontal, 11)
         .padding(.vertical, 7)
         .background(Color.oceanSecondary)
+    }
+
+    func refreshHeartbeat() {
+        guard let workingDir = connection.defaultWorkingDirectory else { return }
+        connection.syncHistory(sessionId: Heartbeat.sessionId, workingDirectory: workingDir)
     }
 
     func triggerHeartbeat() {
