@@ -1,4 +1,7 @@
 # Teammate Orbs → Chat Heads Redesign
+<!-- priority: 10 -->
+<!-- tags: teams, ui -->
+<!-- build: 56 -->
 
 ## Context
 The floating teammate orbs are status indicators only — you can't see what teammates are saying without opening a sheet. Messages are invisible in the main flow. This redesign turns orbs into mini chat heads: each orb shows the teammate's name, floats a speech bubble when a message arrives, and tapping opens a full message timeline.

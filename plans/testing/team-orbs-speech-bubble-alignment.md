@@ -1,4 +1,6 @@
 # Team Orbs Speech Bubble Alignment {bubble.right}
+<!-- priority: 3 -->
+<!-- tags: messages, teams, ui -->
 
 > Orbs shift left when a teammate sends a message — speech bubble expands the HStack instead of growing leftward from a right-aligned anchor.
 

@@ -1,4 +1,7 @@
 # Dead Code Removal
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+<!-- build: 56 -->
 
 ## Changes
 - Removed `GlobalInputBar.configureEffort(from:)` - unused method

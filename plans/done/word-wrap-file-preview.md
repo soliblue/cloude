@@ -1,4 +1,7 @@
 # Word Wrap in File Preview
+<!-- priority: 10 -->
+<!-- tags: files -->
+<!-- build: 56 -->
 
 Enable word wrapping for code/text files in the file preview, like most IDEs default to.
 

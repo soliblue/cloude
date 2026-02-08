@@ -1,4 +1,7 @@
 # Split ChatView+ToolCalls.swift
+<!-- priority: 10 -->
+<!-- tags: refactor, tools -->
+<!-- build: 56 -->
 
 ## Changes
 856 lines → 4 files:

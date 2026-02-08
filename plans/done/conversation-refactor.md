@@ -1,4 +1,7 @@
 # Conversation Architecture Refactor
+<!-- priority: 10 -->
+<!-- tags: conversations, heartbeat, input, refactor, ui -->
+<!-- build: 56 -->
 
 ## Background
 

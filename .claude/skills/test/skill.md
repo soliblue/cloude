@@ -12,7 +12,7 @@ Manage the testing workflow. The `plans/testing/` folder is the source of truth 
 
 ## Flags
 
-- `/test` — show what needs testing (default)
+- `/test` — show what needs testing (default), auto-detect testable features based on build number
 - `/test --run` — run xcodebuild tests before showing testing status
 - `/test --done <name>` — move a specific plan from testing to done
 
@@ -28,12 +28,45 @@ Report pass/fail clearly. If tests fail, show the failing test names and relevan
 
 ## Show What Needs Testing
 
-List all plan files in `plans/testing/`. For each item, explain:
-- What the feature does
-- How to test it
-- What success looks like
+### 1. Get Current Build Number
 
-Also show the count prominently: "**X items awaiting test**"
+```bash
+cd Cloude && agvtool what-version -terse
+```
+
+### 2. Read All Testing Plans
+
+Read every file in `plans/testing/` and extract:
+- Filename (without path or extension)
+- `<!-- build: X -->` metadata (if present)
+- Title (first H1 heading)
+- Brief description or problem statement
+
+### 3. Filter Testable Features
+
+Features are testable if:
+- They have a `<!-- build: X -->` tag
+- The build number in the tag is **≤** current running build number
+
+Features NOT ready to test:
+- No `<!-- build: -->` tag (not yet deployed)
+- Build number **>** current build (deployed to newer build than what's running)
+
+### 4. Generate Minimal Testing Instructions
+
+For each testable feature, provide:
+- **Feature name**: short, clear title
+- **What to test**: 1-2 sentence description of what changed
+- **How to test**: minimal steps (e.g., "Tap X, verify Y appears", "Navigate to Z, check that...")
+- **Expected result**: what success looks like
+
+Keep testing instructions concise and actionable. Avoid verbose explanations.
+
+### 5. Send Interactive Testing Checklist
+
+Use multiple `cloude notify` commands or a structured message to surface the testing checklist. If there are 3+ features, consider asking Soli which ones to prioritize.
+
+Show the count prominently: "**X items ready to test (Build YY)**"
 
 ## After Testing
 

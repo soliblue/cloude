@@ -1,4 +1,5 @@
 # Granular Post-Conversation Reflections {brain.head.profile}
+<!-- priority: 7 -->
 
 > The current `/reflect` skill analyzes everything at once. The most useful insights come right after specific work. After each conversation, a lightweight analysis checks for instant skill suggestions, targeted refactor opportunities, and memory drip updates.
 

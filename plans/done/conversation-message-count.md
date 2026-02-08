@@ -1,4 +1,7 @@
 # Message Count in Conversation Picker
+<!-- priority: 10 -->
+<!-- tags: conversations, messages -->
+<!-- build: 56 -->
 
 Show message count next to relative time in the recent conversations list on the window edit form.
 

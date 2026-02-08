@@ -1,4 +1,7 @@
 # Refactor R2: Extract BashCommandParser.chainedCommands helper
+<!-- priority: 10 -->
+<!-- tags: refactor, tools, ui -->
+<!-- build: 56 -->
 
 ## Status: Active
 

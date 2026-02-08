@@ -1,4 +1,7 @@
 # Agent Consistent Logging {text.alignleft}
+<!-- priority: 10 -->
+<!-- tags: agent -->
+<!-- build: 56 -->
 
 > Replace all remaining print() statements with the Log infrastructure across Mac agent services.
 

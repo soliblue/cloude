@@ -22,7 +22,8 @@ struct PlansService {
                 let rawTitle = extractTitle(from: content) ?? filename.replacingOccurrences(of: ".md", with: "")
                 let (title, icon) = extractIcon(from: rawTitle)
                 let description = extractDescription(from: content)
-                return PlanItem(filename: filename, title: title, icon: icon, description: description, content: content, path: filePath)
+                let (priority, tags, build) = extractMetadata(from: content)
+                return PlanItem(filename: filename, title: title, icon: icon, description: description, priority: priority, tags: tags, build: build, content: content, path: filePath)
             }
 
             result[stage] = plans
@@ -82,5 +83,38 @@ struct PlansService {
             return (String(title[titleRange]).trimmingCharacters(in: .whitespaces), String(title[iconRange]))
         }
         return (title, nil)
+    }
+
+    private static func extractMetadata(from content: String) -> (priority: Int?, tags: [String]?, build: Int?) {
+        let lines = content.components(separatedBy: .newlines)
+        var priority: Int?
+        var tags: [String]?
+        var build: Int?
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("<!--") && trimmed.hasSuffix("-->") {
+                let inner = trimmed
+                    .dropFirst(4)
+                    .dropLast(3)
+                    .trimmingCharacters(in: .whitespaces)
+                if let colonIndex = inner.firstIndex(of: ":") {
+                    let key = String(inner[..<colonIndex]).trimmingCharacters(in: .whitespaces)
+                    let value = String(inner[inner.index(after: colonIndex)...]).trimmingCharacters(in: .whitespaces)
+                    switch key {
+                    case "priority":
+                        priority = Int(value)
+                    case "tags":
+                        tags = value.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                    case "build":
+                        build = Int(value)
+                    default:
+                        break
+                    }
+                }
+            }
+        }
+
+        return (priority, tags, build)
     }
 }
