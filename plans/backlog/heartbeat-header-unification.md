@@ -1,5 +1,7 @@
 # Heartbeat Header Unification {rectangle.grid.1x2}
 
+> Reuse the normal window header layout for heartbeat instead of custom UI — title pill, refresh button, interval picker.
+
 ## Problem
 The heartbeat window has a completely custom header with a dedicated trigger button, but this is redundant — users can already send messages to the heartbeat conversation normally. The heartbeat should feel like a regular window, not a special-case UI.
 

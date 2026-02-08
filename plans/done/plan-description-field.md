@@ -25,6 +25,7 @@ Plans use a `> blockquote` line(s) right after the `# Title {icon}` heading as t
 
 ### UI
 - `PlanCard` in `PlansSheet.swift`: show description below title in `.secondary` color, `.caption` font, max 3 lines
+- Card layout: icon + title inline on same row (HStack), description on row below — no more icon taking a full column
 
 ## Files
 - `Cloude/Cloude/Models/PlansService.swift` — parse description

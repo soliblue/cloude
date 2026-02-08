@@ -1,5 +1,7 @@
 # Markdown Section Toggle {chevron.down.square}
 
+> Collapsible markdown headers that don't shift text position when toggling — tap to collapse/expand body content underneath.
+
 ## Problem
 Markdown headers in messages (##, ###) could act as collapsible sections, but the current arrow-based disclosure indicators shift the header text when toggling. This violates our UX principle of minimizing content movement — users shouldn't have to chase text that jumps around.
 
