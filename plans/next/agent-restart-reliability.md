@@ -1,6 +1,6 @@
-# Agent Restart Reliability
+# Agent Restart Reliability {arrow.triangle.2.circlepath}
 
-Fix Mac agent restart so it works reliably even when an Xcode debug instance was running.
+> Fix Mac agent restart so it works reliably even when an Xcode debug instance was running.
 
 ## Problem
 
