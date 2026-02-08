@@ -1,4 +1,7 @@
 # Tool Shimmer Animation
+<!-- priority: 10 -->
+<!-- tags: tools -->
+<!-- build: 56 -->
 
 ## Done
 

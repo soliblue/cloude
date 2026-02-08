@@ -1,4 +1,7 @@
 # Tool Pill Live Updates
+<!-- priority: 10 -->
+<!-- tags: tools, ui -->
+<!-- build: 56 -->
 
 ## Goal
 Show live tool execution info without expanding the pill inline. Keep the pill compact, put the detail in the sheet.

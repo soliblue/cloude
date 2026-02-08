@@ -1,4 +1,7 @@
 # Better Markdown Table Rendering
+<!-- priority: 10 -->
+<!-- tags: markdown, ui -->
+<!-- build: 56 -->
 
 Tables in markdown currently render with default styling — no visual structure. They should look like real tables with inner dividers and clean styling.
 

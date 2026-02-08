@@ -1,4 +1,7 @@
 # Header Compact Layout {rectangle.compress.vertical}
+<!-- priority: 10 -->
+<!-- tags: ui, windows -->
+<!-- build: 56 -->
 
 > Fix header truncation by removing branch text and reducing tab padding.
 

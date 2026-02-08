@@ -1,4 +1,7 @@
 # Fix: Tool call positions offset after message save / reconnect
+<!-- priority: 10 -->
+<!-- tags: tools, ui -->
+<!-- build: 56 -->
 
 ## Problem
 Tool pills appear at wrong positions (off by ~2 chars, cutting into words) in two scenarios:

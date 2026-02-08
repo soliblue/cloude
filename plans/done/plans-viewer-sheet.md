@@ -1,4 +1,7 @@
 # Plans Viewer Sheet
+<!-- priority: 10 -->
+<!-- tags: files, ui -->
+<!-- build: 56 -->
 
 ## Background
 Plans live on the Mac filesystem under `plans/`. Currently the only way to browse them is via the file browser or asking Claude. Need a purpose-built UI to view plans from the phone — a button in the top-left toolbar next to the brain (memories) icon.

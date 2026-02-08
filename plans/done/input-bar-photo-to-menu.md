@@ -1,4 +1,7 @@
 # Move Photo Button to Send Menu
+<!-- priority: 10 -->
+<!-- tags: input -->
+<!-- build: 56 -->
 
 ## Summary
 Moved the image picker button from a standalone button on the left side of the input bar into the send button's long-press menu, alongside Record and Effort options.

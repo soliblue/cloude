@@ -1,4 +1,7 @@
 # Refactor: Deduplicate Streaming Completion, Send/Queue, and Cleanup
+<!-- priority: 10 -->
+<!-- tags: heartbeat, refactor, ui -->
+<!-- build: 56 -->
 
 ## Status: Active
 

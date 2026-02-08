@@ -1,4 +1,7 @@
 # Adaptive Thinking Support {brain.head.profile}
+<!-- priority: 10 -->
+<!-- tags: input -->
+<!-- build: 56 -->
 
 > Expose effort level controls for Opus 4.6 adaptive thinking, letting users pick low/medium/high/max per conversation or message.
 

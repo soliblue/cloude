@@ -1,4 +1,6 @@
 # Team Summary Badge Not Appearing
+<!-- priority: 3 -->
+<!-- tags: teams -->
 
 Team summary badges should show in saved messages after a team finishes, but they're missing.
 

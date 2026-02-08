@@ -1,4 +1,6 @@
 # Fix Silent Message Drop {exclamationmark.bubble}
+<!-- priority: 2 -->
+<!-- tags: messages, ui -->
 
 > Messages disappear after switching windows — sent message doesn't show in chat and Claude doesn't receive it.
 

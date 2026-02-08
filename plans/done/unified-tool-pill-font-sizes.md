@@ -1,4 +1,7 @@
 # Unified Tool Pill Font Sizes
+<!-- priority: 10 -->
+<!-- tags: tools, ui -->
+<!-- build: 56 -->
 
 ## Problem
 Tool pills had inconsistent font sizes — `.regular` (11pt text, 13pt icon) vs `.small` (10pt text, 12pt icon) used in different contexts, plus chained command pills had their own hardcoded sizes.

@@ -1,4 +1,6 @@
 # TTS Message Playback {speaker.wave.3}
+<!-- priority: 4 -->
+<!-- tags: messages -->
 
 > Long press on assistant message → "Play" option. Uses `AVSpeechSynthesizer` (built-in, offline). Strip markdown before speaking, show playing indicator.
 

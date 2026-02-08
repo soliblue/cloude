@@ -1,4 +1,6 @@
 # Single Smart Reply {text.bubble}
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 > Show only one smart reply suggestion instead of two — cleaner, less noisy, more opinionated.
 

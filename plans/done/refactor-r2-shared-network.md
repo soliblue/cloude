@@ -1,4 +1,7 @@
 # Refactor R2: Move NetworkHelper to CloudeShared
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+<!-- build: 56 -->
 
 ## Status: Active
 

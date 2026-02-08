@@ -1,4 +1,5 @@
 # Breadcrumb: Truncate Long Path Components
+<!-- priority: 3 -->
 
 **Problem**: File viewer breadcrumb overflows when a directory or filename is very long.
 

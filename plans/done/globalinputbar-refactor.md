@@ -1,4 +1,7 @@
 # GlobalInputBar Refactor {arrow.triangle.2.circlepath}
+<!-- priority: 10 -->
+<!-- tags: input, refactor -->
+<!-- build: 56 -->
 
 > Merge duplicate handlers, extract drag gesture and magic numbers from GlobalInputBar.
 

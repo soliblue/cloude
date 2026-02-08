@@ -1,4 +1,7 @@
 # Skill Execution UI
+<!-- priority: 10 -->
+<!-- tags: skills, ui -->
+<!-- build: 56 -->
 
 Show more information when a skill is executed, instead of the generic "Skill" pill with a gear icon.
 

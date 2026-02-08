@@ -1,4 +1,6 @@
 # Heartbeat Header Unification {rectangle.grid.1x2}
+<!-- priority: 7 -->
+<!-- tags: heartbeat, windows -->
 
 > Reuse the normal window header layout for heartbeat instead of custom UI — title pill, refresh button, interval picker.
 

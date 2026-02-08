@@ -1,4 +1,7 @@
 # Send Button Hit Area + Pill Style
+<!-- priority: 10 -->
+<!-- tags: input -->
+<!-- build: 56 -->
 
 Redesigned the send/action button as a prominent pill:
 - **Filled circle** with accent background + white icon when active (can send or stop)

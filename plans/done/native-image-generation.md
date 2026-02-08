@@ -1,4 +1,6 @@
 # Native Image Generation
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 Teach Claude to use image models (primarily Nano Banana Pro / Gemini image gen) as a native capability — knowing when and how to generate images without being explicitly told to.
 

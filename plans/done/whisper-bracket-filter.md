@@ -1,4 +1,6 @@
 # Whisper Bracket Filter
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 ## Summary
 Filter out all `[...]` bracket annotations from Whisper transcription output, not just `[BLANK_AUDIO]` and `[silence]`.

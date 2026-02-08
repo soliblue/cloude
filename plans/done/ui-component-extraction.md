@@ -1,4 +1,7 @@
 # UI Component Extraction Refactor
+<!-- priority: 10 -->
+<!-- tags: ui -->
+<!-- build: 56 -->
 
 ## Status: Active
 

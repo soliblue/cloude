@@ -1,4 +1,6 @@
 # Heartbeat Refresh Button {arrow.clockwise}
+<!-- priority: 4 -->
+<!-- tags: heartbeat, ui -->
 
 > Add a refresh button to the heartbeat sheet toolbar that re-fetches messages.
 

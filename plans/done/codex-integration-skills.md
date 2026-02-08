@@ -1,4 +1,7 @@
 # Codex Integration in Skills
+<!-- priority: 10 -->
+<!-- tags: skills -->
+<!-- build: 56 -->
 
 ## Summary
 Added Codex second opinion step to refactor, reflect, and skillsmith skills.

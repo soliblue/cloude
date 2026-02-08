@@ -1,4 +1,7 @@
 # Window Header Simplify
+<!-- priority: 10 -->
+<!-- tags: ui, windows -->
+<!-- build: 56 -->
 
 ## Status: Testing
 

@@ -1,4 +1,7 @@
 # Import Laptop Conversations
+<!-- priority: 10 -->
+<!-- tags: conversations -->
+<!-- build: 56 -->
 
 "From Laptop" section in conversation picker to import conversations from laptop Claude Code sessions.
 

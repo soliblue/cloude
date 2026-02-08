@@ -1,4 +1,7 @@
 # Split GlobalInputBar.swift
+<!-- priority: 10 -->
+<!-- tags: input, refactor -->
+<!-- build: 56 -->
 
 ## Changes
 635 lines → 3 files:

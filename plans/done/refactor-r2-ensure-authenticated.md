@@ -1,4 +1,7 @@
 # Refactor R2: Extract ensureAuthenticated() helper
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+<!-- build: 56 -->
 
 ## Status: Active
 

@@ -1,4 +1,6 @@
 # Memory Reflect Cleanup
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 ## Summary
 Ran /reflect skill to analyze and reorganize CLAUDE.md and CLAUDE.local.md. Used Sonnet worker + Codex second opinion.

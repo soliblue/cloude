@@ -1,4 +1,7 @@
 # Streaming Text UX Plan
+<!-- priority: 10 -->
+<!-- tags: ui -->
+<!-- build: 56 -->
 
 ## The Problem (How It Feels Today)
 

@@ -1,4 +1,7 @@
 # Rich File Preview
+<!-- priority: 10 -->
+<!-- tags: files, ui -->
+<!-- build: 56 -->
 
 When opening a file from chat (via path pill tap), show a full file viewer with contextual actions instead of a bare preview.
 

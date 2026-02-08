@@ -1,4 +1,6 @@
 # Plan Icons — SF Symbols for Plan Titles {doc.badge.gearshape}
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 > SF Symbol icons in plan headings, displayed on plan cards — same `{icon}` pattern as memory sections.
 

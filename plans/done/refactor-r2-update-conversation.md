@@ -1,4 +1,7 @@
 # Refactor R2: Extract updateConversation() helper
+<!-- priority: 10 -->
+<!-- tags: conversations, refactor -->
+<!-- build: 56 -->
 
 ## Status: Active
 

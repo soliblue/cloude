@@ -1,4 +1,7 @@
 # Streaming + Tool Input Dedup
+<!-- priority: 10 -->
+<!-- tags: input, tools -->
+<!-- build: 56 -->
 
 ## Status: active
 

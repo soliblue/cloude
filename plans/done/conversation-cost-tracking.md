@@ -1,4 +1,7 @@
 # Conversation Cost Tracking
+<!-- priority: 10 -->
+<!-- tags: conversations, ui -->
+<!-- build: 56 -->
 
 Show running cost per conversation. We already get `costUsd` per message from Claude CLI — just need to sum and display it.
 

@@ -1,4 +1,6 @@
 # Screenshot Command
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 Add `cloude screenshot` command that captures the iOS screen and sends it back to the conversation as an image.
 

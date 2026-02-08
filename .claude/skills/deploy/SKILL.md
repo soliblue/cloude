@@ -111,7 +111,29 @@ cd Cloude && agvtool what-version -terse
 
 Report it clearly: "Deployed Build XX to TestFlight"
 
-### 2. Update Tracking (REQUIRED)
+### 2. Tag Testing Plans with Build Number (REQUIRED)
+
+Stamp all plans in `plans/testing/` that don't already have a `<!-- build: -->` tag with the current build number. This records which build a feature shipped in for testing. Plans move to `done/` independently when Soli confirms they work — NOT at deploy time.
+
+```bash
+python3 -c "
+import os, glob
+build = os.popen('cd Cloude && agvtool what-version -terse').read().strip()
+count = 0
+for f in glob.glob('plans/testing/*.md'):
+    with open(f) as fh:
+        content = fh.read()
+    if '<!-- build:' not in content:
+        lines = content.split('\n')
+        lines.insert(1, '<!-- build: ' + build + ' -->')
+        with open(f, 'w') as fh:
+            fh.write('\n'.join(lines))
+        count += 1
+print(f'Tagged {count} testing plans with Build {build}')
+"
+```
+
+### 3. Update Tracking (REQUIRED)
 
 After successful deploy, update ALL of these:
 1. Update "Last deploy" line in CLAUDE.local.md Notes section with date, build number, and brief description
