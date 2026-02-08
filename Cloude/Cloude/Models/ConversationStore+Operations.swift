@@ -158,8 +158,15 @@ extension ConversationStore {
             )
             var merged = messages
             for i in merged.indices {
-                if let serverUUID = merged[i].serverUUID,
-                   let existing = existingByServerUUID[serverUUID] {
+                let existing: ChatMessage?
+                if let serverUUID = merged[i].serverUUID {
+                    existing = existingByServerUUID[serverUUID]
+                } else if i < $0.messages.count, $0.messages[i].isUser == merged[i].isUser {
+                    existing = $0.messages[i]
+                } else {
+                    existing = nil
+                }
+                if let existing {
                     merged[i].id = existing.id
                     if merged[i].durationMs == nil { merged[i].durationMs = existing.durationMs }
                     if merged[i].costUsd == nil { merged[i].costUsd = existing.costUsd }
