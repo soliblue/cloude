@@ -14,7 +14,7 @@ struct MainChatView: View {
     @State var isKeyboardVisible = false
     @State var inputText = ""
     @State var attachedImages: [AttachedImage] = []
-    @State var drafts: [UUID: (text: String, images: [AttachedImage])] = [:]
+    @State var drafts: [UUID: (text: String, images: [AttachedImage], effort: EffortLevel?, model: ModelSelection?)] = [:]
     @State var gitBranches: [String: String] = [:]
     @State var pendingGitChecks: [String] = []
     @State var showIntervalPicker = false
@@ -93,11 +93,11 @@ struct MainChatView: View {
                     conversationDefaultEffort: currentConversation?.defaultEffort,
                     conversationDefaultModel: currentConversation?.defaultModel,
                     onSend: sendMessage,
-                    onEffortChange: { currentEffort = $0 },
-                    onModelChange: { currentModel = $0 },
                     onStop: stopActiveConversation,
                     onTranscribe: transcribeAudio,
-                    onFileSearch: searchFiles
+                    onFileSearch: searchFiles,
+                    currentEffort: $currentEffort,
+                    currentModel: $currentModel
                 )
 
                 pageIndicator()
@@ -115,6 +115,8 @@ struct MainChatView: View {
             setupSuggestionsHandler()
             setupCostHandler()
             checkGitForAllDirectories()
+            currentEffort = currentConversation?.defaultEffort
+            currentModel = currentConversation?.defaultModel
             connection.onTranscription = { text in
                 let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
                 let isBlank = trimmed.isEmpty ||
@@ -153,7 +155,7 @@ struct MainChatView: View {
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
             if let oldId = oldId {
                 if !inputText.isEmpty || !attachedImages.isEmpty {
-                    drafts[oldId] = (inputText, attachedImages)
+                    drafts[oldId] = (inputText, attachedImages, currentEffort, currentModel)
                 } else {
                     drafts.removeValue(forKey: oldId)
                 }
@@ -163,9 +165,13 @@ struct MainChatView: View {
             if let newId = newId, let draft = drafts[newId] {
                 inputText = draft.text
                 attachedImages = draft.images
+                currentEffort = draft.effort
+                currentModel = draft.model
             } else {
                 inputText = ""
                 attachedImages = []
+                currentEffort = currentConversation?.defaultEffort
+                currentModel = currentConversation?.defaultModel
             }
             if windowManager.windows.count == 1 { syncActiveWindowToStore() }
         }

@@ -11,7 +11,7 @@ struct TeamOrbsOverlay: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(alignment: .trailing, spacing: 12) {
             ForEach(activeTeammates) { mate in
                 TeammateOrbRow(
                     teammate: mate,

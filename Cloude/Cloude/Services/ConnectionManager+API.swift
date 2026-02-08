@@ -200,6 +200,9 @@ extension ConnectionManager {
     private func handleTeamDeleted(conversationId: String?) {
         if let id = targetConversationId(from: conversationId) {
             let o = output(for: id)
+            if let teamName = o.teamName, !o.teammates.isEmpty {
+                o.teamSnapshot = (name: teamName, members: o.teammates)
+            }
             o.teamName = nil
             o.teammates = []
         }

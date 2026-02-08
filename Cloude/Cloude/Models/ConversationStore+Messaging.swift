@@ -24,6 +24,13 @@ extension ConversationStore {
                     TeamSummary.Member(name: $0.name, color: $0.color, model: $0.model, agentType: $0.agentType)
                 }
             )
+        } else if let snapshot = output.teamSnapshot {
+            teamSummary = TeamSummary(
+                teamName: snapshot.name,
+                members: snapshot.members.map {
+                    TeamSummary.Member(name: $0.name, color: $0.color, model: $0.model, agentType: $0.agentType)
+                }
+            )
         }
 
         let message = ChatMessage(
