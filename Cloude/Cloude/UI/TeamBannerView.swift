@@ -87,7 +87,7 @@ struct TeamDashboardSheet: View {
                                 .padding(.top, 8)
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 8)
-                                .background(Color(.tertiarySystemGroupedBackground))
+                                .background(Color.oceanTertiary)
                             }
                         }
                     }

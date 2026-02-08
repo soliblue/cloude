@@ -158,4 +158,16 @@ extension ConversationStore {
             }
         }
     }
+
+    func truncateMessages(for conversation: Conversation, from index: Int) {
+        mutate(conversation.id) {
+            if index < $0.messages.count {
+                $0.messages.removeSubrange(index...)
+            }
+        }
+    }
+
+    func messages(for conversation: Conversation) -> [ChatMessage] {
+        conversations.first(where: { $0.id == conversation.id })?.messages ?? []
+    }
 }

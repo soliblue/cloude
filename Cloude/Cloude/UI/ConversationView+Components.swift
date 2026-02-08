@@ -232,9 +232,21 @@ struct ChatMessageList: View {
 
     private var messageListSection: some View {
         ForEach(messages) { message in
-            MessageBubble(message: message)
-                .id("\(message.id)-\(message.isQueued)")
+            MessageBubble(
+                message: message,
+                onRefresh: message.isUser ? nil : { refreshMessage(message) }
+            )
+            .id("\(message.id)-\(message.isQueued)")
         }
+    }
+
+    private func refreshMessage(_ message: ChatMessage) {
+        guard let conversation, let sessionId = conversation.sessionId,
+              let workingDir = conversation.workingDirectory, !workingDir.isEmpty else { return }
+        if let store = conversationStore, let index = store.messages(for: conversation).lastIndex(where: { $0.id == message.id }) {
+            store.truncateMessages(for: conversation, from: index)
+        }
+        connection?.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
     }
 
     private var streamingSection: some View {
@@ -317,7 +329,7 @@ struct ChatMessageList: View {
     private var scrollToBottomButton: some View {
         if !isBottomVisible && !messages.isEmpty {
             Circle()
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color.oceanSecondary)
                 .frame(width: 44, height: 44)
                 .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
                 .overlay {
