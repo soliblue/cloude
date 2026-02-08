@@ -39,7 +39,7 @@ extension MainChatView {
                     .font(.system(size: 22))
                     .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                    .frame(height: 22)
+                    .frame(width: 22, height: 22)
                     .overlay(alignment: .topTrailing) {
                         if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
                             Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
@@ -55,6 +55,7 @@ extension MainChatView {
                     .fill(Color.clear)
                     .frame(width: 5, height: 5)
             }
+            .frame(height: 31)
         }
         .buttonStyle(.plain)
     }
@@ -94,12 +95,13 @@ extension MainChatView {
                     Image(systemName: "plus")
                         .font(.system(size: 20, weight: .medium))
                         .foregroundStyle(.secondary)
-                        .frame(height: 22)
+                        .frame(width: 22, height: 22)
 
                     Circle()
                         .fill(Color.clear)
                         .frame(width: 5, height: 5)
                 }
+                .frame(height: 31)
             }
             .buttonStyle(.plain)
         }
@@ -140,5 +142,6 @@ extension MainChatView {
                 .frame(width: 5, height: 5)
                 .opacity(hasUnread && !isActive ? 1 : 0)
         }
+        .frame(height: 31)
     }
 }
