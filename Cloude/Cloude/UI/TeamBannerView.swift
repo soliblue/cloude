@@ -106,11 +106,11 @@ struct TeamDashboardSheet: View {
                 }
             }
             .background(.ultraThinMaterial)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground(Color.oceanBackground)
     }
 
     private func teammateRow(_ mate: TeammateInfo) -> some View {

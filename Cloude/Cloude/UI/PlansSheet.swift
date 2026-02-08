@@ -96,7 +96,7 @@ struct PlansSheet: View {
             .toolbarBackground(.hidden, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground(Color.oceanBackground)
         .onAppear {
             if stages[selectedStage]?.isEmpty ?? true {
                 if let first = stageOrder.first(where: { !(stages[$0]?.isEmpty ?? true) }) {

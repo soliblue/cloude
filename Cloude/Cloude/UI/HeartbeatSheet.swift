@@ -56,9 +56,9 @@ struct HeartbeatSheet: View {
                     currentModel: $currentModel
                 )
             }
-            .background(.ultraThinMaterial)
+            .background(Color.oceanBackground)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
@@ -152,7 +152,7 @@ struct HeartbeatSheet: View {
                 }
             }
         }
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground(Color.oceanBackground)
     }
 
     private func handleChatCompletion() {

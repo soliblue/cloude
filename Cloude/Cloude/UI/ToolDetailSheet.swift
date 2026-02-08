@@ -135,7 +135,7 @@ struct ToolDetailSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground(Color.oceanBackground)
     }
 
     @ViewBuilder

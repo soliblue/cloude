@@ -127,7 +127,7 @@ struct MessageBubble: View {
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)

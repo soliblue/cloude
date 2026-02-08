@@ -153,7 +153,7 @@ struct ToolCall: Codable {
 }
 
 struct ChatMessage: Codable, Identifiable {
-    let id: UUID
+    var id: UUID
     let isUser: Bool
     var text: String
     let timestamp: Date
