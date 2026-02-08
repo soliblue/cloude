@@ -1,4 +1,7 @@
 # Refactor Tier 2: Deduplication
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+<!-- build: 56 -->
 
 ## Status: Active
 

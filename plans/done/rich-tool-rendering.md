@@ -1,4 +1,7 @@
 # Rich Tool Rendering — Phase 3: Live Subagent Tool Feed
+<!-- priority: 10 -->
+<!-- tags: tools -->
+<!-- build: 56 -->
 
 Phases 1 (shimmer) and 2 (result previews) are done.
 

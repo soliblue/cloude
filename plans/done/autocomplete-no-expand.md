@@ -1,4 +1,7 @@
 # Autocomplete Suggestions Should Not Expand Input Field
+<!-- priority: 10 -->
+<!-- tags: input -->
+<!-- build: 56 -->
 
 ## Problem
 

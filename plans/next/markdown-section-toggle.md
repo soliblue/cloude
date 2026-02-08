@@ -1,4 +1,6 @@
 # Markdown Section Toggle {chevron.down.square}
+<!-- priority: 4 -->
+<!-- tags: markdown -->
 
 > Collapsible markdown headers that don't shift text position when toggling — tap to collapse/expand body content underneath.
 

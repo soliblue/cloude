@@ -1,4 +1,7 @@
 # Refactor Tier 1: Quick Cleanup
+<!-- priority: 10 -->
+<!-- tags: refactor, tools, ui -->
+<!-- build: 56 -->
 
 ## Status: Active
 

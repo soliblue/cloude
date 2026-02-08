@@ -1,4 +1,7 @@
 # Refactor Skill: Pass Context to Codex
+<!-- priority: 10 -->
+<!-- tags: refactor, skills -->
+<!-- build: 56 -->
 
 ## Summary
 Improved the refactor skill's Codex integration in two ways:

@@ -1,4 +1,7 @@
 # File Viewer Actions Spacing
+<!-- priority: 10 -->
+<!-- tags: files -->
+<!-- build: 56 -->
 
 Add horizontal padding and dividers to FileViewerActions icons (share, copy, code) in the file preview header.
 

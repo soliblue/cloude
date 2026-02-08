@@ -1,4 +1,7 @@
 # Queued Send Indicator
+<!-- priority: 10 -->
+<!-- tags: input -->
+<!-- build: 56 -->
 
 Send button visually signals when a message will be queued instead of sent immediately.
 

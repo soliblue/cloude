@@ -58,6 +58,13 @@ struct TeammateOrbRow: View {
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                     .frame(width: 40)
+                HStack(spacing: 3) {
+                    Text(modelBadge(teammate.model))
+                    Text("·")
+                    statusDot
+                }
+                .font(.system(size: 7))
+                .foregroundColor(Color(.tertiaryLabel))
             }
         }
         .onTapGesture(perform: onTap)
@@ -112,6 +119,18 @@ struct TeammateOrbRow: View {
             .fill(orbColor)
             .frame(width: 8, height: 8)
             .offset(x: 12, y: -12)
+    }
+
+    private var statusDot: some View {
+        let (text, color): (String, Color) = {
+            switch teammate.status {
+            case .spawning: return ("Spawn", .orange)
+            case .working: return ("Work", .green)
+            case .idle: return ("Idle", .secondary)
+            case .shutdown: return ("Off", .red)
+            }
+        }()
+        return Text(text).foregroundColor(color)
     }
 
     private func speechBubble(_ text: String) -> some View {

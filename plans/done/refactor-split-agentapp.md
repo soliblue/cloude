@@ -1,4 +1,7 @@
 # Split Cloude_AgentApp.swift
+<!-- priority: 10 -->
+<!-- tags: agent, refactor -->
+<!-- build: 56 -->
 
 ## Changes
 526 lines → 3 files (+ existing Handlers):

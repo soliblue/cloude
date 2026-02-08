@@ -1,4 +1,7 @@
 # Rich Tool Rendering — Phase 2: Result Previews
+<!-- priority: 10 -->
+<!-- tags: tools -->
+<!-- build: 56 -->
 
 Show brief result summary as a second line on completed tool pills:
 - `↳ 241 lines` for Read

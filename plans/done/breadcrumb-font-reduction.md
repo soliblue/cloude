@@ -1,4 +1,6 @@
 # Reduce Path Breadcrumb Font Size
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 Reduced path breadcrumb font from `.caption` to `.caption2` across file viewers and folder browser.
 

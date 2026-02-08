@@ -1,4 +1,7 @@
 # Fix: Messages flash/disappear when switching conversations
+<!-- priority: 10 -->
+<!-- tags: conversations -->
+<!-- build: 56 -->
 
 ## Problem
 When switching to a conversation (via tab swiping, window edit sheet, or `cloude switch`), messages briefly disappear for ~0.5-2 seconds showing either a loading spinner or empty state before reappearing.

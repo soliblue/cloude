@@ -1,4 +1,7 @@
 # Autocomplete tweaks
+<!-- priority: 10 -->
+<!-- tags: input -->
+<!-- build: 56 -->
 
 ## Changes
 - Max input length for autocomplete trigger: 30 → 90 characters

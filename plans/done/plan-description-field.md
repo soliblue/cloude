@@ -1,4 +1,7 @@
 # Plan Description Field {text.below.photo}
+<!-- priority: 10 -->
+<!-- tags: ui -->
+<!-- build: 56 -->
 
 > Show a 2-3 line description on plan cards without opening them.
 

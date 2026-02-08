@@ -1,4 +1,7 @@
 # Refactor Tier 3: Structural Improvements
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+<!-- build: 56 -->
 
 ## Status: Active
 

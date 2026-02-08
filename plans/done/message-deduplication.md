@@ -1,4 +1,7 @@
 # Message Deduplication Plan
+<!-- priority: 10 -->
+<!-- tags: messages -->
+<!-- build: 56 -->
 
 ## Problem
 

@@ -1,4 +1,6 @@
 # Fix Table Column Alignment
+<!-- priority: 10 -->
+<!-- build: 56 -->
 
 Columns in markdown tables weren't aligned across rows — each row sized independently.
 

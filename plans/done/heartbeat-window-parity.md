@@ -1,4 +1,7 @@
 # Heartbeat Window Feature Parity
+<!-- priority: 10 -->
+<!-- tags: heartbeat, ui, windows -->
+<!-- build: 56 -->
 
 ## Problem
 The heartbeat window (page 0 in MainChatView) is missing features that normal chat windows have. It feels like a second-class citizen compared to regular windows.

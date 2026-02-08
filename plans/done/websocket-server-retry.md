@@ -1,4 +1,7 @@
 # WebSocket Server Retry on Port Conflict
+<!-- priority: 10 -->
+<!-- tags: agent -->
+<!-- build: 56 -->
 
 Agent auto-retries port binding up to 5 times with increasing delay (2s, 4s, 6s, 8s, 10s) when "address already in use". Fastlane deploy now uses SIGKILL + 3s wait for clean agent restarts.
 

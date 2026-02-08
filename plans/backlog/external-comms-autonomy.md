@@ -1,4 +1,5 @@
 # External Communication Channels {envelope.arrow.triangle.branch}
+<!-- priority: 7 -->
 
 > Cloude currently only communicates through the iOS app. No way to receive or send emails, SMS, or messages autonomously. Give Cloude external channels with sender allowlist and action restrictions.
 

@@ -1,4 +1,6 @@
 # Conversation Summaries {text.alignleft}
+<!-- priority: 7 -->
+<!-- tags: conversations -->
 
 > After conversations end, the context is lost. Auto-generate concise summaries (background Haiku call) after agent goes idle on conversations with 5+ messages. Store on the Conversation model, display in conversation list and window edit sheet.
 
