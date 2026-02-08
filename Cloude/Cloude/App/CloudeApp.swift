@@ -51,7 +51,7 @@ struct CloudeApp: App {
                             Button(action: { showSettings = true }) {
                                 Image(systemName: "gearshape")
                             }
-                            Divider().frame(height: 20).padding(.horizontal, 6)
+                            Divider().frame(height: 20).padding(.horizontal, 10)
                             Button(action: {
                                 isLoadingMemories = true
                                 memorySections = []
@@ -60,7 +60,7 @@ struct CloudeApp: App {
                             }) {
                                 Image(systemName: "brain")
                             }
-                            Divider().frame(height: 20).padding(.horizontal, 6)
+                            Divider().frame(height: 20).padding(.horizontal, 10)
                             Button(action: {
                                 isLoadingPlans = true
                                 planStages = [:]

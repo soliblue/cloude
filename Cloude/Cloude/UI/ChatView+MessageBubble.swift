@@ -4,6 +4,7 @@ import CloudeShared
 
 struct MessageBubble: View {
     let message: ChatMessage
+    var onRefresh: (() -> Void)?
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
 
@@ -122,6 +123,14 @@ struct MessageBubble: View {
                     if let durationMs = message.durationMs, let costUsd = message.costUsd {
                         StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
                         RunStatsView(durationMs: durationMs, costUsd: costUsd)
+                    }
+                    if let onRefresh {
+                        Button(action: onRefresh) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
                     }
                     if let team = message.teamSummary {
                         if message.durationMs != nil { Spacer() }
