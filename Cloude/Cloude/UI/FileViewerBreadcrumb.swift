@@ -46,7 +46,7 @@ struct FileViewerBreadcrumb: View {
     }
 
     private var fileName: String {
-        path.lastPathComponent.truncatedBreadcrumb
+        path.lastPathComponent.truncatedMiddle
     }
 
     private var parentPath: String {
@@ -124,5 +124,14 @@ struct FileViewerActions: View {
 private extension String {
     var truncatedBreadcrumb: String {
         count <= maxComponentLength ? self : String(prefix(maxComponentLength - 1)) + "…"
+    }
+
+    var truncatedMiddle: String {
+        guard count > maxComponentLength else { return self }
+        let ext = (self as NSString).pathExtension
+        let name = (self as NSString).deletingPathExtension
+        let suffix = ext.isEmpty ? "" : ".\(ext)"
+        let available = maxComponentLength - suffix.count - 1
+        return String(name.prefix(available)) + "…" + suffix
     }
 }

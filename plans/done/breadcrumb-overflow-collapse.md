@@ -1,4 +1,5 @@
 # Breadcrumb Overflow — Collapse to Last 2
+<!-- build: 57 -->
 
 Show only root + `…` + last 2 parent components instead of 3 when path has 4+ segments. Keeps breadcrumb from overflowing screen width.
 
