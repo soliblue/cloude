@@ -1,4 +1,5 @@
 # Toolbar Power Button Cleanup
+<!-- build: 60 -->
 
 ## Changes
 1. **Power button icon**: Replaced colored red/green icons with a single `power` SF Symbol that lights up with accent color when connected and dims to `.secondary` when disconnected

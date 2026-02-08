@@ -1,4 +1,5 @@
 # Breadcrumb — Middle Truncation for Filenames
+<!-- build: 60 -->
 
 Filename in breadcrumb now uses middle truncation to preserve the file extension. e.g. `AutocompleteS….swift` instead of `AutocompleteS…`.
 

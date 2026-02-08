@@ -60,20 +60,17 @@ struct PlansSheet: View {
                 if isLoading {
                     Spacer()
                     ProgressView()
-                    Text("Loading plans...")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.top, 8)
+                        .tint(.secondary.opacity(0.5))
                     Spacer()
                 } else if currentPlans.isEmpty {
                     Spacer()
                     Text("No plans in \(selectedStage)")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.secondary.opacity(0.5))
                     Spacer()
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 12) {
+                        LazyVStack(spacing: 10) {
                             ForEach(filteredAndSortedPlans) { plan in
                                 PlanCard(plan: plan, stage: selectedStage) {
                                     onOpenFile?(plan.path)
@@ -85,7 +82,6 @@ struct PlansSheet: View {
                     }
                 }
             }
-            .background(.ultraThinMaterial)
             .navigationTitle("Plans")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -93,10 +89,11 @@ struct PlansSheet: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                             .fontWeight(.medium)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
         .presentationBackground(.ultraThinMaterial)
@@ -118,33 +115,35 @@ struct PlansSheet: View {
                             .font(.system(size: 14, weight: selectedStage == stage ? .semibold : .regular))
                         Text("\(count)")
                             .font(.system(size: 11))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(selectedStage == stage ? .accentColor.opacity(0.7) : .secondary.opacity(0.6))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .background(selectedStage == stage ? Color.accentColor.opacity(0.12) : Color.clear)
+                    .background(selectedStage == stage ? Color.accentColor.opacity(0.08) : Color.clear)
                     .cornerRadius(8)
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(selectedStage == stage ? .accentColor : .secondary)
+                .foregroundColor(selectedStage == stage ? .accentColor : .secondary.opacity(0.6))
             }
         }
         .padding(4)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(.white.opacity(0.08))
         .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
     }
 
     private var tagFilterChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Button(action: { selectedTags.removeAll() }) {
                     Text("All")
                         .font(.system(size: 12, weight: .medium))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(selectedTags.isEmpty ? Color.accentColor.opacity(0.12) : Color.clear)
-                        .foregroundColor(selectedTags.isEmpty ? .accentColor : .secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(selectedTags.isEmpty ? Color.accentColor.opacity(0.1) : .white.opacity(0.06))
+                        .foregroundColor(selectedTags.isEmpty ? .accentColor : .secondary.opacity(0.7))
                         .clipShape(Capsule())
+                        .overlay(Capsule().strokeBorder(selectedTags.isEmpty ? Color.accentColor.opacity(0.2) : .white.opacity(0.1), lineWidth: 0.5))
                 }
                 .buttonStyle(.plain)
 
@@ -158,11 +157,12 @@ struct PlansSheet: View {
                     }) {
                         Text(tag)
                             .font(.system(size: 12, weight: .medium))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(selectedTags.contains(tag) ? tagColor(tag).opacity(0.15) : Color.clear)
-                            .foregroundColor(selectedTags.contains(tag) ? tagColor(tag) : .secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(selectedTags.contains(tag) ? tagColor(tag).opacity(0.12) : .white.opacity(0.06))
+                            .foregroundColor(selectedTags.contains(tag) ? tagColor(tag) : .secondary.opacity(0.7))
                             .clipShape(Capsule())
+                            .overlay(Capsule().strokeBorder(selectedTags.contains(tag) ? tagColor(tag).opacity(0.2) : .white.opacity(0.1), lineWidth: 0.5))
                     }
                     .buttonStyle(.plain)
                 }
@@ -234,9 +234,9 @@ struct PlanCard: View {
                                     Text(tag)
                                         .font(.system(size: 10, weight: .medium))
                                         .padding(.horizontal, 8)
-                                        .padding(.vertical, 5)
-                                        .background(tagColor(tag).opacity(0.15))
-                                        .foregroundColor(tagColor(tag))
+                                        .padding(.vertical, 4)
+                                        .background(tagColor(tag).opacity(0.1))
+                                        .foregroundColor(tagColor(tag).opacity(0.8))
                                         .clipShape(Capsule())
                                 }
                             }
@@ -249,16 +249,17 @@ struct PlanCard: View {
                     Text("\(build)")
                         .font(.system(size: 10, weight: .medium).monospacedDigit())
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
-                        .background(Color(.quaternarySystemFill))
-                        .foregroundColor(Color(.tertiaryLabel))
+                        .padding(.vertical, 5)
+                        .background(.white.opacity(0.06))
+                        .foregroundColor(.secondary.opacity(0.6))
                         .clipShape(Capsule())
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(.white.opacity(0.08))
             .cornerRadius(12)
+            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
     }

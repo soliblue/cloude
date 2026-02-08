@@ -1,5 +1,5 @@
 # CSV Paths Not Clickable
-<!-- build: 57 -->
+<!-- build: 60 -->
 
 <!-- priority: 2 -->
 <!-- tags: bug, ui, files -->

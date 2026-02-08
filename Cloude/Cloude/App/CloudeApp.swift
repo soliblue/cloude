@@ -48,15 +48,8 @@ struct CloudeApp: App {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         HStack(spacing: 0) {
-                            Button(action: {
-                                isLoadingPlans = true
-                                planStages = [:]
-                                if let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
-                                    connection.getPlans(workingDirectory: wd)
-                                }
-                                showPlans = true
-                            }) {
-                                Image(systemName: "list.bullet.clipboard")
+                            Button(action: { showSettings = true }) {
+                                Image(systemName: "gearshape")
                             }
                             Divider().frame(height: 20).padding(.horizontal, 6)
                             Button(action: {
@@ -68,8 +61,15 @@ struct CloudeApp: App {
                                 Image(systemName: "brain")
                             }
                             Divider().frame(height: 20).padding(.horizontal, 6)
-                            Button(action: { showSettings = true }) {
-                                Image(systemName: "gearshape")
+                            Button(action: {
+                                isLoadingPlans = true
+                                planStages = [:]
+                                if let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+                                    connection.getPlans(workingDirectory: wd)
+                                }
+                                showPlans = true
+                            }) {
+                                Image(systemName: "list.bullet.clipboard")
                             }
                         }
                         .padding(.horizontal, 14)
@@ -88,7 +88,6 @@ struct CloudeApp: App {
                             Image(systemName: "power")
                                 .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
                         }
-                        .padding(.horizontal, 14)
                     }
                 }
         }
