@@ -226,6 +226,7 @@ extension ConnectionManager {
             if !out.isRunning {
                 out.isRunning = true
                 runningConversationId = convId
+                onConversationOutputStarted?(convId)
             }
         } else if let convId = runningConversationId {
             output(for: convId).appendText(text)

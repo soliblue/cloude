@@ -69,10 +69,12 @@ extension MainChatView {
             let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
             let conversation = window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
 
+            let hasUnread = windowManager.unreadWindowIds.contains(window.id)
+
             Button {
                 withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index + 1 }
             } label: {
-                windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
+                windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming, hasUnread: hasUnread)
             }
             .buttonStyle(.plain)
             .simultaneousGesture(
@@ -99,21 +101,30 @@ extension MainChatView {
     }
 
     @ViewBuilder
-    func windowIndicatorIcon(conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
+    func windowIndicatorIcon(conversation: Conversation?, isActive: Bool, isStreaming: Bool, hasUnread: Bool = false) -> some View {
         let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
-        if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
-            Image(systemName: symbol)
-                .font(.system(size: 22, weight: weight))
-                .foregroundStyle(color)
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-        } else {
-            let size: CGFloat = isActive || isStreaming ? 12 : 8
-            Circle()
-                .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
-                .frame(width: size, height: size)
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+        ZStack(alignment: .top) {
+            if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
+                Image(systemName: symbol)
+                    .font(.system(size: 22, weight: weight))
+                    .foregroundStyle(color)
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+            } else {
+                let size: CGFloat = isActive || isStreaming ? 12 : 8
+                Circle()
+                    .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
+                    .frame(width: size, height: size)
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+            }
+
+            if hasUnread && !isActive {
+                Circle()
+                    .fill(Color.accentColor)
+                    .frame(width: 6, height: 6)
+                    .offset(y: -4)
+            }
         }
     }
 }
