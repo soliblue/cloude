@@ -3,21 +3,16 @@ import WidgetKit
 import SwiftUI
 import CloudeShared
 
-extension Color {
-    static let cloudeAccent = Color(red: 0.8, green: 0.447, blue: 0.341)
-}
-
 struct CloudeLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: CloudeActivityAttributes.self) { context in
             LockScreenView(context: context)
-                .activityBackgroundTint(.white)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     Image(systemName: context.attributes.conversationSymbol ?? "cloud.fill")
                         .font(.title2)
-                        .foregroundStyle(Color.cloudeAccent)
+                        .foregroundStyle(.tint)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     StateIndicator(state: context.state.agentState)
@@ -46,12 +41,12 @@ struct CloudeLiveActivity: Widget {
                 }
             } compactLeading: {
                 Image(systemName: context.attributes.conversationSymbol ?? "cloud.fill")
-                    .foregroundStyle(Color.cloudeAccent)
+                    .foregroundStyle(.tint)
             } compactTrailing: {
                 StateIndicator(state: context.state.agentState, compact: true)
             } minimal: {
                 Image(systemName: "cloud.fill")
-                    .foregroundStyle(Color.cloudeAccent)
+                    .foregroundStyle(.tint)
             }
         }
     }
@@ -96,9 +91,9 @@ struct StateIndicator: View {
         switch state {
         case .running:
             if compact {
-                Image(systemName: "bolt.fill")
-                    .foregroundStyle(.green)
-                    .symbolEffect(.pulse)
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .scaleEffect(0.6)
             } else {
                 HStack(spacing: 4) {
                     ProgressView()
@@ -106,25 +101,28 @@ struct StateIndicator: View {
                         .scaleEffect(0.8)
                     Text("Running")
                         .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
         case .compacting:
             HStack(spacing: 4) {
                 Image(systemName: "arrow.triangle.2.circlepath")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.secondary)
                     .symbolEffect(.rotate)
                 if !compact {
                     Text("Compacting")
                         .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
         case .idle:
             HStack(spacing: 4) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(.secondary)
                 if !compact {
                     Text("Done")
                         .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -138,32 +136,31 @@ struct LockScreenView: View {
         HStack(spacing: 10) {
             Image(systemName: context.attributes.conversationSymbol ?? "cloud.fill")
                 .font(.body)
-                .foregroundStyle(Color.cloudeAccent)
+                .foregroundStyle(.tint)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(context.attributes.conversationName)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.cloudeAccent)
                     .lineLimit(1)
 
                 HStack(spacing: 4) {
                     Text(stateText)
                         .font(.caption2)
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(.secondary)
 
                     if let tool = context.state.currentTool {
                         Text("·")
                             .font(.caption2)
-                            .foregroundStyle(Color.gray)
+                            .foregroundStyle(.tertiary)
                         if let detail = context.state.toolDetail {
                             Text(detail)
                                 .font(.caption2)
-                                .foregroundStyle(Color.gray)
+                                .foregroundStyle(.secondary)
                                 .lineLimit(1)
                         } else {
                             Text(toolDisplayName(tool))
                                 .font(.caption2)
-                                .foregroundStyle(Color.gray)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -214,12 +211,12 @@ struct StateIndicatorCompact: View {
         case .compacting:
             Image(systemName: "arrow.triangle.2.circlepath")
                 .font(.subheadline)
-                .foregroundStyle(.orange)
+                .foregroundStyle(.secondary)
                 .symbolEffect(.rotate)
         case .idle:
             Image(systemName: "checkmark.circle.fill")
                 .font(.subheadline)
-                .foregroundStyle(.green)
+                .foregroundStyle(.secondary)
         }
     }
 }
