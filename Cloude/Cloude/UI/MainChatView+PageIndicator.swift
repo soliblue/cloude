@@ -39,6 +39,7 @@ extension MainChatView {
                     .font(.system(size: 22))
                     .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                    .offset(y: -1)
                     .frame(width: 22, height: 22)
                     .overlay(alignment: .topTrailing) {
                         if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
