@@ -34,20 +34,27 @@ extension MainChatView {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
-            ZStack(alignment: .topTrailing) {
-                Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                    .font(.system(size: 22))
-                    .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+            VStack(spacing: 4) {
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
+                        .font(.system(size: 22))
+                        .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
+                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
 
-                if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
-                    Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(minWidth: 14, minHeight: 14)
-                        .background(Circle().fill(Color.accentColor))
-                        .offset(x: 8, y: -8)
+                    if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
+                        Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(minWidth: 14, minHeight: 14)
+                            .background(Circle().fill(Color.accentColor))
+                            .offset(x: 8, y: -8)
+                    }
                 }
+                .frame(height: 22)
+
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 5, height: 5)
             }
         }
         .buttonStyle(.plain)
@@ -84,9 +91,16 @@ extension MainChatView {
             )
         } else {
             Button(action: addWindowWithNewChat) {
-                Image(systemName: "plus")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(.secondary)
+                VStack(spacing: 4) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(height: 22)
+
+                    Circle()
+                        .fill(Color.clear)
+                        .frame(width: 5, height: 5)
+                }
             }
             .buttonStyle(.plain)
         }
@@ -106,18 +120,21 @@ extension MainChatView {
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
         VStack(spacing: 4) {
-            if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
-                Image(systemName: symbol)
-                    .font(.system(size: 22, weight: weight))
-                    .foregroundStyle(color)
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-            } else {
-                let size: CGFloat = isActive || isStreaming ? 12 : 8
-                Circle()
-                    .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
-                    .frame(width: size, height: size)
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+            Group {
+                if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
+                    Image(systemName: symbol)
+                        .font(.system(size: 22, weight: weight))
+                        .foregroundStyle(color)
+                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                } else {
+                    let size: CGFloat = isActive || isStreaming ? 12 : 8
+                    Circle()
+                        .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
+                        .frame(width: size, height: size)
+                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                }
             }
+            .frame(height: 22)
 
             Circle()
                 .fill(Color.accentColor)
