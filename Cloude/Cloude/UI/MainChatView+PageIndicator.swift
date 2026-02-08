@@ -105,7 +105,7 @@ extension MainChatView {
         let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
-        ZStack(alignment: .top) {
+        VStack(spacing: 4) {
             if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
                 Image(systemName: symbol)
                     .font(.system(size: 22, weight: weight))
@@ -119,12 +119,10 @@ extension MainChatView {
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             }
 
-            if hasUnread && !isActive {
-                Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 6, height: 6)
-                    .offset(y: -4)
-            }
+            Circle()
+                .fill(Color.accentColor)
+                .frame(width: 5, height: 5)
+                .opacity(hasUnread && !isActive ? 1 : 0)
         }
     }
 }
