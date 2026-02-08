@@ -202,8 +202,17 @@ extension StreamingMarkdownParser {
         let urlString = String(remaining[urlStart..<urlEndIdx])
         remaining = remaining[remaining.index(after: urlEndIdx)...]
 
-        var attr = AttributedString(linkText)
+        let strippedText = linkText
+            .replacingOccurrences(of: "***", with: "")
+            .replacingOccurrences(of: "**", with: "")
+            .replacingOccurrences(of: "__", with: "")
+            .replacingOccurrences(of: "*", with: "")
+            .replacingOccurrences(of: "_", with: "")
+        var attr = AttributedString(strippedText)
         if let font = font { attr.font = font }
+        if linkText.contains("**") || linkText.contains("__") {
+            attr.inlinePresentationIntent = .stronglyEmphasized
+        }
         if let url = URL(string: urlString) {
             attr.link = url
             attr.foregroundColor = .blue
