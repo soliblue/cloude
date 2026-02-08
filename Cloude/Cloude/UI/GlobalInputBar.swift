@@ -91,8 +91,8 @@ struct GlobalInputBar: View {
     private var atMentionQuery: String? {
         guard let atIndex = inputText.lastIndex(of: "@") else { return nil }
         let afterAt = inputText[inputText.index(after: atIndex)...]
-        let endIndex = afterAt.firstIndex(where: { $0 == " " || $0 == "\n" }) ?? afterAt.endIndex
-        let mention = String(afterAt[..<endIndex])
+        if afterAt.contains(where: { $0 == " " || $0 == "\n" }) { return nil }
+        let mention = String(afterAt)
         if mention.isEmpty { return nil }
         let hasExtension = mention.contains(".") && !mention.hasSuffix(".")
         if hasExtension { return nil }
@@ -463,10 +463,7 @@ struct GlobalInputBar: View {
         guard let atIndex = inputText.lastIndex(of: "@") else { return }
         let fileName = file.lastPathComponent
         let beforeAt = String(inputText[..<atIndex])
-        let afterQuery = inputText[inputText.index(after: atIndex)...]
-        let spaceIndex = afterQuery.firstIndex(where: { $0 == " " || $0 == "\n" })
-        let afterMention = spaceIndex.map { String(afterQuery[$0...]) } ?? ""
-        inputText = beforeAt + "@" + fileName + afterMention
+        inputText = beforeAt + "@" + fileName + " "
     }
 
     private func setEffort(_ level: EffortLevel?) {
