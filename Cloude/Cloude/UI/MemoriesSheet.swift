@@ -18,11 +18,7 @@ struct MemoriesSheet: View {
         min(1.0, Double(totalCharacters) / Double(maxCharacters))
     }
 
-    private var usageColor: Color {
-        if usagePercent >= 0.95 { return .red }
-        if usagePercent >= 0.80 { return .orange }
-        return .accentColor
-    }
+    private var usageColor: Color { .accentColor }
 
 
     var body: some View {
@@ -77,12 +73,9 @@ struct MemoriesSheet: View {
                 GeometryReader { geo in
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
-                        LinearGradient(
-                            colors: [usageColor.opacity(0), usageColor.opacity(0.12)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .frame(height: geo.size.height * usagePercent)
+                        Rectangle()
+                            .fill(Color.accentColor.opacity(0.08))
+                            .frame(height: geo.size.height * usagePercent)
                     }
                 }
             }
