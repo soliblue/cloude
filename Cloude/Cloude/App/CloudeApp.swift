@@ -72,10 +72,10 @@ struct CloudeApp: App {
                                 Image(systemName: "list.bullet.clipboard")
                             }
                         }
-                        .padding(.horizontal, 14)
                     }
                     ToolbarItem(placement: .principal) {
                         ConnectionStatusLogo(connection: connection)
+                            .padding(.leading, 40)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
