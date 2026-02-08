@@ -136,19 +136,30 @@ Stamp all plans in `plans/testing/` that don't already have a `<!-- build: -->` 
 python3 -c "
 import os, glob
 build = os.popen('cd Cloude && agvtool what-version -terse').read().strip()
-count = 0
+tagged = []
 for f in glob.glob('plans/testing/*.md'):
     with open(f) as fh:
         content = fh.read()
     if '<!-- build:' not in content:
+        title = content.split('\n')[0].lstrip('# ').strip()
         lines = content.split('\n')
         lines.insert(1, '<!-- build: ' + build + ' -->')
         with open(f, 'w') as fh:
             fh.write('\n'.join(lines))
-        count += 1
-print(f'Tagged {count} testing plans with Build {build}')
+        tagged.append(title)
+print(f'Tagged {len(tagged)} testing plans with Build {build}')
+if tagged:
+    print('Plans in this deploy:')
+    for t in tagged:
+        print(f'  - {t}')
 "
 ```
+
+After the script runs, **include the plan titles in your deploy summary** so Soli can see exactly what's shipping. Example:
+
+> Deployed Build 66. Plans in this deploy:
+> - Tool Pill Compact Spacing
+> - CSV Header Padding Fix
 
 ### 3. Update Tracking (REQUIRED)
 
