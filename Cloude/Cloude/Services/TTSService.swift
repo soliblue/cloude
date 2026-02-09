@@ -10,6 +10,10 @@ final class TTSService: ObservableObject {
     @Published var playingMessageId: String?
 
     private var standardSynthesizer = AVSpeechSynthesizer()
+    private var audioPlayer: AVAudioPlayer?
+    private var pendingMessageId: String?
+
+    var onSynthesizeRequest: ((String, String) -> Void)?
 
     private init() {}
 
@@ -28,14 +32,40 @@ final class TTSService: ObservableObject {
         switch mode {
         case .off: return
         case .standard: speakStandard(stripped)
-        case .natural: speakStandard(stripped)
+        case .natural: speakNatural(stripped, messageId: messageId)
         }
     }
 
     func stop() {
         standardSynthesizer.stopSpeaking(at: .immediate)
+        audioPlayer?.stop()
+        audioPlayer = nil
+        pendingMessageId = nil
         isPlaying = false
         playingMessageId = nil
+    }
+
+    func playAudio(_ data: Data, messageId: String) {
+        guard pendingMessageId == messageId else { return }
+        pendingMessageId = nil
+
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+            audioPlayer = try AVAudioPlayer(data: data)
+            audioPlayer?.play()
+
+            Task {
+                while audioPlayer?.isPlaying == true {
+                    try? await Task.sleep(nanoseconds: 200_000_000)
+                }
+                isPlaying = false
+                playingMessageId = nil
+            }
+        } catch {
+            isPlaying = false
+            playingMessageId = nil
+        }
     }
 
     private func speakStandard(_ text: String) {
@@ -52,6 +82,11 @@ final class TTSService: ObservableObject {
             isPlaying = false
             playingMessageId = nil
         }
+    }
+
+    private func speakNatural(_ text: String, messageId: String) {
+        pendingMessageId = messageId
+        onSynthesizeRequest?(text, messageId)
     }
 
     private func stripMarkdown(_ text: String) -> String {

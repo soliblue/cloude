@@ -139,6 +139,12 @@ struct MainChatView: View {
                 }
                 AudioRecorder.clearPendingAudioFile()
             }
+            connection.onTTSAudio = { data, messageId in
+                TTSService.shared.playAudio(data, messageId: messageId)
+            }
+            TTSService.shared.onSynthesizeRequest = { [connection] text, messageId in
+                connection.synthesize(text: text, messageId: messageId)
+            }
             connection.onAuthenticated = { [conversationStore, connection] in
                 for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
                     let output = connection.output(for: conv.id)

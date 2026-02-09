@@ -81,6 +81,7 @@ extension WebSocketServer {
             if authenticate(connection, token: token) {
                 sendMessage(.authResult(success: true, message: nil), to: connection)
                 sendMessage(.whisperReady(ready: WhisperService.shared.isReady), to: connection)
+                sendMessage(.kokoroReady(ready: KokoroService.shared.isReady), to: connection)
                 sendMessage(.defaultWorkingDirectory(path: MemoryService.projectRoot), to: connection)
                 let skills = SkillService.loadSkills(from: MemoryService.projectRoot)
                 if !skills.isEmpty {
