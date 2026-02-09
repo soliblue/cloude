@@ -21,69 +21,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Log.rotateIfNeeded()
         Log.logSeparator()
-        Log.startup("╔══════════════════════════════════════════════════════════════╗")
-        Log.startup("║          CLOUDE AGENT STARTING - \(Date())          ║")
-        Log.startup("╚══════════════════════════════════════════════════════════════╝")
-        Log.startup("PID: \(ProcessInfo.processInfo.processIdentifier)")
-        Log.startup("Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
-        Log.startup("Bundle: \(Bundle.main.bundlePath)")
-        Log.startup("Code signing: \(Self.codeSigningIdentity())")
 
-        Log.startup("[1/9] Checking for other agents...")
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        Log.startup("Cloude Agent \(version) (\(build)) — PID \(ProcessInfo.processInfo.processIdentifier)")
+
         let killedAgents = ProcessMonitor.killOtherAgents()
         if killedAgents > 0 {
-            Log.startup("       Killed \(killedAgents) existing agent process(es), waiting 2s for cleanup...")
+            Log.startup("Killed \(killedAgents) existing agent(s), waiting 2s...")
             Thread.sleep(forTimeInterval: 2.0)
         }
-        Log.startup("       ✓ Other agents check complete")
 
-        Log.startup("[2/9] Installing CLI...")
         CLIInstaller.installIfNeeded()
-        Log.startup("       ✓ CLI installed")
-
-        Log.startup("[3/9] Setting activation policy...")
         NSApp.setActivationPolicy(.accessory)
-        Log.startup("       ✓ Activation policy set to accessory")
-
-        Log.startup("[4/9] Setting up menu bar...")
         setupMenuBar()
-        Log.startup("       ✓ Menu bar ready")
-
-        Log.startup("[5/9] Setting up services (WebSocket, RunnerManager)...")
         setupServices()
-        Log.startup("       ✓ Services configured")
-
-        Log.startup("[6/9] Installing signal handlers...")
         installSignalHandlers()
-        Log.startup("       ✓ Signal handlers installed")
-
-        Log.startup("[7/9] Setting up popover...")
         setupPopover()
-        Log.startup("       ✓ Popover ready")
-
-        Log.startup("[8/9] Setting up heartbeat...")
         setupHeartbeat()
-        Log.startup("       ✓ Heartbeat configured")
 
-        Log.startup("[9/9] Starting WebSocket server on port \(server.port)...")
         if let portOwner = ProcessMonitor.checkPortOwner(server.port) {
-            Log.startup("       ⚠️ Port \(server.port) already in use:\n\(portOwner)")
-        } else {
-            Log.startup("       ✓ Port \(server.port) is free")
+            Log.startup("⚠️ Port \(server.port) in use: \(portOwner)")
         }
         server.start()
-        Log.startup("       Server.start() called - waiting for state update...")
 
-        Log.startup("[POST] Initializing Whisper...")
         initializeWhisper()
-
-        Log.startup("[POST] Initializing Kokoro TTS...")
         initializeKokoro()
 
-        Log.startup("═══════════════════════════════════════════════════════════════")
-        Log.startup("STARTUP SEQUENCE COMPLETE - Server should be listening on :\(server.port)")
-        Log.startup("Log file: \(Log.logPath)")
-        Log.startup("═══════════════════════════════════════════════════════════════")
+        Log.startup("Ready on :\(server.port) — log: \(Log.logPath)")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
