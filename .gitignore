@@ -33,6 +33,10 @@ fastlane/README.md
 # Tweet archive data (personal, never commit)
 .claude/skills/tweets/data/
 
+# Sora browser session (contains auth cookies)
+tools/sora/browser-data/
+tools/sora/output/
+
 # Swift Package Manager
 .build/
 .swiftpm/
