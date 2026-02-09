@@ -122,6 +122,7 @@ struct GlobalInputBar: View {
 
     private var showCommandSuggestions: Bool {
         if filteredCommands.isEmpty { return false }
+        if inputText.isEmpty && !isInputFocused { return false }
         if inputText.isEmpty && !suggestions.isEmpty && !isRunning { return false }
         return true
     }
