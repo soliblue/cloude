@@ -46,21 +46,18 @@ extension MainChatView {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
             Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                .font(.system(size: 18))
-                .foregroundStyle(isScheduled || isHeartbeatActive ? Color.accentColor : .secondary)
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                .frame(width: 36, height: 36)
-                .background(
-                    Circle()
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [Color.accentColor, Color.accentColor.opacity(0.3)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1.5
-                        )
+                .font(.system(size: 22))
+                .foregroundStyle(
+                    isScheduled || isHeartbeatActive
+                        ? AnyShapeStyle(LinearGradient(
+                            colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        : AnyShapeStyle(.secondary)
                 )
+                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                .frame(width: 28, height: 28)
                 .overlay(alignment: .topTrailing) {
                     if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
                         Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
@@ -127,20 +124,15 @@ extension MainChatView {
         Button {
         } label: {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 18))
-                .foregroundStyle(.secondary)
-                .frame(width: 36, height: 36)
-                .background(
-                    Circle()
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [Color.accentColor, Color.accentColor.opacity(0.3)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1.5
-                        )
+                .font(.system(size: 22))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
+                .frame(width: 28, height: 28)
         }
         .buttonStyle(.plain)
     }
