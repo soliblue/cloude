@@ -129,6 +129,7 @@ struct ChatMessageList: View {
                 scrollToBottomButton
             }
         }
+        .background(Color.oceanBackground)
         .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = messages.isEmpty

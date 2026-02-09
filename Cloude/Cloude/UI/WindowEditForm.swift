@@ -50,7 +50,7 @@ struct WindowEditForm: View {
                     Image.safeSymbol(symbol.nilIfEmpty, fallback: "circle.dashed")
                         .font(.system(size: 24))
                         .frame(width: 48, height: 48)
-                        .background(.regularMaterial)
+                        .background(Color.oceanSecondary)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)
@@ -60,7 +60,7 @@ struct WindowEditForm: View {
                     .textFieldStyle(.plain)
                     .padding(.horizontal, 16)
                     .frame(height: 48)
-                    .background(.regularMaterial)
+                    .background(Color.oceanSecondary)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .onChange(of: name) { _, newValue in
                         if let conv = conversation, !newValue.isEmpty {
@@ -96,7 +96,7 @@ struct WindowEditForm: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
-                    .background(.regularMaterial)
+                    .background(Color.oceanSecondary)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
@@ -123,7 +123,7 @@ struct WindowEditForm: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(.regularMaterial)
+                .background(Color.oceanSecondary)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
 
@@ -166,7 +166,7 @@ struct WindowEditForm: View {
                         }
                     }
                 }
-                .background(.regularMaterial)
+                .background(Color.oceanSecondary)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             }
 
