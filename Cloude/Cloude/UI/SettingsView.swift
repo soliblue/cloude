@@ -11,7 +11,8 @@ struct SettingsView: View {
     @AppStorage("defaultCostLimitUsd") private var defaultCostLimitUsd: Double = 0
     @AppStorage("enableSuggestions") private var enableSuggestions = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
-    @State private var authToken = ""
+    @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
+@State private var authToken = ""
     @State private var showToken = false
     @State private var ipCopied = false
 
@@ -33,7 +34,7 @@ struct SettingsView: View {
                 processesSection
                 costLimitsSection
                 featuresSection
-                ttsSection
+ttsSection
                 securitySection
                 aboutSection
             }
@@ -107,6 +108,7 @@ struct SettingsView: View {
 
             DeviceIPRow(ipCopied: $ipCopied)
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
     private var processesSection: some View {
@@ -177,6 +179,7 @@ struct SettingsView: View {
         } footer: {
             Text("Running Claude Code processes on the Mac agent")
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
     private var costLimitsSection: some View {
@@ -197,6 +200,7 @@ struct SettingsView: View {
         } footer: {
             Text("Default cost warning for new conversations. Per-conversation limits can be set from the chat header.")
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
     private var featuresSection: some View {
@@ -209,6 +213,7 @@ struct SettingsView: View {
         } footer: {
             Text("Show a suggested reply after each response")
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
     private var ttsSection: some View {
@@ -221,14 +226,26 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.menu)
             }
+
+            if ttsMode == .natural {
+                SettingsRow(icon: "person.wave.2", color: .indigo) {
+                    Picker("Voice", selection: $kokoroVoice) {
+                        ForEach(KokoroVoice.allCases, id: \.self) { voice in
+                            Text("\(voice.label) (\(voice.accent) \(voice.gender))").tag(voice)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+            }
         } header: {
             Text("Text to Speech")
         } footer: {
             Text(ttsMode.description)
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
-    private var securitySection: some View {
+private var securitySection: some View {
         Section {
             if BiometricAuth.isAvailable {
                 SettingsRow(icon: BiometricAuth.biometricIcon, color: .green) {
@@ -245,6 +262,7 @@ struct SettingsView: View {
         } header: {
             Text("Security")
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
     private var aboutSection: some View {
@@ -267,6 +285,7 @@ struct SettingsView: View {
             }
             .foregroundColor(.primary)
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
     private var tailscaleSection: some View {
@@ -299,6 +318,7 @@ struct SettingsView: View {
         } header: {
             Text("Network")
         }
+        .listRowBackground(Color.oceanSecondary)
     }
 
     private func connect() {

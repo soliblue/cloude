@@ -65,8 +65,19 @@ class ConversationStore: ObservableObject {
     @Published var questionInputFocused: Bool = false
     @Published var heartbeatConfig = HeartbeatConfig()
 
-    private let saveKey = "saved_conversations_v2"
+    private let legacySaveKey = "saved_conversations_v2"
     private let heartbeatTriggeredKey = "heartbeatLastTriggered"
+
+    private static var conversationsDirectory: URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let dir = docs.appendingPathComponent("conversations", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    private func fileURL(for id: UUID) -> URL {
+        Self.conversationsDirectory.appendingPathComponent("\(id.uuidString).json")
+    }
 
     var heartbeatConversation: Conversation {
         conversations.first(where: { $0.id == Heartbeat.conversationId })
@@ -107,14 +118,38 @@ class ConversationStore: ObservableObject {
     }
 
     func save() {
-        UserDefaults.standard.setCodable(conversations, forKey: saveKey)
-        if let triggeredAt = heartbeatConfig.lastTriggeredAt {
-            UserDefaults.standard.set(triggeredAt, forKey: heartbeatTriggeredKey)
+        for conversation in conversations {
+            saveConversation(conversation)
         }
     }
 
+    func saveConversation(_ conversation: Conversation) {
+        if let data = try? JSONEncoder().encode(conversation) {
+            try? data.write(to: fileURL(for: conversation.id))
+        }
+    }
+
+    func deleteConversationFile(_ id: UUID) {
+        try? FileManager.default.removeItem(at: fileURL(for: id))
+    }
+
     private func load() {
-        conversations = UserDefaults.standard.codable([Conversation].self, forKey: saveKey, default: [])
+        if let legacy: [Conversation] = UserDefaults.standard.codable([Conversation].self, forKey: legacySaveKey), !legacy.isEmpty {
+            conversations = legacy
+            for conversation in conversations {
+                saveConversation(conversation)
+            }
+            UserDefaults.standard.removeObject(forKey: legacySaveKey)
+        } else {
+            let dir = Self.conversationsDirectory
+            if let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
+                conversations = files.compactMap { url in
+                    guard url.pathExtension == "json",
+                          let data = try? Data(contentsOf: url) else { return nil }
+                    return try? JSONDecoder().decode(Conversation.self, from: data)
+                }
+            }
+        }
 
         ensureHeartbeatExists()
         currentConversation = listableConversations.first
@@ -126,12 +161,14 @@ class ConversationStore: ObservableObject {
 
     private func ensureHeartbeatExists() {
         if !conversations.contains(where: { $0.id == Heartbeat.conversationId }) {
-            conversations.append(Conversation(
+            let heartbeat = Conversation(
                 name: "Heartbeat",
                 symbol: "heart.fill",
                 id: Heartbeat.conversationId,
                 sessionId: Heartbeat.sessionId
-            ))
+            )
+            conversations.append(heartbeat)
+            saveConversation(heartbeat)
         }
     }
 

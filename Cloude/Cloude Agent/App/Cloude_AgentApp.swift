@@ -75,11 +75,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func handleSynthesize(_ text: String, messageId: String, connection: NWConnection) {
-        Log.info("Synthesize: \(text.count) chars for message \(messageId.prefix(8))")
+    func handleSynthesize(_ text: String, messageId: String, voice: String?, connection: NWConnection) {
+        Log.info("Synthesize: \(text.count) chars for message \(messageId.prefix(8)) voice=\(voice ?? "default")")
         Task {
             do {
-                let wavData = try await KokoroService.shared.synthesize(text: text)
+                let wavData = try await KokoroService.shared.synthesize(text: text, voice: voice)
                 let base64 = wavData.base64EncodedString()
                 Log.info("Synthesize: generated \(wavData.count) bytes WAV")
                 await MainActor.run {

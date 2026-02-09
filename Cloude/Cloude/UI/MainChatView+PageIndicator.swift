@@ -45,29 +45,36 @@ extension MainChatView {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
-            Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                .font(.system(size: 22))
-                .foregroundStyle(
-                    isScheduled || isHeartbeatActive
-                        ? AnyShapeStyle(LinearGradient(
-                            colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        : AnyShapeStyle(.secondary)
-                )
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                .frame(width: 28, height: 28)
-                .overlay(alignment: .topTrailing) {
-                    if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
-                        Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(minWidth: 14, minHeight: 14)
-                            .background(Circle().fill(Color.accentColor))
-                            .offset(x: 4, y: -4)
+            VStack(spacing: 4) {
+                Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
+                    .font(.system(size: 22))
+                    .foregroundStyle(
+                        isScheduled || isHeartbeatActive
+                            ? AnyShapeStyle(LinearGradient(
+                                colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                            : AnyShapeStyle(.secondary)
+                    )
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                    .frame(height: 28)
+                    .overlay(alignment: .topTrailing) {
+                        if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
+                            Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(minWidth: 14, minHeight: 14)
+                                .background(Circle().fill(Color.accentColor))
+                                .offset(x: 4, y: -4)
+                        }
                     }
-                }
+
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 6, height: 6)
+            }
+            .frame(height: 39)
         }
         .buttonStyle(.plain)
     }
@@ -105,7 +112,7 @@ extension MainChatView {
             Button(action: addWindowWithNewChat) {
                 VStack(spacing: 4) {
                     Image(systemName: "plus")
-                        .font(.system(size: 25, weight: .medium))
+                        .font(.system(size: 22, weight: .medium))
                         .foregroundStyle(.secondary)
                         .frame(width: 28, height: 28)
 
@@ -122,17 +129,19 @@ extension MainChatView {
     @ViewBuilder
     func searchIndicatorButton() -> some View {
         Button {
+            showConversationSearch = true
         } label: {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 22))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 28, height: 28)
+            VStack(spacing: 4) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 22))
+                    .foregroundStyle(.secondary)
+                    .frame(height: 28)
+
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 6, height: 6)
+            }
+            .frame(height: 39)
         }
         .buttonStyle(.plain)
     }
@@ -154,7 +163,7 @@ extension MainChatView {
             Group {
                 if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
                     Image(systemName: symbol)
-                        .font(.system(size: 28, weight: weight))
+                        .font(.system(size: 22, weight: weight))
                         .foregroundStyle(color)
                         .modifier(StreamingPulseModifier(isStreaming: isStreaming))
                 } else {

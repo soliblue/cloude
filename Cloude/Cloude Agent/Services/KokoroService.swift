@@ -5,6 +5,7 @@ import MLXUtilsLibrary
 import MLX
 import AVFoundation
 import Combine
+import NaturalLanguage
 
 @MainActor
 class KokoroService: ObservableObject {
@@ -19,6 +20,7 @@ class KokoroService: ObservableObject {
     private var voiceNames: [String] = []
     private let defaultVoice = "af_heart"
     private let sampleRate: Double = 24000
+    private let interChunkSilenceSamples = 2400 // 100ms @ 24kHz
 
     private let modelDir: URL = {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -75,22 +77,34 @@ class KokoroService: ObservableObject {
         }
     }
 
-    func synthesize(text: String) async throws -> Data {
+    func synthesize(text: String, voice voiceName: String? = nil) async throws -> Data {
         guard let engine = engine else { throw KokoroError.notReady }
 
-        let voiceKey = defaultVoice + ".npy"
+        let selectedVoice = voiceName ?? defaultVoice
+        let voiceKey = selectedVoice + ".npy"
         guard let voice = voices[voiceKey] else { throw KokoroError.noVoice }
 
         isSynthesizing = true
         defer { isSynthesizing = false }
 
-        Log.debug("KokoroService: Synthesizing \(text.count) chars")
+        Log.debug("KokoroService: Synthesizing \(text.count) chars with voice \(selectedVoice)")
 
-        let language: Language = defaultVoice.first == "a" ? .enUS : .enGB
+        let language: Language = selectedVoice.first == "a" ? .enUS : .enGB
+        let chunks = splitTextForSynthesis(text)
+        Log.debug("KokoroService: Split into \(chunks.count) chunk(s)")
         var audio: [Float] = []
-        try suppressStderr {
-            let (result, _) = try engine.generateAudio(voice: voice, language: language, text: text)
-            audio = result
+        for (index, chunk) in chunks.enumerated() {
+            let chunkAudio = try generateAudioWithFallback(
+                engine: engine,
+                voice: voice,
+                language: language,
+                text: chunk,
+                depth: 0
+            )
+            audio.append(contentsOf: chunkAudio)
+            if index < chunks.count - 1 {
+                audio.append(contentsOf: repeatElement(Float(0), count: interChunkSilenceSamples))
+            }
         }
 
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
@@ -106,6 +120,146 @@ class KokoroService: ObservableObject {
         }
 
         return pcmBufferToWAV(buffer, sampleRate: sampleRate)
+    }
+
+    private func generateAudioWithFallback(
+        engine: KokoroTTS,
+        voice: MLXArray,
+        language: Language,
+        text: String,
+        depth: Int
+    ) throws -> [Float] {
+        do {
+            var audio: [Float] = []
+            try suppressStderr {
+                let (result, _) = try engine.generateAudio(voice: voice, language: language, text: text)
+                audio = result
+            }
+            return audio
+        } catch let err as KokoroTTS.KokoroTTSError {
+            guard err == .tooManyTokens, depth < 6 else { throw err }
+            let pieces = splitInHalfAtBoundary(text)
+            guard pieces.count == 2 else { throw err }
+            let left = try generateAudioWithFallback(engine: engine, voice: voice, language: language, text: pieces[0], depth: depth + 1)
+            let right = try generateAudioWithFallback(engine: engine, voice: voice, language: language, text: pieces[1], depth: depth + 1)
+            return left + Array(repeatElement(Float(0), count: interChunkSilenceSamples / 2)) + right
+        } catch {
+            throw error
+        }
+    }
+
+    private func splitTextForSynthesis(_ text: String) -> [String] {
+        let normalized = text.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return [] }
+
+        let maxChunkChars = 260
+        let hardMaxChars = 380
+        let sentences = splitSentences(normalized)
+
+        var chunks: [String] = []
+        var current = ""
+
+        for sentence in sentences {
+            let candidate = current.isEmpty ? sentence : current + " " + sentence
+            if candidate.count <= maxChunkChars {
+                current = candidate
+                continue
+            }
+
+            if !current.isEmpty {
+                chunks.append(current)
+                current = ""
+            }
+
+            if sentence.count <= hardMaxChars {
+                current = sentence
+                continue
+            }
+
+            // Extra-long sentence: split by words to stay under hard limit.
+            chunks.append(contentsOf: splitByWords(sentence, maxChars: hardMaxChars))
+        }
+
+        if !current.isEmpty {
+            chunks.append(current)
+        }
+
+        return chunks.isEmpty ? [normalized] : chunks
+    }
+
+    private func splitSentences(_ text: String) -> [String] {
+        let tokenizer = NLTokenizer(unit: .sentence)
+        tokenizer.string = text
+        var result: [String] = []
+        tokenizer.enumerateTokens(in: text.startIndex..<text.endIndex) { range, _ in
+            let sentence = String(text[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !sentence.isEmpty {
+                result.append(sentence)
+            }
+            return true
+        }
+        return result.isEmpty ? [text] : result
+    }
+
+    private func splitByWords(_ text: String, maxChars: Int) -> [String] {
+        let words = text.split(separator: " ")
+        var result: [String] = []
+        var current = ""
+
+        for word in words {
+            let wordStr = String(word)
+            let candidate = current.isEmpty ? wordStr : current + " " + wordStr
+            if candidate.count <= maxChars {
+                current = candidate
+            } else {
+                if !current.isEmpty {
+                    result.append(current)
+                }
+                if wordStr.count > maxChars {
+                    result.append(contentsOf: splitHard(wordStr, maxChars: maxChars))
+                    current = ""
+                } else {
+                    current = wordStr
+                }
+            }
+        }
+
+        if !current.isEmpty {
+            result.append(current)
+        }
+
+        return result
+    }
+
+    private func splitHard(_ text: String, maxChars: Int) -> [String] {
+        guard text.count > maxChars else { return [text] }
+        var result: [String] = []
+        var start = text.startIndex
+        while start < text.endIndex {
+            let end = text.index(start, offsetBy: maxChars, limitedBy: text.endIndex) ?? text.endIndex
+            result.append(String(text[start..<end]))
+            start = end
+        }
+        return result
+    }
+
+    private func splitInHalfAtBoundary(_ text: String) -> [String] {
+        guard text.count > 1 else { return [text] }
+        let mid = text.index(text.startIndex, offsetBy: text.count / 2)
+        if let split = text[..<mid].lastIndex(where: { $0 == " " || $0 == "," || $0 == "." || $0 == ";" || $0 == ":" || $0 == "!" || $0 == "?" }) {
+            let left = String(text[..<split]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let right = String(text[text.index(after: split)...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !left.isEmpty && !right.isEmpty {
+                return [left, right]
+            }
+        }
+
+        let left = String(text[..<mid]).trimmingCharacters(in: .whitespacesAndNewlines)
+        let right = String(text[mid...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        if !left.isEmpty && !right.isEmpty {
+            return [left, right]
+        }
+        return [text]
     }
 
     private func pcmBufferToWAV(_ buffer: AVAudioPCMBuffer, sampleRate: Double) -> Data {

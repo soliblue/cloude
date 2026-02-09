@@ -26,7 +26,7 @@ struct CloudeApp: App {
     @State private var filePathToPreview: String? = nil
     @AppStorage("appTheme") private var appTheme: AppTheme = .dark
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
-    @Environment(\.scenePhase) var scenePhase
+@Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -332,4 +332,5 @@ struct CloudeApp: App {
 
         connection.connect(host: host, port: port, token: token)
     }
+
 }

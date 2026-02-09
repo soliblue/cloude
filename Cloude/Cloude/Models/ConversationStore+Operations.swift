@@ -8,7 +8,7 @@ extension ConversationStore {
         if currentConversation?.id == conversationId {
             currentConversation = conversations[idx]
         }
-        save()
+        saveConversation(conversations[idx])
         return true
     }
 
@@ -32,14 +32,14 @@ extension ConversationStore {
         }
         conversations.insert(conversation, at: 0)
         currentConversation = conversation
-        save()
+        saveConversation(conversation)
         return conversation
     }
 
     func addConversation(_ conversation: Conversation) {
         conversations.insert(conversation, at: 0)
         currentConversation = conversation
-        save()
+        saveConversation(conversation)
     }
 
     func addMessage(_ message: ChatMessage, to conversation: Conversation) {
@@ -89,7 +89,7 @@ extension ConversationStore {
         if currentConversation?.id == conversation.id {
             currentConversation = listableConversations.first
         }
-        save()
+        deleteConversationFile(conversation.id)
     }
 
     func duplicateConversation(_ conversation: Conversation) -> Conversation? {
@@ -103,7 +103,7 @@ extension ConversationStore {
         )
         conversations.insert(newConversation, at: 0)
         currentConversation = newConversation
-        save()
+        saveConversation(newConversation)
         return newConversation
     }
 

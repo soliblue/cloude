@@ -7,18 +7,19 @@ final class TTSService: ObservableObject {
     static let shared = TTSService()
 
     @Published var isPlaying = false
+    @Published var isSynthesizing = false
     @Published var playingMessageId: String?
 
     private var standardSynthesizer = AVSpeechSynthesizer()
     private var audioPlayer: AVAudioPlayer?
     private var pendingMessageId: String?
 
-    var onSynthesizeRequest: ((String, String) -> Void)?
+    var onSynthesizeRequest: ((String, String, String?) -> Void)?
 
     private init() {}
 
-    func speak(_ text: String, messageId: String, mode: TTSMode) {
-        if isPlaying && playingMessageId == messageId {
+    func speak(_ text: String, messageId: String, mode: TTSMode, voice: String? = nil) {
+        if (isPlaying || isSynthesizing) && playingMessageId == messageId {
             stop()
             return
         }
@@ -32,7 +33,9 @@ final class TTSService: ObservableObject {
         switch mode {
         case .off: return
         case .standard: speakStandard(stripped)
-        case .natural: speakNatural(stripped, messageId: messageId)
+        case .natural:
+            isSynthesizing = true
+            speakNatural(stripped, messageId: messageId, voice: voice)
         }
     }
 
@@ -41,6 +44,7 @@ final class TTSService: ObservableObject {
         audioPlayer?.stop()
         audioPlayer = nil
         pendingMessageId = nil
+        isSynthesizing = false
         isPlaying = false
         playingMessageId = nil
     }
@@ -48,11 +52,14 @@ final class TTSService: ObservableObject {
     func playAudio(_ data: Data, messageId: String) {
         guard pendingMessageId == messageId else { return }
         pendingMessageId = nil
+        isSynthesizing = false
 
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
             try AVAudioSession.sharedInstance().setActive(true)
             audioPlayer = try AVAudioPlayer(data: data)
+            audioPlayer?.enableRate = true
+            audioPlayer?.rate = 1.25
             audioPlayer?.play()
 
             Task {
@@ -84,9 +91,9 @@ final class TTSService: ObservableObject {
         }
     }
 
-    private func speakNatural(_ text: String, messageId: String) {
+    private func speakNatural(_ text: String, messageId: String, voice: String?) {
         pendingMessageId = messageId
-        onSynthesizeRequest?(text, messageId)
+        onSynthesizeRequest?(text, messageId, voice)
     }
 
     private func stripMarkdown(_ text: String) -> String {

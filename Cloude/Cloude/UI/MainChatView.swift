@@ -24,6 +24,7 @@ struct MainChatView: View {
     @AppStorage("enableSuggestions") var enableSuggestions = false
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?
+    @State var showConversationSearch = false
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
@@ -142,8 +143,8 @@ struct MainChatView: View {
             connection.onTTSAudio = { data, messageId in
                 TTSService.shared.playAudio(data, messageId: messageId)
             }
-            TTSService.shared.onSynthesizeRequest = { [connection] text, messageId in
-                connection.synthesize(text: text, messageId: messageId)
+            TTSService.shared.onSynthesizeRequest = { [connection] text, messageId, voice in
+                connection.synthesize(text: text, messageId: messageId, voice: voice)
             }
             connection.onAuthenticated = { [conversationStore, connection] in
                 for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
@@ -225,6 +226,23 @@ struct MainChatView: View {
                 onDuplicate: { newConv in
                     windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     editingWindow = nil
+                }
+            )
+        }
+        .sheet(isPresented: $showConversationSearch) {
+            ConversationSearchSheet(
+                conversationStore: conversationStore,
+                windowManager: windowManager,
+                onSelect: { conv in
+                    showConversationSearch = false
+                    if let activeWindow = windowManager.activeWindow {
+                        if let oldConvId = activeWindow.conversationId,
+                           let oldConv = conversationStore.conversation(withId: oldConvId),
+                           oldConv.isEmpty, oldConv.id != conv.id {
+                            conversationStore.deleteConversation(oldConv)
+                        }
+                        windowManager.linkToCurrentConversation(activeWindow.id, conversation: conv)
+                    }
                 }
             )
         }
