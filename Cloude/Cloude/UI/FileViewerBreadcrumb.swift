@@ -83,7 +83,7 @@ struct FileViewerActions: View {
     var body: some View {
         HStack(spacing: 12) {
             if let data = fileData {
-                ShareLink(item: data, preview: SharePreview(fileName)) {
+                ShareLink(item: temporaryFileURL(data: data), preview: SharePreview(fileName)) {
                     Image(systemName: "square.and.arrow.up")
                 }
 
@@ -110,6 +110,12 @@ struct FileViewerActions: View {
 
     private var fileName: String {
         path.lastPathComponent
+    }
+
+    private func temporaryFileURL(data: Data) -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+        try? data.write(to: url)
+        return url
     }
 
     private func copyToClipboard(_ data: Data) {
