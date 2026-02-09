@@ -27,7 +27,7 @@ class KokoroService: ObservableObject {
 
     private let modelFileName = "kokoro-v1_0.safetensors"
     private let voicesFileName = "voices.npz"
-    private let modelURL = "https://huggingface.co/hexgrad/Kokoro-82M/resolve/main/kokoro-v1_0.safetensors"
+    private let modelURL = "https://github.com/mlalma/KokoroTestApp/raw/main/Resources/kokoro-v1_0.safetensors"
     private let voicesURL = "https://github.com/mlalma/KokoroTestApp/raw/main/Resources/voices.npz"
 
     var onReady: (() -> Void)?
@@ -53,15 +53,19 @@ class KokoroService: ObservableObject {
                 try await downloadFile(from: voicesURL, to: voicesPath)
             }
 
-            Log.info("KokoroService: Loading model from \(modelPath.lastPathComponent)")
-            engine = KokoroTTS(modelPath: modelPath)
-
-            Log.info("KokoroService: Loading voices from \(voicesPath.lastPathComponent)")
-            if let loadedVoices = NpyzReader.read(fileFromPath: voicesPath) {
-                voices = loadedVoices
-                voiceNames = voices.keys.map { String($0.split(separator: ".")[0]) }.sorted()
-                Log.info("KokoroService: Loaded \(voiceNames.count) voices")
+            Log.info("KokoroService: Loading model...")
+            suppressStderr {
+                engine = KokoroTTS(modelPath: modelPath)
             }
+
+            Log.info("KokoroService: Loading voices...")
+            suppressStderr {
+                if let loadedVoices = NpyzReader.read(fileFromPath: voicesPath) {
+                    voices = loadedVoices
+                    voiceNames = voices.keys.map { String($0.split(separator: ".")[0]) }.sorted()
+                }
+            }
+            Log.info("KokoroService: Loaded \(voiceNames.count) voices")
 
             isReady = true
             Log.info("KokoroService: Ready")
@@ -83,7 +87,11 @@ class KokoroService: ObservableObject {
         Log.debug("KokoroService: Synthesizing \(text.count) chars")
 
         let language: Language = defaultVoice.first == "a" ? .enUS : .enGB
-        let (audio, _) = try engine.generateAudio(voice: voice, language: language, text: text)
+        var audio: [Float] = []
+        try suppressStderr {
+            let (result, _) = try engine.generateAudio(voice: voice, language: language, text: text)
+            audio = result
+        }
 
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
         let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(audio.count))!
@@ -135,18 +143,40 @@ class KokoroService: ObservableObject {
         return data
     }
 
-    private func downloadFile(from urlString: String, to destination: URL) async throws {
+    private func downloadFile(from urlString: String, to destination: URL, maxRetries: Int = 3) async throws {
         guard let url = URL(string: urlString) else { throw KokoroError.downloadFailed }
 
-        let (tempURL, response) = try await URLSession.shared.download(from: url)
+        for attempt in 1...maxRetries {
+            do {
+                let (tempURL, response) = try await URLSession.shared.download(from: url)
 
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw KokoroError.downloadFailed
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    throw KokoroError.downloadFailed
+                }
+
+                try FileManager.default.moveItem(at: tempURL, to: destination)
+                downloadProgress = 1.0
+                return
+            } catch {
+                if attempt == maxRetries { throw error }
+                Log.info("KokoroService: Download attempt \(attempt)/\(maxRetries) failed, retrying in 2s...")
+                try await Task.sleep(nanoseconds: 2_000_000_000)
+            }
         }
-
-        try FileManager.default.moveItem(at: tempURL, to: destination)
-        downloadProgress = 1.0
     }
+}
+
+@discardableResult
+private func suppressStderr<T>(_ body: () throws -> T) rethrows -> T {
+    let saved = dup(STDERR_FILENO)
+    let devNull = open("/dev/null", O_WRONLY)
+    dup2(devNull, STDERR_FILENO)
+    close(devNull)
+    defer {
+        dup2(saved, STDERR_FILENO)
+        close(saved)
+    }
+    return try body()
 }
 
 enum KokoroError: Error, LocalizedError {
