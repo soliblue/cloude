@@ -8,6 +8,8 @@ struct MessageBubble: View {
     var onRefresh: (() -> Void)?
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
+    @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
+    @ObservedObject private var ttsService = TTSService.shared
 
     private var hasToolCalls: Bool {
         !message.toolCalls.filter { $0.parentToolId == nil }.isEmpty
@@ -132,6 +134,17 @@ struct MessageBubble: View {
                         TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
                     }
                     Spacer()
+                    if ttsMode != .off && !message.text.isEmpty {
+                        Button {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode)
+                        } label: {
+                            Image(systemName: ttsService.playingMessageId == message.id.uuidString ? "stop.fill" : "speaker.wave.2")
+                                .font(.caption2)
+                                .foregroundColor(ttsService.playingMessageId == message.id.uuidString ? .purple : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
                     Button {
                         UIPasteboard.general.string = message.text
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -182,6 +195,17 @@ struct MessageBubble: View {
                     }
                 } label: {
                     Label("Copy", systemImage: "doc.on.doc")
+                }
+                if ttsMode != .off && !message.text.isEmpty && !message.isUser {
+                    Button {
+                        ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode)
+                    } label: {
+                        if ttsService.playingMessageId == message.id.uuidString {
+                            Label("Stop", systemImage: "stop.fill")
+                        } else {
+                            Label("Play", systemImage: "speaker.wave.2")
+                        }
+                    }
                 }
             }
             .overlay(alignment: .top) {

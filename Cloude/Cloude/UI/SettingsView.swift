@@ -10,6 +10,8 @@ struct SettingsView: View {
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
     @AppStorage("defaultCostLimitUsd") private var defaultCostLimitUsd: Double = 0
     @AppStorage("enableSuggestions") private var enableSuggestions = false
+    @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
+    @StateObject private var ttsService = TTSService.shared
     @State private var authToken = ""
     @State private var showToken = false
     @State private var ipCopied = false
@@ -32,6 +34,7 @@ struct SettingsView: View {
                 processesSection
                 costLimitsSection
                 featuresSection
+                ttsSection
                 securitySection
                 aboutSection
             }
@@ -206,6 +209,50 @@ struct SettingsView: View {
             Text("Features")
         } footer: {
             Text("Show a suggested reply after each response")
+        }
+    }
+
+    private var ttsSection: some View {
+        Section {
+            SettingsRow(icon: ttsMode.icon, color: .purple) {
+                Picker("Text to Speech", selection: $ttsMode) {
+                    ForEach(TTSMode.allCases, id: \.self) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
+            if ttsMode == .natural {
+                if ttsService.isModelDownloaded {
+                    SettingsRow(icon: "checkmark.circle.fill", color: .green) {
+                        Text("Kokoro model ready")
+                            .foregroundColor(.secondary)
+                    }
+                } else if ttsService.isDownloading {
+                    SettingsRow(icon: "arrow.down.circle", color: .blue) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Downloading model...")
+                            ProgressView(value: ttsService.downloadProgress)
+                        }
+                    }
+                } else {
+                    Button {
+                        Task { await ttsService.downloadModel() }
+                    } label: {
+                        SettingsRow(icon: "arrow.down.circle", color: .blue) {
+                            Text("Download Kokoro model")
+                            Spacer()
+                            Text("~86 MB")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+        } header: {
+            Text("Text to Speech")
+        } footer: {
+            Text(ttsMode.description)
         }
     }
 
