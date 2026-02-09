@@ -82,7 +82,7 @@ class KokoroService: ObservableObject {
 
         Log.debug("KokoroService: Synthesizing \(text.count) chars")
 
-        let language: KokoroLanguage = defaultVoice.first == "a" ? .enUS : .enGB
+        let language: Language = defaultVoice.first == "a" ? .enUS : .enGB
         let (audio, _) = try engine.generateAudio(voice: voice, language: language, text: text)
 
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
