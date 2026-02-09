@@ -1,4 +1,6 @@
 import SwiftUI
+import AVKit
+import Combine
 import CloudeShared
 import HighlightSwift
 
@@ -7,10 +9,21 @@ extension FilePathPreviewView {
     var content: some View {
         if isLoading {
             VStack(spacing: 16) {
-                ProgressView()
-                    .scaleEffect(1.2)
-                Text("Loading...")
-                    .foregroundColor(.secondary)
+                if let progress = chunkProgress {
+                    VStack(spacing: 8) {
+                        ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
+                            .progressViewStyle(.linear)
+                            .frame(width: 200)
+                        Text("\(progress.current + 1) of \(progress.total)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("Loading...")
+                        .foregroundColor(.secondary)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if directoryEntries != nil {
@@ -31,6 +44,8 @@ extension FilePathPreviewView {
                     .scaledToFit()
                     .padding()
             }
+        } else if case .video = contentType {
+            VideoPreview(data: data)
         } else if contentType.isTextBased, let text = String(data: data, encoding: .utf8) {
             if contentType.hasRenderedView && !showSource, let rendered = renderedView(text: text, data: data) {
                 rendered
@@ -112,31 +127,52 @@ extension FilePathPreviewView {
     }
 
     func loadFile() {
+        if let cached = connection.fileCache.get(path) {
+            fileData = cached
+            if contentType.highlightLanguage != nil, let text = String(data: cached, encoding: .utf8) {
+                highlightCode(text)
+            } else {
+                isLoading = false
+            }
+            return
+        }
+
         isLoading = true
         connection.getFile(path: path)
 
-        connection.onFileContent = { responsePath, data, mime, _, _ in
-            guard responsePath == path else { return }
-            mimeType = mime
-
-            if let decoded = Data(base64Encoded: data) {
-                fileData = decoded
-                if contentType.highlightLanguage != nil, let text = String(data: decoded, encoding: .utf8) {
-                    highlightCode(text)
-                } else {
+        let filePath = path
+        connection.events
+            .receive(on: DispatchQueue.main)
+            .sink { event in
+                switch event {
+                case .fileChunk(let p, let chunkIndex, let totalChunks, _, _, _):
+                    guard p == filePath else { return }
+                    withAnimation {
+                        chunkProgress = (chunkIndex, totalChunks)
+                    }
+                case .fileContent(let p, let data, let mime, _, _):
+                    guard p == filePath else { return }
+                    mimeType = mime
+                    if let decoded = Data(base64Encoded: data) {
+                        fileData = decoded
+                        if contentType.highlightLanguage != nil, let text = String(data: decoded, encoding: .utf8) {
+                            highlightCode(text)
+                        } else {
+                            isLoading = false
+                        }
+                    } else {
+                        errorMessage = "Failed to decode file"
+                        isLoading = false
+                    }
+                case .directoryListing(let p, let entries):
+                    guard p == filePath else { return }
+                    directoryEntries = entries
                     isLoading = false
+                default:
+                    break
                 }
-            } else {
-                errorMessage = "Failed to decode file"
-                isLoading = false
             }
-        }
-
-        connection.onDirectoryListing = { responsePath, entries in
-            guard responsePath == path else { return }
-            directoryEntries = entries
-            isLoading = false
-        }
+            .store(in: &cancellables)
 
         connection.onFileError = { message in
             errorMessage = message

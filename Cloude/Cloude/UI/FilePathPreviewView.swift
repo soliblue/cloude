@@ -1,5 +1,6 @@
 import SwiftUI
 import CloudeShared
+import Combine
 import HighlightSwift
 
 struct FilePathPreviewView: View {
@@ -19,6 +20,8 @@ struct FilePathPreviewView: View {
     @State var diffText: String?
     @State var isDiffLoading = false
     @State var showSource = false
+    @State var chunkProgress: (current: Int, total: Int)?
+    @State var cancellables = Set<AnyCancellable>()
 
     var fileName: String {
         path.lastPathComponent
