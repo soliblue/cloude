@@ -22,12 +22,14 @@ codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "YOUR QUESTION HERE
 
 1. Take the user's question (from the `/codex` invocation arguments, or ask if not provided)
 2. Run `codex exec` with `-s read-only` to keep it safe
-3. Present Codex's response back to the user
-4. If the user wants, compare it with your own perspective
+3. **CRITICAL: Set a 5-minute timeout** on the Bash call (`timeout: 300000`) — Codex often takes longer than the default 2 minutes, especially for codebase-aware questions
+4. Present Codex's response back to the user
+5. If the user wants, compare it with your own perspective
 
 ## Notes
 
 - Always use `-s read-only` to prevent Codex from modifying files
+- **Always set `timeout: 300000`** (5 min) on the Bash tool call to avoid premature timeout
 - Keep questions focused and specific for better responses
 - Codex has access to read the codebase so it can give context-aware answers
 - The workspace path is always the current project root
