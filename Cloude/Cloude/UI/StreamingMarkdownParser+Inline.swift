@@ -293,8 +293,10 @@ extension StreamingMarkdownParser {
         guard text.hasPrefix("/") else { return false }
         let imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".heic", ".svg", ".pdf"]
         let codeExtensions = [".swift", ".py", ".js", ".ts", ".json", ".md", ".txt", ".html", ".css", ".yml", ".yaml", ".sh", ".pptx", ".plist"]
+        let videoExtensions = [".mp4", ".mov", ".m4v", ".avi", ".webm"]
+        let audioExtensions = [".mp3", ".m4a", ".wav", ".aac", ".ogg"]
         let dataExtensions = [".csv", ".tsv", ".xml", ".sql", ".log", ".toml", ".env", ".lock"]
-        let allExtensions = imageExtensions + codeExtensions + dataExtensions
+        let allExtensions = imageExtensions + codeExtensions + videoExtensions + audioExtensions + dataExtensions
         let lowered = text.lowercased()
         return allExtensions.contains { lowered.hasSuffix($0) }
     }

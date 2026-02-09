@@ -42,23 +42,18 @@ extension AppDelegate {
         }
     }
 
-    private func sendChunks(_ chunks: [Data], path: String, mimeType: String, size: Int64, connection: NWConnection, index: Int = 0) {
-        guard index < chunks.count else {
-            Log.info("[FileChunk] All \(chunks.count) chunks sent for \(path)")
-            return
-        }
-        let base64 = chunks[index].base64EncodedString()
-        Log.info("[FileChunk] Sending chunk \(index + 1)/\(chunks.count) (\(base64.count) bytes) for \(path)")
-        let message = ServerMessage.fileChunk(
-            path: path,
-            chunkIndex: index,
-            totalChunks: chunks.count,
-            data: base64,
-            mimeType: mimeType,
-            size: size
-        )
-        server.sendMessage(message, to: connection) { [weak self] in
-            self?.sendChunks(chunks, path: path, mimeType: mimeType, size: size, connection: connection, index: index + 1)
+    private func sendChunks(_ chunks: [Data], path: String, mimeType: String, size: Int64, connection: NWConnection) {
+        for (index, chunk) in chunks.enumerated() {
+            let base64 = chunk.base64EncodedString()
+            Log.info("[FileChunk] Sending chunk \(index + 1)/\(chunks.count) (\(base64.count) bytes) for \(path)")
+            server.sendMessage(.fileChunk(
+                path: path,
+                chunkIndex: index,
+                totalChunks: chunks.count,
+                data: base64,
+                mimeType: mimeType,
+                size: size
+            ), to: connection)
         }
     }
 

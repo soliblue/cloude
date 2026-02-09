@@ -76,6 +76,9 @@ extension ConnectionManager {
     }
 
     private func handleFileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool) {
+        if let decoded = Data(base64Encoded: data) {
+            fileCache.set(path, data: decoded)
+        }
         events.send(.fileContent(path: path, data: data, mimeType: mimeType, size: size, truncated: truncated))
         onFileContent?(path, data, mimeType, size, truncated)
     }

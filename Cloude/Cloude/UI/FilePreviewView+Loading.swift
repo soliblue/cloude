@@ -99,6 +99,12 @@ extension FilePreviewView {
     }
 
     func loadFile() {
+        if let cached = connection.fileCache.get(file.path) {
+            fileData = cached
+            isLoading = false
+            return
+        }
+
         isLoading = true
         loadProgress = nil
         connection.getFile(path: file.path)
