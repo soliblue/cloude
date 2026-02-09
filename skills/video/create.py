@@ -216,7 +216,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('prompt')
     parser.add_argument('--orientation', '-o', default='landscape', choices=['landscape', 'portrait', 'square'])
-    parser.add_argument('--size', '-s', default='small', choices=['small', 'medium', 'large'])
+    parser.add_argument('--size', '-s', default='small', choices=['small', 'large'])
     parser.add_argument('--frames', '-f', type=int, default=150, choices=[150, 300, 450, 600])
     parser.add_argument('--image', '-i', help='Reference image path to guide generation')
     args = parser.parse_args()

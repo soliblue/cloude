@@ -43,15 +43,15 @@ python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "timelapse of c
 # Image-to-video (animate a reference image)
 python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "camera slowly zooms out" --image /path/to/photo.png
 
-# Larger resolution
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "epic landscape" -s medium
+# Larger resolution (512x896 portrait, 1024x576 landscape)
+python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "epic landscape" -s large
 ```
 
 ## Options
 
 - First positional arg: prompt (required)
 - `-o`, `--orientation`: `landscape` (default), `portrait`, `square`
-- `-s`, `--size`: `small` (default), `medium`, `large`
+- `-s`, `--size`: `small` (default), `large`
 - `-f`, `--frames`: `150` (5s, default), `300` (10s), `450` (15s), `600` (20s)
 - `-i`, `--image`: path to reference image for image-to-video generation
 
