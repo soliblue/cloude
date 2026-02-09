@@ -9,6 +9,7 @@ struct MessageBubble: View {
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
+    @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @ObservedObject private var ttsService = TTSService.shared
 
     private var hasToolCalls: Bool {
@@ -135,15 +136,21 @@ struct MessageBubble: View {
                     }
                     Spacer()
                     if ttsMode != .off && !message.text.isEmpty {
-                        Button {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode)
-                        } label: {
-                            Image(systemName: ttsService.playingMessageId == message.id.uuidString ? "stop.fill" : "speaker.wave.2")
-                                .font(.caption2)
-                                .foregroundColor(ttsService.playingMessageId == message.id.uuidString ? .purple : .secondary)
+                        if ttsService.isSynthesizing && ttsService.playingMessageId == message.id.uuidString {
+                            ProgressView()
+                                .scaleEffect(0.6)
+                                .frame(width: 16, height: 16)
+                        } else {
+                            Button {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
+                            } label: {
+                                Image(systemName: ttsService.playingMessageId == message.id.uuidString ? "stop.fill" : "speaker.wave.2")
+                                    .font(.caption2)
+                                    .foregroundColor(ttsService.playingMessageId == message.id.uuidString ? .purple : .secondary)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                     Button {
                         UIPasteboard.general.string = message.text
@@ -198,7 +205,7 @@ struct MessageBubble: View {
                 }
                 if ttsMode != .off && !message.text.isEmpty && !message.isUser {
                     Button {
-                        ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode)
+                        ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
                     } label: {
                         if ttsService.playingMessageId == message.id.uuidString {
                             Label("Stop", systemImage: "stop.fill")
