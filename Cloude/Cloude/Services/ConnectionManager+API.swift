@@ -464,9 +464,9 @@ extension ConnectionManager {
         send(.transcribe(audioBase64: audioBase64))
     }
 
-    func synthesize(text: String, messageId: String) {
+    func synthesize(text: String, messageId: String, voice: String? = nil) {
         ensureAuthenticated()
-        send(.synthesize(text: text, messageId: messageId))
+        send(.synthesize(text: text, messageId: messageId, voice: voice))
     }
 
     func requestSuggestions(context: [String], workingDirectory: String?, conversationId: UUID?) {
