@@ -17,7 +17,7 @@ enum TTSMode: String, CaseIterable {
         switch self {
         case .off: return "Disabled"
         case .standard: return "Built-in voice"
-        case .natural: return "Kokoro AI (~86 MB download)"
+        case .natural: return "Kokoro AI (coming soon)"
         }
     }
 }
