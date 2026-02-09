@@ -110,10 +110,14 @@ struct StreamingInterleavedOutput: View {
                             case .text(let content):
                                 StreamingMarkdownView(text: content, isComplete: false)
                             case .tools(let tools):
+                                let allChildren = toolCalls.filter { $0.parentToolId != nil }
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 6) {
                                         ForEach(tools, id: \.toolId) { tool in
-                                            InlineToolPill(toolCall: tool)
+                                            InlineToolPill(
+                                                toolCall: tool,
+                                                children: allChildren.filter { $0.parentToolId == tool.toolId }
+                                            )
                                         }
                                     }
                                     .padding(.horizontal, 16)
