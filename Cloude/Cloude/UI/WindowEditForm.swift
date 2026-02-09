@@ -13,6 +13,7 @@ struct WindowEditForm: View {
     @State private var showSymbolPicker = false
     @State private var showFolderPicker = false
     @State private var costLimitSelection: Double = 0
+    @State private var visibleCount = 20
 
     private var conversation: Conversation? {
         window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
@@ -128,8 +129,9 @@ struct WindowEditForm: View {
             }
 
             if !allConversations.isEmpty {
-                VStack(spacing: 0) {
-                    ForEach(allConversations) { conv in
+                let visible = Array(allConversations.prefix(visibleCount))
+                LazyVStack(spacing: 0) {
+                    ForEach(visible) { conv in
                         Button(action: { onSelectConversation(conv) }) {
                             HStack(spacing: 10) {
                                 Image.safeSymbol(conv.symbol)
@@ -160,9 +162,21 @@ struct WindowEditForm: View {
                         }
                         .buttonStyle(.plain)
 
-                        if conv.id != allConversations.last?.id {
+                        if conv.id != visible.last?.id {
                             Divider()
                                 .padding(.leading, 46)
+                        }
+                    }
+
+                    if allConversations.count > visibleCount {
+                        Button {
+                            visibleCount += 20
+                        } label: {
+                            Text("\(allConversations.count - visibleCount) more")
+                                .font(.caption)
+                                .foregroundColor(.accentColor)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
                         }
                     }
                 }
