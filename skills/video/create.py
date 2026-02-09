@@ -20,7 +20,7 @@ async def get_proxy():
         'password': p['password'],
     }
 
-async def create_video(prompt, orientation='landscape', size='small', n_frames=150):
+async def create_video(prompt, orientation='landscape', size='small', n_frames=150, image_path=None):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     print("Fetching US proxy...")
@@ -48,10 +48,50 @@ async def create_video(prompt, orientation='landscape', size='small', n_frames=1
 
         print(f"Page loaded: {title}")
 
-        # Step 1: Create video
+        file_id = None
+        if image_path:
+            print(f"\nUploading reference image: {image_path}")
+            import base64, mimetypes
+            mime = mimetypes.guess_type(image_path)[0] or 'image/png'
+            filename = os.path.basename(image_path)
+            with open(image_path, 'rb') as img:
+                img_b64 = base64.b64encode(img.read()).decode()
+
+            upload_result = await page.evaluate("""
+                async ({img_b64, mime, filename}) => {
+                    const session = await (await fetch('/api/auth/session')).json();
+                    const token = session.accessToken;
+                    if (!token) return { error: 'No access token' };
+
+                    const bytes = Uint8Array.from(atob(img_b64), c => c.charCodeAt(0));
+                    const file = new File([bytes], filename, { type: mime });
+                    const form = new FormData();
+                    form.append('file', file);
+                    form.append('use_case', 'inpaint_safe');
+
+                    const resp = await fetch('/backend/project_y/file/upload', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token },
+                        body: form,
+                    });
+                    return { status: resp.status, body: await resp.text() };
+                }
+            """, {"img_b64": img_b64, "mime": mime, "filename": filename})
+
+            if upload_result.get('error') or upload_result.get('status') != 200:
+                print(f"ERROR uploading image: {upload_result}")
+                await context.close()
+                sys.exit(1)
+
+            upload_data = json.loads(upload_result['body'])
+            file_id = upload_data['file_id']
+            print(f"Uploaded: {file_id}")
+
+        inpaint_items = [{"kind": "file", "file_id": file_id}] if file_id else []
+
         print(f"\nCreating video: {prompt[:80]}...")
         create_result = await page.evaluate("""
-            async ({prompt, orientation, size, n_frames}) => {
+            async ({prompt, orientation, size, n_frames, inpaint_items}) => {
                 const session = await (await fetch('/api/auth/session')).json();
                 const token = session.accessToken;
                 if (!token) return { error: 'No access token' };
@@ -64,7 +104,7 @@ async def create_video(prompt, orientation='landscape', size='small', n_frames=1
                     },
                     body: JSON.stringify({
                         kind: "video", prompt, title: null, orientation, size, n_frames,
-                        inpaint_items: [], remix_target_id: null, project_id: null,
+                        inpaint_items, remix_target_id: null, project_id: null,
                         metadata: null, cameo_ids: null, cameo_replacements: null,
                         model: "sy_8", style_id: null, audio_caption: null,
                         audio_transcript: null, video_caption: null, storyboard_id: null,
@@ -72,7 +112,7 @@ async def create_video(prompt, orientation='landscape', size='small', n_frames=1
                 });
                 return { status: resp.status, body: await resp.text() };
             }
-        """, {"prompt": prompt, "orientation": orientation, "size": size, "n_frames": n_frames})
+        """, {"prompt": prompt, "orientation": orientation, "size": size, "n_frames": n_frames, "inpaint_items": inpaint_items})
 
         if create_result.get('error') or create_result.get('status') != 200:
             print(f"ERROR: {create_result}")
@@ -118,30 +158,38 @@ async def create_video(prompt, orientation='landscape', size='small', n_frames=1
 
             await page.wait_for_timeout(5000)
 
-        # Step 3: Get download URL from drafts
+        # Step 3: Get download URL from drafts (retry to wait for our video)
         print("\nFetching download URL...")
-        drafts = await page.evaluate("""
-            async () => {
-                const session = await (await fetch('/api/auth/session')).json();
-                const resp = await fetch('/backend/project_y/profile/drafts?limit=5', {
-                    headers: { 'Authorization': 'Bearer ' + session.accessToken }
-                });
-                return await resp.json();
-            }
-        """)
-
         download_url = None
         gen_id = None
-        if drafts.get('items'):
-            latest = drafts['items'][0]
-            gen_id = latest.get('id')
-            download_url = latest.get('download_urls', {}).get('no_watermark') or latest.get('downloadable_url')
-            print(f"Found: {gen_id}")
-            print(f"Prompt: {latest.get('prompt', '?')[:80]}")
-            print(f"Size: {latest.get('width')}x{latest.get('height')}, {latest.get('duration_s')}s")
+        for attempt in range(6):
+            drafts = await page.evaluate("""
+                async () => {
+                    const session = await (await fetch('/api/auth/session')).json();
+                    const resp = await fetch('/backend/project_y/profile/drafts?limit=10', {
+                        headers: { 'Authorization': 'Bearer ' + session.accessToken }
+                    });
+                    return await resp.json();
+                }
+            """)
+
+            if drafts.get('items'):
+                for draft in drafts['items']:
+                    if draft.get('task_id') == task_id or draft.get('prompt', '').strip() == prompt.strip():
+                        gen_id = draft.get('id')
+                        download_url = draft.get('download_urls', {}).get('no_watermark') or draft.get('downloadable_url')
+                        print(f"Found: {gen_id}")
+                        print(f"Prompt: {draft.get('prompt', '?')[:80]}")
+                        print(f"Size: {draft.get('width')}x{draft.get('height')}, {draft.get('duration_s')}s")
+                        break
+
+            if download_url:
+                break
+            print(f"  Draft not ready yet, retrying ({attempt + 1}/6)...")
+            await page.wait_for_timeout(5000)
 
         if not download_url:
-            print("ERROR: Could not find download URL")
+            print("ERROR: Could not find download URL for our task")
             await context.close()
             sys.exit(1)
 
@@ -164,13 +212,13 @@ async def create_video(prompt, orientation='landscape', size='small', n_frames=1
         return filepath
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print("Usage: python3 create.py 'prompt' [landscape|portrait|square] [small|medium|large] [150|300|450|600]")
-        sys.exit(1)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('prompt')
+    parser.add_argument('--orientation', '-o', default='landscape', choices=['landscape', 'portrait', 'square'])
+    parser.add_argument('--size', '-s', default='small', choices=['small', 'medium', 'large'])
+    parser.add_argument('--frames', '-f', type=int, default=150, choices=[150, 300, 450, 600])
+    parser.add_argument('--image', '-i', help='Reference image path to guide generation')
+    args = parser.parse_args()
 
-    prompt = sys.argv[1]
-    orientation = sys.argv[2] if len(sys.argv) > 2 else 'landscape'
-    size = sys.argv[3] if len(sys.argv) > 3 else 'small'
-    n_frames = int(sys.argv[4]) if len(sys.argv) > 4 else 150
-
-    asyncio.run(create_video(prompt, orientation, size, n_frames))
+    asyncio.run(create_video(args.prompt, args.orientation, args.size, args.frames, args.image))

@@ -36,6 +36,7 @@ fastlane/README.md
 # Sora browser session (contains auth cookies)
 tools/sora/browser-data/
 tools/sora/output/
+tools/sora/image_flow_capture.json
 
 # Swift Package Manager
 .build/
