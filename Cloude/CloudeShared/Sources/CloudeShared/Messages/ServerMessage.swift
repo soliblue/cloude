@@ -21,6 +21,8 @@ public enum ServerMessage: Codable {
     case gitCommitResult(success: Bool, message: String?)
     case transcription(text: String)
     case whisperReady(ready: Bool)
+    case ttsAudio(audioBase64: String, messageId: String)
+    case kokoroReady(ready: Bool)
     case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories(sections: [MemorySection])
     case renameConversation(name: String, conversationId: String)
@@ -56,7 +58,7 @@ public enum ServerMessage: Codable {
     case planDeleted(stage: String, filename: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan, audioBase64, messageId
     }
 
     public init(from decoder: Decoder) throws {
@@ -150,6 +152,13 @@ public enum ServerMessage: Codable {
         case "whisper_ready":
             let ready = try container.decode(Bool.self, forKey: .ready)
             self = .whisperReady(ready: ready)
+        case "tts_audio":
+            let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
+            let messageId = try container.decode(String.self, forKey: .messageId)
+            self = .ttsAudio(audioBase64: audioBase64, messageId: messageId)
+        case "kokoro_ready":
+            let ready = try container.decode(Bool.self, forKey: .ready)
+            self = .kokoroReady(ready: ready)
         case "heartbeat_config":
             let intervalMinutes = try container.decodeIfPresent(Int.self, forKey: .intervalMinutes)
             let unreadCount = try container.decode(Int.self, forKey: .unreadCount)

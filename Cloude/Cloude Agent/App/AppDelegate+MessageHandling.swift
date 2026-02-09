@@ -54,6 +54,9 @@ extension AppDelegate {
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
 
+        case .synthesize(let text, let messageId):
+            handleSynthesize(text, messageId: messageId, connection: connection)
+
         case .setHeartbeatInterval(let minutes):
             Log.info("setHeartbeatInterval: \(String(describing: minutes))")
             HeartbeatService.shared.setInterval(minutes)
