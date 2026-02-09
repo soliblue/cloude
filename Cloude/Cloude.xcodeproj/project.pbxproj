@@ -15,6 +15,7 @@
 		C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED022F2619AE007FD3E4 /* CloudeShared */; };
 		C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED042F2619AE007FD3E4 /* CloudeShared */; };
 		C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2WHISPER022F2619AE007FD3E4 /* WhisperKit */; };
+		C2KOKORO012F2619AE007FD3E4 /* KokoroSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C2KOKORO022F2619AE007FD3E4 /* KokoroSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,8 +79,6 @@
 		};
 		C2B3BBB32F2619E8007FD3E4 /* Cloude Agent */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = "Cloude Agent";
 			sourceTree = "<group>";
 		};
@@ -109,6 +108,7 @@
 			files = (
 				C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */,
 				C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */,
+				C2KOKORO012F2619AE007FD3E4 /* KokoroSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,6 +203,7 @@
 			packageProductDependencies = (
 				C2SHARED042F2619AE007FD3E4 /* CloudeShared */,
 				C2WHISPER022F2619AE007FD3E4 /* WhisperKit */,
+				C2KOKORO022F2619AE007FD3E4 /* KokoroSwift */,
 			);
 			productName = "Cloude Agent";
 			productReference = C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */;
@@ -265,6 +266,7 @@
 				C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */,
 				C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 				C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
+				C2KOKORO032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "kokoro-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C2B3BBA12F2619AE007FD3E4 /* Products */;
@@ -465,7 +467,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 69;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -505,7 +507,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 69;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -546,7 +548,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 69;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_APP_SANDBOX = NO;
@@ -583,7 +585,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 69;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_APP_SANDBOX = NO;
@@ -618,7 +620,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 69;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CloudeLiveActivity/Info.plist;
@@ -649,7 +651,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 68;
+				CURRENT_PROJECT_VERSION = 69;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CloudeLiveActivity/Info.plist;
@@ -739,6 +741,14 @@
 				minimumVersion = 0.9.0;
 			};
 		};
+		C2KOKORO032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "kokoro-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mlalma/kokoro-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -766,6 +776,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */;
 			productName = WhisperKit;
+		};
+		C2KOKORO022F2619AE007FD3E4 /* KokoroSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2KOKORO032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "kokoro-ios" */;
+			productName = KokoroSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

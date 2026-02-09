@@ -90,6 +90,13 @@ extension ServerMessage {
         case .whisperReady(let ready):
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
+        case .ttsAudio(let audioBase64, let messageId):
+            try container.encode("tts_audio", forKey: .type)
+            try container.encode(audioBase64, forKey: .audioBase64)
+            try container.encode(messageId, forKey: .messageId)
+        case .kokoroReady(let ready):
+            try container.encode("kokoro_ready", forKey: .type)
+            try container.encode(ready, forKey: .ready)
         case .heartbeatConfig(let intervalMinutes, let unreadCount):
             try container.encode("heartbeat_config", forKey: .type)
             try container.encodeIfPresent(intervalMinutes, forKey: .intervalMinutes)

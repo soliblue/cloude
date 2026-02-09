@@ -108,6 +108,7 @@ class ConnectionManager: ObservableObject {
     @Published var isConnected = false
     @Published var isAuthenticated = false
     @Published var isWhisperReady = false
+    @Published var isKokoroReady = false
     @Published var isTranscribing = false
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
@@ -144,6 +145,7 @@ struct ChunkProgress: Equatable {
     var onDisconnect: ((UUID, ConversationOutput) -> Void)?
     var onAuthenticated: (() -> Void)?
     var onTranscription: ((String) -> Void)?
+    var onTTSAudio: ((Data, String) -> Void)?
     var onHeartbeatConfig: ((Int?, Int) -> Void)?
     var onMemories: (([MemorySection]) -> Void)?
     var onMemoryAdded: ((String, String, String) -> Void)?
@@ -237,6 +239,7 @@ struct ChunkProgress: Equatable {
         isConnected = false
         isAuthenticated = false
         isWhisperReady = false
+        isKokoroReady = false
         isTranscribing = false
         agentState = .idle
 
@@ -285,6 +288,7 @@ struct ChunkProgress: Equatable {
         isConnected = false
         isAuthenticated = false
         isWhisperReady = false
+        isKokoroReady = false
         isTranscribing = false
         agentState = .idle
         runningConversationId = nil

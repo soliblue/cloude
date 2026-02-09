@@ -22,6 +22,7 @@ public enum ClientMessage: Codable {
     case gitDiff(path: String, file: String?)
     case gitCommit(path: String, message: String, files: [String])
     case transcribe(audioBase64: String)
+    case synthesize(text: String, messageId: String)
     case setHeartbeatInterval(minutes: Int?)
     case getHeartbeatConfig
     case markHeartbeatRead
@@ -39,7 +40,7 @@ public enum ClientMessage: Codable {
     case deletePlan(stage: String, filename: String, workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, messageId
     }
 
     public init(from decoder: Decoder) throws {
@@ -96,6 +97,10 @@ public enum ClientMessage: Codable {
         case "transcribe":
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)
+        case "synthesize":
+            let text = try container.decode(String.self, forKey: .text)
+            let messageId = try container.decode(String.self, forKey: .messageId)
+            self = .synthesize(text: text, messageId: messageId)
         case "set_heartbeat_interval":
             let minutes = try container.decodeIfPresent(Int.self, forKey: .minutes)
             self = .setHeartbeatInterval(minutes: minutes)
@@ -197,6 +202,10 @@ public enum ClientMessage: Codable {
         case .transcribe(let audioBase64):
             try container.encode("transcribe", forKey: .type)
             try container.encode(audioBase64, forKey: .audioBase64)
+        case .synthesize(let text, let messageId):
+            try container.encode("synthesize", forKey: .type)
+            try container.encode(text, forKey: .text)
+            try container.encode(messageId, forKey: .messageId)
         case .setHeartbeatInterval(let minutes):
             try container.encode("set_heartbeat_interval", forKey: .type)
             try container.encodeIfPresent(minutes, forKey: .minutes)

@@ -77,6 +77,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         Log.startup("[POST] Initializing Whisper...")
         initializeWhisper()
 
+        Log.startup("[POST] Initializing Kokoro TTS...")
+        initializeKokoro()
+
         Log.startup("═══════════════════════════════════════════════════════════════")
         Log.startup("STARTUP SEQUENCE COMPLETE - Server should be listening on :\(server.port)")
         Log.startup("Log file: \(Log.logPath)")
@@ -95,6 +98,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.server.broadcast(.whisperReady(ready: true))
             }
             await WhisperService.shared.initialize()
+        }
+    }
+
+    private func initializeKokoro() {
+        Task {
+            KokoroService.shared.onReady = { [weak self] in
+                self?.server.broadcast(.kokoroReady(ready: true))
+            }
+            await KokoroService.shared.initialize()
+        }
+    }
+
+    func handleSynthesize(_ text: String, messageId: String, connection: NWConnection) {
+        Log.info("Synthesize: \(text.count) chars for message \(messageId.prefix(8))")
+        Task {
+            do {
+                let wavData = try await KokoroService.shared.synthesize(text: text)
+                let base64 = wavData.base64EncodedString()
+                Log.info("Synthesize: generated \(wavData.count) bytes WAV")
+                await MainActor.run {
+                    server.sendMessage(.ttsAudio(audioBase64: base64, messageId: messageId), to: connection)
+                }
+            } catch {
+                Log.error("Synthesize failed: \(error.localizedDescription)")
+                await MainActor.run {
+                    server.sendMessage(.error(message: "TTS failed: \(error.localizedDescription)"), to: connection)
+                }
+            }
         }
     }
 
