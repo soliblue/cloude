@@ -81,9 +81,18 @@ struct GlobalInputBar: View {
         builtInCommands + skills.flatMap { SlashCommand.fromSkill($0) }
     }
 
+    private var slashQuery: String? {
+        guard let slashIndex = inputText.lastIndex(of: "/") else { return nil }
+        let afterSlash = inputText[inputText.index(after: slashIndex)...]
+        if afterSlash.contains(where: { $0 == " " || $0 == "\n" }) { return nil }
+        return String(afterSlash).lowercased()
+    }
+
     private var filteredCommands: [SlashCommand] {
-        guard inputText.hasPrefix("/") else { return [] }
-        let query = String(inputText.dropFirst()).lowercased()
+        if inputText.isEmpty {
+            return primaryCommands
+        }
+        guard let query = slashQuery else { return [] }
         if query.isEmpty {
             return primaryCommands
         }
@@ -111,6 +120,12 @@ struct GlobalInputBar: View {
         atMentionQuery != nil && !fileSearchResults.isEmpty
     }
 
+    private var showCommandSuggestions: Bool {
+        if filteredCommands.isEmpty { return false }
+        if inputText.isEmpty && !suggestions.isEmpty && !isRunning { return false }
+        return true
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if audioRecorder.hasPendingAudio && !audioRecorder.isRecording && !isTranscribing {
@@ -127,7 +142,7 @@ struct GlobalInputBar: View {
                     onSelect: selectFile
                 )
                 .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else if !filteredCommands.isEmpty {
+            } else if showCommandSuggestions {
                 SlashCommandSuggestions(
                     commands: filteredCommands,
                     onSelect: { command in
@@ -143,7 +158,7 @@ struct GlobalInputBar: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            if !suggestions.isEmpty && inputText.count < 20 && !isRunning && filteredCommands.isEmpty && !showFileSuggestions {
+            if !suggestions.isEmpty && inputText.count < 20 && !isRunning && !showFileSuggestions {
                 HStack(spacing: 8) {
                     ForEach(suggestions, id: \.self) { suggestion in
                         Button(action: {
