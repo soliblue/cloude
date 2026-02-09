@@ -1,47 +1,54 @@
 # TTS Message Playback {speaker.wave.3}
 <!-- build: 67 -->
 <!-- priority: 4 -->
-<!-- tags: messages, settings -->
+<!-- tags: messages, settings, mac-agent -->
 
-> Long press assistant message → "Play". Three-tier TTS setting in Settings: Off / Standard / Natural.
+> Three-tier TTS: Off / Standard / Natural. Standard uses iOS built-in voice. Natural uses Kokoro AI on Mac agent (like Whisper).
+
+## Architecture
+
+Kokoro runs on Mac agent (MLX crashes on iOS). Same pattern as Whisper:
+- iOS sends `synthesize(text, messageId)` → Mac agent
+- Mac agent runs Kokoro TTS, returns WAV audio as base64
+- iOS receives `ttsAudio(audioBase64, messageId)` and plays it
 
 ## TTS Engines
 
-| Setting | Engine | Quality | Download |
-|---------|--------|---------|----------|
-| Off | — | — | — |
-| Standard | AVSpeechSynthesizer | Robotic, instant | 0 (built-in) |
-| Natural | Kokoro via kokoro-ios SPM | Near-human | ~86MB first-time download |
+| Setting | Engine | Where | Quality | Download |
+|---------|--------|-------|---------|----------|
+| Off | — | — | — | — |
+| Standard | AVSpeechSynthesizer | iOS | Robotic, instant | 0 (built-in) |
+| Natural | Kokoro via kokoro-ios SPM | Mac agent | Near-human | ~86MB first-time |
 
-## Implementation
+## Changes
 
-### Settings
-- New "Text to Speech" section in SettingsView
-- Three-option picker: Off / Standard / Natural
-- Persist choice in UserDefaults
-- When Natural selected: show download status/progress if model not yet downloaded
+### Shared Protocol (CloudeShared)
+- `ClientMessage.synthesize(text, messageId)` — iOS → Mac
+- `ServerMessage.ttsAudio(audioBase64, messageId)` — Mac → iOS
+- `ServerMessage.kokoroReady(ready)` — status broadcast
 
-### TTSService
-- New `TTSService.swift` — single interface, two backends
-- `TTSEngine` enum: `.off`, `.standard`, `.natural`
-- Standard: `AVSpeechSynthesizer`, strip markdown, speak
-- Natural: kokoro-ios SPM package, download model on first use, cache locally
-- Model source: `hexgrad/Kokoro-82M` quantized (~86MB) from HuggingFace
-- Show playing indicator on the message bubble while speaking
-- Stop playback if user taps again or navigates away
+### Mac Agent
+- `KokoroService.swift` — downloads model on first use, synthesizes text to WAV
+- AppDelegate: `initializeKokoro()` + `handleSynthesize()`
+- Sends `kokoroReady` on auth like `whisperReady`
 
-### Context Menu
-- Long press assistant message → "Play" option (only if TTS not Off)
-- If already playing that message → "Stop"
+### iOS
+- `TTSService.swift` — Natural mode sends synthesize request via callback
+- `ConnectionManager` — handles `ttsAudio` and `kokoroReady` messages
+- `MainChatView` — wires `onTTSAudio` → `TTSService.playAudio`
+- `Theme.swift` — "Kokoro AI" (removed "coming soon")
 
-### kokoro-ios Integration
-- Add `https://github.com/mlalma/kokoro-ios` as SPM dependency
-- Model files stored in app's Documents directory
-- Download with progress indicator on first use
-- Reference: KokoroTestApp for integration pattern
-
-## Files
-- `TTSService.swift` (new) — engine abstraction + both backends
-- `ChatView+MessageBubble.swift` — context menu Play/Stop
-- `SettingsView+Components.swift` — TTS setting picker
-- `ConnectionManager.swift` or `UserDefaults` — persist setting
+## Files Changed
+- `CloudeShared/Messages/ClientMessage.swift`
+- `CloudeShared/Messages/ServerMessage.swift`
+- `CloudeShared/Messages/ServerMessage+Encoding.swift`
+- `Cloude Agent/Services/KokoroService.swift` (new)
+- `Cloude Agent/App/Cloude_AgentApp.swift`
+- `Cloude Agent/App/AppDelegate+MessageHandling.swift`
+- `Cloude Agent/Services/WebSocketServer+HTTP.swift`
+- `Cloude/Services/TTSService.swift`
+- `Cloude/Services/ConnectionManager.swift`
+- `Cloude/Services/ConnectionManager+API.swift`
+- `Cloude/UI/MainChatView.swift`
+- `Cloude/Utilities/Theme.swift`
+- `Cloude.xcodeproj/project.pbxproj` (KokoroSwift SPM dep)

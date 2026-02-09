@@ -35,6 +35,8 @@ extension ConnectionManager {
         case .gitDiffResult(let path, let diff):          handleGitDiffResult(path: path, diff: diff)
         case .transcription(let text):                    handleTranscription(text)
         case .whisperReady(let ready):                    handleWhisperReady(ready)
+        case .ttsAudio(let audio, let msgId):             handleTTSAudio(audioBase64: audio, messageId: msgId)
+        case .kokoroReady(let ready):                     handleKokoroReady(ready)
         case .heartbeatConfig(let min, let count):        handleHeartbeatConfig(intervalMinutes: min, unreadCount: count)
         case .heartbeatSkipped(let c):                    handleHeartbeatSkipped(conversationId: c)
         case .memories(let sections):                     handleMemories(sections)
@@ -104,6 +106,16 @@ extension ConnectionManager {
 
     private func handleWhisperReady(_ ready: Bool) {
         isWhisperReady = ready
+    }
+
+    private func handleKokoroReady(_ ready: Bool) {
+        isKokoroReady = ready
+    }
+
+    private func handleTTSAudio(audioBase64: String, messageId: String) {
+        if let audioData = Data(base64Encoded: audioBase64) {
+            onTTSAudio?(audioData, messageId)
+        }
     }
 
     private func handleHeartbeatConfig(intervalMinutes: Int?, unreadCount: Int) {
@@ -450,6 +462,11 @@ extension ConnectionManager {
         ensureAuthenticated()
         isTranscribing = true
         send(.transcribe(audioBase64: audioBase64))
+    }
+
+    func synthesize(text: String, messageId: String) {
+        ensureAuthenticated()
+        send(.synthesize(text: text, messageId: messageId))
     }
 
     func requestSuggestions(context: [String], workingDirectory: String?, conversationId: UUID?) {
