@@ -173,6 +173,7 @@ extension ConversationStore {
                     if merged[i].imageBase64 == nil { merged[i].imageBase64 = existing.imageBase64 }
                     if merged[i].imageThumbnails == nil { merged[i].imageThumbnails = existing.imageThumbnails }
                     if merged[i].teamSummary == nil { merged[i].teamSummary = existing.teamSummary }
+                    merged[i].isCollapsed = existing.isCollapsed
                 }
             }
             $0.messages = merged

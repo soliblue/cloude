@@ -41,3 +41,8 @@ tools/sora/image_flow_capture.json
 # Swift Package Manager
 .build/
 .swiftpm/
+skills/speak/models/
+skills/speak/venv/
+skills/music/venv/
+skills/video/__pycache__/
+skills/video/output/

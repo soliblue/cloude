@@ -44,7 +44,7 @@ struct StreamingOutput: View {
 struct StreamingInterleavedOutput: View {
     let text: String
     let toolCalls: [ToolCall]
-    var runStats: (durationMs: Int, costUsd: Double)? = nil
+    var runStats: (durationMs: Int, costUsd: Double, model: String?)? = nil
 
     private var groupedSegments: [StreamingSegment] {
         let topLevelTools = toolCalls
@@ -132,7 +132,7 @@ struct StreamingInterleavedOutput: View {
                     HStack(spacing: 6) {
                         Text(Date(), style: .time)
                             .font(.caption2)
-                        RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd)
+                        RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd, model: stats.model)
                     }
                     .foregroundColor(.secondary)
                 }
@@ -152,12 +152,24 @@ private enum StreamingSegment {
 struct RunStatsView: View {
     let durationMs: Int
     let costUsd: Double
+    var model: String? = nil
 
     var body: some View {
         HStack(spacing: 10) {
+            if let modelDisplay = modelInfo {
+                StatLabel(icon: modelDisplay.icon, text: modelDisplay.name)
+            }
             StatLabel(icon: "timer", text: formattedDuration)
             StatLabel(icon: "dollarsign.circle", text: formattedCost)
         }
+    }
+
+    private var modelInfo: (name: String, icon: String)? {
+        guard let model else { return nil }
+        if model.contains("opus") { return ("Opus", "crown") }
+        if model.contains("sonnet") { return ("Sonnet", "hare") }
+        if model.contains("haiku") { return ("Haiku", "leaf") }
+        return (model, "cpu")
     }
 
     private var formattedDuration: String {

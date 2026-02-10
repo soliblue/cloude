@@ -6,9 +6,9 @@ struct InlineToolPill: View {
     @State private var showDetail = false
     @State private var shimmerPhase: CGFloat = -1
 
-    private var chainedCommands: [String] {
+    private var chainedCommands: [ChainedCommand] {
         guard toolCall.name == "Bash", let input = toolCall.input else { return [] }
-        return BashCommandParser.chainedCommands(for: input)
+        return BashCommandParser.chainedCommandsWithOperators(for: input)
     }
 
     var body: some View {
@@ -81,16 +81,17 @@ struct InlineToolPill: View {
 
     private var chainedPillContent: some View {
         HStack(spacing: 6) {
-            ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, cmd in
+            ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, chained in
                 if index > 0 {
-                    Text("›")
+                    let prevOp = chainedCommands[index - 1].operatorAfter
+                    Text(prevOp == .pipe ? "|" : "›")
                         .font(.system(size: 11, weight: .light))
                         .foregroundColor(.secondary)
                 }
-                let parsed = BashCommandParser.parse(cmd)
+                let parsed = BashCommandParser.parse(chained.command)
                 Text(parsed.command.isEmpty ? "cmd" : parsed.command)
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(toolCallColor(for: "Bash", input: cmd))
+                    .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
             }
             if chainedCommands.count > 3 {
                 Text("+\(chainedCommands.count - 3)")

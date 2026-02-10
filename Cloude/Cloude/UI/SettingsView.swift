@@ -15,6 +15,8 @@ struct SettingsView: View {
 @State private var authToken = ""
     @State private var showToken = false
     @State private var ipCopied = false
+    @State private var showUsageStats = false
+    @State private var usageStats: UsageStats?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -35,6 +37,7 @@ struct SettingsView: View {
                 costLimitsSection
                 featuresSection
 ttsSection
+                usageSection
                 securitySection
                 aboutSection
             }
@@ -243,6 +246,33 @@ ttsSection
             Text(ttsMode.description)
         }
         .listRowBackground(Color.oceanSecondary)
+    }
+
+private var usageSection: some View {
+        Section {
+            Button(action: {
+                connection.onUsageStats = { stats in
+                    usageStats = stats
+                    showUsageStats = true
+                }
+                connection.getUsageStats()
+            }) {
+                SettingsRow(icon: "chart.bar.fill", color: .blue) {
+                    Text("Usage Statistics")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .foregroundColor(.primary)
+        }
+        .listRowBackground(Color.oceanSecondary)
+        .sheet(isPresented: $showUsageStats) {
+            if let stats = usageStats {
+                UsageStatsSheet(stats: stats)
+            }
+        }
     }
 
 private var securitySection: some View {

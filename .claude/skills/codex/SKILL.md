@@ -3,7 +3,7 @@ name: codex
 description: Get a second opinion from Codex (OpenAI) on a question or code problem. Use for second opinions, alternative approaches, or comparing perspectives.
 user-invocable: true
 icon: brain.head.profile
-aliases: [ask-codex, openai, second-opinion]
+aliases: [ask-codex, openai, second-opinion, consult]
 ---
 
 # Ask Codex

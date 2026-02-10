@@ -166,8 +166,10 @@ struct ChatMessage: Codable, Identifiable {
     var imageThumbnails: [String]?
     var serverUUID: String?
     var teamSummary: TeamSummary?
+    var model: String?
+    var isCollapsed: Bool
 
-    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil, imageThumbnails: [String]? = nil, serverUUID: String? = nil, teamSummary: TeamSummary? = nil) {
+    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil, imageThumbnails: [String]? = nil, serverUUID: String? = nil, teamSummary: TeamSummary? = nil, model: String? = nil) {
         self.id = UUID()
         self.isUser = isUser
         self.text = text
@@ -181,9 +183,11 @@ struct ChatMessage: Codable, Identifiable {
         self.imageThumbnails = imageThumbnails
         self.serverUUID = serverUUID
         self.teamSummary = teamSummary
+        self.model = model
+        self.isCollapsed = false
     }
 
-    init(isUser: Bool, text: String, timestamp: Date, toolCalls: [ToolCall] = [], serverUUID: String? = nil) {
+    init(isUser: Bool, text: String, timestamp: Date, toolCalls: [ToolCall] = [], serverUUID: String? = nil, model: String? = nil) {
         self.id = UUID()
         self.isUser = isUser
         self.text = text
@@ -197,6 +201,8 @@ struct ChatMessage: Codable, Identifiable {
         self.imageThumbnails = nil
         self.serverUUID = serverUUID
         self.teamSummary = nil
+        self.model = model
+        self.isCollapsed = false
     }
 
     init(from decoder: Decoder) throws {
@@ -214,10 +220,12 @@ struct ChatMessage: Codable, Identifiable {
         imageThumbnails = try container.decodeIfPresent([String].self, forKey: .imageThumbnails)
         serverUUID = try container.decodeIfPresent(String.self, forKey: .serverUUID)
         teamSummary = try container.decodeIfPresent(TeamSummary.self, forKey: .teamSummary)
+        model = try container.decodeIfPresent(String.self, forKey: .model)
+        isCollapsed = try container.decodeIfPresent(Bool.self, forKey: .isCollapsed) ?? false
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID, teamSummary
+        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID, teamSummary, model, isCollapsed
     }
 }
 

@@ -148,6 +148,11 @@ extension AppDelegate {
             Log.info("Received deletePlan: \(stage)/\(filename)")
             PlansService.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
             server.sendMessage(.planDeleted(stage: stage, filename: filename), to: connection)
+
+        case .getUsageStats:
+            Log.info("Received getUsageStats request")
+            let stats = UsageStatsService.readStats()
+            server.sendMessage(.usageStats(stats: stats), to: connection)
         }
     }
 }

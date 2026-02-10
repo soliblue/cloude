@@ -34,4 +34,5 @@ let builtInCommands: [SlashCommand] = [
     SlashCommand(name: "compact", description: "Compress conversation context", icon: "arrow.triangle.2.circlepath"),
     SlashCommand(name: "context", description: "Show token usage", icon: "chart.pie"),
     SlashCommand(name: "cost", description: "Show usage stats", icon: "dollarsign.circle"),
+    SlashCommand(name: "usage", description: "Usage statistics", icon: "chart.bar.fill"),
 ]

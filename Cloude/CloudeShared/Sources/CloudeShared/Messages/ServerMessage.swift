@@ -15,7 +15,7 @@ public enum ServerMessage: Codable {
     case noMissedResponse(sessionId: String)
     case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?)
     case toolResult(toolId: String, summary: String?, output: String?, conversationId: String?)
-    case runStats(durationMs: Int, costUsd: Double, conversationId: String?)
+    case runStats(durationMs: Int, costUsd: Double, model: String?, conversationId: String?)
     case gitStatusResult(status: GitStatusInfo)
     case gitDiffResult(path: String, diff: String)
     case gitCommitResult(success: Bool, message: String?)
@@ -56,9 +56,10 @@ public enum ServerMessage: Codable {
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
     case plans(stages: [String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
+    case usageStats(stats: UsageStats)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan, audioBase64, messageId
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan, audioBase64, messageId, stats
     }
 
     public init(from decoder: Decoder) throws {
@@ -133,8 +134,9 @@ public enum ServerMessage: Codable {
         case "run_stats":
             let durationMs = try container.decode(Int.self, forKey: .durationMs)
             let costUsd = try container.decode(Double.self, forKey: .costUsd)
+            let model = try container.decodeIfPresent(String.self, forKey: .model)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .runStats(durationMs: durationMs, costUsd: costUsd, conversationId: conversationId)
+            self = .runStats(durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId)
         case "git_status_result":
             let status = try container.decode(GitStatusInfo.self, forKey: .status)
             self = .gitStatusResult(status: status)
@@ -289,6 +291,9 @@ public enum ServerMessage: Codable {
             let stage = try container.decode(String.self, forKey: .stage)
             let filename = try container.decode(String.self, forKey: .filename)
             self = .planDeleted(stage: stage, filename: filename)
+        case "usage_stats":
+            let stats = try container.decode(UsageStats.self, forKey: .stats)
+            self = .usageStats(stats: stats)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

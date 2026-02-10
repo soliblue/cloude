@@ -21,7 +21,7 @@ extension ConnectionManager {
         case .error(let msg):                             handleError(msg)
         case .toolCall(let n, let i, let t, let p, let c, let pos): handleToolCall(name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos)
         case .toolResult(let id, let sum, let out, let c):  handleToolResult(toolId: id, summary: sum, output: out, conversationId: c)
-        case .runStats(let ms, let cost, let c):          handleRunStats(durationMs: ms, costUsd: cost, conversationId: c)
+        case .runStats(let ms, let cost, let m, let c):    handleRunStats(durationMs: ms, costUsd: cost, model: m, conversationId: c)
         case .missedResponse(let sid, let t, _, let tc):  handleMissedResponse(sessionId: sid, text: t, storedToolCalls: tc)
         case .noMissedResponse(let sid):                  handleNoMissedResponse(sessionId: sid)
         case .sessionId(let id, let c):                   handleSessionId(id, conversationId: c)
@@ -66,6 +66,7 @@ extension ConnectionManager {
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(name: name, symbol: sym, conversationId: c)
         case .plans(let stages):                          handlePlans(stages)
         case .planDeleted(let stage, let filename):       handlePlanDeleted(stage: stage, filename: filename)
+        case .usageStats(let stats):                        handleUsageStats(stats)
         case .fileChange, .image, .gitCommitResult:       break
         }
     }
@@ -257,8 +258,8 @@ extension ConnectionManager {
             for i in out.toolCalls.indices where out.toolCalls[i].state == .executing {
                 out.toolCalls[i].state = .complete
             }
-            if let (_, costUsd) = out.runStats {
-                onLastAssistantMessageCostUpdate?(convId, costUsd)
+            if let stats = out.runStats {
+                onLastAssistantMessageCostUpdate?(convId, stats.costUsd)
             }
         }
         out.isRunning = (state == .running || state == .compacting)
@@ -310,9 +311,9 @@ extension ConnectionManager {
         }
     }
 
-    private func handleRunStats(durationMs: Int, costUsd: Double, conversationId: String?) {
+    private func handleRunStats(durationMs: Int, costUsd: Double, model: String?, conversationId: String?) {
         guard let convId = targetConversationId(from: conversationId) else { return }
-        output(for: convId).runStats = (durationMs, costUsd)
+        output(for: convId).runStats = (durationMs, costUsd, model)
     }
 
     private func handleMissedResponse(sessionId: String, text: String, storedToolCalls: [StoredToolCall]) {
@@ -437,6 +438,10 @@ extension ConnectionManager {
         send(.abort(conversationId: conversationId?.uuidString))
     }
 
+    private func handleUsageStats(_ stats: UsageStats) {
+        onUsageStats?(stats)
+    }
+
     private func handlePlans(_ stages: [String: [PlanItem]]) {
         onPlans?(stages)
     }
@@ -448,6 +453,7 @@ extension ConnectionManager {
     func getPlans(workingDirectory: String)                        { ensureAuthenticated(); send(.getPlans(workingDirectory: workingDirectory)) }
     func deletePlan(stage: String, filename: String, workingDirectory: String) { ensureAuthenticated(); send(.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)) }
 
+    func getUsageStats()                                           { ensureAuthenticated(); send(.getUsageStats) }
     func listDirectory(path: String)                              { ensureAuthenticated(); send(.listDirectory(path: path)) }
     func getFile(path: String)                                    { ensureAuthenticated(); send(.getFile(path: path)) }
     func getFileFullQuality(path: String)                         { ensureAuthenticated(); send(.getFileFullQuality(path: path)) }

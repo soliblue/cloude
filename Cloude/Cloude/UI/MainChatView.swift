@@ -25,6 +25,8 @@ struct MainChatView: View {
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?
     @State var showConversationSearch = false
+    @State var showUsageStats = false
+    @State var usageStats: UsageStats?
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
@@ -146,6 +148,10 @@ struct MainChatView: View {
             TTSService.shared.onSynthesizeRequest = { [connection] text, messageId, voice in
                 connection.synthesize(text: text, messageId: messageId, voice: voice)
             }
+            connection.onUsageStats = { stats in
+                usageStats = stats
+                showUsageStats = true
+            }
             connection.onAuthenticated = { [conversationStore, connection] in
                 for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
                     let output = connection.output(for: conv.id)
@@ -245,6 +251,15 @@ struct MainChatView: View {
                     }
                 }
             )
+        }
+        .sheet(isPresented: $showUsageStats) {
+            if let stats = usageStats {
+                UsageStatsSheet(stats: stats)
+            } else {
+                ProgressView("Loading usage stats...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.oceanBackground)
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             isKeyboardVisible = true
