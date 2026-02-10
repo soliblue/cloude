@@ -47,6 +47,12 @@ skills/speak/output/
 skills/music/venv/
 skills/music/output/
 skills/icongen/ref-creature.png
+skills/slides/.venv/
+skills/slides/slides/output/
+skills/slides/reference/
+skills/slides/*.pptx
+skills/slides/*.png
+skills/slides/__pycache__/
 skills/video/__pycache__/
 skills/video/output/
 skills/video/browser-data/
