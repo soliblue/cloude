@@ -1,5 +1,17 @@
 import Foundation
 
+enum ShellOperator: String {
+    case and = "&&"
+    case or = "||"
+    case pipe = "|"
+    case semicolon = ";"
+}
+
+struct ChainedCommand {
+    let command: String
+    let operatorAfter: ShellOperator?
+}
+
 struct BashCommandParser {
     let command: String
     let subcommand: String?
@@ -11,6 +23,12 @@ struct BashCommandParser {
         guard !isScript(input) else { return [] }
         let commands = splitChainedCommands(input)
         return commands.count > 1 ? commands : []
+    }
+
+    static func chainedCommandsWithOperators(for input: String) -> [ChainedCommand] {
+        guard !isScript(input) else { return [] }
+        let result = splitChainedWithOperators(input)
+        return result.count > 1 ? result : []
     }
 
     static func isScript(_ input: String) -> Bool {
@@ -34,11 +52,15 @@ struct BashCommandParser {
     }
 
     static func splitChainedCommands(_ input: String) -> [String] {
+        splitChainedWithOperators(input).map(\.command)
+    }
+
+    static func splitChainedWithOperators(_ input: String) -> [ChainedCommand] {
         if isScript(input) {
-            return [input]
+            return [ChainedCommand(command: input, operatorAfter: nil)]
         }
 
-        var commands: [String] = []
+        var result: [ChainedCommand] = []
         var current = ""
         var inQuote: Character?
         var escape = false
@@ -62,16 +84,29 @@ struct BashCommandParser {
                 let next = input.index(after: i)
                 if next < input.endIndex && input[next] == "&" {
                     let trimmed = current.trimmingCharacters(in: .whitespaces)
-                    if !trimmed.isEmpty { commands.append(trimmed) }
+                    if !trimmed.isEmpty { result.append(ChainedCommand(command: trimmed, operatorAfter: .and)) }
                     current = ""
                     i = input.index(after: next)
                     continue
                 } else {
                     current.append(char)
                 }
+            } else if char == "|" {
+                let next = input.index(after: i)
+                if next < input.endIndex && input[next] == "|" {
+                    let trimmed = current.trimmingCharacters(in: .whitespaces)
+                    if !trimmed.isEmpty { result.append(ChainedCommand(command: trimmed, operatorAfter: .or)) }
+                    current = ""
+                    i = input.index(after: next)
+                    continue
+                } else {
+                    let trimmed = current.trimmingCharacters(in: .whitespaces)
+                    if !trimmed.isEmpty { result.append(ChainedCommand(command: trimmed, operatorAfter: .pipe)) }
+                    current = ""
+                }
             } else if char == ";" {
                 let trimmed = current.trimmingCharacters(in: .whitespaces)
-                if !trimmed.isEmpty { commands.append(trimmed) }
+                if !trimmed.isEmpty { result.append(ChainedCommand(command: trimmed, operatorAfter: .semicolon)) }
                 current = ""
             } else {
                 current.append(char)
@@ -80,8 +115,8 @@ struct BashCommandParser {
         }
 
         let trimmed = current.trimmingCharacters(in: .whitespaces)
-        if !trimmed.isEmpty { commands.append(trimmed) }
-        return commands
+        if !trimmed.isEmpty { result.append(ChainedCommand(command: trimmed, operatorAfter: nil)) }
+        return result
     }
 
     static func parse(_ input: String) -> BashCommandParser {

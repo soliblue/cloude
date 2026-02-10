@@ -253,7 +253,7 @@ struct ToolGroupView: View {
     let tools: [ToolCall]
 
     private var toolHierarchy: [(parent: ToolCall, children: [ToolCall])] {
-        let topLevel = tools.filter { $0.parentToolId == nil }
+        let topLevel = tools.filter { $0.parentToolId == nil }.reversed()
         return topLevel.map { parent in
             let children = tools.filter { $0.parentToolId == parent.toolId }
             return (parent, children)

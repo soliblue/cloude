@@ -46,6 +46,8 @@ extension FilePathPreviewView {
             }
         } else if case .video = contentType {
             VideoPreview(data: data)
+        } else if case .audio = contentType {
+            AudioPreview(data: data, fileName: fileName)
         } else if contentType.isTextBased, let text = String(data: data, encoding: .utf8) {
             if contentType.hasRenderedView && !showSource, let rendered = renderedView(text: text, data: data) {
                 rendered
