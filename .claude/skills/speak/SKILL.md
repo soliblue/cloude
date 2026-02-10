@@ -29,22 +29,22 @@ Do NOT use when:
 
 ```bash
 # Basic (default voice: af_heart)
-python3 /Users/soli/Desktop/CODING/cloude/skills/speak/generate.py "Hello world"
+python3 /Users/soli/Desktop/CODING/cloude/.claude/.claude/skills/speak/generate.py "Hello world"
 
 # Choose a voice
-python3 /Users/soli/Desktop/CODING/cloude/skills/speak/generate.py "Welcome to the show" -v am_adam
+python3 /Users/soli/Desktop/CODING/cloude/.claude/.claude/skills/speak/generate.py "Welcome to the show" -v am_adam
 
 # Custom output name
-python3 /Users/soli/Desktop/CODING/cloude/skills/speak/generate.py "Chapter one" -o intro
+python3 /Users/soli/Desktop/CODING/cloude/.claude/.claude/skills/speak/generate.py "Chapter one" -o intro
 
 # Adjust speed (0.5 = slow, 2.0 = fast)
-python3 /Users/soli/Desktop/CODING/cloude/skills/speak/generate.py "Breaking news" -s 1.2
+python3 /Users/soli/Desktop/CODING/cloude/.claude/.claude/skills/speak/generate.py "Breaking news" -s 1.2
 
 # All options together
-python3 /Users/soli/Desktop/CODING/cloude/skills/speak/generate.py "The quick brown fox" -v bm_george -s 0.9 -o fox-narration
+python3 /Users/soli/Desktop/CODING/cloude/.claude/.claude/skills/speak/generate.py "The quick brown fox" -v bm_george -s 0.9 -o fox-narration
 
 # List voices
-python3 /Users/soli/Desktop/CODING/cloude/skills/speak/generate.py "" --list-voices
+python3 /Users/soli/Desktop/CODING/cloude/.claude/.claude/skills/speak/generate.py "" --list-voices
 ```
 
 ## Options
@@ -75,15 +75,15 @@ Voice naming: `a` = US accent, `b` = UK accent, `f` = female, `m` = male.
 ## First Run
 
 First run auto-installs everything (takes ~1 min):
-1. Creates Python venv in `skills/speak/venv/`
+1. Creates Python venv in `.claude/skills/speak/venv/`
 2. Installs `kokoro-onnx` + `soundfile`
-3. Downloads ONNX model + voices (~300MB total) to `skills/speak/models/`
+3. Downloads ONNX model + voices (~300MB total) to `.claude/skills/speak/models/`
 
 Subsequent runs: ~5-10s model load + synthesis.
 
 ## Output
 
-Default output: `/Users/soli/Desktop/CODING/cloude/skills/speak/output/`
+Default output: `/Users/soli/Desktop/CODING/cloude/.claude/.claude/skills/speak/output/`
 
 Files are named `{output}.wav` (24kHz, 16-bit mono).
 
