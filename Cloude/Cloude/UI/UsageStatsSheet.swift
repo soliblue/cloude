@@ -5,14 +5,13 @@ import CloudeShared
 struct UsageStatsSheet: View {
     let stats: UsageStats
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedDay: DailyActivity?
 
     private var totalToolCalls: Int {
         stats.dailyActivity.reduce(0) { $0 + $1.toolCallCount }
     }
 
-    private var daysActive: Int {
-        stats.dailyActivity.count
-    }
+    private var daysActive: Int { stats.dailyActivity.count }
 
     private var memberSinceFormatted: String? {
         guard let dateStr = stats.firstSessionDate else { return nil }
@@ -33,134 +32,158 @@ struct UsageStatsSheet: View {
             .map { (name: modelDisplayName($0.key), tokens: $0.value) }
     }
 
-    private var maxOutputTokens: Int {
-        sortedModels.first?.tokens.outputTokens ?? 1
-    }
+    private var maxOutputTokens: Int { sortedModels.first?.tokens.outputTokens ?? 1 }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    heroCards
+                VStack(spacing: 16) {
+                    heroRow
                     activityChart
                     modelsSection
                     peakHoursSection
                     footerSection
                 }
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
-            .background(Color.oceanBackground)
             .navigationTitle("Usage")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
+        .presentationDetents([.medium, .large])
+        .presentationBackground(Color.oceanBackground)
     }
 
-    private var heroCards: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            StatCard(value: formatNumber(stats.totalMessages), label: "messages", icon: "bubble.left.and.bubble.right", color: .blue)
-            StatCard(value: formatNumber(stats.totalSessions), label: "sessions", icon: "rectangle.stack", color: .purple)
-            StatCard(value: formatNumber(totalToolCalls), label: "tool calls", icon: "wrench.and.screwdriver", color: .orange)
-            StatCard(value: "\(daysActive)", label: "days active", icon: "calendar", color: .green)
+    private var heroRow: some View {
+        HStack(spacing: 0) {
+            StatPill(value: formatNumber(stats.totalMessages), label: "msgs", color: .blue)
+            Divider().frame(height: 28).padding(.horizontal, 4)
+            StatPill(value: formatNumber(stats.totalSessions), label: "sessions", color: .purple)
+            Divider().frame(height: 28).padding(.horizontal, 4)
+            StatPill(value: formatNumber(totalToolCalls), label: "tools", color: .orange)
+            Divider().frame(height: 28).padding(.horizontal, 4)
+            StatPill(value: "\(daysActive)", label: "days", color: .green)
         }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .background(.white.opacity(0.08))
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var activityChart: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Daily Activity")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.secondary)
+            HStack {
+                Text("Activity")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                Spacer()
+                if let day = selectedDay {
+                    Text("\(shortDate(day.date)) — \(formatNumber(day.messageCount)) msgs, \(day.sessionCount) sessions")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary.opacity(0.8))
+                }
+            }
 
             Chart(recentActivity, id: \.date) { day in
                 BarMark(
                     x: .value("Date", shortDate(day.date)),
                     y: .value("Messages", day.messageCount)
                 )
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
-                )
-                .cornerRadius(4)
+                .foregroundStyle(selectedDay?.date == day.date ? Color.accentColor : Color.blue.opacity(0.6))
+                .cornerRadius(3)
             }
             .chartXAxis {
-                AxisMarks(values: .automatic(desiredCount: 5)) { value in
+                AxisMarks(values: .automatic(desiredCount: 5)) { _ in
                     AxisValueLabel()
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary.opacity(0.6))
                 }
             }
             .chartYAxis {
-                AxisMarks(position: .leading) { value in
+                AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { value in
                     AxisValueLabel {
                         if let v = value.as(Int.self) {
                             Text(formatNumber(v))
-                                .foregroundStyle(.secondary)
+                                .font(.system(size: 9))
+                                .foregroundStyle(.secondary.opacity(0.6))
                         }
                     }
                 }
             }
-            .frame(height: 160)
+            .chartOverlay { proxy in
+                GeometryReader { geo in
+                    Rectangle().fill(.clear).contentShape(Rectangle())
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    let x = value.location.x - geo[proxy.plotFrame!].origin.x
+                                    if let dateStr: String = proxy.value(atX: x) {
+                                        selectedDay = recentActivity.first { shortDate($0.date) == dateStr }
+                                    }
+                                }
+                                .onEnded { _ in
+                                    withAnimation(.easeOut(duration: 0.3)) { selectedDay = nil }
+                                }
+                        )
+                }
+            }
+            .frame(height: 140)
         }
-        .padding()
-        .background(Color.oceanSecondary)
-        .cornerRadius(16)
+        .padding(14)
+        .background(.white.opacity(0.08))
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var modelsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Models")
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.secondary)
 
             ForEach(sortedModels, id: \.name) { model in
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     Text(model.name)
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.primary)
-                        .frame(width: 70, alignment: .leading)
+                        .frame(width: 64, alignment: .leading)
 
                     GeometryReader { geo in
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: 3)
                             .fill(modelColor(model.name))
                             .frame(width: max(4, geo.size.width * fraction))
                     }
-                    .frame(height: 16)
+                    .frame(height: 14)
 
                     Text(formatNumber(model.tokens.outputTokens))
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.system(size: 11, design: .monospaced))
                         .foregroundColor(.secondary)
-                        .frame(minWidth: 40, alignment: .trailing)
+                        .frame(minWidth: 36, alignment: .trailing)
                 }
             }
-
-            Text("output tokens")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding()
-        .background(Color.oceanSecondary)
-        .cornerRadius(16)
+        .padding(14)
+        .background(.white.opacity(0.08))
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var peakHoursSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Peak Hours")
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.secondary)
 
             let maxCount = stats.hourCounts.values.max() ?? 1
@@ -169,55 +192,45 @@ struct UsageStatsSheet: View {
                 ForEach(0..<24, id: \.self) { hour in
                     let count = stats.hourCounts["\(hour)"] ?? 0
                     let height = CGFloat(count) / CGFloat(max(maxCount, 1))
-                    VStack(spacing: 2) {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(peakColor(hour))
-                            .frame(height: max(2, height * 50))
-                    }
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(peakColor(hour))
+                        .frame(height: max(2, height * 44))
                 }
             }
-            .frame(height: 54)
+            .frame(height: 48)
 
             HStack {
-                Text("12 AM")
-                Spacer()
-                Text("6 AM")
-                Spacer()
-                Text("12 PM")
-                Spacer()
-                Text("6 PM")
-                Spacer()
-                Text("12 AM")
+                Text("12a").frame(maxWidth: .infinity, alignment: .leading)
+                Text("6a").frame(maxWidth: .infinity)
+                Text("12p").frame(maxWidth: .infinity)
+                Text("6p").frame(maxWidth: .infinity)
+                Text("12a").frame(maxWidth: .infinity, alignment: .trailing)
             }
             .font(.system(size: 9))
-            .foregroundColor(.secondary)
+            .foregroundColor(.secondary.opacity(0.5))
         }
-        .padding()
-        .background(Color.oceanSecondary)
-        .cornerRadius(16)
+        .padding(14)
+        .background(.white.opacity(0.08))
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var footerSection: some View {
-        VStack(spacing: 6) {
+        HStack(spacing: 16) {
             if let since = memberSinceFormatted {
-                Label("Member since \(since)", systemImage: "person.crop.circle")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Label(since, systemImage: "person.crop.circle")
             }
             if let longest = stats.longestSession {
-                Label("\(longest.messageCount) messages in longest session", systemImage: "trophy")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Label("\(longest.messageCount) msg record", systemImage: "trophy")
             }
-
             let peakHour = stats.hourCounts.max(by: { $0.value < $1.value })
             if let peak = peakHour, let h = Int(peak.key) {
-                Label("Peak hour: \(formatHour(h))", systemImage: "clock")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Label(formatHour(h), systemImage: "clock")
             }
         }
-        .padding(.top, 4)
+        .font(.system(size: 11))
+        .foregroundColor(.secondary.opacity(0.6))
+        .padding(.top, 2)
     }
 
     private func formatNumber(_ n: Int) -> String {
@@ -267,27 +280,20 @@ struct UsageStatsSheet: View {
     }
 }
 
-struct StatCard: View {
+struct StatPill: View {
     let value: String
     let label: String
-    let icon: String
     let color: Color
 
     var body: some View {
-        VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundColor(color)
+        VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(.primary)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(color)
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.system(size: 10))
+                .foregroundColor(.secondary.opacity(0.6))
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color.oceanSecondary)
-        .cornerRadius(16)
     }
 }

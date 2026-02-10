@@ -112,7 +112,7 @@ platform :mac do
         f.puts "#{'=' * 60}"
       end
 
-      sh("xcodebuild -project ../Cloude/Cloude.xcodeproj -scheme 'Cloude Agent' -destination 'platform=macOS' -derivedDataPath ../build clean build 2>&1 | tee -a #{deploy_log}")
+      sh("xcodebuild -project ../Cloude/Cloude.xcodeproj -scheme 'Cloude Agent' -destination 'platform=macOS' -derivedDataPath ../build build 2>&1 | tee -a #{deploy_log}")
 
       File.open(deploy_log, "a") do |f|
         f.puts "BUILD COMPLETE: #{Time.now}"

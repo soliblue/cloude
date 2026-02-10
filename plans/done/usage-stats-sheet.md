@@ -1,4 +1,5 @@
 # Usage Stats Sheet (`/usage`)
+<!-- build: 70 -->
 
 ## Summary
 Native iOS sheet showing Claude Code usage statistics from `~/.claude/stats-cache.json`. Triggered by `/usage` slash command — intercepts before reaching CLI and opens a native SwiftUI sheet.
