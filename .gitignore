@@ -46,3 +46,4 @@ skills/speak/venv/
 skills/music/venv/
 skills/video/__pycache__/
 skills/video/output/
+skills/video/browser-data/
