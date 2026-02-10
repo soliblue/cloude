@@ -41,18 +41,26 @@ tools/sora/image_flow_capture.json
 # Swift Package Manager
 .build/
 .swiftpm/
-skills/speak/models/
-skills/speak/venv/
-skills/speak/output/
-skills/music/venv/
-skills/music/output/
-skills/icongen/ref-creature.png
-skills/slides/.venv/
-skills/slides/slides/output/
-skills/slides/reference/
-skills/slides/*.pptx
-skills/slides/*.png
-skills/slides/__pycache__/
-skills/video/__pycache__/
-skills/video/output/
-skills/video/browser-data/
+
+# Old skills location (everything moved to .claude/skills/)
+/skills/
+
+# Skill runtime data (venvs, models, outputs, browser data)
+.claude/skills/speak/models/
+.claude/skills/speak/venv/
+.claude/skills/speak/output/
+.claude/skills/music/venv/
+.claude/skills/music/output/
+.claude/skills/icon/output/
+.claude/skills/icon/ref-creature.png
+.claude/skills/image/output/
+.claude/skills/slides/.venv/
+.claude/skills/slides/slides/output/
+.claude/skills/slides/reference/
+.claude/skills/slides/*.pptx
+.claude/skills/slides/*.png
+.claude/skills/slides/__pycache__/
+.claude/skills/video/__pycache__/
+.claude/skills/video/output/
+.claude/skills/video/browser-data/
+.claude/skills/video/data/

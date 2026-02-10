@@ -35,24 +35,24 @@ Do NOT use this skill when:
 source /Users/soli/Desktop/CODING/cloude/.env
 
 # Text-to-image
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
   --prompt "description of image" \
   --output my-image
 
 # Edit an existing image
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
   --prompt "change the sky to sunset colors" \
   --edit /path/to/existing-image.png \
   --output edited-image
 
 # With aspect ratio
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
   --prompt "wide landscape photo of mountains" \
   --aspect "16:9" \
   --output landscape
 
 # Custom output directory
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
   --prompt "diagram of system architecture" \
   --output-dir /path/to/destination \
   --output arch-diagram
@@ -93,6 +93,6 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/skills/image/ge
 
 ## Output
 
-Default output: `/Users/soli/Desktop/CODING/cloude/skills/image/output/`
+Default output: `/Users/soli/Desktop/CODING/cloude/.claude/skills/image/output/`
 
 Files are named `{output}.{ext}` where ext matches what Gemini returns (usually png).

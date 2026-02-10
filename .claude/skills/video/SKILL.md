@@ -29,25 +29,25 @@ Do NOT use when:
 
 ```bash
 # Text-to-video (landscape, 5 seconds)
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "a goldfish swimming in clear water"
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/create.py "a goldfish swimming in clear water"
 
 # Portrait orientation
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "a person walking through rain" -o portrait
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/create.py "a person walking through rain" -o portrait
 
 # Square
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "abstract shapes morphing" -o square
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/create.py "abstract shapes morphing" -o square
 
 # Longer duration (10s = 300 frames, 15s = 450, 20s = 600)
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "timelapse of clouds" -f 300
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/create.py "timelapse of clouds" -f 300
 
 # Image-to-video (animate a reference image)
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "camera slowly zooms out" --image /path/to/photo.png
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/create.py "camera slowly zooms out" --image /path/to/photo.png
 
 # Larger resolution (512x896 portrait, 1024x576 landscape)
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py "epic landscape" -s large
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/create.py "epic landscape" -s large
 
 # Batch mode (submit multiple jobs in one browser session)
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/create.py --batch /path/to/jobs.json
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/create.py --batch /path/to/jobs.json
 ```
 
 ## Options
@@ -248,7 +248,7 @@ Note: speech constraints are useless — always strip audio. "No new objects, pr
 
 If the session expires, re-authenticate:
 ```bash
-python3 /Users/soli/Desktop/CODING/cloude/skills/video/session.py login
+python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/video/session.py login
 # Opens Chrome, sign in to sora.chatgpt.com, type 'done'
 ```
 
@@ -261,6 +261,6 @@ python3 /Users/soli/Desktop/CODING/cloude/skills/video/session.py login
 
 ## Output
 
-Default output: `/Users/soli/Desktop/CODING/cloude/skills/video/output/`
+Default output: `/Users/soli/Desktop/CODING/cloude/.claude/skills/video/output/`
 
 Files are named `sora_{timestamp}.mp4`.
