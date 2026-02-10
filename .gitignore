@@ -43,7 +43,10 @@ tools/sora/image_flow_capture.json
 .swiftpm/
 skills/speak/models/
 skills/speak/venv/
+skills/speak/output/
 skills/music/venv/
+skills/music/output/
+skills/icongen/ref-creature.png
 skills/video/__pycache__/
 skills/video/output/
 skills/video/browser-data/
