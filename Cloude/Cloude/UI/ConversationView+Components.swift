@@ -63,7 +63,7 @@ struct ChatMessageList: View {
     var queuedMessages: [ChatMessage] = []
     let currentOutput: String
     let currentToolCalls: [ToolCall]
-    let currentRunStats: (durationMs: Int, costUsd: Double)?
+    let currentRunStats: (durationMs: Int, costUsd: Double, model: String?)?
     @Binding var scrollProxy: ScrollViewProxy?
     let agentState: AgentState
     let conversationId: UUID?
@@ -236,9 +236,16 @@ struct ChatMessageList: View {
             MessageBubble(
                 message: message,
                 skills: connection?.skills ?? [],
-                onRefresh: message.isUser ? nil : { refreshMessage(message) }
+                onRefresh: message.isUser ? nil : { refreshMessage(message) },
+                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
             )
             .id("\(message.id)-\(message.isQueued)")
+        }
+    }
+
+    private func toggleCollapse(_ message: ChatMessage) {
+        if let conversation, let store = conversationStore {
+            store.updateMessage(message.id, in: conversation) { $0.isCollapsed.toggle() }
         }
     }
 

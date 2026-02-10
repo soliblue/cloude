@@ -11,6 +11,12 @@ extension MainChatView {
 
         guard !text.isEmpty || allImagesBase64 != nil || allFilesBase64 != nil else { return }
 
+        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/usage" {
+            inputText = ""
+            connection.getUsageStats()
+            return
+        }
+
         if isHeartbeatActive {
             sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
         } else {

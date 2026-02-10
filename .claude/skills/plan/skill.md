@@ -128,6 +128,36 @@ mv plans/testing/my-feature.md plans/done/
 ### Pick next work
 Look in `next/` first, then `backlog/`. Read the plan, move to `active/`, start working.
 
+## Review Plans with Codex
+
+Send plans to Codex for review and pipe feedback directly into the plan file. Codex stays read-only — its output gets appended as a `## Codex Review` section.
+
+### Single plan
+```bash
+PLAN="plans/next/my-feature.md"
+echo -e "\n## Codex Review\n" >> "$PLAN" && \
+codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude \
+  "Review this plan for the Cloude project (iOS app + Mac agent for remote Claude Code). Give feedback on the approach, flag risks or missing considerations, and suggest improvements. Here is the plan: $(cat "$PLAN")" \
+  >> "$PLAN"
+```
+
+### Batch review (all plans in a folder)
+```bash
+for plan in plans/next/*.md; do
+  echo -e "\n## Codex Review\n" >> "$plan" && \
+  codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude \
+    "Review this plan for the Cloude project (iOS app + Mac agent for remote Claude Code). Give feedback on the approach, flag risks or missing considerations, and suggest improvements. Here is the plan: $(cat "$plan")" \
+    >> "$plan"
+done
+```
+
+### Instructions
+1. **Always set `timeout: 300000`** (5 min) on each Bash call
+2. For batch reviews, run as **parallel background tasks** for speed
+3. Codex stays `-s read-only` — reads codebase for context, never writes
+4. Review appends directly to the plan file as a permanent record
+5. If a plan already has a `## Codex Review` section, remove the old one before appending
+
 ## Rules
 
 - One plan per feature/bug/idea

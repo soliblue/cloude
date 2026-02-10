@@ -6,6 +6,7 @@ struct MessageBubble: View {
     let message: ChatMessage
     var skills: [Skill] = []
     var onRefresh: (() -> Void)?
+    var onToggleCollapse: (() -> Void)?
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
@@ -114,6 +115,30 @@ struct MessageBubble: View {
                     }
                 }
                 .font(.body)
+                .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
+                .clipped()
+                .overlay(alignment: .bottom) {
+                    if message.isCollapsed {
+                        LinearGradient(colors: [backgroundColor.opacity(0), backgroundColor], startPoint: .top, endPoint: .bottom)
+                            .frame(height: 40)
+                    }
+                }
+
+                if message.isCollapsed {
+                    Button {
+                        onToggleCollapse?()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.down")
+                            Text("Show more")
+                        }
+                        .font(.caption2.weight(.medium))
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 2)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .opacity(message.isQueued ? 0.6 : 1.0)
 
@@ -125,14 +150,13 @@ struct MessageBubble: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             } else {
+                if let team = message.teamSummary {
+                    TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
+                }
                 HStack(spacing: 10) {
                     if let durationMs = message.durationMs, let costUsd = message.costUsd {
                         StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
-                        RunStatsView(durationMs: durationMs, costUsd: costUsd)
-                    }
-                    if let team = message.teamSummary {
-                        if message.durationMs != nil { Spacer() }
-                        TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
+                        RunStatsView(durationMs: durationMs, costUsd: costUsd, model: message.model)
                     }
                     Spacer()
                     if ttsMode != .off && !message.text.isEmpty {
@@ -202,6 +226,13 @@ struct MessageBubble: View {
                     }
                 } label: {
                     Label("Copy", systemImage: "doc.on.doc")
+                }
+                if !message.isUser && !message.text.isEmpty {
+                    Button {
+                        onToggleCollapse?()
+                    } label: {
+                        Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
+                    }
                 }
                 if ttsMode != .off && !message.text.isEmpty && !message.isUser {
                     Button {

@@ -8,7 +8,7 @@ class ConversationOutput: ObservableObject {
 
     @Published var text: String = "" { didSet { if text != oldValue { parent?.objectWillChange.send() } } }
     @Published var toolCalls: [ToolCall] = [] { didSet { parent?.objectWillChange.send() } }
-    @Published var runStats: (durationMs: Int, costUsd: Double)? { didSet { parent?.objectWillChange.send() } }
+    @Published var runStats: (durationMs: Int, costUsd: Double, model: String?)? { didSet { parent?.objectWillChange.send() } }
     @Published var isRunning: Bool = false { didSet { if isRunning != oldValue { parent?.objectWillChange.send() } } }
     @Published var isCompacting: Bool = false { didSet { if isCompacting != oldValue { parent?.objectWillChange.send() } } }
     @Published var newSessionId: String? { didSet { if newSessionId != oldValue { parent?.objectWillChange.send() } } }
@@ -200,6 +200,7 @@ struct ChunkProgress: Equatable {
     var onPlans: (([String: [PlanItem]]) -> Void)?
     var onPlanDeleted: ((String, String) -> Void)?
     var onConversationOutputStarted: ((UUID) -> Void)?
+    var onUsageStats: ((UsageStats) -> Void)?
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
