@@ -40,7 +40,7 @@ All slides go to: `/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/slide
 ```bash
 # Activate environment
 source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.venv/bin/activate 2>/dev/null || \
-  (cd /Users/soli/Desktop/CODING/cloude/skills/slides && python -m venv .venv && source .venv/bin/activate && pip install -q google-genai pillow python-dotenv python-pptx)
+  (cd /Users/soli/Desktop/CODING/cloude/.claude/skills/slides && python -m venv .venv && source .venv/bin/activate && pip install -q google-genai pillow python-dotenv python-pptx)
 
 # Load API key
 source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.env
