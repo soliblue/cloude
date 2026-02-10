@@ -10,22 +10,26 @@ struct ToolDetailSheet: View {
 
     private let outputPreviewLineCount = 15
 
-    private var chainedCommands: [String] {
+    private var chainedCommands: [ChainedCommand] {
         guard toolCall.name == "Bash", let input = toolCall.input else { return [] }
-        return BashCommandParser.chainedCommands(for: input)
+        return BashCommandParser.chainedCommandsWithOperators(for: input)
     }
 
     private var displayName: String {
         if toolCall.isMemoryCommand { return "Memory" }
         if toolCall.isScript { return "Script" }
         if toolCall.name == "Bash", let input = toolCall.input {
-            let commands = BashCommandParser.splitChainedCommands(input)
-            if commands.count > 1 {
-                let names = commands.map { cmd -> String in
-                    let parsed = BashCommandParser.parse(cmd)
-                    return parsed.command.isEmpty ? "bash" : parsed.command
+            let chained = BashCommandParser.chainedCommandsWithOperators(for: input)
+            if chained.count > 1 {
+                var parts: [String] = []
+                for (i, cmd) in chained.enumerated() {
+                    let parsed = BashCommandParser.parse(cmd.command)
+                    parts.append(parsed.command.isEmpty ? "bash" : parsed.command)
+                    if i < chained.count - 1, let op = cmd.operatorAfter {
+                        parts.append(op.rawValue)
+                    }
                 }
-                return names.joined(separator: " && ")
+                return parts.joined(separator: " ")
             }
             let parsed = BashCommandParser.parse(input)
             if !parsed.command.isEmpty {
@@ -334,16 +338,16 @@ struct ToolDetailSheet: View {
                 .foregroundColor(.secondary)
 
             VStack(spacing: 0) {
-                ForEach(Array(chainedCommands.enumerated()), id: \.offset) { index, cmd in
+                ForEach(Array(chainedCommands.enumerated()), id: \.offset) { index, chained in
                     VStack(spacing: 0) {
                         HStack(alignment: .top, spacing: 10) {
-                            Image(systemName: ToolCallLabel(name: "Bash", input: cmd).iconName)
+                            Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(toolCallColor(for: "Bash", input: cmd))
+                                .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
                                 .frame(width: 20)
                                 .padding(.top, 2)
 
-                            Text(cmd)
+                            Text(chained.command)
                                 .font(.system(.body, design: .monospaced))
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -351,13 +355,13 @@ struct ToolDetailSheet: View {
                         .padding(.vertical, 10)
                         .padding(.horizontal, 12)
 
-                        if index < chainedCommands.count - 1 {
+                        if let op = chained.operatorAfter {
                             HStack(spacing: 8) {
                                 Rectangle()
                                     .fill(Color.secondary.opacity(0.3))
                                     .frame(width: 1, height: 16)
                                     .padding(.leading, 21)
-                                Text("&&")
+                                Text(op.rawValue)
                                     .font(.system(.caption2, design: .monospaced))
                                     .foregroundColor(.secondary)
                                 Spacer()

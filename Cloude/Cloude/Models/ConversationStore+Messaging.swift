@@ -40,7 +40,8 @@ extension ConversationStore {
             durationMs: output.runStats?.durationMs,
             costUsd: output.runStats?.costUsd,
             serverUUID: output.messageUUID,
-            teamSummary: teamSummary
+            teamSummary: teamSummary,
+            model: output.runStats?.model
         )
 
         let freshConv = self.conversation(withId: conversation.id) ?? conversation

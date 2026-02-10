@@ -3,6 +3,7 @@ import Foundation
 enum FileContentType {
     case image
     case video
+    case audio
     case markdown
     case json
     case yaml
@@ -22,7 +23,7 @@ enum FileContentType {
 
     var isTextBased: Bool {
         switch self {
-        case .image, .video, .binary: return false
+        case .image, .video, .audio, .binary: return false
         default: return true
         }
     }
@@ -45,6 +46,8 @@ enum FileContentType {
             return .image
         case "mp4", "mov", "m4v", "avi", "webm":
             return .video
+        case "wav", "mp3", "m4a", "aac", "ogg", "flac":
+            return .audio
         case "md":
             return .markdown
         case "json":

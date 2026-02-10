@@ -20,6 +20,9 @@ extension ClaudeCodeRunner {
             if type == "system",
                let subtype = json["subtype"] as? String {
                 if subtype == "init", let sessionId = json["session_id"] as? String {
+                    if activeModel == nil, let model = json["model"] as? String {
+                        activeModel = model
+                    }
                     events.send(.sessionId(sessionId))
                     onSessionId?(sessionId)
                 }
@@ -117,7 +120,8 @@ extension ClaudeCodeRunner {
                 }
                 if let durationMs = json["duration_ms"] as? Int,
                    let costUsd = json["total_cost_usd"] as? Double {
-                    pendingRunStats = (durationMs, costUsd)
+                    let model = json["model"] as? String ?? activeModel
+                    pendingRunStats = (durationMs, costUsd, model)
                 }
                 if let result = json["result"] as? String, accumulatedOutput.isEmpty {
                     events.send(.output(result))
@@ -152,7 +156,7 @@ extension ClaudeCodeRunner {
 
         if let stats = pendingRunStats {
             events.send(.runStats(durationMs: stats.durationMs, costUsd: stats.costUsd))
-            onRunStats?(stats.durationMs, stats.costUsd)
+            onRunStats?(stats.durationMs, stats.costUsd, stats.model)
             pendingRunStats = nil
         }
 
@@ -167,6 +171,7 @@ extension ClaudeCodeRunner {
         outputPipe = nil
         errorPipe = nil
         isRunning = false
+        activeModel = nil
         accumulatedOutput = ""
         lineBuffer = ""
         pendingRunStats = nil

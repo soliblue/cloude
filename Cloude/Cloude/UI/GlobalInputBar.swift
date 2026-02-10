@@ -66,7 +66,7 @@ struct GlobalInputBar: View {
         "Swipe left here to clear text",
         "Tap the header to switch chats",
         "The heartbeat runs on a schedule",
-        "Try /cost to see usage stats"
+        "Try /usage to see your stats"
     ]
 
     private var placeholder: String {

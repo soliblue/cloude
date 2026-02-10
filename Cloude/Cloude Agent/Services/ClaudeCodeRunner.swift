@@ -18,7 +18,7 @@ class ClaudeCodeRunner: ObservableObject {
     var onToolResult: ((String, String?, String?) -> Void)?
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
-    var onRunStats: ((Int, Double) -> Void)?
+    var onRunStats: ((Int, Double, String?) -> Void)?
     var onCloudeCommand: ((String, String) -> Void)?
     var onStatus: ((AgentState) -> Void)?
     var onMessageUUID: ((String) -> Void)?
@@ -26,7 +26,8 @@ class ClaudeCodeRunner: ObservableObject {
     var onTeammateSpawned: ((TeammateInfo) -> Void)?
     var onTeamDeleted: (() -> Void)?
 
-    var pendingRunStats: (durationMs: Int, costUsd: Double)?
+    var pendingRunStats: (durationMs: Int, costUsd: Double, model: String?)?
+    var activeModel: String?
     var accumulatedOutput = ""
     var lineBuffer = ""
 
@@ -88,6 +89,7 @@ class ClaudeCodeRunner: ObservableObject {
         }
 
         isRunning = true
+        activeModel = model
         accumulatedOutput = ""
 
         process = Process()

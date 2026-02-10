@@ -22,12 +22,14 @@ public struct HistoryMessage: Codable {
     public let timestamp: Date
     public let toolCalls: [StoredToolCall]
     public let serverUUID: String?
+    public let model: String?
 
-    public init(isUser: Bool, text: String, timestamp: Date, toolCalls: [StoredToolCall] = [], serverUUID: String? = nil) {
+    public init(isUser: Bool, text: String, timestamp: Date, toolCalls: [StoredToolCall] = [], serverUUID: String? = nil, model: String? = nil) {
         self.isUser = isUser
         self.text = text
         self.timestamp = timestamp
         self.toolCalls = toolCalls
         self.serverUUID = serverUUID
+        self.model = model
     }
 }

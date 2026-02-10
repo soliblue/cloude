@@ -37,7 +37,7 @@ struct HistoryService {
             dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
             var userMessages: [(uuid: String, timestamp: Date, text: String)] = []
-            var assistantMessages: [String: (timestamp: Date, items: [ContentItem])] = [:]
+            var assistantMessages: [String: (timestamp: Date, model: String?, items: [ContentItem])] = [:]
 
             for line in lines {
                 guard let data = line.data(using: .utf8),
@@ -63,6 +63,7 @@ struct HistoryService {
                     }
 
                     let messageId = messageObj["id"] as? String ?? uuid
+                    let model = messageObj["model"] as? String
 
                     for item in contentArray {
                         guard let itemType = item["type"] as? String else { continue }
@@ -84,7 +85,7 @@ struct HistoryService {
                             existing.items.append(contentItem)
                             assistantMessages[messageId] = existing
                         } else {
-                            assistantMessages[messageId] = (timestamp, [contentItem])
+                            assistantMessages[messageId] = (timestamp, model, [contentItem])
                         }
                     }
                 }
@@ -112,7 +113,7 @@ struct HistoryService {
                 }
 
                 if !accumulatedText.isEmpty || !toolCalls.isEmpty {
-                    allMessages.append((uuid, data.timestamp, HistoryMessage(isUser: false, text: accumulatedText, timestamp: data.timestamp, toolCalls: toolCalls, serverUUID: uuid)))
+                    allMessages.append((uuid, data.timestamp, HistoryMessage(isUser: false, text: accumulatedText, timestamp: data.timestamp, toolCalls: toolCalls, serverUUID: uuid, model: data.model)))
                 }
             }
 
@@ -129,7 +130,7 @@ struct HistoryService {
                     let adjustedTools = msg.toolCalls.map { tool in
                         StoredToolCall(name: tool.name, input: tool.input, toolId: tool.toolId, parentToolId: tool.parentToolId, textPosition: (tool.textPosition ?? 0) + textOffset)
                     }
-                    merged[lastIdx] = HistoryMessage(isUser: false, text: combinedText, timestamp: prev.timestamp, toolCalls: prev.toolCalls + adjustedTools, serverUUID: prev.serverUUID ?? msg.serverUUID)
+                    merged[lastIdx] = HistoryMessage(isUser: false, text: combinedText, timestamp: prev.timestamp, toolCalls: prev.toolCalls + adjustedTools, serverUUID: prev.serverUUID ?? msg.serverUUID, model: prev.model ?? msg.model)
                 } else {
                     merged.append(msg)
                 }

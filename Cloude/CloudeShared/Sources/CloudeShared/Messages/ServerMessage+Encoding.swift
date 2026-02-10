@@ -68,10 +68,11 @@ extension ServerMessage {
             try container.encodeIfPresent(summary, forKey: .summary)
             try container.encodeIfPresent(output, forKey: .output)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .runStats(let durationMs, let costUsd, let conversationId):
+        case .runStats(let durationMs, let costUsd, let model, let conversationId):
             try container.encode("run_stats", forKey: .type)
             try container.encode(durationMs, forKey: .durationMs)
             try container.encode(costUsd, forKey: .costUsd)
+            try container.encodeIfPresent(model, forKey: .model)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .gitStatusResult(let status):
             try container.encode("git_status_result", forKey: .type)
@@ -227,6 +228,9 @@ extension ServerMessage {
             try container.encode("plan_deleted", forKey: .type)
             try container.encode(stage, forKey: .stage)
             try container.encode(filename, forKey: .filename)
+        case .usageStats(let stats):
+            try container.encode("usage_stats", forKey: .type)
+            try container.encode(stats, forKey: .stats)
         }
     }
 }

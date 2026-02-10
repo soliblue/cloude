@@ -135,8 +135,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.server.broadcast(.toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId))
         }
 
-        runnerManager.onRunStats = { [weak self] durationMs, costUsd, conversationId in
-            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, conversationId: conversationId))
+        runnerManager.onRunStats = { [weak self] durationMs, costUsd, model, conversationId in
+            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId))
         }
 
         runnerManager.onStatusChange = { [weak self] state, conversationId in

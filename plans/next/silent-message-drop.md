@@ -62,3 +62,58 @@ func cleanupEmptyConversation(for windowId: UUID) {
 ## Open Questions
 - Should empty conversation cleanup be removed entirely? It auto-deletes conversations that might have just been created.
 - Should `ConversationView.effectiveConversation` never fall back to `currentConversation`? Return nil instead?
+
+## Codex Review
+
+**Findings (highest severity first)**
+
+1. **Window/conversation binding is still fragile if cleanup remains index-driven**
+- Risk: `currentPageIndex` + `ForEach` index shifts can still misroute sends even after guarding running conversations.
+- Why: Removing a window mutates ordering; page index can now point at a different `windowId`.
+- Where: `Cloude/Cloude/UI/MainChatView.swift`, `Cloude/Cloude/UI/MainChatView+Utilities.swift`.
+- Improvement: Bind page selection to stable `windowId` (UUID), not array index.
+
+2. **Fix 1 likely addresses only one orphaning path**
+- Risk: Empty conversation can still be deleted before first send if not “running” yet.
+- Why: New draft conversations are often empty/non-running by design.
+- Where: `Cloude/Cloude/UI/MainChatView+Utilities.swift`.
+- Improvement: Don’t auto-delete on window switch. Cleanup only on explicit close, app background sweep, or age-based GC.
+
+3. **`Bool` return for send is too lossy for UX and diagnostics**
+- Risk: You can’t distinguish “no active window”, “cost limit”, “transport failure”, etc.
+- Where: `Cloude/Cloude/UI/MainChatView+Messaging.swift`.
+- Improvement: Return `Result<SendAccepted, SendError>` (or typed enum) and surface actionable UI feedback per failure.
+
+4. **Moving completion logic to app level can create double-finalization or lifecycle races**
+- Risk: If `ConversationView` and global handler both finalize, message state can be duplicated/corrupted.
+- Where: `Cloude/Cloude/UI/ConversationView.swift`, `Cloude/Cloude/App/CloudeApp.swift`.
+- Improvement: Single owner for stream lifecycle (prefer model/service layer). Views should render state only.
+
+5. **`effectiveConversation` fallback is a correctness hazard**
+- Risk: Cross-window bleed where one window renders/sends against another conversation.
+- Where: `Cloude/Cloude/UI/ConversationView.swift`.
+- Improvement: Remove fallback to `store.currentConversation` for window-scoped views; render empty/error state when missing binding.
+
+**Missing considerations**
+
+1. **Atomicity/invariants**
+- Define invariant: `window.conversationId` must either be valid or UI is non-sendable.
+- Add assertions/logging when violated.
+
+2. **Concurrency**
+- Ensure mutations to windows/conversations happen on one actor (`@MainActor` or dedicated store actor) to avoid race during switch/send/cleanup.
+
+3. **Observability**
+- Add structured events: `window_switched`, `conversation_unlinked`, `send_rejected(reason)`, `send_accepted(conversationId)`.
+
+4. **Regression tests**
+- Add tests for: switch-away/switch-back/send; delete window while paged; off-screen streaming completion; cost-limit rejection preserving draft text.
+
+**Suggested plan adjustments**
+
+1. Freeze cleanup behavior first (disable unlink-on-switch), ship guarded hotfix.
+2. Refactor page selection to `windowId` identity.
+3. Remove `effectiveConversation` fallback for window-scoped rendering.
+4. Introduce typed send result + user-visible error handling.
+5. Centralize streaming completion in one non-view component.
+6. Add targeted integration tests before re-enabling any cleanup policy.

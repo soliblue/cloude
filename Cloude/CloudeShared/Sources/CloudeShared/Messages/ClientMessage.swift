@@ -38,6 +38,7 @@ public enum ClientMessage: Codable {
     case suggestName(text: String, context: [String], conversationId: String)
     case getPlans(workingDirectory: String)
     case deletePlan(stage: String, filename: String, workingDirectory: String)
+    case getUsageStats
 
     enum CodingKeys: String, CodingKey {
         case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, messageId, voice
@@ -149,6 +150,8 @@ public enum ClientMessage: Codable {
             let filename = try container.decode(String.self, forKey: .filename)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
+        case "get_usage_stats":
+            self = .getUsageStats
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -255,6 +258,8 @@ public enum ClientMessage: Codable {
             try container.encode(stage, forKey: .stage)
             try container.encode(filename, forKey: .filename)
             try container.encode(workingDirectory, forKey: .workingDirectory)
+        case .getUsageStats:
+            try container.encode("get_usage_stats", forKey: .type)
         }
     }
 }
