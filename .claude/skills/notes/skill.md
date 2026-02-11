@@ -14,12 +14,12 @@ Access Soli's personal notes exported from Apple Notes. Includes diary entries (
 
 Export all notes from Apple Notes to markdown:
 ```bash
-bash /Users/soli/Desktop/CODING/cloude/.claude/skills/notes/export.sh
+bash .claude/skills/notes/export.sh
 ```
 
 Export a single folder only:
 ```bash
-bash /Users/soli/Desktop/CODING/cloude/.claude/skills/notes/export.sh "Diary"
+bash .claude/skills/notes/export.sh "Diary"
 ```
 
 Requires Apple Notes permission for Terminal (System Settings → Privacy → Automation).
@@ -65,7 +65,7 @@ folder: Diary
 
 ### Search notes by keyword
 ```bash
-grep -rl "keyword" /Users/soli/Desktop/CODING/cloude/.claude/skills/notes/data/ --include="*.md"
+grep -rl "keyword" .claude/skills/notes/data/ --include="*.md"
 ```
 
 ### Read a specific note
@@ -73,17 +73,17 @@ Use the Read tool with the full path to the markdown file.
 
 ### List all diary entries
 ```bash
-ls /Users/soli/Desktop/CODING/cloude/.claude/skills/notes/data/Diary/
+ls .claude/skills/notes/data/Diary/
 ```
 
 ### Search diary by date range
 ```bash
-ls /Users/soli/Desktop/CODING/cloude/.claude/skills/notes/data/Diary/ | grep "^2024"
+ls .claude/skills/notes/data/Diary/ | grep "^2024"
 ```
 
 ### Full-text search across all notes
 ```bash
-grep -rli "therapy\|therapist" /Users/soli/Desktop/CODING/cloude/.claude/skills/notes/data/ --include="*.md"
+grep -rli "therapy\|therapist" .claude/skills/notes/data/ --include="*.md"
 ```
 
 ## Privacy

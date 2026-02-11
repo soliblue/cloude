@@ -49,6 +49,7 @@ tools/sora/image_flow_capture.json
 .claude/skills/speak/models/
 .claude/skills/speak/venv/
 .claude/skills/speak/output/
+.claude/skills/transcribe/output/
 .claude/skills/music/venv/
 .claude/skills/music/output/
 .claude/skills/icon/output/
