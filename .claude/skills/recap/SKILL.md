@@ -2,6 +2,7 @@
 name: recap
 description: Generate a daily recap video from today's work — Sora videos, Gemini images, app screenshots, everything. Stitches the full day into a ~30s cinematic short.
 user-invocable: true
+disable-model-invocation: true
 icon: film.stack
 aliases: [daily short, daily recap, story]
 ---
@@ -27,7 +28,7 @@ Scan everything from today. Cast a wide net:
 ls -lt skills/video/output/*.mp4 | head -40
 
 # Gemini images (mood boards, story frames, references, icons)
-ls -lt skills/image/output/*.{jpg,png} | head -30
+ls -lt .claude/skills/image/output/*.{jpg,png} | head -30
 
 # App screenshots
 find . -name "screenshot*" -o -name "Screenshot*" | grep -v node_modules | grep -v .git

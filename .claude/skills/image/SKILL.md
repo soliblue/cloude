@@ -35,24 +35,24 @@ Do NOT use this skill when:
 source /Users/soli/Desktop/CODING/cloude/.env
 
 # Text-to-image
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
   --prompt "description of image" \
   --output my-image
 
 # Edit an existing image
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
   --prompt "change the sky to sunset colors" \
   --edit /path/to/existing-image.png \
   --output edited-image
 
 # With aspect ratio
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
   --prompt "wide landscape photo of mountains" \
   --aspect "16:9" \
   --output landscape
 
 # Custom output directory
-GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/image/generate.sh \
+GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
   --prompt "diagram of system architecture" \
   --output-dir /path/to/destination \
   --output arch-diagram
@@ -64,7 +64,7 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/
 - `--output` - Filename without extension (default: image-TIMESTAMP)
 - `--edit` - Path to existing image to modify (sends image + prompt together)
 - `--aspect` - Aspect ratio hint: "16:9", "9:16", "square", "portrait", "landscape"
-- `--output-dir` - Where to save (default: skills/image/output/)
+- `--output-dir` - Where to save (default: .claude/skills/image/output/)
 - `--model` - Gemini model override (default: gemini-2.0-flash-exp)
 
 ## Prompt Tips for Gemini
@@ -93,6 +93,6 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY /Users/soli/Desktop/CODING/cloude/.claude/skills/
 
 ## Output
 
-Default output: `/Users/soli/Desktop/CODING/cloude/.claude/skills/image/output/`
+Default output: `.claude/.claude/skills/image/output/`
 
 Files are named `{output}.{ext}` where ext matches what Gemini returns (usually png).

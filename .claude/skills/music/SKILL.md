@@ -2,6 +2,7 @@
 name: music
 description: Generate background music using MusicGen. Text-to-music for recaps, videos, ambient tracks. Self-contained Python with auto-setup.
 user-invocable: true
+disable-model-invocation: true
 icon: music.note
 aliases: [song, beat, soundtrack, bgm]
 parameters:
@@ -29,19 +30,19 @@ Do NOT use when:
 
 ```bash
 # Custom prompt
-python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/music/generate.py "calm ambient electronic music with soft pads"
+python3 .claude/skills/music/generate.py "calm ambient electronic music with soft pads"
 
 # Use a mood preset
-python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/music/generate.py "" -m recap
+python3 .claude/skills/music/generate.py "" -m recap
 
 # 30 seconds for a recap
-python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/music/generate.py "upbeat cinematic electronic" -d 30 -o recap-bgm
+python3 .claude/skills/music/generate.py "upbeat cinematic electronic" -d 30 -o recap-bgm
 
 # Short 10s loop
-python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/music/generate.py "lo-fi chill beat" -d 10 -o chill-loop
+python3 .claude/skills/music/generate.py "lo-fi chill beat" -d 10 -o chill-loop
 
 # List mood presets
-python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/music/generate.py "" --list-moods
+python3 .claude/skills/music/generate.py "" --list-moods
 ```
 
 ## Options
@@ -73,7 +74,7 @@ python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/music/generate.py "" --
 
 ## Output
 
-Default output: `/Users/soli/Desktop/CODING/cloude/.claude/skills/music/output/`
+Default output: `.claude/skills/music/output/`
 
 Files are named `{output}.wav` (32kHz mono).
 
@@ -82,7 +83,7 @@ Files are named `{output}.wav` (32kHz mono).
 For daily recaps, generate a unique 30s background track:
 
 ```bash
-python3 /Users/soli/Desktop/CODING/cloude/.claude/skills/music/generate.py "upbeat inspiring electronic music, building momentum, modern cinematic" -d 30 -o recap-bgm-2026-02-10
+python3 .claude/skills/music/generate.py "upbeat inspiring electronic music, building momentum, modern cinematic" -d 30 -o recap-bgm-2026-02-10
 ```
 
 Then mix with narration using ffmpeg (lower music volume under speech):

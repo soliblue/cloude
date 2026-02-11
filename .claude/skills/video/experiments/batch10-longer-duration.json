@@ -1,0 +1,5 @@
+[
+  {"prompt": "A woman walking alone through a foggy forest path at dawn, volumetric light rays, mysterious atmosphere, Kodak Portra 400 film grain, slow contemplative pace", "orientation": "portrait", "size": "large", "frames": 300},
+  {"prompt": "Steadicam tracking shot following a felt stop motion character through a miniature city at night, neon signs, rain, puddle reflections, Wes Anderson palette", "orientation": "portrait", "size": "large", "frames": 300},
+  {"prompt": "Aerial drone slowly rising over a mountain lake at sunrise, revealing the full landscape, mist clearing, birds taking flight, cinematic, 35mm film", "orientation": "landscape", "size": "large", "frames": 450}
+]

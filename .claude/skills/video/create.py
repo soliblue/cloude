@@ -6,7 +6,7 @@ OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
 PROXY_API_URL = 'https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&country_code__in=US&page_size=1'
 
 async def get_proxy():
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '.env')
     api_key = None
     with open(env_path) as f:
         for line in f:

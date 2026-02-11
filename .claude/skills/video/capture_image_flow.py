@@ -5,7 +5,7 @@ BROWSER_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'browser
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'image_flow_capture.json')
 
 async def get_proxy():
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '.env')
     api_key = None
     with open(env_path) as f:
         for line in f:

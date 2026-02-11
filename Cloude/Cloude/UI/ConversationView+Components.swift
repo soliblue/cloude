@@ -83,6 +83,7 @@ struct ChatMessageList: View {
     @State private var isInitialLoad = true
     @State private var isBottomVisible = true
     @State private var isCostBannerDismissed = false
+    @State private var scrollViewportHeight: CGFloat = 0
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -141,7 +142,7 @@ struct ChatMessageList: View {
         ScrollView(showsIndicators: false) {
             LazyVStack(alignment: .leading, spacing: 0) {
                 costBannerSection
-                messageListSection
+                messageListSection(viewportHeight: scrollViewportHeight)
                 if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
                     streamingSection
                 }
@@ -155,8 +156,15 @@ struct ChatMessageList: View {
                     .onDisappear { isBottomVisible = false }
             }
         }
+        .coordinateSpace(name: "chatScroll")
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.immediately)
+        .background {
+            GeometryReader { geo in
+                Color.clear.onAppear { scrollViewportHeight = geo.size.height }
+                    .onChange(of: geo.size.height) { _, h in scrollViewportHeight = h }
+            }
+        }
         .simultaneousGesture(
             TapGesture()
                 .onEnded { onInteraction?() }
@@ -231,13 +239,18 @@ struct ChatMessageList: View {
         }
     }
 
-    private var messageListSection: some View {
+    private func messageListSection(viewportHeight: CGFloat) -> some View {
         ForEach(messages) { message in
             MessageBubble(
                 message: message,
                 skills: connection?.skills ?? [],
                 onRefresh: message.isUser ? nil : { refreshMessage(message) },
                 onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
+            )
+            .readingProgress(
+                isAssistant: !message.isUser,
+                isCollapsed: message.isCollapsed,
+                viewportHeight: viewportHeight
             )
             .id("\(message.id)-\(message.isQueued)")
         }

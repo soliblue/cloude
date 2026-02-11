@@ -96,7 +96,7 @@ All examples below show the JS content to write to a temp file, then run with `n
 ```js
 // Write to temp file, run with: node /path/to/search.js "KEYWORD"
 const fs = require("fs");
-const raw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/tweets.js", "utf8");
+const raw = fs.readFileSync(".claude/skills/tweets/data/tweets.js", "utf8");
 const tweets = JSON.parse(raw.replace("window.YTD.tweets.part0 = ", ""));
 const q = (process.argv[2] || "").toLowerCase();
 const matches = tweets
@@ -114,7 +114,7 @@ console.log(JSON.stringify(matches, null, 2));
 ### Get top tweets by likes
 ```js
 const fs = require("fs");
-const raw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/tweets.js", "utf8");
+const raw = fs.readFileSync(".claude/skills/tweets/data/tweets.js", "utf8");
 const tweets = JSON.parse(raw.replace("window.YTD.tweets.part0 = ", ""));
 const sorted = tweets
   .map(t => ({
@@ -133,7 +133,7 @@ console.log(JSON.stringify(sorted, null, 2));
 ```js
 // Run with: node script.js "2024-01-01" "2024-12-31"
 const fs = require("fs");
-const raw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/tweets.js", "utf8");
+const raw = fs.readFileSync(".claude/skills/tweets/data/tweets.js", "utf8");
 const tweets = JSON.parse(raw.replace("window.YTD.tweets.part0 = ", ""));
 const start = new Date(process.argv[2]);
 const end = new Date(process.argv[3]);
@@ -146,7 +146,7 @@ console.log(JSON.stringify(matches, null, 2));
 ### Get original tweets only (no replies, no RTs)
 ```js
 const fs = require("fs");
-const raw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/tweets.js", "utf8");
+const raw = fs.readFileSync(".claude/skills/tweets/data/tweets.js", "utf8");
 const tweets = JSON.parse(raw.replace("window.YTD.tweets.part0 = ", ""));
 const originals = tweets.filter(t =>
   t.tweet.full_text.indexOf("RT @") !== 0 &&
@@ -161,8 +161,8 @@ originals.forEach(t => {
 ### Get full text of a truncated tweet
 ```js
 const fs = require("fs");
-const tweetsRaw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/tweets.js", "utf8");
-const notesRaw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/note-tweet.js", "utf8");
+const tweetsRaw = fs.readFileSync(".claude/skills/tweets/data/tweets.js", "utf8");
+const notesRaw = fs.readFileSync(".claude/skills/tweets/data/note-tweet.js", "utf8");
 const tweets = JSON.parse(tweetsRaw.replace("window.YTD.tweets.part0 = ", ""));
 const notes = JSON.parse(notesRaw.replace("window.YTD.note_tweet.part0 = ", ""));
 const truncated = tweets.filter(t => t.tweet.full_text.endsWith("\u2026") && t.tweet.full_text.indexOf("RT @") !== 0);
@@ -182,7 +182,7 @@ truncated.forEach(t => {
 ### Stats overview
 ```js
 const fs = require("fs");
-const raw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/tweets.js", "utf8");
+const raw = fs.readFileSync(".claude/skills/tweets/data/tweets.js", "utf8");
 const tweets = JSON.parse(raw.replace("window.YTD.tweets.part0 = ", ""));
 const originals = tweets.filter(t => t.tweet.full_text.indexOf("RT @") !== 0 && !t.tweet.in_reply_to_status_id_str);
 const replies = tweets.filter(t => t.tweet.in_reply_to_status_id_str);
@@ -203,7 +203,7 @@ console.log(JSON.stringify({
 ### Topic frequency analysis
 ```js
 const fs = require("fs");
-const raw = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/tweets/data/tweets.js", "utf8");
+const raw = fs.readFileSync(".claude/skills/tweets/data/tweets.js", "utf8");
 const tweets = JSON.parse(raw.replace("window.YTD.tweets.part0 = ", ""));
 const topics = {
   AI: /\b(ai|gpt|claude|llm|openai|anthropic|chatgpt|gemini|copilot|cursor|model|neural|transformer)\b/i,

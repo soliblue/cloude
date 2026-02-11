@@ -31,7 +31,7 @@ For each slide:
 
 ## Output Directory
 
-All slides go to: `/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/slides/output/`
+All slides go to: `.claude/skills/slides/slides/output/`
 
 **File paths are clickable in Cloude** - the user can tap to open and preview each slide image.
 
@@ -39,11 +39,11 @@ All slides go to: `/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/slide
 
 ```bash
 # Activate environment
-source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.venv/bin/activate 2>/dev/null || \
-  (cd /Users/soli/Desktop/CODING/cloude/.claude/skills/slides && python -m venv .venv && source .venv/bin/activate && pip install -q google-genai pillow python-dotenv python-pptx)
+source .claude/skills/slides/.venv/bin/activate 2>/dev/null || \
+  (cd .claude/skills/slides && python -m venv .venv && source .venv/bin/activate && pip install -q google-genai pillow python-dotenv python-pptx)
 
 # Load API key
-source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.env
+source .claude/skills/slides/.env
 ```
 
 ## Generate a Single Slide
@@ -51,8 +51,8 @@ source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.env
 Use this Python code pattern (inline in bash):
 
 ```bash
-source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.venv/bin/activate && \
-source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.env && \
+source .claude/skills/slides/.venv/bin/activate && \
+source .claude/skills/slides/.env && \
 python << 'PYEOF'
 import os
 from pathlib import Path
@@ -61,7 +61,7 @@ from PIL import Image
 from google import genai
 
 # Configuration
-OUTPUT_DIR = Path("/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/slides/output")
+OUTPUT_DIR = Path(".claude/skills/slides/slides/output")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -116,7 +116,7 @@ PYEOF
 To maintain consistent style across slides, use a reference image:
 
 ```python
-REFERENCE_PATH = "/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/reference/your-style.png"
+REFERENCE_PATH = ".claude/skills/slides/reference/your-style.png"
 ```
 
 ## Assemble into PowerPoint
@@ -124,13 +124,13 @@ REFERENCE_PATH = "/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/refere
 After all slides are approved:
 
 ```bash
-source /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/.venv/bin/activate && \
+source .claude/skills/slides/.venv/bin/activate && \
 python << 'PYEOF'
 from pathlib import Path
 from pptx import Presentation
 from pptx.util import Inches
 
-OUTPUT_DIR = Path("/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/slides/output")
+OUTPUT_DIR = Path(".claude/skills/slides/slides/output")
 slides = sorted(OUTPUT_DIR.glob("slide_*.png"))
 
 if not slides:
@@ -159,7 +159,7 @@ PYEOF
 
 ## Reference Assets
 
-Available in `/Users/soli/Desktop/CODING/cloude/.claude/skills/slides/reference/`:
+Available in `.claude/skills/slides/reference/`:
 - `claude-mascot.png` - Orange pixel-art Claude Code character
 - `knowunity-background.png` - Branded background template
 - `knowunity-logo.png` - Brand logo
@@ -190,7 +190,7 @@ Ready to generate slide 1?
 User: Yes
 
 Claude: [generates slide, outputs path]
-Generated: /Users/soli/Desktop/CODING/cloude/.claude/skills/slides/slides/output/slide_01_title.png
+Generated: .claude/skills/slides/slides/output/slide_01_title.png
 
 Take a look and let me know if you want changes.
 

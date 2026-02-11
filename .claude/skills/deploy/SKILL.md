@@ -1,9 +1,10 @@
 ---
 name: deploy
-description: Deploy Cloude to TestFlight and build the Mac agent. Use when pushing changes and deploying, or when asked to "deploy", "push and deploy", or "send to TestFlight".
+description: Deploy Cloude to TestFlight, install to iPhone, and build the Mac agent. Use when pushing changes and deploying, or when asked to "deploy", "push and deploy", "send to TestFlight", "install to phone", "deploy to iPhone", "wireless install", or "direct install".
 user-invocable: true
 icon: airplane.departure
 aliases: [distribute, ship, release]
+argument-hint: "[--mac-only|--ios-only|--phone]"
 ---
 
 # Deploy Skill
@@ -66,6 +67,18 @@ If the agent is not running, always build and launch it.
 | No | No | No | Mac agent only (to start it) |
 | User asks "deploy" | - | - | Both (when in doubt) |
 
+## CRITICAL: Use Scripts, Not Manual Commands
+
+**NEVER execute manual deploy commands. ALWAYS use the scripts below.**
+
+This ensures deterministic execution — no skipped steps, no placeholders, no variance.
+
+- **iOS deployment**: `.claude/skills/deploy/deploy-ios.sh`
+- **Mac agent**: `source .env && fastlane mac build_agent`
+- **Both**: Git push, then run both scripts
+
+If a script fails, report the error and stop. Do not attempt manual commands.
+
 ## Deployment Steps
 
 ### 1. Git Push (if changes exist)
@@ -83,30 +96,35 @@ EOF
 git push
 ```
 
-### 2. iOS Deploy: Check for Connected iPhone First
+### 2. iOS Deploy: Use the Script
 
-Before deploying iOS via TestFlight, check if My iPhone is connected (USB or Wi-Fi):
+**ALWAYS use the deploy script. NEVER run manual commands.**
 
 ```bash
-xcrun devicectl list devices 2>&1 | grep "My iPhone"
+.claude/skills/deploy/deploy-ios.sh
 ```
 
-If the phone is **connected** (state = `connected`):
-1. Build the app: `xcodebuild -project Cloude/Cloude.xcodeproj -scheme Cloude -destination "platform=iOS,name=My iPhone" build 2>&1 | tail -5`
-2. Install directly: `xcrun devicectl device install app --device <DEVICE_UUID> /Users/soli/Library/Developer/Xcode/DerivedData/Cloude-drgeixundgtalkdkjnittevjxsyt/Build/Products/Debug-iphoneos/Cloude.app`
-3. Report: "Installed directly to iPhone"
+The script automatically:
+- Checks if iPhone is connected (USB or Wi-Fi)
+- Extracts device UUID if connected
+- Installs directly to iPhone if connected
+- Falls back to TestFlight if not connected
+- Exits with error on failure (fail closed)
 
-If the phone is **not connected** or `unavailable`:
-1. Fall back to TestFlight: `source .env && fastlane ios beta_local`
-2. If TestFlight fails with **upload limit error (409)** — Apple limits ~50-70 builds/day per app — tell Soli and suggest plugging in or enabling Wi-Fi debugging in Xcode to install directly next time.
+**Optional flag:**
+```bash
+.claude/skills/deploy/deploy-ios.sh --phone-only
+```
+Fails if phone is not connected (no TestFlight fallback).
 
 ### 3. Deploy Based on What Changed
 
 **Both (default when in doubt):**
 ```bash
-source .env && fastlane deploy
+# Git push first, then deploy both
+source .env && fastlane mac build_agent
+.claude/skills/deploy/deploy-ios.sh
 ```
-Note: For the iOS portion, still check for connected phone first (step 2 above). If phone is connected, use `fastlane mac build_agent` for the Mac side and direct install for iOS.
 
 **Mac agent only:**
 ```bash
@@ -114,7 +132,14 @@ source .env && fastlane mac build_agent
 ```
 
 **iOS only:**
-Use the connected phone check from step 2 above. Direct install if connected, TestFlight if not.
+```bash
+.claude/skills/deploy/deploy-ios.sh
+```
+
+**Phone-only (fail if not connected):**
+```bash
+.claude/skills/deploy/deploy-ios.sh --phone-only
+```
 
 ## Post-Deployment
 

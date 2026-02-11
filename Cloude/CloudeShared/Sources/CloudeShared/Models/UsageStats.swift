@@ -20,7 +20,8 @@ public struct UsageStats: Codable {
     }
 }
 
-public struct DailyActivity: Codable {
+public struct DailyActivity: Codable, Identifiable {
+    public var id: String { date }
     public let date: String
     public let messageCount: Int
     public let sessionCount: Int

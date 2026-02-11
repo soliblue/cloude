@@ -5,7 +5,14 @@ import CloudeShared
 struct UsageStatsSheet: View {
     let stats: UsageStats
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedDay: DailyActivity?
+    @State private var selectedTimeRange: TimeRange?
+
+    private let timeRanges = [
+        TimeRange(label: "7d", days: 7),
+        TimeRange(label: "14d", days: 14),
+        TimeRange(label: "30d", days: 30),
+        TimeRange(label: "All", days: nil)
+    ]
 
     private var totalToolCalls: Int {
         stats.dailyActivity.reduce(0) { $0 + $1.toolCallCount }
@@ -24,7 +31,10 @@ struct UsageStatsSheet: View {
     }
 
     private var recentActivity: [DailyActivity] {
-        Array(stats.dailyActivity.suffix(14))
+        if let days = selectedTimeRange?.days {
+            return Array(stats.dailyActivity.suffix(days))
+        }
+        return Array(stats.dailyActivity.suffix(14))
     }
 
     private var sortedModels: [(name: String, tokens: ModelTokens)] {
@@ -82,68 +92,18 @@ struct UsageStatsSheet: View {
     }
 
     private var activityChart: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Activity")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.secondary)
-                Spacer()
-                if let day = selectedDay {
-                    Text("\(shortDate(day.date)) — \(formatNumber(day.messageCount)) msgs, \(day.sessionCount) sessions")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary.opacity(0.8))
-                }
-            }
-
-            Chart(recentActivity, id: \.date) { day in
-                BarMark(
-                    x: .value("Date", shortDate(day.date)),
-                    y: .value("Messages", day.messageCount)
-                )
-                .foregroundStyle(selectedDay?.date == day.date ? Color.accentColor : Color.blue.opacity(0.6))
-                .cornerRadius(3)
-            }
-            .chartXAxis {
-                AxisMarks(values: .automatic(desiredCount: 5)) { _ in
-                    AxisValueLabel()
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary.opacity(0.6))
-                }
-            }
-            .chartYAxis {
-                AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { value in
-                    AxisValueLabel {
-                        if let v = value.as(Int.self) {
-                            Text(formatNumber(v))
-                                .font(.system(size: 9))
-                                .foregroundStyle(.secondary.opacity(0.6))
-                        }
-                    }
-                }
-            }
-            .chartOverlay { proxy in
-                GeometryReader { geo in
-                    Rectangle().fill(.clear).contentShape(Rectangle())
-                        .gesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { value in
-                                    let x = value.location.x - geo[proxy.plotFrame!].origin.x
-                                    if let dateStr: String = proxy.value(atX: x) {
-                                        selectedDay = recentActivity.first { shortDate($0.date) == dateStr }
-                                    }
-                                }
-                                .onEnded { _ in
-                                    withAnimation(.easeOut(duration: 0.3)) { selectedDay = nil }
-                                }
-                        )
-                }
-            }
-            .frame(height: 140)
-        }
-        .padding(14)
-        .background(.white.opacity(0.08))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        InteractiveBarChart(
+            title: "Activity",
+            data: recentActivity,
+            xValue: { chartDateLabel($0.date) },
+            yValue: { $0.messageCount },
+            formatYValue: formatNumber,
+            detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.messageCount)) msgs, \($0.sessionCount) sessions" },
+            barColor: { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
+            showTimeRangePicker: true,
+            timeRanges: timeRanges,
+            selectedRange: $selectedTimeRange
+        )
     }
 
     private var modelsSection: some View {
@@ -241,8 +201,29 @@ struct UsageStatsSheet: View {
 
     private func shortDate(_ dateStr: String) -> String {
         let parts = dateStr.split(separator: "-")
-        guard parts.count == 3 else { return dateStr }
-        return "\(parts[1])/\(parts[2])"
+        guard parts.count == 3, let day = Int(parts[2]) else { return dateStr }
+        return "\(day)"
+    }
+
+    private func chartDateLabel(_ dateStr: String) -> String {
+        let parts = dateStr.split(separator: "-")
+        guard parts.count == 3, let month = Int(parts[1]), let day = Int(parts[2]) else { return dateStr }
+        let months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        let monthName = month > 0 && month <= 12 ? months[month] : "\(month)"
+
+        let activity = recentActivity
+        let idx = activity.firstIndex { $0.date == dateStr }
+        let isFirst = idx == activity.startIndex
+        let prevMonth: Bool = {
+            guard let i = idx, i > activity.startIndex else { return false }
+            let prev = activity[activity.index(before: i)].date.split(separator: "-")
+            return prev.count == 3 && prev[1] != parts[1]
+        }()
+
+        if isFirst || prevMonth {
+            return "\(monthName) \(day)"
+        }
+        return "\(day)"
     }
 
     private func modelDisplayName(_ name: String) -> String {

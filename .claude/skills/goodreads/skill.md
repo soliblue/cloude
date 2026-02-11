@@ -19,7 +19,7 @@ How to find it: Go to goodreads.com → My Books → any shelf → click the RSS
 
 Then fetch:
 ```bash
-node /Users/soli/Desktop/CODING/cloude/.claude/skills/goodreads/fetch.js "FEED_URL_HERE"
+node .claude/skills/goodreads/fetch.js "FEED_URL_HERE"
 ```
 
 This saves the URL to `data/feed_url.txt` and fetches all shelves into `data/books.csv`.
@@ -28,7 +28,7 @@ This saves the URL to `data/feed_url.txt` and fetches all shelves into `data/boo
 
 Re-run the fetch script (it reuses the saved URL):
 ```bash
-node /Users/soli/Desktop/CODING/cloude/.claude/skills/goodreads/fetch.js
+node .claude/skills/goodreads/fetch.js
 ```
 
 ## Data Location
@@ -54,7 +54,7 @@ All examples use the CSV directly. Write JS to a temp file and run with `node`.
 ### Search books by keyword (title/author)
 ```js
 const fs = require("fs");
-const csv = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/goodreads/data/books.csv", "utf8");
+const csv = fs.readFileSync(".claude/skills/goodreads/data/books.csv", "utf8");
 const lines = csv.split("\n");
 const headers = lines[0].split(",");
 const q = (process.argv[2] || "").toLowerCase();
@@ -73,7 +73,7 @@ console.log(`\n${books.length} matches`);
 ### List all read books sorted by rating
 ```js
 const fs = require("fs");
-const csv = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/goodreads/data/books.csv", "utf8");
+const csv = fs.readFileSync(".claude/skills/goodreads/data/books.csv", "utf8");
 const lines = csv.split("\n");
 const headers = lines[0].split(",");
 const books = [];
@@ -92,7 +92,7 @@ console.log(`\n${books.length} read books`);
 ### Stats overview
 ```js
 const fs = require("fs");
-const csv = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/goodreads/data/books.csv", "utf8");
+const csv = fs.readFileSync(".claude/skills/goodreads/data/books.csv", "utf8");
 const lines = csv.split("\n");
 const headers = lines[0].split(",");
 const books = [];
@@ -125,7 +125,7 @@ console.log(JSON.stringify({
 ### Books by shelf
 ```js
 const fs = require("fs");
-const csv = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/goodreads/data/books.csv", "utf8");
+const csv = fs.readFileSync(".claude/skills/goodreads/data/books.csv", "utf8");
 const lines = csv.split("\n");
 const headers = lines[0].split(",");
 const shelf = (process.argv[2] || "read").toLowerCase();
@@ -144,7 +144,7 @@ console.log(`\n${books.length} books on "${shelf}"`);
 ### 5-star books
 ```js
 const fs = require("fs");
-const csv = fs.readFileSync("/Users/soli/Desktop/CODING/cloude/.claude/skills/goodreads/data/books.csv", "utf8");
+const csv = fs.readFileSync(".claude/skills/goodreads/data/books.csv", "utf8");
 const lines = csv.split("\n");
 const headers = lines[0].split(",");
 for (let i = 1; i < lines.length; i++) {

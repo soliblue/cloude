@@ -2,6 +2,7 @@
 name: icon
 description: Generate app icons and image assets using AI (Gemini + local background removal). Use when creating icons, generating images for the app, or processing existing images.
 user-invocable: true
+disable-model-invocation: true
 icon: photo.badge.plus
 aliases: [icongen, app-icon]
 parameters:
@@ -12,7 +13,7 @@ parameters:
 
 # Icon Generation Skill
 
-Generate icons and image assets using the icon pipeline at `/Users/soli/Desktop/CODING/cloude/.claude/skills/icon`.
+Generate icons and image assets using the icon pipeline at `.claude/skills/icon`.
 
 ## Pipeline
 
@@ -24,20 +25,20 @@ Generate icons and image assets using the icon pipeline at `/Users/soli/Desktop/
 ## Commands
 
 ```bash
-source /Users/soli/Desktop/CODING/cloude/.claude/skills/icon/.venv/bin/activate
+source .claude/skills/icon/.venv/bin/activate
 
-GOOGLE_API_KEY=$GOOGLE_API_KEY python /Users/soli/Desktop/CODING/cloude/.claude/skills/icon/generate.py \
+GOOGLE_API_KEY=$GOOGLE_API_KEY python .claude/skills/icon/generate.py \
   --prompt "description of icon" \
   --output icon_name \
   --assets-dir /Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Assets.xcassets
 
-GOOGLE_API_KEY=$GOOGLE_API_KEY python /Users/soli/Desktop/CODING/cloude/.claude/skills/icon/generate.py \
+GOOGLE_API_KEY=$GOOGLE_API_KEY python .claude/skills/icon/generate.py \
   --ref /path/to/reference_icon.png \
   --prompt "description of icon" \
   --output icon_name \
   --assets-dir /Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Assets.xcassets
 
-python /Users/soli/Desktop/CODING/cloude/.claude/skills/icon/generate.py \
+python .claude/skills/icon/generate.py \
   --skip-generate \
   --input /path/to/image.png \
   --output icon_name \
@@ -57,5 +58,5 @@ python /Users/soli/Desktop/CODING/cloude/.claude/skills/icon/generate.py \
 ## Notes
 
 - GOOGLE_API_KEY must be set (available in environment)
-- Output goes to `/Users/soli/Desktop/CODING/cloude/.claude/skills/icon/output/` by default
+- Output goes to `.claude/skills/icon/output/` by default
 - With `--assets-dir`, creates proper `.imageset` folder with Contents.json
