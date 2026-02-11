@@ -1,0 +1,7 @@
+[
+  {"prompt": "First person POV walking through a crowded market in Marrakech, spices and fabrics everywhere, golden afternoon light, shaky handheld, 16mm film grain", "orientation": "portrait", "size": "large"},
+  {"prompt": "Timelapse of a city skyline from day to night, clouds racing, lights turning on building by building, deep blue to warm orange transition, cinematic", "orientation": "landscape", "size": "large", "frames": 300},
+  {"prompt": "Split screen showing four seasons of the same tree in a field, spring blossoms top left, summer green top right, autumn orange bottom left, winter snow bottom right, time passing", "orientation": "landscape", "size": "large"},
+  {"prompt": "Underwater camera looking up at the surface of a swimming pool, sunlight refracting through turquoise water, swimmer's shadow passing overhead, slow motion, dreamlike", "orientation": "portrait", "size": "large"},
+  {"prompt": "A single candle flame in complete darkness, extreme close-up, the flame dancing slowly, warm orange glow illuminating nothing else, meditative, minimal", "orientation": "portrait", "size": "large"}
+]

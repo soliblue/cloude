@@ -65,8 +65,10 @@ Provide actionable improvements:
 
 Either way, **never run Codex in parallel with your own analysis**. One leads, the other reviews. This produces better results than two independent analyses.
 
+Use the `/consult codex` skill to get Codex's perspective:
+
 ```bash
-codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "You are being asked for a second opinion on refactoring this codebase. Read .claude/skills/refactor/SKILL.md first — it contains the analysis criteria and philosophy you should follow. Then review the codebase and suggest specific improvements with file paths and line numbers."
+/consult codex "Review this codebase for refactoring opportunities. Read .claude/skills/refactor/SKILL.md first — it contains the analysis criteria and philosophy. Suggest specific improvements with file paths and line numbers."
 ```
 
 Present a unified list, noting where you agree and where you differ.

@@ -170,11 +170,7 @@ struct MainChatView: View {
         }
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
             if let oldId = oldId {
-                if !inputText.isEmpty || !attachedImages.isEmpty {
-                    drafts[oldId] = (inputText, attachedImages, currentEffort, currentModel)
-                } else {
-                    drafts.removeValue(forKey: oldId)
-                }
+                drafts[oldId] = (inputText, attachedImages, currentEffort, currentModel)
                 cleanupEmptyConversation(for: oldId)
             }
             suggestions = []
