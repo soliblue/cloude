@@ -222,6 +222,9 @@ struct ChunkProgress: Equatable {
 
     func clearAllRunningStates() {
         for output in conversationOutputs.values {
+            for i in output.toolCalls.indices where output.toolCalls[i].state == .executing {
+                output.toolCalls[i].state = .complete
+            }
             output.isRunning = false
             output.isCompacting = false
         }
@@ -307,6 +310,9 @@ struct ChunkProgress: Equatable {
         if let convId = runningConversationId,
            let output = conversationOutputs[convId] {
             output.flushBuffer()
+            for i in output.toolCalls.indices where output.toolCalls[i].state == .executing {
+                output.toolCalls[i].state = .complete
+            }
             if !output.text.isEmpty {
                 events.send(.disconnect(conversationId: convId, output: output))
                 onDisconnect?(convId, output)

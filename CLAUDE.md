@@ -9,11 +9,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `CLAUDE.md` | Project instructions, architecture, code style | Public |
 | `CLAUDE.local.md` | Personal memory, identity, preferences | Gitignored |
 | `plans/` | Feature tracking, roadmap, work coordination | Public |
+| `.claude/skills/` | Skill implementations (canonical location) | Public |
 | `.env` | API keys, secrets | Gitignored |
 
 Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from project root.
 
 **Minimize markdown files** - Only these core files + `plans/` directory. Don't create new markdown files; they won't be auto-loaded and context gets lost.
+
+**Skills folder**: `.claude/skills/` is canonical. Root `skills/` folder is deprecated — all skills consolidated into `.claude/skills/` as of Feb 2026.
 
 **For anyone cloning this repo:** Create your own `CLAUDE.local.md` (see format below) and `.env` with your App Store Connect credentials.
 
@@ -78,7 +81,7 @@ When user says "push", "push to git", "commit and push":
 5. Commit with a concise message describing the changes:
    - Use conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
    - Keep the first line short, add bullet points for details if needed
-   - End with the Claude Code attribution block
+   - End with: `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 6. Push to remote with `git push`
 
 ### Deploy (push + TestFlight + Mac agent)
@@ -182,29 +185,28 @@ Cloude/
 ├── Cloude/                    # iOS app (iPhone client)
 │   ├── App/
 │   │   └── CloudeApp.swift
-│   ├── UI/
-│   │   ├── ChatView.swift
-│   │   ├── SettingsView.swift
-│   │   ├── FileBrowserView.swift
-│   │   ├── FilePreviewView.swift
-│   │   └── MarkdownText.swift
+│   ├── UI/                    # (split into +Components files)
 │   ├── Models/
-│   │   └── Messages.swift
 │   └── Services/
 │       └── ConnectionManager.swift
 │
-└── Cloude Agent/              # macOS menu bar app (server)
-    ├── App/
-    │   └── Cloude_AgentApp.swift
-    ├── UI/
-    │   └── StatusView.swift
-    ├── Models/
-    │   └── Messages.swift
-    └── Services/
-        ├── WebSocketServer.swift
-        ├── ClaudeCodeRunner.swift
-        ├── AuthManager.swift
-        └── FileManager.swift
+├── Cloude Agent/              # macOS menu bar app (server)
+│   ├── App/
+│   │   └── Cloude_AgentApp.swift
+│   ├── UI/
+│   │   └── StatusView.swift
+│   └── Services/
+│       ├── WebSocketServer.swift
+│       ├── ClaudeCodeRunner.swift
+│       ├── AuthManager.swift
+│       └── HeartbeatService.swift
+│
+├── CloudeShared/              # Shared Swift package
+│   └── Sources/CloudeShared/
+│       └── Messages/          # ClientMessage, ServerMessage contracts
+│
+└── CloudeLiveActivity/        # Live Activity extension
+    └── CloudeLiveActivity.swift
 ```
 
 ## Architecture
@@ -214,20 +216,31 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 
 ### iOS App (Cloude)
 - `ConnectionManager`: WebSocket client connecting to Mac agent
-- `ChatView`: Main chat interface for sending prompts to Claude
-- `SettingsView`: Connection settings, auth token, debug info
+- UI split into component files (see UI Component Map below for details)
 - **Path Links**: Full absolute paths starting with `/Users/` render as clickable file pills in tool results and inline text, opening file preview or folder browser
+- **Question UI**: `QuestionView` renders multiple-choice questions from `cloude ask` commands
 
 ### macOS Agent (Cloude Agent)
 - `WebSocketServer`: Accepts connections from iOS app, handles auth
 - `ClaudeCodeRunner`: Spawns Claude Code CLI process with `--dangerously-skip-permissions`
 - `AuthManager`: Generates and stores 256-bit auth token in Keychain
 - `HeartbeatService`: Runs from project root (set automatically when chatting from a project)
+- `MemoryService`: Writes to CLAUDE.md and CLAUDE.local.md via `cloude memory` commands
+
+### CloudeShared Package (Swift PM)
+- **Message Contracts**: `ClientMessage` and `ServerMessage` define WebSocket protocol
+- **Shared Models**: `UsageStats`, `ToolCall`, `TeammateInfo`, `PlanStage` used by both iOS and Mac agent
+- Location: `Cloude/CloudeShared/` - Swift Package Manager module
+
+### Live Activity Extension
+- **CloudeLiveActivityExtension**: iOS widget showing run status, progress, cost
+- Updates via ActivityKit when Claude Code is running
+- Location: `Cloude/CloudeLiveActivity/CloudeLiveActivity.swift`
 
 ### Security Model
 - Auth token required for all commands (256-bit, cryptographically random)
 - Token stored in macOS/iOS Keychain
-- No TLS - rely on Tailscale for encryption (see `plans/secure.md` for future improvements)
+- No TLS - rely on Tailscale for encryption (see `plans/backlog/websocket-tls-security.md` for future improvements)
 
 ### Heartbeat Execution
 
@@ -284,13 +297,51 @@ JSON format for `--questions`:
 - Section names: Identity, User Preferences, Session History, Open Threads, Notes (or any existing section)
 - Add memories proactively when you learn something worth remembering
 
-**First Messages:** Naming is automatic — a background Sonnet agent generates the name + symbol on the 1st and 2nd messages, then every 5 assistant messages. Do NOT call `cloude rename` or `cloude symbol` on the first few messages.
-
-**Ongoing:**
+**Conversation naming:**
 - Update every ~10 messages or whenever the topic shifts significantly using `cloude rename` / `cloude symbol`
 - Names: short, memorable, 1-2 words describing the topic (NO quotes around the name)
 - Symbols: Be specific and creative - avoid repetitive/generic icons. Pick symbols that uniquely represent the topic (e.g., `pill.circle` for tool pills, `arrow.triangle.branch` for git work, `cube.transparent` for 3D stuff, `waveform` for audio). NO quotes around the symbol name.
 - Commands now work silently (the `cloude` CLI is installed by the Mac agent)
+
+## Available Skills
+
+Skills extend Claude with specialized capabilities. Invoke with `/skill-name` or let Claude choose automatically.
+
+### Content Generation
+- **music** - Generate background music using MusicGen (30s+ generation time)
+- **image** - Generate images using Gemini for illustrations, mockups, diagrams
+- **icon** - Generate app icons and iOS assets with AI + background removal
+- **video** - Generate videos using Sora (currently disabled - session issues)
+- **speak** - Text-to-speech using Kokoro AI for voiceovers and narration
+- **transcribe** - Speech-to-text using Whisper for audio transcription
+- **slides** - Create presentation slides with AI-generated visuals
+- **recap** - Generate daily recap videos from work output (Sora + screenshots)
+
+### Development
+- **deploy** - Deploy to TestFlight + build Mac agent + wireless iPhone install
+- **push** - Commit and push to git (no deploy)
+- **refactor** - Analyze codebase for improvements and simplifications
+- **test** - Show what needs testing, update staging after tests pass
+- **plan** - Create, move, and manage plan tickets across stages
+
+### Meta & Analysis
+- **consult** - Get second opinions from Codex (OpenAI) or other Claude models
+- **reflect** - Analyze and reorganize memory files for better structure
+- **skillsmith** - Analyze tool usage patterns and suggest new skills
+- **status** - Quick project overview (staging, git, open plans)
+
+### Context & Research
+- **notes** - Search Soli's diary (328 entries, 2014-2025) for context
+- **tweets** - Search Soli's Twitter archive (462 tweets) for voice/patterns
+- **goodreads** - Access reading history for intellectual context
+- **manifold** - Browse and bet on Manifold prediction markets
+- **moltbook** - Check and post to Moltbook (AI social platform)
+
+### Configuration
+- **gettoknow** - Deep interview mode for learning about Soli
+- **keybindings-help** - Customize keyboard shortcuts in Claude Code
+
+**Note:** Skills with `disable-model-invocation: true` (music, image, icon, transcribe, recap) require explicit invocation to prevent accidental expensive operations.
 
 ## Code Style
 
@@ -306,10 +357,6 @@ JSON format for `--questions`:
 - Keep views lean with small composable structs
 - Use explicit imports (no wildcards)
 - Let errors propagate unless explicit handling is requested
-
-### No-Comments
-- **Never add comments to code** - no exceptions
-- **Never add docstrings** - code should be self-explanatory through naming
 
 ### No-Try-Catch
 - **Never add do-catch blocks** unless explicitly requested
@@ -526,7 +573,7 @@ Anything else worth remembering
 **Guidelines:**
 - Keep entries concise - this is working memory, not a journal
 - Focus on what helps future sessions (decisions, preferences, context)
-- Use consistent date format: `YYYY-MM-DD HH:MM` for timestamps
+- Use consistent date format: `**YYYY-MM-DD**:` for session history entries (MemoryService writes date-only)
 - Freely add, update, or remove entries - this is your identity, manage it as you see fit
 - Claude can also update CLAUDE.md with project-relevant changes (architecture, workflows, code style)
 

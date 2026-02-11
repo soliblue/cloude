@@ -8,13 +8,16 @@ extension ConversationStore {
         let rawText = output.text
         let trimmedText = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
         let leadingTrimmed = rawText.count - rawText.drop(while: { $0.isWhitespace || $0.isNewline }).count
-        let adjustedToolCalls = leadingTrimmed > 0 ? output.toolCalls.map { tool in
+        let adjustedToolCalls = output.toolCalls.map { tool in
             var adjusted = tool
-            if let pos = adjusted.textPosition {
+            if leadingTrimmed > 0, let pos = adjusted.textPosition {
                 adjusted.textPosition = max(0, pos - leadingTrimmed)
             }
+            if adjusted.state == .executing {
+                adjusted.state = .complete
+            }
             return adjusted
-        } : output.toolCalls
+        }
 
         var teamSummary: TeamSummary?
         if let teamName = output.teamName, !output.teammates.isEmpty {
