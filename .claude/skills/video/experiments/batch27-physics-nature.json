@@ -1,0 +1,27 @@
+[
+  {
+    "prompt": "Macro photography of a soap bubble in flight, rainbow iridescent surface reflecting the world, swirling oil-slick patterns dance across the membrane, the bubble drifts slowly through warm afternoon sunlight, delicate and fragile, background blurred to soft bokeh. Shot on macro lens 100mm f/2.8, shallow DOF.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Ferrofluid sculpture responding to magnets, black magnetic liquid forms spikes and organic alien shapes in real time, the fluid dances and morphs as invisible magnetic fields shift, shot against pure white background with dramatic side lighting creating sharp shadows. Scientific art, mesmerizing motion.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Murmuration of starlings at dusk, thousands of birds flow through the sky like liquid smoke, the flock morphs into waves and vortices, purple and orange sunset behind them, the mass of birds moves as one organism. Real wildlife footage aesthetic, telephoto lens compression.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Extreme slow motion of a hummingbird feeding from a flower, wings beating create rainbow blur, tongue extends into the bloom, pollen dust explodes in golden particles, every feather visible in crystalline detail, shot at 2000fps. Nature documentary quality, Phantom high-speed camera.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Lightning storm timelapse over a desert landscape, multiple lightning bolts fork across purple clouds, the strikes illuminate mesas and canyons in brief flashes, stars wheel overhead between strikes, long exposure captures the full violence of the storm. Shot on RED camera, 8K resolution downscaled.",
+    "orientation": "portrait",
+    "frames": 300
+  }
+]

@@ -138,12 +138,14 @@ struct CloudeApp: App {
                 if requireBiometricAuth {
                     isUnlocked = false
                 }
+                connection.beginBackgroundStreamingIfNeeded()
             } else if newPhase == .active {
-                if wasBackgrounded {
+                connection.endBackgroundStreaming()
+                if wasBackgrounded && !connection.isAnyRunning {
                     connection.clearAllRunningStates()
                 }
                 connection.reconnectIfNeeded()
-                if wasBackgrounded, let sessionId = lastActiveSessionId {
+                if wasBackgrounded && !connection.isAnyRunning, let sessionId = lastActiveSessionId {
                     connection.requestMissedResponse(sessionId: sessionId)
                 }
                 wasBackgrounded = false

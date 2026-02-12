@@ -75,7 +75,7 @@ struct WindowEditSheet: View {
                                     Image(systemName: "arrow.clockwise")
                                 }
                             }
-                            .disabled(isRefreshing)
+                            .disabled(isRefreshing || connection.isAnyRunning)
                         }
 
                         if windowManager.canRemoveWindow {

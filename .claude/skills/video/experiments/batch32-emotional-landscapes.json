@@ -1,0 +1,27 @@
+[
+  {
+    "prompt": "The physical manifestation of loneliness: a single chair in an endless white room, shadows stretch impossibly long, the light source is invisible, dust particles hang motionless in thick air, the silence is visible. Minimal, crushing, beautiful. Shot like a Tarkovsky film.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Nostalgia as a place: an empty childhood bedroom at golden hour, dust motes dance in amber window light, faded posters on walls, unmade bed, a music box plays silently, everything is slightly oversaturated and soft-focused like a memory. Shot on expired Kodak Gold 200.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Anxiety made visible: a hallway that stretches infinitely as you walk, walls slowly closing in, fluorescent lights flicker overhead, the exit door recedes faster than you approach, breathing visible in cold air. Claustrophobic, unnerving, shot handheld with wide lens distortion.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Wonder personified: standing at the edge of the universe, galaxies swirl like watercolors in infinite space, nebulae bloom in slow motion, a single human figure silhouetted against cosmic beauty, overwhelmed by scale. Shot like Interstellar, anamorphic cosmic cinematography.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Peace as environment: a moss-covered stone garden where time moves differently, steam rises from a hot spring, a single koi fish circles endlessly, cherry blossoms fall in perfect slow motion, everything breathes in unison. Meditative, Japanese zen aesthetic, 16mm film grain.",
+    "orientation": "portrait",
+    "frames": 300
+  }
+]
