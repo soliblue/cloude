@@ -68,10 +68,11 @@ extension MainChatView {
                 Button(action: refreshHeartbeat) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(isRunning ? .secondary.opacity(0.3) : .secondary)
                         .padding(7)
                 }
                 .buttonStyle(.plain)
+                .disabled(isRunning)
 
                 Divider()
                     .frame(height: 20)

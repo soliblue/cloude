@@ -72,7 +72,7 @@ struct InlineToolPill: View {
         }
         .onAppear {
             if isExecuting {
-                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: false)) {
                     shimmerPhase = 2
                 }
             } else {

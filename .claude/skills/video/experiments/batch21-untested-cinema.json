@@ -1,0 +1,27 @@
+[
+  {
+    "prompt": "Oil painting coming to life, thick impasto brushstrokes visible, a lonely lighthouse on a stormy cliff at night, waves crash against rocks sending spray upward, lightning illuminates clouds, the paint itself seems wet and moving, warm amber light from lighthouse beam sweeps across the scene. Kodak Portra 400 film grain overlay.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Miniature tilt-shift photography, a bustling Tokyo intersection at night seen from above, tiny people with umbrellas crossing in rain, neon signs reflecting in wet streets, shallow depth of field making everything look like a toy model, warm streetlights, cold blue rain. Real photography feel, not animated.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Botanical illustration style, scientific drawing of a bioluminescent deep sea creature slowly drifting through dark water, delicate tendrils trail behind it pulsing with blue and green light, ink wash background, aged parchment texture, naturalist field guide aesthetic, Darwin's sketchbook brought to life.",
+    "orientation": "portrait",
+    "frames": 300
+  },
+  {
+    "prompt": "Polaroid photograph developing in real time, the image slowly appears showing a couple dancing in a sunlit kitchen, morning light through windows, flour dust in the air, warm nostalgic colors bleeding in from the edges, the white Polaroid border visible, slight overexposure on highlights. Shot on expired film.",
+    "orientation": "portrait",
+    "frames": 150
+  },
+  {
+    "prompt": "Ancient Egyptian tomb painting coming alive, hieroglyphic figures begin walking along the wall, Anubis leads a procession of souls, papyrus texture, gold leaf accents catch torchlight, wall painting perspective with flat figures moving in profile, flickering torch shadows dance across limestone walls.",
+    "orientation": "portrait",
+    "frames": 300
+  }
+]

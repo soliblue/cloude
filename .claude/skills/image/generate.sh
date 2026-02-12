@@ -16,6 +16,7 @@ Options:
   --output-dir DIR     Output directory (default: skills/image/output/)
   --edit PATH          Existing image to edit (sends image + prompt to Gemini)
   --aspect RATIO       Aspect ratio hint in prompt (e.g. "16:9", "square", "portrait")
+  --grid SPEC          Generate multiple images in a grid (e.g. "2x2", "3x3")
   --model MODEL        Gemini model (default: gemini-2.0-flash-exp)
 USAGE
     exit 1
@@ -25,6 +26,7 @@ PROMPT=""
 OUTPUT_NAME=""
 EDIT_IMAGE=""
 ASPECT=""
+GRID=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -34,6 +36,7 @@ while [[ $# -gt 0 ]]; do
         --edit) EDIT_IMAGE="$2"; shift 2 ;;
         --aspect) ASPECT="$2"; shift 2 ;;
         --model) MODEL="$2"; shift 2 ;;
+        --grid) GRID="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; usage ;;
     esac
 done
@@ -56,6 +59,14 @@ mkdir -p "$OUTPUT_DIR"
 
 if [[ -n "$ASPECT" ]]; then
     PROMPT="$PROMPT. Aspect ratio: $ASPECT"
+fi
+
+GRID_BORDER=6
+if [[ -n "$GRID" ]]; then
+    GRID_TEMPLATE=$(mktemp /tmp/grid-template-XXXX.png)
+    python3 "$SCRIPT_DIR/grid.py" create --grid "$GRID" --border "$GRID_BORDER" --output "$GRID_TEMPLATE"
+    EDIT_IMAGE="$GRID_TEMPLATE"
+    PROMPT="This is a grid template with ${GRID} cells separated by black borders. Fill each cell with a different variation of: ${PROMPT}. Keep each cell distinct. Do not remove or alter the grid borders."
 fi
 
 build_request_body() {
@@ -156,6 +167,17 @@ for part in data['candidates'][0]['content']['parts']:
 
 echo "Saved: $OUTPUT_PATH"
 
+if [[ -n "$GRID" ]]; then
+    echo "Splitting grid into individual images..."
+    python3 "$SCRIPT_DIR/grid.py" split \
+        --input "$OUTPUT_PATH" \
+        --grid "$GRID" \
+        --border "$GRID_BORDER" \
+        --output-dir "$OUTPUT_DIR" \
+        --prefix "$OUTPUT_NAME"
+    rm -f "$OUTPUT_PATH" "${GRID_TEMPLATE:-}"
+fi
+
 TEXT_RESPONSE=$(python3 -c "
 import json
 data = json.load(open('$RESPONSE_FILE'))
@@ -168,4 +190,6 @@ if [[ -n "$TEXT_RESPONSE" ]]; then
     echo "Model notes: $TEXT_RESPONSE"
 fi
 
-echo "$OUTPUT_PATH"
+if [[ -z "$GRID" ]]; then
+    echo "$OUTPUT_PATH"
+fi

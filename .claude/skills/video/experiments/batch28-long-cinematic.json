@@ -1,0 +1,27 @@
+[
+  {
+    "prompt": "Steadicam following a lone figure walking through an abandoned space station, rust and vines have taken over the metal corridors, emergency lights flicker red, floating debris drifts in zero gravity, windows show Earth rotating slowly below. Sci-fi cinematic, Interstellar aesthetic, anamorphic lens.",
+    "orientation": "portrait",
+    "frames": 450
+  },
+  {
+    "prompt": "Drone shot rising from street level in a cyberpunk megacity at night, neon signs in Japanese and Chinese cover every surface, holographic ads float in mid-air, flying cars zip past, the camera ascends past hundreds of floors revealing the massive scale. Blade Runner 2049 cinematography, rain falling.",
+    "orientation": "portrait",
+    "frames": 450
+  },
+  {
+    "prompt": "Golden hour in a lavender field in Provence, rows of purple flowers stretch to the horizon, a single white dress hangs on a clothesline blowing in warm wind, bees drift lazily, the sun sets painting everything amber and gold. Shot on 35mm film, Terrence Malick style, natural light only.",
+    "orientation": "portrait",
+    "frames": 450
+  },
+  {
+    "prompt": "Inside a gothic cathedral at dawn, colored light streams through stained glass windows creating rainbow beams through dust particles, candles flicker on the altar, a single figure kneels in prayer silhouetted against the light. Reverential, sacred, shot on Arri Alexa.",
+    "orientation": "portrait",
+    "frames": 450
+  },
+  {
+    "prompt": "Underwater POV sinking slowly into an abyss, sunlight from the surface fades to deep blue then to pure darkness, bioluminescent jellyfish drift past glowing pale blue and green, the pressure and void is palpable. Shot like a nature documentary, meditative and terrifying.",
+    "orientation": "portrait",
+    "frames": 450
+  }
+]

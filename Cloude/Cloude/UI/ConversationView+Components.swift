@@ -98,7 +98,7 @@ struct ChatMessageList: View {
     }
 
     private var showEmptyState: Bool {
-        !isInitialLoad && messages.isEmpty && currentOutput.isEmpty && conversationId != nil
+        !isInitialLoad && messages.isEmpty && queuedMessages.isEmpty && currentOutput.isEmpty && conversationId != nil
     }
 
     private var hasRequiredDependencies: Bool {
@@ -188,10 +188,8 @@ struct ChatMessageList: View {
         }
         .onChange(of: userMessageCount) { oldCount, newCount in
             if newCount == oldCount + 1 {
-                if let lastUserMessage = messages.last(where: { $0.isUser }) {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        scrollToMessage(lastUserMessage.id, anchor: .top)
-                    }
+                withAnimation(.easeOut(duration: 0.25)) {
+                    proxy.scrollTo(bottomId, anchor: .bottom)
                 }
             }
             lastUserMessageCount = newCount
@@ -245,7 +243,8 @@ struct ChatMessageList: View {
                 message: message,
                 skills: connection?.skills ?? [],
                 onRefresh: message.isUser ? nil : { refreshMessage(message) },
-                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
+                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) },
+                isStreaming: agentState == .running || agentState == .compacting
             )
             .readingProgress(
                 isAssistant: !message.isUser,

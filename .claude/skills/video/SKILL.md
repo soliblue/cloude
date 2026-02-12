@@ -1,7 +1,9 @@
 ---
 name: video
-description: Generate videos using Sora. Text-to-video and image-to-video via Soli's ChatGPT Pro subscription. BANNED for now — session issues, use later.
+description: Generate videos using Sora. Text-to-video and image-to-video via Soli's ChatGPT Pro subscription.
 user-invocable: false
+disable-model-invocation: true
+disabled: true
 icon: film.fill
 aliases: [sora, generate video, vid]
 parameters:
@@ -13,6 +15,11 @@ parameters:
 # Video Generation Skill
 
 Generate videos using OpenAI's Sora via Playwright automation. Supports text-to-video and image-guided generation.
+
+## IMPORTANT RULES
+
+- **ALWAYS confirm with the user before generating** — describe what you plan to generate and wait for approval. Never auto-generate.
+- **Default orientation is portrait** (`-o portrait`). Only use landscape if explicitly requested.
 
 ## When to Use This Skill
 
@@ -28,11 +35,11 @@ Do NOT use when:
 ## Commands
 
 ```bash
-# Text-to-video (landscape, 5 seconds)
-python3 .claude/skills/video/create.py "a goldfish swimming in clear water"
+# Text-to-video (portrait, 5 seconds — portrait is default)
+python3 .claude/skills/video/create.py "a goldfish swimming in clear water" -o portrait
 
-# Portrait orientation
-python3 .claude/skills/video/create.py "a person walking through rain" -o portrait
+# Landscape orientation (only when explicitly requested)
+python3 .claude/skills/video/create.py "a person walking through rain" -o landscape
 
 # Square
 python3 .claude/skills/video/create.py "abstract shapes morphing" -o square
@@ -384,7 +391,7 @@ Only now run `create.py --batch`. The Sora jobs are submitted server-side the mo
 - **Double-run danger**: If a batch command times out in the CLI, the Sora jobs were ALREADY submitted server-side and will generate. Always check `ls -lt output/*.mp4 | head` for new files before re-running — you'll burn duplicate credits otherwise.
 - **Audio (sy_8 model)**: `audio_transcript: {"text": "..."}` and `audio_caption: "string"` are accepted by the API but videos with audio never produce download URLs on the `sy_8` model. Audio appears broken — use Kokoro TTS locally instead for narration overlay.
 - **Sora can't maintain consistency across clips**: Don't expect character/style consistency between separate Sora generations. Use Gemini for consistency (mood board chaining) and Sora only for animation.
-- **100 credits/day**: ChatGPT Pro gives ~100 generations per day. Each batch job costs 1 credit per video. Credits reset on a rolling ~4.5hr timer, not midnight.
+- **100 credits/day**: ChatGPT Pro gives ~100 generations per day. Each batch job costs 1 credit per video. Credits reset on a rolling ~4.5hr timer, not midnight. **Last reset ETA: 2026-02-11 ~14:23** (update this after each rate limit hit).
 - **Poll crash on HTML response**: The poll_until_done function sometimes gets an HTML page instead of JSON from the Sora API. Jobs are still submitted server-side — use download.py to recover. This is a known intermittent issue, not a show-stopper.
 - **Browser lock file**: If Chrome crashes or times out, a `SingletonLock` file persists in `browser-data/`. Delete it before retrying: `rm -f browser-data/SingletonLock`. Also kill zombie Chrome processes: `ps aux | grep "Chrome.*browser-data" | grep -v grep | awk '{print $2}' | xargs kill -9`.
 
