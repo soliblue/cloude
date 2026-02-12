@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import QuartzCore
+import UIKit
 import CloudeShared
 
 class ConversationOutput: ObservableObject {
@@ -157,6 +158,7 @@ struct ChunkProgress: Equatable {
     private var savedHost: String = ""
     private var savedPort: UInt16 = 8765
     private var savedToken: String = ""
+    private var backgroundTaskId: UIBackgroundTaskIdentifier = .invalid
 
     var runningConversationId: UUID?
     var conversationOutputs: [UUID: ConversationOutput] = [:]
@@ -230,6 +232,20 @@ struct ChunkProgress: Equatable {
         }
         agentState = .idle
         runningConversationId = nil
+    }
+
+    func beginBackgroundStreamingIfNeeded() {
+        guard isAnyRunning, backgroundTaskId == .invalid else { return }
+        backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "StreamingResponse") { [weak self] in
+            self?.endBackgroundStreaming()
+        }
+    }
+
+    func endBackgroundStreaming() {
+        guard backgroundTaskId != .invalid else { return }
+        let taskId = backgroundTaskId
+        backgroundTaskId = .invalid
+        UIApplication.shared.endBackgroundTask(taskId)
     }
 
     func connect(host: String, port: UInt16, token: String) {
@@ -326,6 +342,7 @@ struct ChunkProgress: Equatable {
         isTranscribing = false
         agentState = .idle
         runningConversationId = nil
+        endBackgroundStreaming()
     }
 
     func checkForMissedResponse() {
