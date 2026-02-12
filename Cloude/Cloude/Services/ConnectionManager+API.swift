@@ -267,6 +267,7 @@ extension ConnectionManager {
         if state == .idle {
             LiveActivityManager.shared.endActivity(conversationId: convId)
             runningConversationId = nil
+            if !isAnyRunning { endBackgroundStreaming() }
         } else {
             LiveActivityManager.shared.updateActivity(conversationId: convId, agentState: state)
         }

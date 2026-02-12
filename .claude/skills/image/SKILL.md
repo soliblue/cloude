@@ -64,8 +64,31 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
 - `--output` - Filename without extension (default: image-TIMESTAMP)
 - `--edit` - Path to existing image to modify (sends image + prompt together)
 - `--aspect` - Aspect ratio hint: "16:9", "9:16", "square", "portrait", "landscape"
+- `--grid` - Generate multiple images in one call: "2x2" (4 images) or "3x3" (9 images)
 - `--output-dir` - Where to save (default: .claude/skills/image/output/)
 - `--model` - Gemini model override (default: gemini-2.0-flash-exp)
+
+## Grid Mode (Multiple Images)
+
+Generate 4 or 9 variations in a single API call using `--grid`:
+
+```bash
+source /Users/soli/Desktop/CODING/cloude/.env
+
+# 4 variations (2x2 grid)
+GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
+  --prompt "cute robot mascot in different poses" \
+  --grid 2x2 \
+  --output robot
+
+# 9 variations (3x3 grid)
+GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
+  --prompt "abstract pattern in different color palettes" \
+  --grid 3x3 \
+  --output pattern
+```
+
+This creates a grid template, sends it to Gemini asking it to fill each cell, then crops the output into individual images (`robot-1.png`, `robot-2.png`, etc.). One API call instead of 4 or 9.
 
 ## Prompt Tips for Gemini
 
