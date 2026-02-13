@@ -170,7 +170,7 @@ struct MessageBubble: View {
                                 ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
                             } label: {
                                 Image(systemName: ttsService.playingMessageId == message.id.uuidString ? "stop.fill" : "speaker.wave.2")
-                                    .font(.caption2)
+                                    .font(.system(size: 11))
                                     .foregroundColor(ttsService.playingMessageId == message.id.uuidString ? .purple : .secondary)
                             }
                             .buttonStyle(.plain)
@@ -184,15 +184,15 @@ struct MessageBubble: View {
                             withAnimation { showCopiedToast = false }
                         }
                     } label: {
-                        Image(systemName: "doc.on.doc")
-                            .font(.caption2)
+                        Image(systemName: "square.on.square")
+                            .font(.system(size: 11))
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
-                                .font(.caption2)
+                                .font(.system(size: 11))
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)

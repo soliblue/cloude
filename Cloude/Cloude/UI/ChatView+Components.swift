@@ -8,6 +8,7 @@ struct StatLabel: View {
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: icon)
+                .frame(height: 10)
             Text(text)
         }
         .font(.caption2)
