@@ -6,12 +6,12 @@ struct StatLabel: View {
     let text: String
 
     var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: 2) {
             Image(systemName: icon)
-                .frame(height: 10)
+                .frame(height: 8)
             Text(text)
         }
-        .font(.caption2)
+        .font(.system(size: 9))
     }
 }
 
@@ -131,9 +131,9 @@ struct StreamingInterleavedOutput: View {
                 }
 
                 if let stats = runStats {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 5) {
                         Text(Date(), style: .time)
-                            .font(.caption2)
+                            .font(.system(size: 9))
                         RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd, model: stats.model)
                     }
                     .foregroundColor(.secondary)
@@ -157,7 +157,7 @@ struct RunStatsView: View {
     var model: String? = nil
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             if let modelDisplay = modelInfo {
                 StatLabel(icon: modelDisplay.icon, text: modelDisplay.name)
             }
