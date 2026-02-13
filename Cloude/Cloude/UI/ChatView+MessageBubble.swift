@@ -143,17 +143,16 @@ struct MessageBubble: View {
             .opacity(message.isQueued ? 0.6 : 1.0)
 
             if message.isUser {
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
                     StatLabel(icon: "textformat.size", text: "\(message.text.count)")
                 }
-                .font(.caption)
                 .foregroundColor(.secondary)
             } else {
                 if let team = message.teamSummary {
                     TeamSummaryBadge(summary: team, onTap: { showTeamDashboard = true })
                 }
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     if let durationMs = message.durationMs, let costUsd = message.costUsd {
                         StatLabel(icon: "clock", text: formatTimestamp(message.timestamp))
                         RunStatsView(durationMs: durationMs, costUsd: costUsd, model: message.model)
@@ -162,15 +161,15 @@ struct MessageBubble: View {
                     if ttsMode != .off && !message.text.isEmpty {
                         if ttsService.isSynthesizing && ttsService.playingMessageId == message.id.uuidString {
                             ProgressView()
-                                .scaleEffect(0.6)
-                                .frame(width: 16, height: 16)
+                                .scaleEffect(0.5)
+                                .frame(width: 14, height: 14)
                         } else {
                             Button {
                                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                 ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
                             } label: {
                                 Image(systemName: ttsService.playingMessageId == message.id.uuidString ? "stop.fill" : "speaker.wave.2")
-                                    .font(.system(size: 11))
+                                    .font(.system(size: 9))
                                     .foregroundColor(ttsService.playingMessageId == message.id.uuidString ? .purple : .secondary)
                             }
                             .buttonStyle(.plain)
@@ -185,20 +184,19 @@ struct MessageBubble: View {
                         }
                     } label: {
                         Image(systemName: "square.on.square")
-                            .font(.system(size: 11))
+                            .font(.system(size: 9))
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 11))
+                                .font(.system(size: 9))
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .font(.caption)
                 .foregroundColor(.secondary)
             }
         }
