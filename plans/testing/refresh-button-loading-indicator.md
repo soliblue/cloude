@@ -1,4 +1,5 @@
 # Refresh Button Loading Indicator
+<!-- build: 71 -->
 
 ## Problem
 When tapping the refresh button in the window header, the button stays as the static refresh icon even while the conversation is syncing. No visual feedback that anything is happening.
