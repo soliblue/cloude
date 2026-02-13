@@ -27,6 +27,7 @@ struct MainChatView: View {
     @State var showConversationSearch = false
     @State var showUsageStats = false
     @State var usageStats: UsageStats?
+    @State var refreshingSessionIds: Set<String> = []
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
@@ -257,6 +258,13 @@ struct MainChatView: View {
                     .background(Color.oceanBackground)
             }
         }
+        .onReceive(connection.events) { event in
+            switch event {
+            case .historySync(let sessionId, _), .historySyncError(let sessionId, _):
+                refreshingSessionIds.remove(sessionId)
+            default: break
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             isKeyboardVisible = true
         }
@@ -372,12 +380,23 @@ struct MainChatView: View {
                 windowManager.setActive(window.id)
                 refreshConversation(for: window)
             }) {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .padding(7)
+                if let sid = window.conversationId.flatMap({ conversationStore.conversation(withId: $0)?.sessionId }), refreshingSessionIds.contains(sid) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                        .frame(width: 15, height: 15)
+                        .padding(7)
+                } else {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(7)
+                }
             }
             .buttonStyle(.plain)
+            .disabled(
+                window.conversationId.map({ connection.output(for: $0).isRunning }) ?? false ||
+                window.conversationId.flatMap({ conversationStore.conversation(withId: $0)?.sessionId }).map({ refreshingSessionIds.contains($0) }) ?? false
+            )
 
             Divider()
                 .frame(height: 20)
@@ -403,6 +422,7 @@ struct MainChatView: View {
               let conv = conversationStore.conversation(withId: convId),
               let sessionId = conv.sessionId,
               let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
+        refreshingSessionIds.insert(sessionId)
         let messages = conversationStore.messages(for: conv)
         if let lastUserIndex = messages.lastIndex(where: { $0.isUser }) {
             conversationStore.truncateMessages(for: conv, from: lastUserIndex + 1)

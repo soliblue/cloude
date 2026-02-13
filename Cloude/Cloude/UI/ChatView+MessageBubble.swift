@@ -7,7 +7,6 @@ struct MessageBubble: View {
     var skills: [Skill] = []
     var onRefresh: (() -> Void)?
     var onToggleCollapse: (() -> Void)?
-    var isStreaming: Bool = false
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
@@ -194,10 +193,9 @@ struct MessageBubble: View {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
                                 .font(.caption2)
-                                .foregroundColor(isStreaming ? .secondary.opacity(0.3) : .secondary)
+                                .foregroundColor(.secondary)
                         }
                         .buttonStyle(.plain)
-                        .disabled(isStreaming)
                     }
                 }
                 .font(.caption)
