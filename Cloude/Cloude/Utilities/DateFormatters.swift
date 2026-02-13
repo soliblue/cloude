@@ -10,12 +10,10 @@ enum DateFormatters {
         let calendar = Calendar.current
         if calendar.isDateInToday(date) {
             shared.dateFormat = "HH:mm"
-        } else if calendar.isDateInYesterday(date) {
-            shared.dateFormat = "'Yesterday' HH:mm"
         } else if calendar.isDate(date, equalTo: Date(), toGranularity: .year) {
-            shared.dateFormat = "MMM d, HH:mm"
+            shared.dateFormat = "d/M HH:mm"
         } else {
-            shared.dateFormat = "MMM d yyyy, HH:mm"
+            shared.dateFormat = "d/M/yy HH:mm"
         }
         return shared.string(from: date)
     }
