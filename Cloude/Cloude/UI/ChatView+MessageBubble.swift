@@ -116,7 +116,7 @@ struct MessageBubble: View {
                 }
                 .font(.body)
                 .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
-                .clipped()
+                .modifier(ConditionalClip(isClipped: message.isCollapsed))
                 .overlay(alignment: .bottom) {
                     if message.isCollapsed {
                         LinearGradient(colors: [backgroundColor.opacity(0), backgroundColor], startPoint: .top, endPoint: .bottom)
@@ -269,6 +269,17 @@ struct CopiedToast: View {
         .cornerRadius(20)
         .shadow(radius: 4)
         .padding(.top, 8)
+    }
+}
+
+struct ConditionalClip: ViewModifier {
+    let isClipped: Bool
+    func body(content: Content) -> some View {
+        if isClipped {
+            content.clipped()
+        } else {
+            content
+        }
     }
 }
 

@@ -113,7 +113,7 @@ struct StreamingInterleavedOutput: View {
                                 let allChildren = toolCalls.filter { $0.parentToolId != nil }
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 6) {
-                                        ForEach(tools, id: \.toolId) { tool in
+                                        ForEach(tools.reversed(), id: \.toolId) { tool in
                                             InlineToolPill(
                                                 toolCall: tool,
                                                 children: allChildren.filter { $0.parentToolId == tool.toolId }
@@ -123,6 +123,7 @@ struct StreamingInterleavedOutput: View {
                                     .padding(.horizontal, 16)
                                 }
                                 .padding(.horizontal, -16)
+                                .scrollClipDisabled()
                             }
                         }
                     }
