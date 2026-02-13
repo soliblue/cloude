@@ -49,6 +49,10 @@ extension FilePreviewView {
             }
         } else if file.isVideo {
             VideoPreview(data: data)
+        } else if file.isAudio {
+            AudioPreview(data: data, fileName: file.name)
+        } else if file.isPDF {
+            PDFPreview(data: data)
         } else if file.isText, let text = String(data: data, encoding: .utf8) {
             TextPreview(text: text)
         } else {
