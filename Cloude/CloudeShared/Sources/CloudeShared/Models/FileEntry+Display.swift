@@ -39,6 +39,14 @@ extension FileEntry {
         mimeType?.hasPrefix("video/") ?? false
     }
 
+    public var isAudio: Bool {
+        mimeType?.hasPrefix("audio/") ?? false
+    }
+
+    public var isPDF: Bool {
+        mimeType?.contains("pdf") ?? false
+    }
+
     public var isText: Bool {
         guard let mime = mimeType else { return false }
         return mime.hasPrefix("text/") || mime.contains("json") || mime.contains("javascript") || mime.contains("xml")
