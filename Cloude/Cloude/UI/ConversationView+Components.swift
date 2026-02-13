@@ -243,8 +243,7 @@ struct ChatMessageList: View {
                 message: message,
                 skills: connection?.skills ?? [],
                 onRefresh: message.isUser ? nil : { refreshMessage(message) },
-                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) },
-                isStreaming: agentState == .running || agentState == .compacting
+                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
             )
             .readingProgress(
                 isAssistant: !message.isUser,
