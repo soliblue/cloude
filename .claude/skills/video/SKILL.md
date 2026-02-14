@@ -375,7 +375,7 @@ The CLI often times out but the script keeps running in the background. Videos g
 
 ### Step 3: Check recent output
 ```bash
-ls -lt output/*.mp4 | head -10
+ls -lt output/raw/*.mp4 | head -10
 ```
 Verify what you already have so you don't re-generate.
 
@@ -388,7 +388,7 @@ Only now run `create.py --batch`. The Sora jobs are submitted server-side the mo
 ## Known Limitations
 
 - **One browser at a time**: Playwright uses a persistent Chrome profile, so only one Sora process can run. Use batch mode for parallelism (Sora generates up to 5 simultaneously server-side).
-- **Double-run danger**: If a batch command times out in the CLI, the Sora jobs were ALREADY submitted server-side and will generate. Always check `ls -lt output/*.mp4 | head` for new files before re-running — you'll burn duplicate credits otherwise.
+- **Double-run danger**: If a batch command times out in the CLI, the Sora jobs were ALREADY submitted server-side and will generate. Always check `ls -lt output/raw/*.mp4 | head` for new files before re-running — you'll burn duplicate credits otherwise.
 - **Audio (sy_8 model)**: `audio_transcript: {"text": "..."}` and `audio_caption: "string"` are accepted by the API but videos with audio never produce download URLs on the `sy_8` model. Audio appears broken — use Kokoro TTS locally instead for narration overlay.
 - **Sora can't maintain consistency across clips**: Don't expect character/style consistency between separate Sora generations. Use Gemini for consistency (mood board chaining) and Sora only for animation.
 - **100 credits/day**: ChatGPT Pro gives ~100 generations per day. Each batch job costs 1 credit per video. Credits reset on a rolling ~4.5hr timer, not midnight. **Last reset ETA: 2026-02-11 ~14:23** (update this after each rate limit hit).
@@ -412,9 +412,16 @@ python3 .claude/skills/video/session.py login
 
 ## Output
 
-Default output: `.claude/skills/video/output/`
+Default output: `.claude/skills/video/output/raw/`
 
 Files are named `sora_{timestamp}.mp4`.
+
+## Output Layout
+
+- Raw Sora downloads: `.claude/skills/video/output/raw/`
+- Curated edits: `.claude/skills/video/output/shorts/`, `.claude/skills/video/output/compilations/`
+- Reviews / frames / notes: `.claude/skills/video/output/reviews/`
+- Utility scripts for assembling shorts: `.claude/skills/video/pipelines/`
 
 ## Experiment Catalog
 

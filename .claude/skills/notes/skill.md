@@ -86,6 +86,37 @@ ls .claude/skills/notes/data/Diary/ | grep "^2024"
 grep -rli "therapy\|therapist" .claude/skills/notes/data/ --include="*.md"
 ```
 
+## Creating Notes via AppleScript
+
+You can create and edit notes directly in Apple Notes via AppleScript:
+
+```applescript
+tell application "Notes"
+    set targetFolder to first folder whose name is "Notes"
+    make new note at targetFolder with properties {name:"My Note", body:"<div><b>Bold header</b></div><div>• Bullet point</div>"}
+end tell
+```
+
+### Formatting that works reliably
+- `<h1>Title</h1>` — large title (collapsible in Notes)
+- `<h2>Section</h2>` — section heading (collapsible in Notes)
+- `<h3>Subsection</h3>` — sub-heading (collapsible in Notes)
+- `<b>text</b>` — bold
+- `<i>text</i>` — italic
+- `<u>text</u>` — underline
+- `<strike>text</strike>` — strikethrough (great for marking items done)
+- `<ul><li>item</li></ul>` — bullet list
+- `<div>` — line/paragraph breaks
+- `<br>` for line breaks within a div
+
+### What does NOT work or is unreliable
+- Clickable links (`<a href>`) — technically work but AppleScript can't read them back reliably, creates messy HTML. Let the user add links manually in the UI.
+- Checklist/checkbox creation — Apple locks this to manual UI only
+- `font-size` styles — avoid entirely, causes inconsistent rendering
+
+### Best practice
+Use `<h2>` for collapsible section headers, `<h3>` for sub-sections, `<ul><li>` for bullets, `<strike>` for done items. For URLs, just write plain text (e.g., "jardinmajorelle.com") — the user can tap and add the link manually if needed. Do NOT mix heading tags with `font-size` or `<b>` wrappers — use them standalone.
+
 ## Privacy
 
 This is the user's personal diary. The data directory is gitignored and never committed. Treat the content with care — it contains deeply personal reflections, relationships, and experiences.
