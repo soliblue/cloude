@@ -155,9 +155,9 @@ Parse the worker's JSON output and present to user:
 
 ### 5. Ask for Approval
 
-Present all suggestions to Soli in plain text and wait for approval. Do NOT apply any changes until Soli confirms which ones to proceed with.
+Present all suggestions to the user in plain text and wait for approval. Do NOT apply any changes until the user confirms which ones to proceed with.
 
-When Soli approves changes that involve actionable work (not just memory edits), create a plan ticket in `plans/active/` or `plans/testing/` for each approved item.
+When the user approves changes that involve actionable work (not just memory edits), create a plan ticket in `plans/active/` or `plans/testing/` for each approved item.
 
 Only write to files after explicit approval.
 
@@ -209,7 +209,7 @@ Apply changes? [Select which to apply]
 After completing your analysis, ask Codex for its perspective on the memory structure:
 
 ```bash
-codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "Review CLAUDE.md and CLAUDE.local.md. Suggest improvements to memory organization, identify stale or redundant entries, and flag anything missing that should be remembered based on the codebase. Be specific."
+codex exec -s read-only -C "$(git rev-parse --show-toplevel)" "Review CLAUDE.md and CLAUDE.local.md. Suggest improvements to memory organization, identify stale or redundant entries, and flag anything missing that should be remembered based on the codebase. Be specific."
 ```
 
 Compare Codex's suggestions with the Sonnet worker's analysis. Present a unified view noting where both agree (high confidence) and where they differ (worth discussing).

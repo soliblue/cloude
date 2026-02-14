@@ -115,7 +115,7 @@ Parse the worker's JSON output and present to user:
 
 ### 5. Present and Wait for Approval
 
-**Present all suggestions to Soli and wait for explicit approval.** Do NOT implement any changes until Soli says which ones to do.
+**Present all suggestions to the user and wait for explicit approval.** Do NOT implement any changes until the user says which ones to do.
 
 **Priority order** (always prefer higher options):
 1. **Extend existing skill** - Add a flag, variant, or small feature
@@ -124,7 +124,7 @@ Parse the worker's JSON output and present to user:
 
 Be skeptical of new skill suggestions. Ask: "Could this just be an extension to /deploy, /status, /push, or /refactor?"
 
-When Soli approves specific suggestions, create a plan ticket in `plans/active/` (or `plans/testing/` if implementing immediately) for each approved item before starting work.
+When the user approves specific suggestions, create a plan ticket in `plans/active/` (or `plans/testing/` if implementing immediately) for each approved item before starting work.
 
 ## Guidelines
 
@@ -182,7 +182,7 @@ Create which skills? [Select multiple]
 After completing your analysis, ask Codex for its perspective on the skill ecosystem:
 
 ```bash
-codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "Review all skills in .claude/skills/ and recent session history. Suggest new skills, extensions to existing ones, or skills that should be merged or deprecated. Focus on practical automation gaps, not theoretical improvements. Be specific."
+codex exec -s read-only -C "$(git rev-parse --show-toplevel)" "Review all skills in .claude/skills/ and recent session history. Suggest new skills, extensions to existing ones, or skills that should be merged or deprecated. Focus on practical automation gaps, not theoretical improvements. Be specific."
 ```
 
 Compare Codex's suggestions with the Sonnet worker's analysis. Present a unified view noting where both agree (high confidence) and where they differ (worth discussing).

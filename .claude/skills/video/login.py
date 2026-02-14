@@ -1,7 +1,7 @@
 import asyncio, json, sys, os
 from playwright.async_api import async_playwright
 
-CHROME_USER_DATA = '/Users/soli/Library/Application Support/Google/Chrome'
+CHROME_USER_DATA = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', 'Google', 'Chrome')
 PROFILE = 'Profile 3'
 PROXY_API_URL = 'https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&country_code__in=US&page_size=1'
 
@@ -43,7 +43,7 @@ async def login():
         page = context.pages[0] if context.pages else await context.new_page()
         await page.goto('https://sora.chatgpt.com/', timeout=60000)
 
-        print("\nBrowser opened with your personal Chrome profile (user@example.com).")
+        print("\nBrowser opened with your personal Chrome profile.")
         print("Sign in to Sora if needed. Waiting for login (checking every 3s)...\n")
 
         for i in range(120):

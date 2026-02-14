@@ -30,7 +30,7 @@ backlog/ → next/ → active/ → testing/ → done/
 - **backlog**: Anything worth remembering. Can skip straight to `next/` or `active/` if urgent.
 - **next**: Soli (or an agent) decided this is priority. Pick from here first.
 - **active**: An agent is working on this RIGHT NOW. Move here when starting, move out when done.
-- **testing**: Code is written, needs Soli to verify on device. Corresponds to "Awaiting test" in CLAUDE.local.md staging.
+- **testing**: Code is written, needs the user to verify on device. Corresponds to "Awaiting test" in CLAUDE.local.md staging.
 - **done**: Tested and deployed. Keep for reference.
 
 ## Plan File Format
@@ -136,7 +136,7 @@ Send plans to Codex for review and pipe feedback directly into the plan file. Co
 ```bash
 PLAN="plans/next/my-feature.md"
 echo -e "\n## Codex Review\n" >> "$PLAN" && \
-codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude \
+codex exec -s read-only -C "$(git rev-parse --show-toplevel)" \
   "Review this plan for the Cloude project (iOS app + Mac agent for remote Claude Code). Give feedback on the approach, flag risks or missing considerations, and suggest improvements. Here is the plan: $(cat "$PLAN")" \
   >> "$PLAN"
 ```
@@ -145,7 +145,7 @@ codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude \
 ```bash
 for plan in plans/next/*.md; do
   echo -e "\n## Codex Review\n" >> "$plan" && \
-  codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude \
+  codex exec -s read-only -C "$(git rev-parse --show-toplevel)" \
     "Review this plan for the Cloude project (iOS app + Mac agent for remote Claude Code). Give feedback on the approach, flag risks or missing considerations, and suggest improvements. Here is the plan: $(cat "$plan")" \
     >> "$plan"
 done
@@ -165,6 +165,6 @@ done
 - Only move your own plans (multi-agent coordination)
 - Plans in `active/` should have at most 1-2 items per agent
 - The `testing/` folder is the single source of truth for what needs testing — no need to duplicate in CLAUDE.local.md
-- At **5+ items in testing/**, stop adding features and tell Soli to test first
+- At **5+ items in testing/**, stop adding features and tell the user to test first
 - Delete plan files only from `done/` if they're no longer useful as reference
 - Keep plans concrete: diagrams, file lists, ASCII mockups over abstract descriptions

@@ -90,5 +90,8 @@ async def poll(task_id):
         await context.close()
 
 if __name__ == '__main__':
-    task_id = sys.argv[1] if len(sys.argv) > 1 else 'SORA_TASK_ID_PLACEHOLDER'
+    task_id = sys.argv[1] if len(sys.argv) > 1 else None
+    if not task_id:
+        print("Usage: python3 poll.py <task_id>")
+        sys.exit(1)
     asyncio.run(poll(task_id))

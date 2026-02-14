@@ -33,7 +33,7 @@ claude -p --model <model> --tools "Read,Glob,Grep,WebFetch,WebSearch" --dangerou
 
 **Codex:**
 ```bash
-codex exec -s read-only -C /Users/soli/Desktop/CODING/cloude "QUESTION"
+codex exec -s read-only -C "$(git rev-parse --show-toplevel)" "QUESTION"
 ```
 
 ## Instructions

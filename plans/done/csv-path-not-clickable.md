@@ -5,7 +5,7 @@
 <!-- tags: bug, ui, files -->
 
 ## Problem
-CSV file paths sent in chat don't render as clickable file pills. Other file types (e.g. `.md`, `.swift`) work fine. Tested with `/Users/soli/Desktop/CODING/cloude/books.csv` — not tappable.
+CSV file paths sent in chat don't render as clickable file pills. Other file types (e.g. `.md`, `.swift`) work fine. Tested with `books.csv` — not tappable.
 
 ## Investigate
 - Check `InlineTextView.swift` / `FilePathPill` for file extension filtering

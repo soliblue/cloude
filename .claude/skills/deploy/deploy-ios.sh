@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Set DEVICE_NAME env var to match your iPhone name in Xcode
+DEVICE_NAME="${DEVICE_NAME:-My iPhone}"
+
 # Deploy iOS app - checks for connected iPhone first, falls back to TestFlight
 # Usage: ./deploy-ios.sh [--phone-only]
 
@@ -12,7 +15,7 @@ fi
 echo "🔍 Checking for connected iPhone..."
 
 # Check if iPhone is connected
-DEVICE_LINE=$(xcrun devicectl list devices 2>&1 | grep "My iPhone" || true)
+DEVICE_LINE=$(xcrun devicectl list devices 2>&1 | grep "$DEVICE_NAME" || true)
 
 if [[ -z "$DEVICE_LINE" ]]; then
     if [[ "$PHONE_ONLY" == true ]]; then
@@ -25,7 +28,7 @@ if [[ -z "$DEVICE_LINE" ]]; then
 fi
 
 # Extract device UUID and state (handle device name with spaces)
-# Format: "My iPhone   hostname   UUID   state   model"
+# Format: "MyDevice   hostname   UUID   state   model"
 DEVICE_UUID=$(echo "$DEVICE_LINE" | awk '{for(i=1;i<=NF;i++) if($i ~ /^[0-9A-F]{8}-/) print $i}')
 DEVICE_STATE=$(echo "$DEVICE_LINE" | awk '{for(i=1;i<=NF;i++) if($i ~ /^[0-9A-F]{8}-/) print $(i+1)}')
 
@@ -45,7 +48,7 @@ echo "🔨 Building iOS app..."
 # Build for connected device
 xcodebuild -project Cloude/Cloude.xcodeproj \
     -scheme Cloude \
-    -destination "platform=iOS,name=My iPhone" \
+    -destination "platform=iOS,name=$DEVICE_NAME" \
     build 2>&1 | tail -5
 
 if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
@@ -55,10 +58,18 @@ fi
 
 echo "📲 Installing to iPhone..."
 
+# Find the built app in DerivedData
+APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData/Cloude-*/Build/Products/Debug-iphoneos/Cloude.app -maxdepth 0 2>/dev/null | head -1)
+
+if [[ -z "$APP_PATH" ]]; then
+    echo "❌ Could not find built Cloude.app in DerivedData"
+    exit 1
+fi
+
 # Install to device
 xcrun devicectl device install app \
     --device "$DEVICE_UUID" \
-    /Users/soli/Library/Developer/Xcode/DerivedData/Cloude-drgeixundgtalkdkjnittevjxsyt/Build/Products/Debug-iphoneos/Cloude.app
+    "$APP_PATH"
 
 if [[ $? -eq 0 ]]; then
     echo "✅ Installed directly to iPhone"

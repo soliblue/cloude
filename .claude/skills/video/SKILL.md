@@ -1,6 +1,6 @@
 ---
 name: video
-description: Generate videos using Sora. Text-to-video and image-to-video via Soli's ChatGPT Pro subscription.
+description: Generate videos using Sora. Text-to-video and image-to-video via ChatGPT Pro subscription.
 user-invocable: false
 disable-model-invocation: true
 disabled: true
