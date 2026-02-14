@@ -1,6 +1,6 @@
 ---
 name: tweets
-description: Search, analyze, and use Soli's Twitter archive (462 tweets, 39 note-tweets). Use for context, voice matching, pattern analysis.
+description: Search, analyze, and use the user's Twitter archive (462 tweets, 39 note-tweets). Use for context, voice matching, pattern analysis.
 user-invocable: true
 icon: bubble.left.and.text.bubble.right
 aliases: [twitter, tweet, x]
@@ -8,7 +8,7 @@ aliases: [twitter, tweet, x]
 
 # Tweets Skill
 
-Access Soli's Twitter archive (@_xsoli) for search, analysis, and context.
+Access the user's Twitter archive for search, analysis, and context.
 
 ## Privacy
 
@@ -223,15 +223,8 @@ console.log("Topic frequency:", JSON.stringify(counts, null, 2));
 
 ## Use Cases
 
-- **Voice matching**: Search tweets to understand how Soli writes — his tone, vocabulary, sentence structure. Use when writing as or for him.
-- **Context for interviews**: Pull relevant tweets when using the Get To Know skill or when discussing Soli's views on a topic.
+- **Voice matching**: Search tweets to understand how the user writes — their tone, vocabulary, sentence structure. Use when writing as or for the user.
+- **Context for interviews**: Pull relevant tweets when using the Get To Know skill or when discussing the user's views on a topic.
 - **Pattern analysis**: Track how interests shifted over time (obsession cycles), what topics dominate which periods.
 - **Content creation**: Find themes and ideas worth expanding into longer content.
-- **Self-reflection**: Surface contradictions, evolution of views, patterns Soli might not see himself.
-
-## Account Info
-
-- **Handle**: @_xsoli
-- **User ID**: 297600500
-- **Archive date**: January 6, 2026
-- **Tweet URL format**: `https://x.com/_xSoli/status/{tweet_id}`
+- **Self-reflection**: Surface contradictions, evolution of views, patterns the user might not see themselves.

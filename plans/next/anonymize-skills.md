@@ -6,7 +6,7 @@ Make all skills generic so anyone cloning the repo can use them without editing 
 ## What Needs Changing
 
 ### Hardcoded absolute paths
-Every skill references `/Users/soli/Desktop/CODING/cloude/...` — should use relative paths or a `$PROJECT_ROOT` variable.
+Every skill references `./...` — should use relative paths or a `$PROJECT_ROOT` variable.
 
 ### Personal name references
 - "Soli" appears in ~15 skills as the owner/user — replace with generic "the user" or remove

@@ -1,6 +1,6 @@
 ---
 name: goodreads
-description: Access Soli's Goodreads reading history for context about his intellectual journey, book search, and reading patterns.
+description: Access the user's Goodreads reading history for context about their intellectual journey, book search, and reading patterns.
 user-invocable: true
 icon: book.fill
 aliases: [books, reading]
@@ -8,7 +8,7 @@ aliases: [books, reading]
 
 # Goodreads Skill
 
-Access Soli's reading history from Goodreads. Books are stored locally as CSV for fast search and analysis.
+Access the user's reading history from Goodreads. Books are stored locally as CSV for fast search and analysis.
 
 ## Setup (First Time)
 
@@ -42,10 +42,10 @@ node .claude/skills/goodreads/fetch.js
 
 `book_id, title, author, isbn, rating, avg_rating, date_read, date_added, shelves, pages, published, review`
 
-- `rating`: Soli's rating (0 = unrated, 1-5)
+- `rating`: User's rating (0 = unrated, 1-5)
 - `shelves`: comma-separated shelf names (read, currently-reading, to-read, custom)
 - `date_read`: when finished (empty if not yet read)
-- `review`: Soli's review text (if any)
+- `review`: User's review text (if any)
 
 ## Common Queries
 
@@ -162,10 +162,10 @@ Same as the tweets skill — **never use inline `node -e` with queries**. Always
 
 ## Use Cases
 
-- **Intellectual context**: What books shaped Soli's thinking on a topic? Search by keyword.
+- **Intellectual context**: What books shaped the user's thinking on a topic? Search by keyword.
 - **Reading journey**: Trace the arc from religious texts → philosophy → CS → markets.
 - **Recommendations**: Based on 5-star books and patterns, suggest new reads.
-- **Conversation context**: Reference relevant books when discussing topics Soli cares about.
+- **Conversation context**: Reference relevant books when discussing topics the user cares about.
 - **Pattern analysis**: Reading pace, genre distribution, author preferences.
 
 ## Limitations

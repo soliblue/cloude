@@ -32,7 +32,7 @@ Do NOT use this skill when:
 ## Commands
 
 ```bash
-source /Users/soli/Desktop/CODING/cloude/.env
+source .env
 
 # Text-to-image
 GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
@@ -73,7 +73,7 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
 Generate 4 or 9 variations in a single API call using `--grid`:
 
 ```bash
-source /Users/soli/Desktop/CODING/cloude/.env
+source .env
 
 # 4 variations (2x2 grid)
 GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \

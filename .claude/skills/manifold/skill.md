@@ -12,10 +12,10 @@ Participate in prediction markets on Manifold Markets.
 
 ## Account Info
 
-- **Username**: Soli (this is Soli's personal account — NOT Cloude's)
-- **User ID**: MANIFOLD_USER_ID_PLACEHOLDER
-- **Profile**: https://manifold.markets/Soli
-- **CRITICAL**: Never post, bet, comment, or create markets without explicit permission. This is Soli's account, not mine.
+- **Username**: Set $MANIFOLD_USERNAME in .env
+- **User ID**: Set $MANIFOLD_USER_ID in .env
+- **Profile**: https://manifold.markets/$MANIFOLD_USERNAME
+- **CRITICAL**: Never post, bet, comment, or create markets without explicit permission. This is the user's account.
 
 ## API Authentication
 
@@ -82,18 +82,18 @@ curl -sL -X POST \
 
 ```bash
 curl -sL -H "Authorization: Key $MANIFOLD_KEY" \
-  "https://api.manifold.markets/v0/bets?username=Soli&limit=20" | jq '[.[] | {contractId, outcome, amount, shares, probBefore, probAfter, createdTime}]'
+  "https://api.manifold.markets/v0/bets?username=$MANIFOLD_USERNAME&limit=20" | jq '[.[] | {contractId, outcome, amount, shares, probBefore, probAfter, createdTime}]'
 ```
 
 ## Check Positions on a Market
 
 ```bash
-curl -sL "https://api.manifold.markets/v0/market/{marketId}/positions?userId=MANIFOLD_USER_ID_PLACEHOLDER" | jq
+curl -sL "https://api.manifold.markets/v0/market/{marketId}/positions?userId=$MANIFOLD_USER_ID" | jq
 ```
 
 ## Check Comments on My Markets
 
-Get all open markets Soli created and check for new comments from other users. Use the helper script:
+Get all open markets the user created and check for new comments from other users. Use the helper script:
 
 ```bash
 node /path/to/check_comments.js <marketId1> <marketId2> ...
@@ -101,7 +101,7 @@ node /path/to/check_comments.js <marketId1> <marketId2> ...
 
 To get all open market IDs:
 ```bash
-curl -sL "https://api.manifold.markets/v0/search-markets?term=&sort=newest&filter=open&creatorId=MANIFOLD_USER_ID_PLACEHOLDER&limit=20" | jq -r '.[].id'
+curl -sL "https://api.manifold.markets/v0/search-markets?term=&sort=newest&filter=open&creatorId=$MANIFOLD_USER_ID&limit=20" | jq -r '.[].id'
 ```
 
 To check comments on a specific market:
@@ -109,7 +109,7 @@ To check comments on a specific market:
 curl -sL "https://api.manifold.markets/v0/comments?contractId={marketId}&limit=10" | jq '[.[] | {userName, date: (.createdTime / 1000 | todate), text: [(.content.content // [])[] | [(.content // [])[] | select(.type == "text" or .type == "mention") | (if .type == "mention" then "@" + .attrs.label else .text end)] | join("")] | join(" ")}]'
 ```
 
-Filter to only show comments from the last N days by checking dates. When reporting, skip comments from "Soli" (that's us) and highlight any unanswered questions.
+Filter to only show comments from the last N days by checking dates. When reporting, skip comments from the user (that's us) and highlight any unanswered questions.
 
 ## Post a Comment
 
@@ -121,9 +121,9 @@ curl -sL -X POST \
   "https://api.manifold.markets/v0/comment" | jq
 ```
 
-**CRITICAL**: Never post comments without Soli's explicit permission.
+**CRITICAL**: Never post comments without the user's explicit permission.
 
-## Soli's Manifold Profile
+## Profile Context
 
 - **Account since**: Sept 2023
 - **3,595 total bets** across 460 markets, **100 markets created**
@@ -131,16 +131,15 @@ curl -sL -X POST \
 - **Peak activity**: Dec 2023 - Jan 2024 (750+ bets/month), tapered to occasional since mid-2025
 - **Dominant interest**: AI/LLM (71% of created markets) — ChatBot Arena rankings, model releases, company moves
 - **Notable markets created**: "Best LLM at end of 2025" (584K vol, 199 traders), "Trump die/ill before end of term" (503K vol, 874 traders)
-- **Style**: Heavy YES bias (78%), bets mostly 10-500 mana range, trades actively in markets he cares about (359 bets in a single market)
+- **Style**: Heavy YES bias (78%), bets mostly 10-500 mana range, trades actively in markets the user cares about (359 bets in a single market)
 - **Topics**: AI models, OpenAI vs Anthropic, tech stocks, Apple hardware, prediction markets meta, occasional politics/philosophy
-- **Twitter**: @_xsoli
 
 ## Rules for Cloude
 
 - READ-ONLY by default. Only browse, analyze, surface insights.
-- Never bet, sell, create markets, or comment without Soli's explicit instruction.
-- When suggesting opportunities, show the reasoning — Soli decides.
-- This is Soli's account and identity. I don't pretend to be him.
+- Never bet, sell, create markets, or comment without the user's explicit instruction.
+- When suggesting opportunities, show the reasoning — the user decides.
+- This is the user's account and identity. I don't pretend to be them.
 
 ## Rate Limits
 

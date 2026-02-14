@@ -9,7 +9,7 @@ Create a `/tweets` skill that provides access to Soli's Twitter archive for cont
 ## Requirements
 
 ### Data Setup
-- Symlink or copy the tweet archive from `/Users/soli/Desktop/CODING/tweets/` into the project (e.g., `.claude/skills/tweets/data/`)
+- Symlink or copy the tweet archive from `~/tweets/` into the project (e.g., `.claude/skills/tweets/data/`)
 - Add the data path to `.gitignore` so it never gets committed (public repo — tweets contain personal data)
 - Parse `tweets.js` and `note-tweet.js` into a usable format (JSON without the `window.YTD` prefix)
 
@@ -21,7 +21,7 @@ Create a `/tweets` skill that provides access to Soli's Twitter archive for cont
 - **Stats** — total tweets, most liked, most retweeted, posting frequency by period
 
 ### Technical Notes
-- Tweet archive location: `/Users/soli/Desktop/CODING/tweets/twitter-2026-01-06-2f330bc3d23cb832ac07e77324c2bebe7b3e8f0ea0a1e4d337b73cb0f0bf0a14/data/`
+- Tweet archive location: `~/tweets/twitter-archive/data/`
 - Key files: `tweets.js` (462 original tweets), `note-tweet.js` (39 long-form notes)
 - Files have `window.YTD.tweets.part0 = ` prefix that needs stripping before JSON parse
 - Reply tweets start with `@` and have `in_reply_to_user_id` set
