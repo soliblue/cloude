@@ -27,7 +27,7 @@ Reflect on tool and skill usage patterns. Analyze session history to discover re
 
 ```bash
 # Get list of recent sessions (last 7 days)
-find ~/.claude/projects/-Users-soli-Desktop-CODING-cloude -name "*.jsonl" -mtime -7 -type f
+find ~/.claude/projects/-$(pwd | tr '/' '-' | sed 's/^-//') -name "*.jsonl" -mtime -7 -type f
 
 # Read all skill definitions
 ls -la .claude/skills/
@@ -124,7 +124,7 @@ Parse the worker's JSON output and present to user:
 
 Be skeptical of new skill suggestions. Ask: "Could this just be an extension to /deploy, /status, /push, or /refactor?"
 
-When the user approves specific suggestions, create a plan ticket in `plans/active/` (or `plans/testing/` if implementing immediately) for each approved item before starting work.
+When the user approves specific suggestions, create a plan ticket in `plans/20_active/` (or `plans/30_testing/` if implementing immediately) for each approved item before starting work.
 
 ## Guidelines
 
