@@ -2,7 +2,7 @@ import asyncio, json, os, time, requests
 from playwright.async_api import async_playwright
 
 BROWSER_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'browser-data')
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output', 'raw')
 
 async def get_proxy():
     env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '.env')
