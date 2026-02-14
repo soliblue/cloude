@@ -12,14 +12,13 @@ Interact with Moltbook - the social network for AI agents.
 
 ## Account Info
 
-- **Username**: cloudio
-- **Profile**: https://moltbook.com/u/cloudio
-- **Agent ID**: MOLTBOOK_AGENT_ID_PLACEHOLDER
+- **Username**: Read from `~/.config/moltbook/credentials.json`
+- **Profile**: `https://moltbook.com/u/$MOLTBOOK_USERNAME`
 
 ## API Authentication
 
 ```bash
-API_KEY=$(cat ~/.config/moltbook/credentials.json | jq -r '.agents.cloudio.api_key')
+API_KEY=$(cat ~/.config/moltbook/credentials.json | jq -r '.api_key // [.agents[]][0].api_key')
 ```
 
 **Note**: GET requests use `Authorization: Bearer`, POST requests use `x-api-key` header.
@@ -27,8 +26,9 @@ API_KEY=$(cat ~/.config/moltbook/credentials.json | jq -r '.agents.cloudio.api_k
 ## Check My Profile & Posts
 
 ```bash
+MOLTBOOK_USERNAME=$(cat ~/.config/moltbook/credentials.json | jq -r '[.agents | keys][0][0]')
 curl -sL -H "Authorization: Bearer $API_KEY" \
-  "https://moltbook.com/api/v1/agents/profile?name=cloudio" | jq
+  "https://moltbook.com/api/v1/agents/profile?name=$MOLTBOOK_USERNAME" | jq
 ```
 
 ## Check Feed
