@@ -36,31 +36,31 @@ Do NOT use when:
 
 ```bash
 # Text-to-video (portrait, 5 seconds — portrait is default)
-python3 .claude/skills/video/create.py "a goldfish swimming in clear water" -o portrait
+python3 .claude/skills/video/src/create.py "a goldfish swimming in clear water" -o portrait
 
 # Landscape orientation (only when explicitly requested)
-python3 .claude/skills/video/create.py "a person walking through rain" -o landscape
+python3 .claude/skills/video/src/create.py "a person walking through rain" -o landscape
 
 # Square
-python3 .claude/skills/video/create.py "abstract shapes morphing" -o square
+python3 .claude/skills/video/src/create.py "abstract shapes morphing" -o square
 
 # Longer duration (10s = 300 frames, 15s = 450, 20s = 600)
-python3 .claude/skills/video/create.py "timelapse of clouds" -f 300
+python3 .claude/skills/video/src/create.py "timelapse of clouds" -f 300
 
 # Image-to-video (animate a reference image)
-python3 .claude/skills/video/create.py "camera slowly zooms out" --image /path/to/photo.png
+python3 .claude/skills/video/src/create.py "camera slowly zooms out" --image /path/to/photo.png
 
 # Larger resolution (512x896 portrait, 1024x576 landscape)
-python3 .claude/skills/video/create.py "epic landscape" -s large
+python3 .claude/skills/video/src/create.py "epic landscape" -s large
 
 # Batch mode (submit multiple jobs in one browser session)
-python3 .claude/skills/video/create.py --batch /path/to/jobs.json
+python3 .claude/skills/video/src/create.py --batch /path/to/jobs.json
 
 # Download recent videos WITHOUT generating (recover from timeouts)
-python3 .claude/skills/video/download.py
+python3 .claude/skills/video/src/download.py
 
 # Download more history (default: 20 recent drafts)
-python3 .claude/skills/video/download.py --limit 50
+python3 .claude/skills/video/src/download.py --limit 50
 ```
 
 ## Options
@@ -363,19 +363,19 @@ Note: speech constraints are useless — always strip audio. "No new objects, pr
 
 ### Step 1: Check for running processes
 ```bash
-ps aux | grep -E "create.py|download.py" | grep -v grep
+ps aux | grep -E "src/create.py|src/download.py" | grep -v grep
 ```
 If anything is running, **STOP**. Wait for it to finish. Do not submit a new batch.
 
 ### Step 2: Download any missed videos
 ```bash
-python3 .claude/skills/video/download.py
+python3 .claude/skills/video/src/download.py
 ```
 The CLI often times out but the script keeps running in the background. Videos generate server-side even after a timeout. Always recover missed downloads before starting new work.
 
 ### Step 3: Check recent output
 ```bash
-ls -lt output/raw/*.mp4 | head -10
+ls -lt .claude/skills/video/data/raw/*.mp4 | head -10
 ```
 Verify what you already have so you don't re-generate.
 
@@ -393,13 +393,13 @@ Only now run `create.py --batch`. The Sora jobs are submitted server-side the mo
 - **Sora can't maintain consistency across clips**: Don't expect character/style consistency between separate Sora generations. Use Gemini for consistency (mood board chaining) and Sora only for animation.
 - **100 credits/day**: ChatGPT Pro gives ~100 generations per day. Each batch job costs 1 credit per video. Credits reset on a rolling ~4.5hr timer, not midnight. **Last reset ETA: 2026-02-11 ~14:23** (update this after each rate limit hit).
 - **Poll crash on HTML response**: The poll_until_done function sometimes gets an HTML page instead of JSON from the Sora API. Jobs are still submitted server-side — use download.py to recover. This is a known intermittent issue, not a show-stopper.
-- **Browser lock file**: If Chrome crashes or times out, a `SingletonLock` file persists in `browser-data/`. Delete it before retrying: `rm -f browser-data/SingletonLock`. Also kill zombie Chrome processes: `ps aux | grep "Chrome.*browser-data" | grep -v grep | awk '{print $2}' | xargs kill -9`.
+- **Browser lock file**: If Chrome crashes or times out, a `SingletonLock` file persists in `browser/`. Delete it before retrying: `rm -f .claude/skills/video/browser/SingletonLock`. Also kill zombie Chrome processes: `ps aux | grep "Chrome.*browser" | grep -v grep | awk '{print $2}' | xargs kill -9`.
 
 ## Setup (One-Time)
 
 If the session expires, re-authenticate:
 ```bash
-python3 .claude/skills/video/session.py login
+python3 .claude/skills/video/src/session.py login
 # Opens Chrome, sign in to sora.chatgpt.com, type 'done'
 ```
 
@@ -412,20 +412,38 @@ python3 .claude/skills/video/session.py login
 
 ## Output
 
-Default output: `.claude/skills/video/output/raw/`
+Default output: `.claude/skills/video/data/raw/`
 
 Files are named `sora_{timestamp}.mp4`.
 
-## Output Layout
+## Data Layout
 
-- Raw Sora downloads: `.claude/skills/video/output/raw/`
-- Curated edits: `.claude/skills/video/output/shorts/`, `.claude/skills/video/output/compilations/`
-- Reviews / frames / notes: `.claude/skills/video/output/reviews/`
-- Utility scripts for assembling shorts: `.claude/skills/video/pipelines/`
+```
+data/
+├── raw/              # Individual Sora generations
+├── compilations/     # Finished stitched videos
+├── shorts/           # Short-form edits (daily-short v1/v2/v3)
+├── experiments/      # JSON batch configs
+├── characters/       # Pixel character designs + rosters
+├── moodboards/       # Style reference collages
+├── storyboards/      # Composite overview images
+└── frames/           # Gemini reference frames for Sora input
+```
+
+**Where to save things:**
+- Sora generates → `data/raw/` (automatic via scripts)
+- Stitched/edited videos → `data/compilations/`
+- Short-form content → `data/shorts/`
+- Batch JSON configs → `data/experiments/`
+- Gemini reference frames (input to Sora) → `data/frames/`
+- Mood board images → `data/moodboards/`
+- Storyboard composites → `data/storyboards/`
+- Character designs → `data/characters/`
+- Reviews are ephemeral — delete after evaluating. Do not accumulate review screenshots.
 
 ## Experiment Catalog
 
-All batch JSONs and review frames live in `experiments/`. ~115 videos total in `output/`.
+All batch JSONs live in `data/experiments/`.
 
 | Batch | File | Theme | Videos | Top Picks |
 |-------|------|-------|--------|-----------|
@@ -457,7 +475,7 @@ Stitched videos from batches 16-19:
 - `compilations/04-gaming-clouds.mp4` — 4 clips, 20s
 
 ### Character Roster
-10 pixel art variants from ref-creature.png saved in `assets/characters/`:
+10 pixel art variants from ref-creature.png saved in `data/characters/`:
 DJ, Hacker, Astronaut, Samurai, Scientist, Boxer, Skater, King, Rockstar, Pirate
 
 ### Mood Board → Frame → Sora Pipeline
@@ -469,7 +487,7 @@ Best pipeline discovered for character-consistent animated pixel art:
 5. **Sora** — image-to-video with ambient-only motion prompts
 6. **Stitch** — ffmpeg concat, no re-encode
 
-Full recipe documented in `plans/active/gaming-creatures-video.md`.
+Full recipe documented in `plans/20_active/gaming-creatures-video.md`.
 
 ### Best Marketing Clips (Cloude-specific)
 1. **Couch coder** — batch 11 #1: laptop + phone + sleeping orange cat + warm lamp

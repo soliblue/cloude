@@ -1,5 +1,6 @@
 .DS_Store
 __pycache__/
+icon/__pycache__/
 
 # Local virtualenvs for image/icon pipelines
 .venv/
@@ -7,4 +8,3 @@ icon/.venv/
 
 # Generated artifacts
 output/
-

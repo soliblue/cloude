@@ -26,7 +26,7 @@ struct CloudeApp: App {
     @State private var filePathToPreview: String? = nil
     @AppStorage("appTheme") private var appTheme: AppTheme = .dark
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
-@Environment(\.scenePhase) var scenePhase
+    @Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -94,6 +94,7 @@ struct CloudeApp: App {
                     }
                 }
         }
+        .onReceive(connection.events, perform: handleConnectionEvent)
         .sheet(isPresented: $showSettings) {
             SettingsView(connection: connection)
         }
@@ -113,7 +114,7 @@ struct CloudeApp: App {
             )
         }
         .sheet(item: $filePathToPreview) { path in
-            FilePathPreviewView(path: path, connection: connection)
+            FilePreviewView(path: path, connection: connection)
         }
         .onOpenURL { url in
             guard url.scheme == "cloude" else { return }
@@ -153,19 +154,18 @@ struct CloudeApp: App {
         }
     }
 
-    private func loadAndConnect() {
-        NotificationManager.requestPermission()
-
-        let host = UserDefaults.standard.string(forKey: "serverHost") ?? ""
-        let portString = UserDefaults.standard.string(forKey: "serverPort") ?? "8765"
-        let token = KeychainHelper.get(key: "authToken") ?? ""
-
-        guard !host.isEmpty, !token.isEmpty, let port = UInt16(portString) else {
-            showSettings = true
-            return
-        }
-
-        connection.onMissedResponse = { [conversationStore] _, text, toolCalls, _, interruptedConvId, interruptedMsgId in
+    private func handleConnectionEvent(_ event: ConnectionEvent) {
+        switch event {
+        case .missedResponse(_, let text, _, let storedToolCalls, let interruptedConvId, let interruptedMsgId):
+            let toolCalls = storedToolCalls.map {
+                ToolCall(
+                    name: $0.name,
+                    input: $0.input,
+                    toolId: $0.toolId,
+                    parentToolId: $0.parentToolId,
+                    textPosition: $0.textPosition
+                )
+            }
             if let convId = interruptedConvId,
                let msgId = interruptedMsgId,
                let conv = conversationStore.findConversation(withId: convId) {
@@ -179,9 +179,8 @@ struct CloudeApp: App {
                 let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
                 conversationStore.addMessage(message, to: conversation)
             }
-        }
 
-        connection.onDisconnect = { [conversationStore, connection] convId, output in
+        case .disconnect(let convId, let output):
             guard !output.text.isEmpty else { return }
             if let conv = conversationStore.findConversation(withId: convId) {
                 let message = ChatMessage(
@@ -196,71 +195,74 @@ struct CloudeApp: App {
                 }
                 output.reset()
             }
-        }
 
-        connection.onMemories = { sections in
+        case .memories(let sections):
             memorySections = sections
             isLoadingMemories = false
-        }
 
-        connection.onPlans = { stages in
+        case .plans(let stages):
             planStages = stages
             isLoadingPlans = false
-        }
 
-        connection.onPlanDeleted = { stage, filename in
+        case .planDeleted(let stage, let filename):
             planStages[stage]?.removeAll { $0.filename == filename }
-        }
 
-        connection.onRenameConversation = { [conversationStore] convId, name in
+        case .renameConversation(let convId, let name):
             if let conv = conversationStore.findConversation(withId: convId) {
                 conversationStore.renameConversation(conv, to: name)
             }
-        }
 
-        connection.onSetConversationSymbol = { [conversationStore] convId, symbol in
+        case .setConversationSymbol(let convId, let symbol):
             if let conv = conversationStore.findConversation(withId: convId) {
                 conversationStore.setConversationSymbol(conv, symbol: symbol)
             }
-        }
 
-        connection.onSessionIdReceived = { [conversationStore] convId, sessionId in
+        case .sessionIdReceived(let convId, let sessionId):
             if let conv = conversationStore.findConversation(withId: convId) {
                 conversationStore.updateSessionId(conv, sessionId: sessionId, workingDirectory: conv.workingDirectory)
             }
-        }
 
-        connection.onHistorySync = { [conversationStore] sessionId, historyMessages in
+        case .historySync(let sessionId, let historyMessages):
             if let conv = conversationStore.findConversation(withSessionId: sessionId) {
                 let newMessages = historyMessages.map { msg in
-                    let toolCalls = msg.toolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition) }
-                    return ChatMessage(isUser: msg.isUser, text: msg.text, timestamp: msg.timestamp, toolCalls: toolCalls, serverUUID: msg.serverUUID, model: msg.model)
+                    let toolCalls = msg.toolCalls.map {
+                        ToolCall(
+                            name: $0.name,
+                            input: $0.input,
+                            toolId: $0.toolId,
+                            parentToolId: $0.parentToolId,
+                            textPosition: $0.textPosition
+                        )
+                    }
+                    return ChatMessage(
+                        isUser: msg.isUser,
+                        text: msg.text,
+                        timestamp: msg.timestamp,
+                        toolCalls: toolCalls,
+                        serverUUID: msg.serverUUID,
+                        model: msg.model
+                    )
                 }
                 conversationStore.replaceMessages(conv, with: newMessages)
             }
-        }
 
-        connection.onDeleteConversation = { [conversationStore] convId in
+        case .deleteConversation(let convId):
             if let conv = conversationStore.findConversation(withId: convId) {
                 conversationStore.deleteConversation(conv)
             }
-        }
 
-        connection.onNotify = { title, body in
+        case .notify(let title, let body):
             NotificationManager.showCustomNotification(title: title, body: body)
-        }
 
-        connection.onClipboard = { text in
+        case .clipboard(let text):
             UIPasteboard.general.string = text
-        }
 
-        connection.onOpenURL = { urlString in
+        case .openURL(let urlString):
             if let url = URL(string: urlString) {
                 UIApplication.shared.open(url)
             }
-        }
 
-        connection.onHaptic = { style in
+        case .haptic(let style):
             let generator: UIImpactFeedbackGenerator
             switch style {
             case "light": generator = UIImpactFeedbackGenerator(style: .light)
@@ -270,29 +272,25 @@ struct CloudeApp: App {
             default: generator = UIImpactFeedbackGenerator(style: .medium)
             }
             generator.impactOccurred()
-        }
 
-        connection.onSpeak = { text in
+        case .speak(let text):
             let utterance = AVSpeechUtterance(string: text)
             utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
             AVSpeechSynthesizer().speak(utterance)
-        }
 
-        connection.onSwitchConversation = { [conversationStore] convId in
+        case .switchConversation(let convId):
             if let conv = conversationStore.findConversation(withId: convId) {
                 conversationStore.selectConversation(conv)
             }
-        }
 
-        connection.onQuestion = { [conversationStore] questions, convId in
+        case .question(let questions, let convId):
             if let convId = convId {
                 conversationStore.pendingQuestion = PendingQuestion(conversationId: convId, questions: questions)
             } else if let currentId = conversationStore.currentConversation?.id {
                 conversationStore.pendingQuestion = PendingQuestion(conversationId: currentId, questions: questions)
             }
-        }
 
-        connection.onScreenshot = { [conversationStore, connection] convId in
+        case .screenshot(let convId):
             DispatchQueue.main.async {
                 guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                       let window = windowScene.windows.first(where: { $0.isKeyWindow }) else { return }
@@ -323,13 +321,28 @@ struct CloudeApp: App {
                     conversationSymbol: conv.symbol
                 )
             }
-        }
 
-        connection.onConversationOutputStarted = { [windowManager] convId in
+        case .conversationOutputStarted(let convId):
             if let window = windowManager.windowForConversation(convId),
                window.id != windowManager.activeWindowId {
                 windowManager.markUnread(window.id)
             }
+
+        default:
+            break
+        }
+    }
+
+    private func loadAndConnect() {
+        NotificationManager.requestPermission()
+
+        let host = UserDefaults.standard.string(forKey: "serverHost") ?? ""
+        let portString = UserDefaults.standard.string(forKey: "serverPort") ?? "8765"
+        let token = KeychainHelper.get(key: "authToken") ?? ""
+
+        guard !host.isEmpty, !token.isEmpty, let port = UInt16(portString) else {
+            showSettings = true
+            return
         }
 
         connection.connect(host: host, port: port, token: token)

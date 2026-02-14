@@ -13,6 +13,7 @@ extension MainChatView {
 
         if text.lowercased().trimmingCharacters(in: .whitespaces) == "/usage" {
             inputText = ""
+            awaitingUsageStats = true
             connection.getUsageStats()
             return
         }
@@ -67,7 +68,7 @@ extension MainChatView {
         }
         guard let activeWindow = windowManager.activeWindow else { return }
 
-        var conversation = activeWindow.conversationId.flatMap { conversationStore.conversation(withId: $0) }
+        var conversation = activeWindow.conversation(in: conversationStore)
         if conversation == nil {
             let workingDir = activeWindowWorkingDirectory()
             conversation = conversationStore.newConversation(workingDirectory: workingDir)

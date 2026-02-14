@@ -7,16 +7,17 @@ struct SettingsView: View {
     @AppStorage("serverHost") private var serverHost = ""
     @AppStorage("serverPort") private var serverPort = "8765"
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
-    @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
+    @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("defaultCostLimitUsd") private var defaultCostLimitUsd: Double = 0
     @AppStorage("enableSuggestions") private var enableSuggestions = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
-@State private var authToken = ""
+    @State private var authToken = ""
     @State private var showToken = false
     @State private var ipCopied = false
     @State private var showUsageStats = false
     @State private var usageStats: UsageStats?
+    @State private var awaitingUsageStats = false
 
     @Environment(\.dismiss) private var dismiss
 
@@ -36,7 +37,7 @@ struct SettingsView: View {
                 processesSection
                 costLimitsSection
                 featuresSection
-ttsSection
+                ttsSection
                 usageSection
                 securitySection
                 aboutSection
@@ -65,6 +66,13 @@ ttsSection
         }
         .onChange(of: authToken) { _, newValue in
             KeychainHelper.save(key: "authToken", value: newValue)
+        }
+        .onReceive(connection.events) { event in
+            if case let .usageStats(stats) = event, awaitingUsageStats {
+                awaitingUsageStats = false
+                usageStats = stats
+                showUsageStats = true
+            }
         }
     }
 
@@ -110,77 +118,6 @@ ttsSection
             }
 
             DeviceIPRow(ipCopied: $ipCopied)
-        }
-        .listRowBackground(Color.oceanSecondary)
-    }
-
-    private var processesSection: some View {
-        Section {
-            if connection.processes.isEmpty {
-                HStack {
-                    Image(systemName: "checkmark.circle")
-                        .font(.system(size: 20))
-                        .foregroundColor(.green)
-                    Text("No Claude processes running")
-                        .foregroundColor(.secondary)
-                }
-            } else {
-                ForEach(connection.processes) { proc in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            if let name = proc.conversationName {
-                                Text(name)
-                                    .font(.system(.body, weight: .medium))
-                            } else {
-                                Text("PID \(proc.pid)")
-                                    .font(.system(.body, design: .monospaced))
-                            }
-                            HStack(spacing: 8) {
-                                if proc.conversationName != nil {
-                                    Text("PID \(proc.pid)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                if let start = proc.startTime {
-                                    Text(start, style: .relative)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                        }
-                        Spacer()
-                        Button(action: { connection.killProcess(pid: proc.pid) }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(.red)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-
-                if connection.processes.count > 1 {
-                    Button(action: { connection.killAllProcesses() }) {
-                        HStack {
-                            Image(systemName: "xmark.circle")
-                                .font(.system(size: 20))
-                            Text("Kill All Processes")
-                        }
-                        .foregroundColor(.red)
-                    }
-                }
-            }
-        } header: {
-            HStack {
-                Text("Claude Processes")
-                Spacer()
-                Button(action: { connection.getProcesses() }) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 15))
-                }
-                .buttonStyle(.plain)
-            }
-        } footer: {
-            Text("Running Claude Code processes on the Mac agent")
         }
         .listRowBackground(Color.oceanSecondary)
     }
@@ -248,13 +185,10 @@ ttsSection
         .listRowBackground(Color.oceanSecondary)
     }
 
-private var usageSection: some View {
+    private var usageSection: some View {
         Section {
             Button(action: {
-                connection.onUsageStats = { stats in
-                    usageStats = stats
-                    showUsageStats = true
-                }
+                awaitingUsageStats = true
                 connection.getUsageStats()
             }) {
                 SettingsRow(icon: "chart.bar.fill", color: .blue) {
@@ -273,82 +207,6 @@ private var usageSection: some View {
                 UsageStatsSheet(stats: stats)
             }
         }
-    }
-
-private var securitySection: some View {
-        Section {
-            if BiometricAuth.isAvailable {
-                SettingsRow(icon: BiometricAuth.biometricIcon, color: .green) {
-                    Toggle("Require \(BiometricAuth.biometricName)", isOn: $requireBiometricAuth)
-                }
-            } else {
-                SettingsRow(icon: "lock.fill", color: .gray) {
-                    Text("Biometric Auth")
-                    Spacer()
-                    Text("Not Available")
-                        .foregroundColor(.secondary)
-                }
-            }
-        } header: {
-            Text("Security")
-        }
-        .listRowBackground(Color.oceanSecondary)
-    }
-
-    private var aboutSection: some View {
-        Section {
-            SettingsRow(icon: "cloud.fill", color: .blue) {
-                Text("Cloude")
-                Spacer()
-                Text("v1.0")
-                    .foregroundColor(.secondary)
-            }
-
-            Link(destination: URL(string: "https://github.com")!) {
-                SettingsRow(icon: "questionmark.circle", color: .cyan) {
-                    Text("Help & Support")
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .font(.system(size: 15))
-                        .foregroundColor(.secondary)
-                }
-            }
-            .foregroundColor(.primary)
-        }
-        .listRowBackground(Color.oceanSecondary)
-    }
-
-    private var tailscaleSection: some View {
-        Section {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Image(systemName: "network")
-                        .font(.system(size: 20))
-                        .foregroundColor(.blue)
-                    Text("Tailscale Required")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                }
-
-                Text("Cloude connects to your Mac agent over Tailscale, a secure mesh VPN. Install Tailscale on both your iPhone and Mac to enable remote access.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Link(destination: URL(string: "https://tailscale.com/download")!) {
-                    HStack {
-                        Text("Download Tailscale")
-                            .font(.subheadline)
-                        Image(systemName: "arrow.up.right")
-                            .font(.system(size: 12))
-                    }
-                }
-            }
-            .padding(.vertical, 4)
-        } header: {
-            Text("Network")
-        }
-        .listRowBackground(Color.oceanSecondary)
     }
 
     private func connect() {

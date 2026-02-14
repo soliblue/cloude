@@ -1,63 +1,17 @@
 import SwiftUI
 import CloudeShared
 import Combine
+import HighlightSwift
 
 extension FilePreviewView {
     var currentProgress: (current: Int, total: Int)? {
-        if let progress = connection.chunkProgress, progress.path == file.path {
+        if let progress = chunkProgress {
+            return (progress.current, progress.total)
+        }
+        if let progress = connection.chunkProgress, progress.path == path {
             return (progress.current, progress.total)
         }
         return nil
-    }
-
-    @ViewBuilder
-    var content: some View {
-        if isLoading {
-            VStack(spacing: 16) {
-                if let progress = currentProgress {
-                    VStack(spacing: 8) {
-                        ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
-                            .progressViewStyle(.linear)
-                            .frame(width: 200)
-                        Text("\(progress.current + 1) of \(progress.total)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    ProgressView()
-                    Text("Loading...")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if let error = errorMessage {
-            ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
-        } else if let data = fileData {
-            fileContent(data)
-        }
-    }
-
-    @ViewBuilder
-    func fileContent(_ data: Data) -> some View {
-        if file.isImage, let image = UIImage(data: data) {
-            VStack {
-                ImagePreview(image: image)
-                if isThumbnail {
-                    thumbnailBanner
-                }
-            }
-        } else if file.isVideo {
-            VideoPreview(data: data)
-        } else if file.isAudio {
-            AudioPreview(data: data, fileName: file.name)
-        } else if file.isPDF {
-            PDFPreview(data: data)
-        } else if file.isText, let text = String(data: data, encoding: .utf8) {
-            TextPreview(text: text)
-        } else {
-            BinaryPreview(file: file, data: data)
-        }
     }
 
     var thumbnailBanner: some View {
@@ -99,43 +53,53 @@ extension FilePreviewView {
     func loadFullQuality() {
         isLoadingFullQuality = true
         loadProgress = nil
-        connection.getFileFullQuality(path: file.path)
+        connection.getFileFullQuality(path: path)
     }
 
     func loadFile() {
-        if let cached = connection.fileCache.get(file.path) {
+        if let cached = connection.fileCache.get(path) {
             fileData = cached
-            isLoading = false
+            if contentType.highlightLanguage != nil, let text = String(data: cached, encoding: .utf8) {
+                highlightCode(text)
+            } else {
+                isLoading = false
+            }
             return
         }
 
         isLoading = true
         loadProgress = nil
-        connection.getFile(path: file.path)
+        connection.getFile(path: path)
 
-        let filePath = file.path
+        let filePath = path
         connection.events
             .receive(on: DispatchQueue.main)
             .sink { event in
                 switch event {
-                case .fileChunk(let path, let chunkIndex, let totalChunks, _, _, _):
-                    guard path == filePath else { return }
+                case .fileChunk(let p, let chunkIndex, let totalChunks, _, _, _):
+                    guard p == filePath else { return }
                     withAnimation {
+                        chunkProgress = (chunkIndex, totalChunks)
                         loadProgress = (chunkIndex, totalChunks)
                     }
-                case .fileContent(let path, let data, _, _, let truncated):
-                    guard path == filePath else { return }
-                    isLoading = false
+                case .fileContent(let p, let data, _, _, let truncated):
+                    guard p == filePath else { return }
                     isLoadingFullQuality = false
                     isTruncated = truncated
                     isThumbnail = false
                     if let decoded = Data(base64Encoded: data) {
                         fileData = decoded
+                        if contentType.highlightLanguage != nil, let text = String(data: decoded, encoding: .utf8) {
+                            highlightCode(text)
+                        } else {
+                            isLoading = false
+                        }
                     } else {
                         errorMessage = "Failed to decode file"
+                        isLoading = false
                     }
-                case .fileThumbnail(let path, let data, let size):
-                    guard path == filePath else { return }
+                case .fileThumbnail(let p, let data, let size):
+                    guard p == filePath else { return }
                     isLoading = false
                     isThumbnail = true
                     fullSize = size
@@ -144,10 +108,40 @@ extension FilePreviewView {
                     } else {
                         errorMessage = "Failed to decode thumbnail"
                     }
+                case .directoryListing(let p, let entries):
+                    guard p == filePath else { return }
+                    directoryEntries = entries
+                    isLoading = false
+                case .fileError(let message):
+                    errorMessage = message
+                    isLoading = false
                 default:
                     break
                 }
             }
             .store(in: &cancellables)
+    }
+
+    func highlightCode(_ code: String) {
+        Task {
+            let highlight = Highlight()
+            let colors: HighlightColors = colorScheme == .dark ? .dark(.xcode) : .light(.xcode)
+            do {
+                let result: AttributedString
+                if let lang = contentType.highlightLanguage {
+                    result = try await highlight.attributedText(code, language: lang, colors: colors)
+                } else {
+                    result = try await highlight.attributedText(code, colors: colors)
+                }
+                await MainActor.run {
+                    highlightedCode = result
+                    isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                }
+            }
+        }
     }
 }

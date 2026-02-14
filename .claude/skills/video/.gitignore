@@ -1,4 +1,3 @@
-output/
 data/
-experiments/
-browser-data/
+browser/
+__pycache__/
