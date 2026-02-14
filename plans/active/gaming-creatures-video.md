@@ -14,7 +14,7 @@ The third compilation video (`03-gaming-creatures.mp4`) came out incredible. Thi
 
 Generated 10 pixel art character variants from `ref-creature.png` using Gemini image editing. Each prompt sends the ref creature and asks for a themed version on white background.
 
-**Reference image:** `.claude/skills/icon/ref-creature.png`
+**Reference image:** `.claude/skills/image/icon/ref-creature.png`
 
 **Prompt template:**
 ```

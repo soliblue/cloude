@@ -65,7 +65,7 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
 - `--edit` - Path to existing image to modify (sends image + prompt together)
 - `--aspect` - Aspect ratio hint: "16:9", "9:16", "square", "portrait", "landscape"
 - `--grid` - Generate multiple images in one call: "2x2" (4 images) or "3x3" (9 images)
-- `--output-dir` - Where to save (default: .claude/skills/image/output/)
+- `--output-dir` - Where to save (default: .claude/skills/image/output/misc/)
 - `--model` - Gemini model override (default: gemini-2.0-flash-exp)
 
 ## Grid Mode (Multiple Images)
@@ -116,6 +116,6 @@ This creates a grid template, sends it to Gemini asking it to fill each cell, th
 
 ## Output
 
-Default output: `.claude/.claude/skills/image/output/`
+Default output: `.claude/skills/image/output/misc/`
 
 Files are named `{output}.{ext}` where ext matches what Gemini returns (usually png).

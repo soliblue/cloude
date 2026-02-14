@@ -9,7 +9,7 @@ struct LockScreenView: View {
         VStack(spacing: 32) {
             Spacer()
 
-            Image("Logo")
+            Image("logo-transparent")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)
