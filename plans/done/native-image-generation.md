@@ -21,7 +21,7 @@ Teach Claude to use image models (primarily Nano Banana Pro / Gemini image gen) 
 - **Separate from `icon`** — no icon pipeline, no bg removal, no iOS asset management. Pure image generation.
 
 ### Also: rename `icongen` → `icon`
-- Rename skill folder `.claude/skills/icongen/` → `.claude/skills/icon/`
+- Merged icon generation into `.claude/skills/image/icon/` (removed standalone `.claude/skills/icon/`)
 - Update SKILL.md name from `icongen` to `icon`
 - Update aliases, script paths accordingly
 - Simpler, cleaner naming alongside `image`
