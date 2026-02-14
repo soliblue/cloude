@@ -34,7 +34,7 @@ cat CLAUDE.local.md
 
 ```bash
 # Get list of recent sessions (last 7 days)
-find ~/.claude/projects/-Users-soli-Desktop-CODING-cloude -name "*.jsonl" -mtime -7 -type f
+find ~/.claude/projects/-$(pwd | tr '/' '-' | sed 's/^-//') -name "*.jsonl" -mtime -7 -type f
 ```
 
 For each session, extract key content:
@@ -157,7 +157,7 @@ Parse the worker's JSON output and present to user:
 
 Present all suggestions to the user in plain text and wait for approval. Do NOT apply any changes until the user confirms which ones to proceed with.
 
-When the user approves changes that involve actionable work (not just memory edits), create a plan ticket in `plans/active/` or `plans/testing/` for each approved item.
+When the user approves changes that involve actionable work (not just memory edits), create a plan ticket in `plans/20_active/` or `plans/30_testing/` for each approved item.
 
 Only write to files after explicit approval.
 

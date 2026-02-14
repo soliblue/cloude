@@ -49,7 +49,7 @@ Provide actionable improvements:
 2. Why the change improves the code
 3. What the change looks like
 
-**Present suggestions to Soli and wait for approval.** Do NOT implement any changes until Soli says to. When Soli approves specific suggestions, create a plan ticket in `plans/active/` (or `plans/testing/` if implementing immediately) for each approved change.
+**Present suggestions to the user and wait for approval.** Do NOT implement any changes until the user says to. When the user approves specific suggestions, create a plan ticket in `plans/20_active/` (or `plans/30_testing/` if implementing immediately) for each approved change.
 
 ## Second Opinion (Codex)
 

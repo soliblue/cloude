@@ -23,7 +23,7 @@ Click "Allow" in System Settings → Privacy & Security → Automation → Termi
 ### Search contacts
 ```bash
 bash .claude/skills/contacts/contact-search.sh "Adam"           # By name
-bash .claude/skills/contacts/contact-search.sh "Soliman"         # By last name
+bash .claude/skills/contacts/contact-search.sh "Smith"            # By last name
 bash .claude/skills/contacts/contact-search.sh "knowunity"       # By company
 ```
 

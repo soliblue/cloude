@@ -32,6 +32,12 @@ struct GitChangesView: View {
         }
         .onAppear { loadStatus() }
         .refreshable { loadStatus() }
+        .onReceive(connection.events) { event in
+            if case let .gitStatus(path, status) = event, path == repoPath {
+                gitStatus = status
+                isLoading = false
+            }
+        }
     }
 
     private func statusHeader(_ status: GitStatusInfo) -> some View {
@@ -84,12 +90,6 @@ struct GitChangesView: View {
     private func loadStatus() {
         isLoading = true
         gitStatus = nil
-
-        connection.onGitStatus = { status in
-            gitStatus = status
-            isLoading = false
-        }
-
         connection.gitStatus(path: repoPath)
     }
 }

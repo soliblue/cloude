@@ -14,7 +14,7 @@ struct WindowEditSheet: View {
     @State private var isRefreshing = false
 
     private var conversation: Conversation? {
-        window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
+        window.conversation(in: conversationStore)
     }
 
     var body: some View {

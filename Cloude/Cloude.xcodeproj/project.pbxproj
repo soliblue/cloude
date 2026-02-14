@@ -81,8 +81,6 @@
 		};
 		C2B3BBB32F2619E8007FD3E4 /* Cloude Agent */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = "Cloude Agent";
 			sourceTree = "<group>";
 		};

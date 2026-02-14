@@ -30,7 +30,11 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 - **NEVER chain `cloude` commands** with `&&` or `;` — always run each `cloude` command as its own separate Bash call
 - Pass the name/symbol directly with NO quotes: `cloude rename Memory Fix` not `cloude rename "Memory Fix"`
 
-**Rebuilding the Mac agent** - You CAN rebuild the agent using `source .env && fastlane mac build_agent`. The build process will SIGKILL the old agent, wait 3s, and launch the new one. The WebSocket server has retry logic (up to 5 attempts) if the port is still in use. Deploying both agent + iOS together (`fastlane deploy`) is safe. **CRITICAL:** Always run this as the LAST thing in your response. Say everything important first, then trigger the build. The connection will drop briefly but the iOS app will reconnect automatically.
+**Rebuilding the Mac agent** - Claude Code cannot spawn inside another Claude Code session, so you MUST launch agent builds in a separate Terminal via osascript:
+```bash
+osascript -e 'tell application "Terminal" to do script "cd /Users/soli/Desktop/CODING/cloude && source .env && fastlane mac build_agent"'
+```
+**NEVER run `fastlane mac build_agent` directly** — it kills the agent hosting your session. The WebSocket server has retry logic (up to 5 attempts) if the port is still in use. The iOS app will reconnect automatically.
 
 ## Multi-Agent Workflow
 
@@ -46,22 +50,22 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 The `plans/` directory is the single source of truth for tracking work. Every change gets a ticket.
 
-**Lifecycle**: `backlog/ → next/ → active/ → testing/ → done/`
+**Lifecycle**: `00_backlog/ → 10_next/ → 20_active/ → 30_testing/ → 40_done/`
 
 **Rules:**
 - **Every code change needs a plan ticket** — if a plan already exists, move it. If not, create one.
-- **Create the ticket in `plans/active/` BEFORE writing any code** — this is non-negotiable. Plan first, implement second.
-- After implementing a change, move the plan to `testing/`
-- When Soli confirms it works, move to `done/`
-- At **5+ items in testing/**, stop adding features — tell Soli to test first
+- **Create the ticket in `plans/20_active/` BEFORE writing any code** — this is non-negotiable. Plan first, implement second.
+- After implementing a change, move the plan to `30_testing/`
+- When Soli confirms it works, move to `40_done/`
+- At **5+ items in 30_testing/**, stop adding features — tell Soli to test first
 - Other agents can read plans to understand what's in progress and avoid conflicts
 - Only move your own plans (multi-agent coordination)
 - Don't modify another agent's plan unless collaborating explicitly
 - Plans are a communication channel between agents across sessions
 
-**Ad-hoc requests** (no existing ticket): When Soli asks for a quick change that has no plan, create a small plan file directly in `testing/` after implementing it. This ensures nothing gets lost.
+**Ad-hoc requests** (no existing ticket): When Soli asks for a quick change that has no plan, create a small plan file directly in `30_testing/` after implementing it. This ensures nothing gets lost.
 
-**The `testing/` folder replaces the CLAUDE.local.md staging section** — don't duplicate tracking in both places.
+**The `30_testing/` folder replaces the CLAUDE.local.md staging section** — don't duplicate tracking in both places.
 
 ## Git Workflow
 
@@ -218,7 +222,7 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 - `ConnectionManager`: WebSocket client connecting to Mac agent
 - UI split into component files (see UI Component Map below for details)
 - **Path Links**: Full absolute paths starting with `/Users/` render as clickable file pills in tool results and inline text, opening file preview or folder browser
-- **Question UI**: `QuestionView` renders multiple-choice questions from `cloude ask` commands
+- **Question UI**: `ConversationView+Question` renders multiple-choice questions from `cloude ask` commands
 
 ### macOS Agent (Cloude Agent)
 - `WebSocketServer`: Accepts connections from iOS app, handles auth
@@ -240,7 +244,7 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 ### Security Model
 - Auth token required for all commands (256-bit, cryptographically random)
 - Token stored in macOS/iOS Keychain
-- No TLS - rely on Tailscale for encryption (see `plans/backlog/websocket-tls-security.md` for future improvements)
+- No TLS - rely on Tailscale for encryption (see `plans/00_backlog/websocket-tls-security.md` for future improvements)
 
 ### Heartbeat Execution
 
@@ -352,7 +356,7 @@ Skills extend Claude with specialized capabilities. Invoke with `/skill-name` or
 
 ### General
 - **NEVER add comments to code** - no inline comments, no docstrings, no file header comments (except the file name/module line). Code should be self-explanatory through clear naming.
-- **File size limit**: For files >150 lines, use `ParentView+Feature.swift` extensions to break down complexity (e.g., `SettingsView+Cards.swift`, `ChatView+Components.swift`)
+- **File size limit**: For files >150 lines, use `ParentView+Feature.swift` extensions to break down complexity (e.g., `SettingsView+Sections.swift`, `MessageBubble+Components.swift`)
 - Struct-first design for models and services
 - Keep views lean with small composable structs
 - Use explicit imports (no wildcards)
@@ -456,32 +460,32 @@ When the user screenshots the app and says "change this", use this map to find t
 | File browser | `FileBrowserView.swift` | Directory navigator |
 | Git view | `GitChangesView.swift` | Branch info + changed files |
 | Settings | `SettingsView.swift` | Connection, processes, config |
-| Lock screen | `LockScreenView.swift` | Biometric unlock |
+| Lock screen | `CloudeApp+LockScreen.swift` | Biometric unlock |
 
 **Header & navigation:**
 | Name | File | What it is |
 |------|------|------------|
 | Window header | `MainChatView.swift` (windowHeader) | Title pill + refresh/close buttons |
-| Title pill | `ConversationView+Components.swift:ConversationInfoLabel` | SF Symbol + name + cost |
+| Title pill | `MainChatView+ConversationInfo.swift` | SF Symbol + name + cost |
 | Switcher | `MainChatView+PageIndicator.swift` | Heart button + window dots + plus button |
 | Heartbeat button | `MainChatView+PageIndicator.swift:heartbeatIndicatorButton` | Heart icon with unread badge |
 | Window dot | `MainChatView+PageIndicator.swift:windowIndicatorButton` | Dot/symbol per window |
-| Breadcrumb | `FileViewerBreadcrumb.swift` | Clickable path segments |
-| Team banner | `TeamBannerView.swift` | Team name + colored dots |
+| Breadcrumb | `FilePreviewView+Breadcrumb.swift` | Clickable path segments |
+| Team banner | `ConversationView+TeamBanner.swift` | Team name + colored dots |
 
 **Chat components:**
 | Name | File | What it is |
 |------|------|------------|
-| Bubble | `ChatView+MessageBubble.swift:MessageBubble` | Single message container |
+| Bubble | `MessageBubble.swift` | Single message container |
 | Message list | `ConversationView+Components.swift:ChatMessageList` | All bubbles + cost banner |
-| Tool pill | `ChatView+ToolPill.swift:InlineToolPill` | Colored tool call indicator |
-| Tool sheet | `ToolDetailSheet.swift` | Full tool detail popup |
-| Cost banner | `ConversationView+Components.swift:costBannerSection` | Warning when cost is high |
+| Tool pill | `InlineToolPill.swift` | Colored tool call indicator |
+| Tool sheet | `ToolDetailSheet.swift` + `ToolDetailSheet+Content.swift` | Full tool detail popup |
+| Cost banner | `ConversationView+CostBanner.swift` | Warning when cost is high |
 | Queued bubble | `ConversationView+Components.swift:SwipeToDeleteBubble` | Swipeable pending message |
 | Scroll button | `ConversationView+Components.swift:scrollToBottomButton` | Floating down-arrow button |
-| Run stats | `ChatView+MessageBubble.swift:RunStatsView` | Duration + cost inline |
-| Slash bubble | `ChatView+MessageBubble.swift:SlashCommandBubble` | /command display |
-| Empty state | `EmptyConversationView.swift` | Pixel art character |
+| Run stats | `MessageBubble+Components.swift:RunStatsView` | Duration + cost inline |
+| Slash bubble | `MessageBubble+SlashCommand.swift:SlashCommandBubble` | /command display |
+| Empty state | `ConversationView+EmptyState.swift` | Pixel art character |
 
 **Input bar:**
 | Name | File | What it is |
@@ -501,45 +505,44 @@ When the user screenshots the app and says "change this", use this map to find t
 | Markdown view | `StreamingMarkdownView.swift` | Rendered markdown with collapsible headers |
 | Code block | `MarkdownText+Blocks.swift:CodeBlock` | Syntax-highlighted code |
 | Table | `MarkdownText+Blocks.swift:MarkdownTableView` | Bordered data table |
-| File link | `FilePathPreviewView.swift` / `InlineTextView.swift:FilePathPill` | Clickable absolute path |
+| File link | `FilePreviewView.swift` / `StreamingMarkdownView+InlineText.swift:FilePathPill` | Clickable absolute path |
 | Collapsible header | `StreamingMarkdownView.swift:HeaderSectionView` | Expandable section |
 
 **Sheets & modals:**
 | Name | File | What it is |
 |------|------|------------|
 | File preview | `FilePreviewView.swift` | Full file viewer sheet |
-| File diff | `FileDiffSheet.swift` | Git diff for a file |
-| Heartbeat sheet | `HeartbeatSheet.swift` | Heartbeat chat + controls |
-| Memories sheet | `MemoriesSheet.swift` | Tree of memory sections |
-| Plans sheet | `PlansSheet.swift` | Plan cards by stage |
+| File diff | `FilePreviewView+DiffSheet.swift` | Git diff for a file |
+| Memories sheet | `CloudeApp+MemoriesSheet.swift` | Tree of memory sections |
+| Plans sheet | `CloudeApp+PlansSheet.swift` | Plan cards by stage |
 | Window edit | `WindowEditSheet.swift` | Edit window conversation/name/symbol |
-| Symbol picker | `SymbolPickerSheet.swift` | SF Symbol grid search |
-| Question view | `QuestionView.swift` | Multiple-choice question cards |
-| Team dashboard | `TeamBannerView.swift:TeamDashboardSheet` | Teammate list + messages |
-| Teammate detail | `TeamOrbsOverlay+Detail.swift:TeammateDetailSheet` | Single teammate info |
+| Symbol picker | `WindowEditSheet+SymbolPicker.swift` | SF Symbol grid search |
+| Question view | `ConversationView+Question.swift` | Multiple-choice question cards |
+| Team dashboard | `ConversationView+TeamBanner.swift:TeamDashboardSheet` | Teammate list + messages |
+| Teammate detail | `ConversationView+TeamOrbs+Detail.swift:TeammateDetailSheet` | Single teammate info |
 
 **Team UI:**
 | Name | File | What it is |
 |------|------|------------|
-| Team orbs | `TeamOrbsOverlay.swift` | Floating teammate circles on right edge |
-| Orb | `TeamOrbsOverlay.swift:TeammateOrbRow` | Colored circle with initials + speech bubble |
-| Team summary | `ChatView+MessageBubble.swift:TeamSummaryBadge` | Overlapping circles in chat |
+| Team orbs | `ConversationView+TeamOrbs.swift` | Floating teammate circles on right edge |
+| Orb | `ConversationView+TeamOrbs.swift:TeammateOrbRow` | Colored circle with initials + speech bubble |
+| Team summary | `MessageBubble.swift:TeamSummaryBadge` | Overlapping circles in chat |
 
 **Settings components:**
 | Name | File | What it is |
 |------|------|------------|
 | Connection card | `SettingsView+Components.swift:ConnectionStatusCard` | Status dot + connect button |
-| Process list | `SettingsView.swift:processesSection` | Running processes + kill buttons |
+| Process list | `SettingsView+Sections.swift:processesSection` | Running processes + kill buttons |
 
 **Shared utilities:**
 | Name | File | What it is |
 |------|------|------------|
-| Status logo | `ConnectionStatusLogo.swift` | Logo with pulse during runs |
-| Shimmer | `ChatView+ToolPill.swift:ShimmerOverlay` | Gradient shimmer on executing tools |
-| CSV table | `CSVTableView.swift` | Scrollable data table |
-| JSON tree | `JSONTreeView.swift` | Collapsible JSON hierarchy |
+| Status logo | `CloudeApp+StatusLogo.swift` | Logo with pulse during runs |
+| Shimmer | `InlineToolPill.swift:ShimmerOverlay` | Gradient shimmer on executing tools |
+| CSV table | `FilePreviewView+CSVTable.swift` | Scrollable data table |
+| JSON tree | `FilePreviewView+JSONTree.swift` | Collapsible JSON hierarchy |
 | Diff text | `GitDiffView+Components.swift:DiffTextView` | Colored diff lines |
-| Waveform | `AudioWaveformView.swift` | Animated audio bars |
+| Waveform | `GlobalInputBar+AudioWaveform.swift` | Animated audio bars |
 
 ---
 

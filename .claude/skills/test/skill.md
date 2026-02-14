@@ -8,7 +8,7 @@ aliases: [check, testing]
 
 # Test Skill
 
-Manage the testing workflow. The `plans/testing/` folder is the source of truth for what needs testing.
+Manage the testing workflow. The `plans/30_testing/` folder is the source of truth for what needs testing.
 
 ## Flags
 
@@ -36,7 +36,7 @@ cd Cloude && agvtool what-version -terse
 
 ### 2. Read All Testing Plans
 
-Read every file in `plans/testing/` and extract:
+Read every file in `plans/30_testing/` and extract:
 - Filename (without path or extension)
 - `<!-- build: X -->` metadata (if present)
 - Title (first H1 heading)
@@ -64,22 +64,22 @@ Keep testing instructions concise and actionable. Avoid verbose explanations.
 
 ### 5. Send Interactive Testing Checklist
 
-Use multiple `cloude notify` commands or a structured message to surface the testing checklist. If there are 3+ features, consider asking Soli which ones to prioritize.
+Use multiple `cloude notify` commands or a structured message to surface the testing checklist. If there are 3+ features, consider asking the user which ones to prioritize.
 
 Show the count prominently: "**X items ready to test (Build YY)**"
 
 ## After Testing
 
-When Soli confirms items pass:
+When the user confirms items pass:
 
-1. Move the plan file from `plans/testing/` to `plans/done/`
+1. Move the plan file from `plans/30_testing/` to `plans/40_done/`
 2. If all items tested, suggest deploying
 
 ## Blocking Rule
 
-If 5+ items in `plans/testing/`:
+If 5+ items in `plans/30_testing/`:
 - Don't add new features
-- Tell Soli to test first
+- Tell the user to test first
 - Focus on bug fixes or docs only
 
 ## After Deploy

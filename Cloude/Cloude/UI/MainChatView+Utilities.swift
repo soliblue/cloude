@@ -41,18 +41,6 @@ extension MainChatView {
         )
     }
 
-    func setupGitStatusHandler() {
-        connection.onGitStatus = { status in
-            if let dir = pendingGitChecks.first {
-                pendingGitChecks.removeFirst()
-                if !status.branch.isEmpty {
-                    gitBranches[dir] = status.branch
-                }
-                checkNextGitDirectory()
-            }
-        }
-    }
-
     func checkGitForAllDirectories() {
         pendingGitChecks = conversationStore.uniqueWorkingDirectories
             .filter { gitBranches[$0] == nil }
@@ -81,23 +69,6 @@ extension MainChatView {
         connection.searchFiles(query: query, workingDirectory: workingDir)
     }
 
-    func setupFileSearchHandler() {
-        connection.onFileSearchResults = { files, _ in
-            fileSearchResults = files
-        }
-    }
-
-    func setupSuggestionsHandler() {
-        connection.onSuggestionsResult = { newSuggestions, convId in
-            guard let activeWindow = windowManager.activeWindow,
-                  activeWindow.conversationId == convId,
-                  inputText.isEmpty else { return }
-            withAnimation(.easeIn(duration: 0.2)) {
-                suggestions = newSuggestions
-            }
-        }
-    }
-
     func requestSuggestions() {
         guard let conv = currentConversation,
               !conv.messages.isEmpty else { return }
@@ -105,16 +76,6 @@ extension MainChatView {
         let context = recent.map { $0.text }
         let workingDir = activeWindowWorkingDirectory()
         connection.requestSuggestions(context: context, workingDirectory: workingDir, conversationId: conv.id)
-    }
-
-    func setupCostHandler() {
-        connection.onLastAssistantMessageCostUpdate = { [conversationStore] convId, costUsd in
-            guard let conversation = conversationStore.conversation(withId: convId),
-                  let lastAssistantMsg = conversation.messages.last(where: { !$0.isUser }) else { return }
-            conversationStore.updateMessage(lastAssistantMsg.id, in: conversation) { msg in
-                msg.costUsd = costUsd
-            }
-        }
     }
 
     func fetchLatestScreenshot() {

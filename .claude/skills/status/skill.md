@@ -12,12 +12,12 @@ Get a quick overview of where things stand.
 
 ## Check These
 
-1. **Testing Queue** (plans/testing/)
+1. **Testing Queue** (plans/30_testing/)
    ```bash
-   ls plans/testing/ 2>/dev/null | grep -c .md
+   ls plans/30_testing/ 2>/dev/null | grep -c .md
    ```
-   - Count items in `plans/testing/`
-   - **WARN if 5+ items** — stop adding features, ask Soli to test first
+   - Count items in `plans/30_testing/`
+   - **WARN if 5+ items** — stop adding features, ask the user to test first
    - List the items briefly
 
 2. **Last Deploy** (CLAUDE.local.md)
@@ -35,7 +35,7 @@ Get a quick overview of where things stand.
 
 4. **Open Plans**
    ```bash
-   ls plans/active/ plans/next/ 2>/dev/null
+   ls plans/20_active/ plans/10_next/ 2>/dev/null
    ```
    Read any active plans to understand ongoing work.
 
@@ -55,5 +55,5 @@ Summarize concisely:
 **If 5+ items awaiting test:**
 ```
 TESTING QUEUE FULL - X items awaiting test
-Stop adding features until Soli tests. Ask: "Ready to test the staging items?"
+Stop adding features until the user tests. Ask: "Ready to test the staging items?"
 ```

@@ -27,6 +27,7 @@ struct MainChatView: View {
     @State var showConversationSearch = false
     @State var showUsageStats = false
     @State var usageStats: UsageStats?
+    @State var awaitingUsageStats = false
     @State var refreshingSessionIds: Set<String> = []
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
@@ -35,7 +36,7 @@ struct MainChatView: View {
         if isHeartbeatActive {
             return conversationStore.heartbeatConversation
         } else {
-            return windowManager.activeWindow?.conversationId.flatMap { conversationStore.conversation(withId: $0) }
+            return windowManager.activeWindow?.conversation(in: conversationStore)
         }
     }
 
@@ -117,56 +118,11 @@ struct MainChatView: View {
         }
         .onAppear {
             initializeFirstWindow()
-            setupGitStatusHandler()
-            setupFileSearchHandler()
-            setupSuggestionsHandler()
-            setupCostHandler()
             checkGitForAllDirectories()
             currentEffort = currentConversation?.defaultEffort
             currentModel = currentConversation?.defaultModel
-            connection.onTranscription = { text in
-                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-                let isBlank = trimmed.isEmpty ||
-                    trimmed.contains("blank_audio") ||
-                    trimmed.contains("blank audio") ||
-                    trimmed.contains("silence") ||
-                    trimmed.contains("no speech") ||
-                    trimmed.contains("inaudible") ||
-                    trimmed == "you" ||
-                    trimmed == "thanks for watching"
-                if !isBlank {
-                    if inputText.isEmpty {
-                        inputText = text
-                    } else {
-                        inputText += " " + text
-                    }
-                }
-                AudioRecorder.clearPendingAudioFile()
-            }
-            connection.onTTSAudio = { data, messageId in
-                TTSService.shared.playAudio(data, messageId: messageId)
-            }
             TTSService.shared.onSynthesizeRequest = { [connection] text, messageId, voice in
                 connection.synthesize(text: text, messageId: messageId, voice: voice)
-            }
-            connection.onUsageStats = { stats in
-                usageStats = stats
-                showUsageStats = true
-            }
-            connection.onAuthenticated = { [conversationStore, connection] in
-                for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
-                    let output = connection.output(for: conv.id)
-                    if !output.isRunning {
-                        conversationStore.replayQueuedMessages(conversation: conv, connection: connection)
-                    }
-                }
-                let heartbeat = conversationStore.heartbeatConversation
-                if !heartbeat.pendingMessages.isEmpty {
-                    let output = connection.output(for: Heartbeat.conversationId)
-                    if !output.isRunning {
-                        conversationStore.replayQueuedMessages(conversation: heartbeat, connection: connection)
-                    }
-                }
             }
         }
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
@@ -258,12 +214,11 @@ struct MainChatView: View {
                     .background(Color.oceanBackground)
             }
         }
-        .onReceive(connection.events) { event in
-            switch event {
-            case .historySync(let sessionId, _), .historySyncError(let sessionId, _):
-                refreshingSessionIds.remove(sessionId)
-            default: break
-            }
+        .onReceive(connection.events, perform: handleConnectionEvent)
+        // Fallback: a PassthroughSubject can be missed if this view isn't mounted yet.
+        .onChange(of: connection.isAuthenticated) { _, authed in
+            guard authed else { return }
+            replayQueuedMessagesIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             isKeyboardVisible = true
@@ -297,179 +252,5 @@ struct MainChatView: View {
             conversationStore: conversationStore,
             connection: connection
         ))
-    }
-
-    @ViewBuilder
-    func pagedWindowContent(for window: ChatWindow) -> some View {
-        let conversation = window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
-
-        VStack(spacing: 0) {
-            windowHeader(for: window, conversation: conversation)
-
-            switch window.type {
-            case .chat:
-                ConversationView(
-                    connection: connection,
-                    store: conversationStore,
-                    conversation: conversation,
-                    window: window,
-                    windowManager: windowManager,
-                    isCompact: false,
-                    isKeyboardVisible: isKeyboardVisible,
-                    onInteraction: { dismissKeyboard() },
-                    onSelectRecentConversation: { conv in
-                        windowManager.linkToCurrentConversation(window.id, conversation: conv)
-                    },
-                    onNewConversation: {
-                        let workingDir = activeWindowWorkingDirectory()
-                        let newConv = conversationStore.newConversation(workingDirectory: workingDir)
-                        windowManager.linkToCurrentConversation(window.id, conversation: newConv)
-                    }
-                )
-            case .files:
-                FileBrowserView(
-                    connection: connection,
-                    rootPath: conversation?.workingDirectory
-                )
-            case .gitChanges:
-                GitChangesView(
-                    connection: connection,
-                    rootPath: conversation?.workingDirectory
-                )
-            }
-        }
-    }
-
-    func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
-        return HStack(spacing: 9) {
-            Button(action: {
-                windowManager.setActive(window.id)
-                editingWindow = window
-            }) {
-                ConversationInfoLabel(
-                    conversation: conversation,
-                    showCost: true,
-                    placeholderText: "Select chat..."
-                )
-                .padding(.horizontal, 7)
-                .padding(.vertical, 7)
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            if let conv = conversation, conv.sessionId != nil {
-                Button(action: {
-                    windowManager.setActive(window.id)
-                    if let newConv = conversationStore.duplicateConversation(conv) {
-                        windowManager.linkToCurrentConversation(window.id, conversation: newConv)
-                    }
-                }) {
-                    Image(systemName: "arrow.triangle.branch")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.secondary)
-                        .padding(7)
-                }
-                .buttonStyle(.plain)
-
-                Divider()
-                    .frame(height: 20)
-            }
-
-            Button(action: {
-                windowManager.setActive(window.id)
-                refreshConversation(for: window)
-            }) {
-                if let sid = window.conversationId.flatMap({ conversationStore.conversation(withId: $0)?.sessionId }), refreshingSessionIds.contains(sid) {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                        .frame(width: 15, height: 15)
-                        .padding(7)
-                } else {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.secondary)
-                        .padding(7)
-                }
-            }
-            .buttonStyle(.plain)
-            .disabled(
-                window.conversationId.map({ connection.output(for: $0).isRunning }) ?? false ||
-                window.conversationId.flatMap({ conversationStore.conversation(withId: $0)?.sessionId }).map({ refreshingSessionIds.contains($0) }) ?? false
-            )
-
-            Divider()
-                .frame(height: 20)
-
-            Button(action: {
-                windowManager.setActive(window.id)
-                windowManager.removeWindow(window.id)
-            }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .padding(7)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 7)
-        .padding(.vertical, 7)
-        .background(Color.oceanSecondary)
-    }
-
-    private func refreshConversation(for window: ChatWindow) {
-        guard let convId = window.conversationId,
-              let conv = conversationStore.conversation(withId: convId),
-              let sessionId = conv.sessionId,
-              let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
-        refreshingSessionIds.insert(sessionId)
-        let messages = conversationStore.messages(for: conv)
-        if let lastUserIndex = messages.lastIndex(where: { $0.isUser }) {
-            conversationStore.truncateMessages(for: conv, from: lastUserIndex + 1)
-        }
-        connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
-    }
-}
-
-struct HeartbeatIntervalModifier: ViewModifier {
-    @Binding var showIntervalPicker: Bool
-    var conversationStore: ConversationStore
-    var connection: ConnectionManager
-
-    func body(content: Content) -> some View {
-        content
-            .confirmationDialog("Heartbeat Interval", isPresented: $showIntervalPicker, titleVisibility: .visible) {
-                ForEach(HeartbeatConfig.intervalOptions, id: \.minutes) { option in
-                    Button(option.label) {
-                        let value = option.minutes == 0 ? nil : option.minutes
-                        conversationStore.heartbeatConfig.intervalMinutes = value
-                        connection.send(.setHeartbeatInterval(minutes: value))
-                    }
-                }
-            }
-            .onAppear {
-                connection.onHeartbeatConfig = { [conversationStore] intervalMinutes, unreadCount in
-                    conversationStore.handleHeartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount)
-                }
-            }
-    }
-}
-
-struct StreamingPulseModifier: ViewModifier {
-    let isStreaming: Bool
-    @State private var isPulsing = false
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(isPulsing ? 0.4 : 1.0)
-            .animation(isPulsing ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true) : .linear(duration: 0.15), value: isPulsing)
-            .onChange(of: isStreaming) { _, streaming in
-                withAnimation(streaming ? nil : .linear(duration: 0.15)) {
-                    isPulsing = streaming
-                }
-            }
-            .onAppear {
-                if isStreaming { isPulsing = true }
-            }
     }
 }

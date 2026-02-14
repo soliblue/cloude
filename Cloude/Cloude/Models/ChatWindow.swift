@@ -43,4 +43,8 @@ struct ChatWindow: Identifiable, Codable {
     private enum CodingKeys: String, CodingKey {
         case id, type, conversationId
     }
+
+    func conversation(in store: ConversationStore) -> Conversation? {
+        conversationId.flatMap { store.conversation(withId: $0) }
+    }
 }

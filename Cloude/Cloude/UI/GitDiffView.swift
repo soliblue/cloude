@@ -28,6 +28,15 @@ struct GitDiffView: View {
             }
             .onAppear { loadDiff() }
         }
+        .onReceive(connection.events) { event in
+            if case let .gitDiff(path, diffText) = event {
+                // Server returns the file path; match against the requested file.
+                if path == file.path || path.hasSuffix("/" + file.path) {
+                    diff = diffText
+                    isLoading = false
+                }
+            }
+        }
     }
 
     private var fileHeader: some View {
@@ -88,12 +97,6 @@ struct GitDiffView: View {
     private func loadDiff() {
         isLoading = true
         diff = nil
-
-        connection.onGitDiff = { _, diffText in
-            diff = diffText
-            isLoading = false
-        }
-
         connection.gitDiff(path: repoPath, file: file.path)
     }
 }

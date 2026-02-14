@@ -2,6 +2,7 @@ import Foundation
 import CloudeShared
 
 struct PlansService {
+    static let stageFolders = ["00_backlog", "10_next", "20_active", "30_testing", "40_done"]
     static let stages = ["backlog", "next", "active", "testing", "done"]
 
     static func readPlans(workingDirectory: String) -> [String: [PlanItem]] {
@@ -9,8 +10,8 @@ struct PlansService {
         let fm = FileManager.default
         var result: [String: [PlanItem]] = [:]
 
-        for stage in stages {
-            let stageDir = (plansDir as NSString).appendingPathComponent(stage)
+        for (folder, stage) in zip(stageFolders, stages) {
+            let stageDir = (plansDir as NSString).appendingPathComponent(folder)
             guard let files = try? fm.contentsOfDirectory(atPath: stageDir) else {
                 result[stage] = []
                 continue
@@ -33,11 +34,12 @@ struct PlansService {
     }
 
     static func deletePlan(stage: String, filename: String, workingDirectory: String) {
-        guard stages.contains(stage) else { return }
+        guard let index = stages.firstIndex(of: stage) else { return }
         guard !filename.contains("/") && !filename.contains("..") else { return }
+        let folder = stageFolders[index]
         let path = (workingDirectory as NSString)
             .appendingPathComponent("plans")
-            .appending("/\(stage)/\(filename)")
+            .appending("/\(folder)/\(filename)")
         try? FileManager.default.removeItem(atPath: path)
     }
 

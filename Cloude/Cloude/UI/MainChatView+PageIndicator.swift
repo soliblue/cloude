@@ -93,7 +93,7 @@ extension MainChatView {
             let isActive = currentPageIndex == index + 1
             let convId = window.conversationId
             let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
-            let conversation = window.conversationId.flatMap { conversationStore.conversation(withId: $0) }
+            let conversation = window.conversation(in: conversationStore)
 
             let hasUnread = windowManager.unreadWindowIds.contains(window.id)
 

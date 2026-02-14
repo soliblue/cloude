@@ -74,10 +74,20 @@ If the agent is not running, always build and launch it.
 This ensures deterministic execution — no skipped steps, no placeholders, no variance.
 
 - **iOS deployment**: `.claude/skills/deploy/deploy-ios.sh`
-- **Mac agent**: `source .env && fastlane mac build_agent`
+- **Mac agent**: Must be launched via `osascript` in a new Terminal window (see below)
 - **Both**: Git push, then run both scripts
 
 If a script fails, report the error and stop. Do not attempt manual commands.
+
+## CRITICAL: Mac Agent Build Must Run in Separate Terminal
+
+Claude Code cannot spawn inside another Claude Code session. Since the Mac agent build kills the running agent (which hosts this Claude Code process), you MUST launch it in a separate Terminal window using `osascript`:
+
+```bash
+osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --show-toplevel) && source .env && fastlane mac build_agent"'
+```
+
+**NEVER run `fastlane mac build_agent` directly** — it will either fail or kill your own session.
 
 ## Deployment Steps
 
@@ -122,13 +132,13 @@ Fails if phone is not connected (no TestFlight fallback).
 **Both (default when in doubt):**
 ```bash
 # Git push first, then deploy both
-source .env && fastlane mac build_agent
+osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --show-toplevel) && source .env && fastlane mac build_agent"'
 .claude/skills/deploy/deploy-ios.sh
 ```
 
 **Mac agent only:**
 ```bash
-source .env && fastlane mac build_agent
+osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --show-toplevel) && source .env && fastlane mac build_agent"'
 ```
 
 **iOS only:**
@@ -155,14 +165,14 @@ Report it clearly: "Deployed Build XX to TestFlight" or "Installed Build XX dire
 
 ### 2. Tag Testing Plans with Build Number (REQUIRED)
 
-Stamp all plans in `plans/testing/` that don't already have a `<!-- build: -->` tag with the current build number. This records which build a feature shipped in for testing. Plans move to `done/` independently when Soli confirms they work — NOT at deploy time.
+Stamp all plans in `plans/30_testing/` that don't already have a `<!-- build: -->` tag with the current build number. This records which build a feature shipped in for testing. Plans move to `done/` independently when the user confirms they work — NOT at deploy time.
 
 ```bash
 python3 -c "
 import os, glob
 build = os.popen('cd Cloude && agvtool what-version -terse').read().strip()
 tagged = []
-for f in glob.glob('plans/testing/*.md'):
+for f in glob.glob('plans/30_testing/*.md'):
     with open(f) as fh:
         content = fh.read()
     if '<!-- build:' not in content:
@@ -180,7 +190,7 @@ if tagged:
 "
 ```
 
-After the script runs, **include the plan titles in your deploy summary** so Soli can see exactly what's shipping. Example:
+After the script runs, **include the plan titles in your deploy summary** so the user can see exactly what's shipping. Example:
 
 > Deployed Build 66. Plans in this deploy:
 > - Tool Pill Compact Spacing
@@ -190,7 +200,7 @@ After the script runs, **include the plan titles in your deploy summary** so Sol
 
 After successful deploy, update ALL of these:
 1. Update "Last deploy" line in CLAUDE.local.md Notes section with date, build number, and brief description
-2. Ensure any features just deployed have a corresponding plan in `plans/testing/` (the source of truth for what needs testing)
+2. Ensure any features just deployed have a corresponding plan in `plans/30_testing/` (the source of truth for what needs testing)
 
 ## How Deploy Works (Mac Agent Restart)
 
@@ -204,8 +214,8 @@ The WebSocket server has built-in retry logic — if port 8765 is still in use, 
 
 ## Important Notes
 
-- **CRITICAL**: Always run the deployment command as the LAST thing in your response. The connection will drop briefly when the Mac agent restarts.
-- **Deploying both is the default** — `fastlane deploy` handles Mac agent + iOS together safely
+- **CRITICAL**: Mac agent builds MUST use the `osascript` Terminal approach — never run fastlane mac build_agent directly
+- **Deploying both is the default** — run osascript for agent + deploy script for iOS
 - Always prefix fastlane commands with `source .env &&` to load API credentials
 - Get confirmation before pushing to git
 - If iOS signing fails, check App Store Connect certificates
