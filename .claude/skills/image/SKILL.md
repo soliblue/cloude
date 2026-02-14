@@ -12,7 +12,7 @@ parameters:
 
 # Image Generation Skill
 
-Generate images using Gemini's native image generation. Separate from the `icon` skill — no background removal, no iOS asset pipeline. Pure image generation and editing.
+Generate images using Gemini's native image generation. For app icons (bg removal + iOS asset pipeline), use the icon script at `.claude/skills/image/icon/generate.py`.
 
 ## When to Use This Skill
 
@@ -25,7 +25,7 @@ Generate an image when:
 - User explicitly asks for an image, drawing, illustration, or photo
 
 Do NOT use this skill when:
-- Generating app icons (use the `icon` skill instead — it has bg removal + iOS asset pipeline)
+- Generating app icons via pure text-to-image. Use `.claude/skills/image/icon/generate.py` instead (bg removal + iOS asset pipeline).
 - The user needs code, not visuals
 - A text description is sufficient and the user hasn't asked for an image
 

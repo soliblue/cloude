@@ -1,0 +1,6 @@
+.DS_Store
+
+# Python bytecode caches inside skills
+skills/**/__pycache__/
+skills/**/*.pyc
+
