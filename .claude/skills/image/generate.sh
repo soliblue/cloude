@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-OUTPUT_DIR="$SCRIPT_DIR/output"
+OUTPUT_DIR="$SCRIPT_DIR/output/misc"
 MODEL="${GEMINI_MODEL:-gemini-3-pro-image-preview}"
 API_BASE="https://generativelanguage.googleapis.com/v1beta/models"
 
@@ -13,7 +13,7 @@ Usage: generate.sh --prompt "description" [options]
 Options:
   --prompt TEXT        Image description (required)
   --output NAME        Output filename without extension (default: image-TIMESTAMP)
-  --output-dir DIR     Output directory (default: skills/image/output/)
+  --output-dir DIR     Output directory (default: .claude/skills/image/output/misc/)
   --edit PATH          Existing image to edit (sends image + prompt to Gemini)
   --aspect RATIO       Aspect ratio hint in prompt (e.g. "16:9", "square", "portrait")
   --grid SPEC          Generate multiple images in a grid (e.g. "2x2", "3x3")

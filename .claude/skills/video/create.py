@@ -2,7 +2,8 @@ import asyncio, json, sys, os, time, requests
 from playwright.async_api import async_playwright
 
 BROWSER_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'browser-data')
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
+# Keep raw downloads separate from curated outputs under `output/shorts`, `output/reviews`, etc.
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output', 'raw')
 PROXY_API_URL = 'https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&country_code__in=US&page_size=1'
 
 async def get_proxy():
@@ -159,6 +160,7 @@ async def snapshot_draft_ids(page):
 
 async def download_videos(page, proxy, task_ids, prompts, pre_draft_ids=None):
     print("\nFetching download URLs...")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     proxy_url = f"http://{proxy['username']}:{proxy['password']}@{proxy['server'].replace('http://', '')}"
     downloaded = []
     target_count = len(task_ids)
