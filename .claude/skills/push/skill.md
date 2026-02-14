@@ -24,9 +24,9 @@ If unsure, ASK before committing.
 
 1. **Check testing gate**
    ```bash
-   ls plans/testing/ 2>/dev/null | grep -c .md
+   ls plans/30_testing/ 2>/dev/null | grep -c .md
    ```
-   - If **5+ items** in `plans/testing/`, warn: "Testing queue is full (X items). Consider running /test before adding more."
+   - If **5+ items** in `plans/30_testing/`, warn: "Testing queue is full (X items). Consider running /test before adding more."
    - Don't block the push, just warn.
 
 2. **Review changes**
@@ -60,7 +60,7 @@ If unsure, ASK before committing.
 
 6. **Plan ticket check**
    After pushing, check if there's a matching plan in `plans/` for the work just committed:
-   - If no matching plan exists, create a small plan file directly in `plans/testing/` describing what was just pushed
+   - If no matching plan exists, create a small plan file directly in `plans/30_testing/` describing what was just pushed
    - Every code change needs a plan ticket — this ensures nothing gets lost
 
 ## Important

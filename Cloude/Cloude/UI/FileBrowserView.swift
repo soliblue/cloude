@@ -29,6 +29,13 @@ struct FileBrowserView: View {
         .onAppear {
             loadDirectory()
         }
+        .onReceive(connection.events) { event in
+            if case let .directoryListing(path, newEntries) = event {
+                currentPath = path
+                entries = newEntries
+                isLoading = false
+            }
+        }
     }
 
     private var fileList: some View {
@@ -62,11 +69,5 @@ struct FileBrowserView: View {
         isLoading = true
         entries = []
         connection.listDirectory(path: currentPath)
-
-        connection.onDirectoryListing = { path, newEntries in
-            currentPath = path
-            entries = newEntries
-            isLoading = false
-        }
     }
 }

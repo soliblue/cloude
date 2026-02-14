@@ -32,22 +32,22 @@ struct GlobalInputBar: View {
     @Binding var currentModel: ModelSelection?
 
     @State private var selectedItem: PhotosPickerItem?
-    @State private var showPhotoPicker = false
-    @State private var showFilePicker = false
-    @FocusState private var isInputFocused: Bool
-    @StateObject private var audioRecorder = AudioRecorder()
+    @State var showPhotoPicker = false
+    @State var showFilePicker = false
+    @FocusState var isInputFocused: Bool
+    @StateObject var audioRecorder = AudioRecorder()
     @State private var placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
     @State private var textFieldId = UUID()
-    @State private var swipeOffset: CGFloat = 0
-    @State private var horizontalSwipeOffset: CGFloat = 0
-    @State private var isSwipingToRecord = false
-    @State private var showInputBar = true
-    @State private var showRecordingOverlay = false
+    @State var swipeOffset: CGFloat = 0
+    @State var horizontalSwipeOffset: CGFloat = 0
+    @State var isSwipingToRecord = false
+    @State var showInputBar = true
+    @State var showRecordingOverlay = false
     @State private var idleTime: Date = Date()
-    @State private var showStopButton = false
+    @State var showStopButton = false
     @State private var fileSearchDebounce: Task<Void, Never>?
 
-    private enum Constants {
+    enum Constants {
         static let swipeThreshold: CGFloat = 60
         static let transitionDuration: Double = 0.15
         static let stopButtonDelay: TimeInterval = 3.0
@@ -149,6 +149,7 @@ struct GlobalInputBar: View {
                     onSelect: { command in
                         inputText = "/\(command.resolvesTo ?? command.name)"
                         if !command.hasParameters {
+                            isInputFocused = false
                             onSend()
                         } else {
                             inputText += " "
@@ -317,16 +318,8 @@ struct GlobalInputBar: View {
         }
     }
 
-    private var canSend: Bool {
+    var canSend: Bool {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachedImages.isEmpty || !attachedFiles.isEmpty
-    }
-
-    private var willQueue: Bool {
-        isRunning && canSend
-    }
-
-    private var shouldShowStopButton: Bool {
-        isRunning && showStopButton && !isInputFocused
     }
 
     private var inputRow: some View {
@@ -359,160 +352,6 @@ struct GlobalInputBar: View {
         }
     }
 
-    private var actionButtonIcon: String {
-        if shouldShowStopButton { return "stop.fill" }
-        if willQueue { return "clock.fill" }
-        return "paperplane.fill"
-    }
-
-    @ViewBuilder
-    private var actionButton: some View {
-        if shouldShowStopButton {
-            Button(action: { onStop?() }) {
-                actionButtonLabel
-            }
-        } else {
-            Menu {
-                Button(action: { showPhotoPicker = true }) {
-                    Label("Photo", systemImage: "photo")
-                }
-
-                Button(action: { showFilePicker = true }) {
-                    Label("File", systemImage: "doc")
-                }
-
-                Button(action: startRecording) {
-                    Label("Record", systemImage: "mic.fill")
-                }
-                .disabled(!canRecord)
-
-                Divider()
-
-                Menu {
-                    Button(action: { setEffort(nil) }) {
-                        Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
-                    }
-                    ForEach(EffortLevel.allCases, id: \.self) { level in
-                        Button(action: { setEffort(level) }) {
-                            Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
-                        }
-                    }
-                } label: {
-                    Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
-                }
-
-                Menu {
-                    Button(action: { setModel(nil) }) {
-                        Label("Auto", systemImage: currentModel == nil ? "checkmark" : "circle")
-                    }
-                    ForEach(ModelSelection.allCases, id: \.self) { model in
-                        Button(action: { setModel(model) }) {
-                            Label(model.displayName, systemImage: currentModel == model ? "checkmark" : "circle")
-                        }
-                    }
-                } label: {
-                    Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
-                }
-            } label: {
-                actionButtonLabel
-            } primaryAction: {
-                onSend()
-            }
-        }
-    }
-
-    private var actionButtonLabel: some View {
-        Image(systemName: actionButtonIcon)
-            .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(canSend || shouldShowStopButton ? .white : .accentColor.opacity(0.4))
-            .frame(width: 36, height: 36)
-            .background(canSend || shouldShowStopButton ? Color.accentColor : Color.clear)
-            .clipShape(Circle())
-            .contentShape(Circle().inset(by: -8))
-            .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
-            .animation(.easeInOut(duration: 0.2), value: canSend)
-    }
-
-    private var inputBarDragGesture: some Gesture {
-        DragGesture(minimumDistance: 10)
-            .onChanged { value in
-                let verticalDrag = -value.translation.height
-                let horizontalDrag = -value.translation.width
-
-                if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
-                    isSwipingToRecord = true
-                    swipeOffset = verticalDrag
-                    horizontalSwipeOffset = 0
-                } else if horizontalDrag > abs(verticalDrag) && !inputText.isEmpty {
-                    horizontalSwipeOffset = horizontalDrag
-                    swipeOffset = 0
-                    isSwipingToRecord = false
-                }
-            }
-            .onEnded { value in
-                let verticalDrag = -value.translation.height
-                let horizontalDrag = -value.translation.width
-
-                if verticalDrag >= Constants.swipeThreshold && canRecord && isSwipingToRecord {
-                    startRecording()
-                } else if horizontalDrag >= Constants.swipeThreshold && !inputText.isEmpty {
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        inputText = ""
-                        attachedImages = []
-                        attachedFiles = []
-                    }
-                }
-
-                withAnimation(.easeOut(duration: 0.2)) {
-                    swipeOffset = 0
-                    horizontalSwipeOffset = 0
-                    isSwipingToRecord = false
-                }
-            }
-    }
-
-    private var canRecord: Bool {
-        isConnected && isWhisperReady && !audioRecorder.isTranscribing
-    }
-
-    private func startRecording() {
-        audioRecorder.requestPermission { granted in
-            if granted {
-                UIApplication.shared.isIdleTimerDisabled = true
-                withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-                    showInputBar = false
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
-                    audioRecorder.startRecording()
-                    withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-                        showRecordingOverlay = true
-                    }
-                }
-            }
-        }
-    }
-
-    private func stopRecording() {
-        UIApplication.shared.isIdleTimerDisabled = false
-        let data = audioRecorder.stopRecording()
-        withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-            showRecordingOverlay = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
-            withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-                showInputBar = true
-            }
-            if let data = data {
-                onTranscribe?(data)
-            }
-        }
-    }
-
-    private func resendPendingAudio() {
-        if let data = audioRecorder.pendingAudioData() {
-            onTranscribe?(data)
-        }
-    }
 
     private func selectFile(_ file: String) {
         guard let atIndex = inputText.lastIndex(of: "@") else { return }
@@ -521,11 +360,4 @@ struct GlobalInputBar: View {
         inputText = beforeAt + "@" + fileName + " "
     }
 
-    private func setEffort(_ level: EffortLevel?) {
-        currentEffort = level
-    }
-
-    private func setModel(_ model: ModelSelection?) {
-        currentModel = model
-    }
 }

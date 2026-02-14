@@ -2,7 +2,6 @@ import SwiftUI
 import AVKit
 import AVFoundation
 import PDFKit
-import CloudeShared
 
 struct ImagePreview: View {
     let image: UIImage
@@ -150,46 +149,3 @@ struct PDFPreview: UIViewRepresentable {
     func updateUIView(_ uiView: PDFView, context: Context) {}
 }
 
-struct TextPreview: View {
-    let text: String
-
-    var body: some View {
-        ScrollView(showsIndicators: false) {
-            Text(text)
-                .font(.system(size: 12, design: .monospaced))
-                .textSelection(.enabled)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-}
-
-struct BinaryPreview: View {
-    let file: FileEntry
-    let data: Data
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: file.icon)
-                .font(.system(size: 64))
-                .foregroundColor(.secondary)
-
-            Text(file.name)
-                .font(.headline)
-
-            Text(file.formattedSize)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Text("Binary file - cannot preview")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            ShareLink(item: data, preview: SharePreview(file.name)) {
-                Label("Share", systemImage: "square.and.arrow.up")
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-    }
-}
