@@ -4,7 +4,7 @@ The third compilation video (`03-gaming-creatures.mp4`) came out incredible. Thi
 
 ## Result
 
-`/Users/soli/Desktop/CODING/cloude/.claude/skills/video/output/compilations/03-gaming-creatures.mp4`
+`.claude/skills/video/output/compilations/03-gaming-creatures.mp4`
 
 4 clips stitched together (~20 seconds): Space Invaders → Platformer → Fighter → Kart Racing. (Pac-Man creatures clip missing — Sora download URL issue, still in drafts.)
 
@@ -14,7 +14,7 @@ The third compilation video (`03-gaming-creatures.mp4`) came out incredible. Thi
 
 Generated 10 pixel art character variants from `ref-creature.png` using Gemini image editing. Each prompt sends the ref creature and asks for a themed version on white background.
 
-**Reference image:** `/Users/soli/Desktop/CODING/cloude/.claude/skills/icon/ref-creature.png`
+**Reference image:** `.claude/skills/icon/ref-creature.png`
 
 **Prompt template:**
 ```
@@ -31,7 +31,7 @@ Same exact pixel art character as the reference image — same orange/brown squa
 
 Sent the roster composite to Gemini with a director's mood board prompt.
 
-**Reference image:** `/Users/soli/Desktop/CODING/cloude/.claude/skills/video/assets/characters/roster-all.png`
+**Reference image:** `.claude/skills/video/assets/characters/roster-all.png`
 
 **Gemini prompt:**
 ```
@@ -39,7 +39,7 @@ Director's mood board for CLOUDE GAMING — retro video games featuring these pi
 ```
 
 **Aspect ratio:** 9:16 (vertical)
-**Output:** `/Users/soli/Desktop/CODING/cloude/.claude/skills/video/assets/moodboard-gaming-creatures.jpg`
+**Output:** `.claude/skills/video/assets/moodboard-gaming-creatures.jpg`
 
 ### Step 3: First Frames (Gemini)
 
@@ -73,13 +73,13 @@ Single scene, full frame, no panels: Rainbow Road kart racing game. The king cre
 ```
 
 **Aspect ratio:** 16:9 (landscape)
-**Output:** `/Users/soli/Desktop/CODING/cloude/.claude/skills/video/assets/frames/frame-11-*.jpg` through `frame-15-*.jpg`
+**Output:** `.claude/skills/video/assets/frames/frame-11-*.jpg` through `frame-15-*.jpg`
 
 ### Step 4: Sora Video Generation (Image-to-Video)
 
 Each frame was sent to Sora as image-to-video. Prompts describe ONLY ambient motion — no camera movement, no character locomotion (those break image-to-video).
 
-**Batch JSON:** `/Users/soli/Desktop/CODING/cloude/.claude/skills/video/experiments/batch18-gaming-creatures.json`
+**Batch JSON:** `.claude/skills/video/experiments/batch18-gaming-creatures.json`
 
 | Frame | Sora Prompt | Output |
 |-------|-------------|--------|

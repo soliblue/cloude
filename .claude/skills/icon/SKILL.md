@@ -30,19 +30,19 @@ source .claude/skills/icon/.venv/bin/activate
 GOOGLE_API_KEY=$GOOGLE_API_KEY python .claude/skills/icon/generate.py \
   --prompt "description of icon" \
   --output icon_name \
-  --assets-dir /Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Assets.xcassets
+  --assets-dir Cloude/Cloude/Assets.xcassets
 
 GOOGLE_API_KEY=$GOOGLE_API_KEY python .claude/skills/icon/generate.py \
   --ref /path/to/reference_icon.png \
   --prompt "description of icon" \
   --output icon_name \
-  --assets-dir /Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Assets.xcassets
+  --assets-dir Cloude/Cloude/Assets.xcassets
 
 python .claude/skills/icon/generate.py \
   --skip-generate \
   --input /path/to/image.png \
   --output icon_name \
-  --assets-dir /Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Assets.xcassets
+  --assets-dir Cloude/Cloude/Assets.xcassets
 ```
 
 ## Options

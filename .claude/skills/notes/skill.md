@@ -1,6 +1,6 @@
 ---
 name: notes
-description: Access Soli's Apple Notes — diary entries, ideas, philosophy, writings. 328+ diary entries from 2014-2025. Exported as markdown for search and analysis.
+description: Access the user's Apple Notes — diary entries, ideas, philosophy, writings. 328+ diary entries from 2014-2025. Exported as markdown for search and analysis.
 user-invocable: true
 icon: note.text
 aliases: [diary, journal]
@@ -8,7 +8,7 @@ aliases: [diary, journal]
 
 # Apple Notes Skill
 
-Access Soli's personal notes exported from Apple Notes. Includes diary entries (2014-2025), ideas, philosophy, writings, and more.
+Access the user's personal notes exported from Apple Notes. Includes diary entries (2014-2025), ideas, philosophy, writings, and more.
 
 ## Setup (First Time)
 
@@ -88,12 +88,12 @@ grep -rli "therapy\|therapist" .claude/skills/notes/data/ --include="*.md"
 
 ## Privacy
 
-This is Soli's personal diary. The data directory is gitignored and never committed. Treat the content with care — it contains deeply personal reflections, relationships, and experiences.
+This is the user's personal diary. The data directory is gitignored and never committed. Treat the content with care — it contains deeply personal reflections, relationships, and experiences.
 
 ## Use Cases
 
 - **Interview context**: Reference diary entries when discussing life events, verify timeline
 - **Pattern analysis**: Track themes, emotional arcs, recurring topics over 10+ years
 - **Memory building**: Extract key moments and insights for CLAUDE.local.md
-- **Writing voice**: Understand Soli's personal writing style (vs. professional/tweet voice)
+- **Writing voice**: Understand the user's personal writing style (vs. professional/tweet voice)
 - **Timeline verification**: Cross-reference dates and events mentioned in conversation
