@@ -8,7 +8,7 @@ Comprehensive audit revealed multiple issues with skill implementation and docum
 - **Problem**: Every skill uses absolute paths that break for anyone cloning the repo
 - **Files affected**: All SKILL.md files
 - **Fix**: Replace with `${HOME}` or relative paths from project root
-- **Example**: `.claude/skills/icon/` → `.claude/skills/icon/`
+- **Example**: `.claude/skills/image/icon/` → `.claude/skills/image/icon/`
 
 ### 2. Refactor skill uses deprecated Codex pattern
 - **Problem**: `refactor` skill directly calls `codex exec` instead of using `/consult codex`
