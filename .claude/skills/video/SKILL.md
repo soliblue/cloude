@@ -1,11 +1,11 @@
 ---
 name: video
-description: Generate videos using Sora. Text-to-video and image-to-video via ChatGPT Pro subscription.
+description: Generate videos using fal.ai (Wan, Kling) or Sora. Text-to-video and image-to-video.
 user-invocable: false
 disable-model-invocation: true
-disabled: true
+disabled: false
 icon: film.fill
-aliases: [sora, generate video, vid]
+aliases: [sora, generate video, vid, fal]
 parameters:
   - name: prompt
     placeholder: Describe the video...
@@ -14,12 +14,93 @@ parameters:
 
 # Video Generation Skill
 
-Generate videos using OpenAI's Sora via Playwright automation. Supports text-to-video and image-guided generation.
+Two providers: **fal.ai** (Wan, Kling — API-based, $5/day budget) and **Sora** (Playwright automation, currently disabled).
+
+**Default provider: fal.ai** — use Sora only when explicitly requested.
 
 ## IMPORTANT RULES
 
 - **ALWAYS confirm with the user before generating** — describe what you plan to generate and wait for approval. Never auto-generate.
-- **Default orientation is portrait** (`-o portrait`). Only use landscape if explicitly requested.
+- **$5/day budget** for fal.ai — check budget before generating. Run `--budget` to see status.
+- **Default: Wan 480p** (cheapest at ~$0.04/sec). Use Kling only for premium quality.
+- **Default aspect ratio is 16:9**. Use 9:16 for portrait/mobile content.
+
+## fal.ai Commands
+
+```bash
+# Text-to-video (Wan 2.2, 480p, 16:9 — cheapest)
+python3 .claude/skills/video/src/fal_create.py "a goldfish swimming in clear water"
+
+# Portrait (9:16)
+python3 .claude/skills/video/src/fal_create.py "neon dice rolling" -a 9:16
+
+# Higher quality (720p — 2x cost)
+python3 .claude/skills/video/src/fal_create.py "epic landscape" -r 720p
+
+# Kling Standard (better quality, $0.28/5s)
+python3 .claude/skills/video/src/fal_create.py "robot playing poker" -m kling-std
+
+# Kling Pro (best quality, $0.49/5s)
+python3 .claude/skills/video/src/fal_create.py "cinematic casino scene" -m kling-pro
+
+# 10-second Kling ($0.56)
+python3 .claude/skills/video/src/fal_create.py "dice duel showdown" -m kling-std -d 10
+
+# Image-to-video (auto-selects i2v model)
+python3 .claude/skills/video/src/fal_create.py "camera slowly zooms out" --image /path/to/photo.png
+
+# Batch mode
+python3 .claude/skills/video/src/fal_create.py --batch /path/to/jobs.json
+
+# Check budget
+python3 .claude/skills/video/src/fal_create.py --budget
+
+# Override daily limit
+python3 .claude/skills/video/src/fal_create.py "prompt" --daily-limit 3.00
+```
+
+## fal.ai Options
+
+| Flag | Options | Default | Notes |
+|------|---------|---------|-------|
+| `-m` | wan-t2v, wan-i2v, kling-std, kling-pro, kling-std-i2v | wan-t2v | Auto-switches to i2v with --image |
+| `-r` | 480p, 580p, 720p | 480p | Wan only |
+| `-a` | 16:9, 9:16, 1:1 | 16:9 | All models |
+| `-d` | 5, 10 | 5 | Kling only (seconds) |
+| `-f` | 17-161 | 81 | Wan only (frames, 81≈5s at 16fps) |
+| `-i` | path | — | Reference image |
+| `-b` | path | — | Batch JSON |
+
+## fal.ai Pricing
+
+| Model | Resolution/Duration | Cost | Videos per $5 |
+|-------|-------------------|------|---------------|
+| **wan-t2v** | 480p | ~$0.04/sec | ~125 |
+| **wan-t2v** | 720p | ~$0.08/sec | ~62 |
+| **wan-i2v** | 480p | $0.20 | 25 |
+| **wan-i2v** | 720p | $0.40 | 12 |
+| **kling-std** | 5s | $0.28 | 17 |
+| **kling-std** | 10s | $0.56 | 8 |
+| **kling-pro** | 5s | $0.49 | 10 |
+| **kling-pro** | 10s | $0.98 | 5 |
+
+Budget tracked in `~/.config/fal/budget.json`, resets daily.
+
+## fal.ai Batch Format
+
+```json
+[
+  {"prompt": "neon dice rolling on felt", "model": "wan-t2v", "aspect_ratio": "9:16"},
+  {"prompt": "robot casino", "model": "kling-std", "duration": "5"},
+  {"prompt": "animate this", "model": "wan-i2v", "image": "/path/to/img.png"}
+]
+```
+
+Each job supports: `prompt` (required), `model`, `resolution`, `aspect_ratio`, `duration`, `num_frames`, `image`.
+
+---
+
+## Sora Commands (currently disabled — needs re-auth)
 
 ## When to Use This Skill
 
