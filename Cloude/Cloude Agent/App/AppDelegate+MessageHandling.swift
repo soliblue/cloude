@@ -153,6 +153,22 @@ extension AppDelegate {
             Log.info("Received getUsageStats request")
             let stats = UsageStatsService.readStats()
             server.sendMessage(.usageStats(stats: stats), to: connection)
+
+        case .getScheduledTasks:
+            Log.info("Received getScheduledTasks request")
+            let tasks = SchedulerService.shared.getAllTasks()
+            server.sendMessage(.scheduledTasks(tasks: tasks), to: connection)
+
+        case .toggleScheduledTask(let taskId, let isActive):
+            Log.info("Toggle scheduled task \(taskId.prefix(8)) -> \(isActive)")
+            if let updated = SchedulerService.shared.toggleTask(taskId: taskId, isActive: isActive) {
+                server.broadcast(.scheduledTaskUpdated(task: updated))
+            }
+
+        case .deleteScheduledTask(let taskId):
+            Log.info("Delete scheduled task \(taskId.prefix(8))")
+            SchedulerService.shared.deleteTask(taskId: taskId)
+            server.broadcast(.scheduledTaskDeleted(taskId: taskId))
         }
     }
 }

@@ -203,7 +203,8 @@ Cloude/
 │       ├── WebSocketServer.swift
 │       ├── ClaudeCodeRunner.swift
 │       ├── AuthManager.swift
-│       └── HeartbeatService.swift
+│       ├── HeartbeatService.swift
+│       └── SchedulerService.swift
 │
 ├── CloudeShared/              # Shared Swift package
 │   └── Sources/CloudeShared/
@@ -270,7 +271,15 @@ cloude speak Hello world     # Text-to-speech on iOS
 cloude switch <conv-id>      # Switch to a different conversation by UUID
 cloude ask --q "Question?" --options "A,B,C"  # Ask user a multiple-choice question
 cloude screenshot              # Capture iOS screen and send back as image
+cloude schedule --name "Name" --prompt "What to do" --cron "0 9 * * *"  # Recurring task
+cloude schedule --name "Name" --prompt "What to do" --at "2026-02-18T03:00:00"  # One-time task
+cloude schedule --list         # List all scheduled tasks
+cloude schedule --delete <id>  # Delete a scheduled task
+cloude schedule --toggle <id>  # Toggle a scheduled task on/off
 ```
+
+**Scheduled Tasks (`cloude schedule`):**
+Each scheduled task is its own conversation — recurring tasks resume the same session, building context over runs. Tasks are managed from the clock button (top-left header) on iOS, or via the CLI. The Mac agent's `SchedulerService` handles timing and spawning Claude Code sessions.
 
 **Asking Questions (`cloude ask`):**
 Use for multiple-choice questions — renders as tappable option buttons in iOS. User's answers come back as the next message (e.g., "Color? Blue\nSize? M, L"). For open-ended questions, just ask in plain text instead.
@@ -515,6 +524,7 @@ When the user screenshots the app and says "change this", use this map to find t
 | File diff | `FilePreviewView+DiffSheet.swift` | Git diff for a file |
 | Memories sheet | `CloudeApp+MemoriesSheet.swift` | Tree of memory sections |
 | Plans sheet | `CloudeApp+PlansSheet.swift` | Plan cards by stage |
+| Scheduled tasks | `CloudeApp+ScheduledTasksSheet.swift` | Task list with toggle/delete |
 | Window edit | `WindowEditSheet.swift` | Edit window conversation/name/symbol |
 | Symbol picker | `WindowEditSheet+SymbolPicker.swift` | SF Symbol grid search |
 | Question view | `ConversationView+Question.swift` | Multiple-choice question cards |

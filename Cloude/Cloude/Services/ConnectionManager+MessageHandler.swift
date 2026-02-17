@@ -67,6 +67,9 @@ extension ConnectionManager {
         case .plans(let stages):                          handlePlans(stages)
         case .planDeleted(let stage, let filename):       handlePlanDeleted(stage: stage, filename: filename)
         case .usageStats(let stats):                        handleUsageStats(stats)
+        case .scheduledTasks(let tasks):                  handleScheduledTasks(tasks)
+        case .scheduledTaskUpdated(let task):             handleScheduledTaskUpdated(task)
+        case .scheduledTaskDeleted(let taskId):           handleScheduledTaskDeleted(taskId: taskId)
         case .fileChange, .image, .gitCommitResult:       break
         }
     }
@@ -306,5 +309,17 @@ extension ConnectionManager {
 
     private func handlePlanDeleted(stage: String, filename: String) {
         events.send(.planDeleted(stage: stage, filename: filename))
+    }
+
+    private func handleScheduledTasks(_ tasks: [ScheduledTask]) {
+        events.send(.scheduledTasks(tasks))
+    }
+
+    private func handleScheduledTaskUpdated(_ task: ScheduledTask) {
+        events.send(.scheduledTaskUpdated(task))
+    }
+
+    private func handleScheduledTaskDeleted(taskId: String) {
+        events.send(.scheduledTaskDeleted(taskId: taskId))
     }
 }

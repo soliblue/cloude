@@ -36,6 +36,9 @@ extension ConnectionManager {
     func deletePlan(stage: String, filename: String, workingDirectory: String) { ensureAuthenticated(); send(.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)) }
 
     func getUsageStats()                                           { ensureAuthenticated(); send(.getUsageStats) }
+    func getScheduledTasks()                                        { ensureAuthenticated(); send(.getScheduledTasks) }
+    func toggleScheduledTask(taskId: String, isActive: Bool)        { ensureAuthenticated(); send(.toggleScheduledTask(taskId: taskId, isActive: isActive)) }
+    func deleteScheduledTask(taskId: String)                        { ensureAuthenticated(); send(.deleteScheduledTask(taskId: taskId)) }
     func listDirectory(path: String)                              { ensureAuthenticated(); send(.listDirectory(path: path)) }
     func getFile(path: String)                                    { ensureAuthenticated(); send(.getFile(path: path)) }
     func getFileFullQuality(path: String)                         { ensureAuthenticated(); send(.getFileFullQuality(path: path)) }

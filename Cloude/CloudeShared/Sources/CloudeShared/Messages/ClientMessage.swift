@@ -39,9 +39,12 @@ public enum ClientMessage: Codable {
     case getPlans(workingDirectory: String)
     case deletePlan(stage: String, filename: String, workingDirectory: String)
     case getUsageStats
+    case getScheduledTasks
+    case toggleScheduledTask(taskId: String, isActive: Bool)
+    case deleteScheduledTask(taskId: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, messageId, voice
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, messageId, voice, taskId, isActive
     }
 
     public init(from decoder: Decoder) throws {
@@ -152,6 +155,15 @@ public enum ClientMessage: Codable {
             self = .deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
         case "get_usage_stats":
             self = .getUsageStats
+        case "get_scheduled_tasks":
+            self = .getScheduledTasks
+        case "toggle_scheduled_task":
+            let taskId = try container.decode(String.self, forKey: .taskId)
+            let isActive = try container.decode(Bool.self, forKey: .isActive)
+            self = .toggleScheduledTask(taskId: taskId, isActive: isActive)
+        case "delete_scheduled_task":
+            let taskId = try container.decode(String.self, forKey: .taskId)
+            self = .deleteScheduledTask(taskId: taskId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -260,6 +272,15 @@ public enum ClientMessage: Codable {
             try container.encode(workingDirectory, forKey: .workingDirectory)
         case .getUsageStats:
             try container.encode("get_usage_stats", forKey: .type)
+        case .getScheduledTasks:
+            try container.encode("get_scheduled_tasks", forKey: .type)
+        case .toggleScheduledTask(let taskId, let isActive):
+            try container.encode("toggle_scheduled_task", forKey: .type)
+            try container.encode(taskId, forKey: .taskId)
+            try container.encode(isActive, forKey: .isActive)
+        case .deleteScheduledTask(let taskId):
+            try container.encode("delete_scheduled_task", forKey: .type)
+            try container.encode(taskId, forKey: .taskId)
         }
     }
 }

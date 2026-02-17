@@ -246,9 +246,9 @@ enum EffortLevel: String, Codable, CaseIterable {
 }
 
 enum ModelSelection: String, Codable, CaseIterable {
-    case opus = "claude-opus-4-6"
-    case sonnet = "claude-sonnet-4-5-20250929"
-    case haiku = "claude-haiku-4-5-20251001"
+    case opus = "opus"
+    case sonnet = "sonnet"
+    case haiku = "haiku"
 
     var displayName: String {
         switch self {
