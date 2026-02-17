@@ -28,6 +28,11 @@ enum ConnectionEvent {
     case plans([String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
 
+    // Scheduled Tasks
+    case scheduledTasks([ScheduledTask])
+    case scheduledTaskUpdated(ScheduledTask)
+    case scheduledTaskDeleted(taskId: String)
+
     // UI / orchestration
     case authenticated
     case usageStats(UsageStats)

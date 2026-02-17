@@ -57,9 +57,12 @@ public enum ServerMessage: Codable {
     case plans(stages: [String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
     case usageStats(stats: UsageStats)
+    case scheduledTasks(tasks: [ScheduledTask])
+    case scheduledTaskUpdated(task: ScheduledTask)
+    case scheduledTaskDeleted(taskId: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan, audioBase64, messageId, stats
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan, audioBase64, messageId, stats, tasks, task, taskId, isActive
     }
 
     public init(from decoder: Decoder) throws {
@@ -294,6 +297,15 @@ public enum ServerMessage: Codable {
         case "usage_stats":
             let stats = try container.decode(UsageStats.self, forKey: .stats)
             self = .usageStats(stats: stats)
+        case "scheduled_tasks":
+            let tasks = try container.decode([ScheduledTask].self, forKey: .tasks)
+            self = .scheduledTasks(tasks: tasks)
+        case "scheduled_task_updated":
+            let task = try container.decode(ScheduledTask.self, forKey: .task)
+            self = .scheduledTaskUpdated(task: task)
+        case "scheduled_task_deleted":
+            let taskId = try container.decode(String.self, forKey: .taskId)
+            self = .scheduledTaskDeleted(taskId: taskId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
