@@ -231,6 +231,15 @@ extension ServerMessage {
         case .usageStats(let stats):
             try container.encode("usage_stats", forKey: .type)
             try container.encode(stats, forKey: .stats)
+        case .scheduledTasks(let tasks):
+            try container.encode("scheduled_tasks", forKey: .type)
+            try container.encode(tasks, forKey: .tasks)
+        case .scheduledTaskUpdated(let task):
+            try container.encode("scheduled_task_updated", forKey: .type)
+            try container.encode(task, forKey: .task)
+        case .scheduledTaskDeleted(let taskId):
+            try container.encode("scheduled_task_deleted", forKey: .type)
+            try container.encode(taskId, forKey: .taskId)
         }
     }
 }

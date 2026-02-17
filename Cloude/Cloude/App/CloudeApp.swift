@@ -20,6 +20,9 @@ struct CloudeApp: App {
     @State private var showPlans = false
     @State private var planStages: [String: [PlanItem]] = [:]
     @State private var isLoadingPlans = false
+    @State private var showScheduledTasks = false
+    @State private var scheduledTasks: [ScheduledTask] = []
+    @State private var isLoadingScheduledTasks = false
     @State private var wasBackgrounded = false
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
@@ -50,10 +53,6 @@ struct CloudeApp: App {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         HStack(spacing: 0) {
-                            Button(action: { showSettings = true }) {
-                                Image(systemName: "gearshape")
-                            }
-                            Divider().frame(height: 20).padding(.horizontal, 10)
                             Button(action: {
                                 isLoadingMemories = true
                                 memorySections = []
@@ -73,12 +72,21 @@ struct CloudeApp: App {
                             }) {
                                 Image(systemName: "list.bullet.clipboard")
                             }
+                            Divider().frame(height: 20).padding(.horizontal, 10)
+                            Button(action: {
+                                isLoadingScheduledTasks = true
+                                scheduledTasks = []
+                                connection.send(.getScheduledTasks)
+                                showScheduledTasks = true
+                            }) {
+                                Image(systemName: "clock")
+                            }
                         }
                         .padding(.horizontal, 14)
                     }
                     ToolbarItem(placement: .principal) {
                         ConnectionStatusLogo(connection: connection)
-                            .padding(.leading, 40)
+                            .onTapGesture { showSettings = true }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
@@ -91,6 +99,7 @@ struct CloudeApp: App {
                             Image(systemName: "power")
                                 .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
                         }
+                        .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
                     }
                 }
         }
@@ -111,6 +120,16 @@ struct CloudeApp: App {
                         filePathToPreview = path
                     }
                 }
+            )
+        }
+        .sheet(isPresented: $showScheduledTasks) {
+            ScheduledTasksSheet(
+                tasks: $scheduledTasks,
+                isLoading: isLoadingScheduledTasks,
+                connection: connection,
+                conversationStore: conversationStore,
+                windowManager: windowManager,
+                onOpenConversation: { showScheduledTasks = false }
             )
         }
         .sheet(item: $filePathToPreview) { path in
@@ -206,6 +225,20 @@ struct CloudeApp: App {
 
         case .planDeleted(let stage, let filename):
             planStages[stage]?.removeAll { $0.filename == filename }
+
+        case .scheduledTasks(let tasks):
+            scheduledTasks = tasks
+            isLoadingScheduledTasks = false
+
+        case .scheduledTaskUpdated(let task):
+            if let idx = scheduledTasks.firstIndex(where: { $0.id == task.id }) {
+                scheduledTasks[idx] = task
+            } else {
+                scheduledTasks.append(task)
+            }
+
+        case .scheduledTaskDeleted(let taskId):
+            scheduledTasks.removeAll { $0.id == taskId }
 
         case .renameConversation(let convId, let name):
             if let conv = conversationStore.findConversation(withId: convId) {

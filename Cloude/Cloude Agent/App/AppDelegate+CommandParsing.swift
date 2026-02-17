@@ -134,6 +134,10 @@ extension AppDelegate {
             server.broadcast(.screenshot(conversationId: conversationId))
             Log.info("Screenshot requested for \(conversationId?.prefix(8) ?? "nil")")
 
+        case "schedule":
+            guard parts.count >= 2 else { return }
+            handleScheduleCommand(parts[1], conversationId: conversationId)
+
         default:
             Log.info("Unknown cloude command: \(action)")
         }
@@ -210,5 +214,94 @@ extension AppDelegate {
         }
 
         return [Question(text: questionText, options: options, multiSelect: multi)]
+    }
+
+    func handleScheduleCommand(_ args: String, conversationId: String?) {
+        let scheduleArgs = args.components(separatedBy: " --").map { $0.trimmingCharacters(in: .whitespaces) }
+
+        var name: String?
+        var prompt: String?
+        var cron: String?
+        var at: String?
+        var list = false
+        var deleteId: String?
+        var toggleId: String?
+
+        for arg in scheduleArgs {
+            if arg.hasPrefix("name ") {
+                name = String(arg.dropFirst(5)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            } else if arg.hasPrefix("prompt ") {
+                prompt = String(arg.dropFirst(7)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            } else if arg.hasPrefix("cron ") {
+                cron = String(arg.dropFirst(5)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            } else if arg.hasPrefix("at ") {
+                at = String(arg.dropFirst(3)).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            } else if arg.hasPrefix("list") || arg == "-list" {
+                list = true
+            } else if arg.hasPrefix("delete ") {
+                deleteId = String(arg.dropFirst(7)).trimmingCharacters(in: .whitespaces)
+            } else if arg.hasPrefix("toggle ") {
+                toggleId = String(arg.dropFirst(7)).trimmingCharacters(in: .whitespaces)
+            }
+        }
+
+        if list {
+            let tasks = SchedulerService.shared.getAllTasks()
+            server.broadcast(.scheduledTasks(tasks: tasks))
+            Log.info("Schedule list: \(tasks.count) tasks")
+            return
+        }
+
+        if let deleteId {
+            SchedulerService.shared.deleteTask(taskId: deleteId)
+            server.broadcast(.scheduledTaskDeleted(taskId: deleteId))
+            Log.info("Schedule delete: \(deleteId.prefix(8))")
+            return
+        }
+
+        if let toggleId {
+            let currentTask = SchedulerService.shared.getAllTasks().first { $0.id == toggleId }
+            let newActive = !(currentTask?.isActive ?? true)
+            if let updated = SchedulerService.shared.toggleTask(taskId: toggleId, isActive: newActive) {
+                server.broadcast(.scheduledTaskUpdated(task: updated))
+            }
+            Log.info("Schedule toggle: \(toggleId.prefix(8)) -> \(newActive)")
+            return
+        }
+
+        guard let name, let prompt else {
+            Log.info("cloude schedule: missing --name or --prompt")
+            return
+        }
+
+        let schedule: TaskSchedule
+        if let cron {
+            schedule = .recurring(cron)
+        } else if let at {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime]
+            if let date = formatter.date(from: at) {
+                schedule = .oneTime(date)
+            } else {
+                let fallback = DateFormatter()
+                fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                fallback.timeZone = .current
+                if let date = fallback.date(from: at) {
+                    schedule = .oneTime(date)
+                } else {
+                    Log.info("cloude schedule: invalid date '\(at)'")
+                    return
+                }
+            }
+        } else {
+            Log.info("cloude schedule: missing --cron or --at")
+            return
+        }
+
+        let workingDir = HeartbeatService.shared.projectDirectory ?? MemoryService.projectRoot
+        if let task = SchedulerService.shared.addTask(name: name, prompt: prompt, schedule: schedule, workingDirectory: workingDir) {
+            server.broadcast(.scheduledTaskUpdated(task: task))
+            Log.info("Schedule created: '\(name)' (\(task.id.prefix(8)))")
+        }
     }
 }
