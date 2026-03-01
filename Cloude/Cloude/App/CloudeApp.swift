@@ -29,7 +29,7 @@ struct CloudeApp: App {
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
     @State private var filePathToPreview: String? = nil
-    @AppStorage("appTheme") private var appTheme: AppTheme = .dark
+    @AppStorage("appTheme") private var appTheme: AppTheme = .oceanDark
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
     @Environment(\.scenePhase) var scenePhase
 
@@ -61,15 +61,6 @@ struct CloudeApp: App {
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 0) {
-                            Button(action: {
-                                isLoadingScheduledTasks = true
-                                scheduledTasks = []
-                                connection.send(.getScheduledTasks)
-                                showScheduledTasks = true
-                            }) {
-                                Image(systemName: "clock")
-                            }
-                            Divider().frame(height: 20).padding(.horizontal, 10)
                             Button(action: {
                                 if let cached = OfflineCacheService.loadPlans() {
                                     planStages = cached.stages
