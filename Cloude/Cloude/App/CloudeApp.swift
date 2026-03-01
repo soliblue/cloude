@@ -54,35 +54,20 @@ struct CloudeApp: App {
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
+                        Button(action: { showSettings = true }) {
+                            ConnectionStatusLogo(connection: connection)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 0) {
                             Button(action: {
-                                if connection.isAuthenticated || connection.isConnected {
-                                    connection.disconnect(clearCredentials: false)
-                                } else {
-                                    connection.reconnectIfNeeded()
-                                }
+                                isLoadingScheduledTasks = true
+                                scheduledTasks = []
+                                connection.send(.getScheduledTasks)
+                                showScheduledTasks = true
                             }) {
-                                Image(systemName: "power")
-                                    .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
-                            }
-                            .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
-                            Divider().frame(height: 20).padding(.horizontal, 10)
-                            Button(action: {
-                                if let cached = OfflineCacheService.loadMemories() {
-                                    memorySections = cached.sections
-                                    memoriesFromCache = true
-                                    isLoadingMemories = connection.isAuthenticated
-                                } else {
-                                    memorySections = []
-                                    memoriesFromCache = false
-                                    isLoadingMemories = true
-                                }
-                                if connection.isAuthenticated {
-                                    connection.send(.getMemories)
-                                }
-                                showMemories = true
-                            }) {
-                                Image(systemName: "brain")
+                                Image(systemName: "clock")
                             }
                             Divider().frame(height: 20).padding(.horizontal, 10)
                             Button(action: {
@@ -104,19 +89,36 @@ struct CloudeApp: App {
                             }
                             Divider().frame(height: 20).padding(.horizontal, 10)
                             Button(action: {
-                                isLoadingScheduledTasks = true
-                                scheduledTasks = []
-                                connection.send(.getScheduledTasks)
-                                showScheduledTasks = true
+                                if let cached = OfflineCacheService.loadMemories() {
+                                    memorySections = cached.sections
+                                    memoriesFromCache = true
+                                    isLoadingMemories = connection.isAuthenticated
+                                } else {
+                                    memorySections = []
+                                    memoriesFromCache = false
+                                    isLoadingMemories = true
+                                }
+                                if connection.isAuthenticated {
+                                    connection.send(.getMemories)
+                                }
+                                showMemories = true
                             }) {
-                                Image(systemName: "clock")
+                                Image(systemName: "brain")
                             }
+                            Divider().frame(height: 20).padding(.horizontal, 10)
+                            Button(action: {
+                                if connection.isAuthenticated || connection.isConnected {
+                                    connection.disconnect(clearCredentials: false)
+                                } else {
+                                    connection.reconnectIfNeeded()
+                                }
+                            }) {
+                                Image(systemName: "power")
+                                    .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
+                            }
+                            .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
                         }
                         .padding(.horizontal, 14)
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        ConnectionStatusLogo(connection: connection)
-                            .onTapGesture { showSettings = true }
                     }
                 }
         }
