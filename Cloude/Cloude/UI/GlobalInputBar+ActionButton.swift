@@ -74,11 +74,11 @@ extension GlobalInputBar {
     var actionButtonLabel: some View {
         Image(systemName: actionButtonIcon)
             .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(canSend || shouldShowStopButton ? .white : .accentColor.opacity(0.4))
-            .frame(width: 36, height: 36)
-            .background(canSend || shouldShowStopButton ? Color.accentColor : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .contentShape(RoundedRectangle(cornerRadius: 10).inset(by: -8))
+            .foregroundColor(canSend || shouldShowStopButton ? .white : .secondary.opacity(0.5))
+            .frame(width: 56)
+            .frame(maxHeight: .infinity)
+            .background(canSend || shouldShowStopButton ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
+            .contentShape(Rectangle())
             .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
             .animation(.easeInOut(duration: 0.2), value: canSend)
     }
