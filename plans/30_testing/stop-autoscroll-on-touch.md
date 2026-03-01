@@ -1,4 +1,5 @@
 # Stop Auto-Scroll on Touch
+<!-- build: 82 -->
 
 When the user touches or drags the chat scroll view during streaming, auto-scroll should stop so they can read earlier content without being yanked to the bottom.
 
