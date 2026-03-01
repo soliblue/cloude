@@ -25,18 +25,16 @@ struct SelectableTextView: UIViewRepresentable {
     }
 
     func updateUIView(_ textView: SelectableUITextView, context: Context) {
-        if textView.attributedText != attributedString {
-            textView.attributedText = attributedString
-            textView.invalidateIntrinsicContentSize()
-        }
+        textView.attributedText = attributedString
         context.coordinator.onLinkTap = onLinkTap
+        textView.invalidateIntrinsicContentSize()
     }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onLinkTap: onLinkTap)
     }
 
-    final class Coordinator: NSObject, UITextViewDelegate {
+    class Coordinator: NSObject, UITextViewDelegate {
         var onLinkTap: ((URL) -> Void)?
 
         init(onLinkTap: ((URL) -> Void)?) {
@@ -44,8 +42,9 @@ struct SelectableTextView: UIViewRepresentable {
         }
 
         func textViewDidChangeSelection(_ textView: UITextView) {
-            if let tv = textView as? SelectableUITextView {
-                tv.updateScrollLock()
+            if let selectableTV = textView as? SelectableUITextView {
+                let hasSelection = textView.selectedRange.length > 0
+                selectableTV.setParentScrollEnabled(!hasSelection)
             }
         }
 
@@ -59,96 +58,20 @@ struct SelectableTextView: UIViewRepresentable {
     }
 }
 
-final class SelectableUITextView: UITextView {
-    private static var activeTextView: SelectableUITextView?
-    private var installedProxy = false
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        installProxyIfNeeded()
+class SelectableUITextView: UITextView {
+    func setParentScrollEnabled(_ enabled: Bool) {
+        var view: UIView? = superview
+        while let current = view {
+            if let scrollView = current as? UIScrollView, scrollView !== self {
+                scrollView.isScrollEnabled = enabled
+                return
+            }
+            view = current.superview
+        }
     }
 
     override func resignFirstResponder() -> Bool {
-        if SelectableUITextView.activeTextView === self {
-            SelectableUITextView.activeTextView = nil
-        }
+        setParentScrollEnabled(true)
         return super.resignFirstResponder()
-    }
-
-    func updateScrollLock() {
-        if selectedRange.length > 0 {
-            SelectableUITextView.activeTextView = self
-        } else if SelectableUITextView.activeTextView === self {
-            SelectableUITextView.activeTextView = nil
-        }
-    }
-
-    private func installProxyIfNeeded() {
-        guard !installedProxy else { return }
-        if let scroll = findAncestorScrollView() {
-            let pan = scroll.panGestureRecognizer
-            let proxy = ScrollPanDelegate(original: pan.delegate)
-            pan.delegate = proxy
-            objc_setAssociatedObject(scroll, &AssociatedKeys.proxyKey, proxy, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-            installedProxy = true
-        }
-    }
-
-    private func findAncestorScrollView() -> UIScrollView? {
-        var v = superview
-        while let current = v {
-            if let scroll = current as? UIScrollView, scroll !== self {
-                return scroll
-            }
-            v = current.superview
-        }
-        return nil
-    }
-
-    static var hasActiveSelection: Bool {
-        if let active = activeTextView {
-            return active.isFirstResponder && active.selectedRange.length > 0
-        }
-        return false
-    }
-}
-
-private struct AssociatedKeys {
-    static var proxyKey = 0
-}
-
-private class ScrollPanDelegate: NSObject, UIGestureRecognizerDelegate {
-    weak var original: UIGestureRecognizerDelegate?
-
-    init(original: UIGestureRecognizerDelegate?) {
-        self.original = original
-    }
-
-    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if SelectableUITextView.hasActiveSelection {
-            return false
-        }
-        return original?.gestureRecognizerShouldBegin?(gestureRecognizer) ?? true
-    }
-
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return original?.gestureRecognizer?(gestureRecognizer, shouldRecognizeSimultaneouslyWith: otherGestureRecognizer) ?? false
-    }
-
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return original?.gestureRecognizer?(gestureRecognizer, shouldRequireFailureOf: otherGestureRecognizer) ?? false
-    }
-
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return original?.gestureRecognizer?(gestureRecognizer, shouldBeRequiredToFailBy: otherGestureRecognizer) ?? false
-    }
-
-    override func responds(to aSelector: Selector!) -> Bool {
-        super.responds(to: aSelector) || (original?.responds(to: aSelector) ?? false)
-    }
-
-    override func forwardingTarget(for aSelector: Selector!) -> Any? {
-        if original?.responds(to: aSelector) == true { return original }
-        return super.forwardingTarget(for: aSelector)
     }
 }
