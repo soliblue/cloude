@@ -1,4 +1,5 @@
 # Logo Transparent Background Fix
+<!-- build: 77 -->
 
 Fix the logo in the top-left toolbar having an iOS-applied tinted background.
 

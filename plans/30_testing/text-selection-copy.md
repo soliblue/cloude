@@ -1,4 +1,5 @@
 # Text Selection & Partial Copy
+<!-- build: 77 -->
 
 Enable selecting and copying parts of message text instead of all-or-nothing.
 
