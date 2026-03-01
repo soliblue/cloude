@@ -24,48 +24,78 @@ struct InlineTextView: View {
     let segments: [InlineSegment]
 
     var body: some View {
-        Text(buildAttributedString())
-            .textSelection(.enabled)
+        SelectableTextView(
+            attributedString: buildNSAttributedString(),
+            onLinkTap: { url in
+                UIApplication.shared.open(url)
+            }
+        )
     }
 
-    private func buildAttributedString() -> AttributedString {
-        var result = AttributedString()
+    private func buildNSAttributedString() -> NSAttributedString {
+        let result = NSMutableAttributedString()
+        let bodySize = UIFont.preferredFont(forTextStyle: .body).pointSize
+        let bodyFont = UIFont.systemFont(ofSize: bodySize)
+        let defaultAttributes: [NSAttributedString.Key: Any] = [
+            .font: bodyFont,
+            .foregroundColor: UIColor.label
+        ]
+
         for segment in segments {
             switch segment {
             case .text(_, let attr):
-                result.append(attr)
+                let converted: NSAttributedString = NSAttributedString(attr)
+                let nsAttr = NSMutableAttributedString(attributedString: converted)
+                let fullRange = NSRange(location: 0, length: nsAttr.length)
+                nsAttr.enumerateAttribute(NSAttributedString.Key.font, in: fullRange) { value, range, _ in
+                    if value == nil {
+                        nsAttr.addAttribute(NSAttributedString.Key.font, value: bodyFont, range: range)
+                    }
+                }
+                nsAttr.enumerateAttribute(NSAttributedString.Key.foregroundColor, in: fullRange) { value, range, _ in
+                    if value == nil {
+                        nsAttr.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.label, range: range)
+                    }
+                }
+                result.append(nsAttr)
             case .code(_, let code):
-                var attr = AttributedString(code)
-                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .regular, design: .monospaced)
-                attr.backgroundColor = .secondary.opacity(0.1)
+                let monoFont = UIFont.monospacedSystemFont(ofSize: bodySize - 1, weight: .regular)
+                let attr = NSAttributedString(string: code, attributes: [
+                    .font: monoFont,
+                    .foregroundColor: UIColor.label,
+                    .backgroundColor: UIColor.secondarySystemFill
+                ])
                 result.append(attr)
             case .filePath(_, let path):
                 let filename = path.lastPathComponent
                 let icon = fileIconChar(for: filename)
                 let nbsp = "\u{00A0}"
                 let pillText = "\(nbsp)\(icon)\(nbsp)\(filename.replacingOccurrences(of: " ", with: nbsp))\(nbsp)"
-                var attr = AttributedString(pillText)
-                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .medium, design: .monospaced)
-                attr.foregroundColor = fileIconColor(for: filename)
-                attr.backgroundColor = fileIconColor(for: filename).opacity(0.12)
+                let color = UIColor(fileIconColor(for: filename))
+                var attrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.monospacedSystemFont(ofSize: bodySize - 1, weight: .medium),
+                    .foregroundColor: color,
+                    .backgroundColor: color.withAlphaComponent(0.12)
+                ]
                 if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                    let url = URL(string: "cloude://file\(encodedPath)") {
-                    attr.link = url
+                    attrs[.link] = url
                 }
-                result.append(attr)
+                result.append(NSAttributedString(string: pillText, attributes: attrs))
             case .url(_, let urlString, let displayText):
                 let nbsp = "\u{00A0}"
                 let pillText = "\(nbsp)↗\(nbsp)\(displayText.replacingOccurrences(of: " ", with: nbsp))\(nbsp)"
-                var attr = AttributedString(pillText)
-                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .medium, design: .monospaced)
-                attr.foregroundColor = .blue
-                attr.backgroundColor = Color.blue.opacity(0.12)
+                var attrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.monospacedSystemFont(ofSize: bodySize - 1, weight: .medium),
+                    .foregroundColor: UIColor.systemBlue,
+                    .backgroundColor: UIColor.systemBlue.withAlphaComponent(0.12)
+                ]
                 if let url = URL(string: urlString) {
-                    attr.link = url
+                    attrs[.link] = url
                 }
-                result.append(attr)
+                result.append(NSAttributedString(string: pillText, attributes: attrs))
             case .lineBreak:
-                result.append(AttributedString("\n"))
+                result.append(NSAttributedString(string: "\n", attributes: defaultAttributes))
             }
         }
         return result
