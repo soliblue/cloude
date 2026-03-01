@@ -140,8 +140,9 @@ class AutocompleteService {
         Also pick an SF Symbol icon from this list that best fits the topic:
         \(symbolList)
 
-        Respond with ONLY a JSON object like: {"name": "Short Name", "symbol": "star.fill"}
+        Respond with ONLY a JSON object like: {"name": "Short Name", "symbol": "star"}
         You MUST pick a symbol from the list above. Pick something specific and creative, not generic.
+        Prefer outline versions of icons (e.g. "star" over "star.fill") unless only a .fill variant exists.
         """
 
         let process = Process()
