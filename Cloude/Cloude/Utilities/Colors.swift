@@ -1,21 +1,14 @@
 import SwiftUI
-import UIKit
 
 extension Color {
-    static let oceanBackground = Color(light: .white, dark: Color(hex: 0x152233))
-    static let oceanSecondary = Color(light: Color(UIColor.secondarySystemBackground), dark: Color(hex: 0x1C2B3D))
-    static let oceanSurface = Color(light: Color(UIColor.tertiarySystemBackground), dark: Color(hex: 0x263750))
-    static let oceanGray6 = Color(light: Color(UIColor.systemGray6), dark: Color(hex: 0x1C2B3D))
-    static let oceanGroupedSecondary = Color(light: Color(UIColor.secondarySystemGroupedBackground), dark: Color(hex: 0x1C2B3D))
-    static let oceanTertiary = Color(light: Color(UIColor.tertiarySystemGroupedBackground), dark: Color(hex: 0x223350))
-    static let oceanFill = Color(light: Color(UIColor.systemFill), dark: Color(hex: 0x2E4058))
-    static let oceanSystemBackground = Color(light: Color(UIColor.systemBackground), dark: Color(hex: 0x152233))
-
-    init(light: Color, dark: Color) {
-        self.init(uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
-        })
-    }
+    static var oceanBackground: Color { Color(hex: AppTheme.current.palette.background) }
+    static var oceanSecondary: Color { Color(hex: AppTheme.current.palette.secondary) }
+    static var oceanSurface: Color { Color(hex: AppTheme.current.palette.surface) }
+    static var oceanGray6: Color { Color(hex: AppTheme.current.palette.gray6) }
+    static var oceanGroupedSecondary: Color { Color(hex: AppTheme.current.palette.groupedSecondary) }
+    static var oceanTertiary: Color { Color(hex: AppTheme.current.palette.tertiary) }
+    static var oceanFill: Color { Color(hex: AppTheme.current.palette.fill) }
+    static var oceanSystemBackground: Color { Color(hex: AppTheme.current.palette.systemBackground) }
 
     init(hex: UInt, alpha: Double = 1.0) {
         self.init(

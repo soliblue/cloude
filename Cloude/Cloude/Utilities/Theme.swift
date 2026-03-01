@@ -60,24 +60,100 @@ enum KokoroVoice: String, CaseIterable {
     }
 }
 
-enum AppTheme: String, CaseIterable {
-    case system = "System"
-    case light = "Light"
-    case dark = "Dark"
+struct ThemePalette {
+    let background: UInt
+    let secondary: UInt
+    let surface: UInt
+    let gray6: UInt
+    let groupedSecondary: UInt
+    let tertiary: UInt
+    let fill: UInt
+    let systemBackground: UInt
+}
 
-    var colorScheme: ColorScheme? {
+enum AppTheme: String, CaseIterable {
+    case oceanDark = "Ocean Dark"
+    case oceanLight = "Ocean Light"
+    case midnight = "Midnight"
+    case solarizedDark = "Solarized Dark"
+    case solarizedLight = "Solarized Light"
+    case monokai = "Monokai"
+    case nord = "Nord"
+    case dracula = "Dracula"
+    case githubLight = "GitHub Light"
+
+    static var current: AppTheme {
+        AppTheme(rawValue: UserDefaults.standard.string(forKey: "appTheme") ?? "Ocean Dark") ?? .oceanDark
+    }
+
+    var colorScheme: ColorScheme {
         switch self {
-        case .system: return nil
-        case .light: return .light
-        case .dark: return .dark
+        case .oceanLight, .solarizedLight, .githubLight: return .light
+        default: return .dark
         }
     }
 
     var icon: String {
         switch self {
-        case .system: return "circle.lefthalf.filled"
-        case .light: return "sun.max.fill"
-        case .dark: return "moon.fill"
+        case .oceanDark: return "water.waves"
+        case .oceanLight: return "sun.and.horizon"
+        case .midnight: return "moon.stars.fill"
+        case .solarizedDark: return "sun.dust.fill"
+        case .solarizedLight: return "sun.max.fill"
+        case .monokai: return "paintpalette.fill"
+        case .nord: return "snowflake"
+        case .dracula: return "moon.haze.fill"
+        case .githubLight: return "doc.plaintext"
+        }
+    }
+
+    var palette: ThemePalette {
+        switch self {
+        case .oceanDark:
+            return ThemePalette(
+                background: 0x152233, secondary: 0x1C2B3D, surface: 0x263750,
+                gray6: 0x1C2B3D, groupedSecondary: 0x1C2B3D, tertiary: 0x223350,
+                fill: 0x2E4058, systemBackground: 0x152233)
+        case .oceanLight:
+            return ThemePalette(
+                background: 0xFFFFFF, secondary: 0xF2F2F7, surface: 0xE5E5EA,
+                gray6: 0xF2F2F7, groupedSecondary: 0xF2F2F7, tertiary: 0xE5E5EA,
+                fill: 0xD1D1D6, systemBackground: 0xFFFFFF)
+        case .midnight:
+            return ThemePalette(
+                background: 0x000000, secondary: 0x0A0A0A, surface: 0x161616,
+                gray6: 0x0A0A0A, groupedSecondary: 0x0A0A0A, tertiary: 0x121212,
+                fill: 0x1C1C1E, systemBackground: 0x000000)
+        case .solarizedDark:
+            return ThemePalette(
+                background: 0x002B36, secondary: 0x073642, surface: 0x094753,
+                gray6: 0x073642, groupedSecondary: 0x073642, tertiary: 0x094753,
+                fill: 0x1A5C6B, systemBackground: 0x002B36)
+        case .solarizedLight:
+            return ThemePalette(
+                background: 0xFDF6E3, secondary: 0xEEE8D5, surface: 0xDDD6C1,
+                gray6: 0xEEE8D5, groupedSecondary: 0xEEE8D5, tertiary: 0xDDD6C1,
+                fill: 0xD0C8AD, systemBackground: 0xFDF6E3)
+        case .monokai:
+            return ThemePalette(
+                background: 0x272822, secondary: 0x2D2E27, surface: 0x3E3D32,
+                gray6: 0x2D2E27, groupedSecondary: 0x2D2E27, tertiary: 0x3E3D32,
+                fill: 0x49483E, systemBackground: 0x272822)
+        case .nord:
+            return ThemePalette(
+                background: 0x2E3440, secondary: 0x3B4252, surface: 0x434C5E,
+                gray6: 0x3B4252, groupedSecondary: 0x3B4252, tertiary: 0x434C5E,
+                fill: 0x4C566A, systemBackground: 0x2E3440)
+        case .dracula:
+            return ThemePalette(
+                background: 0x282A36, secondary: 0x313347, surface: 0x3D4058,
+                gray6: 0x313347, groupedSecondary: 0x313347, tertiary: 0x3D4058,
+                fill: 0x44475A, systemBackground: 0x282A36)
+        case .githubLight:
+            return ThemePalette(
+                background: 0xFFFFFF, secondary: 0xF6F8FA, surface: 0xE1E4E8,
+                gray6: 0xF6F8FA, groupedSecondary: 0xF6F8FA, tertiary: 0xE1E4E8,
+                fill: 0xD1D5DA, systemBackground: 0xFFFFFF)
         }
     }
 }
