@@ -6,7 +6,8 @@ struct SettingsView: View {
 
     @AppStorage("serverHost") private var serverHost = ""
     @AppStorage("serverPort") private var serverPort = "8765"
-    @AppStorage("appTheme") private var appTheme: AppTheme = .oceanDark
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.oceanDark.rawValue
+    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
 @AppStorage("enableSuggestions") private var enableSuggestions = false
