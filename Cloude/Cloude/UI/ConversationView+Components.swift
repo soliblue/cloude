@@ -27,6 +27,7 @@ struct ChatMessageList: View {
     @State private var isBottomVisible = true
     @State private var isCostBannerDismissed = false
     @State private var scrollViewportHeight: CGFloat = 0
+    @State private var userHasScrolled = false
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -78,6 +79,7 @@ struct ChatMessageList: View {
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = messages.isEmpty
             isCostBannerDismissed = false
+            userHasScrolled = false
         }
     }
 
@@ -110,11 +112,15 @@ struct ChatMessageList: View {
         }
         .simultaneousGesture(
             TapGesture()
-                .onEnded { onInteraction?() }
+                .onEnded {
+                    userHasScrolled = true
+                    onInteraction?()
+                }
         )
         .simultaneousGesture(
             DragGesture(minimumDistance: 5)
                 .onChanged { _ in
+                    userHasScrolled = true
                     onInteraction?()
                 }
                 .onEnded { _ in }
@@ -131,6 +137,7 @@ struct ChatMessageList: View {
         }
         .onChange(of: userMessageCount) { oldCount, newCount in
             if newCount == oldCount + 1 {
+                userHasScrolled = false
                 withAnimation(.easeOut(duration: 0.25)) {
                     proxy.scrollTo(bottomId, anchor: .bottom)
                 }
@@ -141,7 +148,7 @@ struct ChatMessageList: View {
             if !newValue.isEmpty && isInitialLoad {
                 isInitialLoad = false
             }
-            if isBottomVisible && !newValue.isEmpty {
+            if isBottomVisible && !newValue.isEmpty && !userHasScrolled {
                 proxy.scrollTo(bottomId, anchor: .bottom)
             }
         }
@@ -303,6 +310,7 @@ struct ChatMessageList: View {
                 .highPriorityGesture(
                     TapGesture()
                         .onEnded {
+                            userHasScrolled = false
                             withAnimation(.easeOut(duration: 0.2)) {
                                 scrollProxy?.scrollTo(bottomId, anchor: .bottom)
                             }
