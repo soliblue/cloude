@@ -6,6 +6,7 @@ enum InlineSegment: Identifiable, Equatable {
     case text(id: UUID = UUID(), AttributedString)
     case code(id: UUID = UUID(), String)
     case filePath(id: UUID = UUID(), String)
+    case url(id: UUID = UUID(), String, String)
     case lineBreak(id: UUID = UUID())
 
     var id: UUID {
@@ -13,6 +14,7 @@ enum InlineSegment: Identifiable, Equatable {
         case .text(let id, _): return id
         case .code(let id, _): return id
         case .filePath(let id, _): return id
+        case .url(let id, _, _): return id
         case .lineBreak(let id): return id
         }
     }
@@ -48,6 +50,17 @@ struct InlineTextView: View {
                 attr.backgroundColor = fileIconColor(for: filename).opacity(0.12)
                 if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                    let url = URL(string: "cloude://file\(encodedPath)") {
+                    attr.link = url
+                }
+                result.append(attr)
+            case .url(_, let urlString, let displayText):
+                let nbsp = "\u{00A0}"
+                let pillText = "\(nbsp)↗\(nbsp)\(displayText.replacingOccurrences(of: " ", with: nbsp))\(nbsp)"
+                var attr = AttributedString(pillText)
+                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .medium, design: .monospaced)
+                attr.foregroundColor = .blue
+                attr.backgroundColor = Color.blue.opacity(0.12)
+                if let url = URL(string: urlString) {
                     attr.link = url
                 }
                 result.append(attr)
