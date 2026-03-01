@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct StreamingMarkdownView: View {
     let text: String
@@ -173,8 +174,7 @@ private struct HeaderSectionView: View {
                 if hasSpecialSegments {
                     InlineTextView(segments: headerSegments)
                 } else {
-                    Text(headerContent)
-                        .textSelection(.enabled)
+                    SelectableTextView(attributedString: nsAttributedString(from: headerContent))
                 }
             }
             .contentShape(Rectangle())
@@ -213,8 +213,7 @@ struct StreamingBlockView: View {
             if hasSpecialSegments {
                 InlineTextView(segments: segments)
             } else {
-                Text(attributed)
-                    .textSelection(.enabled)
+                SelectableTextView(attributedString: nsAttributedString(from: attributed))
             }
 
         case .code(_, let content, let language, _):
@@ -239,8 +238,7 @@ struct StreamingBlockView: View {
             if hasSpecialSegments {
                 InlineTextView(segments: segments)
             } else {
-                Text(content)
-                    .textSelection(.enabled)
+                SelectableTextView(attributedString: nsAttributedString(from: content))
             }
 
         case .toolGroup(_, let tools):
@@ -272,4 +270,22 @@ struct ToolGroupView: View {
         .padding(.horizontal, -16)
         .scrollClipDisabled()
     }
+}
+
+private func nsAttributedString(from attributed: AttributedString) -> NSAttributedString {
+    let converted: NSAttributedString = NSAttributedString(attributed)
+    let result = NSMutableAttributedString(attributedString: converted)
+    let bodyFont = UIFont.preferredFont(forTextStyle: .body)
+    let fullRange = NSRange(location: 0, length: result.length)
+    result.enumerateAttribute(NSAttributedString.Key.font, in: fullRange) { value, range, _ in
+        if value == nil {
+            result.addAttribute(NSAttributedString.Key.font, value: bodyFont, range: range)
+        }
+    }
+    result.enumerateAttribute(NSAttributedString.Key.foregroundColor, in: fullRange) { value, range, _ in
+        if value == nil {
+            result.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.label, range: range)
+        }
+    }
+    return result
 }
