@@ -74,7 +74,7 @@ struct MessageBubble: View {
                                     .font: UIFont.preferredFont(forTextStyle: .body),
                                     .foregroundColor: UIColor.label
                                 ]
-                            ))
+                            ), detectLinks: true)
                         }
                     } else if hasToolCalls {
                         InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
