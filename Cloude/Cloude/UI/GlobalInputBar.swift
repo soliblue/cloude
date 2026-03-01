@@ -226,7 +226,6 @@ struct GlobalInputBar: View {
                     .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
                 }
             }
-            .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
@@ -323,28 +322,26 @@ struct GlobalInputBar: View {
     }
 
     private var inputRow: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
-                ZStack(alignment: .leading) {
-                    if inputText.isEmpty {
-                        Text(placeholder)
-                            .foregroundColor(.secondary)
-                            .id(placeholderIndex)
-                            .transition(.opacity)
-                    }
-                    TextField("", text: $inputText, axis: .vertical)
-                        .textFieldStyle(.plain)
-                        .lineLimit(1...4)
-                        .focused($isInputFocused)
-                        .foregroundColor(isSlashCommand ? .cyan : .primary)
-                        .onSubmit { if canSend { onSend() } }
-                        .id(textFieldId)
+        HStack(spacing: 0) {
+            ZStack(alignment: .leading) {
+                if inputText.isEmpty {
+                    Text(placeholder)
+                        .foregroundColor(.secondary)
+                        .id(placeholderIndex)
+                        .transition(.opacity)
                 }
+                TextField("", text: $inputText, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .lineLimit(1...4)
+                    .focused($isInputFocused)
+                    .foregroundColor(isSlashCommand ? .cyan : .primary)
+                    .onSubmit { if canSend { onSend() } }
+                    .id(textFieldId)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
             .background(Color.oceanSecondary.opacity(0.8))
-            .clipShape(RoundedRectangle(cornerRadius: 15))
             .offset(x: -horizontalSwipeOffset * 0.3)
             .opacity(1 - Double(min(horizontalSwipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.5)
 

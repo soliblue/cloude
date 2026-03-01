@@ -61,6 +61,7 @@ struct InlineToolPill: View {
                     .transition(.opacity)
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
         .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 8))
         .onChange(of: toolCall.state) { _, newState in
             if newState == .complete {
