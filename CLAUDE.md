@@ -41,10 +41,10 @@ osascript -e 'tell application "Terminal" to do script "sleep 3 && pushd /Users/
 
 **⚠️ CRITICAL: Multiple Claude agents work on this project simultaneously.**
 
-- **NEVER touch another agent's code** - if you see errors, broken builds, or issues from another agent's work, **STOP and tell Soli**. Do not fix it yourself, even if it seems simple.
-- **ASK before fixing build errors** - if a build fails and it's not clearly your code, ask Soli before touching it
+- **NEVER touch another agent's code** - if you see errors, broken builds, or issues from another agent's work, **STOP and tell the user**. Do not fix it yourself, even if it seems simple.
+- **ASK before fixing build errors** - if a build fails and it's not clearly your code, ask the user before touching it
 - Only modify code you are actively working on for your current task
-- Coordinate through Soli, not by modifying each other's work
+- Coordinate through the user, not by modifying each other's work
 - When in doubt, ask first
 
 ### Plans Directory
@@ -57,14 +57,14 @@ The `plans/` directory is the single source of truth for tracking work. Every ch
 - **Every code change needs a plan ticket** — if a plan already exists, move it. If not, create one.
 - **Create the ticket in `plans/20_active/` BEFORE writing any code** — this is non-negotiable. Plan first, implement second.
 - After implementing a change, move the plan to `30_testing/`
-- When Soli confirms it works, move to `40_done/`
-- At **5+ items in 30_testing/**, stop adding features — tell Soli to test first
+- When the user confirms it works, move to `40_done/`
+- At **5+ items in 30_testing/**, stop adding features — tell the user to test first
 - Other agents can read plans to understand what's in progress and avoid conflicts
 - Only move your own plans (multi-agent coordination)
 - Don't modify another agent's plan unless collaborating explicitly
 - Plans are a communication channel between agents across sessions
 
-**Ad-hoc requests** (no existing ticket): When Soli asks for a quick change that has no plan, create a small plan file directly in `30_testing/` after implementing it. This ensures nothing gets lost.
+**Ad-hoc requests** (no existing ticket): When the user asks for a quick change that has no plan, create a small plan file directly in `30_testing/` after implementing it. This ensures nothing gets lost.
 
 **The `30_testing/` folder replaces the CLAUDE.local.md staging section** — don't duplicate tracking in both places.
 
@@ -351,14 +351,14 @@ Skills extend Claude with specialized capabilities. Invoke with `/skill-name` or
 - **status** - Quick project overview (staging, git, open plans)
 
 ### Context & Research
-- **notes** - Search Soli's diary (328 entries, 2014-2025) for context
-- **tweets** - Search Soli's Twitter archive (462 tweets) for voice/patterns
+- **notes** - Search the user's diary for context
+- **tweets** - Search the user's Twitter archive for voice/patterns
 - **goodreads** - Access reading history for intellectual context
 - **manifold** - Browse and bet on Manifold prediction markets
 - **moltbook** - Check and post to Moltbook (AI social platform)
 
 ### Configuration
-- **gettoknow** - Deep interview mode for learning about Soli
+- **gettoknow** - Deep interview mode for learning about the user
 - **keybindings-help** - Customize keyboard shortcuts in Claude Code
 
 **Note:** Skills with `disable-model-invocation: true` (music, image, icon, transcribe, recap) require explicit invocation to prevent accidental expensive operations.

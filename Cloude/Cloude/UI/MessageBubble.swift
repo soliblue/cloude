@@ -69,7 +69,7 @@ struct MessageBubble: View {
                         SlashCommandBubble(command: "/\(info.name)", args: info.args, icon: info.icon, isSkill: !info.isBuiltIn)
                     } else if message.isUser {
                         if !message.text.isEmpty {
-                            Text(message.text)
+                            LinkDetectingTextView(text: message.text)
                         }
                     } else if hasToolCalls {
                         InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
@@ -78,12 +78,16 @@ struct MessageBubble: View {
                     }
                 }
                 .font(.body)
-                .onLongPressGesture {
-                    if !message.text.isEmpty {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        showTextSelection = true
-                    }
-                }
+                .contentShape(Rectangle())
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.5)
+                        .onEnded { _ in
+                            if !message.text.isEmpty {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                showTextSelection = true
+                            }
+                        }
+                )
                 .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
                 .modifier(ConditionalClip(isClipped: message.isCollapsed))
                 .overlay(alignment: .bottom) {
@@ -181,7 +185,7 @@ struct MessageBubble: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
             .sheet(isPresented: $showTextSelection) {
-                TextSelectionSheet(text: message.text)
+                TextSelectionSheet(text: message.text, isUser: message.isUser)
             }
             .sheet(isPresented: $showTeamDashboard) {
                 if let team = message.teamSummary {
