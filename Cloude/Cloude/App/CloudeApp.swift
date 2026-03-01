@@ -29,7 +29,8 @@ struct CloudeApp: App {
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
     @State private var filePathToPreview: String? = nil
-    @AppStorage("appTheme") private var appTheme: AppTheme = .oceanDark
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.oceanDark.rawValue
+    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
     @Environment(\.scenePhase) var scenePhase
 

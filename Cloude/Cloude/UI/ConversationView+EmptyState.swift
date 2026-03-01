@@ -2,13 +2,14 @@ import SwiftUI
 
 struct EmptyConversationView: View {
     private static let characters = [
-        "baby-claude",
-        "chef-claude",
-        "grandpa-claude",
-        "cowboy-claude",
-        "wizard-claude",
-        "ninja-claude",
         "artist-claude",
+        "claude-painter",
+        "claude-builder",
+        "claude-scientist",
+        "ninja-claude",
+        "chef-claude",
+        "claude-boxer",
+        "claude-explorer",
     ]
 
     @State private var character: String

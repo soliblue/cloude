@@ -9,7 +9,7 @@ struct ConnectionStatusLogo: View {
             .renderingMode(.original)
             .resizable()
             .scaledToFit()
-            .frame(width: 38, height: 38)
+            .frame(width: 34, height: 34)
             .padding(.horizontal, 12)
             .opacity(isPulsing ? 0.5 : 1.0)
             .animation(
