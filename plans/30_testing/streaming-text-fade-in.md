@@ -1,4 +1,5 @@
 # Streaming Text Fade-In
+<!-- build: 82 -->
 
 **Status**: Testing
 **Created**: 2026-03-01
