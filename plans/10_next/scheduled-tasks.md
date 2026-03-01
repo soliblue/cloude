@@ -63,4 +63,4 @@ ScheduledTask {
 - **CloudeShared**: ScheduledTask model + messages for sync
 
 ## Status
-Planning — ready for architecture review.
+On hold — clock button removed from header toolbar (build 82). Underlying code (sheet, state, event handling) kept in place. Will re-add properly when ready to implement fully.
