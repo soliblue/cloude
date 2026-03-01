@@ -20,6 +20,7 @@ struct StreamingMarkdownView: View {
                 )
             }
         }
+        .animation(isComplete ? nil : .easeOut(duration: 0.6), value: text)
         .onAppear { updateCacheIfNeeded() }
         .onChange(of: text) { _, _ in updateCacheIfNeeded() }
         .onChange(of: toolCalls.count) { _, _ in updateCacheIfNeeded() }
@@ -152,12 +153,7 @@ private struct HeaderSectionView: View {
     }
 
     private var hasSpecialSegments: Bool {
-        headerSegments.contains { segment in
-            switch segment {
-            case .code, .filePath: return true
-            default: return false
-            }
-        }
+        headerSegments.contains(where: \.isSpecial)
     }
 
     var body: some View {
@@ -204,17 +200,12 @@ struct StreamingBlockView: View {
     var body: some View {
         switch block {
         case .text(_, let attributed, let segments):
-            let hasSpecialSegments = segments.contains { segment in
-                switch segment {
-                case .code, .filePath: return true
-                default: return false
-                }
-            }
-            if hasSpecialSegments {
+            if segments.contains(where: \.isSpecial) {
                 InlineTextView(segments: segments)
             } else {
                 Text(attributed)
                     .textSelection(.enabled)
+                    .contentTransition(.interpolate)
             }
 
         case .code(_, let content, let language, _):
@@ -230,17 +221,12 @@ struct StreamingBlockView: View {
             HorizontalRuleView()
 
         case .header(_, _, let content, let segments):
-            let hasSpecialSegments = segments.contains { segment in
-                switch segment {
-                case .code, .filePath: return true
-                default: return false
-                }
-            }
-            if hasSpecialSegments {
+            if segments.contains(where: \.isSpecial) {
                 InlineTextView(segments: segments)
             } else {
                 Text(content)
                     .textSelection(.enabled)
+                    .contentTransition(.interpolate)
             }
 
         case .toolGroup(_, let tools):
@@ -253,11 +239,16 @@ struct ToolGroupView: View {
     let tools: [ToolCall]
 
     private var toolHierarchy: [(parent: ToolCall, children: [ToolCall])] {
-        let topLevel = tools.filter { $0.parentToolId == nil }
-        return topLevel.map { parent in
-            let children = tools.filter { $0.parentToolId == parent.toolId }
-            return (parent, children)
+        var childrenByParent: [String: [ToolCall]] = [:]
+        var topLevel: [ToolCall] = []
+        for tool in tools {
+            if let parentId = tool.parentToolId {
+                childrenByParent[parentId, default: []].append(tool)
+            } else {
+                topLevel.append(tool)
+            }
         }
+        return topLevel.map { ($0, childrenByParent[$0.toolId] ?? []) }
     }
 
     var body: some View {
