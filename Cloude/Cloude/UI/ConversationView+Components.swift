@@ -113,15 +113,14 @@ struct ChatMessageList: View {
         .simultaneousGesture(
             TapGesture()
                 .onEnded {
-                    userHasScrolled = true
+                    if !userHasScrolled { userHasScrolled = true }
                     onInteraction?()
                 }
         )
         .simultaneousGesture(
             DragGesture(minimumDistance: 5)
                 .onChanged { _ in
-                    userHasScrolled = true
-                    onInteraction?()
+                    if !userHasScrolled { userHasScrolled = true }
                 }
                 .onEnded { _ in }
         )
