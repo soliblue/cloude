@@ -9,6 +9,7 @@ struct MessageBubble: View {
     var onToggleCollapse: (() -> Void)?
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
+    @State private var showTextSelection = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @ObservedObject private var ttsService = TTSService.shared
@@ -68,13 +69,7 @@ struct MessageBubble: View {
                         SlashCommandBubble(command: "/\(info.name)", args: info.args, icon: info.icon, isSkill: !info.isBuiltIn)
                     } else if message.isUser {
                         if !message.text.isEmpty {
-                            SelectableTextView(attributedString: NSAttributedString(
-                                string: message.text,
-                                attributes: [
-                                    .font: UIFont.preferredFont(forTextStyle: .body),
-                                    .foregroundColor: UIColor.label
-                                ]
-                            ), detectLinks: true)
+                            Text(message.text)
                         }
                     } else if hasToolCalls {
                         InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
@@ -83,6 +78,12 @@ struct MessageBubble: View {
                     }
                 }
                 .font(.body)
+                .onLongPressGesture {
+                    if !message.text.isEmpty {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        showTextSelection = true
+                    }
+                }
                 .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
                 .modifier(ConditionalClip(isClipped: message.isCollapsed))
                 .overlay(alignment: .bottom) {
@@ -179,6 +180,9 @@ struct MessageBubble: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
+            .sheet(isPresented: $showTextSelection) {
+                TextSelectionSheet(text: message.text)
+            }
             .sheet(isPresented: $showTeamDashboard) {
                 if let team = message.teamSummary {
                     TeamDashboardSheet(

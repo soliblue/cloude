@@ -6,8 +6,8 @@ struct SelectableTextView: UIViewRepresentable {
     var onLinkTap: ((URL) -> Void)?
     var detectLinks: Bool = false
 
-    func makeUIView(context: Context) -> SelectableUITextView {
-        let textView = SelectableUITextView()
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
         textView.isEditable = false
         textView.isSelectable = true
         textView.isScrollEnabled = false
@@ -24,7 +24,7 @@ struct SelectableTextView: UIViewRepresentable {
         return textView
     }
 
-    func updateUIView(_ textView: SelectableUITextView, context: Context) {
+    func updateUIView(_ textView: UITextView, context: Context) {
         textView.attributedText = attributedString
         context.coordinator.onLinkTap = onLinkTap
         textView.invalidateIntrinsicContentSize()
@@ -41,13 +41,6 @@ struct SelectableTextView: UIViewRepresentable {
             self.onLinkTap = onLinkTap
         }
 
-        func textViewDidChangeSelection(_ textView: UITextView) {
-            if let selectableTV = textView as? SelectableUITextView {
-                let hasSelection = textView.selectedRange.length > 0
-                selectableTV.setParentScrollEnabled(!hasSelection)
-            }
-        }
-
         func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
             if let onLinkTap {
                 onLinkTap(URL)
@@ -58,20 +51,65 @@ struct SelectableTextView: UIViewRepresentable {
     }
 }
 
-class SelectableUITextView: UITextView {
-    func setParentScrollEnabled(_ enabled: Bool) {
-        var view: UIView? = superview
-        while let current = view {
-            if let scrollView = current as? UIScrollView, scrollView !== self {
-                scrollView.isScrollEnabled = enabled
-                return
+struct TextSelectionSheet: View {
+    let text: String
+    @Environment(\.dismiss) private var dismiss
+    @State private var showCopied = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                SelectableSheetTextView(text: text)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
             }
-            view = current.superview
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        ClipboardHelper.copy(text)
+                        withAnimation { showCopied = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation { showCopied = false }
+                        }
+                    } label: {
+                        Image(systemName: showCopied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(showCopied ? .green : .secondary)
+                    }
+                }
+            }
         }
     }
+}
 
-    override func resignFirstResponder() -> Bool {
-        setParentScrollEnabled(true)
-        return super.resignFirstResponder()
+struct SelectableSheetTextView: UIViewRepresentable {
+    let text: String
+
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.isScrollEnabled = false
+        textView.backgroundColor = .clear
+        textView.font = .preferredFont(forTextStyle: .body)
+        textView.textColor = .label
+        textView.textContainerInset = .zero
+        textView.textContainer.lineFragmentPadding = 0
+        textView.dataDetectorTypes = .link
+        textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        textView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        return textView
+    }
+
+    func updateUIView(_ textView: UITextView, context: Context) {
+        textView.text = text
+        textView.invalidateIntrinsicContentSize()
     }
 }
