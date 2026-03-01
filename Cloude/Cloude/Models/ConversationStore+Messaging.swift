@@ -3,9 +3,9 @@ import CloudeShared
 
 extension ConversationStore {
     func finalizeStreamingMessage(output: ConversationOutput, conversation: Conversation) {
-        guard !output.fullText.isEmpty else { return }
+        guard !output.text.isEmpty else { return }
 
-        let rawText = output.fullText
+        let rawText = output.text
         let trimmedText = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
         let leadingTrimmed = rawText.count - rawText.drop(while: { $0.isWhitespace || $0.isNewline }).count
         let adjustedToolCalls = output.toolCalls.map { tool in
