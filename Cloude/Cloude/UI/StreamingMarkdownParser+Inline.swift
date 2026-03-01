@@ -207,10 +207,10 @@ extension StreamingMarkdownParser {
             remaining = Substring(String(urlText.removeLast())) + remaining
         }
         if let url = URL(string: urlText), url.host != nil {
-            let host = url.host ?? urlText
-            let path = url.path.count > 1 ? url.path : ""
-            let display = path.count > 20 ? host + path.prefix(20) + "…" : host + path
-            return .url(urlText, display)
+            var attr = AttributedString(urlText)
+            attr.link = url
+            attr.foregroundColor = .blue
+            return .text(attr)
         }
         return nil
     }

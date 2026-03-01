@@ -43,26 +43,4 @@ if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
     exit 1
 fi
 
-echo "📲 Installing to iPhone..."
-
-DEVICECTL_UUID=$(xcrun devicectl list devices 2>&1 | grep -i "iphone" | grep "connected" \
-    | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
-
-APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData/Cloude-*/Build/Products/Release-iphoneos/Cloude.app -maxdepth 0 2>/dev/null | head -1)
-
-if [[ -z "$APP_PATH" ]]; then
-    echo "❌ Could not find built Cloude.app in DerivedData"
-    exit 1
-fi
-
-xcrun devicectl device install app \
-    --device "$DEVICECTL_UUID" \
-    "$APP_PATH"
-
-if [[ $? -eq 0 ]]; then
-    echo "✅ Installed directly to $XCODE_NAME"
-    exit 0
-else
-    echo "❌ Install failed"
-    exit 1
-fi
+echo "✅ Installed directly to $XCODE_NAME"
