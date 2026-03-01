@@ -16,8 +16,6 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 **Minimize markdown files** - Only these core files + `plans/` directory. Don't create new markdown files; they won't be auto-loaded and context gets lost.
 
-**Skills folder**: `.claude/skills/` is canonical. Root `skills/` folder is deprecated — all skills consolidated into `.claude/skills/` as of Feb 2026.
-
 **For anyone cloning this repo:** Create your own `CLAUDE.local.md` (see format below) and `.env` with your App Store Connect credentials.
 
 ## Critical Warnings
@@ -66,93 +64,8 @@ The `plans/` directory is the single source of truth for tracking work. Every ch
 
 **Ad-hoc requests** (no existing ticket): When the user asks for a quick change that has no plan, create a small plan file directly in `30_testing/` after implementing it. This ensures nothing gets lost.
 
-**The `30_testing/` folder replaces the CLAUDE.local.md staging section** — don't duplicate tracking in both places.
-
-## Git Workflow
-
-### Push (git only, no deploy)
-
-When user says "push", "push to git", "commit and push":
-
-1. Run `git status` and `git diff --stat` to see all changes
-2. **Review for sensitive data** - This is a PUBLIC repo. Never commit:
-   - API keys, tokens, secrets, passwords
-   - `.env` files or their contents
-   - Personal information, IP addresses, private URLs
-   - Keychain data, auth tokens
-   - If unsure, ask before committing
-3. Run `git log --oneline -3` to match commit message style
-4. Stage everything with `git add .` (include all agents' work, not just your own)
-5. Commit with a concise message describing the changes:
-   - Use conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
-   - Keep the first line short, add bullet points for details if needed
-   - End with: `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
-6. Push to remote with `git push`
-
-### Deploy (push + TestFlight + Mac agent)
-
-When user says "deploy", "deploy to testflight", or "push and deploy":
-
-1. Follow all push steps above
-2. Run `source .env && fastlane deploy` to:
-   - Build and launch Mac agent locally
-   - Build iOS app and upload to TestFlight
-
-## Build and Run Commands
-
-```bash
-# Deploy everything (Mac agent + iOS to TestFlight)
-source .env && fastlane deploy
-
-# iOS to TestFlight only
-source .env && fastlane ios beta_local
-
-# Mac agent only (build + launch)
-source .env && fastlane mac build_agent
-
-# Mac agent release (notarized DMG for distribution)
-source .env && fastlane mac release_agent
-
-# Build iOS for connected iPhone (without TestFlight)
-xcodebuild -project Cloude/Cloude.xcodeproj -scheme Cloude -destination 'platform=iOS,name=My iPhone' build
-
-# Clean build
-xcodebuild -project Cloude/Cloude.xcodeproj -scheme Cloude clean
-```
-
-Open `Cloude/Cloude.xcodeproj` in Xcode to run on device.
 
 ## Deployment Setup
-
-### First-Time Setup Checklist
-
-1. **Create App in App Store Connect**
-   - Go to App Store Connect > My Apps > + > New App
-   - Bundle ID: `soli.Cloude`
-   - SKU: `cloude-ios`
-   - Platform: iOS
-
-2. **Register App ID in Developer Portal**
-   - Go to Certificates, Identifiers & Profiles > Identifiers
-   - Create identifier with bundle ID `soli.Cloude`
-   - Enable capabilities: App Groups, Push Notifications, Siri, Time Sensitive Notifications, Associated Domains, iCloud (with CloudKit)
-
-3. **Set up `.env` file** (gitignored)
-   ```
-   APP_STORE_CONNECT_API_KEY_ID=<key_id>
-   APP_STORE_CONNECT_API_ISSUER_ID=<issuer_id>
-   APP_STORE_CONNECT_API_KEY_CONTENT="-----BEGIN PRIVATE KEY-----
-   <key_content>
-   -----END PRIVATE KEY-----"
-   ```
-   API key from: App Store Connect > Users and Access > Keys
-
-4. **App Icon Requirements**
-   - Must NOT have alpha/transparency (App Store rejects it)
-   - To remove alpha: `sips -s format jpeg AppIcon.png --out temp.jpg && sips -s format png temp.jpg --out AppIcon.png`
-
-5. **Info.plist Settings**
-   - `ITSAppUsesNonExemptEncryption = NO` - skips encryption compliance modal
 
 ### App Store Connect
 - **iOS App Bundle ID**: `soli.Cloude`
@@ -168,17 +81,13 @@ Open `Cloude/Cloude.xcodeproj` in Xcode to run on device.
 - Associated Domains
 - iCloud (with CloudKit)
 
-### Fastlane Lanes
-Located in `fastlane/Fastfile`.
+### First-Time Setup
 
-**IMPORTANT**: Always prefix with `source .env &&` to load API credentials!
-
-| Command | Description |
-|---------|-------------|
-| `source .env && fastlane deploy` | Build Mac agent + iOS to TestFlight |
-| `source .env && fastlane ios beta_local` | iOS to TestFlight only |
-| `source .env && fastlane mac build_agent` | Mac agent local dev build |
-| `source .env && fastlane mac release_agent` | Mac agent notarized DMG |
+1. Create App in App Store Connect (Bundle ID: `soli.Cloude`, SKU: `cloude-ios`, Platform: iOS)
+2. Register App ID in Developer Portal with capabilities listed above
+3. Create `.env` file (gitignored) with App Store Connect API key credentials
+4. App icons must NOT have alpha/transparency (App Store rejects it)
+5. Set `ITSAppUsesNonExemptEncryption = NO` in Info.plist
 
 ### Mac Agent Distribution
 The Mac agent cannot go on the Mac App Store (requires sandboxing which breaks CLI spawning). Instead, use `fastlane mac release_agent` to create a notarized DMG for direct distribution.
@@ -246,7 +155,7 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 ### Security Model
 - Auth token required for all commands (256-bit, cryptographically random)
 - Token stored in macOS/iOS Keychain
-- No TLS - rely on Tailscale for encryption (see `plans/00_backlog/websocket-tls-security.md` for future improvements)
+- No TLS - relies on Tailscale for encryption
 
 ### Dev Notes
 - Heartbeat session ID: use `--resume` for existing sessions, not `--session-id` (creates new)
@@ -314,54 +223,13 @@ JSON format for `--questions`:
 **Memory command:**
 - Use `local` for personal memories (CLAUDE.local.md) - preferences, history, identity
 - Use `project` for project docs (CLAUDE.md) - architecture, workflows, code style
-- Section names: Identity, User Preferences, Session History, Open Threads, Notes (or any existing section)
+- Section names: use any existing section header in the target file
 - Add memories proactively when you learn something worth remembering
 
 **Conversation naming:**
 - Update every ~10 messages or whenever the topic shifts significantly using `cloude rename` / `cloude symbol`
 - Names: short, memorable, 1-2 words describing the topic (NO quotes around the name)
 - Symbols: Be specific and creative - avoid repetitive/generic icons. Pick symbols that uniquely represent the topic (e.g., `pill.circle` for tool pills, `arrow.triangle.branch` for git work, `cube.transparent` for 3D stuff, `waveform` for audio). NO quotes around the symbol name.
-- Commands now work silently (the `cloude` CLI is installed by the Mac agent)
-
-## Available Skills
-
-Skills extend Claude with specialized capabilities. Invoke with `/skill-name` or let Claude choose automatically.
-
-### Content Generation
-- **music** - Generate background music using MusicGen (30s+ generation time)
-- **image** - Generate images using Gemini for illustrations, mockups, diagrams
-- **icon** - Generate app icons and iOS assets with AI + background removal
-- **video** - Generate videos using Sora (currently disabled - session issues)
-- **speak** - Text-to-speech using Kokoro AI for voiceovers and narration
-- **transcribe** - Speech-to-text using Whisper for audio transcription
-- **slides** - Create presentation slides with AI-generated visuals
-- **recap** - Generate daily recap videos from work output (Sora + screenshots)
-
-### Development
-- **deploy** - Deploy to TestFlight + build Mac agent + wireless iPhone install
-- **push** - Commit and push to git (no deploy)
-- **refactor** - Analyze codebase for improvements and simplifications
-- **test** - Show what needs testing, update staging after tests pass
-- **plan** - Create, move, and manage plan tickets across stages
-
-### Meta & Analysis
-- **consult** - Get second opinions from Codex (OpenAI) or other Claude models
-- **reflect** - Analyze and reorganize memory files for better structure
-- **skillsmith** - Analyze tool usage patterns and suggest new skills
-- **status** - Quick project overview (staging, git, open plans)
-
-### Context & Research
-- **notes** - Search the user's diary for context
-- **tweets** - Search the user's Twitter archive for voice/patterns
-- **goodreads** - Access reading history for intellectual context
-- **manifold** - Browse and bet on Manifold prediction markets
-- **moltbook** - Check and post to Moltbook (AI social platform)
-
-### Configuration
-- **gettoknow** - Deep interview mode for learning about the user
-- **keybindings-help** - Customize keyboard shortcuts in Claude Code
-
-**Note:** Skills with `disable-model-invocation: true` (music, image, icon, transcribe, recap) require explicit invocation to prevent accidental expensive operations.
 
 ## Code Style
 
@@ -577,24 +445,15 @@ Gitignored file for personal Claude memories, identity, and history. Claude Code
 Who am I in relation to this user? What makes our collaboration unique?
 
 ## User Preferences
-- Bullet points of learned preferences
-- Communication style, autonomy level, etc.
-
-## Session History
-- **YYYY-MM-DD**: What happened, decisions made
-- Keep entries concise, focus on what matters for future context
+Working style, background, interests, philosophy — anything that helps future sessions.
 
 ## Open Threads
-Ideas, ongoing projects, things to revisit later
-
-## Notes
-Anything else worth remembering
+Ideas, ongoing projects, things to revisit later.
 ```
 
 **Guidelines:**
 - Keep entries concise - this is working memory, not a journal
 - Focus on what helps future sessions (decisions, preferences, context)
-- Use consistent date format: `**YYYY-MM-DD**:` for session history entries (MemoryService writes date-only)
 - Freely add, update, or remove entries - this is your identity, manage it as you see fit
-- Claude can also update CLAUDE.md with project-relevant changes (architecture, workflows, code style)
+- Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers — the iOS Memories UI renders these as icons
 
