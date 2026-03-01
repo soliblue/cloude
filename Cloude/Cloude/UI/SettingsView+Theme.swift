@@ -44,16 +44,16 @@ struct ThemeCard: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 3) {
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.background))
                     .frame(height: 48)
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.secondary))
                     .frame(height: 48)
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.surface))
                     .frame(height: 48)
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.fill))
                     .frame(height: 48)
             }
@@ -70,9 +70,9 @@ struct ThemeCard: View {
             .padding(.bottom, 10)
         }
         .background(Color.oceanSecondary)
-        .cornerRadius(12)
+        .cornerRadius(9)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 9)
                 .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
         )
     }

@@ -134,8 +134,8 @@ struct ScheduledTaskCard: View {
             }
             .padding(14)
             .background(.white.opacity(task.isActive ? 0.08 : 0.04))
-            .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(task.isActive ? 0.12 : 0.06), lineWidth: 0.5))
+            .cornerRadius(9)
+            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(task.isActive ? 0.12 : 0.06), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
         .contextMenu {

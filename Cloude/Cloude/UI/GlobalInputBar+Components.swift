@@ -40,9 +40,9 @@ struct ImageAttachmentPill: View {
                     .resizable()
                     .scaledToFill()
                     .frame(width: 44, height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.white.opacity(0.15), lineWidth: 1)
                     )
             }
@@ -106,10 +106,10 @@ struct FileAttachmentPill: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color.cyan.opacity(0.12))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.cyan.opacity(0.25), lineWidth: 1)
                 )
         )
@@ -233,10 +233,10 @@ struct FilePill: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color.orange.opacity(0.12))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 10)
                         .stroke(
                             LinearGradient(
                                 colors: [Color.orange.opacity(0.3), Color.yellow.opacity(0.2)],

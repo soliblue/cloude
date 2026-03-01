@@ -64,7 +64,7 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
                     y: .value("Y", yValue(point))
                 )
                 .foregroundStyle(barColor(point, selectedPoint?.id == point.id))
-                .cornerRadius(3)
+                .cornerRadius(2)
             }
             .chartXAxis {
                 AxisMarks(values: .automatic(desiredCount: 5)) { _ in
@@ -105,8 +105,8 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
         }
         .padding(14)
         .background(.white.opacity(0.08))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(9)
+        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var timeRangePicker: some View {
@@ -124,7 +124,7 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(selectedRange?.id == range.id ? Color.accentColor.opacity(0.3) : Color.clear)
-                        .cornerRadius(6)
+                        .cornerRadius(4)
                 }
             }
         }

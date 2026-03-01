@@ -87,8 +87,8 @@ struct UsageStatsSheet: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
         .background(.white.opacity(0.08))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(9)
+        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var activityChart: some View {
@@ -121,7 +121,7 @@ struct UsageStatsSheet: View {
 
                     GeometryReader { geo in
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))
-                        RoundedRectangle(cornerRadius: 3)
+                        RoundedRectangle(cornerRadius: 2)
                             .fill(modelColor(model.name))
                             .frame(width: max(4, geo.size.width * fraction))
                     }
@@ -136,8 +136,8 @@ struct UsageStatsSheet: View {
         }
         .padding(14)
         .background(.white.opacity(0.08))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(9)
+        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var peakHoursSection: some View {
@@ -171,8 +171,8 @@ struct UsageStatsSheet: View {
         }
         .padding(14)
         .background(.white.opacity(0.08))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(9)
+        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var footerSection: some View {
