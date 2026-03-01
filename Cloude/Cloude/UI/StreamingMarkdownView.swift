@@ -154,7 +154,7 @@ private struct HeaderSectionView: View {
     private var hasSpecialSegments: Bool {
         headerSegments.contains { segment in
             switch segment {
-            case .code, .filePath, .url: return true
+            case .code, .filePath: return true
             default: return false
             }
         }
@@ -206,7 +206,7 @@ struct StreamingBlockView: View {
         case .text(_, let attributed, let segments):
             let hasSpecialSegments = segments.contains { segment in
                 switch segment {
-                case .code, .filePath, .url: return true
+                case .code, .filePath: return true
                 default: return false
                 }
             }
@@ -232,7 +232,7 @@ struct StreamingBlockView: View {
         case .header(_, _, let content, let segments):
             let hasSpecialSegments = segments.contains { segment in
                 switch segment {
-                case .code, .filePath, .url: return true
+                case .code, .filePath: return true
                 default: return false
                 }
             }
