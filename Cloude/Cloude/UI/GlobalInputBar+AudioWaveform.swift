@@ -89,7 +89,7 @@ struct RecordingOverlayView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 20))
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 15))
         .onAppear {
             withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
                 pulse = true

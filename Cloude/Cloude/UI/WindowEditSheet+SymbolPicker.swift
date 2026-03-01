@@ -57,7 +57,7 @@ struct SymbolPickerSheet: View {
                                             .font(.system(size: 22))
                                             .frame(width: 44, height: 44)
                                             .background(selectedSymbol == symbol ? Color.accentColor.opacity(0.2) : Color.clear)
-                                            .cornerRadius(8)
+                                            .cornerRadius(6)
                                     }
                                     .buttonStyle(.plain)
                                 }

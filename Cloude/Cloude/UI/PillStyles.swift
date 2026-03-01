@@ -16,11 +16,11 @@ struct SkillPillBackground: View {
     let isSkill: Bool
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 14)
+        RoundedRectangle(cornerRadius: 8)
             .fill(isSkill ? Color.purple.opacity(0.12) : Color.cyan.opacity(0.12))
             .overlay(
                 isSkill ?
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 8)
                     .stroke(
                         LinearGradient(
                             colors: [Color.purple.opacity(0.3), Color.pink.opacity(0.2)],

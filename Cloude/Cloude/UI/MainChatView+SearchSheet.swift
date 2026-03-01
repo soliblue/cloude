@@ -67,7 +67,7 @@ struct ConversationSearchSheet: View {
                                 }
                             }
                             .background(Color.oceanSecondary)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                     }
                 }

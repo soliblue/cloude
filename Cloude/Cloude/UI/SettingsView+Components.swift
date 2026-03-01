@@ -66,7 +66,7 @@ struct ConnectionStatusCard: View {
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: 10)
                     .fill(statusColor.opacity(0.2))
                     .frame(width: 44, height: 44)
 
@@ -100,10 +100,6 @@ struct ConnectionStatusCard: View {
                     .disabled(!canConnect)
             }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity)
-        .background(Color.oceanGroupedSecondary)
-        .cornerRadius(12)
         .padding(.horizontal)
     }
 

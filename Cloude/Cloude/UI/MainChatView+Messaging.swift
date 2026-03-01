@@ -76,10 +76,6 @@ extension MainChatView {
         }
         guard let conv = conversation else { return }
 
-        if let limit = conv.costLimitUsd, limit > 0, conv.totalCost >= limit {
-            return
-        }
-
         let isRunning = connection.output(for: conv.id).isRunning
 
         if isRunning || !connection.isAuthenticated {

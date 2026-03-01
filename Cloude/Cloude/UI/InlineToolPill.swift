@@ -43,9 +43,9 @@ struct InlineToolPill: View {
 
                 if !children.isEmpty {
                     Text("\(children.count)")
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .font(.system(size: 8, weight: .bold, design: .rounded))
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, 3)
                         .padding(.vertical, 1)
                         .background(Color.secondary.opacity(0.15))
                         .clipShape(Capsule())
@@ -53,16 +53,15 @@ struct InlineToolPill: View {
             }
 
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(.ultraThinMaterial)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .overlay {
             if isExecuting {
                 ShimmerOverlay(phase: shimmerPhase)
                     .transition(.opacity)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 8))
         .onChange(of: toolCall.state) { _, newState in
             if newState == .complete {
                 withAnimation(.easeOut(duration: 0.3)) {
@@ -72,8 +71,8 @@ struct InlineToolPill: View {
         }
         .onAppear {
             if isExecuting {
-                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: false)) {
-                    shimmerPhase = 2
+                withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                    shimmerPhase = 1.5
                 }
             } else {
                 shimmerPhase = -1
@@ -87,17 +86,17 @@ struct InlineToolPill: View {
                 if index > 0 {
                     let prevOp = chainedCommands[index - 1].operatorAfter
                     Text(prevOp == .pipe ? "|" : "›")
-                        .font(.system(size: 11, weight: .light))
+                        .font(.system(size: 9, weight: .light))
                         .foregroundColor(.secondary)
                 }
                 let parsed = BashCommandParser.parse(chained.command)
                 Text(parsed.command.isEmpty ? "cmd" : parsed.command)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
                     .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
             }
             if chainedCommands.count > 3 {
                 Text("+\(chainedCommands.count - 3)")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 9, weight: .semibold))
                     .foregroundColor(.secondary)
             }
         }
