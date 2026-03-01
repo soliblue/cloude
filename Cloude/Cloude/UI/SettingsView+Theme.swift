@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct ThemePickerView: View {
-    @AppStorage("appTheme") private var appTheme: AppTheme = .oceanDark
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.oceanDark.rawValue
+    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [
@@ -15,7 +16,7 @@ struct ThemePickerView: View {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(AppTheme.allCases, id: \.self) { theme in
                         ThemeCard(theme: theme, isSelected: appTheme == theme)
-                            .onTapGesture { appTheme = theme }
+                            .onTapGesture { appThemeRaw = theme.rawValue }
                     }
                 }
                 .padding(16)
