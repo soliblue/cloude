@@ -68,8 +68,13 @@ struct MessageBubble: View {
                         SlashCommandBubble(command: "/\(info.name)", args: info.args, icon: info.icon, isSkill: !info.isBuiltIn)
                     } else if message.isUser {
                         if !message.text.isEmpty {
-                            Text(message.text)
-                                .textSelection(.enabled)
+                            SelectableTextView(attributedString: NSAttributedString(
+                                string: message.text,
+                                attributes: [
+                                    .font: UIFont.preferredFont(forTextStyle: .body),
+                                    .foregroundColor: UIColor.label
+                                ]
+                            ))
                         }
                     } else if hasToolCalls {
                         InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
