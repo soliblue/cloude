@@ -17,9 +17,11 @@ struct CloudeApp: App {
     @State private var showMemories = false
     @State private var memorySections: [MemorySection] = []
     @State private var isLoadingMemories = false
+    @State private var memoriesFromCache = false
     @State private var showPlans = false
     @State private var planStages: [String: [PlanItem]] = [:]
     @State private var isLoadingPlans = false
+    @State private var plansFromCache = false
     @State private var showScheduledTasks = false
     @State private var scheduledTasks: [ScheduledTask] = []
     @State private var isLoadingScheduledTasks = false
@@ -54,18 +56,46 @@ struct CloudeApp: App {
                     ToolbarItem(placement: .topBarLeading) {
                         HStack(spacing: 0) {
                             Button(action: {
-                                isLoadingMemories = true
-                                memorySections = []
-                                connection.send(.getMemories)
+                                if connection.isAuthenticated || connection.isConnected {
+                                    connection.disconnect(clearCredentials: false)
+                                } else {
+                                    connection.reconnectIfNeeded()
+                                }
+                            }) {
+                                Image(systemName: "power")
+                                    .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
+                            }
+                            .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
+                            Divider().frame(height: 20).padding(.horizontal, 10)
+                            Button(action: {
+                                if let cached = OfflineCacheService.loadMemories() {
+                                    memorySections = cached.sections
+                                    memoriesFromCache = true
+                                    isLoadingMemories = connection.isAuthenticated
+                                } else {
+                                    memorySections = []
+                                    memoriesFromCache = false
+                                    isLoadingMemories = true
+                                }
+                                if connection.isAuthenticated {
+                                    connection.send(.getMemories)
+                                }
                                 showMemories = true
                             }) {
                                 Image(systemName: "brain")
                             }
                             Divider().frame(height: 20).padding(.horizontal, 10)
                             Button(action: {
-                                isLoadingPlans = true
-                                planStages = [:]
-                                if let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+                                if let cached = OfflineCacheService.loadPlans() {
+                                    planStages = cached.stages
+                                    plansFromCache = true
+                                    isLoadingPlans = connection.isAuthenticated
+                                } else {
+                                    planStages = [:]
+                                    plansFromCache = false
+                                    isLoadingPlans = true
+                                }
+                                if connection.isAuthenticated, let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
                                     connection.getPlans(workingDirectory: wd)
                                 }
                                 showPlans = true
@@ -84,22 +114,9 @@ struct CloudeApp: App {
                         }
                         .padding(.horizontal, 14)
                     }
-                    ToolbarItem(placement: .principal) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         ConnectionStatusLogo(connection: connection)
                             .onTapGesture { showSettings = true }
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: {
-                            if connection.isAuthenticated || connection.isConnected {
-                                connection.disconnect(clearCredentials: false)
-                            } else {
-                                connection.reconnectIfNeeded()
-                            }
-                        }) {
-                            Image(systemName: "power")
-                                .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
-                        }
-                        .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
                     }
                 }
         }
@@ -108,12 +125,13 @@ struct CloudeApp: App {
             SettingsView(connection: connection)
         }
         .sheet(isPresented: $showMemories) {
-            MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories)
+            MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories, fromCache: memoriesFromCache)
         }
         .sheet(isPresented: $showPlans) {
             PlansSheet(
                 stages: planStages,
                 isLoading: isLoadingPlans,
+                fromCache: plansFromCache,
                 onOpenFile: { path in
                     showPlans = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -142,9 +160,17 @@ struct CloudeApp: App {
                 let path = url.path.removingPercentEncoding ?? url.path
                 filePathToPreview = path
             case "memory":
-                isLoadingMemories = true
-                memorySections = []
-                connection.send(.getMemories)
+                if let cached = OfflineCacheService.loadMemories() {
+                    memorySections = cached.sections
+                    memoriesFromCache = true
+                    isLoadingMemories = connection.isAuthenticated
+                } else {
+                    memorySections = []
+                    isLoadingMemories = true
+                }
+                if connection.isAuthenticated {
+                    connection.send(.getMemories)
+                }
                 showMemories = true
             default:
                 break
@@ -217,11 +243,15 @@ struct CloudeApp: App {
 
         case .memories(let sections):
             memorySections = sections
+            memoriesFromCache = false
             isLoadingMemories = false
+            OfflineCacheService.saveMemories(sections)
 
         case .plans(let stages):
             planStages = stages
+            plansFromCache = false
             isLoadingPlans = false
+            OfflineCacheService.savePlans(stages)
 
         case .planDeleted(let stage, let filename):
             planStages[stage]?.removeAll { $0.filename == filename }

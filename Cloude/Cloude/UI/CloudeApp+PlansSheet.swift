@@ -4,6 +4,7 @@ import CloudeShared
 struct PlansSheet: View {
     let stages: [String: [PlanItem]]
     var isLoading: Bool = false
+    var fromCache: Bool = false
     var onOpenFile: ((String) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var selectedStage = "active"
@@ -90,6 +91,19 @@ struct PlansSheet: View {
                         Image(systemName: "xmark")
                             .fontWeight(.medium)
                             .foregroundColor(.secondary)
+                    }
+                }
+                if fromCache && !isLoading {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Label("Cached", systemImage: "arrow.clockwise.icloud")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                if isLoading && !stages.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        ProgressView()
+                            .controlSize(.small)
                     }
                 }
             }

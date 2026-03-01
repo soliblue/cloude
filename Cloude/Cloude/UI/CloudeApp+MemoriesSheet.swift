@@ -4,6 +4,7 @@ import CloudeShared
 struct MemoriesSheet: View {
     let sections: [MemorySection]
     var isLoading: Bool = false
+    var fromCache: Bool = false
     @Environment(\.dismiss) private var dismiss
     @State private var expandedPaths: Set<String> = []
     @State private var parsedSections: [ParsedMemorySection] = []
@@ -62,6 +63,19 @@ struct MemoriesSheet: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                             .fontWeight(.medium)
+                    }
+                }
+                if fromCache && !isLoading {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Label("Cached", systemImage: "arrow.clockwise.icloud")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                if isLoading && !sections.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        ProgressView()
+                            .controlSize(.small)
                     }
                 }
             }

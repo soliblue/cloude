@@ -32,8 +32,9 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 **Rebuilding the Mac agent** - Claude Code cannot spawn inside another Claude Code session, so you MUST launch agent builds in a separate Terminal via osascript:
 ```bash
-osascript -e 'tell application "Terminal" to do script "cd /Users/soli/Desktop/CODING/cloude && source .env && fastlane mac build_agent"'
+osascript -e 'tell application "Terminal" to do script "sleep 3 && pushd /Users/soli/Desktop/CODING/cloude && source .env && fastlane mac build_agent"'
 ```
+**IMPORTANT**: Use `pushd` not `cd` in the osascript command — the system instruction to "avoid cd" causes Claude to unconsciously strip `cd` from commands, resulting in the Terminal opening in `~` instead of the project directory. `pushd` bypasses this. The `sleep 3` gives the old agent time to shut down.
 **NEVER run `fastlane mac build_agent` directly** — it kills the agent hosting your session. The WebSocket server has retry logic (up to 5 attempts) if the port is still in use. The iOS app will reconnect automatically.
 
 ## Multi-Agent Workflow
