@@ -69,6 +69,7 @@ struct MessageBubble: View {
                     } else if message.isUser {
                         if !message.text.isEmpty {
                             Text(message.text)
+                                .textSelection(.enabled)
                         }
                     } else if hasToolCalls {
                         InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
@@ -149,6 +150,14 @@ struct MessageBubble: View {
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
+                    if let onToggleCollapse {
+                        Button(action: onToggleCollapse) {
+                            Image(systemName: message.isCollapsed ? "chevron.down" : "chevron.up")
+                                .font(.system(size: 9))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
@@ -173,35 +182,6 @@ struct MessageBubble: View {
                             TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
                         }
                     )
-                }
-            }
-            .contextMenu {
-                Button {
-                    ClipboardHelper.copy(message.text)
-                    withAnimation { showCopiedToast = true }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        withAnimation { showCopiedToast = false }
-                    }
-                } label: {
-                    Label("Copy", systemImage: "doc.on.doc")
-                }
-                if !message.isUser && !message.text.isEmpty {
-                    Button {
-                        onToggleCollapse?()
-                    } label: {
-                        Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
-                    }
-                }
-                if ttsMode != .off && !message.text.isEmpty && !message.isUser {
-                    Button {
-                        ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
-                    } label: {
-                        if ttsService.playingMessageId == message.id.uuidString {
-                            Label("Stop", systemImage: "stop.fill")
-                        } else {
-                            Label("Play", systemImage: "speaker.wave.2")
-                        }
-                    }
                 }
             }
             .overlay(alignment: .top) {

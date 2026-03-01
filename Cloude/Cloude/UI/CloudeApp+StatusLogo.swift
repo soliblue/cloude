@@ -6,6 +6,7 @@ struct ConnectionStatusLogo: View {
 
     var body: some View {
         Image("logo-transparent")
+            .renderingMode(.original)
             .resizable()
             .scaledToFit()
             .frame(width: 45, height: 45)
