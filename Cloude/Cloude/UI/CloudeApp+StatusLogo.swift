@@ -10,6 +10,7 @@ struct ConnectionStatusLogo: View {
             .resizable()
             .scaledToFit()
             .frame(width: 45, height: 45)
+            .padding(.horizontal, 6)
             .opacity(isPulsing ? 0.5 : 1.0)
             .animation(
                 connection.isAnyRunning

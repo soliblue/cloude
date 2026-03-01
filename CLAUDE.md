@@ -248,6 +248,12 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 - Token stored in macOS/iOS Keychain
 - No TLS - rely on Tailscale for encryption (see `plans/00_backlog/websocket-tls-security.md` for future improvements)
 
+### Dev Notes
+- Heartbeat session ID: use `--resume` for existing sessions, not `--session-id` (creates new)
+- Tool call input for Read/Write/Edit is the raw file path string not JSON
+- Agent teams: CLI returns plain text for Task results, TeamCreate/Delete returns JSON. Read `~/.claude/teams/{name}/config.json` for color/model/agentType.
+- Sora credits: Reset on rolling ~4.5hr timer, not midnight
+
 ### Heartbeat Execution
 
 Heartbeat is autonomous - no user request, you decide what to do. Triggered by timer or manual button. Be proactive: check personal tasks in CLAUDE.local.md, update memory, check git status, explore codebase. Use `cloude skip` if nothing useful to do. Be concise.
@@ -442,6 +448,7 @@ let role = user.isAdmin ? "admin" : "user"
 - Minimize message movement during streaming - users should not have to chase content
 - Scroll to position content at the start of streaming, not during
 - Loading indicators should disappear once actual content is available (avoid redundant UI)
+- Never use brace notation like {1-6} when referencing files in chat - each file must be a full absolute path to render as a tappable pill
 
 ### iOS UI Conventions
 - Use SF Symbols instead of text for toolbar buttons (e.g., `xmark` for Cancel, `checkmark` for Done/Save, `trash` for Delete)
