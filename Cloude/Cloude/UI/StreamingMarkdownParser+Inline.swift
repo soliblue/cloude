@@ -101,12 +101,6 @@ extension StreamingMarkdownParser {
                 continue
             }
 
-            if let result = parseURL(&remaining) {
-                flushText()
-                segments.append(result)
-                continue
-            }
-
             if let result = parseLink(&remaining, font: font) {
                 flushText()
                 segments.append(result)
@@ -196,25 +190,6 @@ extension StreamingMarkdownParser {
         return .text(attr)
     }
 
-    private static func parseURL(_ remaining: inout Substring) -> InlineSegment? {
-        guard remaining.hasPrefix("https://") || remaining.hasPrefix("http://") else { return nil }
-        var urlText = ""
-        while let ch = remaining.first {
-            if ch.isWhitespace || ch == ")" || ch == "]" || ch == ">" { break }
-            urlText.append(remaining.removeFirst())
-        }
-        while urlText.last == "." || urlText.last == "," || urlText.last == ";" {
-            remaining = Substring(String(urlText.removeLast())) + remaining
-        }
-        if let url = URL(string: urlText), url.host != nil {
-            var attr = AttributedString(urlText)
-            attr.link = url
-            attr.foregroundColor = .blue
-            return .text(attr)
-        }
-        return nil
-    }
-
     private static func parseLink(_ remaining: inout Substring, font: Font?) -> InlineSegment? {
         guard remaining.hasPrefix("["),
               let closeIdx = remaining.firstIndex(of: "]"),
@@ -287,14 +262,6 @@ extension StreamingMarkdownParser {
                 attr.foregroundColor = .accentColor
                 if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                    let url = URL(string: "cloude://file\(encodedPath)") {
-                    attr.link = url
-                }
-                result.append(attr)
-            case .url(_, let urlString, let displayText):
-                var attr = AttributedString("↗ \(displayText)")
-                attr.font = .system(size: 14, weight: .medium, design: .monospaced)
-                attr.foregroundColor = .blue
-                if let url = URL(string: urlString) {
                     attr.link = url
                 }
                 result.append(attr)

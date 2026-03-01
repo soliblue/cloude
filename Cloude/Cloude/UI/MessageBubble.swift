@@ -69,7 +69,7 @@ struct MessageBubble: View {
                         SlashCommandBubble(command: "/\(info.name)", args: info.args, icon: info.icon, isSkill: !info.isBuiltIn)
                     } else if message.isUser {
                         if !message.text.isEmpty {
-                            LinkDetectingTextView(text: message.text)
+                            Text(message.text)
                         }
                     } else if hasToolCalls {
                         InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
@@ -78,16 +78,6 @@ struct MessageBubble: View {
                     }
                 }
                 .font(.body)
-                .contentShape(Rectangle())
-                .simultaneousGesture(
-                    LongPressGesture(minimumDuration: 0.5)
-                        .onEnded { _ in
-                            if !message.text.isEmpty {
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                showTextSelection = true
-                            }
-                        }
-                )
                 .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
                 .modifier(ConditionalClip(isClipped: message.isCollapsed))
                 .overlay(alignment: .bottom) {
@@ -160,14 +150,6 @@ struct MessageBubble: View {
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
-                    if let onToggleCollapse {
-                        Button(action: onToggleCollapse) {
-                            Image(systemName: message.isCollapsed ? "chevron.down" : "chevron.up")
-                                .font(.system(size: 9))
-                                .foregroundColor(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
@@ -185,7 +167,7 @@ struct MessageBubble: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
             .sheet(isPresented: $showTextSelection) {
-                TextSelectionSheet(text: message.text, isUser: message.isUser)
+                TextSelectionSheet(text: message.text, isMarkdown: !message.isUser)
             }
             .sheet(isPresented: $showTeamDashboard) {
                 if let team = message.teamSummary {
@@ -195,6 +177,42 @@ struct MessageBubble: View {
                             TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
                         }
                     )
+                }
+            }
+            .contextMenu {
+                Button {
+                    ClipboardHelper.copy(message.text)
+                    withAnimation { showCopiedToast = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        withAnimation { showCopiedToast = false }
+                    }
+                } label: {
+                    Label("Copy", systemImage: "doc.on.doc")
+                }
+                if !message.text.isEmpty {
+                    Button {
+                        showTextSelection = true
+                    } label: {
+                        Label("Select Text", systemImage: "text.cursor")
+                    }
+                }
+                if !message.isUser && !message.text.isEmpty {
+                    Button {
+                        onToggleCollapse?()
+                    } label: {
+                        Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
+                    }
+                }
+                if ttsMode != .off && !message.text.isEmpty && !message.isUser {
+                    Button {
+                        ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
+                    } label: {
+                        if ttsService.playingMessageId == message.id.uuidString {
+                            Label("Stop", systemImage: "stop.fill")
+                        } else {
+                            Label("Play", systemImage: "speaker.wave.2")
+                        }
+                    }
                 }
             }
             .overlay(alignment: .top) {
@@ -272,6 +290,69 @@ struct TeamSummaryBadge: View {
             .clipShape(Capsule())
         }
         .buttonStyle(.plain)
+    }
+}
+
+struct TextSelectionSheet: View {
+    let text: String
+    var isMarkdown: Bool = false
+    @Environment(\.dismiss) private var dismiss
+    @State private var showCopied = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                PlainSelectableText(text: text)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        ClipboardHelper.copy(text)
+                        withAnimation { showCopied = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation { showCopied = false }
+                        }
+                    } label: {
+                        Image(systemName: showCopied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(showCopied ? .green : .secondary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct PlainSelectableText: UIViewRepresentable {
+    let text: String
+
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.isScrollEnabled = false
+        textView.backgroundColor = .clear
+        textView.font = .preferredFont(forTextStyle: .body)
+        textView.textColor = .label
+        textView.textContainerInset = .zero
+        textView.textContainer.lineFragmentPadding = 0
+        textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        textView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        return textView
+    }
+
+    func updateUIView(_ textView: UITextView, context: Context) {
+        textView.text = text
+        textView.invalidateIntrinsicContentSize()
     }
 }
 

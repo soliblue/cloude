@@ -6,7 +6,6 @@ enum InlineSegment: Identifiable, Equatable {
     case text(id: UUID = UUID(), AttributedString)
     case code(id: UUID = UUID(), String)
     case filePath(id: UUID = UUID(), String)
-    case url(id: UUID = UUID(), String, String)
     case lineBreak(id: UUID = UUID())
 
     var id: UUID {
@@ -14,7 +13,6 @@ enum InlineSegment: Identifiable, Equatable {
         case .text(let id, _): return id
         case .code(let id, _): return id
         case .filePath(let id, _): return id
-        case .url(let id, _, _): return id
         case .lineBreak(let id): return id
         }
     }
@@ -24,78 +22,37 @@ struct InlineTextView: View {
     let segments: [InlineSegment]
 
     var body: some View {
-        SelectableTextView(
-            attributedString: buildNSAttributedString(),
-            onLinkTap: { url in
-                UIApplication.shared.open(url)
-            }
-        )
+        Text(buildAttributedString())
+            .textSelection(.enabled)
     }
 
-    private func buildNSAttributedString() -> NSAttributedString {
-        let result = NSMutableAttributedString()
-        let bodySize = UIFont.preferredFont(forTextStyle: .body).pointSize
-        let bodyFont = UIFont.systemFont(ofSize: bodySize)
-        let defaultAttributes: [NSAttributedString.Key: Any] = [
-            .font: bodyFont,
-            .foregroundColor: UIColor.label
-        ]
-
+    private func buildAttributedString() -> AttributedString {
+        var result = AttributedString()
         for segment in segments {
             switch segment {
             case .text(_, let attr):
-                let converted: NSAttributedString = NSAttributedString(attr)
-                let nsAttr = NSMutableAttributedString(attributedString: converted)
-                let fullRange = NSRange(location: 0, length: nsAttr.length)
-                nsAttr.enumerateAttribute(NSAttributedString.Key.font, in: fullRange) { value, range, _ in
-                    if value == nil {
-                        nsAttr.addAttribute(NSAttributedString.Key.font, value: bodyFont, range: range)
-                    }
-                }
-                nsAttr.enumerateAttribute(NSAttributedString.Key.foregroundColor, in: fullRange) { value, range, _ in
-                    if value == nil {
-                        nsAttr.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.label, range: range)
-                    }
-                }
-                result.append(nsAttr)
+                result.append(attr)
             case .code(_, let code):
-                let monoFont = UIFont.monospacedSystemFont(ofSize: bodySize - 1, weight: .regular)
-                let attr = NSAttributedString(string: code, attributes: [
-                    .font: monoFont,
-                    .foregroundColor: UIColor.label,
-                    .backgroundColor: UIColor.secondarySystemFill
-                ])
+                var attr = AttributedString(code)
+                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .regular, design: .monospaced)
+                attr.backgroundColor = .secondary.opacity(0.1)
                 result.append(attr)
             case .filePath(_, let path):
                 let filename = path.lastPathComponent
                 let icon = fileIconChar(for: filename)
                 let nbsp = "\u{00A0}"
                 let pillText = "\(nbsp)\(icon)\(nbsp)\(filename.replacingOccurrences(of: " ", with: nbsp))\(nbsp)"
-                let color = UIColor(fileIconColor(for: filename))
-                var attrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.monospacedSystemFont(ofSize: bodySize - 1, weight: .medium),
-                    .foregroundColor: color,
-                    .backgroundColor: color.withAlphaComponent(0.12)
-                ]
+                var attr = AttributedString(pillText)
+                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .medium, design: .monospaced)
+                attr.foregroundColor = fileIconColor(for: filename)
+                attr.backgroundColor = fileIconColor(for: filename).opacity(0.12)
                 if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                    let url = URL(string: "cloude://file\(encodedPath)") {
-                    attrs[.link] = url
+                    attr.link = url
                 }
-                result.append(NSAttributedString(string: pillText, attributes: attrs))
-            case .url(_, let urlString, let displayText):
-                let nbsp = "\u{00A0}"
-                let pillText = "\(nbsp)↗\(nbsp)\(displayText.replacingOccurrences(of: " ", with: nbsp))\(nbsp)"
-                var attrs: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.monospacedSystemFont(ofSize: bodySize - 1, weight: .medium),
-                    .foregroundColor: UIColor.systemBlue,
-                    .backgroundColor: UIColor.systemBlue.withAlphaComponent(0.12)
-                ]
-                if let url = URL(string: urlString) {
-                    attrs[.link] = url
-                }
-                result.append(NSAttributedString(string: pillText, attributes: attrs))
+                result.append(attr)
             case .lineBreak:
-                result.append(NSAttributedString(string: "\n", attributes: defaultAttributes))
+                result.append(AttributedString("\n"))
             }
         }
         return result
