@@ -6,7 +6,8 @@ struct SettingsView: View {
 
     @AppStorage("serverHost") private var serverHost = ""
     @AppStorage("serverPort") private var serverPort = "8765"
-    @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @AppStorage("appTheme") private var appTheme: AppTheme = .oceanDark
+    @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("defaultCostLimitUsd") private var defaultCostLimitUsd: Double = 0
     @AppStorage("enableSuggestions") private var enableSuggestions = false
@@ -56,6 +57,7 @@ struct SettingsView: View {
                 }
             }
         }
+        .preferredColorScheme(appTheme.colorScheme)
         .onAppear {
             if let saved = KeychainHelper.get(key: "authToken") {
                 authToken = saved
@@ -108,13 +110,20 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
             }
 
-            SettingsRow(icon: appTheme.icon, color: .purple) {
-                Picker("Theme", selection: $appTheme) {
-                    ForEach(AppTheme.allCases, id: \.self) { theme in
-                        Text(theme.rawValue).tag(theme)
-                    }
+            Button(action: { showThemePicker = true }) {
+                SettingsRow(icon: appTheme.icon, color: .purple) {
+                    Text("Theme")
+                    Spacer()
+                    Text(appTheme.rawValue)
+                        .foregroundColor(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
                 }
-                .pickerStyle(.menu)
+            }
+            .foregroundColor(.primary)
+            .sheet(isPresented: $showThemePicker) {
+                ThemePickerView()
             }
 
             DeviceIPRow(ipCopied: $ipCopied)
