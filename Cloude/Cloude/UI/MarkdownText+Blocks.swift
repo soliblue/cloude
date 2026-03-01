@@ -12,7 +12,7 @@ struct CodeBlock: View {
         }
         .padding(12)
         .background(Color.oceanSecondary)
-        .cornerRadius(8)
+        .cornerRadius(6)
     }
 }
 

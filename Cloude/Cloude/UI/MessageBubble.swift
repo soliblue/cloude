@@ -50,7 +50,7 @@ struct MessageBubble: View {
                                     .resizable()
                                     .scaledToFill()
                                     .frame(width: 36, height: 36)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
                             }
                         }
                     }
@@ -61,7 +61,7 @@ struct MessageBubble: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: 36, height: 36)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
 
                 Group {
@@ -235,7 +235,7 @@ struct CopiedToast: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(Color(.darkGray))
-        .cornerRadius(20)
+        .cornerRadius(15)
         .shadow(radius: 4)
         .padding(.top, 8)
     }

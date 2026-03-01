@@ -134,7 +134,7 @@ struct PlansSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                     .background(selectedStage == stage ? Color.accentColor.opacity(0.08) : Color.clear)
-                    .cornerRadius(8)
+                    .cornerRadius(6)
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(selectedStage == stage ? .accentColor : .secondary.opacity(0.6))
@@ -142,8 +142,8 @@ struct PlansSheet: View {
         }
         .padding(4)
         .background(.white.opacity(0.08))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
+        .cornerRadius(9)
+        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
     }
 
     private var tagFilterChips: some View {
@@ -272,8 +272,8 @@ struct PlanCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
             .background(.white.opacity(0.08))
-            .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+            .cornerRadius(9)
+            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
     }

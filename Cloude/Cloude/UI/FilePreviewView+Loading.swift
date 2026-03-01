@@ -44,7 +44,7 @@ extension FilePreviewView {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(.ultraThinMaterial)
-            .cornerRadius(20)
+            .cornerRadius(15)
         }
         .disabled(isLoadingFullQuality)
         .padding(.bottom, 16)

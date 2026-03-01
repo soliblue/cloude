@@ -143,9 +143,9 @@ struct TeammateOrbRow: View {
             .padding(.vertical, 7)
             .background(.ultraThinMaterial)
             .background(orbColor.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 9))
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 9)
                     .strokeBorder(orbColor.opacity(0.2), lineWidth: 0.5)
             )
             .frame(maxWidth: 200, alignment: .trailing)

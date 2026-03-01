@@ -67,7 +67,7 @@ struct QuestionView: View {
                     .padding(.vertical, 6)
                     .background(canSubmit ? Color.accentColor : Color.secondary.opacity(0.3))
                     .foregroundColor(.white)
-                    .cornerRadius(20)
+                    .cornerRadius(15)
                 }
                 .disabled(!canSubmit)
             }
@@ -75,7 +75,7 @@ struct QuestionView: View {
         }
         .padding(12)
         .background(Color.oceanSecondary)
-        .cornerRadius(14)
+        .cornerRadius(10)
         .onChange(of: focusedQuestionId) { _, newValue in
             onFocusChange(newValue != nil)
         }
@@ -144,7 +144,7 @@ struct QuestionCard: View {
                 .lineLimit(1...3)
                 .padding(8)
                 .background(Color.oceanTertiary)
-                .cornerRadius(8)
+                .cornerRadius(6)
                 .focused(focusBinding, equals: question.id)
         }
     }
@@ -181,9 +181,9 @@ struct OptionRow: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .background(isSelected ? Color.accentColor.opacity(0.1) : Color.oceanTertiary)
-            .cornerRadius(8)
+            .cornerRadius(6)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 6)
                     .strokeBorder(isSelected ? Color.accentColor : Color.secondary.opacity(0.15), lineWidth: 1)
             )
         }

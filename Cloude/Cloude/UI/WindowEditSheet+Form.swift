@@ -12,8 +12,7 @@ struct WindowEditForm: View {
     @State private var symbol: String = ""
     @State private var showSymbolPicker = false
     @State private var showFolderPicker = false
-    @State private var costLimitSelection: Double = 0
-    @State private var visibleCount = 20
+@State private var visibleCount = 20
 
     private var conversation: Conversation? {
         window.conversation(in: conversationStore)
@@ -52,7 +51,7 @@ struct WindowEditForm: View {
                         .font(.system(size: 24))
                         .frame(width: 48, height: 48)
                         .background(Color.oceanSecondary)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 9))
                 }
                 .buttonStyle(.plain)
 
@@ -62,7 +61,7 @@ struct WindowEditForm: View {
                     .padding(.horizontal, 16)
                     .frame(height: 48)
                     .background(Color.oceanSecondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(RoundedRectangle(cornerRadius: 9))
                     .onChange(of: name) { _, newValue in
                         if let conv = conversation, !newValue.isEmpty {
                             conversationStore.renameConversation(conv, to: newValue)
@@ -98,37 +97,12 @@ struct WindowEditForm: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                     .background(Color.oceanSecondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
             }
 
-            if conversation != nil {
-                HStack(spacing: 10) {
-                    Image(systemName: "dollarsign.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.green)
-                        .frame(width: 32)
-                    Text("Cost Limit")
-                        .font(.subheadline)
-                    Spacer()
-                    Picker("", selection: $costLimitSelection) {
-                        Text("Off").tag(0.0)
-                        Text("$1").tag(1.0)
-                        Text("$5").tag(5.0)
-                        Text("$10").tag(10.0)
-                        Text("$25").tag(25.0)
-                        Text("$50").tag(50.0)
-                    }
-                    .pickerStyle(.menu)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(Color.oceanSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-
-            if !allConversations.isEmpty {
+if !allConversations.isEmpty {
                 let visible = Array(allConversations.prefix(visibleCount))
                 LazyVStack(spacing: 0) {
                     ForEach(visible) { conv in
@@ -181,7 +155,7 @@ struct WindowEditForm: View {
                     }
                 }
                 .background(Color.oceanSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
 
         }
@@ -193,12 +167,7 @@ struct WindowEditForm: View {
                 conversationStore.setConversationSymbol(conv, symbol: newValue.nilIfEmpty)
             }
         }
-        .onChange(of: costLimitSelection) { _, newValue in
-            if let conv = conversation {
-                conversationStore.setCostLimit(conv, limit: newValue > 0 ? newValue : nil)
-            }
-        }
-        .sheet(isPresented: $showFolderPicker) {
+.sheet(isPresented: $showFolderPicker) {
             FolderPickerView(connection: connection) { path in
                 if let conv = conversation {
                     conversationStore.setWorkingDirectory(conv, path: path)
@@ -208,12 +177,10 @@ struct WindowEditForm: View {
         .onAppear {
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
-            costLimitSelection = conversation?.costLimitUsd ?? 0
         }
         .onChange(of: conversation?.id) { _, _ in
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
-            costLimitSelection = conversation?.costLimitUsd ?? 0
         }
     }
 

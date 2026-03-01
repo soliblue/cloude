@@ -25,8 +25,7 @@ struct ChatMessageList: View {
     @State private var lastUserMessageCount = 0
     @State private var isInitialLoad = true
     @State private var isBottomVisible = true
-    @State private var isCostBannerDismissed = false
-    @State private var scrollViewportHeight: CGFloat = 0
+@State private var scrollViewportHeight: CGFloat = 0
     @State private var userHasScrolled = false
 
     private var bottomId: String {
@@ -78,15 +77,13 @@ struct ChatMessageList: View {
         .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = messages.isEmpty
-            isCostBannerDismissed = false
-            userHasScrolled = false
+userHasScrolled = false
         }
     }
 
     private func scrollableContent(proxy: ScrollViewProxy, userMessageCount: Int) -> some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(alignment: .leading, spacing: 0) {
-                costBannerSection
                 messageListSection(viewportHeight: scrollViewportHeight)
                 if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
                     streamingSection
@@ -168,25 +165,7 @@ struct ChatMessageList: View {
         }
     }
 
-    @ViewBuilder
-    private var costBannerSection: some View {
-        if let conv = conversation,
-           let limit = conv.costLimitUsd,
-           limit > 0,
-           conv.totalCost >= limit * 0.75 {
-            let isExceeded = conv.totalCost >= limit
-            if isExceeded || !isCostBannerDismissed {
-                CostBanner(
-                    currentCost: conv.totalCost,
-                    limit: limit,
-                    onDismiss: { isCostBannerDismissed = true },
-                    onNewChat: { onNewConversation?() }
-                )
-            }
-        }
-    }
-
-    private func messageListSection(viewportHeight: CGFloat) -> some View {
+private func messageListSection(viewportHeight: CGFloat) -> some View {
         ForEach(messages) { message in
             MessageBubble(
                 message: message,
@@ -297,7 +276,7 @@ struct ChatMessageList: View {
     @ViewBuilder
     private var scrollToBottomButton: some View {
         if !isBottomVisible && !messages.isEmpty {
-            Circle()
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color.oceanSecondary)
                 .frame(width: 44, height: 44)
                 .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
@@ -400,7 +379,7 @@ struct CompactingIndicator: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(Color.cyan.opacity(0.12))
-        .cornerRadius(14)
+        .cornerRadius(10)
         .onAppear { pulse = true }
     }
 }

@@ -9,8 +9,7 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .oceanDark
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
-    @AppStorage("defaultCostLimitUsd") private var defaultCostLimitUsd: Double = 0
-    @AppStorage("enableSuggestions") private var enableSuggestions = false
+@AppStorage("enableSuggestions") private var enableSuggestions = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @State private var authToken = ""
@@ -31,13 +30,12 @@ struct SettingsView: View {
                     }, canConnect: !serverHost.isEmpty && !authToken.isEmpty)
                 }
                 .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
 
                 connectionSection
                 tailscaleSection
                 processesSection
-                costLimitsSection
-                featuresSection
+featuresSection
                 ttsSection
                 usageSection
                 securitySection
@@ -131,28 +129,7 @@ struct SettingsView: View {
         .listRowBackground(Color.oceanSecondary)
     }
 
-    private var costLimitsSection: some View {
-        Section {
-            SettingsRow(icon: "dollarsign.circle.fill", color: .green) {
-                Picker("Default Cost Limit", selection: $defaultCostLimitUsd) {
-                    Text("Off").tag(0.0)
-                    Text("$1").tag(1.0)
-                    Text("$5").tag(5.0)
-                    Text("$10").tag(10.0)
-                    Text("$25").tag(25.0)
-                    Text("$50").tag(50.0)
-                }
-                .pickerStyle(.menu)
-            }
-        } header: {
-            Text("Cost Limits")
-        } footer: {
-            Text("Default cost warning for new conversations. Per-conversation limits can be set from the chat header.")
-        }
-        .listRowBackground(Color.oceanSecondary)
-    }
-
-    private var featuresSection: some View {
+private var featuresSection: some View {
         Section {
             SettingsRow(icon: "text.bubble", color: .indigo) {
                 Toggle("Smart Suggestions", isOn: $enableSuggestions)

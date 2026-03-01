@@ -11,7 +11,6 @@ struct Conversation: Codable, Identifiable {
     var messages: [ChatMessage]
     var pendingMessages: [ChatMessage]
     var pendingFork: Bool
-    var costLimitUsd: Double?
     var defaultEffort: EffortLevel?
     var defaultModel: ModelSelection?
 
@@ -51,7 +50,6 @@ struct Conversation: Codable, Identifiable {
         self.messages = []
         self.pendingMessages = []
         self.pendingFork = pendingFork
-        self.costLimitUsd = nil
         self.defaultEffort = nil
         self.defaultModel = nil
         self.name = name ?? Self.randomNames.randomElement() ?? "Chat"
@@ -70,13 +68,12 @@ struct Conversation: Codable, Identifiable {
         messages = try container.decode([ChatMessage].self, forKey: .messages)
         pendingMessages = try container.decodeIfPresent([ChatMessage].self, forKey: .pendingMessages) ?? []
         pendingFork = try container.decodeIfPresent(Bool.self, forKey: .pendingFork) ?? false
-        costLimitUsd = try container.decodeIfPresent(Double.self, forKey: .costLimitUsd)
         defaultEffort = try container.decodeIfPresent(EffortLevel.self, forKey: .defaultEffort)
         defaultModel = try container.decodeIfPresent(ModelSelection.self, forKey: .defaultModel)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, costLimitUsd, defaultEffort, defaultModel
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel
     }
 }
 

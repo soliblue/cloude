@@ -68,10 +68,6 @@ extension ConversationStore {
 
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
 
-        if let limit = freshConv.costLimitUsd, limit > 0, freshConv.totalCost >= limit {
-            return
-        }
-
         let pending = popPendingMessages(from: freshConv)
         guard !pending.isEmpty else { return }
 

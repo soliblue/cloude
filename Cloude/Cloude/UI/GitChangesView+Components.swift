@@ -34,7 +34,7 @@ struct GitFileRow: View {
             .foregroundColor(.white)
             .frame(width: 28, height: 22)
             .background(statusColor)
-            .cornerRadius(4)
+            .cornerRadius(3)
     }
 
     private var statusColor: Color {

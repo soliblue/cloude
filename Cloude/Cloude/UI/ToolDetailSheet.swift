@@ -156,7 +156,7 @@ struct ToolDetailSheet: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .background(Color.oceanGray6.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 

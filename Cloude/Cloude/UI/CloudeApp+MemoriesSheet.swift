@@ -185,7 +185,7 @@ struct MemorySectionCard: View {
             }
         }
         .background(backgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: depth == 0 ? 12 : 8))
+        .clipShape(RoundedRectangle(cornerRadius: depth == 0 ? 9 : 6))
     }
 }
 
@@ -222,7 +222,7 @@ struct MemoryItemCard: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(backgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private func formatDate(_ date: Date) -> String {

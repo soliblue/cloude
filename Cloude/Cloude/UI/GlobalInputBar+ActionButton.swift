@@ -77,8 +77,8 @@ extension GlobalInputBar {
             .foregroundColor(canSend || shouldShowStopButton ? .white : .accentColor.opacity(0.4))
             .frame(width: 36, height: 36)
             .background(canSend || shouldShowStopButton ? Color.accentColor : Color.clear)
-            .clipShape(Circle())
-            .contentShape(Circle().inset(by: -8))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .contentShape(RoundedRectangle(cornerRadius: 10).inset(by: -8))
             .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
             .animation(.easeInOut(duration: 0.2), value: canSend)
     }

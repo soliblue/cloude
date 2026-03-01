@@ -14,7 +14,7 @@ extension ToolDetailSheet {
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.oceanGray6.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 
@@ -51,7 +51,7 @@ extension ToolDetailSheet {
                 }
             }
             .background(Color.oceanGray6.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 
@@ -80,7 +80,7 @@ extension ToolDetailSheet {
                 }
                 .padding(12)
                 .background(Color.oceanGray6.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
         }
@@ -119,7 +119,7 @@ extension ToolDetailSheet {
                 }
             }
             .background(Color.oceanGray6.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 
@@ -153,7 +153,7 @@ extension ToolDetailSheet {
                 }
             }
             .background(Color.oceanGray6.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 
@@ -197,7 +197,7 @@ extension ToolDetailSheet {
                 }
             }
             .background(Color.oceanGray6.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 }
