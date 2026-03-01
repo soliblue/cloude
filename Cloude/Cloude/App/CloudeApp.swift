@@ -54,10 +54,8 @@ struct CloudeApp: App {
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button(action: { showSettings = true }) {
-                            ConnectionStatusLogo(connection: connection)
-                        }
-                        .buttonStyle(.plain)
+                        ConnectionStatusLogo(connection: connection)
+                            .onTapGesture { showSettings = true }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 0) {
