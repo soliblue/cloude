@@ -16,6 +16,13 @@ enum InlineSegment: Identifiable, Equatable {
         case .lineBreak(let id): return id
         }
     }
+
+    var isSpecial: Bool {
+        switch self {
+        case .code, .filePath: return true
+        case .text, .lineBreak: return false
+        }
+    }
 }
 
 struct InlineTextView: View {
