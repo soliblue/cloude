@@ -46,11 +46,8 @@ extension MainChatView {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
             VStack(spacing: 4) {
-                Image("claude-heartbeat-glyph")
-                    .renderingMode(.template)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 24)
+                Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
+                    .font(.system(size: 22))
                     .foregroundStyle(
                         isScheduled || isHeartbeatActive
                             ? AnyShapeStyle(LinearGradient(
@@ -135,11 +132,8 @@ extension MainChatView {
             showConversationSearch = true
         } label: {
             VStack(spacing: 4) {
-                Image("claude-search-glyph")
-                    .renderingMode(.template)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 24)
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 22))
                     .foregroundStyle(.secondary)
                     .frame(height: 28)
 
@@ -150,6 +144,14 @@ extension MainChatView {
             .frame(height: 39)
         }
         .buttonStyle(.plain)
+    }
+
+    func heartbeatIconName(active: Bool, scheduled: Bool) -> String {
+        if scheduled {
+            return active ? "heart.circle.fill" : "heart.fill"
+        } else {
+            return active ? "heart.slash.fill" : "heart.slash"
+        }
     }
 
     @ViewBuilder
