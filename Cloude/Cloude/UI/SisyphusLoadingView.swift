@@ -1,36 +1,24 @@
 import SwiftUI
 
 struct SisyphusLoadingView: View {
-    @State private var startDate = Date()
+    @State private var frameIndex = 0
 
-    private let frameNames = (1...15).map { "sisyphus-\($0)" }
-    private let frameDuration: Double = 0.1
-    private let frameCount = 15
+    private let frameNames = (1...12).map { "sisyphus-\($0)" }
+    private let interval: TimeInterval = 0.1
+
+    private var sequence: [Int] {
+        Array(0..<12) + Array((0..<12).reversed())
+    }
 
     var body: some View {
-        TimelineView(.animation) { timeline in
-            let elapsed = timeline.date.timeIntervalSince(startDate)
-            let cycleLength = Double(frameCount) * frameDuration
-            let halfCycle = elapsed.truncatingRemainder(dividingBy: cycleLength * 2)
-            let progress = halfCycle < cycleLength
-                ? halfCycle / cycleLength
-                : 1.0 - (halfCycle - cycleLength) / cycleLength
-            let exactFrame = progress * Double(frameCount - 1)
-            let lower = Int(exactFrame)
-            let upper = min(lower + 1, frameCount - 1)
-            let blend = exactFrame - Double(lower)
-
-            ZStack {
-                Image(frameNames[lower])
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-
-                Image(frameNames[upper])
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .opacity(blend)
+        Image(frameNames[sequence[frameIndex]])
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(height: 30)
+            .onAppear {
+                Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+                    frameIndex = (frameIndex + 1) % sequence.count
+                }
             }
-            .frame(height: 50)
-        }
     }
 }
