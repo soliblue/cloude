@@ -155,7 +155,7 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 ### Security Model
 - Auth token required for all commands (256-bit, cryptographically random)
 - Token stored in macOS/iOS Keychain
-- No TLS - relies on Tailscale for encryption
+- No TLS - works over local WiFi (both devices on same network) but we recommend Tailscale for encrypted remote access
 
 ### Dev Notes
 - Heartbeat session ID: use `--resume` for existing sessions, not `--session-id` (creates new)

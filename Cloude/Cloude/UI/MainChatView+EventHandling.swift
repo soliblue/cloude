@@ -69,6 +69,15 @@ extension MainChatView {
                 msg.costUsd = costUsd
             }
 
+        case .plans(let stages):
+            planStages = stages
+            plansFromCache = false
+            isLoadingPlans = false
+            OfflineCacheService.savePlans(stages)
+
+        case .planDeleted(let stage, let filename):
+            planStages[stage]?.removeAll { $0.filename == filename }
+
         default:
             break
         }
