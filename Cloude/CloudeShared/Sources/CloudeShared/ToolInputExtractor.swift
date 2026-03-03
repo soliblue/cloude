@@ -40,6 +40,11 @@ public enum ToolInputExtractor {
             let msgType = input?["type"] as? String ?? "message"
             return "\(msgType) → \(target)"
         default:
+            if name.hasPrefix("mcp__widgets__"), let input = input,
+               let data = try? JSONSerialization.data(withJSONObject: input),
+               let json = String(data: data, encoding: .utf8) {
+                return json
+            }
             return nil
         }
     }
@@ -59,6 +64,12 @@ public enum ToolInputExtractor {
             let description = input?["description"] as? String ?? ""
             return truncate(description, to: 60)
         default:
+            if name.hasPrefix("mcp__widgets__") {
+                return input?["expression"] as? String
+                    ?? input?["name"] as? String
+                    ?? input?["hint"] as? String
+                    ?? truncate(raw, to: 40)
+            }
             return raw
         }
     }
