@@ -79,7 +79,7 @@ struct CloudeApp: App {
                                 .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
                         }
                         .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
-                        .padding(.trailing, 8)
+                        .padding(.horizontal, 8)
                     }
                 }
         }
