@@ -6,7 +6,7 @@ extension GlobalInputBar {
     }
 
     var shouldShowStopButton: Bool {
-        isRunning && showStopButton && !isInputFocused
+        isRunning && !isInputFocused && (showStopButton || !canSend)
     }
 
     var actionButtonIcon: String {
