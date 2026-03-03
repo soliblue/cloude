@@ -28,6 +28,7 @@ struct FilePreviewView: View {
     @State var directoryEntries: [FileEntry]?
     @State var browsingFolder: String?
     @State var showSource = false
+    @AppStorage("wrapCodeLines") var wrapCodeLines = true
     @State var chunkProgress: (current: Int, total: Int)?
 
     init(file: FileEntry, connection: ConnectionManager, onBrowseFolder: ((String) -> Void)? = nil) {
@@ -87,6 +88,11 @@ struct FilePreviewView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 12) {
+                        if contentType.isTextBased && fileData != nil {
+                            Button(action: { wrapCodeLines.toggle() }) {
+                                Image(systemName: wrapCodeLines ? "text.word.spacing" : "arrow.left.and.right.text.vertical")
+                            }
+                        }
                         if contentType.hasRenderedView && fileData != nil {
                             Button(action: { showSource.toggle() }) {
                                 Image(systemName: showSource ? "doc.richtext" : "curlybraces")

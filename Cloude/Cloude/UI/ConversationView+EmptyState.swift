@@ -2,12 +2,9 @@ import SwiftUI
 
 struct EmptyConversationView: View {
     private static let characters = [
-        "artist-claude",
         "claude-painter",
         "claude-builder",
         "claude-scientist",
-        "ninja-claude",
-        "chef-claude",
         "claude-boxer",
         "claude-explorer",
     ]

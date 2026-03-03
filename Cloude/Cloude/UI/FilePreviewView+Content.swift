@@ -99,19 +99,21 @@ extension FilePreviewView {
 
     @ViewBuilder
     private func sourceTextView(_ text: String) -> some View {
-        ScrollView(.vertical) {
+        ScrollView(wrapCodeLines ? .vertical : [.vertical, .horizontal]) {
             if let highlighted = highlightedCode {
                 Text(highlighted)
                     .font(.system(size: 12, design: .monospaced))
+                    .fixedSize(horizontal: !wrapCodeLines, vertical: false)
                     .textSelection(.enabled)
                     .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
             } else {
                 Text(text)
                     .font(.system(size: 12, design: .monospaced))
+                    .fixedSize(horizontal: !wrapCodeLines, vertical: false)
                     .textSelection(.enabled)
                     .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
             }
         }
         .background(Color.oceanSystemBackground)

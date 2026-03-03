@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
 @AppStorage("enableSuggestions") private var enableSuggestions = false
+    @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @State private var authToken = ""
@@ -131,6 +132,10 @@ struct SettingsView: View {
 
             SettingsRow(icon: "text.bubble", color: .indigo) {
                 Toggle("Smart Suggestions", isOn: $enableSuggestions)
+            }
+
+            SettingsRow(icon: "text.word.spacing", color: .cyan) {
+                Toggle("Wrap Code Lines", isOn: $wrapCodeLines)
             }
 
             SettingsRow(icon: ttsMode.icon, color: .purple) {

@@ -112,19 +112,28 @@ struct StreamingInterleavedOutput: View {
                                 StreamingMarkdownView(text: content, isComplete: false)
                             case .tools(let tools):
                                 let allChildren = toolCalls.filter { $0.parentToolId != nil }
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 6) {
-                                        ForEach(tools.reversed(), id: \.toolId) { tool in
-                                            InlineToolPill(
-                                                toolCall: tool,
-                                                children: allChildren.filter { $0.parentToolId == tool.toolId }
-                                            )
-                                        }
-                                    }
-                                    .padding(.horizontal, 16)
+                                let widgetTools = tools.filter { WidgetRegistry.isWidget($0.name) }
+                                let regularTools = tools.filter { !WidgetRegistry.isWidget($0.name) }
+
+                                ForEach(widgetTools, id: \.toolId) { tool in
+                                    WidgetRegistry.view(for: tool.name, input: tool.input)
                                 }
-                                .padding(.horizontal, -16)
-                                .scrollClipDisabled()
+
+                                if !regularTools.isEmpty {
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 6) {
+                                            ForEach(regularTools.reversed(), id: \.toolId) { tool in
+                                                InlineToolPill(
+                                                    toolCall: tool,
+                                                    children: allChildren.filter { $0.parentToolId == tool.toolId }
+                                                )
+                                            }
+                                        }
+                                        .padding(.horizontal, 16)
+                                    }
+                                    .padding(.horizontal, -16)
+                                    .scrollClipDisabled()
+                                }
                             }
                         }
                     }

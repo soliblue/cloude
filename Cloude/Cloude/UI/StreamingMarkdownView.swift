@@ -251,16 +251,32 @@ struct ToolGroupView: View {
         return topLevel.map { ($0, childrenByParent[$0.toolId] ?? []) }
     }
 
+    private var widgets: [(parent: ToolCall, children: [ToolCall])] {
+        toolHierarchy.filter { WidgetRegistry.isWidget($0.parent.name) }
+    }
+
+    private var nonWidgets: [(parent: ToolCall, children: [ToolCall])] {
+        toolHierarchy.filter { !WidgetRegistry.isWidget($0.parent.name) }
+    }
+
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                ForEach(toolHierarchy, id: \.parent.toolId) { item in
-                    InlineToolPill(toolCall: item.parent, children: item.children)
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(widgets, id: \.parent.toolId) { item in
+                WidgetRegistry.view(for: item.parent.name, input: item.parent.input)
             }
-            .padding(.horizontal, 16)
+
+            if !nonWidgets.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(nonWidgets, id: \.parent.toolId) { item in
+                            InlineToolPill(toolCall: item.parent, children: item.children)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+                .padding(.horizontal, -16)
+                .scrollClipDisabled()
+            }
         }
-        .padding(.horizontal, -16)
-        .scrollClipDisabled()
     }
 }
