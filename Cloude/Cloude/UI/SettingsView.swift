@@ -3,6 +3,8 @@ import CloudeShared
 
 struct SettingsView: View {
     @ObservedObject var connection: ConnectionManager
+    var onShowMemories: (() -> Void)?
+    var onShowPlans: (() -> Void)?
 
     @AppStorage("serverHost") private var serverHost = ""
     @AppStorage("serverPort") private var serverPort = "8765"
@@ -15,7 +17,6 @@ struct SettingsView: View {
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @State private var authToken = ""
     @State private var showToken = false
-    @State private var ipCopied = false
     @State private var showUsageStats = false
     @State private var usageStats: UsageStats?
     @State private var awaitingUsageStats = false
@@ -35,10 +36,7 @@ struct SettingsView: View {
 
                 connectionSection
                 processesSection
-featuresSection
-                ttsSection
-                usageSection
-                securitySection
+                preferencesSection
                 aboutSection
             }
             .scrollContentBackground(.hidden)
@@ -107,7 +105,19 @@ featuresSection
                 }
                 .buttonStyle(.plain)
             }
+        } footer: {
+            HStack(spacing: 0) {
+                Text("Works over WiFi · ")
+                Link("Tailscale", destination: URL(string: "https://tailscale.com/download")!)
+                Text(" recommended for remote & secure access")
+            }
+            .font(.footnote)
+        }
+        .listRowBackground(Color.oceanSecondary)
+    }
 
+    private var preferencesSection: some View {
+        Section {
             Button(action: { showThemePicker = true }) {
                 SettingsRow(icon: appTheme.icon, color: .purple) {
                     Text("Theme")
@@ -124,26 +134,10 @@ featuresSection
                 ThemePickerView()
             }
 
-            DeviceIPRow(ipCopied: $ipCopied)
-        }
-        .listRowBackground(Color.oceanSecondary)
-    }
-
-private var featuresSection: some View {
-        Section {
             SettingsRow(icon: "text.bubble", color: .indigo) {
                 Toggle("Smart Suggestions", isOn: $enableSuggestions)
             }
-        } header: {
-            Text("Features")
-        } footer: {
-            Text("Show a suggested reply after each response")
-        }
-        .listRowBackground(Color.oceanSecondary)
-    }
 
-    private var ttsSection: some View {
-        Section {
             SettingsRow(icon: ttsMode.icon, color: .purple) {
                 Picker("Text to Speech", selection: $ttsMode) {
                     ForEach(TTSMode.allCases, id: \.self) { mode in
@@ -163,22 +157,43 @@ private var featuresSection: some View {
                     .pickerStyle(.menu)
                 }
             }
-        } header: {
-            Text("Text to Speech")
-        } footer: {
-            Text(ttsMode.description)
-        }
-        .listRowBackground(Color.oceanSecondary)
-    }
 
-    private var usageSection: some View {
-        Section {
+            securityRow
+
             Button(action: {
                 awaitingUsageStats = true
                 connection.getUsageStats()
             }) {
                 SettingsRow(icon: "chart.bar.fill", color: .blue) {
                     Text("Usage Statistics")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .foregroundColor(.primary)
+
+            Button(action: {
+                dismiss()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onShowMemories?() }
+            }) {
+                SettingsRow(icon: "brain", color: .pink) {
+                    Text("Memories")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .foregroundColor(.primary)
+
+            Button(action: {
+                dismiss()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { onShowPlans?() }
+            }) {
+                SettingsRow(icon: "list.bullet.clipboard", color: .green) {
+                    Text("Plans")
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13))
