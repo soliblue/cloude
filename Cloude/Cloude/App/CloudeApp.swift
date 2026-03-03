@@ -18,6 +18,10 @@ struct CloudeApp: App {
     @State private var memorySections: [MemorySection] = []
     @State private var isLoadingMemories = false
     @State private var memoriesFromCache = false
+    @State private var showPlans = false
+    @State private var planStages: [String: [PlanItem]] = [:]
+    @State private var isLoadingPlans = false
+    @State private var plansFromCache = false
     @State private var showScheduledTasks = false
     @State private var scheduledTasks: [ScheduledTask] = []
     @State private var isLoadingScheduledTasks = false
@@ -49,21 +53,8 @@ struct CloudeApp: App {
                 connection: connection,
                 conversationStore: conversationStore,
                 windowManager: windowManager,
-                onShowMemories: {
-                    if let cached = OfflineCacheService.loadMemories() {
-                        memorySections = cached.sections
-                        memoriesFromCache = true
-                        isLoadingMemories = connection.isAuthenticated
-                    } else {
-                        memorySections = []
-                        memoriesFromCache = false
-                        isLoadingMemories = true
-                    }
-                    if connection.isAuthenticated {
-                        connection.send(.getMemories)
-                    }
-                    showMemories = true
-                },
+                onShowPlans: { openPlans() },
+                onShowMemories: { openMemories() },
                 onShowSettings: { showSettings = true }
             )
             .navigationBarTitleDisplayMode(.inline)
@@ -78,21 +69,7 @@ struct CloudeApp: App {
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 0) {
-                            Button(action: {
-                                if let cached = OfflineCacheService.loadMemories() {
-                                    memorySections = cached.sections
-                                    memoriesFromCache = true
-                                    isLoadingMemories = connection.isAuthenticated
-                                } else {
-                                    memorySections = []
-                                    memoriesFromCache = false
-                                    isLoadingMemories = true
-                                }
-                                if connection.isAuthenticated {
-                                    connection.send(.getMemories)
-                                }
-                                showMemories = true
-                            }) {
+                            Button(action: { openMemories() }) {
                                 Image(systemName: "brain")
                             }
                             Divider().frame(height: 20).padding(.horizontal, 10)
@@ -114,10 +91,23 @@ struct CloudeApp: App {
         }
         .onReceive(connection.events, perform: handleConnectionEvent)
         .sheet(isPresented: $showSettings) {
-            SettingsView(connection: connection)
+            SettingsView(connection: connection, onShowMemories: { openMemories() }, onShowPlans: { openPlans() })
         }
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories, fromCache: memoriesFromCache)
+        }
+        .sheet(isPresented: $showPlans) {
+            PlansSheet(
+                stages: planStages,
+                isLoading: isLoadingPlans,
+                fromCache: plansFromCache,
+                onOpenFile: { path in
+                    showPlans = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        filePathToPreview = path
+                    }
+                }
+            )
         }
         .sheet(isPresented: $showScheduledTasks) {
             ScheduledTasksSheet(
@@ -139,18 +129,7 @@ struct CloudeApp: App {
                 let path = url.path.removingPercentEncoding ?? url.path
                 filePathToPreview = path
             case "memory":
-                if let cached = OfflineCacheService.loadMemories() {
-                    memorySections = cached.sections
-                    memoriesFromCache = true
-                    isLoadingMemories = connection.isAuthenticated
-                } else {
-                    memorySections = []
-                    isLoadingMemories = true
-                }
-                if connection.isAuthenticated {
-                    connection.send(.getMemories)
-                }
-                showMemories = true
+                openMemories()
             default:
                 break
             }
@@ -225,6 +204,15 @@ struct CloudeApp: App {
             memoriesFromCache = false
             isLoadingMemories = false
             OfflineCacheService.saveMemories(sections)
+
+        case .plans(let stages):
+            planStages = stages
+            plansFromCache = false
+            isLoadingPlans = false
+            OfflineCacheService.savePlans(stages)
+
+        case .planDeleted(let stage, let filename):
+            planStages[stage]?.removeAll { $0.filename == filename }
 
         case .scheduledTasks(let tasks):
             scheduledTasks = tasks
@@ -364,6 +352,38 @@ struct CloudeApp: App {
         default:
             break
         }
+    }
+
+    private func openMemories() {
+        if let cached = OfflineCacheService.loadMemories() {
+            memorySections = cached.sections
+            memoriesFromCache = true
+            isLoadingMemories = connection.isAuthenticated
+        } else {
+            memorySections = []
+            memoriesFromCache = false
+            isLoadingMemories = true
+        }
+        if connection.isAuthenticated {
+            connection.send(.getMemories)
+        }
+        showMemories = true
+    }
+
+    private func openPlans() {
+        if let cached = OfflineCacheService.loadPlans() {
+            planStages = cached.stages
+            plansFromCache = true
+            isLoadingPlans = connection.isAuthenticated
+        } else {
+            planStages = [:]
+            plansFromCache = false
+            isLoadingPlans = true
+        }
+        if connection.isAuthenticated, let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+            connection.getPlans(workingDirectory: wd)
+        }
+        showPlans = true
     }
 
     private func loadAndConnect() {
