@@ -159,7 +159,7 @@ struct SlashCommandSuggestions: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(commands, id: \.name) { command in
                     Button(action: { onSelect(command) }) {
                         SkillPill(command: command)
@@ -168,7 +168,7 @@ struct SlashCommandSuggestions: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
         }
     }
 }
@@ -177,15 +177,15 @@ struct SkillPill: View {
     let command: SlashCommand
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 4) {
             Image(systemName: command.icon)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
             Text("/\(command.name)")
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
         }
         .foregroundStyle(command.isSkill ? skillGradient : builtInGradient)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
         .background(SkillPillBackground(isSkill: command.isSkill))
     }
 }
