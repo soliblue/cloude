@@ -45,7 +45,27 @@ struct CloudeApp: App {
 
     private var mainContent: some View {
         NavigationStack {
-            MainChatView(connection: connection, conversationStore: conversationStore, windowManager: windowManager)
+            MainChatView(
+                connection: connection,
+                conversationStore: conversationStore,
+                windowManager: windowManager,
+                onShowMemories: {
+                    if let cached = OfflineCacheService.loadMemories() {
+                        memorySections = cached.sections
+                        memoriesFromCache = true
+                        isLoadingMemories = connection.isAuthenticated
+                    } else {
+                        memorySections = []
+                        memoriesFromCache = false
+                        isLoadingMemories = true
+                    }
+                    if connection.isAuthenticated {
+                        connection.send(.getMemories)
+                    }
+                    showMemories = true
+                },
+                onShowSettings: { showSettings = true }
+            )
             .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
                 .toolbarBackground(.visible, for: .navigationBar)

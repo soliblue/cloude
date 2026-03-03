@@ -36,6 +36,18 @@ extension MainChatView {
             return
         }
 
+        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/memories" {
+            inputText = ""
+            onShowMemories?()
+            return
+        }
+
+        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/settings" {
+            inputText = ""
+            onShowSettings?()
+            return
+        }
+
         if isHeartbeatActive {
             sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
         } else {
