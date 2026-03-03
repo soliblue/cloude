@@ -34,6 +34,8 @@ struct MainChatView: View {
     @State var plansFromCache = false
     @State var filePathToPreview: String? = nil
     @State var refreshingSessionIds: Set<String> = []
+    var onShowMemories: (() -> Void)?
+    var onShowSettings: (() -> Void)?
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
