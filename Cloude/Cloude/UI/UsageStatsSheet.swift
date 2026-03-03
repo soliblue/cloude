@@ -60,7 +60,7 @@ struct UsageStatsSheet: View {
             .navigationTitle("Usage")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                             .fontWeight(.medium)

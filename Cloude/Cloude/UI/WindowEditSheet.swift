@@ -32,7 +32,7 @@ struct WindowEditSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: onDismiss) {
                         Image(systemName: "xmark")
                     }

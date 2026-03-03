@@ -71,7 +71,7 @@ struct SymbolPickerSheet: View {
             .navigationTitle("Choose Symbol")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                     }
