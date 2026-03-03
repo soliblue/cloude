@@ -3,11 +3,11 @@ import SwiftUI
 struct SisyphusLoadingView: View {
     @State private var frameIndex = 0
 
-    private let frameNames = (1...12).map { "sisyphus-\($0)" }
-    private let interval: TimeInterval = 0.1
+    private let frameNames = (1...7).map { "sisyphus-\($0)" }
+    private let interval: TimeInterval = 0.14
 
     private var sequence: [Int] {
-        Array(0..<12) + Array((0..<12).reversed())
+        Array(0..<7) + Array((0..<7).reversed())
     }
 
     var body: some View {
