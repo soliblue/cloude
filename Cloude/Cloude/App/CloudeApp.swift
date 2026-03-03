@@ -68,24 +68,18 @@ struct CloudeApp: App {
                         .buttonStyle(.borderless)
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        HStack(spacing: 0) {
-                            Button(action: { openMemories() }) {
-                                Image(systemName: "brain")
+                        Button(action: {
+                            if connection.isAuthenticated || connection.isConnected {
+                                connection.disconnect(clearCredentials: false)
+                            } else {
+                                connection.reconnectIfNeeded()
                             }
-                            Divider().frame(height: 20).padding(.horizontal, 10)
-                            Button(action: {
-                                if connection.isAuthenticated || connection.isConnected {
-                                    connection.disconnect(clearCredentials: false)
-                                } else {
-                                    connection.reconnectIfNeeded()
-                                }
-                            }) {
-                                Image(systemName: "power")
-                                    .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
-                            }
-                            .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
+                        }) {
+                            Image(systemName: "power")
+                                .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
                         }
-                        .padding(.horizontal, 14)
+                        .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
+                        .padding(.trailing, 8)
                     }
                 }
         }
