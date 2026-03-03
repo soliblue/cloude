@@ -51,6 +51,12 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
   --aspect "16:9" \
   --output landscape
 
+# Transparent PNG (bg removal + autocrop)
+GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
+  --prompt "pixel art character holding a sword" \
+  --transparent \
+  --output character
+
 # Custom output directory
 GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
   --prompt "diagram of system architecture" \
@@ -65,6 +71,7 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY .claude/skills/image/generate.sh \
 - `--edit` - Path to existing image to modify (sends image + prompt together)
 - `--aspect` - Aspect ratio hint: "16:9", "9:16", "square", "portrait", "landscape"
 - `--grid` - Generate multiple images in one call: "2x2" (4 images) or "3x3" (9 images)
+- `--transparent` - Remove background after generation (uses rembg). Adds "solid white background" to prompt, then removes it with BiRefNet + autocrop. Output is always PNG.
 - `--output-dir` - Where to save (default: .claude/skills/image/output/misc/)
 - `--model` - Gemini model override (default: gemini-2.0-flash-exp)
 

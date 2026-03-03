@@ -34,6 +34,29 @@ Long responses sometimes leave the iOS app in a "running" state even after the C
 - `Cloude/CloudeShared/Sources/CloudeShared/Messages/ServerMessage.swift` — protocol messages
 - `Cloude/Cloude/UI/ConversationView.swift` — `handleCompletion()` view dependency
 
+## Related: Duplicate Message Display Bug
+
+When the user leaves the chat view mid-stream and returns after it finishes, the same response appears twice — once as a saved message, once as stale streaming output. Refresh fixes it.
+
+**Root cause:** `handleCompletion()` fires via `.onChange(of: output?.isRunning)` in `ConversationView` — if the view is unmounted when streaming ends, `onChange` never fires. `output.text` stays filled. When the view remounts, both the saved message (from `syncHistory`) and the stale `output.text` (in `streamingSection`) render simultaneously.
+
+**Proposed fix:** Add `.onAppear` to `ConversationView` that checks for stale output and flushes it:
+```swift
+.onAppear {
+    if let output = convOutput, !output.isRunning, !output.text.isEmpty {
+        output.flushBuffer()  // drain CADisplayLink fully before finalizing
+        handleCompletion()
+    }
+}
+```
+
+**Edge cases to handle:**
+- Call `output.flushBuffer()` before checking, since the CADisplayLink drain might still be running (would finalize partial text)
+- Double finalization is safe — `finalizeStreamingMessage` has a duplicate guard + `output.reset()` clears text, so second call bails on `guard !output.text.isEmpty`
+- Brief flash possible if `syncHistory` also runs on foreground — minor visual glitch
+
+**Bigger fix (if needed later):** Move completion handling out of the view entirely into `ConnectionManager+MessageHandler` when it receives `idle` status. View-independent, no lifecycle dependency. Bigger refactor though.
+
 ## Open Questions
 
 - What timeout value for the safety fallback? (10s? 30s?)
