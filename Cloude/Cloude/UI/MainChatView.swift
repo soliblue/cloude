@@ -26,6 +26,7 @@ struct MainChatView: View {
     @State var currentModel: ModelSelection?
     @State var showConversationSearch = false
     @State var showUsageStats = false
+    @State var widgetEditing = false
     @State var usageStats: UsageStats?
     @State var awaitingUsageStats = false
     @State var refreshingSessionIds: Set<String> = []
@@ -86,38 +87,52 @@ struct MainChatView: View {
                 }
             }
             .onTapGesture {
-                dismissKeyboard()
+                if !widgetEditing { dismissKeyboard() }
             }
 
             VStack(spacing: 0) {
-                GlobalInputBar(
-                    inputText: $inputText,
-                    attachedImages: $attachedImages,
-                    attachedFiles: $attachedFiles,
-                    suggestions: $suggestions,
-                    isConnected: connection.isAuthenticated,
-                    isWhisperReady: connection.isWhisperReady,
-                    isTranscribing: connection.isTranscribing,
-                    isRunning: activeConversationIsRunning,
-                    skills: connection.skills,
-                    fileSearchResults: fileSearchResults,
-                    conversationDefaultEffort: currentConversation?.defaultEffort,
-                    conversationDefaultModel: currentConversation?.defaultModel,
-                    onSend: sendMessage,
-                    onStop: stopActiveConversation,
-                    onTranscribe: transcribeAudio,
-                    onFileSearch: searchFiles,
-                    currentEffort: $currentEffort,
-                    currentModel: $currentModel
-                )
+                if !widgetEditing {
+                    GlobalInputBar(
+                        inputText: $inputText,
+                        attachedImages: $attachedImages,
+                        attachedFiles: $attachedFiles,
+                        suggestions: $suggestions,
+                        isConnected: connection.isAuthenticated,
+                        isWhisperReady: connection.isWhisperReady,
+                        isTranscribing: connection.isTranscribing,
+                        isRunning: activeConversationIsRunning,
+                        skills: connection.skills,
+                        fileSearchResults: fileSearchResults,
+                        conversationDefaultEffort: currentConversation?.defaultEffort,
+                        conversationDefaultModel: currentConversation?.defaultModel,
+                        onSend: sendMessage,
+                        onStop: stopActiveConversation,
+                        onTranscribe: transcribeAudio,
+                        onFileSearch: searchFiles,
+                        currentEffort: $currentEffort,
+                        currentModel: $currentModel
+                    )
+                }
 
-                pageIndicator()
-                    .frame(height: 44)
-                    .padding(.bottom, isKeyboardVisible ? 12 : 4)
+                if !widgetEditing {
+                    pageIndicator()
+                        .frame(height: 44)
+                        .padding(.bottom, isKeyboardVisible ? 12 : 4)
+                }
             }
             .contentShape(Rectangle())
             .onTapGesture { }
             .background(Color.oceanBackground)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .widgetInputActive)) { note in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                widgetEditing = note.object as? Bool ?? false
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            if widgetEditing {
+                withAnimation(.easeInOut(duration: 0.15)) { widgetEditing = false }
+            }
         }
         .onAppear {
             initializeFirstWindow()

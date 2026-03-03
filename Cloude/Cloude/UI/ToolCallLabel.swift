@@ -30,6 +30,7 @@ struct ToolCallLabel: View {
     private var isScript: Bool { toolCallProxy.isScript }
 
     private var displayName: String {
+        if WidgetRegistry.isWidget(name) { return WidgetRegistry.displayName(name) }
         if name == "TodoWrite" { return "Tasks" }
         if name == "TeamCreate" { return "Team" }
         if name == "TeamDelete" { return "Team End" }
@@ -211,7 +212,9 @@ struct ToolCallLabel: View {
         case "TeamCreate": return "person.3.fill"
         case "TeamDelete": return "person.3.fill"
         case "SendMessage": return "paperplane.fill"
-        default: return "gear"
+        default:
+            if WidgetRegistry.isWidget(name) { return WidgetRegistry.iconName(name) }
+            return "gear"
         }
     }
 
@@ -264,6 +267,8 @@ func toolCallColor(for name: String, input: String? = nil) -> Color {
     case "Memory": return .pink
     case "TeamCreate", "TeamDelete": return .cyan
     case "SendMessage": return .teal
-    default: return .secondary
+    default:
+        if WidgetRegistry.isWidget(name) { return WidgetRegistry.color(name) }
+        return .secondary
     }
 }
