@@ -18,6 +18,7 @@ Options:
   --aspect RATIO       Aspect ratio hint in prompt (e.g. "16:9", "square", "portrait")
   --grid SPEC          Generate multiple images in a grid (e.g. "2x2", "3x3")
   --model MODEL        Gemini model (default: gemini-2.0-flash-exp)
+  --transparent        Remove background after generation (uses rembg)
 USAGE
     exit 1
 }
@@ -27,6 +28,7 @@ OUTPUT_NAME=""
 EDIT_IMAGE=""
 ASPECT=""
 GRID=""
+TRANSPARENT=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -37,6 +39,7 @@ while [[ $# -gt 0 ]]; do
         --aspect) ASPECT="$2"; shift 2 ;;
         --model) MODEL="$2"; shift 2 ;;
         --grid) GRID="$2"; shift 2 ;;
+        --transparent) TRANSPARENT="1"; shift ;;
         *) echo "Unknown option: $1"; usage ;;
     esac
 done
@@ -59,6 +62,10 @@ mkdir -p "$OUTPUT_DIR"
 
 if [[ -n "$ASPECT" ]]; then
     PROMPT="$PROMPT. Aspect ratio: $ASPECT"
+fi
+
+if [[ -n "$TRANSPARENT" ]]; then
+    PROMPT="$PROMPT. Use a plain solid white background."
 fi
 
 GRID_BORDER=6
@@ -166,6 +173,36 @@ for part in data['candidates'][0]['content']['parts']:
 "
 
 echo "Saved: $OUTPUT_PATH"
+
+if [[ -n "$TRANSPARENT" ]] && [[ -z "$GRID" ]]; then
+    echo "Removing background..."
+    TRANSPARENT_PATH="$OUTPUT_DIR/${OUTPUT_NAME}.png"
+    python3 -c "
+from PIL import Image
+from rembg import remove, new_session
+import io
+
+img = Image.open('$OUTPUT_PATH').convert('RGBA')
+session = new_session('birefnet-general')
+img = remove(img, session=session)
+
+bbox = img.getbbox()
+if bbox:
+    cropped = img.crop(bbox)
+    pad_x = int(cropped.width * 0.05)
+    pad_y = int(cropped.height * 0.05)
+    result = Image.new('RGBA', (cropped.width + 2*pad_x, cropped.height + 2*pad_y), (0,0,0,0))
+    result.paste(cropped, (pad_x, pad_y))
+    result.save('$TRANSPARENT_PATH', 'PNG')
+else:
+    img.save('$TRANSPARENT_PATH', 'PNG')
+"
+    if [[ "$OUTPUT_PATH" != "$TRANSPARENT_PATH" ]]; then
+        rm -f "$OUTPUT_PATH"
+    fi
+    OUTPUT_PATH="$TRANSPARENT_PATH"
+    echo "Background removed: $OUTPUT_PATH"
+fi
 
 if [[ -n "$GRID" ]]; then
     echo "Splitting grid into individual images..."
