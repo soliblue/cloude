@@ -18,10 +18,6 @@ struct CloudeApp: App {
     @State private var memorySections: [MemorySection] = []
     @State private var isLoadingMemories = false
     @State private var memoriesFromCache = false
-    @State private var showPlans = false
-    @State private var planStages: [String: [PlanItem]] = [:]
-    @State private var isLoadingPlans = false
-    @State private var plansFromCache = false
     @State private var showScheduledTasks = false
     @State private var scheduledTasks: [ScheduledTask] = []
     @State private var isLoadingScheduledTasks = false
@@ -63,24 +59,6 @@ struct CloudeApp: App {
                     ToolbarItem(placement: .topBarTrailing) {
                         HStack(spacing: 0) {
                             Button(action: {
-                                if let cached = OfflineCacheService.loadPlans() {
-                                    planStages = cached.stages
-                                    plansFromCache = true
-                                    isLoadingPlans = connection.isAuthenticated
-                                } else {
-                                    planStages = [:]
-                                    plansFromCache = false
-                                    isLoadingPlans = true
-                                }
-                                if connection.isAuthenticated, let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
-                                    connection.getPlans(workingDirectory: wd)
-                                }
-                                showPlans = true
-                            }) {
-                                Image(systemName: "list.bullet.clipboard")
-                            }
-                            Divider().frame(height: 20).padding(.horizontal, 10)
-                            Button(action: {
                                 if let cached = OfflineCacheService.loadMemories() {
                                     memorySections = cached.sections
                                     memoriesFromCache = true
@@ -120,19 +98,6 @@ struct CloudeApp: App {
         }
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories, fromCache: memoriesFromCache)
-        }
-        .sheet(isPresented: $showPlans) {
-            PlansSheet(
-                stages: planStages,
-                isLoading: isLoadingPlans,
-                fromCache: plansFromCache,
-                onOpenFile: { path in
-                    showPlans = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        filePathToPreview = path
-                    }
-                }
-            )
         }
         .sheet(isPresented: $showScheduledTasks) {
             ScheduledTasksSheet(
@@ -240,15 +205,6 @@ struct CloudeApp: App {
             memoriesFromCache = false
             isLoadingMemories = false
             OfflineCacheService.saveMemories(sections)
-
-        case .plans(let stages):
-            planStages = stages
-            plansFromCache = false
-            isLoadingPlans = false
-            OfflineCacheService.savePlans(stages)
-
-        case .planDeleted(let stage, let filename):
-            planStages[stage]?.removeAll { $0.filename == filename }
 
         case .scheduledTasks(let tasks):
             scheduledTasks = tasks

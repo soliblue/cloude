@@ -35,4 +35,5 @@ let builtInCommands: [SlashCommand] = [
     SlashCommand(name: "context", description: "Show token usage", icon: "chart.pie"),
     SlashCommand(name: "cost", description: "Show usage stats", icon: "dollarsign.circle"),
     SlashCommand(name: "usage", description: "Usage statistics", icon: "chart.bar.fill"),
+    SlashCommand(name: "plans", description: "View plans by stage", icon: "list.bullet.clipboard"),
 ]

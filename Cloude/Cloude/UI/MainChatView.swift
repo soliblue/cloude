@@ -28,6 +28,11 @@ struct MainChatView: View {
     @State var showUsageStats = false
     @State var usageStats: UsageStats?
     @State var awaitingUsageStats = false
+    @State var showPlans = false
+    @State var planStages: [String: [PlanItem]] = [:]
+    @State var isLoadingPlans = false
+    @State var plansFromCache = false
+    @State var filePathToPreview: String? = nil
     @State var refreshingSessionIds: Set<String> = []
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
@@ -213,6 +218,22 @@ struct MainChatView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.oceanBackground)
             }
+        }
+        .sheet(isPresented: $showPlans) {
+            PlansSheet(
+                stages: planStages,
+                isLoading: isLoadingPlans,
+                fromCache: plansFromCache,
+                onOpenFile: { path in
+                    showPlans = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        filePathToPreview = path
+                    }
+                }
+            )
+        }
+        .sheet(item: $filePathToPreview) { path in
+            FilePreviewView(path: path, connection: connection)
         }
         .onReceive(connection.events, perform: handleConnectionEvent)
         // Fallback: a PassthroughSubject can be missed if this view isn't mounted yet.
