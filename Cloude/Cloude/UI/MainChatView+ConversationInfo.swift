@@ -10,11 +10,14 @@ struct ConversationInfoLabel: View {
         HStack(spacing: 5) {
             Image.safeSymbol(conversation?.symbol)
                 .font(.system(size: 15))
+                .contentTransition(.symbolEffect(.replace))
             if let conv = conversation {
                 Text(conv.name)
                     .font(.caption)
                     .fontWeight(.medium)
                     .lineLimit(1)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.3), value: conv.name)
             } else {
                 Text(placeholderText)
                     .font(.caption)
