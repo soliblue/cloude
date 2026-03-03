@@ -106,12 +106,7 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
             }
         } footer: {
-            HStack(spacing: 0) {
-                Text("Works over WiFi · ")
-                Link("Tailscale", destination: URL(string: "https://tailscale.com/download")!)
-                Text(" recommended for remote & secure access")
-            }
-            .font(.footnote)
+            Text("Works over WiFi · ") + Text("[Tailscale](https://tailscale.com/download)") + Text(" recommended for remote & secure access")
         }
         .listRowBackground(Color.oceanSecondary)
     }

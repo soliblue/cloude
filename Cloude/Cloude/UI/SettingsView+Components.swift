@@ -17,49 +17,6 @@ struct SettingsRow<Content: View>: View {
     }
 }
 
-struct DeviceIPRow: View {
-    @Binding var ipCopied: Bool
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "wifi")
-                .font(.system(size: 20))
-                .foregroundColor(.green)
-                .frame(width: 24)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Device IP")
-                    .font(.subheadline)
-                Text(NetworkHelper.getIPAddress() ?? "Not available")
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.secondary)
-                Text("Works over WiFi · Tailscale recommended for remote access")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary.opacity(0.7))
-            }
-
-            Spacer()
-
-            Button(action: copyIP) {
-                Image(systemName: ipCopied ? "checkmark.circle.fill" : "doc.on.doc")
-                    .foregroundColor(ipCopied ? .green : .accentColor)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-            .disabled(NetworkHelper.getIPAddress() == nil)
-        }
-    }
-
-    private func copyIP() {
-        if let ip = NetworkHelper.getIPAddress() {
-            UIPasteboard.general.string = ip
-            ipCopied = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                ipCopied = false
-            }
-        }
-    }
-}
-
 struct ConnectionStatusCard: View {
     @ObservedObject var connection: ConnectionManager
     let onConnect: () -> Void

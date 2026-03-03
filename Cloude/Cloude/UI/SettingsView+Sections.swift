@@ -73,24 +73,12 @@ extension SettingsView {
         .listRowBackground(Color.oceanSecondary)
     }
 
-    var securitySection: some View {
-        Section {
-            if BiometricAuth.isAvailable {
-                SettingsRow(icon: BiometricAuth.biometricIcon, color: .green) {
-                    Toggle("Require \(BiometricAuth.biometricName)", isOn: $requireBiometricAuth)
-                }
-            } else {
-                SettingsRow(icon: "lock.fill", color: .gray) {
-                    Text("Biometric Auth")
-                    Spacer()
-                    Text("Not Available")
-                        .foregroundColor(.secondary)
-                }
+    @ViewBuilder var securityRow: some View {
+        if BiometricAuth.isAvailable {
+            SettingsRow(icon: BiometricAuth.biometricIcon, color: .green) {
+                Toggle("Require \(BiometricAuth.biometricName)", isOn: $requireBiometricAuth)
             }
-        } header: {
-            Text("Security")
         }
-        .listRowBackground(Color.oceanSecondary)
     }
 
     var aboutSection: some View {
