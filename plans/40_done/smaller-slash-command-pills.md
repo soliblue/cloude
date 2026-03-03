@@ -1,4 +1,5 @@
 # Smaller Slash Command Pills
+<!-- build: 82 -->
 
 Reduced the size of `/command` suggestion pills above the input bar by ~20%.
 
