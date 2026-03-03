@@ -1,16 +1,44 @@
 import SwiftUI
+import UIKit
 
 struct CodeBlock: View {
     let code: String
     let language: String?
+    @State private var copied = false
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            Text(SyntaxHighlighter.highlight(code, language: language))
-                .font(.system(.caption, design: .monospaced))
-                .textSelection(.enabled)
+        VStack(spacing: 0) {
+            if language != nil && !language!.isEmpty {
+                HStack {
+                    Text(language!)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        UIPasteboard.general.string = code
+                        copied = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
+                    } label: {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .font(.caption2)
+                            .foregroundStyle(copied ? .green : .secondary)
+                            .contentTransition(.symbolEffect(.replace))
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+
+                Divider()
+                    .overlay(Color.gray.opacity(0.3))
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                Text(SyntaxHighlighter.highlight(code, language: language))
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+            }
+            .padding(12)
         }
-        .padding(12)
         .background(Color.oceanSecondary)
         .cornerRadius(6)
     }
