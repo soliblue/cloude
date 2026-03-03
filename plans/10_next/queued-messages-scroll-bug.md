@@ -6,8 +6,9 @@ When queued messages are visible in the conversation, scrolling the chat becomes
 ## Root Cause
 `ConversationView+Components.swift:SwipeToDeleteBubble` uses a `DragGesture(minimumDistance: 10)` that captures drag events before the parent ScrollView can handle them. The gesture only filters for horizontal direction (`translation < 0`) inside `onChanged`, but by then it has already claimed the gesture from the ScrollView.
 
-## Fix Ideas
-- Use `simultaneousGesture` instead of `.gesture` so the ScrollView still receives the drag
-- Add a direction check: only activate the swipe gesture when horizontal movement exceeds vertical (e.g., `abs(translation.width) > abs(translation.height)`)
-- Increase `minimumDistance` threshold
-- Use a custom `GestureState` approach that defers to ScrollView for vertical drags
+## Proposed Fix
+In `SwipeToDeleteBubble`, two changes:
+1. Increase `minimumDistance` from 10 to 20 — gives ScrollView more room to claim vertical drags
+2. Add direction detection with `dragDecided`/`isHorizontalDrag` state — on first movement, check if `horizontal > vertical * 1.5`. Only activate swipe-to-delete if clearly horizontal. Reset both flags in `onEnded`.
+
+This keeps swipe-to-delete working while letting vertical scrolls pass through to the ScrollView.

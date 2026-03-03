@@ -226,7 +226,7 @@ struct GlobalInputBar: View {
                     .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.bottom, 12)
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))

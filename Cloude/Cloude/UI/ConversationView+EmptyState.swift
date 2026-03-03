@@ -24,7 +24,7 @@ struct EmptyConversationView: View {
             Image(character)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 160, height: 160)
+                .frame(width: 100, height: 100)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
