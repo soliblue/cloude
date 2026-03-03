@@ -92,7 +92,8 @@ extension MainChatView {
             }
         }
         .padding(.horizontal, 11)
-        .padding(.vertical, 7)
+        .padding(.top, 0)
+        .padding(.bottom, 7)
         .background(Color.oceanSecondary)
     }
 
