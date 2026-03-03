@@ -85,6 +85,9 @@ userHasScrolled = false
         ScrollView(showsIndicators: false) {
             LazyVStack(alignment: .leading, spacing: 0) {
                 messageListSection(viewportHeight: scrollViewportHeight)
+                if agentState == .running && currentOutput.isEmpty && currentToolCalls.isEmpty && currentRunStats == nil && !isCompacting {
+                    sisyphusSection
+                }
                 if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
                     streamingSection
                 }
@@ -197,6 +200,16 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
         connection?.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
     }
 
+    private var sisyphusSection: some View {
+        HStack {
+            SisyphusLoadingView()
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .transition(.opacity)
+    }
+
     private var streamingSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             if isCompacting {
@@ -266,7 +279,7 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
 
     private var queuedMessagesSection: some View {
         ForEach(queuedMessages) { message in
-            SwipeToDeleteBubble(message: message, skills: connection?.skills ?? []) {
+            QueuedBubble(message: message, skills: connection?.skills ?? []) {
                 onDeleteQueued?(message.id)
             }
             .id("\(message.id)-queued")
@@ -307,59 +320,18 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
     }
 }
 
-struct SwipeToDeleteBubble: View {
+struct QueuedBubble: View {
     let message: ChatMessage
     var skills: [Skill] = []
     let onDelete: () -> Void
 
-    @State private var offset: CGFloat = 0
-    @State private var showDelete = false
-
-    private let deleteThreshold: CGFloat = -60
-
     var body: some View {
-        ZStack(alignment: .trailing) {
-            if showDelete {
-                Button(action: onDelete) {
-                    Image(systemName: "trash.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(width: 60)
-                        .frame(maxHeight: .infinity)
-                        .background(Color.red)
+        MessageBubble(message: message, skills: skills)
+            .contextMenu {
+                Button(role: .destructive, action: onDelete) {
+                    Label("Delete", systemImage: "trash")
                 }
-                .transition(.opacity)
             }
-
-            MessageBubble(message: message, skills: skills)
-                .offset(x: offset)
-                .gesture(
-                    DragGesture(minimumDistance: 10)
-                        .onChanged { value in
-                            let translation = value.translation.width
-                            if translation < 0 {
-                                offset = translation
-                                showDelete = translation < deleteThreshold
-                            }
-                        }
-                        .onEnded { value in
-                            if value.translation.width < deleteThreshold {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    offset = -400
-                                }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    onDelete()
-                                }
-                            } else {
-                                withAnimation(.spring(response: 0.3)) {
-                                    offset = 0
-                                    showDelete = false
-                                }
-                            }
-                        }
-            )
-        }
-        .clipped()
     }
 }
 
