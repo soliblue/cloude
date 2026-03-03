@@ -32,6 +32,9 @@ struct DeviceIPRow: View {
                 Text(NetworkHelper.getIPAddress() ?? "Not available")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundColor(.secondary)
+                Text("Works over WiFi · Tailscale recommended for remote access")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary.opacity(0.7))
             }
 
             Spacer()

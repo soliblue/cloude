@@ -18,6 +18,24 @@ extension MainChatView {
             return
         }
 
+        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/plans" {
+            inputText = ""
+            if let cached = OfflineCacheService.loadPlans() {
+                planStages = cached.stages
+                plansFromCache = true
+                isLoadingPlans = connection.isAuthenticated
+            } else {
+                planStages = [:]
+                plansFromCache = false
+                isLoadingPlans = true
+            }
+            if connection.isAuthenticated, let wd = currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+                connection.getPlans(workingDirectory: wd)
+            }
+            showPlans = true
+            return
+        }
+
         if isHeartbeatActive {
             sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
         } else {
