@@ -105,7 +105,19 @@ build_request_body() {
         parts_json=$(printf '[{"text": "%s"}]' "$(echo "$PROMPT" | sed 's/"/\\"/g; s/\n/\\n/g')")
     fi
 
-    printf '{"contents": [{"parts": %s}], "generationConfig": {"responseModalities": ["image", "text"]}}' "$parts_json"
+    local gen_config='{"responseModalities": ["image", "text"]'
+    if [[ -n "$ASPECT" ]]; then
+        local api_aspect="$ASPECT"
+        case "$ASPECT" in
+            square) api_aspect="1:1" ;;
+            portrait) api_aspect="3:4" ;;
+            landscape) api_aspect="3:2" ;;
+        esac
+        gen_config="$gen_config, \"imageConfig\": {\"aspectRatio\": \"$api_aspect\"}"
+    fi
+    gen_config="$gen_config}"
+
+    printf '{"contents": [{"parts": %s}], "generationConfig": %s}' "$parts_json" "$gen_config"
 }
 
 echo "Generating: $PROMPT"
