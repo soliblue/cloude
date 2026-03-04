@@ -19,15 +19,8 @@ struct ScatterPlotWidget: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "chart.dots.scatter")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.teal)
-                Text(title ?? "Scatter Plot")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
+        WidgetContainer {
+            WidgetHeader(icon: "chart.dots.scatter", title: title ?? "Scatter Plot", color: .teal)
 
             Chart {
                 ForEach(Array(points.enumerated()), id: \.offset) { index, point in
@@ -116,8 +109,5 @@ struct ScatterPlotWidget: View {
                 }
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

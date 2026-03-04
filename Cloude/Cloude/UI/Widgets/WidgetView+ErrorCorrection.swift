@@ -17,37 +17,13 @@ struct ErrorCorrectionWidget: View {
     private var allFound: Bool { foundCount == errorCount }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.red)
-                Text("Error Correction")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { revealed = [] }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(!revealed.isEmpty ? .red : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(revealed.isEmpty)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            revealed = Set(segments.indices.filter { segments[$0].correction != nil })
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(!allFound ? .red : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(allFound)
+        WidgetContainer {
+            WidgetHeader(icon: "exclamationmark.triangle", title: "Error Correction", color: .red) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .red, enabled: !revealed.isEmpty) {
+                    revealed = []
+                }
+                WidgetButton(icon: "eye", color: .red, enabled: !allFound) {
+                    revealed = Set(segments.indices.filter { segments[$0].correction != nil })
                 }
             }
 
@@ -62,18 +38,11 @@ struct ErrorCorrectionWidget: View {
                 }
             }
 
-            HStack(spacing: 4) {
-                Image(systemName: allFound ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 10))
-                Text("\(foundCount)/\(errorCount) found")
-                    .font(.system(size: 11, weight: .medium))
-            }
-            .foregroundColor(.secondary)
-            .frame(maxWidth: .infinity)
+            WidgetProgressBadge(
+                icon: allFound ? "checkmark.circle.fill" : "circle",
+                text: "\(foundCount)/\(errorCount) found"
+            )
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder

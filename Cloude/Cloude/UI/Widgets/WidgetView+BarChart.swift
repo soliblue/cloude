@@ -29,15 +29,8 @@ struct BarChartWidget: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "chart.bar")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(barColor)
-                Text(title ?? "Bar Chart")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
+        WidgetContainer {
+            WidgetHeader(icon: "chart.bar", title: title ?? "Bar Chart", color: barColor)
 
             Chart {
                 ForEach(Array(bars.enumerated()), id: \.offset) { index, bar in
@@ -104,9 +97,6 @@ struct BarChartWidget: View {
                     .frame(maxWidth: .infinity)
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func formatValue(_ value: Double) -> String {

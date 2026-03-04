@@ -21,15 +21,8 @@ struct PieChartWidget: View {
     private let colors: [Color] = [.blue, .orange, .green, .purple, .red, .teal, .pink, .indigo, .yellow, .mint]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "chart.pie")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.orange)
-                Text(title ?? "Pie Chart")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
+        WidgetContainer {
+            WidgetHeader(icon: "chart.pie", title: title ?? "Pie Chart", color: .orange)
 
             Chart {
                 ForEach(Array(slices.enumerated()), id: \.offset) { index, slice in
@@ -92,9 +85,6 @@ struct PieChartWidget: View {
                 }
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func updateSelectedSlice() {

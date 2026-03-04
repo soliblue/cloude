@@ -17,53 +17,20 @@ struct HighlightSelectWidget: View {
     private var hasWrong: Bool { checked && !isAllCorrect }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "highlighter")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.yellow)
-                Text("Highlight")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedWords = []
-                            checked = false
-                            revealed = false
-                        }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasInput || checked ? .yellow : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasInput && !checked)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedWords = correctWords
-                            revealed = true
-                            checked = true
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasWrong && !revealed ? .yellow : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasWrong || revealed)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { checked = true }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(checked ? .secondary.opacity(0.3) : .yellow)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(checked)
+        WidgetContainer {
+            WidgetHeader(icon: "highlighter", title: "Highlight", color: .yellow) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .yellow, enabled: hasInput || checked) {
+                    selectedWords = []
+                    checked = false
+                    revealed = false
+                }
+                WidgetButton(icon: "eye", color: .yellow, enabled: hasWrong && !revealed) {
+                    selectedWords = correctWords
+                    revealed = true
+                    checked = true
+                }
+                WidgetButton(icon: "checkmark.circle", color: .yellow, enabled: !checked) {
+                    checked = true
                 }
             }
 
@@ -77,19 +44,9 @@ struct HighlightSelectWidget: View {
             }
 
             if checked {
-                HStack(spacing: 4) {
-                    Image(systemName: isAllCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(isAllCorrect ? "All correct!" : "Some selections are wrong")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(isAllCorrect, correct: "All correct!", wrong: "Some selections are wrong")
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func wordButton(_ word: String) -> some View {
