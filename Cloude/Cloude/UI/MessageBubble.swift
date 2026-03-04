@@ -11,6 +11,7 @@ struct MessageBubble: View {
     @State private var showTeamDashboard = false
     @State private var showTextSelection = false
     @State private var showLongPressMenu = false
+    @State private var menuPressY: CGFloat = 0
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @ObservedObject private var ttsService = TTSService.shared
@@ -192,38 +193,50 @@ struct MessageBubble: View {
             }
             .overlay {
                 if showLongPressMenu {
-                    Color.black.opacity(0.001)
-                        .onTapGesture { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+                    GeometryReader { geo in
+                        let menuY = min(max(menuPressY - 60, 0), geo.size.height - 60)
+                        BubbleActionMenu(
+                            message: message,
+                            ttsMode: ttsMode,
+                            ttsService: ttsService,
+                            kokoroVoice: kokoroVoice,
+                            onCopy: {
+                                ClipboardHelper.copy(message.text)
+                                withAnimation { showCopiedToast = true }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    withAnimation { showCopiedToast = false }
+                                }
+                            },
+                            onSelectText: { showTextSelection = true },
+                            onToggleCollapse: onToggleCollapse,
+                            onDismiss: { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+                        )
+                        .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                        .frame(maxWidth: .infinity)
+                        .offset(y: menuY)
+                    }
                 }
             }
-            .overlay(alignment: .top) {
-                if showLongPressMenu {
-                    BubbleActionMenu(
-                        message: message,
-                        ttsMode: ttsMode,
-                        ttsService: ttsService,
-                        kokoroVoice: kokoroVoice,
-                        onCopy: {
-                            ClipboardHelper.copy(message.text)
-                            withAnimation { showCopiedToast = true }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                withAnimation { showCopiedToast = false }
-                            }
-                        },
-                        onSelectText: { showTextSelection = true },
-                        onToggleCollapse: onToggleCollapse,
-                        onDismiss: { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
-                    )
-                    .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .top)))
-                    .padding(.top, 8)
+            .onChange(of: showLongPressMenu) { _, showing in
+                if showing {
+                    WindowDismissOverlay.show { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+                } else {
+                    WindowDismissOverlay.hide()
                 }
             }
-            .onLongPressGesture(minimumDuration: 0.4) {
-                if !hasInteractiveWidgets {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showLongPressMenu = true }
-                }
-            }
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                LongPressGesture(minimumDuration: 0.4)
+                    .sequenced(before: DragGesture(minimumDistance: 0))
+                    .onEnded { value in
+                        if hasInteractiveWidgets { return }
+                        if case .second(true, let drag) = value {
+                            menuPressY = drag?.location.y ?? 0
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showLongPressMenu = true }
+                        }
+                    }
+            )
     }
 }
 
@@ -420,6 +433,40 @@ struct PlainSelectableText: UIViewRepresentable {
     func updateUIView(_ textView: UITextView, context: Context) {
         textView.text = text
         textView.invalidateIntrinsicContentSize()
+    }
+}
+
+final class WindowDismissOverlay {
+    private static var overlayView: UIView?
+
+    static func show(onTap: @escaping () -> Void) {
+        hide()
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first else { return }
+        let view = DismissTapView(frame: window.bounds, onTap: onTap)
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        window.addSubview(view)
+        overlayView = view
+    }
+
+    static func hide() {
+        overlayView?.removeFromSuperview()
+        overlayView = nil
+    }
+
+    private class DismissTapView: UIView {
+        var onTap: (() -> Void)?
+
+        convenience init(frame: CGRect, onTap: @escaping () -> Void) {
+            self.init(frame: frame)
+            self.onTap = onTap
+            backgroundColor = .clear
+            addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapped)))
+        }
+
+        @objc private func tapped() {
+            onTap?()
+        }
     }
 }
 
