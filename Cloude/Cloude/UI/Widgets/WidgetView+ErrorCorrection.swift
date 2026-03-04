@@ -55,9 +55,11 @@ struct ErrorCorrectionWidget: View {
                     .font(.system(size: 15))
                     .strikethrough(true, color: .red)
                     .foregroundColor(.red.opacity(0.5))
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(correction)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.green)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 4)
             .padding(.vertical, 2)
@@ -72,12 +74,14 @@ struct ErrorCorrectionWidget: View {
                 Text(segment.text)
                     .font(.system(size: 15))
                     .foregroundColor(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .buttonStyle(.plain)
         } else {
             Text(segment.text)
                 .font(.system(size: 15))
                 .foregroundColor(.primary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
