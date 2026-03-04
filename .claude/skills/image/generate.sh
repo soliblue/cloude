@@ -26,6 +26,7 @@ USAGE
 PROMPT=""
 OUTPUT_NAME=""
 EDIT_IMAGE=""
+REF_IMAGES=()
 ASPECT=""
 GRID=""
 TRANSPARENT=""
@@ -39,6 +40,7 @@ while [[ $# -gt 0 ]]; do
         --aspect) ASPECT="$2"; shift 2 ;;
         --model) MODEL="$2"; shift 2 ;;
         --grid) GRID="$2"; shift 2 ;;
+        --ref) REF_IMAGES+=("$2"); shift 2 ;;
         --transparent) TRANSPARENT="1"; shift ;;
         *) echo "Unknown option: $1"; usage ;;
     esac
@@ -97,13 +99,30 @@ build_request_body() {
         local b64_data
         b64_data="$(base64 < "$EDIT_IMAGE")"
 
-        parts_json=$(printf '[{"text": "%s"}, {"inline_data": {"mime_type": "%s", "data": "%s"}}]' \
+        parts_json=$(printf '[{"text": "%s"}, {"inline_data": {"mime_type": "%s", "data": "%s"}}' \
             "$(echo "$PROMPT" | sed 's/"/\\"/g; s/\n/\\n/g')" \
             "$mime_type" \
             "$b64_data")
     else
-        parts_json=$(printf '[{"text": "%s"}]' "$(echo "$PROMPT" | sed 's/"/\\"/g; s/\n/\\n/g')")
+        parts_json=$(printf '[{"text": "%s"}' "$(echo "$PROMPT" | sed 's/"/\\"/g; s/\n/\\n/g')")
     fi
+
+    for ref_img in "${REF_IMAGES[@]}"; do
+        if [[ -f "$ref_img" ]]; then
+            local ref_mime
+            case "${ref_img##*.}" in
+                jpg|jpeg) ref_mime="image/jpeg" ;;
+                png) ref_mime="image/png" ;;
+                webp) ref_mime="image/webp" ;;
+                *) ref_mime="image/png" ;;
+            esac
+            local ref_b64
+            ref_b64="$(base64 < "$ref_img")"
+            parts_json="$parts_json, {\"inline_data\": {\"mime_type\": \"$ref_mime\", \"data\": \"$ref_b64\"}}"
+        fi
+    done
+
+    parts_json="$parts_json]"
 
     local gen_config='{"responseModalities": ["image", "text"]'
     if [[ -n "$ASPECT" ]]; then
@@ -123,6 +142,7 @@ build_request_body() {
 echo "Generating: $PROMPT"
 echo "Model: $MODEL"
 [[ -n "$EDIT_IMAGE" ]] && echo "Editing: $EDIT_IMAGE"
+for ref_img in "${REF_IMAGES[@]}"; do echo "Reference: $ref_img"; done
 
 RESPONSE_FILE=$(mktemp)
 REQUEST_FILE=$(mktemp)
