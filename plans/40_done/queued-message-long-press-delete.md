@@ -1,4 +1,5 @@
 # Queued Message: Long Press to Delete
+<!-- build: 82 -->
 
 ## Problem
 Swipe-to-delete on queued messages was causing interaction issues. Inconsistent with the rest of the app which uses long-press context menus.

@@ -76,42 +76,39 @@ struct ErrorCorrectionWidget: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    @ViewBuilder
     private func segmentView(index: Int, segment: (text: String, correction: String?)) -> some View {
-        let isError = segment.correction != nil
         let isRevealed = revealed.contains(index)
 
-        return Button {
-            if isError && !isRevealed {
+        if isRevealed, let correction = segment.correction {
+            VStack(spacing: 2) {
+                Text(segment.text)
+                    .font(.system(size: 15))
+                    .strikethrough(true, color: .red)
+                    .foregroundColor(.red.opacity(0.5))
+                Text(correction)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.green)
+            }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 2)
+            .background(Color.green.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+        } else if segment.correction != nil {
+            Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     _ = revealed.insert(index)
                 }
-            }
-        } label: {
-            if isRevealed, let correction = segment.correction {
-                VStack(spacing: 2) {
-                    Text(segment.text)
-                        .font(.system(size: 15))
-                        .strikethrough(true, color: .red)
-                        .foregroundColor(.red.opacity(0.5))
-                    Text(correction)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.green)
-                }
-                .padding(.horizontal, 4)
-                .padding(.vertical, 2)
-                .background(Color.green.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-            } else {
+            } label: {
                 Text(segment.text)
                     .font(.system(size: 15))
                     .foregroundColor(.primary)
-                    .padding(.horizontal, isError ? 4 : 1)
-                    .padding(.vertical, 2)
-                    .background(isError ? Color.red.opacity(0.06) : .clear)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
             }
+            .buttonStyle(.plain)
+        } else {
+            Text(segment.text)
+                .font(.system(size: 15))
+                .foregroundColor(.primary)
         }
-        .buttonStyle(.plain)
-        .disabled(!isError || isRevealed)
     }
 }
