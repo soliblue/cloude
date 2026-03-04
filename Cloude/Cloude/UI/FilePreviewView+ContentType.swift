@@ -2,6 +2,7 @@ import Foundation
 
 enum FileContentType {
     case image
+    case gif
     case video
     case audio
     case pdf
@@ -24,7 +25,7 @@ enum FileContentType {
 
     var isTextBased: Bool {
         switch self {
-        case .image, .video, .audio, .pdf, .binary: return false
+        case .image, .gif, .video, .audio, .pdf, .binary: return false
         default: return true
         }
     }
@@ -43,7 +44,9 @@ enum FileContentType {
 
     static func from(extension ext: String) -> FileContentType {
         switch ext {
-        case "png", "jpg", "jpeg", "gif", "webp", "heic", "svg":
+        case "gif":
+            return .gif
+        case "png", "jpg", "jpeg", "webp", "heic", "svg":
             return .image
         case "mp4", "mov", "m4v", "avi", "webm":
             return .video

@@ -2,6 +2,59 @@ import SwiftUI
 import AVKit
 import AVFoundation
 import PDFKit
+import ImageIO
+
+struct GIFPreview: UIViewRepresentable {
+    let data: Data
+
+    func makeUIView(context: Context) -> UIView {
+        let container = UIView()
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(imageView)
+        NSLayoutConstraint.activate([
+            imageView.topAnchor.constraint(equalTo: container.topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+        ])
+
+        if let source = CGImageSourceCreateWithData(data as CFData, nil) {
+            let count = CGImageSourceGetCount(source)
+            var frames: [UIImage] = []
+            var totalDuration: Double = 0
+
+            for i in 0..<count {
+                if let cgImage = CGImageSourceCreateImageAtIndex(source, i, nil) {
+                    frames.append(UIImage(cgImage: cgImage))
+                    if let props = CGImageSourceCopyPropertiesAtIndex(source, i, nil) as? [String: Any],
+                       let gifProps = props[kCGImagePropertyGIFDictionary as String] as? [String: Any] {
+                        let delay = gifProps[kCGImagePropertyGIFUnclampedDelayTime as String] as? Double
+                            ?? gifProps[kCGImagePropertyGIFDelayTime as String] as? Double
+                            ?? 0.1
+                        totalDuration += max(delay, 0.02)
+                    } else {
+                        totalDuration += 0.1
+                    }
+                }
+            }
+
+            if frames.count > 1 {
+                imageView.animationImages = frames
+                imageView.animationDuration = totalDuration
+                imageView.animationRepeatCount = 0
+                imageView.startAnimating()
+            } else if let first = frames.first {
+                imageView.image = first
+            }
+        }
+
+        return container
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
 
 struct ImagePreview: View {
     let image: UIImage
