@@ -37,7 +37,9 @@ extension FilePreviewView {
 
     @ViewBuilder
     func fileContent(_ data: Data) -> some View {
-        if case .image = contentType, let image = UIImage(data: data) {
+        if case .gif = contentType {
+            GIFPreview(data: data)
+        } else if case .image = contentType, let image = UIImage(data: data) {
             VStack {
                 ImagePreview(image: image)
                 if isThumbnail {
