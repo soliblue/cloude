@@ -3,15 +3,18 @@ import SwiftUI
 struct SisyphusLoadingView: View {
     @State private var frameIndex = 0
 
-    private let frameNames = (1...7).map { "sisyphus-\($0)" }
+    private let pushFrames = (1...9).map { "cloude-anim-\($0)" }
+    private let retreatFrames = (10...18).map { "cloude-anim-\($0)" }
     private let interval: TimeInterval = 0.14
 
-    private var sequence: [Int] {
-        Array(0..<7) + Array((0..<7).reversed())
+    private var sequence: [String] {
+        let pushCycle = pushFrames + pushFrames.reversed().dropFirst().dropLast()
+        let retreatCycle = retreatFrames + retreatFrames.reversed().dropFirst().dropLast()
+        return pushCycle + pushCycle + retreatCycle
     }
 
     var body: some View {
-        Image(frameNames[sequence[frameIndex]])
+        Image(sequence[frameIndex])
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(height: 30)
