@@ -374,6 +374,58 @@ const tools = [
       required: ["steps"],
     },
   },
+  {
+    name: "timeline",
+    description: "Render a vertical timeline of events. Each event has a date, title, optional description, SF Symbol icon, and color dot.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Timeline title" },
+        events: {
+          type: "array",
+          description: "Array of events in chronological order",
+          items: {
+            type: "object",
+            properties: {
+              date: { type: "string", description: "Date or time label (e.g. 'Jan 2024', '9:00 AM')" },
+              title: { type: "string", description: "Event title" },
+              description: { type: "string", description: "Optional event description" },
+              icon: { type: "string", description: "SF Symbol name (default: circle.fill)" },
+              color: { type: "string", description: "Dot color: blue, green, orange, purple, red, teal, pink, indigo (default: blue)" },
+            },
+            required: ["date", "title"],
+          },
+        },
+      },
+      required: ["events"],
+    },
+  },
+  {
+    name: "tree",
+    description: "Render a collapsible tree diagram. Great for file structures, org charts, decision trees. Nodes can have SF Symbol icons and are collapsible.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Tree title" },
+        root: {
+          type: "object",
+          description: "Root node of the tree. Each node has a label, optional icon/color, and optional children array.",
+          properties: {
+            label: { type: "string", description: "Node label" },
+            icon: { type: "string", description: "SF Symbol name (default: folder.fill for parents, doc.fill for leaves)" },
+            color: { type: "string", description: "Icon color (default: yellow for folders, blue for files)" },
+            children: {
+              type: "array",
+              description: "Child nodes (same structure recursively)",
+              items: { type: "object" },
+            },
+          },
+          required: ["label"],
+        },
+      },
+      required: ["root"],
+    },
+  },
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));

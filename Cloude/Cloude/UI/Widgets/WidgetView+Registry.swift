@@ -40,6 +40,8 @@ enum WidgetRegistry {
             case "pie_chart": PieChartWidget(data: data)
             case "scatter_plot": ScatterPlotWidget(data: data)
             case "line_chart": LineChartWidget(data: data)
+            case "timeline": TimelineWidget(data: data)
+            case "tree": TreeWidget(data: data)
             default: Text("Unknown widget: \(type)").font(.caption).foregroundColor(.secondary)
             }
         }
@@ -65,6 +67,8 @@ enum WidgetRegistry {
         case "pie_chart": return "Pie Chart"
         case "scatter_plot": return "Scatter Plot"
         case "line_chart": return "Line Chart"
+        case "timeline": return "Timeline"
+        case "tree": return "Tree"
         default: return toolName
         }
     }
@@ -89,6 +93,8 @@ enum WidgetRegistry {
         case "pie_chart": return "chart.pie"
         case "scatter_plot": return "chart.dots.scatter"
         case "line_chart": return "chart.line.uptrend.xyaxis"
+        case "timeline": return "calendar.day.timeline.left"
+        case "tree": return "filemenu.and.selection"
         default: return "puzzlepiece"
         }
     }
@@ -113,6 +119,8 @@ enum WidgetRegistry {
         case "pie_chart": return .orange
         case "scatter_plot": return .teal
         case "line_chart": return .blue
+        case "timeline": return .blue
+        case "tree": return .yellow
         default: return .secondary
         }
     }
