@@ -30,7 +30,6 @@ struct InlineTextView: View {
 
     var body: some View {
         Text(buildAttributedString())
-            .textSelection(.enabled)
     }
 
     private func buildAttributedString() -> AttributedString {

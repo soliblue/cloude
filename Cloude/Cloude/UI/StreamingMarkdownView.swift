@@ -170,7 +170,6 @@ private struct HeaderSectionView: View {
                     InlineTextView(segments: headerSegments)
                 } else {
                     Text(headerContent)
-                        .textSelection(.enabled)
                 }
             }
             .contentShape(Rectangle())
@@ -204,7 +203,6 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(attributed)
-                    .textSelection(.enabled)
                     .contentTransition(.interpolate)
             }
 
@@ -225,7 +223,6 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(content)
-                    .textSelection(.enabled)
                     .contentTransition(.interpolate)
             }
 

@@ -35,7 +35,6 @@ struct CodeBlock: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 Text(SyntaxHighlighter.highlight(code, language: language))
                     .font(.system(.caption, design: .monospaced))
-                    .textSelection(.enabled)
             }
             .padding(12)
         }
@@ -109,7 +108,6 @@ private struct TableCell: View {
     var body: some View {
         Text(parseInlineMarkdown())
             .font(isHeader ? .caption.bold() : .caption)
-            .textSelection(.enabled)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
     }
