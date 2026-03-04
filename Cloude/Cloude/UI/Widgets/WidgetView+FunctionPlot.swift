@@ -42,15 +42,8 @@ struct FunctionPlotWidget: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "chart.xyaxis.line")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.blue)
-                Text("Function Plot")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
+        WidgetContainer {
+            WidgetHeader(icon: "chart.xyaxis.line", title: "Function Plot", color: .blue)
 
             Text("f(x) = \(expression)")
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
@@ -63,9 +56,6 @@ struct FunctionPlotWidget: View {
                 paramSlider(param)
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
             if !initialized {
                 for param in paramDefs { paramValues[param.name] = param.value }

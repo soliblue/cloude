@@ -1,14 +1,11 @@
 import SwiftUI
 
-extension Notification.Name {
-    static let widgetInputActive = Notification.Name("widgetInputActive")
-}
-
 struct FillInBlankWidget: View {
     let data: [String: Any]
     @State private var answers: [String] = []
     @State private var checked = false
     @State private var revealed = false
+    @State private var originalAnswers: [String] = []
     @FocusState private var focusedBlank: Int?
 
     private var text: String { data["text"] as? String ?? "" }
@@ -58,61 +55,24 @@ struct FillInBlankWidget: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "text.badge.checkmark")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.orange)
-                if let hint {
-                    Text(hint)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
+        WidgetContainer {
+            WidgetHeader(icon: "text.badge.checkmark", title: hint, color: .orange) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .orange, enabled: hasInput || checked) {
+                    answers = Array(repeating: "", count: blanks.count)
+                    checked = false
+                    revealed = false
+                    focusedBlank = nil
                 }
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            answers = Array(repeating: "", count: blanks.count)
-                            checked = false
-                            revealed = false
-                            focusedBlank = nil
-                        }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasInput || checked ? .orange : .secondary.opacity(0.3))
+                WidgetButton(icon: "eye", color: .orange, enabled: hasWrong && !revealed) {
+                    for i in blanks.indices {
+                        if !isBlankCorrect(i) { answers[i] = blanks[i] }
                     }
-                    .buttonStyle(.plain)
-                    .disabled(!hasInput && !checked)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            for i in blanks.indices {
-                                if !isBlankCorrect(i) { answers[i] = blanks[i] }
-                            }
-                            revealed = true
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasWrong && !revealed ? .orange : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasWrong || revealed)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            originalAnswers = answers
-                            checked = true
-                            focusedBlank = nil
-                        }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(checked ? .secondary.opacity(0.3) : .orange)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(checked)
+                    revealed = true
+                }
+                WidgetButton(icon: "checkmark.circle", color: .orange, enabled: !checked) {
+                    originalAnswers = answers
+                    checked = true
+                    focusedBlank = nil
                 }
             }
 
@@ -131,19 +91,9 @@ struct FillInBlankWidget: View {
             }
 
             if checked {
-                HStack(spacing: 4) {
-                    Image(systemName: allCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(allCorrect ? "All correct!" : "\(blanks.indices.filter { isBlankCorrect($0) }.count)/\(blanks.count) correct")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(allCorrect, correct: "All correct!", wrong: "\(blanks.indices.filter { isBlankCorrect($0) }.count)/\(blanks.count) correct")
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
             if answers.isEmpty { answers = Array(repeating: "", count: blanks.count) }
         }
@@ -155,6 +105,11 @@ struct FillInBlankWidget: View {
     private func isBlankCorrect(_ index: Int) -> Bool {
         guard index < answers.count, index < blanks.count else { return false }
         return answers[index].trimmingCharacters(in: .whitespaces).lowercased() == blanks[index].lowercased()
+    }
+
+    private func isOriginallyCorrect(_ index: Int) -> Bool {
+        guard index < originalAnswers.count, index < blanks.count else { return false }
+        return originalAnswers[index].trimmingCharacters(in: .whitespaces).lowercased() == blanks[index].lowercased()
     }
 
     private func blankField(index: Int) -> some View {
@@ -202,13 +157,6 @@ struct FillInBlankWidget: View {
                     }
                 }
             }
-    }
-
-    @State private var originalAnswers: [String] = []
-
-    private func isOriginallyCorrect(_ index: Int) -> Bool {
-        guard index < originalAnswers.count, index < blanks.count else { return false }
-        return originalAnswers[index].trimmingCharacters(in: .whitespaces).lowercased() == blanks[index].lowercased()
     }
 
     private func binding(for index: Int) -> Binding<String> {

@@ -24,42 +24,16 @@ struct MatchingWidget: View {
     private var hasWrong: Bool { allMatched && !allCorrect }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "line.horizontal.3")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.pink)
-                Text("Matching")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            matched = [:]
-                            selectedLeft = nil
-                            shuffledRight = pairs.map(\.right).shuffled()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(!matched.isEmpty ? .pink : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(matched.isEmpty)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            matched = correctMap
-                            selectedLeft = nil
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasWrong ? .pink : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasWrong)
+        WidgetContainer {
+            WidgetHeader(icon: "line.horizontal.3", title: "Matching", color: .pink) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .pink, enabled: !matched.isEmpty) {
+                    matched = [:]
+                    selectedLeft = nil
+                    shuffledRight = pairs.map(\.right).shuffled()
+                }
+                WidgetButton(icon: "eye", color: .pink, enabled: hasWrong) {
+                    matched = correctMap
+                    selectedLeft = nil
                 }
             }
 
@@ -85,19 +59,9 @@ struct MatchingWidget: View {
             }
 
             if allMatched {
-                HStack(spacing: 4) {
-                    Image(systemName: allCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(allCorrect ? "All correct!" : "\(matched.filter { correctMap[$0.key] == $0.value }.count)/\(pairs.count) correct")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(allCorrect, correct: "All correct!", wrong: "\(matched.filter { correctMap[$0.key] == $0.value }.count)/\(pairs.count) correct")
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
             if !initialized {
                 shuffledRight = pairs.map(\.right).shuffled()

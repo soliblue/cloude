@@ -20,17 +20,8 @@ struct FlashcardDeckWidget: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "rectangle.stack")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.indigo)
-                if let title {
-                    Text(title)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
+        WidgetContainer {
+            WidgetHeader(icon: "rectangle.stack", title: title, color: .indigo) {
                 Text("\(currentIndex + 1)/\(cards.count)")
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
                     .foregroundColor(.secondary)
@@ -84,8 +75,5 @@ struct FlashcardDeckWidget: View {
                 }
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
