@@ -1,4 +1,5 @@
 # GIF Preview Support
+<!-- build: 82 -->
 
 Add animated GIF playback in FilePreviewView. Currently GIFs render as static images.
 
