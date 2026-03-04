@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct SisyphusLoadingView: View {
-    @State private var frameIndex = 0
-
+    private let start = Date()
     private let pushFrames = (1...9).map { "cloude-anim-\($0)" }
     private let retreatFrames = (10...18).map { "cloude-anim-\($0)" }
     private let interval: TimeInterval = 0.14
@@ -14,14 +13,12 @@ struct SisyphusLoadingView: View {
     }
 
     var body: some View {
-        Image(sequence[frameIndex])
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(height: 30)
-            .onAppear {
-                Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-                    frameIndex = (frameIndex + 1) % sequence.count
-                }
-            }
+        TimelineView(.periodic(from: start, by: interval)) { context in
+            let index = Int(context.date.timeIntervalSince(start) / interval) % sequence.count
+            Image(sequence[index])
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 30)
+        }
     }
 }
