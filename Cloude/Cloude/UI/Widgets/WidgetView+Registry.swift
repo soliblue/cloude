@@ -36,6 +36,10 @@ enum WidgetRegistry {
             case "error_correction": ErrorCorrectionWidget(data: data)
             case "type_answer": TypeAnswerWidget(data: data)
             case "step_reveal": StepRevealWidget(data: data)
+            case "bar_chart": BarChartWidget(data: data)
+            case "pie_chart": PieChartWidget(data: data)
+            case "scatter_plot": ScatterPlotWidget(data: data)
+            case "line_chart": LineChartWidget(data: data)
             default: Text("Unknown widget: \(type)").font(.caption).foregroundColor(.secondary)
             }
         }
@@ -57,6 +61,10 @@ enum WidgetRegistry {
         case "error_correction": return "Error Correction"
         case "type_answer": return "Type Answer"
         case "step_reveal": return "Step by Step"
+        case "bar_chart": return "Bar Chart"
+        case "pie_chart": return "Pie Chart"
+        case "scatter_plot": return "Scatter Plot"
+        case "line_chart": return "Line Chart"
         default: return toolName
         }
     }
@@ -77,6 +85,10 @@ enum WidgetRegistry {
         case "error_correction": return "exclamationmark.triangle"
         case "type_answer": return "keyboard"
         case "step_reveal": return "list.number"
+        case "bar_chart": return "chart.bar"
+        case "pie_chart": return "chart.pie"
+        case "scatter_plot": return "chart.dots.scatter"
+        case "line_chart": return "chart.line.uptrend.xyaxis"
         default: return "puzzlepiece"
         }
     }
@@ -97,6 +109,10 @@ enum WidgetRegistry {
         case "error_correction": return .red
         case "type_answer": return .cyan
         case "step_reveal": return .indigo
+        case "bar_chart": return .blue
+        case "pie_chart": return .orange
+        case "scatter_plot": return .teal
+        case "line_chart": return .blue
         default: return .secondary
         }
     }
