@@ -1,4 +1,5 @@
 # Wrap Code Lines Toggle
+<!-- build: 82 -->
 
 Add a persistent user preference for wrapping code lines in file preview.
 

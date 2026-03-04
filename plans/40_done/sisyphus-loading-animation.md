@@ -1,4 +1,5 @@
 # Sisyphus Loading Animation
+<!-- build: 82 -->
 
 ## What
 Small loading animation in the chat area while waiting for the first token from Claude. A tiny character pushes a ball up a hill, it rolls back, repeat — Sisyphus myth.

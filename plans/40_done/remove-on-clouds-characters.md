@@ -1,4 +1,5 @@
 # Remove On-Clouds Characters
+<!-- build: 82 -->
 
 Remove the three "on clouds" pixel art characters from the empty chat state.
 

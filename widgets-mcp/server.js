@@ -250,6 +250,115 @@ const tools = [
     },
   },
   {
+    name: "bar_chart",
+    description: "Render a bar chart for comparing values. Great for histograms, frequency distributions, and category comparisons.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Chart title" },
+        bars: {
+          type: "array",
+          description: "Array of bars, each with a label and value",
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Bar label" },
+              value: { type: "number", description: "Bar value" },
+            },
+            required: ["label", "value"],
+          },
+        },
+        unit: { type: "string", description: "Optional unit label for the values (e.g. '%', 'kg')" },
+        color: { type: "string", description: "Bar color: blue, green, orange, purple, red, teal, pink (default: blue)" },
+      },
+      required: ["bars"],
+    },
+  },
+  {
+    name: "pie_chart",
+    description: "Render a pie chart showing proportions. Great for percentages, fractions, and part-of-whole relationships.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Chart title" },
+        slices: {
+          type: "array",
+          description: "Array of slices, each with a label and value (values are proportional, don't need to sum to 100)",
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Slice label" },
+              value: { type: "number", description: "Slice value" },
+            },
+            required: ["label", "value"],
+          },
+        },
+      },
+      required: ["slices"],
+    },
+  },
+  {
+    name: "scatter_plot",
+    description: "Render a scatter plot for showing data point relationships and correlations.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Chart title" },
+        points: {
+          type: "array",
+          description: "Array of data points with x and y coordinates",
+          items: {
+            type: "object",
+            properties: {
+              x: { type: "number" },
+              y: { type: "number" },
+              label: { type: "string", description: "Optional point label" },
+            },
+            required: ["x", "y"],
+          },
+        },
+        xLabel: { type: "string", description: "X axis label" },
+        yLabel: { type: "string", description: "Y axis label" },
+      },
+      required: ["points"],
+    },
+  },
+  {
+    name: "line_chart",
+    description: "Render a data-driven line chart for time series, trends, and sequences. Unlike function_plot, this takes explicit data points.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Chart title" },
+        lines: {
+          type: "array",
+          description: "One or more data series to plot",
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Series name for legend" },
+              points: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    x: { type: "number", description: "X value or index" },
+                    y: { type: "number", description: "Y value" },
+                  },
+                  required: ["x", "y"],
+                },
+              },
+            },
+            required: ["label", "points"],
+          },
+        },
+        xLabel: { type: "string", description: "X axis label" },
+        yLabel: { type: "string", description: "Y axis label" },
+      },
+      required: ["lines"],
+    },
+  },
+  {
     name: "step_reveal",
     description: "Render a step-by-step reveal exercise. Steps are hidden and revealed one at a time as the user taps 'Next'. Forces active thinking before seeing each answer.",
     inputSchema: {
