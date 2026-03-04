@@ -10,9 +10,14 @@ struct MessageBubble: View {
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
     @State private var showTextSelection = false
+    @State private var showLongPressMenu = false
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @ObservedObject private var ttsService = TTSService.shared
+
+    private var hasInteractiveWidgets: Bool {
+        message.toolCalls.contains { WidgetRegistry.isWidget($0.name) }
+    }
 
     private var hasToolCalls: Bool {
         !message.toolCalls.filter { $0.parentToolId == nil }.isEmpty
@@ -179,46 +184,44 @@ struct MessageBubble: View {
                     )
                 }
             }
-            .contextMenu {
-                Button {
-                    ClipboardHelper.copy(message.text)
-                    withAnimation { showCopiedToast = true }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        withAnimation { showCopiedToast = false }
-                    }
-                } label: {
-                    Label("Copy", systemImage: "doc.on.doc")
-                }
-                if !message.text.isEmpty {
-                    Button {
-                        showTextSelection = true
-                    } label: {
-                        Label("Select Text", systemImage: "text.cursor")
-                    }
-                }
-                if !message.isUser && !message.text.isEmpty {
-                    Button {
-                        onToggleCollapse?()
-                    } label: {
-                        Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
-                    }
-                }
-                if ttsMode != .off && !message.text.isEmpty && !message.isUser {
-                    Button {
-                        ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
-                    } label: {
-                        if ttsService.playingMessageId == message.id.uuidString {
-                            Label("Stop", systemImage: "stop.fill")
-                        } else {
-                            Label("Play", systemImage: "speaker.wave.2")
-                        }
-                    }
-                }
-            }
             .overlay(alignment: .top) {
                 if showCopiedToast {
                     CopiedToast()
                         .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+            .overlay {
+                if showLongPressMenu {
+                    Color.black.opacity(0.001)
+                        .onTapGesture { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+                }
+            }
+            .overlay(alignment: .top) {
+                if showLongPressMenu {
+                    BubbleActionMenu(
+                        message: message,
+                        ttsMode: ttsMode,
+                        ttsService: ttsService,
+                        kokoroVoice: kokoroVoice,
+                        onCopy: {
+                            ClipboardHelper.copy(message.text)
+                            withAnimation { showCopiedToast = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                withAnimation { showCopiedToast = false }
+                            }
+                        },
+                        onSelectText: { showTextSelection = true },
+                        onToggleCollapse: onToggleCollapse,
+                        onDismiss: { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+                    )
+                    .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .top)))
+                    .padding(.top, 8)
+                }
+            }
+            .onLongPressGesture(minimumDuration: 0.4) {
+                if !hasInteractiveWidgets {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showLongPressMenu = true }
                 }
             }
     }
@@ -238,6 +241,70 @@ struct CopiedToast: View {
         .cornerRadius(15)
         .shadow(radius: 4)
         .padding(.top, 8)
+    }
+}
+
+struct BubbleActionMenu: View {
+    let message: ChatMessage
+    let ttsMode: TTSMode
+    @ObservedObject var ttsService: TTSService
+    let kokoroVoice: KokoroVoice
+    let onCopy: () -> Void
+    let onSelectText: () -> Void
+    let onToggleCollapse: (() -> Void)?
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            menuButton(icon: "doc.on.doc", label: "Copy") {
+                onCopy()
+                onDismiss()
+            }
+            if !message.text.isEmpty {
+                divider
+                menuButton(icon: "text.cursor", label: "Select") {
+                    onSelectText()
+                    onDismiss()
+                }
+            }
+            if !message.isUser && !message.text.isEmpty {
+                divider
+                menuButton(icon: message.isCollapsed ? "chevron.down" : "chevron.up", label: message.isCollapsed ? "Expand" : "Collapse") {
+                    onToggleCollapse?()
+                    onDismiss()
+                }
+            }
+            if ttsMode != .off && !message.text.isEmpty && !message.isUser {
+                divider
+                let isPlaying = ttsService.playingMessageId == message.id.uuidString
+                menuButton(icon: isPlaying ? "stop.fill" : "speaker.wave.2", label: isPlaying ? "Stop" : "Play") {
+                    ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
+                    onDismiss()
+                }
+            }
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
+    }
+
+    private func menuButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                Text(label)
+                    .font(.system(size: 10, weight: .medium))
+            }
+            .foregroundColor(.primary)
+            .frame(width: 64, height: 52)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Color.primary.opacity(0.1))
+            .frame(width: 0.5, height: 32)
     }
 }
 
