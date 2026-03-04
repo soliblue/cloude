@@ -21,57 +21,22 @@ struct TypeAnswerWidget: View {
     private var hasWrong: Bool { checked && !isCorrect }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "keyboard")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.cyan)
-                Text("Type Answer")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            userInput = ""
-                            checked = false
-                            revealed = false
-                        }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasInput || checked ? .cyan : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasInput && !checked)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            userInput = answer
-                            revealed = true
-                            checked = true
-                            isFocused = false
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasWrong && !revealed ? .cyan : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasWrong || revealed)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            checked = true
-                            isFocused = false
-                        }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(checked ? .secondary.opacity(0.3) : .cyan)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(checked)
+        WidgetContainer {
+            WidgetHeader(icon: "keyboard", title: "Type Answer", color: .cyan) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .cyan, enabled: hasInput || checked) {
+                    userInput = ""
+                    checked = false
+                    revealed = false
+                }
+                WidgetButton(icon: "eye", color: .cyan, enabled: hasWrong && !revealed) {
+                    userInput = answer
+                    revealed = true
+                    checked = true
+                    isFocused = false
+                }
+                WidgetButton(icon: "checkmark.circle", color: .cyan, enabled: !checked) {
+                    checked = true
+                    isFocused = false
                 }
             }
 
@@ -100,19 +65,9 @@ struct TypeAnswerWidget: View {
                 }
 
             if checked {
-                HStack(spacing: 4) {
-                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(isCorrect ? "Correct!" : "Wrong answer")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(isCorrect)
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onChange(of: isFocused) { _, newValue in
             NotificationCenter.default.post(name: .widgetInputActive, object: newValue)
         }

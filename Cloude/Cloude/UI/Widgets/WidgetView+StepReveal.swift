@@ -9,47 +9,16 @@ struct StepRevealWidget: View {
     private var allRevealed: Bool { revealedCount >= steps.count }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "list.number")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.indigo)
-                if let title {
-                    Text(title)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
+        WidgetContainer {
+            WidgetHeader(icon: "list.number", title: title, color: .indigo) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .indigo, enabled: revealedCount > 0) {
+                    revealedCount = 0
                 }
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { revealedCount = 0 }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(revealedCount > 0 ? .indigo : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(revealedCount == 0)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { revealedCount = steps.count }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(!allRevealed ? .indigo : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(allRevealed)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { revealedCount += 1 }
-                    } label: {
-                        Image(systemName: "plus.circle")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(!allRevealed ? .indigo : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(allRevealed)
+                WidgetButton(icon: "eye", color: .indigo, enabled: !allRevealed) {
+                    revealedCount = steps.count
+                }
+                WidgetButton(icon: "plus.circle", color: .indigo, enabled: !allRevealed) {
+                    revealedCount += 1
                 }
             }
 
@@ -79,17 +48,10 @@ struct StepRevealWidget: View {
                 }
             }
 
-            HStack(spacing: 4) {
-                Image(systemName: allRevealed ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 10))
-                Text("\(revealedCount)/\(steps.count) revealed")
-                    .font(.system(size: 11, weight: .medium))
-            }
-            .foregroundColor(.secondary)
-            .frame(maxWidth: .infinity)
+            WidgetProgressBadge(
+                icon: allRevealed ? "checkmark.circle.fill" : "circle",
+                text: "\(revealedCount)/\(steps.count) revealed"
+            )
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

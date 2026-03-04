@@ -26,15 +26,8 @@ struct LineChartWidget: View {
     private let colors: [Color] = [.blue, .orange, .green, .purple, .red, .teal]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.blue)
-                Text(title ?? "Line Chart")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
+        WidgetContainer {
+            WidgetHeader(icon: "chart.line.uptrend.xyaxis", title: title ?? "Line Chart", color: .blue)
 
             Chart {
                 ForEach(Array(lines.enumerated()), id: \.offset) { lineIdx, line in
@@ -110,9 +103,6 @@ struct LineChartWidget: View {
                 }
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder

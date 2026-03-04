@@ -11,35 +11,13 @@ struct QuizWidget: View {
     private var answered: Bool { selectedIndex != nil }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "questionmark.circle")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.cyan)
-                Text("Quiz")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { selectedIndex = nil }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(answered ? .cyan : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!answered)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { selectedIndex = correctIndex }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(answered && selectedIndex != correctIndex ? .cyan : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!answered || selectedIndex == correctIndex)
+        WidgetContainer {
+            WidgetHeader(icon: "questionmark.circle", title: "Quiz", color: .cyan) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .cyan, enabled: answered) {
+                    selectedIndex = nil
+                }
+                WidgetButton(icon: "eye", color: .cyan, enabled: answered && selectedIndex != correctIndex) {
+                    selectedIndex = correctIndex
                 }
             }
 
@@ -63,19 +41,9 @@ struct QuizWidget: View {
             }
 
             if answered {
-                HStack(spacing: 4) {
-                    Image(systemName: selectedIndex == correctIndex ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(selectedIndex == correctIndex ? "Correct!" : "Wrong answer")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(selectedIndex == correctIndex)
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func optionButton(index: Int, text: String) -> some View {

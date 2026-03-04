@@ -34,15 +34,8 @@ struct InteractiveFunctionWidget: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.purple)
-                Text(name)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
+        WidgetContainer {
+            WidgetHeader(icon: "slider.horizontal.3", title: name, color: .purple)
 
             ForEach(inputDefs, id: \.name) { input in
                 inputSlider(input)
@@ -50,9 +43,6 @@ struct InteractiveFunctionWidget: View {
 
             resultView
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
             if !initialized {
                 for input in inputDefs { inputValues[input.name] = input.value }

@@ -20,57 +20,24 @@ struct WordScrambleWidget: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "textformat.abc")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.yellow)
-                Text("Word Scramble")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedIndices = []
-                            checked = false
-                            revealed = false
-                            scrambledLetters = Array(word).shuffled()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasInput || checked ? .yellow : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasInput && !checked)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedIndices = Array(0..<scrambledLetters.count)
-                            let correctLetters = Array(word.uppercased())
-                            scrambledLetters = correctLetters
-                            selectedIndices = Array(0..<correctLetters.count)
-                            revealed = true
-                            checked = true
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasWrong && !revealed ? .yellow : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasWrong || revealed)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { checked = true }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(allPlaced && !checked ? .yellow : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!allPlaced || checked)
+        WidgetContainer {
+            WidgetHeader(icon: "textformat.abc", title: "Word Scramble", color: .yellow) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .yellow, enabled: hasInput || checked) {
+                    selectedIndices = []
+                    checked = false
+                    revealed = false
+                    scrambledLetters = Array(word).shuffled()
+                }
+                WidgetButton(icon: "eye", color: .yellow, enabled: hasWrong && !revealed) {
+                    selectedIndices = Array(0..<scrambledLetters.count)
+                    let correctLetters = Array(word.uppercased())
+                    scrambledLetters = correctLetters
+                    selectedIndices = Array(0..<correctLetters.count)
+                    revealed = true
+                    checked = true
+                }
+                WidgetButton(icon: "checkmark.circle", color: .yellow, enabled: allPlaced && !checked) {
+                    checked = true
                 }
             }
 
@@ -131,19 +98,9 @@ struct WordScrambleWidget: View {
             }
 
             if checked {
-                HStack(spacing: 4) {
-                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(isCorrect ? "Correct!" : "Not quite")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(isCorrect, correct: "Correct!", wrong: "Not quite")
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
             if !initialized {
                 scrambledLetters = Array(word).shuffled()

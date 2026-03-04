@@ -28,59 +28,24 @@ struct CategorizationWidget: View {
     private var hasWrong: Bool { checked && !allCorrect }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "tray.2")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.mint)
-                Text("Categorization")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            placements = [:]
-                            checked = false
-                            revealed = false
-                            selectedCategory = nil
-                            allItems = categories.flatMap(\.items).shuffled()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasInput || checked ? .mint : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasInput && !checked)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            placements = correctMap
-                            revealed = true
-                            checked = true
-                            selectedCategory = nil
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasWrong && !revealed ? .mint : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasWrong || revealed)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            checked = true
-                            selectedCategory = nil
-                        }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(allPlaced && !checked ? .mint : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!allPlaced || checked)
+        WidgetContainer {
+            WidgetHeader(icon: "tray.2", title: "Categorization", color: .mint) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .mint, enabled: hasInput || checked) {
+                    placements = [:]
+                    checked = false
+                    revealed = false
+                    selectedCategory = nil
+                    allItems = categories.flatMap(\.items).shuffled()
+                }
+                WidgetButton(icon: "eye", color: .mint, enabled: hasWrong && !revealed) {
+                    placements = correctMap
+                    revealed = true
+                    checked = true
+                    selectedCategory = nil
+                }
+                WidgetButton(icon: "checkmark.circle", color: .mint, enabled: allPlaced && !checked) {
+                    checked = true
+                    selectedCategory = nil
                 }
             }
 
@@ -117,19 +82,9 @@ struct CategorizationWidget: View {
             }
 
             if checked {
-                HStack(spacing: 4) {
-                    Image(systemName: allCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(allCorrect ? "All correct!" : "\(placements.filter { correctMap[$0.key] == $0.value }.count)/\(allItems.count) correct")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(allCorrect, correct: "All correct!", wrong: "\(placements.filter { correctMap[$0.key] == $0.value }.count)/\(allItems.count) correct")
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
             if !initialized {
                 allItems = categories.flatMap(\.items).shuffled()

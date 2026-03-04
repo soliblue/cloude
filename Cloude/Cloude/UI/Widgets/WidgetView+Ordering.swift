@@ -17,56 +17,21 @@ struct OrderingWidget: View {
     private var allPlaced: Bool { selectedOrder.count == correctOrder.count }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                Image(systemName: "arrow.up.arrow.down")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.teal)
-                Text("Ordering")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
-                Spacer()
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedOrder = []
-                            checked = false
-                            revealed = false
-                            shuffledItems = correctOrder.shuffled()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasInput || checked ? .teal : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasInput && !checked)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedOrder = correctOrder
-                            revealed = true
-                            checked = true
-                        }
-                    } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(hasWrong && !revealed ? .teal : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!hasWrong || revealed)
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            checked = true
-                        }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(allPlaced ? .teal : .secondary.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!allPlaced)
+        WidgetContainer {
+            WidgetHeader(icon: "arrow.up.arrow.down", title: "Ordering", color: .teal) {
+                WidgetButton(icon: "arrow.counterclockwise", color: .teal, enabled: hasInput || checked) {
+                    selectedOrder = []
+                    checked = false
+                    revealed = false
+                    shuffledItems = correctOrder.shuffled()
+                }
+                WidgetButton(icon: "eye", color: .teal, enabled: hasWrong && !revealed) {
+                    selectedOrder = correctOrder
+                    revealed = true
+                    checked = true
+                }
+                WidgetButton(icon: "checkmark.circle", color: .teal, enabled: allPlaced) {
+                    checked = true
                 }
             }
 
@@ -104,19 +69,9 @@ struct OrderingWidget: View {
             }
 
             if checked {
-                HStack(spacing: 4) {
-                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text(isCorrect ? "Correct!" : "\(correctOrder.indices.filter { correctOrder[$0] == selectedOrder[$0] }.count)/\(correctOrder.count) in place")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
+                WidgetResultBadge(isCorrect, correct: "Correct!", wrong: "\(correctOrder.indices.filter { correctOrder[$0] == selectedOrder[$0] }.count)/\(correctOrder.count) in place")
             }
         }
-        .padding(14)
-        .background(Color.oceanGray6.opacity(0.3))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {
             if !initialized {
                 shuffledItems = correctOrder.shuffled()
