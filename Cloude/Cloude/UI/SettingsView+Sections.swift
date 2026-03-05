@@ -40,9 +40,9 @@ extension SettingsView {
                         Button(action: { connection.killProcess(pid: proc.pid) }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 20))
-                                .foregroundColor(.red)
                         }
                         .buttonStyle(.plain)
+                        .tint(.accentColor)
                     }
                 }
 
@@ -53,8 +53,9 @@ extension SettingsView {
                                 .font(.system(size: 20))
                             Text("Kill All Processes")
                         }
-                        .foregroundColor(.red)
                     }
+                    .buttonStyle(.bordered)
+                    .tint(.accentColor)
                 }
             }
         } header: {

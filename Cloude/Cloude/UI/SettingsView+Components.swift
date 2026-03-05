@@ -52,7 +52,7 @@ struct ConnectionStatusCard: View {
                 Button("Disconnect", action: onDisconnect)
                     .font(.subheadline)
                     .buttonStyle(.bordered)
-                    .tint(.red)
+                    .tint(.accentColor)
             } else {
                 Button("Connect", action: onConnect)
                     .font(.subheadline)
