@@ -3,39 +3,29 @@ import CloudeShared
 
 struct SettingsView: View {
     @ObservedObject var connection: ConnectionManager
+    @ObservedObject var environmentStore: EnvironmentStore
     var onShowMemories: (() -> Void)?
     var onShowPlans: (() -> Void)?
 
-    @AppStorage("serverHost") private var serverHost = ""
-    @AppStorage("serverPort") private var serverPort = "8765"
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.oceanDark.rawValue
     private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
-@AppStorage("enableSuggestions") private var enableSuggestions = false
+    @AppStorage("enableSuggestions") private var enableSuggestions = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
-    @State private var authToken = ""
-    @State private var showToken = false
     @State private var showUsageStats = false
     @State private var usageStats: UsageStats?
     @State private var awaitingUsageStats = false
+    @State var selectedEnvironmentPage: AnyHashable = ""
 
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    ConnectionStatusCard(connection: connection, onConnect: connect, onDisconnect: {
-                        connection.disconnect()
-                    }, canConnect: !serverHost.isEmpty && !authToken.isEmpty)
-                }
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-
-                connectionSection
+                environmentsCarousel
                 processesSection
                 preferencesSection
                 aboutSection
@@ -56,15 +46,12 @@ struct SettingsView: View {
         }
         .preferredColorScheme(appTheme.colorScheme)
         .onAppear {
-            if let saved = KeychainHelper.get(key: "authToken") {
-                authToken = saved
+            if let activeId = environmentStore.activeEnvironmentId {
+                selectedEnvironmentPage = activeId
             }
             if connection.isAuthenticated {
                 connection.getProcesses()
             }
-        }
-        .onChange(of: authToken) { _, newValue in
-            KeychainHelper.save(key: "authToken", value: newValue)
         }
         .onReceive(connection.events) { event in
             if case let .usageStats(stats) = event, awaitingUsageStats {
@@ -73,43 +60,6 @@ struct SettingsView: View {
                 showUsageStats = true
             }
         }
-    }
-
-    private var connectionSection: some View {
-        Section {
-            SettingsRow(icon: "server.rack", color: .blue) {
-                TextField("Host", text: $serverHost)
-                    .textContentType(.URL)
-                    .autocapitalization(.none)
-                    .keyboardType(.URL)
-            }
-
-            SettingsRow(icon: "number", color: .blue) {
-                TextField("Port", text: $serverPort)
-                    .keyboardType(.numberPad)
-            }
-
-            SettingsRow(icon: "key.fill", color: .orange) {
-                Group {
-                    if showToken {
-                        TextField("Auth Token", text: $authToken)
-                            .font(.system(.body, design: .monospaced))
-                            .autocapitalization(.none)
-                    } else {
-                        SecureField("Auth Token", text: $authToken)
-                    }
-                }
-
-                Button(action: { showToken.toggle() }) {
-                    Image(systemName: showToken ? "eye.slash.fill" : "eye.fill")
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
-        } footer: {
-            Text("Works over WiFi · ") + Text("[Tailscale](https://tailscale.com/download)") + Text(" recommended for remote & secure access")
-        }
-        .listRowBackground(Color.oceanSecondary)
     }
 
     private var preferencesSection: some View {
@@ -210,12 +160,8 @@ struct SettingsView: View {
         }
     }
 
-    private func connect() {
-        guard let port = UInt16(serverPort) else { return }
-        connection.connect(host: serverHost, port: port, token: authToken)
-    }
 }
 
 #Preview {
-    SettingsView(connection: ConnectionManager())
+    SettingsView(connection: ConnectionManager(), environmentStore: EnvironmentStore())
 }
