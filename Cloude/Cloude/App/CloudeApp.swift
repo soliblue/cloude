@@ -13,6 +13,7 @@ struct CloudeApp: App {
     @StateObject private var connection = ConnectionManager()
     @StateObject private var conversationStore = ConversationStore()
     @StateObject private var windowManager = WindowManager()
+    @StateObject private var environmentStore = EnvironmentStore()
     @State private var showSettings = false
     @State private var showMemories = false
     @State private var memorySections: [MemorySection] = []
@@ -85,7 +86,7 @@ struct CloudeApp: App {
         }
         .onReceive(connection.events, perform: handleConnectionEvent)
         .sheet(isPresented: $showSettings) {
-            SettingsView(connection: connection, onShowMemories: { openMemories() }, onShowPlans: { openPlans() })
+            SettingsView(connection: connection, environmentStore: environmentStore, onShowMemories: { openMemories() }, onShowPlans: { openPlans() })
         }
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories, fromCache: memoriesFromCache)
@@ -383,16 +384,11 @@ struct CloudeApp: App {
     private func loadAndConnect() {
         NotificationManager.requestPermission()
 
-        let host = UserDefaults.standard.string(forKey: "serverHost") ?? ""
-        let portString = UserDefaults.standard.string(forKey: "serverPort") ?? "8765"
-        let token = KeychainHelper.get(key: "authToken") ?? ""
-
-        guard !host.isEmpty, !token.isEmpty, let port = UInt16(portString) else {
+        if let env = environmentStore.activeEnvironment, !env.host.isEmpty, !env.token.isEmpty {
+            connection.connect(host: env.host, port: env.port, token: env.token)
+        } else {
             showSettings = true
-            return
         }
-
-        connection.connect(host: host, port: port, token: token)
     }
 
 }
