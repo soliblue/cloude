@@ -18,14 +18,14 @@ extension SettingsView {
                     .tag(env.id)
                 }
 
-                AddEnvironmentCard(unusedCharacters: environmentStore.unusedCharacters()) { env in
+                AddEnvironmentCard { env in
                     environmentStore.add(env)
                     selectedEnvironmentPage = env.id
                 }
                 .tag("add" as AnyHashable)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
-            .frame(height: 260)
+            .frame(height: 255)
         }
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
@@ -55,14 +55,15 @@ struct EnvironmentCard: View {
 
     @State private var showToken = false
     @State private var showDeleteConfirm = false
+    @State private var showSymbolPicker = false
 
     var body: some View {
-        VStack(spacing: 10) {
-            HStack {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
                 if let onDelete {
                     Button(action: { showDeleteConfirm = true }) {
                         Image(systemName: "trash")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14))
                             .foregroundColor(.red.opacity(0.7))
                     }
                     .buttonStyle(.plain)
@@ -71,76 +72,24 @@ struct EnvironmentCard: View {
                     }
                 }
 
-                Spacer()
-
-                Image(env.character)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 50)
-
-                Spacer()
-
-                Color.clear.frame(width: 13, height: 13)
-            }
-
-            VStack(spacing: 8) {
-                HStack(spacing: 8) {
-                    Image(systemName: "server.rack")
-                        .font(.system(size: 14))
-                        .foregroundColor(.blue)
-                        .frame(width: 20)
-                    TextField("Host", text: $env.host)
-                        .textContentType(.URL)
-                        .autocapitalization(.none)
-                        .keyboardType(.URL)
-                        .font(.system(.subheadline))
-                        .onChange(of: env.host) { _, _ in onUpdate(env) }
-
-                    Text(":")
-                        .foregroundColor(.secondary)
-
-                    TextField("Port", text: portBinding)
-                        .keyboardType(.numberPad)
-                        .font(.system(.subheadline, design: .monospaced))
-                        .frame(width: 50)
-                        .onChange(of: env.port) { _, _ in onUpdate(env) }
+                Button(action: { showSymbolPicker = true }) {
+                    Image(systemName: env.symbol)
+                        .font(.system(size: 24))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 36, height: 36)
+                }
+                .buttonStyle(.plain)
+                .sheet(isPresented: $showSymbolPicker) {
+                    SymbolPickerSheet(selectedSymbol: $env.symbol)
+                        .onChange(of: env.symbol) { _, _ in onUpdate(env) }
                 }
 
-                HStack(spacing: 8) {
-                    Image(systemName: "key.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(.orange)
-                        .frame(width: 20)
-
-                    Group {
-                        if showToken {
-                            TextField("Auth Token", text: $env.token)
-                                .font(.system(.subheadline, design: .monospaced))
-                        } else {
-                            SecureField("Auth Token", text: $env.token)
-                                .font(.system(.subheadline))
-                        }
-                    }
-                    .autocapitalization(.none)
-                    .onChange(of: env.token) { _, _ in onUpdate(env) }
-
-                    Button(action: { showToken.toggle() }) {
-                        Image(systemName: showToken ? "eye.slash.fill" : "eye.fill")
-                            .font(.system(size: 13))
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 4)
-
-            HStack(spacing: 14) {
                 HStack(spacing: 6) {
                     Circle()
                         .fill(statusColor)
                         .frame(width: 8, height: 8)
                     Text(statusText)
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
 
@@ -148,24 +97,81 @@ struct EnvironmentCard: View {
 
                 if isConnected {
                     Button("Disconnect", action: onDisconnect)
-                        .font(.caption)
+                        .font(.subheadline)
                         .buttonStyle(.bordered)
                         .tint(.red)
                         .controlSize(.small)
                 } else {
                     Button("Connect", action: onConnect)
-                        .font(.caption)
+                        .font(.subheadline)
                         .buttonStyle(.borderedProminent)
                         .controlSize(.small)
                         .disabled(env.host.isEmpty || env.token.isEmpty)
                 }
             }
+
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    Image(systemName: "server.rack")
+                        .font(.system(size: 20))
+                        .foregroundColor(.blue)
+                        .frame(width: 24)
+                    TextField("Host", text: $env.host)
+                        .textContentType(.URL)
+                        .autocapitalization(.none)
+                        .keyboardType(.URL)
+                        .onChange(of: env.host) { _, _ in onUpdate(env) }
+                }
+                .padding(.vertical, 10)
+
+                Divider().padding(.leading, 36)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "number")
+                        .font(.system(size: 20))
+                        .foregroundColor(.blue)
+                        .frame(width: 24)
+                    TextField("Port", text: portBinding)
+                        .keyboardType(.numberPad)
+                        .font(.system(.body, design: .monospaced))
+                        .onChange(of: env.port) { _, _ in onUpdate(env) }
+                }
+                .padding(.vertical, 10)
+
+                Divider().padding(.leading, 36)
+
+                HStack(spacing: 12) {
+                    Image(systemName: "key.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.orange)
+                        .frame(width: 24)
+
+                    Group {
+                        if showToken {
+                            TextField("Auth Token", text: $env.token)
+                                .font(.system(.body, design: .monospaced))
+                        } else {
+                            SecureField("Auth Token", text: $env.token)
+                        }
+                    }
+                    .autocapitalization(.none)
+                    .onChange(of: env.token) { _, _ in onUpdate(env) }
+
+                    Button(action: { showToken.toggle() }) {
+                        Image(systemName: showToken ? "eye.slash.fill" : "eye.fill")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.vertical, 10)
+            }
+            .padding(.horizontal, 12)
+            .background(Color.oceanSecondary)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+            Spacer().frame(height: 8)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.oceanSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 4)
     }
 
     private var statusColor: Color {
@@ -189,35 +195,17 @@ struct EnvironmentCard: View {
 }
 
 struct AddEnvironmentCard: View {
-    let unusedCharacters: [String]
     let onAdd: (ServerEnvironment) -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-
-            Image(systemName: "plus.circle.fill")
-                .font(.system(size: 40))
+        Button(action: {
+            onAdd(ServerEnvironment(name: "New", host: "", port: 8765, token: ""))
+        }) {
+            Image(systemName: "plus")
+                .font(.system(size: 30, weight: .light))
                 .foregroundColor(.secondary.opacity(0.5))
-
-            Text("Add Environment")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Button("Add") {
-                let character = unusedCharacters.first ?? ServerEnvironment.availableCharacters[0]
-                onAdd(ServerEnvironment(name: "New", host: "", port: 8765, token: "", character: character))
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-
-            Spacer()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.oceanSecondary.opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal, 16)
+        .buttonStyle(.plain)
     }
 }

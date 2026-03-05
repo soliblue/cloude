@@ -6,24 +6,14 @@ struct ServerEnvironment: Codable, Identifiable, Equatable {
     var host: String
     var port: UInt16
     var token: String
-    var character: String
+    var symbol: String
 
-    init(name: String, host: String, port: UInt16 = 8765, token: String, character: String = "claude-on-clouds-wizard") {
+    init(name: String, host: String, port: UInt16 = 8765, token: String, symbol: String = "laptopcomputer") {
         self.id = UUID()
         self.name = name
         self.host = host
         self.port = port
         self.token = token
-        self.character = character
+        self.symbol = symbol
     }
-
-    static let availableCharacters = [
-        "claude-on-clouds-baby",
-        "claude-on-clouds-wizard",
-        "claude-on-clouds-ninja",
-        "claude-on-clouds-cowboy",
-        "claude-on-clouds-chef",
-        "claude-on-clouds-artist",
-        "claude-on-clouds-grandpa"
-    ]
 }
