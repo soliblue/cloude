@@ -18,7 +18,7 @@ struct SettingsView: View {
     @State private var showUsageStats = false
     @State private var usageStats: UsageStats?
     @State private var awaitingUsageStats = false
-    @State var selectedEnvironmentPage: AnyHashable = ""
+    @State var selectedEnvironmentPage: Int = 0
 
     @Environment(\.dismiss) private var dismiss
 
@@ -26,10 +26,12 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 environmentsCarousel
+                    .listSectionSeparator(.hidden)
                 processesSection
                 preferencesSection
                 aboutSection
             }
+            .contentMargins(.top, 8, for: .scrollContent)
             .scrollContentBackground(.hidden)
             .background(Color.oceanBackground)
             .navigationTitle("Settings")
@@ -46,8 +48,9 @@ struct SettingsView: View {
         }
         .preferredColorScheme(appTheme.colorScheme)
         .onAppear {
-            if let activeId = environmentStore.activeEnvironmentId {
-                selectedEnvironmentPage = activeId
+            if let activeId = environmentStore.activeEnvironmentId,
+               let index = environmentStore.environments.firstIndex(where: { $0.id == activeId }) {
+                selectedEnvironmentPage = index
             }
             if connection.isAuthenticated {
                 connection.getProcesses()
