@@ -2,14 +2,12 @@ import SwiftUI
 
 struct SisyphusLoadingView: View {
     private let start = Date()
-    private let pushFrames = (1...9).map { "cloude-anim-\($0)" }
-    private let retreatFrames = (10...18).map { "cloude-anim-\($0)" }
-    private let interval: TimeInterval = 0.14
+    private let pushFrames = (1...6).map { "cloude-anim-\($0)" }
+    private let retreatFrames = (11...18).map { "cloude-anim-\($0)" }
+    private let interval: TimeInterval = 0.22
 
     private var sequence: [String] {
-        let pushCycle = pushFrames + pushFrames.reversed().dropFirst().dropLast()
-        let retreatCycle = retreatFrames + retreatFrames.reversed().dropFirst().dropLast()
-        return pushCycle + pushCycle + retreatCycle
+        pushFrames + retreatFrames
     }
 
     var body: some View {

@@ -32,12 +32,7 @@ struct WindowEditSheet: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark")
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     HStack(spacing: 12) {
                         Button(action: onNewConversation) {
                             Image(systemName: "plus")
@@ -92,6 +87,11 @@ struct WindowEditSheet: View {
                         }
                     }
                     .padding(.horizontal, 8)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                    }
                 }
             }
             .scrollContentBackground(.hidden)
