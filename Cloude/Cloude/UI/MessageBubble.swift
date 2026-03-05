@@ -193,6 +193,10 @@ struct MessageBubble: View {
             }
             .overlay {
                 if showLongPressMenu {
+                    Color.black.opacity(0.01)
+                        .ignoresSafeArea()
+                        .onTapGesture { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+
                     GeometryReader { geo in
                         let menuY = min(max(menuPressY - 60, 0), geo.size.height - 60)
                         BubbleActionMenu(
@@ -215,13 +219,6 @@ struct MessageBubble: View {
                         .frame(maxWidth: .infinity)
                         .offset(y: menuY)
                     }
-                }
-            }
-            .onChange(of: showLongPressMenu) { _, showing in
-                if showing {
-                    WindowDismissOverlay.show { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
-                } else {
-                    WindowDismissOverlay.hide()
                 }
             }
             .contentShape(Rectangle())
@@ -436,37 +433,4 @@ struct PlainSelectableText: UIViewRepresentable {
     }
 }
 
-final class WindowDismissOverlay {
-    private static var overlayView: UIView?
-
-    static func show(onTap: @escaping () -> Void) {
-        hide()
-        guard let window = UIApplication.shared.connectedScenes
-            .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first else { return }
-        let view = DismissTapView(frame: window.bounds, onTap: onTap)
-        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        window.addSubview(view)
-        overlayView = view
-    }
-
-    static func hide() {
-        overlayView?.removeFromSuperview()
-        overlayView = nil
-    }
-
-    private class DismissTapView: UIView {
-        var onTap: (() -> Void)?
-
-        convenience init(frame: CGRect, onTap: @escaping () -> Void) {
-            self.init(frame: frame)
-            self.onTap = onTap
-            backgroundColor = .clear
-            addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapped)))
-        }
-
-        @objc private func tapped() {
-            onTap?()
-        }
-    }
-}
 

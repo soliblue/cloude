@@ -25,10 +25,11 @@ extension SettingsView {
                 .tag(environmentStore.environments.count)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
-            .frame(height: 255)
+            .frame(height: 235)
         }
         .listRowBackground(Color.clear)
-        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+        .listRowInsets(EdgeInsets(top: -8, leading: 0, bottom: -12, trailing: 0))
+        .listSectionSpacing(0)
     }
 
     private func connectEnvironment(_ env: ServerEnvironment) {
@@ -60,18 +61,6 @@ struct EnvironmentCard: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                if let onDelete {
-                    Button(action: { showDeleteConfirm = true }) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 14))
-                            .foregroundColor(.red.opacity(0.7))
-                    }
-                    .buttonStyle(.plain)
-                    .confirmationDialog("Delete \(env.name)?", isPresented: $showDeleteConfirm) {
-                        Button("Delete", role: .destructive, action: onDelete)
-                    }
-                }
-
                 Button(action: { showSymbolPicker = true }) {
                     Image(systemName: env.symbol)
                         .font(.system(size: 24))
@@ -94,6 +83,20 @@ struct EnvironmentCard: View {
                 }
 
                 Spacer()
+
+                if let onDelete {
+                    Button(action: { showDeleteConfirm = true }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 14))
+                            .foregroundColor(.red.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                    .confirmationDialog("Delete \(env.name)?", isPresented: $showDeleteConfirm) {
+                        Button("Delete", role: .destructive, action: onDelete)
+                    }
+
+                    Divider().frame(height: 20)
+                }
 
                 if isConnected {
                     Button("Disconnect", action: onDisconnect)
@@ -169,7 +172,7 @@ struct EnvironmentCard: View {
             .background(Color.oceanSecondary)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
-            Spacer().frame(height: 8)
+            Spacer().frame(height: 2)
         }
         .padding(.horizontal, 4)
     }
