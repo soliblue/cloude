@@ -47,7 +47,7 @@ struct WordScrambleWidget: View {
                     .foregroundColor(.secondary)
             }
 
-            HStack(spacing: 6) {
+            FlowLayout(spacing: 6) {
                 ForEach(Array(word.enumerated()), id: \.offset) { index, _ in
                     let hasLetter = index < selectedIndices.count
                     let letter = hasLetter ? String(scrambledLetters[selectedIndices[index]]) : ""
