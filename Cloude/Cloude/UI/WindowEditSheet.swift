@@ -87,7 +87,7 @@ struct WindowEditSheet: View {
                                 onDismiss()
                             } label: {
                                 Image(systemName: "trash")
-                                    .foregroundColor(.red)
+                                    .foregroundColor(.accentColor)
                             }
                         }
                     }

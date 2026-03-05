@@ -88,7 +88,7 @@ struct EnvironmentCard: View {
                     Button(action: { showDeleteConfirm = true }) {
                         Image(systemName: "trash")
                             .font(.system(size: 14))
-                            .foregroundColor(.red.opacity(0.7))
+                            .foregroundColor(.accentColor)
                     }
                     .buttonStyle(.plain)
                     .confirmationDialog("Delete \(env.name)?", isPresented: $showDeleteConfirm) {
