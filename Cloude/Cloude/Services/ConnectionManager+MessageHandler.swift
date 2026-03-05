@@ -148,7 +148,9 @@ extension ConnectionManager {
                 out.toolCalls[i].state = .complete
             }
             if let stats = out.runStats {
-                events.send(.lastAssistantMessageCostUpdate(conversationId: convId, costUsd: stats.costUsd))
+                let turnCost = max(0, stats.costUsd - out.previousCumulativeCost)
+                out.previousCumulativeCost = stats.costUsd
+                events.send(.lastAssistantMessageCostUpdate(conversationId: convId, costUsd: turnCost))
             }
         }
         out.isRunning = (state == .running || state == .compacting)

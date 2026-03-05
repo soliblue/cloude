@@ -65,3 +65,9 @@ tools/sora/image_flow_capture.json
 .claude/skills/video/output/
 .claude/skills/video/browser-data/
 .claude/skills/video/data/
+
+# Personal skills (not relevant to other Cloude users)
+.claude/skills/projects/
+
+# Cloudflare Wrangler
+.wrangler/
