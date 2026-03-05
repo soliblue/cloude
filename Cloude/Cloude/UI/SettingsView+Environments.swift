@@ -4,7 +4,7 @@ extension SettingsView {
     var environmentsCarousel: some View {
         Section {
             TabView(selection: $selectedEnvironmentPage) {
-                ForEach(environmentStore.environments) { env in
+                ForEach(Array(environmentStore.environments.enumerated()), id: \.element.id) { index, env in
                     EnvironmentCard(
                         env: env,
                         isActive: env.id == environmentStore.activeEnvironmentId,
@@ -15,14 +15,14 @@ extension SettingsView {
                         onUpdate: { environmentStore.update($0); syncIfActive($0) },
                         onDelete: environmentStore.environments.count > 1 ? { environmentStore.delete(env.id) } : nil
                     )
-                    .tag(env.id)
+                    .tag(index)
                 }
 
                 AddEnvironmentCard { env in
                     environmentStore.add(env)
-                    selectedEnvironmentPage = env.id
+                    selectedEnvironmentPage = environmentStore.environments.count - 1
                 }
-                .tag("add" as AnyHashable)
+                .tag(environmentStore.environments.count)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .frame(height: 255)
