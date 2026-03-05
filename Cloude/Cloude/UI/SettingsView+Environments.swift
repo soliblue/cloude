@@ -102,7 +102,7 @@ struct EnvironmentCard: View {
                     Button("Disconnect", action: onDisconnect)
                         .font(.subheadline)
                         .buttonStyle(.bordered)
-                        .tint(.red)
+                        .tint(.accentColor)
                         .controlSize(.small)
                 } else {
                     Button("Connect", action: onConnect)
