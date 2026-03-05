@@ -193,12 +193,14 @@ struct MessageBubble: View {
             }
             .overlay {
                 if showLongPressMenu {
-                    Color.black.opacity(0.01)
-                        .ignoresSafeArea()
-                        .onTapGesture { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
-
                     GeometryReader { geo in
                         let menuY = min(max(menuPressY - 60, 0), geo.size.height - 60)
+                        let origin = geo.frame(in: .global).origin
+                        Color.black.opacity(0.01)
+                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                            .position(x: UIScreen.main.bounds.width / 2 - origin.x, y: UIScreen.main.bounds.height / 2 - origin.y)
+                            .onTapGesture { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+
                         BubbleActionMenu(
                             message: message,
                             ttsMode: ttsMode,
@@ -432,5 +434,6 @@ struct PlainSelectableText: UIViewRepresentable {
         textView.invalidateIntrinsicContentSize()
     }
 }
+
 
 
