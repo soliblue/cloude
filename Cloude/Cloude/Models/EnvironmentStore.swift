@@ -41,7 +41,7 @@ class EnvironmentStore: ObservableObject {
         let token = KeychainHelper.get(key: "authToken") ?? ""
 
         if !host.isEmpty || !token.isEmpty {
-            let env = ServerEnvironment(name: "Default", host: host, port: port, token: token, character: "claude-on-clouds-wizard")
+            let env = ServerEnvironment(name: "Default", host: host, port: port, token: token)
             environments = [env]
             setActive(env.id)
             save()
@@ -81,10 +81,5 @@ class EnvironmentStore: ObservableObject {
     func setActive(_ envId: UUID) {
         activeEnvironmentId = envId
         UserDefaults.standard.set(envId.uuidString, forKey: "activeEnvironmentId")
-    }
-
-    func unusedCharacters(excluding envId: UUID? = nil) -> [String] {
-        let used = Set(environments.filter { $0.id != envId }.map(\.character))
-        return ServerEnvironment.availableCharacters.filter { !used.contains($0) }
     }
 }

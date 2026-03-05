@@ -6,6 +6,7 @@ struct SymbolPickerSheet: View {
     @State private var searchText = ""
 
     private static let symbolCategories: [(String, [String])] = [
+        ("Places", ["house", "house.fill", "building", "building.fill", "building.2", "building.2.fill", "building.columns", "building.columns.fill", "storefront", "storefront.fill", "tent", "tent.fill", "suitcase", "suitcase.fill", "briefcase", "briefcase.fill", "bed.double", "bed.double.fill", "sofa", "sofa.fill", "chair.lounge", "chair.lounge.fill", "cup.and.saucer", "cup.and.saucer.fill", "wineglass", "wineglass.fill", "fork.knife", "takeoutbag.and.cup.and.straw", "gym.bag", "gym.bag.fill"]),
         ("Communication", ["message", "message.fill", "bubble.left", "bubble.left.fill", "bubble.right", "bubble.right.fill", "bubble.left.and.bubble.right", "bubble.left.and.bubble.right.fill", "phone", "phone.fill", "video", "video.fill", "envelope", "envelope.fill", "paperplane", "paperplane.fill", "bell", "bell.fill", "megaphone", "megaphone.fill"]),
         ("Weather", ["sun.max", "sun.max.fill", "moon", "moon.fill", "moon.stars", "moon.stars.fill", "cloud", "cloud.fill", "cloud.sun", "cloud.sun.fill", "cloud.moon", "cloud.moon.fill", "cloud.bolt", "cloud.bolt.fill", "cloud.rain", "cloud.rain.fill", "cloud.snow", "cloud.snow.fill", "snowflake", "thermometer.sun", "thermometer.snowflake"]),
         ("Objects", ["pencil", "pencil.circle.fill", "folder", "folder.fill", "paperclip", "link", "book", "book.fill", "bookmark", "bookmark.fill", "tag", "tag.fill", "camera", "camera.fill", "photo", "photo.fill", "film", "music.note", "music.note.list", "headphones", "lightbulb", "lightbulb.fill", "lamp.desk", "flashlight.on.fill", "battery.100", "cpu", "memorychip", "keyboard", "printer", "tv", "display"]),
@@ -74,17 +75,6 @@ struct SymbolPickerSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                    }
-                }
-                if !selectedSymbol.isEmpty {
-                    ToolbarItem(placement: .destructiveAction) {
-                        Button {
-                            selectedSymbol = ""
-                            dismiss()
-                        } label: {
-                            Image(systemName: "trash")
-                        }
-                        .foregroundColor(.red)
                     }
                 }
             }
