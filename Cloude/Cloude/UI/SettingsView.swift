@@ -13,6 +13,7 @@ struct SettingsView: View {
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("enableSuggestions") private var enableSuggestions = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
+    @AppStorage("showCodeLineNumbers") private var showCodeLineNumbers = true
     @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
     @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @State private var showUsageStats = false
@@ -89,6 +90,10 @@ struct SettingsView: View {
 
             SettingsRow(icon: "text.word.spacing", color: .cyan) {
                 Toggle("Wrap Code Lines", isOn: $wrapCodeLines)
+            }
+
+            SettingsRow(icon: "list.number", color: .cyan) {
+                Toggle("Code Line Numbers", isOn: $showCodeLineNumbers)
             }
 
             SettingsRow(icon: ttsMode.icon, color: .purple) {

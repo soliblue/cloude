@@ -20,6 +20,7 @@ final class ConversationOutput: ObservableObject {
     var lastSavedMessageId: UUID?
     var messageUUID: String?
 
+    var previousCumulativeCost: Double = 0
     var fullText: String = ""
     private var displayIndex: String.Index?
     private var displayLink: CADisplayLink?

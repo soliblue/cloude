@@ -245,6 +245,7 @@ JSON format for `--questions`:
 - Keep views lean with small composable structs
 - Use explicit imports (no wildcards)
 - Let errors propagate unless explicit handling is requested
+- **Never use em dashes** (—) anywhere - not in code, comments, commit messages, chat, or generated text. Use hyphens (-) or rewrite the sentence instead.
 
 ### No-Try-Catch
 - **Never add do-catch blocks** unless explicitly requested
