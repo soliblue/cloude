@@ -107,7 +107,7 @@ build_request_body() {
         parts_json=$(printf '[{"text": "%s"}' "$(echo "$PROMPT" | sed 's/"/\\"/g; s/\n/\\n/g')")
     fi
 
-    for ref_img in "${REF_IMAGES[@]}"; do
+    for ref_img in "${REF_IMAGES[@]+"${REF_IMAGES[@]}"}"; do
         if [[ -f "$ref_img" ]]; then
             local ref_mime
             case "${ref_img##*.}" in
@@ -142,7 +142,7 @@ build_request_body() {
 echo "Generating: $PROMPT"
 echo "Model: $MODEL"
 [[ -n "$EDIT_IMAGE" ]] && echo "Editing: $EDIT_IMAGE"
-for ref_img in "${REF_IMAGES[@]}"; do echo "Reference: $ref_img"; done
+[[ ${#REF_IMAGES[@]} -gt 0 ]] && for ref_img in "${REF_IMAGES[@]}"; do echo "Reference: $ref_img"; done
 
 RESPONSE_FILE=$(mktemp)
 REQUEST_FILE=$(mktemp)
