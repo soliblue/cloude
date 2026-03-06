@@ -43,6 +43,7 @@ enum WidgetRegistry {
             case "timeline": TimelineWidget(data: data)
             case "tree": TreeWidget(data: data)
             case "color_palette": ColorPaletteWidget(data: data)
+            case "image_carousel": ImageCarouselWidget(data: data)
             default: Text("Unknown widget: \(type)").font(.caption).foregroundColor(.secondary)
             }
         }
@@ -71,6 +72,7 @@ enum WidgetRegistry {
         case "timeline": return "Timeline"
         case "tree": return "Tree"
         case "color_palette": return "Color Palette"
+        case "image_carousel": return "Images"
         default: return toolName
         }
     }
@@ -98,6 +100,7 @@ enum WidgetRegistry {
         case "timeline": return "calendar.day.timeline.left"
         case "tree": return "filemenu.and.selection"
         case "color_palette": return "paintpalette"
+        case "image_carousel": return "photo.on.rectangle"
         default: return "puzzlepiece"
         }
     }
@@ -125,6 +128,7 @@ enum WidgetRegistry {
         case "timeline": return .blue
         case "tree": return .yellow
         case "color_palette": return .purple
+        case "image_carousel": return .green
         default: return .secondary
         }
     }
