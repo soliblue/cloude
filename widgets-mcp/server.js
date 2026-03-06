@@ -401,6 +401,29 @@ const tools = [
     },
   },
   {
+    name: "image_carousel",
+    description: "Render an image or swipeable image carousel. Supports local file paths and web URLs. Single image shows inline, multiple images show as a swipeable carousel with page dots.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Optional title shown above the images" },
+        images: {
+          type: "array",
+          description: "Array of images to display. Each image needs either a path (local file) or url (web)",
+          items: {
+            type: "object",
+            properties: {
+              path: { type: "string", description: "Absolute file path on the Mac (e.g. '/Users/soli/Desktop/photo.png')" },
+              url: { type: "string", description: "Web URL of the image (e.g. 'https://example.com/photo.jpg')" },
+              caption: { type: "string", description: "Optional caption shown below the image" },
+            },
+          },
+        },
+      },
+      required: ["images"],
+    },
+  },
+  {
     name: "color_palette",
     description: "Render a color palette with labeled swatches. Great for showing theme colors, brand palettes, design systems, or any set of colors with context.",
     inputSchema: {
