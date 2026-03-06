@@ -401,6 +401,29 @@ const tools = [
     },
   },
   {
+    name: "color_palette",
+    description: "Render a color palette with labeled swatches. Great for showing theme colors, brand palettes, design systems, or any set of colors with context.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Palette title" },
+        colors: {
+          type: "array",
+          description: "Array of colors, each with a hex value and optional label",
+          items: {
+            type: "object",
+            properties: {
+              hex: { type: "string", description: "Hex color (e.g. '#6050DC', '#FF5733')" },
+              label: { type: "string", description: "Color name or role (e.g. 'Background', 'Majorelle Blue')" },
+            },
+            required: ["hex"],
+          },
+        },
+      },
+      required: ["colors"],
+    },
+  },
+  {
     name: "tree",
     description: "Render a collapsible tree diagram. Great for file structures, org charts, decision trees. Nodes can have SF Symbol icons and are collapsible.",
     inputSchema: {

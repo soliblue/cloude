@@ -42,6 +42,7 @@ enum WidgetRegistry {
             case "line_chart": LineChartWidget(data: data)
             case "timeline": TimelineWidget(data: data)
             case "tree": TreeWidget(data: data)
+            case "color_palette": ColorPaletteWidget(data: data)
             default: Text("Unknown widget: \(type)").font(.caption).foregroundColor(.secondary)
             }
         }
@@ -69,6 +70,7 @@ enum WidgetRegistry {
         case "line_chart": return "Line Chart"
         case "timeline": return "Timeline"
         case "tree": return "Tree"
+        case "color_palette": return "Color Palette"
         default: return toolName
         }
     }
@@ -95,6 +97,7 @@ enum WidgetRegistry {
         case "line_chart": return "chart.line.uptrend.xyaxis"
         case "timeline": return "calendar.day.timeline.left"
         case "tree": return "filemenu.and.selection"
+        case "color_palette": return "paintpalette"
         default: return "puzzlepiece"
         }
     }
@@ -121,6 +124,7 @@ enum WidgetRegistry {
         case "line_chart": return .blue
         case "timeline": return .blue
         case "tree": return .yellow
+        case "color_palette": return .purple
         default: return .secondary
         }
     }

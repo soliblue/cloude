@@ -21,6 +21,7 @@ enum AppTheme: String, CaseIterable {
     case nord = "Nord"
     case dracula = "Dracula"
     case githubLight = "GitHub Light"
+    case majorelle = "Majorelle"
 
     static var current: AppTheme {
         AppTheme(rawValue: UserDefaults.standard.string(forKey: "appTheme") ?? "Ocean Dark") ?? .oceanDark
@@ -44,6 +45,7 @@ enum AppTheme: String, CaseIterable {
         case .nord: return "snowflake"
         case .dracula: return "moon.haze.fill"
         case .githubLight: return "doc.plaintext"
+        case .majorelle: return "leaf.fill"
         }
     }
 
@@ -94,6 +96,11 @@ enum AppTheme: String, CaseIterable {
                 background: 0xFFFFFF, secondary: 0xF6F8FA, surface: 0xE1E4E8,
                 gray6: 0xF6F8FA, groupedSecondary: 0xF6F8FA, tertiary: 0xE1E4E8,
                 fill: 0xD1D5DA, systemBackground: 0xFFFFFF)
+        case .majorelle:
+            return ThemePalette(
+                background: 0x0C0F1F, secondary: 0x141A35, surface: 0x1E2750,
+                gray6: 0x141A35, groupedSecondary: 0x141A35, tertiary: 0x1E2750,
+                fill: 0x2A3568, systemBackground: 0x0C0F1F)
         }
     }
 }
