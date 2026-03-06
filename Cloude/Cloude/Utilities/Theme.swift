@@ -22,6 +22,10 @@ enum AppTheme: String, CaseIterable {
     case dracula = "Dracula"
     case githubLight = "GitHub Light"
     case majorelle = "Majorelle"
+    case gaudi = "Gaudí"
+    case hundertwasser = "Hundertwasser"
+    case rothko = "Rothko"
+    case klimt = "Klimt"
 
     static var current: AppTheme {
         AppTheme(rawValue: UserDefaults.standard.string(forKey: "appTheme") ?? "Ocean Dark") ?? .oceanDark
@@ -46,6 +50,10 @@ enum AppTheme: String, CaseIterable {
         case .dracula: return "moon.haze.fill"
         case .githubLight: return "doc.plaintext"
         case .majorelle: return "leaf.fill"
+        case .gaudi: return "building.columns.fill"
+        case .hundertwasser: return "house.fill"
+        case .rothko: return "square.fill"
+        case .klimt: return "sparkles"
         }
     }
 
@@ -101,6 +109,26 @@ enum AppTheme: String, CaseIterable {
                 background: 0x0C0F1F, secondary: 0x141A35, surface: 0x1E2750,
                 gray6: 0x141A35, groupedSecondary: 0x141A35, tertiary: 0x1E2750,
                 fill: 0x2A3568, systemBackground: 0x0C0F1F)
+        case .gaudi:
+            return ThemePalette(
+                background: 0x0E1A12, secondary: 0x162118, surface: 0x1E3328,
+                gray6: 0x162118, groupedSecondary: 0x162118, tertiary: 0x1E3328,
+                fill: 0x2B4A38, systemBackground: 0x0E1A12)
+        case .hundertwasser:
+            return ThemePalette(
+                background: 0x1A0E0A, secondary: 0x2A1810, surface: 0x3D2618,
+                gray6: 0x2A1810, groupedSecondary: 0x2A1810, tertiary: 0x3D2618,
+                fill: 0x5A3A24, systemBackground: 0x1A0E0A)
+        case .rothko:
+            return ThemePalette(
+                background: 0x140A0E, secondary: 0x241218, surface: 0x3A1C26,
+                gray6: 0x241218, groupedSecondary: 0x241218, tertiary: 0x3A1C26,
+                fill: 0x522A38, systemBackground: 0x140A0E)
+        case .klimt:
+            return ThemePalette(
+                background: 0x141008, secondary: 0x221A0C, surface: 0x352912,
+                gray6: 0x221A0C, groupedSecondary: 0x221A0C, tertiary: 0x352912,
+                fill: 0x4E3D1C, systemBackground: 0x141008)
         }
     }
 }
