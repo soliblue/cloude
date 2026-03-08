@@ -252,7 +252,7 @@ function handleSearchFiles(query, workingDirectory, ws, sendTo) {
 
 function handleGetPlans(workingDirectory, ws, sendTo) {
   const stages = {}
-  const plansDir = join(workingDirectory, 'plans')
+  const plansDir = join(workingDirectory, '.claude', 'plans')
   if (!existsSync(plansDir)) return sendTo(ws, { type: 'plans', stages: {} })
 
   const stageDirs = ['00_backlog', '10_next', '20_active', '30_testing', '40_done']
@@ -280,7 +280,7 @@ function handleGetPlans(workingDirectory, ws, sendTo) {
 }
 
 function handleDeletePlan(stage, filename, workingDirectory, ws, sendTo) {
-  const filePath = join(workingDirectory, 'plans', stage, filename)
+  const filePath = join(workingDirectory, '.claude', 'plans', stage, filename)
   try {
     unlinkSync(filePath)
     sendTo(ws, { type: 'plan_deleted', stage, filename })
