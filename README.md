@@ -1,6 +1,6 @@
-# Cloude
+# Cloude - Remote Claude
 
-Control Claude Code from your iPhone. Mac and Linux.
+Control Claude Code from your iPhone. Your phone becomes a remote terminal for Claude Code running on any machine - Mac, Linux, or cloud.
 
 ```
 ┌──────────────┐              ┌──────────────┐
