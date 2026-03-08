@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { writeFileSync, mkdirSync } from 'fs'
+import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
 import { log } from './log.js'
 import { handleCloudeCommand } from './commands.js'
@@ -44,7 +44,8 @@ export class ClaudeCodeRunner {
     }
     args.push('-p', fullPrompt)
 
-    const cwd = workingDirectory || process.env.HOME
+    const rawCwd = workingDirectory || process.env.HOME
+    const cwd = rawCwd === '~' || rawCwd.startsWith('~/') ? rawCwd.replace('~', process.env.HOME) : rawCwd
     log(`Running claude in ${cwd} (conv=${this.conversationId.slice(0, 8)})`)
 
     const env = { ...process.env, TERM: 'xterm-256color', NO_COLOR: '1', CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1' }
@@ -61,7 +62,14 @@ export class ClaudeCodeRunner {
       args[args.length - 1] = `${prefix}\n${args[args.length - 1]}`
     }
 
-    this.process = spawn('/bin/bash', ['-l', '-c', `claude ${args.map(a => `'${a.replace(/'/g, "'\\''")}'`).join(' ')}`], { cwd, env })
+    this.process = spawn('claude', args, { cwd, env })
+    this.process.stdin.end()
+
+    this.process.on('error', (err) => {
+      log(`Process spawn error: ${err.message}`)
+      this.onEvent({ type: 'output', text: `Error: ${err.message}`, conversationId: this.conversationId })
+      this.onEvent({ type: 'status', state: 'idle', conversationId: this.conversationId })
+    })
 
     this.onEvent({ type: 'status', state: 'running', conversationId: this.conversationId })
 
@@ -93,6 +101,10 @@ export class ClaudeCodeRunner {
   processLine(line) {
     let json
     try { json = JSON.parse(line) } catch { return }
+
+    if (json.type === 'stream_event' && json.event) {
+      json = { ...json.event, session_id: json.session_id, parent_tool_use_id: json.parent_tool_use_id, uuid: json.uuid }
+    }
 
     const type = json.type
     const cid = this.conversationId
