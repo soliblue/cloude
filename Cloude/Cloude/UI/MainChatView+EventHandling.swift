@@ -29,9 +29,6 @@ extension MainChatView {
             }
             AudioRecorder.clearPendingAudioFile()
 
-        case .ttsAudio(let data, let messageId):
-            TTSService.shared.playAudio(data, messageId: messageId)
-
         case .usageStats(let stats):
             guard awaitingUsageStats else { break }
             awaitingUsageStats = false

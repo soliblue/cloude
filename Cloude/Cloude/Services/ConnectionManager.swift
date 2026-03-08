@@ -8,7 +8,6 @@ class ConnectionManager: ObservableObject {
     @Published var isConnected = false
     @Published var isAuthenticated = false
     @Published var isWhisperReady = false
-    @Published var isKokoroReady = false
     @Published var isTranscribing = false
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
@@ -132,7 +131,6 @@ class ConnectionManager: ObservableObject {
         isConnected = false
         isAuthenticated = false
         isWhisperReady = false
-        isKokoroReady = false
         isTranscribing = false
         agentState = .idle
 
@@ -189,7 +187,6 @@ class ConnectionManager: ObservableObject {
         isConnected = false
         isAuthenticated = false
         isWhisperReady = false
-        isKokoroReady = false
         isTranscribing = false
         agentState = .idle
         runningConversationId = nil

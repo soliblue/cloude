@@ -35,8 +35,7 @@ extension ConnectionManager {
         case .gitDiffResult(let path, let diff):          handleGitDiffResult(path: path, diff: diff)
         case .transcription(let text):                    handleTranscription(text)
         case .whisperReady(let ready):                    handleWhisperReady(ready)
-        case .ttsAudio(let audio, let msgId):             handleTTSAudio(audioBase64: audio, messageId: msgId)
-        case .kokoroReady(let ready):                     handleKokoroReady(ready)
+        case .ttsAudio, .kokoroReady:                     break
         case .heartbeatConfig(let min, let count):        handleHeartbeatConfig(intervalMinutes: min, unreadCount: count)
         case .heartbeatSkipped(let c):                    handleHeartbeatSkipped(conversationId: c)
         case .memories(let sections):                     handleMemories(sections)
@@ -83,15 +82,6 @@ extension ConnectionManager {
         isWhisperReady = ready
     }
 
-    private func handleKokoroReady(_ ready: Bool) {
-        isKokoroReady = ready
-    }
-
-    private func handleTTSAudio(audioBase64: String, messageId: String) {
-        if let audioData = Data(base64Encoded: audioBase64) {
-            events.send(.ttsAudio(data: audioData, messageId: messageId))
-        }
-    }
 
     private func handleHeartbeatConfig(intervalMinutes: Int?, unreadCount: Int) {
         events.send(.heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount))
