@@ -77,9 +77,12 @@ struct WindowEditForm: View {
                         .font(.system(size: 16))
                         .foregroundColor(.accentColor)
                         .frame(width: 32)
-                    Text(env.name)
+                    Text(env.host)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                    Text(":\(env.port)")
+                        .font(.subheadline.monospaced())
+                        .foregroundColor(.secondary.opacity(0.7))
                     Spacer()
                 }
                 .padding(.horizontal, 12)
