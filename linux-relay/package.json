@@ -1,5 +1,5 @@
 {
-  "name": "cloude-agent-linux",
+  "name": "cloude-linux-relay",
   "version": "1.0.0",
   "type": "module",
   "bin": { "cloude-agent": "./index.js" },
