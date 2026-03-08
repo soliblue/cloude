@@ -9,7 +9,7 @@ enum WindowType: String, CaseIterable, Codable {
         switch self {
         case .chat: return "bubble.left.and.bubble.right"
         case .files: return "folder"
-        case .gitChanges: return "arrow.triangle.branch"
+        case .gitChanges: return "point.3.connected.trianglepath.dotted"
         }
     }
 

@@ -51,7 +51,7 @@ struct SentenceBuilderWidget: View {
                     ForEach(Array(selectedIndices.enumerated()), id: \.offset) { pos, index in
                         Button {
                             if !checked {
-                                withAnimation(.easeInOut(duration: 0.15)) {
+                                _ = withAnimation(.easeInOut(duration: 0.15)) {
                                     selectedIndices.remove(at: pos)
                                 }
                             }

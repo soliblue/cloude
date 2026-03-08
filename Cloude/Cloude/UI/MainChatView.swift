@@ -146,9 +146,6 @@ struct MainChatView: View {
             checkGitForAllDirectories()
             currentEffort = currentConversation?.defaultEffort
             currentModel = currentConversation?.defaultModel
-            TTSService.shared.onSynthesizeRequest = { [connection] text, messageId, voice in
-                connection.synthesize(text: text, messageId: messageId, voice: voice)
-            }
         }
         .onChange(of: windowManager.activeWindowId) { oldId, newId in
             if let oldId = oldId {

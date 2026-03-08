@@ -36,9 +36,6 @@ struct ConversationInfoLabel: View {
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }
-            Image(systemName: "chevron.down")
-                .font(.system(size: 15))
-                .foregroundColor(.secondary)
         }
     }
 }
