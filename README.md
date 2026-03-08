@@ -75,7 +75,7 @@ claude login
 
 ```bash
 git clone https://github.com/soliblue/cloude.git
-cd cloude/agent-linux
+cd cloude/linux-relay
 sudo bash install.sh
 ```
 
