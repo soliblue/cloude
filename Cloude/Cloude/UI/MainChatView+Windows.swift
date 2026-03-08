@@ -65,6 +65,15 @@ extension MainChatView {
 
             Spacer()
 
+            if let envId = conversation?.environmentId,
+               let env = environmentStore.environments.first(where: { $0.id == envId }) {
+                Image(systemName: env.symbol)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
             if let conv = conversation, conv.sessionId != nil {
                 Button(action: {
                     windowManager.setActive(window.id)

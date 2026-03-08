@@ -68,9 +68,8 @@ struct EnvironmentCard: View {
                         .frame(width: 36, height: 36)
                 }
                 .buttonStyle(.plain)
-                .sheet(isPresented: $showSymbolPicker) {
+                .sheet(isPresented: $showSymbolPicker, onDismiss: { onUpdate(env) }) {
                     SymbolPickerSheet(selectedSymbol: $env.symbol)
-                        .onChange(of: env.symbol) { _, _ in onUpdate(env) }
                 }
 
                 HStack(spacing: 6) {
