@@ -1,30 +1,21 @@
 # Cloude
 
-Control Claude Code CLI from your iPhone. Works anywhere via Tailscale.
+Control Claude Code from your iPhone. Mac and Linux.
 
 ```
-                                    ┌──────────────┐
-                             ┌─────►│     Mac      │
-┌──────────────┐         ┌───┴──────┴──┐           │ (Cloude Agent)
-│   iPhone     │◄───────►│  Tailscale   │           └──────────────┘
-│  (Cloude)    │   WS    │   (VPN)      │                  │
-└──────────────┘         └───┬──────┬──┘                  ▼
-                             │      │           ┌──────────────┐
-                             │      └──────────►│ Claude Code  │
-                             │                  │     CLI      │
-                             │                  └──────────────┘
-                             │
-                             │      ┌──────────────┐
-                             └─────►│    Linux     │
-                                    │ (Node.js     │
-                                    │  agent)      │
-                                    └──────┬───────┘
-                                           ▼
-                                    ┌──────────────┐
-                                    │ Claude Code  │
-                                    │     CLI      │
-                                    └──────────────┘
+┌──────────────┐              ┌──────────────┐
+│   iPhone     │◄────────────►│  Mac / Linux │
+│  (Cloude)    │  WebSocket   │   (server)   │
+└──────────────┘              └──────┬───────┘
+                                     │
+                                     ▼
+                              ┌──────────────┐
+                              │ Claude Code  │
+                              │     CLI      │
+                              └──────────────┘
 ```
+
+The server is a lightweight relay that spawns Claude Code CLI processes and streams their output over WebSocket. The iOS app is a native chat UI. Use Tailscale for encrypted remote access, or connect directly on local WiFi.
 
 ## Quick Start (Mac)
 
@@ -34,8 +25,7 @@ Control Claude Code CLI from your iPhone. Works anywhere via Tailscale.
 # Mac
 brew install --cask tailscale
 
-# iPhone
-# Download from App Store
+# iPhone - App Store
 ```
 
 Sign in with the same account on both.
@@ -46,14 +36,14 @@ Sign in with the same account on both.
 open Cloude/Cloude.xcodeproj
 ```
 
-### 3. Configure macOS Agent
+### 3. Build the server
 
 1. Select **Cloude Agent** target
 2. Go to **Signing & Capabilities**
 3. **Remove App Sandbox** (click X on it)
 4. Build and run (Cmd+R)
 
-### 4. Configure iOS App
+### 4. Build the iOS app
 
 1. Select **Cloude** target
 2. Go to **Info** tab
@@ -68,7 +58,7 @@ open Cloude/Cloude.xcodeproj
    - Port: 8765
    - Token: paste from step 1
 
-Done. Chat with Claude from your phone.
+Done.
 
 ## Quick Start (Linux)
 
@@ -81,15 +71,15 @@ npm install -g @anthropic-ai/claude-code
 claude login
 ```
 
-### 2. Install the agent
+### 2. Install the server
 
 ```bash
-git clone https://github.com/ahmedsoliman/cloude.git
+git clone https://github.com/soliblue/cloude.git
 cd cloude/agent-linux
 sudo bash install.sh
 ```
 
-This installs a systemd service, generates an auth token, and starts the agent on port 8765.
+This creates a systemd service, generates an auth token, and starts the server on port 8765.
 
 ### 3. Connect from iPhone
 
@@ -113,23 +103,11 @@ This installs a systemd service, generates an auth token, and starts the agent o
 
 ## Architecture
 
-**macOS Agent** (menu bar app)
-- WebSocket server on port 8765
-- Spawns Claude Code CLI
-- Streams output to clients
-- Serves files for browsing
+**Mac server** - native macOS menu bar app, WebSocket on port 8765, spawns Claude Code processes, streams output, serves files
 
-**Linux Agent** (Node.js)
-- WebSocket server on port 8765
-- Same protocol as macOS agent
-- Runs as a systemd service
-- Lightweight: single dependency (ws)
+**Linux server** - Node.js, same WebSocket protocol, runs as a systemd service, single dependency (ws)
 
-**iOS App**
-- WebSocket client
-- Chat interface with streaming markdown
-- File browser and media preview
-- Git changes viewer
+**iOS app** - WebSocket client, chat UI with streaming markdown, file browser, git viewer
 
 ## Requirements
 
