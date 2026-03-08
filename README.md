@@ -5,7 +5,7 @@ Control Claude Code from your iPhone. Mac and Linux.
 ```
 ┌──────────────┐              ┌──────────────┐
 │   iPhone     │◄────────────►│  Mac / Linux │
-│  (Cloude)    │  WebSocket   │   (server)   │
+│  (Cloude)    │  WebSocket   │   (relay)    │
 └──────────────┘              └──────┬───────┘
                                      │
                                      ▼
@@ -15,7 +15,7 @@ Control Claude Code from your iPhone. Mac and Linux.
                               └──────────────┘
 ```
 
-The server is a lightweight relay that spawns Claude Code CLI processes and streams their output over WebSocket. The iOS app is a native chat UI. Use Tailscale for encrypted remote access, or connect directly on local WiFi.
+The relay spawns Claude Code CLI processes and streams their output over WebSocket. The iOS app is a native chat UI. Use Tailscale for encrypted remote access, or connect directly on local WiFi.
 
 ## Quick Start (Mac)
 
@@ -36,7 +36,7 @@ Sign in with the same account on both.
 open Cloude/Cloude.xcodeproj
 ```
 
-### 3. Build the server
+### 3. Build the relay
 
 1. Select **Cloude Agent** target
 2. Go to **Signing & Capabilities**
@@ -71,7 +71,7 @@ npm install -g @anthropic-ai/claude-code
 claude login
 ```
 
-### 2. Install the server
+### 2. Install the relay
 
 ```bash
 git clone https://github.com/soliblue/cloude.git
@@ -79,7 +79,7 @@ cd cloude/agent-linux
 sudo bash install.sh
 ```
 
-This creates a systemd service, generates an auth token, and starts the server on port 8765.
+This creates a systemd service, generates an auth token, and starts the relay on port 8765.
 
 ### 3. Connect from iPhone
 
@@ -103,9 +103,9 @@ This creates a systemd service, generates an auth token, and starts the server o
 
 ## Architecture
 
-**Mac server** - native macOS menu bar app, WebSocket on port 8765, spawns Claude Code processes, streams output, serves files
+**Mac relay** - native macOS menu bar app, WebSocket on port 8765, spawns Claude Code processes, streams output, serves files
 
-**Linux server** - Node.js, same WebSocket protocol, runs as a systemd service, single dependency (ws)
+**Linux relay** - Node.js, same WebSocket protocol, runs as a systemd service, single dependency (ws)
 
 **iOS app** - WebSocket client, chat UI with streaming markdown, file browser, git viewer
 
