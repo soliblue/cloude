@@ -68,7 +68,7 @@ struct WordScrambleWidget: View {
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .onTapGesture {
                         if hasLetter && !checked {
-                            withAnimation(.easeInOut(duration: 0.15)) {
+                            _ = withAnimation(.easeInOut(duration: 0.15)) {
                                 selectedIndices.remove(at: index)
                             }
                         }

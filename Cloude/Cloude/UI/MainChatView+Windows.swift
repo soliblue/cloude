@@ -45,7 +45,11 @@ extension MainChatView {
     func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
         HStack(spacing: 9) {
             HStack(spacing: 0) {
-                ForEach(WindowType.allCases, id: \.self) { type in
+                ForEach(Array(WindowType.allCases.enumerated()), id: \.element) { index, type in
+                    if index > 0 {
+                        Divider()
+                            .frame(height: 20)
+                    }
                     Button(action: {
                         windowManager.setWindowType(window.id, type: type)
                     }) {
