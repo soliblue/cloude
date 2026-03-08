@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync, existsSync, unlinkSync } from 'fs'
 import { join, extname, basename } from 'path'
-import { execSync } from 'child_process'
+import { execSync, spawn } from 'child_process'
 import { log } from './log.js'
 
 const MIME_TYPES = {
@@ -113,7 +113,7 @@ export function handleMessage(msg, ws, ctx) {
     case 'toggle_scheduled_task':
     case 'delete_scheduled_task':
     case 'transcribe':
-      log(`Unimplemented message type: ${msg.type}`)
+      handleTranscribe(msg.audioBase64, ws, sendTo)
       break
 
     default:
@@ -223,9 +223,9 @@ function handleGitCommit(path, message, files, ws, sendTo) {
 
 function handleGetMemories(ws, sendTo) {
   const sections = []
-  const home = process.env.HOME
-  for (const file of ['CLAUDE.md', 'CLAUDE.local.md']) {
-    const path = join(home, file)
+  const projectDir = process.env.CLOUDE_PROJECT || join(process.env.HOME, 'projects', 'cloude')
+  for (const file of ['CLAUDE.local.md']) {
+    const path = join(projectDir, file)
     try {
       const content = readFileSync(path, 'utf8')
       const parts = content.split(/^## /m)
@@ -233,7 +233,7 @@ function handleGetMemories(ws, sendTo) {
         const nlIdx = part.indexOf('\n')
         const title = part.slice(0, nlIdx).trim()
         const body = part.slice(nlIdx + 1).trim()
-        sections.push({ title: `${file}: ${title}`, content: body })
+        sections.push({ title, content: body })
       }
     } catch {}
   }
@@ -287,4 +287,39 @@ function handleDeletePlan(stage, filename, workingDirectory, ws, sendTo) {
   } catch (e) {
     sendTo(ws, { type: 'error', message: e.message })
   }
+}
+
+const WHISPER_PYTHON = join(import.meta.dirname, 'whisper-env', 'bin', 'python3')
+const WHISPER_SCRIPT = join(import.meta.dirname, 'transcribe.py')
+
+function handleTranscribe(audioBase64, ws, sendTo) {
+  if (!audioBase64) {
+    sendTo(ws, { type: 'error', message: 'No audio data provided' })
+    return
+  }
+
+  log('Transcribing audio...')
+  const proc = spawn(WHISPER_PYTHON, [WHISPER_SCRIPT])
+  let stdout = ''
+  let stderr = ''
+
+  proc.stdout.on('data', d => { stdout += d })
+  proc.stderr.on('data', d => { stderr += d })
+  proc.stdin.write(audioBase64)
+  proc.stdin.end()
+
+  proc.on('close', code => {
+    if (code !== 0) {
+      log(`Transcription failed: ${stderr}`)
+      sendTo(ws, { type: 'error', message: `Transcription failed: ${stderr.slice(0, 200)}` })
+      return
+    }
+    try {
+      const result = JSON.parse(stdout)
+      log(`Transcribed: "${result.text?.slice(0, 50)}..."`)
+      sendTo(ws, { type: 'transcription', text: result.text || '' })
+    } catch (e) {
+      sendTo(ws, { type: 'error', message: 'Failed to parse transcription result' })
+    }
+  })
 }

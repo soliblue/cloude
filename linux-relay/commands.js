@@ -87,12 +87,12 @@ function handleMemory(args, conversationId, broadcast) {
   const section = parts[1]
   const text = parts.slice(2).join(' ')
 
-  const home = process.env.HOME
+  const projectDir = process.env.CLOUDE_PROJECT || join(process.env.HOME, 'projects', 'cloude')
   let filePath
   if (target === 'local') {
-    filePath = join(home, 'CLAUDE.local.md')
+    filePath = join(projectDir, 'CLAUDE.local.md')
   } else if (target === 'project') {
-    filePath = join(home, 'CLAUDE.md')
+    filePath = join(projectDir, 'CLAUDE.md')
   } else return
 
   let content = ''

@@ -72,5 +72,9 @@ tools/sora/image_flow_capture.json
 # Personal skills (not relevant to other Cloude users)
 .claude/skills/projects/
 
+# Linux relay runtime data
+linux-relay/whisper-env/
+linux-relay/whisper-models/
+
 # Cloudflare Wrangler
 .wrangler/
