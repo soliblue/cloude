@@ -8,13 +8,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |------|---------|-----|
 | `CLAUDE.md` | Project instructions, architecture, code style | Public |
 | `CLAUDE.local.md` | Personal memory, identity, preferences | Gitignored |
-| `plans/` | Feature tracking, roadmap, work coordination | Public |
+| `.claude/plans/` | Feature tracking, roadmap, work coordination | Public |
 | `.claude/skills/` | Skill implementations (canonical location) | Public |
 | `.env` | API keys, secrets | Gitignored |
 
 Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from project root.
 
-**Minimize markdown files** - Only these core files + `plans/` directory. Don't create new markdown files; they won't be auto-loaded and context gets lost.
+**Minimize markdown files** - Only these core files + `.claude/plans/` directory. Don't create new markdown files; they won't be auto-loaded and context gets lost.
 
 **For anyone cloning this repo:** Create your own `CLAUDE.local.md` (see format below) and `.env` with your App Store Connect credentials.
 
@@ -47,13 +47,13 @@ osascript -e 'tell application "Terminal" to do script "sleep 3 && pushd /Users/
 
 ### Plans Directory
 
-The `plans/` directory is the single source of truth for tracking work. Every change gets a ticket.
+The `.claude/plans/` directory is the single source of truth for tracking work. Every change gets a ticket.
 
 **Lifecycle**: `00_backlog/ → 10_next/ → 20_active/ → 30_testing/ → 40_done/`
 
 **Rules:**
 - **Every code change needs a plan ticket** — if a plan already exists, move it. If not, create one.
-- **Create the ticket in `plans/20_active/` BEFORE writing any code** — this is non-negotiable. Plan first, implement second.
+- **Create the ticket in `.claude/plans/20_active/` BEFORE writing any code** — this is non-negotiable. Plan first, implement second.
 - After implementing a change, move the plan to `30_testing/`
 - When the user confirms it works, move to `40_done/`
 - At **5+ items in 30_testing/**, stop adding features — tell the user to test first

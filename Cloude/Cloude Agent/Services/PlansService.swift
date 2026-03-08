@@ -6,7 +6,7 @@ struct PlansService {
     static let stages = ["backlog", "next", "active", "testing", "done"]
 
     static func readPlans(workingDirectory: String) -> [String: [PlanItem]] {
-        let plansDir = (workingDirectory as NSString).appendingPathComponent("plans")
+        let plansDir = (workingDirectory as NSString).appendingPathComponent(".claude/plans")
         let fm = FileManager.default
         var result: [String: [PlanItem]] = [:]
 
@@ -38,7 +38,7 @@ struct PlansService {
         guard !filename.contains("/") && !filename.contains("..") else { return }
         let folder = stageFolders[index]
         let path = (workingDirectory as NSString)
-            .appendingPathComponent("plans")
+            .appendingPathComponent(".claude/plans")
             .appending("/\(folder)/\(filename)")
         try? FileManager.default.removeItem(atPath: path)
     }
