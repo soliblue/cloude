@@ -1,0 +1,8 @@
+{
+  "name": "cloude-agent-linux",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": { "cloude-agent": "./index.js" },
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "ws": "^8.18.0" }
+}
