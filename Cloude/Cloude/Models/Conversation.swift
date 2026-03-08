@@ -13,6 +13,7 @@ struct Conversation: Codable, Identifiable {
     var pendingFork: Bool
     var defaultEffort: EffortLevel?
     var defaultModel: ModelSelection?
+    var environmentId: UUID?
 
     var isEmpty: Bool {
         messages.isEmpty && pendingMessages.isEmpty && sessionId == nil
@@ -41,7 +42,7 @@ struct Conversation: Codable, Identifiable {
         "hare", "tortoise", "bird", "fish", "tree", "mountain.2", "drop"
     ]
 
-    init(name: String? = nil, symbol: String? = nil, id: UUID = UUID(), sessionId: String? = nil, workingDirectory: String? = nil, pendingFork: Bool = false) {
+    init(name: String? = nil, symbol: String? = nil, id: UUID = UUID(), sessionId: String? = nil, workingDirectory: String? = nil, pendingFork: Bool = false, environmentId: UUID? = nil) {
         self.id = id
         self.sessionId = sessionId
         self.workingDirectory = workingDirectory
@@ -52,6 +53,7 @@ struct Conversation: Codable, Identifiable {
         self.pendingFork = pendingFork
         self.defaultEffort = nil
         self.defaultModel = nil
+        self.environmentId = environmentId
         self.name = name ?? Self.randomNames.randomElement() ?? "Chat"
         self.symbol = symbol ?? Self.randomSymbols.randomElement()
     }
@@ -70,10 +72,11 @@ struct Conversation: Codable, Identifiable {
         pendingFork = try container.decodeIfPresent(Bool.self, forKey: .pendingFork) ?? false
         defaultEffort = try container.decodeIfPresent(EffortLevel.self, forKey: .defaultEffort)
         defaultModel = try container.decodeIfPresent(ModelSelection.self, forKey: .defaultModel)
+        environmentId = try container.decodeIfPresent(UUID.self, forKey: .environmentId)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel, environmentId
     }
 }
 

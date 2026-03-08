@@ -24,12 +24,16 @@ extension ConversationStore {
         currentConversation = conversations.first { $0.id == conversation.id }
     }
 
-    func newConversation(workingDirectory: String? = nil) -> Conversation {
-        let conversation = Conversation(workingDirectory: workingDirectory)
+    func newConversation(workingDirectory: String? = nil, environmentId: UUID? = nil) -> Conversation {
+        let conversation = Conversation(workingDirectory: workingDirectory, environmentId: environmentId)
         conversations.insert(conversation, at: 0)
         currentConversation = conversation
         saveConversation(conversation)
         return conversation
+    }
+
+    func setEnvironmentId(_ conversation: Conversation, environmentId: UUID?) {
+        mutate(conversation.id) { $0.environmentId = environmentId }
     }
 
     func addConversation(_ conversation: Conversation) {
@@ -91,7 +95,8 @@ func deleteConversation(_ conversation: Conversation) {
             symbol: conversation.symbol,
             sessionId: conversation.sessionId,
             workingDirectory: conversation.workingDirectory,
-            pendingFork: true
+            pendingFork: true,
+            environmentId: conversation.environmentId
         )
         conversations.insert(newConversation, at: 0)
         currentConversation = newConversation

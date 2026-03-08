@@ -6,6 +6,7 @@ struct WindowEditForm: View {
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
+    @ObservedObject var environmentStore: EnvironmentStore
     let onSelectConversation: (Conversation) -> Void
 
     @State private var name: String = ""
@@ -67,6 +68,24 @@ struct WindowEditForm: View {
                             conversationStore.renameConversation(conv, to: newValue)
                         }
                     }
+            }
+
+            if let envId = conversation?.environmentId,
+               let env = environmentStore.environments.first(where: { $0.id == envId }) {
+                HStack(spacing: 10) {
+                    Image.safeSymbol(env.symbol)
+                        .font(.system(size: 16))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32)
+                    Text(env.name)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color.oceanSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
 
             if canChangeFolder {

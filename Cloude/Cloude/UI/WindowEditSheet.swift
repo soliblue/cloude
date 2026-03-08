@@ -5,6 +5,7 @@ struct WindowEditSheet: View {
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager
+    @ObservedObject var environmentStore: EnvironmentStore
     let onSelectConversation: (Conversation) -> Void
     let onNewConversation: () -> Void
     let onDismiss: () -> Void
@@ -25,6 +26,7 @@ struct WindowEditSheet: View {
                     conversationStore: conversationStore,
                     windowManager: windowManager,
                     connection: connection,
+                    environmentStore: environmentStore,
                     onSelectConversation: onSelectConversation
                 )
                 .padding(.horizontal, 20)

@@ -89,7 +89,7 @@ extension MainChatView {
         var conversation = activeWindow.conversation(in: conversationStore)
         if conversation == nil {
             let workingDir = activeWindowWorkingDirectory()
-            conversation = conversationStore.newConversation(workingDirectory: workingDir)
+            conversation = conversationStore.newConversation(workingDirectory: workingDir, environmentId: environmentStore.activeEnvironmentId)
             windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         }
         guard let conv = conversation else { return }
