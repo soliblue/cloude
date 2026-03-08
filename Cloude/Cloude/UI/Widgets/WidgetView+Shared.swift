@@ -2,6 +2,7 @@ import SwiftUI
 
 extension Notification.Name {
     static let widgetInputActive = Notification.Name("widgetInputActive")
+    static let editActiveWindow = Notification.Name("editActiveWindow")
 }
 
 struct WidgetContainer<Content: View>: View {

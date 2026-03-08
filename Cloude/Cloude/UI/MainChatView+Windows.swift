@@ -24,7 +24,7 @@ extension MainChatView {
                     },
                     onNewConversation: {
                         let workingDir = activeWindowWorkingDirectory()
-                        let newConv = conversationStore.newConversation(workingDirectory: workingDir)
+                        let newConv = conversationStore.newConversation(workingDirectory: workingDir, environmentId: environmentStore.activeEnvironmentId)
                         windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
@@ -44,19 +44,20 @@ extension MainChatView {
 
     func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
         HStack(spacing: 9) {
-            Button(action: {
-                windowManager.setActive(window.id)
-                editingWindow = window
-            }) {
-                ConversationInfoLabel(
-                    conversation: conversation,
-                    showCost: true,
-                    placeholderText: "Select chat..."
-                )
-                .padding(.horizontal, 7)
-                .padding(.vertical, 7)
+            HStack(spacing: 0) {
+                ForEach(WindowType.allCases, id: \.self) { type in
+                    Button(action: {
+                        windowManager.setWindowType(window.id, type: type)
+                    }) {
+                        Image(systemName: type.icon)
+                            .font(.system(size: 15, weight: window.type == type ? .semibold : .regular))
+                            .foregroundColor(window.type == type ? .accentColor : .secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-            .buttonStyle(.plain)
 
             Spacer()
 

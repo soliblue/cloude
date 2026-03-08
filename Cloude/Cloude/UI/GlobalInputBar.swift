@@ -24,6 +24,7 @@ struct GlobalInputBar: View {
     let fileSearchResults: [String]
     let conversationDefaultEffort: EffortLevel?
     let conversationDefaultModel: ModelSelection?
+    let environmentMismatch: Bool
     let onSend: () -> Void
     var onStop: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
@@ -318,7 +319,8 @@ struct GlobalInputBar: View {
     }
 
     var canSend: Bool {
-        !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachedImages.isEmpty || !attachedFiles.isEmpty
+        if environmentMismatch { return false }
+        return !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachedImages.isEmpty || !attachedFiles.isEmpty
     }
 
     private var inputRow: some View {

@@ -9,6 +9,7 @@ struct MainChatView: View {
     @ObservedObject var connection: ConnectionManager
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
+    @ObservedObject var environmentStore: EnvironmentStore
     @State var editingWindow: ChatWindow?
     @State var currentPageIndex: Int = 0
     @State var isKeyboardVisible = false
@@ -35,6 +36,11 @@ struct MainChatView: View {
     var onShowSettings: (() -> Void)?
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
+
+    var hasEnvironmentMismatch: Bool {
+        guard let envId = currentConversation?.environmentId else { return false }
+        return envId != environmentStore.activeEnvironmentId
+    }
 
     var currentConversation: Conversation? {
         if isHeartbeatActive {
@@ -105,6 +111,7 @@ struct MainChatView: View {
                         fileSearchResults: fileSearchResults,
                         conversationDefaultEffort: currentConversation?.defaultEffort,
                         conversationDefaultModel: currentConversation?.defaultModel,
+                        environmentMismatch: hasEnvironmentMismatch,
                         onSend: sendMessage,
                         onStop: stopActiveConversation,
                         onTranscribe: transcribeAudio,
@@ -171,6 +178,7 @@ struct MainChatView: View {
                 conversationStore: conversationStore,
                 windowManager: windowManager,
                 connection: connection,
+                environmentStore: environmentStore,
                 onSelectConversation: { conv in
                     if let oldConvId = window.conversationId,
                        let oldConv = conversationStore.conversation(withId: oldConvId),
@@ -187,7 +195,7 @@ struct MainChatView: View {
                         conversationStore.deleteConversation(oldConv)
                     }
                     let workingDir = activeWindowWorkingDirectory()
-                    let newConv = conversationStore.newConversation(workingDirectory: workingDir)
+                    let newConv = conversationStore.newConversation(workingDirectory: workingDir, environmentId: environmentStore.activeEnvironmentId)
                     windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     editingWindow = nil
                 },
@@ -232,6 +240,11 @@ struct MainChatView: View {
                     .background(Color.oceanBackground)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .editActiveWindow)) { _ in
+            if let window = windowManager.activeWindow {
+                editingWindow = window
+            }
+        }
         .onReceive(connection.events, perform: handleConnectionEvent)
         // Fallback: a PassthroughSubject can be missed if this view isn't mounted yet.
         .onChange(of: connection.isAuthenticated) { _, authed in
@@ -248,6 +261,7 @@ struct MainChatView: View {
             fetchLatestScreenshot()
         }
         .onChange(of: currentPageIndex) { oldIndex, newIndex in
+            windowManager.isHeartbeatShowing = newIndex == 0
             if oldIndex == 0 && newIndex != 0 {
                 connection.send(.markHeartbeatRead)
                 conversationStore.markHeartbeatRead()
