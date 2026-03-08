@@ -12,10 +12,6 @@ struct MessageBubble: View {
     @State private var showTextSelection = false
     @State private var showLongPressMenu = false
     @State private var menuPressY: CGFloat = 0
-    @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
-    @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
-    @ObservedObject private var ttsService = TTSService.shared
-
     private var hasInteractiveWidgets: Bool {
         message.toolCalls.contains { WidgetRegistry.isWidget($0.name) }
     }
@@ -127,23 +123,6 @@ struct MessageBubble: View {
                         RunStatsView(durationMs: durationMs, costUsd: costUsd, model: message.model)
                     }
                     Spacer()
-                    if ttsMode != .off && !message.text.isEmpty {
-                        if ttsService.isSynthesizing && ttsService.playingMessageId == message.id.uuidString {
-                            ProgressView()
-                                .scaleEffect(0.5)
-                                .frame(width: 14, height: 14)
-                        } else {
-                            Button {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
-                            } label: {
-                                Image(systemName: ttsService.playingMessageId == message.id.uuidString ? "stop.fill" : "speaker.wave.2")
-                                    .font(.system(size: 9))
-                                    .foregroundColor(ttsService.playingMessageId == message.id.uuidString ? .purple : .secondary)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
                     Button {
                         ClipboardHelper.copy(message.text)
                         withAnimation { showCopiedToast = true }
@@ -203,9 +182,6 @@ struct MessageBubble: View {
 
                         BubbleActionMenu(
                             message: message,
-                            ttsMode: ttsMode,
-                            ttsService: ttsService,
-                            kokoroVoice: kokoroVoice,
                             onCopy: {
                                 ClipboardHelper.copy(message.text)
                                 withAnimation { showCopiedToast = true }
@@ -258,9 +234,6 @@ struct CopiedToast: View {
 
 struct BubbleActionMenu: View {
     let message: ChatMessage
-    let ttsMode: TTSMode
-    @ObservedObject var ttsService: TTSService
-    let kokoroVoice: KokoroVoice
     let onCopy: () -> Void
     let onSelectText: () -> Void
     let onToggleCollapse: (() -> Void)?
@@ -283,14 +256,6 @@ struct BubbleActionMenu: View {
                 divider
                 menuButton(icon: message.isCollapsed ? "chevron.down" : "chevron.up", label: message.isCollapsed ? "Expand" : "Collapse") {
                     onToggleCollapse?()
-                    onDismiss()
-                }
-            }
-            if ttsMode != .off && !message.text.isEmpty && !message.isUser {
-                divider
-                let isPlaying = ttsService.playingMessageId == message.id.uuidString
-                menuButton(icon: isPlaying ? "stop.fill" : "speaker.wave.2", label: isPlaying ? "Stop" : "Play") {
-                    ttsService.speak(message.text, messageId: message.id.uuidString, mode: ttsMode, voice: kokoroVoice.rawValue)
                     onDismiss()
                 }
             }

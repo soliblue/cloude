@@ -14,8 +14,6 @@ struct SettingsView: View {
     @AppStorage("enableSuggestions") private var enableSuggestions = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("showCodeLineNumbers") private var showCodeLineNumbers = true
-    @AppStorage("ttsMode") private var ttsMode: TTSMode = .off
-    @AppStorage("kokoroVoice") private var kokoroVoice: KokoroVoice = .af_heart
     @State private var showUsageStats = false
     @State private var usageStats: UsageStats?
     @State private var awaitingUsageStats = false
@@ -94,26 +92,6 @@ struct SettingsView: View {
 
             SettingsRow(icon: "list.number", color: .cyan) {
                 Toggle("Code Line Numbers", isOn: $showCodeLineNumbers)
-            }
-
-            SettingsRow(icon: ttsMode.icon, color: .purple) {
-                Picker("Text to Speech", selection: $ttsMode) {
-                    ForEach(TTSMode.allCases, id: \.self) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-
-            if ttsMode == .natural {
-                SettingsRow(icon: "person.wave.2", color: .indigo) {
-                    Picker("Voice", selection: $kokoroVoice) {
-                        ForEach(KokoroVoice.allCases, id: \.self) { voice in
-                            Text("\(voice.label) (\(voice.accent) \(voice.gender))").tag(voice)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
             }
 
             securityRow

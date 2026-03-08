@@ -47,7 +47,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         server.start()
 
         initializeWhisper()
-        initializeKokoro()
 
         Log.startup("Ready on :\(server.port) — log: \(Log.logPath)")
     }
@@ -64,34 +63,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.server.broadcast(.whisperReady(ready: true))
             }
             await WhisperService.shared.initialize()
-        }
-    }
-
-    private func initializeKokoro() {
-        Task {
-            KokoroService.shared.onReady = { [weak self] in
-                self?.server.broadcast(.kokoroReady(ready: true))
-            }
-            await KokoroService.shared.initialize()
-        }
-    }
-
-    func handleSynthesize(_ text: String, messageId: String, voice: String?, connection: NWConnection) {
-        Log.info("Synthesize: \(text.count) chars for message \(messageId.prefix(8)) voice=\(voice ?? "default")")
-        Task {
-            do {
-                let wavData = try await KokoroService.shared.synthesize(text: text, voice: voice)
-                let base64 = wavData.base64EncodedString()
-                Log.info("Synthesize: generated \(wavData.count) bytes WAV")
-                await MainActor.run {
-                    server.sendMessage(.ttsAudio(audioBase64: base64, messageId: messageId), to: connection)
-                }
-            } catch {
-                Log.error("Synthesize failed: \(error.localizedDescription)")
-                await MainActor.run {
-                    server.sendMessage(.error(message: "TTS failed: \(error.localizedDescription)"), to: connection)
-                }
-            }
         }
     }
 

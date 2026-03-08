@@ -37,7 +37,6 @@ export function createServer(port, token, dataDir) {
           sendTo(ws, { type: 'auth_result', success: true })
           sendTo(ws, { type: 'default_working_directory', path: process.env.HOME })
           sendTo(ws, { type: 'whisper_ready', ready: false })
-          sendTo(ws, { type: 'kokoro_ready', ready: false })
           log('Client authenticated')
         } else {
           sendTo(ws, { type: 'auth_result', success: false, message: 'Invalid token' })

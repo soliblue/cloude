@@ -113,7 +113,6 @@ export function handleMessage(msg, ws, ctx) {
     case 'toggle_scheduled_task':
     case 'delete_scheduled_task':
     case 'transcribe':
-    case 'synthesize':
       log(`Unimplemented message type: ${msg.type}`)
       break
 
@@ -135,11 +134,11 @@ function handleListDirectory(dirPath, ws, sendTo) {
           path: fullPath,
           isDirectory: d.isDirectory(),
           size: st.size,
-          modified: st.mtime.toISOString(),
+          modified: st.mtime.getTime() / 1000 - 978307200,
           mimeType: d.isDirectory() ? null : (MIME_TYPES[extname(d.name)] || 'application/octet-stream')
         }
       } catch {
-        return { name: d.name, path: fullPath, isDirectory: d.isDirectory(), size: 0, modified: new Date().toISOString(), mimeType: null }
+        return { name: d.name, path: fullPath, isDirectory: d.isDirectory(), size: 0, modified: Date.now() / 1000 - 978307200, mimeType: null }
       }
     })
     entries.sort((a, b) => {
