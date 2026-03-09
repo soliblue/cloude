@@ -74,23 +74,24 @@ extension MainChatView {
 
             Spacer()
 
-            if let conv = conversation, conv.sessionId != nil {
-                Button(action: {
+            Button(action: {
+                if let conv = conversation, conv.sessionId != nil {
                     windowManager.setActive(window.id)
                     if let newConv = conversationStore.duplicateConversation(conv) {
                         windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
-                }) {
-                    Image(systemName: "arrow.triangle.branch")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.secondary)
-                        .padding(7)
                 }
-                .buttonStyle(.plain)
-
-                Divider()
-                    .frame(height: 20)
+            }) {
+                Image(systemName: "arrow.triangle.branch")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .padding(7)
             }
+            .buttonStyle(.plain)
+            .disabled(conversation?.sessionId == nil)
+
+            Divider()
+                .frame(height: 20)
 
             Button(action: {
                 windowManager.setActive(window.id)
