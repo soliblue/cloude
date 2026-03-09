@@ -3,6 +3,7 @@ import CloudeShared
 
 struct FolderPickerView: View {
     @ObservedObject var connection: ConnectionManager
+    var environmentId: UUID?
     let onSelect: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -94,6 +95,6 @@ struct FolderPickerView: View {
     private func loadDirectory() {
         isLoading = true
         entries = []
-        connection.listDirectory(path: currentPath)
+        connection.listDirectory(path: currentPath, environmentId: environmentId)
     }
 }

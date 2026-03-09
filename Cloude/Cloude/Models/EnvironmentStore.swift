@@ -41,7 +41,7 @@ class EnvironmentStore: ObservableObject {
         let token = KeychainHelper.get(key: "authToken") ?? ""
 
         if !host.isEmpty || !token.isEmpty {
-            let env = ServerEnvironment(name: "Default", host: host, port: port, token: token)
+            let env = ServerEnvironment(host: host, port: port, token: token)
             environments = [env]
             setActive(env.id)
             save()

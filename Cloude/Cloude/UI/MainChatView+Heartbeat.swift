@@ -77,6 +77,11 @@ extension MainChatView {
                 Divider()
                     .frame(height: 20)
 
+                heartbeatEnvironmentMenu
+
+                Divider()
+                    .frame(height: 20)
+
                 Button(action: { showIntervalPicker = true }) {
                     if conversationStore.heartbeatConfig.intervalMinutes == nil {
                         Image(systemName: "clock.badge.xmark")
@@ -97,15 +102,42 @@ extension MainChatView {
         .background(Color.oceanSecondary)
     }
 
+    private var heartbeatEnvironmentMenu: some View {
+        let effectiveEnvId = heartbeatEnvironmentId ?? environmentStore.activeEnvironmentId
+        let currentEnv = environmentStore.environments.first { $0.id == effectiveEnvId }
+
+        return Menu {
+            ForEach(environmentStore.environments) { env in
+                Button(action: { heartbeatEnvironmentId = env.id }) {
+                    Label {
+                        Text(env.host.isEmpty ? "No host" : env.host)
+                    } icon: {
+                        Image(systemName: env.id == effectiveEnvId ? "checkmark" : env.symbol)
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: currentEnv?.symbol ?? "laptopcomputer")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .padding(7)
+        }
+    }
+
+    var heartbeatEnvId: UUID? {
+        heartbeatEnvironmentId ?? environmentStore.activeEnvironmentId
+    }
+
     func refreshHeartbeat() {
-        guard let workingDir = connection.defaultWorkingDirectory else { return }
-        connection.syncHistory(sessionId: Heartbeat.sessionId, workingDirectory: workingDir)
+        let conn = heartbeatEnvId.flatMap { connection.connection(for: $0) } ?? activeEnvConnection
+        guard let workingDir = conn?.defaultWorkingDirectory else { return }
+        connection.syncHistory(sessionId: Heartbeat.sessionId, workingDirectory: workingDir, environmentId: heartbeatEnvId)
     }
 
     func triggerHeartbeat() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
         conversationStore.recordHeartbeatTrigger()
-        connection.send(.triggerHeartbeat)
+        connection.send(.triggerHeartbeat, environmentId: heartbeatEnvId)
     }
 }

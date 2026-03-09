@@ -70,30 +70,11 @@ struct WindowEditForm: View {
                     }
             }
 
-            if let envId = conversation?.environmentId,
+            if canChangeFolder {
+                environmentPicker
+            } else if let envId = conversation?.environmentId,
                let env = environmentStore.environments.first(where: { $0.id == envId }) {
-                HStack(spacing: 10) {
-                    Image.safeSymbol(env.symbol)
-                        .font(.system(size: 16))
-                        .foregroundColor(.accentColor)
-                        .frame(width: 32)
-                    Text("\(env.host):\(env.port)")
-                        .font(.subheadline.monospaced())
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                    Spacer()
-                    if let dir = conversation?.workingDirectory, !dir.isEmpty {
-                        Text(dir)
-                            .font(.caption2.monospaced())
-                            .foregroundColor(.secondary.opacity(0.7))
-                            .lineLimit(1)
-                            .truncationMode(.head)
-                    }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(Color.oceanSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                environmentRow(env: env)
             }
 
             if canChangeFolder {
@@ -154,6 +135,12 @@ if !allConversations.isEmpty {
                                     .font(.caption2)
                                 }
                                 Spacer()
+                                if let envId = conv.environmentId,
+                                   let env = environmentStore.environments.first(where: { $0.id == envId }) {
+                                    Image.safeSymbol(env.symbol)
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.secondary)
+                                }
                                 Text(relativeTime(conv.lastMessageAt))
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
@@ -195,7 +182,7 @@ if !allConversations.isEmpty {
             }
         }
 .sheet(isPresented: $showFolderPicker) {
-            FolderPickerView(connection: connection) { path in
+            FolderPickerView(connection: connection, environmentId: conversation?.environmentId ?? environmentStore.activeEnvironmentId) { path in
                 if let conv = conversation {
                     conversationStore.setWorkingDirectory(conv, path: path)
                     if conv.isEmpty, conv.environmentId == nil {
@@ -211,6 +198,74 @@ if !allConversations.isEmpty {
         .onChange(of: conversation?.id) { _, _ in
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
+        }
+    }
+
+    private var selectedEnv: ServerEnvironment? {
+        let envId = conversation?.environmentId ?? environmentStore.activeEnvironmentId
+        return environmentStore.environments.first { $0.id == envId }
+    }
+
+    private func environmentRow(env: ServerEnvironment) -> some View {
+        HStack(spacing: 10) {
+            Image.safeSymbol(env.symbol)
+                .font(.system(size: 16))
+                .foregroundColor(.accentColor)
+                .frame(width: 32)
+            Text("\(env.host):\(env.port)")
+                .font(.subheadline.monospaced())
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+            Spacer()
+            if let dir = conversation?.workingDirectory, !dir.isEmpty {
+                Text(dir)
+                    .font(.caption2.monospaced())
+                    .foregroundColor(.secondary.opacity(0.7))
+                    .lineLimit(1)
+                    .truncationMode(.head)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.oceanSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var environmentPicker: some View {
+        Menu {
+            ForEach(environmentStore.environments) { env in
+                Button(action: {
+                    if let conv = conversation {
+                        conversationStore.setEnvironmentId(conv, environmentId: env.id)
+                        environmentStore.setActive(env.id)
+                    }
+                }) {
+                    Label {
+                        Text("\(env.host):\(env.port)")
+                    } icon: {
+                        Image(systemName: env.symbol)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
+                    .font(.system(size: 16))
+                    .foregroundColor(.accentColor)
+                    .frame(width: 32)
+                Text(selectedEnv.map { "\($0.host):\($0.port)" } ?? "Select environment")
+                    .font(.subheadline.monospaced())
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                Spacer()
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.oceanSecondary)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 
