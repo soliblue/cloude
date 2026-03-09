@@ -24,7 +24,7 @@ extension MainChatView {
                     },
                     onNewConversation: {
                         let workingDir = activeWindowWorkingDirectory()
-                        let newConv = conversationStore.newConversation(workingDirectory: workingDir, environmentId: environmentStore.activeEnvironmentId)
+                        let newConv = conversationStore.newConversation(workingDirectory: workingDir)
                         windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
