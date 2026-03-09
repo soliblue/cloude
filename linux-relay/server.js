@@ -35,7 +35,7 @@ export function createServer(port, token, dataDir) {
         if (msg.token === token) {
           authenticated.add(ws)
           sendTo(ws, { type: 'auth_result', success: true })
-          sendTo(ws, { type: 'default_working_directory', path: process.env.HOME })
+          sendTo(ws, { type: 'default_working_directory', path: process.env.CLOUDE_PROJECT || `${process.env.HOME}/projects/cloude` })
           sendTo(ws, { type: 'whisper_ready', ready: true })
           log('Client authenticated')
         } else {
