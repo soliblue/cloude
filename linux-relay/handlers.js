@@ -14,6 +14,24 @@ const MIME_TYPES = {
 }
 
 const MAX_CHUNK = 500_000
+const APPLE_EPOCH = 978307200
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const EMPTY_STATS = { totalSessions: 0, totalMessages: 0, firstSessionDate: null, dailyActivity: [], modelUsage: {}, hourCounts: {}, longestSession: null }
+
+function toAppleTimestamp(ms) { return ms / 1000 - APPLE_EPOCH }
+function toAppleDate(isoString) { return toAppleTimestamp(new Date(isoString).getTime()) }
+function projectDir(workingDirectory) {
+  return join(process.env.HOME, '.claude', 'projects', workingDirectory.replace(/\//g, '-'))
+}
+function parseJSONL(filePath) {
+  const content = readFileSync(filePath, 'utf8')
+  const entries = []
+  for (const line of content.split('\n')) {
+    if (!line) continue
+    try { entries.push(JSON.parse(line)) } catch {}
+  }
+  return entries
+}
 
 export function handleMessage(msg, ws, ctx) {
   const { manager, broadcast, sendTo } = ctx
@@ -94,7 +112,7 @@ export function handleMessage(msg, ws, ctx) {
       break
 
     case 'get_usage_stats':
-      sendTo(ws, { type: 'usage_stats', stats: { totalSessions: 0, totalMessages: 0, firstSessionDate: null, dailyActivity: [], modelUsage: {}, hourCounts: {}, longestSession: null } })
+      handleGetUsageStats(ws, sendTo)
       break
 
     case 'set_heartbeat_interval':
@@ -109,6 +127,9 @@ export function handleMessage(msg, ws, ctx) {
       break
 
     case 'list_remote_sessions':
+      handleListRemoteSessions(msg.workingDirectory, ws, sendTo)
+      break
+
     case 'request_missed_response':
     case 'request_suggestions':
     case 'suggest_name':
@@ -139,11 +160,11 @@ function handleListDirectory(dirPath, ws, sendTo) {
           path: fullPath,
           isDirectory: d.isDirectory(),
           size: st.size,
-          modified: st.mtime.getTime() / 1000 - 978307200,
+          modified: toAppleTimestamp(st.mtime.getTime()),
           mimeType: d.isDirectory() ? null : (MIME_TYPES[extname(d.name)] || 'application/octet-stream')
         }
       } catch {
-        return { name: d.name, path: fullPath, isDirectory: d.isDirectory(), size: 0, modified: Date.now() / 1000 - 978307200, mimeType: null }
+        return { name: d.name, path: fullPath, isDirectory: d.isDirectory(), size: 0, modified: toAppleTimestamp(Date.now()), mimeType: null }
       }
     })
     entries.sort((a, b) => {
@@ -372,31 +393,130 @@ function extractToolInput(name, input) {
   }
 }
 
-const APPLE_EPOCH = 978307200
-
-function toAppleDate(isoString) {
-  return new Date(isoString).getTime() / 1000 - APPLE_EPOCH
-}
-
-function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
-  const projectPath = workingDirectory.replace(/\//g, '-')
-  const sessionFile = join(process.env.HOME, '.claude', 'projects', projectPath, `${sessionId}.jsonl`)
-
-  if (!existsSync(sessionFile)) {
-    sendTo(ws, { type: 'history_sync_error', sessionId, error: `Session file not found: ${sessionFile}` })
-    return
+function handleGetUsageStats(ws, sendTo) {
+  const projectsDir = join(process.env.HOME, '.claude', 'projects')
+  try { readdirSync(projectsDir) } catch {
+    return sendTo(ws, { type: 'usage_stats', stats: EMPTY_STATS })
   }
 
   try {
-    const content = readFileSync(sessionFile, 'utf8')
-    const lines = content.split('\n').filter(Boolean)
+    let totalSessions = 0, totalMessages = 0, firstSessionDate = null
+    const dailyMap = {}
+    const modelUsage = {}
+    const hourCounts = {}
+    let longestSession = null
 
+    for (const dir of readdirSync(projectsDir, { withFileTypes: true }).filter(d => d.isDirectory())) {
+      const dirPath = join(projectsDir, dir.name)
+      for (const file of readdirSync(dirPath).filter(f => f.endsWith('.jsonl'))) {
+        let entries
+        try { entries = parseJSONL(join(dirPath, file)) } catch { continue }
+
+        let sessionMessages = 0
+        let sessionStart = null, sessionEnd = null
+
+        for (const entry of entries) {
+          const { type, timestamp, message } = entry
+          if (!type || !timestamp) continue
+
+          if (type === 'user' || type === 'assistant') {
+            totalMessages++
+            sessionMessages++
+
+            if (!sessionStart || timestamp < sessionStart) sessionStart = timestamp
+            if (!sessionEnd || timestamp > sessionEnd) sessionEnd = timestamp
+
+            const dateStr = timestamp.slice(0, 10)
+            if (!firstSessionDate || dateStr < firstSessionDate) firstSessionDate = dateStr
+
+            if (!dailyMap[dateStr]) dailyMap[dateStr] = { messageCount: 0, sessionIds: new Set(), toolCallCount: 0 }
+            dailyMap[dateStr].messageCount++
+            dailyMap[dateStr].sessionIds.add(file)
+
+            hourCounts[timestamp.slice(11, 13)] = (hourCounts[timestamp.slice(11, 13)] || 0) + 1
+          }
+
+          if (type === 'assistant' && message) {
+            const model = message.model
+            if (model && !model.startsWith('<')) {
+              const bucket = modelUsage[model] ??= { inputTokens: 0, outputTokens: 0, cacheReadInputTokens: 0, cacheCreationInputTokens: 0 }
+              const usage = message.usage
+              if (usage) {
+                bucket.inputTokens += usage.input_tokens || 0
+                bucket.outputTokens += usage.output_tokens || 0
+                bucket.cacheReadInputTokens += usage.cache_read_input_tokens || 0
+                bucket.cacheCreationInputTokens += usage.cache_creation_input_tokens || 0
+              }
+            }
+
+            if (Array.isArray(message.content)) {
+              const toolCount = message.content.filter(c => c.type === 'tool_use').length
+              if (toolCount) {
+                const dateStr = timestamp.slice(0, 10)
+                if (dailyMap[dateStr]) dailyMap[dateStr].toolCallCount += toolCount
+              }
+            }
+          }
+        }
+
+        if (sessionMessages > 0) {
+          totalSessions++
+          const duration = sessionStart && sessionEnd ? Math.round((new Date(sessionEnd) - new Date(sessionStart)) / 1000) : 0
+          if (!longestSession || sessionMessages > longestSession.messageCount) {
+            longestSession = { messageCount: sessionMessages, duration }
+          }
+        }
+      }
+    }
+
+    const dailyActivity = Object.entries(dailyMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, data]) => ({ date, messageCount: data.messageCount, sessionCount: data.sessionIds.size, toolCallCount: data.toolCallCount }))
+
+    log(`Usage stats: ${totalSessions} sessions, ${totalMessages} messages`)
+    sendTo(ws, { type: 'usage_stats', stats: { totalSessions, totalMessages, firstSessionDate, dailyActivity, modelUsage, hourCounts, longestSession } })
+  } catch (e) {
+    log(`Usage stats error: ${e.message}`)
+    sendTo(ws, { type: 'usage_stats', stats: EMPTY_STATS })
+  }
+}
+
+function handleListRemoteSessions(workingDirectory, ws, sendTo) {
+  const dirPath = projectDir(workingDirectory)
+  try {
+    const files = readdirSync(dirPath).filter(f => f.endsWith('.jsonl'))
+    const sessions = []
+
+    for (const file of files) {
+      const sessionId = basename(file, '.jsonl')
+      if (!UUID_REGEX.test(sessionId)) continue
+
+      const filePath = join(dirPath, file)
+      const st = statSync(filePath)
+      const entries = parseJSONL(filePath)
+      const messageCount = entries.filter(e => e.type === 'user' || e.type === 'assistant').length
+
+      sessions.push({ sessionId, workingDirectory, lastModified: toAppleTimestamp(st.mtime.getTime()), messageCount })
+    }
+
+    sessions.sort((a, b) => b.lastModified - a.lastModified)
+    log(`Remote sessions: ${sessions.length} for ${workingDirectory}`)
+    sendTo(ws, { type: 'remote_session_list', sessions })
+  } catch (e) {
+    log(`List sessions error: ${e.message}`)
+    sendTo(ws, { type: 'remote_session_list', sessions: [] })
+  }
+}
+
+function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
+  const sessionFile = join(projectDir(workingDirectory), `${sessionId}.jsonl`)
+
+  try {
+    const entries = parseJSONL(sessionFile)
     const userMessages = []
     const assistantMessages = {}
 
-    for (const line of lines) {
-      let entry
-      try { entry = JSON.parse(line) } catch { continue }
+    for (const entry of entries) {
       const { type, uuid, timestamp, message } = entry
       if (!type || !message) continue
 
