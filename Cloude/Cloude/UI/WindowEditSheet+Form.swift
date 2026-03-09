@@ -198,6 +198,9 @@ if !allConversations.isEmpty {
             FolderPickerView(connection: connection) { path in
                 if let conv = conversation {
                     conversationStore.setWorkingDirectory(conv, path: path)
+                    if conv.isEmpty, conv.environmentId == nil {
+                        conversationStore.setEnvironmentId(conv, environmentId: environmentStore.activeEnvironmentId)
+                    }
                 }
             }
         }

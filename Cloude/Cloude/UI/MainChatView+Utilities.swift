@@ -13,7 +13,7 @@ extension MainChatView {
     func addWindowWithNewChat() {
         let activeWorkingDir = activeWindowWorkingDirectory()
         let newWindowId = windowManager.addWindow()
-        let newConv = conversationStore.newConversation(workingDirectory: activeWorkingDir, environmentId: environmentStore.activeEnvironmentId)
+        let newConv = conversationStore.newConversation(workingDirectory: activeWorkingDir)
         windowManager.linkToCurrentConversation(newWindowId, conversation: newConv)
     }
 
