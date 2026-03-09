@@ -77,13 +77,18 @@ struct WindowEditForm: View {
                         .font(.system(size: 16))
                         .foregroundColor(.accentColor)
                         .frame(width: 32)
-                    Text(env.host)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    Text(":\(env.port)")
+                    Text("\(env.host):\(env.port)")
                         .font(.subheadline.monospaced())
-                        .foregroundColor(.secondary.opacity(0.7))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                     Spacer()
+                    if let dir = conversation?.workingDirectory, !dir.isEmpty {
+                        Text(dir)
+                            .font(.caption2.monospaced())
+                            .foregroundColor(.secondary.opacity(0.7))
+                            .lineLimit(1)
+                            .truncationMode(.head)
+                    }
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
