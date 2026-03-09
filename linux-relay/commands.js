@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { log } from './log.js'
 
-export function handleCloudeCommand(command, conversationId, broadcast) {
+export function handleCloudeCommand(command, conversationId, broadcast, workingDirectory) {
   const rest = command.slice(7)
   const spaceIdx = rest.indexOf(' ')
   const action = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx)
@@ -24,7 +24,7 @@ export function handleCloudeCommand(command, conversationId, broadcast) {
       break
 
     case 'memory':
-      handleMemory(args, conversationId, broadcast)
+      handleMemory(args, conversationId, broadcast, workingDirectory)
       break
 
     case 'skip':
@@ -79,7 +79,7 @@ export function handleCloudeCommand(command, conversationId, broadcast) {
   }
 }
 
-function handleMemory(args, conversationId, broadcast) {
+function handleMemory(args, conversationId, broadcast, workingDirectory) {
   const parts = args.split(' ')
   if (parts.length < 3) return
 
@@ -87,12 +87,11 @@ function handleMemory(args, conversationId, broadcast) {
   const section = parts[1]
   const text = parts.slice(2).join(' ')
 
-  const projectDir = process.env.CLOUDE_PROJECT || join(process.env.HOME, 'projects', 'cloude')
   let filePath
   if (target === 'local') {
-    filePath = join(projectDir, 'CLAUDE.local.md')
+    filePath = join(workingDirectory, 'CLAUDE.local.md')
   } else if (target === 'project') {
-    filePath = join(projectDir, 'CLAUDE.md')
+    filePath = join(workingDirectory, 'CLAUDE.md')
   } else return
 
   let content = ''

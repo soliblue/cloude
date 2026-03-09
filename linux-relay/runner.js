@@ -46,6 +46,7 @@ export class ClaudeCodeRunner {
 
     const rawCwd = workingDirectory || process.env.HOME
     const cwd = rawCwd === '~' || rawCwd.startsWith('~/') ? rawCwd.replace('~', process.env.HOME) : rawCwd
+    this._cwd = cwd
     log(`Running claude in ${cwd} (conv=${this.conversationId.slice(0, 8)})`)
 
     const env = { ...process.env, TERM: 'xterm-256color', NO_COLOR: '1', CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: '1' }
@@ -172,7 +173,7 @@ export class ClaudeCodeRunner {
             this.onEvent({ type: 'tool_result', toolId: block.tool_use_id, summary, output, conversationId: cid })
 
             if (this._cloudeCommand) {
-              handleCloudeCommand(this._cloudeCommand, cid, this.onEvent)
+              handleCloudeCommand(this._cloudeCommand, cid, this.onEvent, this._cwd)
               this._cloudeCommand = null
             }
           }
