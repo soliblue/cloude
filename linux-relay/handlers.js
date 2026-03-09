@@ -105,6 +105,9 @@ export function handleMessage(msg, ws, ctx) {
       break
 
     case 'sync_history':
+      handleSyncHistory(msg.sessionId, msg.workingDirectory, ws, sendTo)
+      break
+
     case 'list_remote_sessions':
     case 'request_missed_response':
     case 'request_suggestions':
@@ -112,6 +115,8 @@ export function handleMessage(msg, ws, ctx) {
     case 'get_scheduled_tasks':
     case 'toggle_scheduled_task':
     case 'delete_scheduled_task':
+      break
+
     case 'transcribe':
       handleTranscribe(msg.audioBase64, ws, sendTo)
       break
@@ -348,4 +353,122 @@ function handleTranscribe(audioBase64, ws, sendTo) {
       sendTo(ws, { type: 'error', message: 'Failed to parse transcription result' })
     }
   })
+}
+
+function extractToolInput(name, input) {
+  if (!input) return null
+  switch (name) {
+    case 'Bash': return input.command
+    case 'Read': case 'Write': case 'Edit': return input.file_path
+    case 'Glob': case 'Grep': return input.pattern
+    case 'WebFetch': return input.url
+    case 'WebSearch': return input.query
+    case 'Task': return `${input.subagent_type || 'agent'}: ${input.description || ''}`
+    case 'Skill': return input.args ? `${input.skill}:${input.args}` : input.skill || null
+    case 'TodoWrite': return input.todos ? JSON.stringify(input.todos) : null
+    case 'TeamCreate': case 'TeamDelete': return input.team_name
+    case 'SendMessage': return `${input.type || 'message'} → ${input.target || ''}`
+    default: return null
+  }
+}
+
+const APPLE_EPOCH = 978307200
+
+function toAppleDate(isoString) {
+  return new Date(isoString).getTime() / 1000 - APPLE_EPOCH
+}
+
+function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
+  const projectPath = workingDirectory.replace(/\//g, '-')
+  const sessionFile = join(process.env.HOME, '.claude', 'projects', projectPath, `${sessionId}.jsonl`)
+
+  if (!existsSync(sessionFile)) {
+    sendTo(ws, { type: 'history_sync_error', sessionId, error: `Session file not found: ${sessionFile}` })
+    return
+  }
+
+  try {
+    const content = readFileSync(sessionFile, 'utf8')
+    const lines = content.split('\n').filter(Boolean)
+
+    const userMessages = []
+    const assistantMessages = {}
+
+    for (const line of lines) {
+      let entry
+      try { entry = JSON.parse(line) } catch { continue }
+      const { type, uuid, timestamp, message } = entry
+      if (!type || !message) continue
+
+      if (type === 'user') {
+        if (typeof message.content === 'string') {
+          userMessages.push({ uuid, timestamp, text: message.content })
+        }
+      } else if (type === 'assistant') {
+        if (!Array.isArray(message.content)) continue
+        const messageId = message.id || uuid
+        const model = message.model || null
+
+        for (const item of message.content) {
+          if (!item.type) continue
+          let contentItem = null
+
+          if (item.type === 'text' && item.text) {
+            contentItem = { type: 'text', text: item.text }
+          } else if (item.type === 'tool_use' && item.name && item.id) {
+            contentItem = { type: 'tool_use', toolName: item.name, toolId: item.id, toolInput: extractToolInput(item.name, item.input) }
+          }
+
+          if (contentItem) {
+            if (!assistantMessages[messageId]) assistantMessages[messageId] = { timestamp, model, items: [] }
+            assistantMessages[messageId].items.push(contentItem)
+          }
+        }
+      }
+    }
+
+    const allMessages = []
+
+    for (const u of userMessages) {
+      const ts = toAppleDate(u.timestamp)
+      allMessages.push({ timestamp: u.timestamp, msg: { isUser: true, text: u.text, timestamp: ts, toolCalls: [], serverUUID: u.uuid } })
+    }
+
+    for (const [uuid, data] of Object.entries(assistantMessages)) {
+      let text = ''
+      const toolCalls = []
+      for (const item of data.items) {
+        if (item.type === 'text') {
+          text += item.text
+        } else if (item.type === 'tool_use') {
+          toolCalls.push({ name: item.toolName, input: item.toolInput || null, toolId: item.toolId, parentToolId: null, textPosition: text.length })
+        }
+      }
+      if (text || toolCalls.length) {
+        const ts = toAppleDate(data.timestamp)
+        allMessages.push({ timestamp: data.timestamp, msg: { isUser: false, text, timestamp: ts, toolCalls, serverUUID: uuid, model: data.model } })
+      }
+    }
+
+    allMessages.sort((a, b) => a.timestamp < b.timestamp ? -1 : 1)
+
+    const merged = []
+    for (const { msg } of allMessages) {
+      const last = merged[merged.length - 1]
+      if (!msg.isUser && last && !last.isUser) {
+        const sep = (last.text && msg.text) ? '\n\n' : ''
+        const offset = last.text.length + sep.length
+        const adjustedTools = msg.toolCalls.map(t => ({ ...t, textPosition: (t.textPosition || 0) + offset }))
+        last.text = last.text + sep + msg.text
+        last.toolCalls = last.toolCalls.concat(adjustedTools)
+      } else {
+        merged.push({ ...msg })
+      }
+    }
+
+    log(`History sync: ${merged.length} messages for session ${sessionId.slice(0, 8)}`)
+    sendTo(ws, { type: 'history_sync', sessionId, messages: merged })
+  } catch (e) {
+    sendTo(ws, { type: 'history_sync_error', sessionId, error: e.message })
+  }
 }
