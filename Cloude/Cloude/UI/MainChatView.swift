@@ -31,6 +31,7 @@ struct MainChatView: View {
     @State var usageStats: UsageStats?
     @State var awaitingUsageStats = false
     @State var refreshingSessionIds: Set<String> = []
+    @State var heartbeatEnvironmentId: UUID?
     var onShowPlans: (() -> Void)?
     var onShowMemories: (() -> Void)?
     var onShowSettings: (() -> Void)?
@@ -38,8 +39,15 @@ struct MainChatView: View {
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
     var hasEnvironmentMismatch: Bool {
-        guard let envId = currentConversation?.environmentId else { return false }
-        return envId != environmentStore.activeEnvironmentId
+        if let envId = currentConversation?.environmentId {
+            return !(connection.connection(for: envId)?.isAuthenticated ?? false)
+        }
+        return false
+    }
+
+    var activeEnvConnection: EnvironmentConnection? {
+        let envId = currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
+        return connection.connection(for: envId)
     }
 
     var currentConversation: Conversation? {
@@ -103,11 +111,11 @@ struct MainChatView: View {
                         attachedImages: $attachedImages,
                         attachedFiles: $attachedFiles,
                         suggestions: $suggestions,
-                        isConnected: connection.isAuthenticated,
-                        isWhisperReady: connection.isWhisperReady,
-                        isTranscribing: connection.isTranscribing,
+                        isConnected: activeEnvConnection?.isAuthenticated ?? false,
+                        isWhisperReady: activeEnvConnection?.isWhisperReady ?? false,
+                        isTranscribing: activeEnvConnection?.isTranscribing ?? false,
                         isRunning: activeConversationIsRunning,
-                        skills: connection.skills,
+                        skills: activeEnvConnection?.skills ?? [],
                         fileSearchResults: fileSearchResults,
                         conversationDefaultEffort: currentConversation?.defaultEffort,
                         conversationDefaultModel: currentConversation?.defaultModel,

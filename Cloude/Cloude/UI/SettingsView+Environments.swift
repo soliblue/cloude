@@ -8,10 +8,10 @@ extension SettingsView {
                     EnvironmentCard(
                         env: env,
                         isActive: env.id == environmentStore.activeEnvironmentId,
-                        isConnected: env.id == environmentStore.activeEnvironmentId && connection.isAuthenticated,
-                        isConnecting: env.id == environmentStore.activeEnvironmentId && connection.isConnected && !connection.isAuthenticated,
+                        isConnected: connection.connection(for: env.id)?.isAuthenticated ?? false,
+                        isConnecting: (connection.connection(for: env.id)?.isConnected ?? false) && !(connection.connection(for: env.id)?.isAuthenticated ?? false),
                         onConnect: { connectEnvironment(env) },
-                        onDisconnect: { connection.disconnect() },
+                        onDisconnect: { connection.disconnectEnvironment(env.id, clearCredentials: false) },
                         onUpdate: { environmentStore.update($0); syncIfActive($0) },
                         onDelete: environmentStore.environments.count > 1 ? { environmentStore.delete(env.id) } : nil
                     )
@@ -34,12 +34,12 @@ extension SettingsView {
 
     private func connectEnvironment(_ env: ServerEnvironment) {
         environmentStore.setActive(env.id)
-        connection.connect(host: env.host, port: env.port, token: env.token)
+        connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token)
     }
 
     private func syncIfActive(_ env: ServerEnvironment) {
-        if env.id == environmentStore.activeEnvironmentId {
-            connection.connect(host: env.host, port: env.port, token: env.token)
+        if let conn = connection.connection(for: env.id), conn.isAuthenticated {
+            conn.disconnect(clearCredentials: false)
         }
     }
 }
@@ -90,7 +90,7 @@ struct EnvironmentCard: View {
                             .foregroundColor(.accentColor)
                     }
                     .buttonStyle(.plain)
-                    .confirmationDialog("Delete \(env.name)?", isPresented: $showDeleteConfirm) {
+                    .confirmationDialog("Delete \(env.host)?", isPresented: $showDeleteConfirm) {
                         Button("Delete", role: .destructive, action: onDelete)
                     }
 
@@ -201,7 +201,7 @@ struct AddEnvironmentCard: View {
 
     var body: some View {
         Button(action: {
-            onAdd(ServerEnvironment(name: "New", host: "", port: 8765, token: ""))
+            onAdd(ServerEnvironment(host: "", port: 8765, token: ""))
         }) {
             Image(systemName: "plus")
                 .font(.system(size: 30, weight: .light))

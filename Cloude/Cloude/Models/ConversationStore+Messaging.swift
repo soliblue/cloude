@@ -87,7 +87,8 @@ extension ConversationStore {
             isNewSession: false,
             conversationId: updatedConv.id,
             conversationName: updatedConv.name,
-            conversationSymbol: updatedConv.symbol
+            conversationSymbol: updatedConv.symbol,
+            environmentId: updatedConv.environmentId
         )
     }
 }

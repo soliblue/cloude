@@ -9,7 +9,7 @@ extension FilePreviewView {
             return (progress.current, progress.total)
         }
         if let progress = connection.chunkProgress, progress.path == path {
-            return (progress.current, progress.total)
+            return (Int(progress.current), Int(progress.total))
         }
         return nil
     }

@@ -14,7 +14,7 @@ extension MainChatView {
         if text.lowercased().trimmingCharacters(in: .whitespaces) == "/usage" {
             inputText = ""
             awaitingUsageStats = true
-            connection.getUsageStats()
+            connection.getUsageStats(environmentId: currentConversation?.environmentId ?? environmentStore.activeEnvironmentId)
             return
         }
 
@@ -75,7 +75,8 @@ extension MainChatView {
                 imagesBase64: imagesBase64,
                 filesBase64: filesBase64,
                 conversationName: "Heartbeat",
-                conversationSymbol: "heart.fill"
+                conversationSymbol: "heart.fill",
+                environmentId: heartbeatEnvId
             )
         }
     }
@@ -112,7 +113,7 @@ extension MainChatView {
             let workingDir = conv.workingDirectory
             let effortValue = (currentEffort ?? conv.defaultEffort)?.rawValue
             let modelValue = (currentModel ?? conv.defaultModel)?.rawValue
-            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, filesBase64: filesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue, model: modelValue)
+            connection.sendChat(text, workingDirectory: workingDir, sessionId: conv.sessionId, isNewSession: isNewSession, conversationId: conv.id, imagesBase64: imagesBase64, filesBase64: filesBase64, conversationName: conv.name, conversationSymbol: conv.symbol, forkSession: isFork, effort: effortValue, model: modelValue, environmentId: conv.environmentId)
 
             if isNewSession {
                 connection.requestNameSuggestion(text: text, context: [], conversationId: conv.id)
@@ -125,7 +126,8 @@ extension MainChatView {
     }
 
     func transcribeAudio(_ audioData: Data) {
-        connection.transcribe(audioBase64: audioData.base64EncodedString())
+        let envId = currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
+        connection.transcribe(audioBase64: audioData.base64EncodedString(), environmentId: envId)
     }
 
     func dismissKeyboard() {

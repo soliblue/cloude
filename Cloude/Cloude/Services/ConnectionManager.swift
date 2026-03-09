@@ -5,44 +5,59 @@ import CloudeShared
 
 @MainActor
 class ConnectionManager: ObservableObject {
-    @Published var isConnected = false
-    @Published var isAuthenticated = false
-    @Published var isWhisperReady = false
-    @Published var isTranscribing = false
-    @Published var agentState: AgentState = .idle
-    @Published var lastError: String?
-    @Published var processes: [AgentProcessInfo] = []
-    @Published var defaultWorkingDirectory: String?
-    @Published var skills: [Skill] = []
-    @Published var chunkProgress: ChunkProgress?
-
-    struct ChunkProgress: Equatable {
-        let path: String
-        let current: Int
-        let total: Int
-    }
+    @Published var connections: [UUID: EnvironmentConnection] = [:]
 
     let events = PassthroughSubject<ConnectionEvent, Never>()
-    var fileCache = FileCache()
-
-    private var webSocket: URLSessionWebSocketTask?
-    private var session: URLSession?
-    private var savedHost: String = ""
-    private var savedPort: UInt16 = 8765
-    private var savedToken: String = ""
-    private var backgroundTaskId: UIBackgroundTaskIdentifier = .invalid
-    // Used to ignore callbacks from stale sockets after reconnect/disconnect.
-    private var connectionToken = UUID()
-    // Used by `ConnectionManager+API.swift` to serialize git-status requests (result payload has no path).
-    // Keep usage limited to the ConnectionManager implementation.
-    var gitStatusQueue: [String] = []
-    var gitStatusInFlightPath: String?
-
-    var runningConversationId: UUID?
     var conversationOutputs: [UUID: ConversationOutput] = [:]
-    var interruptedSession: (conversationId: UUID, sessionId: String, messageId: UUID)?
+    var conversationEnvironments: [UUID: UUID] = [:]
+    private var backgroundTaskId: UIBackgroundTaskIdentifier = .invalid
 
-    var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
+    var isConnected: Bool { connections.values.contains { $0.isConnected } }
+    var isAuthenticated: Bool { connections.values.contains { $0.isAuthenticated } }
+
+    var agentState: AgentState {
+        let states = connections.values.map(\.agentState)
+        if states.contains(.running) { return .running }
+        if states.contains(.compacting) { return .compacting }
+        return .idle
+    }
+
+    var isAnyRunning: Bool {
+        conversationOutputs.values.contains { $0.isRunning }
+    }
+
+    var lastError: String? {
+        connections.values.compactMap(\.lastError).first
+    }
+
+    var processes: [AgentProcessInfo] {
+        connections.values.flatMap(\.processes)
+    }
+
+    var skills: [Skill] {
+        var seen = Set<String>()
+        return connections.values.flatMap(\.skills).filter { seen.insert($0.name).inserted }
+    }
+
+    var isWhisperReady: Bool {
+        connections.values.contains { $0.isWhisperReady }
+    }
+
+    var isTranscribing: Bool {
+        connections.values.contains { $0.isTranscribing }
+    }
+
+    var defaultWorkingDirectory: String? {
+        connections.values.compactMap(\.defaultWorkingDirectory).first
+    }
+
+    var chunkProgress: EnvironmentConnection.ChunkProgress? {
+        connections.values.compactMap(\.chunkProgress).first
+    }
+
+    var fileCache: AggregateFileCache {
+        AggregateFileCache(connections: connections)
+    }
 
     func output(for conversationId: UUID) -> ConversationOutput {
         if let existing = conversationOutputs[conversationId] {
@@ -54,12 +69,43 @@ class ConnectionManager: ObservableObject {
         return new
     }
 
-    var hasCredentials: Bool {
-        !savedHost.isEmpty && !savedToken.isEmpty
+    func connection(for environmentId: UUID?) -> EnvironmentConnection? {
+        environmentId.flatMap { connections[$0] }
     }
 
-    var isAnyRunning: Bool {
-        conversationOutputs.values.contains { $0.isRunning }
+    func connectionForConversation(_ conversationId: UUID) -> EnvironmentConnection? {
+        conversationEnvironments[conversationId].flatMap { connections[$0] }
+    }
+
+    func anyAuthenticatedConnection() -> EnvironmentConnection? {
+        connections.values.first { $0.isAuthenticated }
+    }
+
+    func connectEnvironment(_ envId: UUID, host: String, port: UInt16, token: String) {
+        let conn = connections[envId] ?? EnvironmentConnection(environmentId: envId)
+        conn.manager = self
+        connections[envId] = conn
+        conn.connect(host: host, port: port, token: token)
+    }
+
+    func disconnectEnvironment(_ envId: UUID, clearCredentials: Bool = true) {
+        connections[envId]?.disconnect(clearCredentials: clearCredentials)
+    }
+
+    func disconnectAll(clearCredentials: Bool = true) {
+        for conn in connections.values {
+            conn.disconnect(clearCredentials: clearCredentials)
+        }
+    }
+
+    func reconnectAll() {
+        for conn in connections.values {
+            conn.reconnectIfNeeded()
+        }
+    }
+
+    func registerConversation(_ conversationId: UUID, environmentId: UUID) {
+        conversationEnvironments[conversationId] = environmentId
     }
 
     func clearAllRunningStates() {
@@ -70,8 +116,10 @@ class ConnectionManager: ObservableObject {
             output.isRunning = false
             output.isCompacting = false
         }
-        agentState = .idle
-        runningConversationId = nil
+        for conn in connections.values {
+            conn.agentState = .idle
+            conn.runningConversationId = nil
+        }
     }
 
     func beginBackgroundStreamingIfNeeded() {
@@ -88,132 +136,7 @@ class ConnectionManager: ObservableObject {
         UIApplication.shared.endBackgroundTask(taskId)
     }
 
-    func connect(host: String, port: UInt16, token: String) {
-        savedHost = host
-        savedPort = port
-        savedToken = token
-        reconnect()
-    }
-
-    func reconnect() {
-        guard hasCredentials else { return }
-        disconnect(clearCredentials: false)
-        connectionToken = UUID()
-
-        guard let url = URL(string: "ws://\(savedHost):\(savedPort)") else {
-            lastError = "Invalid URL"
-            return
-        }
-
-        session = URLSession(configuration: .default)
-        webSocket = session?.webSocketTask(with: url)
-        webSocket?.resume()
-
-        isConnected = true
-        lastError = nil
-
-        receiveMessage(token: connectionToken)
-    }
-
-    func reconnectIfNeeded() {
-        guard hasCredentials, !isAuthenticated else { return }
-        reconnect()
-    }
-
-    func disconnect(clearCredentials: Bool = true) {
-        connectionToken = UUID()
-        webSocket?.cancel(with: .goingAway, reason: nil)
-        webSocket = nil
-        session = nil
-        // Clear any in-flight request state that depends on a live socket.
-        gitStatusQueue.removeAll()
-        gitStatusInFlightPath = nil
-        isConnected = false
-        isAuthenticated = false
-        isWhisperReady = false
-        isTranscribing = false
-        agentState = .idle
-
-        if clearCredentials {
-            savedHost = ""
-            savedToken = ""
-        }
-    }
-
-    func receiveMessage() {
-        receiveMessage(token: connectionToken)
-    }
-
-    private func receiveMessage(token: UUID) {
-        webSocket?.receive { [weak self] result in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                guard token == self.connectionToken else { return }
-
-                switch result {
-                case .success(let message):
-                    switch message {
-                    case .string(let text):
-                        self.handleMessage(text)
-                    case .data(let data):
-                        if let text = String(data: data, encoding: .utf8) {
-                            self.handleMessage(text)
-                        }
-                    @unknown default:
-                        break
-                    }
-                    self.receiveMessage(token: token)
-
-                case .failure(let error):
-                    self.lastError = error.localizedDescription
-                    self.handleDisconnect()
-                }
-            }
-        }
-    }
-
-    func handleDisconnect() {
-        if let convId = runningConversationId,
-           let output = conversationOutputs[convId] {
-            output.flushBuffer()
-            for i in output.toolCalls.indices where output.toolCalls[i].state == .executing {
-                output.toolCalls[i].state = .complete
-            }
-            if !output.text.isEmpty {
-                events.send(.disconnect(conversationId: convId, output: output))
-            }
-            output.isRunning = false
-        }
-        isConnected = false
-        isAuthenticated = false
-        isWhisperReady = false
-        isTranscribing = false
-        agentState = .idle
-        runningConversationId = nil
-        gitStatusQueue.removeAll()
-        gitStatusInFlightPath = nil
-        endBackgroundStreaming()
-    }
-
-    func checkForMissedResponse() {
-        guard let interrupted = interruptedSession else { return }
-        send(.requestMissedResponse(sessionId: interrupted.sessionId))
-    }
-
-    func authenticate() {
-        send(.auth(token: savedToken))
-    }
-
-    func send(_ message: ClientMessage) {
-        guard let data = try? JSONEncoder().encode(message),
-              let text = String(data: data, encoding: .utf8) else { return }
-
-        webSocket?.send(.string(text)) { [weak self] error in
-            if let error = error {
-                Task { @MainActor [weak self] in
-                    self?.lastError = error.localizedDescription
-                }
-            }
-        }
+    func fileCache(for environmentId: UUID?) -> FileCache? {
+        environmentId.flatMap { connections[$0]?.fileCache }
     }
 }

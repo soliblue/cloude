@@ -248,7 +248,8 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
                             isNewSession: false,
                             conversationId: conv.id,
                             conversationName: conv.name,
-                            conversationSymbol: conv.symbol
+                            conversationSymbol: conv.symbol,
+                            environmentId: conv.environmentId
                         )
                     }
                 },

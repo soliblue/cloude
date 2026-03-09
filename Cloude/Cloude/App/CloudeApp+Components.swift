@@ -5,7 +5,7 @@ struct ConnectionStatus: View {
     @ObservedObject var connection: ConnectionManager
 
     var body: some View {
-        Button(action: { connection.reconnectIfNeeded() }) {
+        Button(action: { connection.reconnectAll() }) {
             Circle()
                 .fill(statusColor)
                 .frame(width: 10, height: 10)

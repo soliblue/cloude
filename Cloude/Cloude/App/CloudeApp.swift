@@ -76,9 +76,9 @@ struct CloudeApp: App {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
                             if connection.isAuthenticated || connection.isConnected {
-                                connection.disconnect(clearCredentials: false)
+                                connection.disconnectAll(clearCredentials: false)
                             } else {
-                                connection.reconnectIfNeeded()
+                                connectAllConfiguredEnvironments()
                             }
                         }) {
                             Image(systemName: "power")
@@ -91,7 +91,7 @@ struct CloudeApp: App {
         }
         .onReceive(connection.events, perform: handleConnectionEvent)
         .sheet(isPresented: $showSettings) {
-            SettingsView(connection: connection, environmentStore: environmentStore, onShowMemories: { openMemories() }, onShowPlans: { openPlans() })
+            SettingsView(connection: connection, environmentStore: environmentStore)
         }
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories, fromCache: memoriesFromCache)
@@ -148,7 +148,7 @@ struct CloudeApp: App {
                 if wasBackgrounded && !connection.isAnyRunning {
                     connection.clearAllRunningStates()
                 }
-                connection.reconnectIfNeeded()
+                connection.reconnectAll()
                 if wasBackgrounded && !connection.isAnyRunning, let sessionId = lastActiveSessionId {
                     connection.requestMissedResponse(sessionId: sessionId)
                 }
@@ -193,8 +193,9 @@ struct CloudeApp: App {
                     wasInterrupted: true
                 )
                 conversationStore.addMessage(message, to: conv)
-                if let sessionId = output.newSessionId {
-                    connection.interruptedSession = (convId, sessionId, message.id)
+                if let sessionId = output.newSessionId,
+                   let envConn = connection.connectionForConversation(convId) {
+                    envConn.interruptedSession = (convId, sessionId, message.id)
                 }
                 output.reset()
             }
@@ -422,7 +423,8 @@ struct CloudeApp: App {
             plansFromCache = false
             isLoadingPlans = true
         }
-        if connection.isAuthenticated, let wd = conversationStore.currentConversation?.workingDirectory ?? connection.defaultWorkingDirectory {
+        let activeEnvConn = connection.connection(for: environmentStore.activeEnvironmentId)
+        if let wd = conversationStore.currentConversation?.workingDirectory ?? activeEnvConn?.defaultWorkingDirectory {
             connection.getPlans(workingDirectory: wd)
         }
         showPlans = true
@@ -431,10 +433,14 @@ struct CloudeApp: App {
     private func loadAndConnect() {
         NotificationManager.requestPermission()
 
-        if let env = environmentStore.activeEnvironment, !env.host.isEmpty, !env.token.isEmpty {
-            connection.connect(host: env.host, port: env.port, token: env.token)
-        } else {
+        if environmentStore.environments.allSatisfy({ $0.host.isEmpty || $0.token.isEmpty }) {
             showSettings = true
+        }
+    }
+
+    private func connectAllConfiguredEnvironments() {
+        for env in environmentStore.environments where !env.host.isEmpty && !env.token.isEmpty {
+            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token)
         }
     }
 
