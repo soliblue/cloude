@@ -4,14 +4,16 @@ import CloudeShared
 struct FileBrowserView: View {
     @ObservedObject var connection: ConnectionManager
     var rootPath: String?
+    var environmentId: UUID?
     @State var currentPath: String = "~"
     @State var entries: [FileEntry] = []
     @State var selectedFile: FileEntry?
     @State var isLoading = false
 
-    init(connection: ConnectionManager, rootPath: String? = nil) {
+    init(connection: ConnectionManager, rootPath: String? = nil, environmentId: UUID? = nil) {
         self.connection = connection
         self.rootPath = rootPath
+        self.environmentId = environmentId
         _currentPath = State(initialValue: rootPath ?? "~")
     }
 
@@ -22,7 +24,7 @@ struct FileBrowserView: View {
             fileList
         }
         .sheet(item: $selectedFile) { file in
-            FilePreviewView(file: file, connection: connection) { folderPath in
+            FilePreviewView(file: file, connection: connection, environmentId: environmentId) { folderPath in
                 navigateTo(folderPath)
             }
         }
@@ -68,6 +70,6 @@ struct FileBrowserView: View {
     private func loadDirectory() {
         isLoading = true
         entries = []
-        connection.listDirectory(path: currentPath)
+        connection.listDirectory(path: currentPath, environmentId: environmentId)
     }
 }

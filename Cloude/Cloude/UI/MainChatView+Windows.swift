@@ -32,12 +32,14 @@ extension MainChatView {
             case .files:
                 FileBrowserView(
                     connection: connection,
-                    rootPath: conversation?.workingDirectory
+                    rootPath: conversation?.workingDirectory,
+                    environmentId: conversation?.environmentId
                 )
             case .gitChanges:
                 GitChangesView(
                     connection: connection,
-                    rootPath: conversation?.workingDirectory
+                    rootPath: conversation?.workingDirectory,
+                    environmentId: conversation?.environmentId
                 )
             case .terminal:
                 TerminalView(

@@ -5,6 +5,7 @@ struct GitDiffView: View {
     @ObservedObject var connection: ConnectionManager
     let repoPath: String
     let file: GitFileStatus
+    var environmentId: UUID?
 
     @Environment(\.dismiss) private var dismiss
     @State private var diff: String?
@@ -97,6 +98,6 @@ struct GitDiffView: View {
     private func loadDiff() {
         isLoading = true
         diff = nil
-        connection.gitDiff(path: repoPath, file: file.path)
+        connection.gitDiff(path: repoPath, file: file.path, environmentId: environmentId)
     }
 }
