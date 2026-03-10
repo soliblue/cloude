@@ -61,7 +61,7 @@ struct TerminalView: View {
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .background(Color(hex: 0x1A1B26))
+                .background(Color.oceanBackground)
                 .onChange(of: commandBlocks.count) {
                     if let last = commandBlocks.last {
                         withAnimation(.easeOut(duration: 0.15)) {
@@ -120,14 +120,14 @@ struct TerminalView: View {
 
                     Text("$ \(b.command)")
                         .font(.system(size: 13, weight: .medium, design: .monospaced))
-                        .foregroundColor(Color(hex: 0x7AA2F7))
+                        .foregroundColor(.accentColor)
 
                     Spacer()
 
                     if b.isDone && !b.outputSegments.isEmpty {
                         Image(systemName: b.isCollapsed ? "chevron.right" : "chevron.down")
                             .font(.system(size: 10))
-                            .foregroundColor(Color(hex: 0x565F89))
+                            .foregroundColor(.secondary)
                     }
                 }
             }
@@ -149,11 +149,11 @@ struct TerminalView: View {
 
             Image(systemName: "terminal")
                 .font(.system(size: 40))
-                .foregroundColor(Color(hex: 0x565F89))
+                .foregroundColor(.secondary.opacity(0.4))
 
             Text(workingDirectory)
                 .font(.system(size: 13, design: .monospaced))
-                .foregroundColor(Color(hex: 0x565F89))
+                .foregroundColor(.secondary)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -168,10 +168,10 @@ struct TerminalView: View {
                                 Text(cmd)
                                     .font(.system(size: 12, design: .monospaced))
                             }
-                            .foregroundColor(Color(hex: 0xA9B1D6))
+                            .foregroundColor(.secondary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color(hex: 0x24283B))
+                            .background(Color.oceanSecondary)
                             .cornerRadius(8)
                         }
                         .buttonStyle(.plain)
@@ -194,11 +194,11 @@ struct TerminalView: View {
                     } label: {
                         Text(cmd)
                             .font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(Color(hex: 0xA9B1D6))
+                            .foregroundColor(.secondary)
                             .lineLimit(1)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color(hex: 0x24283B))
+                            .background(Color.oceanSecondary)
                             .cornerRadius(6)
                     }
                     .buttonStyle(.plain)
@@ -207,18 +207,17 @@ struct TerminalView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
         }
-        .background(Color(hex: 0x1A1B26))
+        .background(Color.oceanBackground)
     }
 
     private var inputBar: some View {
         HStack(spacing: 8) {
             Text("$")
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(Color(hex: 0x7AA2F7))
+                .foregroundColor(.accentColor)
 
             TextField("command", text: $commandText)
                 .font(.system(size: 14, design: .monospaced))
-                .foregroundColor(Color(hex: 0xA9B1D6))
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .focused($isFocused)
@@ -228,12 +227,11 @@ struct TerminalView: View {
             if isExecuting {
                 ProgressView()
                     .scaleEffect(0.7)
-                    .tint(Color(hex: 0x7AA2F7))
             } else if !commandBlocks.isEmpty {
                 Button(action: clearTerminal) {
                     Image(systemName: "trash")
                         .font(.system(size: 13))
-                        .foregroundColor(Color(hex: 0x565F89))
+                        .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -241,13 +239,13 @@ struct TerminalView: View {
             Button(action: executeCommand) {
                 Image(systemName: "return")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(commandText.isEmpty ? Color(hex: 0x565F89) : Color(hex: 0x7AA2F7))
+                    .foregroundColor(commandText.isEmpty ? .secondary : .accentColor)
             }
             .disabled(commandText.isEmpty)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Color(hex: 0x1A1B26))
+        .background(Color.oceanSecondary)
     }
 
     private func executeCommand() {
@@ -268,7 +266,7 @@ struct TerminalView: View {
     }
 
     private func parseANSI(_ text: String, isError: Bool) -> [ANSISegment] {
-        let defaultColor: Color = isError ? Color(hex: 0xF7768E) : Color(hex: 0xA9B1D6)
+        let defaultColor: Color = isError ? .red : .primary
         var segments: [ANSISegment] = []
         var currentColor = defaultColor
         var currentBold = false
@@ -296,22 +294,15 @@ struct TerminalView: View {
                     switch Int(part) {
                     case 0: currentColor = defaultColor; currentBold = false
                     case 1: currentBold = true
-                    case 30: currentColor = Color(hex: 0x414868)
-                    case 31: currentColor = Color(hex: 0xF7768E)
-                    case 32: currentColor = Color(hex: 0x9ECE6A)
-                    case 33: currentColor = Color(hex: 0xE0AF68)
-                    case 34: currentColor = Color(hex: 0x7AA2F7)
-                    case 35: currentColor = Color(hex: 0xBB9AF7)
-                    case 36: currentColor = Color(hex: 0x7DCFFF)
-                    case 37: currentColor = Color(hex: 0xC0CAF5)
-                    case 90: currentColor = Color(hex: 0x565F89)
-                    case 91: currentColor = Color(hex: 0xF7768E)
-                    case 92: currentColor = Color(hex: 0x9ECE6A)
-                    case 93: currentColor = Color(hex: 0xE0AF68)
-                    case 94: currentColor = Color(hex: 0x7AA2F7)
-                    case 95: currentColor = Color(hex: 0xBB9AF7)
-                    case 96: currentColor = Color(hex: 0x7DCFFF)
-                    case 97: currentColor = Color(hex: 0xC0CAF5)
+                    case 30: currentColor = .secondary
+                    case 31, 91: currentColor = .red
+                    case 32, 92: currentColor = .green
+                    case 33, 93: currentColor = .yellow
+                    case 34, 94: currentColor = .accentColor
+                    case 35, 95: currentColor = .purple
+                    case 36, 96: currentColor = .cyan
+                    case 37, 97: currentColor = .primary
+                    case 90: currentColor = .secondary
                     default: break
                     }
                 }
