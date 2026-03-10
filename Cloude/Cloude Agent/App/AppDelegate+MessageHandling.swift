@@ -169,6 +169,9 @@ extension AppDelegate {
             Log.info("Delete scheduled task \(taskId.prefix(8))")
             SchedulerService.shared.deleteTask(taskId: taskId)
             server.broadcast(.scheduledTaskDeleted(taskId: taskId))
+
+        case .terminalExec(let command, let workingDirectory):
+            handleTerminalExec(command, workingDirectory: workingDirectory, connection: connection)
         }
     }
 }

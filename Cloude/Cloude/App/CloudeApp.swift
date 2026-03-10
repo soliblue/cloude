@@ -30,6 +30,7 @@ struct CloudeApp: App {
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
     @State private var filePathToPreview: String? = nil
+    @State private var filePreviewEnvironmentId: UUID? = nil
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.oceanDark.rawValue
     private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
@@ -103,7 +104,9 @@ struct CloudeApp: App {
                 fromCache: plansFromCache,
                 onOpenFile: { path in
                     showPlans = false
+                    let envId = conversationStore.currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        filePreviewEnvironmentId = envId
                         filePathToPreview = path
                     }
                 }
@@ -120,13 +123,14 @@ struct CloudeApp: App {
             )
         }
         .sheet(item: $filePathToPreview) { path in
-            FilePreviewView(path: path, connection: connection)
+            FilePreviewView(path: path, connection: connection, environmentId: filePreviewEnvironmentId)
         }
         .onOpenURL { url in
             guard url.scheme == "cloude" else { return }
             switch url.host {
             case "file":
                 let path = url.path.removingPercentEncoding ?? url.path
+                filePreviewEnvironmentId = conversationStore.currentConversation?.environmentId
                 filePathToPreview = path
             case "memory":
                 openMemories()

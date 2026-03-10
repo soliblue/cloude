@@ -6,6 +6,7 @@ import HighlightSwift
 struct FilePreviewView: View {
     let path: String
     @ObservedObject var connection: ConnectionManager
+    var environmentId: UUID?
     var onBrowseFolder: ((String) -> Void)?
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
@@ -31,17 +32,19 @@ struct FilePreviewView: View {
     @AppStorage("wrapCodeLines") var wrapCodeLines = true
     @State var chunkProgress: (current: Int, total: Int)?
 
-    init(file: FileEntry, connection: ConnectionManager, onBrowseFolder: ((String) -> Void)? = nil) {
+    init(file: FileEntry, connection: ConnectionManager, environmentId: UUID? = nil, onBrowseFolder: ((String) -> Void)? = nil) {
         self.path = file.path
         self.fileEntry = file
         self.connection = connection
+        self.environmentId = environmentId
         self.onBrowseFolder = onBrowseFolder
     }
 
-    init(path: String, connection: ConnectionManager) {
+    init(path: String, connection: ConnectionManager, environmentId: UUID? = nil) {
         self.path = path
         self.fileEntry = nil
         self.connection = connection
+        self.environmentId = environmentId
     }
 
     var fileName: String { path.lastPathComponent }
@@ -131,6 +134,6 @@ struct FilePreviewView: View {
         isDiffLoading = true
         diffText = nil
         showDiff = true
-        connection.gitDiff(path: path.deletingLastPathComponent, file: path)
+        connection.gitDiff(path: path.deletingLastPathComponent, file: path, environmentId: environmentId)
     }
 }
