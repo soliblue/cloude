@@ -220,11 +220,12 @@ extension ServerMessage {
         case .usageStats(let stats):
             try container.encode("usage_stats", forKey: .type)
             try container.encode(stats, forKey: .stats)
-        case .terminalOutput(let output, let exitCode, let isError):
+        case .terminalOutput(let output, let exitCode, let isError, let terminalId):
             try container.encode("terminal_output", forKey: .type)
             try container.encode(output, forKey: .output)
             try container.encodeIfPresent(exitCode, forKey: .exitCode)
             try container.encode(isError, forKey: .isError)
+            try container.encodeIfPresent(terminalId, forKey: .terminalId)
         }
     }
 }

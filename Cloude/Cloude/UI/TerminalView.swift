@@ -1,34 +1,20 @@
 import SwiftUI
+import Combine
+import SwiftTerm
 import CloudeShared
 
 struct TerminalView: View {
     @ObservedObject var connection: ConnectionManager
     var rootPath: String?
+    var environmentId: UUID?
+    var terminalId: String?
 
+    @StateObject private var bridge = TerminalBridge()
     @State private var commandText = ""
-    @State private var commandBlocks: [CommandBlock] = []
     @State private var isExecuting = false
+    @State private var hasContent = false
     @State private var commandHistory: [String] = []
-    @State private var historyIndex = -1
     @FocusState private var isFocused: Bool
-
-    struct CommandBlock: Identifiable {
-        let id = UUID()
-        let command: String
-        var outputSegments: [ANSISegment] = []
-        var exitCode: Int?
-        var isCollapsed = false
-
-        var isSuccess: Bool { exitCode == 0 }
-        var isDone: Bool { exitCode != nil }
-    }
-
-    struct ANSISegment: Identifiable {
-        let id = UUID()
-        let text: String
-        let color: Color
-        let isBold: Bool
-    }
 
     private let quickCommands = [
         ("ls --color", "folder"),
@@ -46,28 +32,12 @@ struct TerminalView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        if commandBlocks.isEmpty {
-                            emptyState
-                        }
+            ZStack {
+                SwiftTermWrapper(bridge: bridge)
+                    .opacity(hasContent ? 1 : 0)
 
-                        ForEach($commandBlocks) { $block in
-                            commandBlockView($block)
-                                .id(block.id)
-                        }
-                    }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .background(Color.oceanBackground)
-                .onChange(of: commandBlocks.count) {
-                    if let last = commandBlocks.last {
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            proxy.scrollTo(last.id, anchor: .bottom)
-                        }
-                    }
+                if !hasContent {
+                    emptyState
                 }
             }
 
@@ -77,68 +47,31 @@ struct TerminalView: View {
                 historyStrip
             }
 
+            if isExecuting {
+                keyStrip
+            }
+
             inputBar
         }
+        .onAppear {
+            bridge.onSendBack = { [weak connection] text in
+                connection?.terminalInput(text: text, terminalId: terminalId, environmentId: environmentId)
+            }
+        }
         .onReceive(connection.events) { event in
-            if case let .terminalOutput(output, exitCode, isError) = event {
-                guard !commandBlocks.isEmpty else { return }
-                let idx = commandBlocks.count - 1
+            if case let .terminalOutput(output, exitCode, _, tid) = event {
+                if tid != nil && tid != terminalId { return }
 
                 if !output.isEmpty {
-                    let segments = parseANSI(output, isError: isError)
-                    commandBlocks[idx].outputSegments.append(contentsOf: segments)
+                    hasContent = true
+                    bridge.feed(output)
                 }
 
                 if let code = exitCode {
-                    commandBlocks[idx].exitCode = code
                     isExecuting = false
+                    let color = code == 0 ? "32" : "31"
+                    bridge.feed("\r\n\u{1B}[\(color)m[exit \(code)]\u{1B}[0m\r\n")
                 }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func commandBlockView(_ block: Binding<CommandBlock>) -> some View {
-        let b = block.wrappedValue
-
-        VStack(alignment: .leading, spacing: 0) {
-            Button {
-                if b.isDone {
-                    block.wrappedValue.isCollapsed.toggle()
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    if b.isDone {
-                        Image(systemName: b.isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(b.isSuccess ? .green : .red)
-                    } else {
-                        ProgressView()
-                            .scaleEffect(0.5)
-                            .frame(width: 11, height: 11)
-                    }
-
-                    Text("$ \(b.command)")
-                        .font(.system(size: 13, weight: .medium, design: .monospaced))
-                        .foregroundColor(.accentColor)
-
-                    Spacer()
-
-                    if b.isDone && !b.outputSegments.isEmpty {
-                        Image(systemName: b.isCollapsed ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 10))
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 10)
-            .padding(.bottom, 4)
-
-            if !b.isCollapsed && !b.outputSegments.isEmpty {
-                FlowTextView(segments: b.outputSegments)
-                    .padding(.leading, 17)
-                    .padding(.bottom, 4)
             }
         }
     }
@@ -183,6 +116,7 @@ struct TerminalView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
+        .background(Color.oceanBackground)
     }
 
     private var historyStrip: some View {
@@ -210,41 +144,99 @@ struct TerminalView: View {
         .background(Color.oceanBackground)
     }
 
-    private var inputBar: some View {
-        HStack(spacing: 8) {
-            Text("$")
-                .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(.accentColor)
+    private let terminalKeys: [(String, String)] = [
+        ("esc", "\u{1B}"),
+        ("ctrl", ""),
+        ("tab", "\t"),
+        ("↑", "\u{1B}[A"),
+        ("↓", "\u{1B}[B"),
+        ("→", "\u{1B}[C"),
+        ("←", "\u{1B}[D"),
+        ("|", "|"),
+        ("~", "~"),
+        ("/", "/"),
+        ("-", "-"),
+    ]
 
-            TextField("command", text: $commandText)
-                .font(.system(size: 14, design: .monospaced))
+    @State private var ctrlActive = false
+
+    private var keyStrip: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(terminalKeys, id: \.0) { label, sequence in
+                    Button {
+                        if label == "ctrl" {
+                            ctrlActive.toggle()
+                        } else if ctrlActive && sequence.isEmpty == false {
+                            ctrlActive = false
+                            sendKeySequence(sequence)
+                        } else {
+                            sendKeySequence(sequence)
+                        }
+                    } label: {
+                        Text(label)
+                            .font(.system(size: 12, weight: label == "ctrl" && ctrlActive ? .bold : .medium, design: .monospaced))
+                            .foregroundColor(label == "ctrl" && ctrlActive ? .accentColor : .secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(label == "ctrl" && ctrlActive ? Color.accentColor.opacity(0.2) : Color.oceanSecondary)
+                            .cornerRadius(6)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+        }
+        .background(Color.oceanBackground)
+    }
+
+    private func sendKeySequence(_ sequence: String) {
+        if ctrlActive && sequence.count == 1, let ascii = sequence.first?.asciiValue {
+            ctrlActive = false
+            let ctrlChar = String(UnicodeScalar(ascii & 0x1F))
+            connection.terminalInput(text: ctrlChar, terminalId: terminalId, environmentId: environmentId)
+        } else {
+            connection.terminalInput(text: sequence, terminalId: terminalId, environmentId: environmentId)
+        }
+    }
+
+    private var canSend: Bool {
+        !commandText.isEmpty || isExecuting
+    }
+
+    private var inputBar: some View {
+        HStack(spacing: 0) {
+            Text(isExecuting ? ">" : "$")
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .foregroundColor(isExecuting ? .green : .accentColor)
+                .padding(.leading, 12)
+
+            TextField(isExecuting ? "stdin" : "command", text: $commandText)
+                .font(.system(size: 12, design: .monospaced))
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .focused($isFocused)
-                .onSubmit { executeCommand() }
-                .disabled(isExecuting)
+                .onSubmit { isExecuting ? sendInput() : executeCommand() }
+                .padding(.horizontal, 8)
 
             if isExecuting {
                 ProgressView()
                     .scaleEffect(0.7)
-            } else if !commandBlocks.isEmpty {
-                Button(action: clearTerminal) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
+                    .padding(.trailing, 4)
             }
 
-            Button(action: executeCommand) {
-                Image(systemName: "return")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(commandText.isEmpty ? .secondary : .accentColor)
+            Button(action: { isExecuting ? sendInput() : executeCommand() }) {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(canSend ? .white : .secondary.opacity(0.5))
+                    .frame(width: 56)
+                    .frame(maxHeight: .infinity)
+                    .background(canSend ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
             }
-            .disabled(commandText.isEmpty)
+            .disabled(!canSend)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .frame(height: 44)
         .background(Color.oceanSecondary)
     }
 
@@ -252,105 +244,94 @@ struct TerminalView: View {
         let cmd = commandText.trimmingCharacters(in: .whitespaces)
         guard !cmd.isEmpty else { return }
 
-        commandBlocks.append(CommandBlock(command: cmd))
+        hasContent = true
+        bridge.feed("\u{1B}[36m$ \(cmd)\u{1B}[0m\r\n")
+        if commandHistory.count >= 100 { commandHistory.removeFirst() }
         commandHistory.append(cmd)
-        historyIndex = -1
         commandText = ""
         isExecuting = true
 
-        connection.terminalExec(command: cmd, workingDirectory: workingDirectory)
+        connection.terminalExec(command: cmd, workingDirectory: workingDirectory, terminalId: terminalId, environmentId: environmentId)
     }
 
-    private func clearTerminal() {
-        commandBlocks.removeAll()
+    private func sendInput() {
+        connection.terminalInput(text: commandText + "\n", terminalId: terminalId, environmentId: environmentId)
+        commandText = ""
     }
 
-    private func parseANSI(_ text: String, isError: Bool) -> [ANSISegment] {
-        let defaultColor: Color = isError ? .red : .primary
-        var segments: [ANSISegment] = []
-        var currentColor = defaultColor
-        var currentBold = false
-        var buffer = ""
-
-        let chars = Array(text)
-        var i = 0
-
-        while i < chars.count {
-            if chars[i] == "\u{1B}" && i + 1 < chars.count && chars[i + 1] == "[" {
-                if !buffer.isEmpty {
-                    segments.append(ANSISegment(text: buffer, color: currentColor, isBold: currentBold))
-                    buffer = ""
-                }
-
-                i += 2
-                var code = ""
-                while i < chars.count && chars[i] != "m" {
-                    code.append(chars[i])
-                    i += 1
-                }
-                i += 1
-
-                for part in code.split(separator: ";") {
-                    switch Int(part) {
-                    case 0: currentColor = defaultColor; currentBold = false
-                    case 1: currentBold = true
-                    case 30: currentColor = .secondary
-                    case 31, 91: currentColor = .red
-                    case 32, 92: currentColor = .green
-                    case 33, 93: currentColor = .yellow
-                    case 34, 94: currentColor = .accentColor
-                    case 35, 95: currentColor = .purple
-                    case 36, 96: currentColor = .cyan
-                    case 37, 97: currentColor = .primary
-                    case 90: currentColor = .secondary
-                    default: break
-                    }
-                }
-            } else {
-                buffer.append(chars[i])
-                i += 1
-            }
-        }
-
-        if !buffer.isEmpty {
-            segments.append(ANSISegment(text: buffer, color: currentColor, isBold: currentBold))
-        }
-
-        return segments
-    }
 }
 
-struct FlowTextView: View {
-    let segments: [TerminalView.ANSISegment]
+class TerminalBridge: ObservableObject {
+    var termView: SwiftTerm.TerminalView?
 
-    var body: some View {
-        let lines = buildLines()
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(lines.enumerated()), id: \.offset) { _, lineSegments in
-                HStack(spacing: 0) {
-                    ForEach(lineSegments) { segment in
-                        Text(segment.text)
-                            .font(.system(size: 13, weight: segment.isBold ? .bold : .regular, design: .monospaced))
-                            .foregroundColor(segment.color)
-                    }
-                }
-                .textSelection(.enabled)
-            }
+    var onSendBack: ((String) -> Void)?
+
+    func feed(_ text: String) {
+        DispatchQueue.main.async {
+            self.termView?.feed(text: text)
         }
     }
 
-    private func buildLines() -> [[TerminalView.ANSISegment]] {
-        var lines: [[TerminalView.ANSISegment]] = [[]]
-        for segment in segments {
-            let parts = segment.text.split(separator: "\n", omittingEmptySubsequences: false)
-            for (i, part) in parts.enumerated() {
-                if i > 0 { lines.append([]) }
-                let text = String(part)
-                if !text.isEmpty {
-                    lines[lines.count - 1].append(TerminalView.ANSISegment(text: text, color: segment.color, isBold: segment.isBold))
-                }
+}
+
+class NoKeyboardTerminalView: SwiftTerm.TerminalView {}
+
+struct SwiftTermWrapper: UIViewRepresentable {
+    let bridge: TerminalBridge
+
+    func makeUIView(context: Context) -> NoKeyboardTerminalView {
+        let tv = NoKeyboardTerminalView(frame: .zero)
+        tv.terminalDelegate = context.coordinator
+        tv.nativeBackgroundColor = UIColor(Color.oceanBackground)
+        tv.nativeForegroundColor = .white
+        tv.font = UIFont.monospacedSystemFont(ofSize: 10, weight: .regular)
+        tv.isUserInteractionEnabled = true
+        tv.isScrollEnabled = true
+        tv.inputView = UIView(frame: .zero)
+        tv.inputAccessoryView = nil
+        bridge.termView = tv
+        return tv
+    }
+
+    func updateUIView(_ uiView: NoKeyboardTerminalView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(bridge: bridge) }
+
+    class Coordinator: NSObject, SwiftTerm.TerminalViewDelegate {
+        let bridge: TerminalBridge
+
+        init(bridge: TerminalBridge) {
+            self.bridge = bridge
+        }
+
+        func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {}
+        func setTerminalTitle(source: SwiftTerm.TerminalView, title: String) {}
+        func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
+
+        func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {
+            let text = String(bytes: data, encoding: .utf8) ?? ""
+            if !text.isEmpty {
+                bridge.onSendBack?(text)
             }
         }
-        return lines
+
+        func scrolled(source: SwiftTerm.TerminalView, position: Double) {}
+
+        func requestOpenLink(source: SwiftTerm.TerminalView, link: String, params: [String : String]) {
+            if let url = URL(string: link) {
+                UIApplication.shared.open(url)
+            }
+        }
+
+        func bell(source: SwiftTerm.TerminalView) {}
+
+        func clipboardCopy(source: SwiftTerm.TerminalView, content: Data) {
+            if let text = String(data: content, encoding: .utf8) {
+                UIPasteboard.general.string = text
+            }
+        }
+
+        func iTermContent(source: SwiftTerm.TerminalView, content: ArraySlice<UInt8>) {}
+        func rangeChanged(source: SwiftTerm.TerminalView, startY: Int, endY: Int) {}
     }
 }

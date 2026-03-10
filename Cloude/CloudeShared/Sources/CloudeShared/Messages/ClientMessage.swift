@@ -37,10 +37,11 @@ public enum ClientMessage: Codable {
     case getPlans(workingDirectory: String)
     case deletePlan(stage: String, filename: String, workingDirectory: String)
     case getUsageStats
-    case terminalExec(command: String, workingDirectory: String)
+    case terminalExec(command: String, workingDirectory: String, terminalId: String?)
+    case terminalInput(text: String, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, command
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId
     }
 
     public init(from decoder: Decoder) throws {
@@ -144,7 +145,12 @@ public enum ClientMessage: Codable {
         case "terminal_exec":
             let command = try container.decode(String.self, forKey: .command)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
-            self = .terminalExec(command: command, workingDirectory: workingDirectory)
+            let terminalId = try container.decodeIfPresent(String.self, forKey: .terminalId)
+            self = .terminalExec(command: command, workingDirectory: workingDirectory, terminalId: terminalId)
+        case "terminal_input":
+            let text = try container.decode(String.self, forKey: .text)
+            let terminalId = try container.decodeIfPresent(String.self, forKey: .terminalId)
+            self = .terminalInput(text: text, terminalId: terminalId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -243,10 +249,15 @@ public enum ClientMessage: Codable {
             try container.encode(workingDirectory, forKey: .workingDirectory)
         case .getUsageStats:
             try container.encode("get_usage_stats", forKey: .type)
-        case .terminalExec(let command, let workingDirectory):
+        case .terminalExec(let command, let workingDirectory, let terminalId):
             try container.encode("terminal_exec", forKey: .type)
             try container.encode(command, forKey: .command)
             try container.encode(workingDirectory, forKey: .workingDirectory)
+            try container.encodeIfPresent(terminalId, forKey: .terminalId)
+        case .terminalInput(let text, let terminalId):
+            try container.encode("terminal_input", forKey: .type)
+            try container.encode(text, forKey: .text)
+            try container.encodeIfPresent(terminalId, forKey: .terminalId)
         }
     }
 }

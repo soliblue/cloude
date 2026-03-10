@@ -41,7 +41,9 @@ extension MainChatView {
             case .terminal:
                 TerminalView(
                     connection: connection,
-                    rootPath: conversation?.workingDirectory
+                    rootPath: conversation?.workingDirectory,
+                    environmentId: conversation?.environmentId,
+                    terminalId: window.id.uuidString
                 )
             }
         }

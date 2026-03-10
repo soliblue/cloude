@@ -86,6 +86,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.handleMessage(message, from: connection)
         }
 
+        server.onDisconnect = { [weak self] connection in
+            self?.cleanupTerminal(for: connection)
+        }
+
         runnerManager.onOutput = { [weak self] text, conversationId in
             self?.server.broadcast(.output(text: text, conversationId: conversationId))
         }

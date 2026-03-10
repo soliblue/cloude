@@ -144,8 +144,11 @@ extension AppDelegate {
             let stats = UsageStatsService.readStats()
             server.sendMessage(.usageStats(stats: stats), to: connection)
 
-        case .terminalExec(let command, let workingDirectory):
-            handleTerminalExec(command, workingDirectory: workingDirectory, connection: connection)
+        case .terminalExec(let command, let workingDirectory, let terminalId):
+            handleTerminalExec(command, workingDirectory: workingDirectory, terminalId: terminalId, connection: connection)
+
+        case .terminalInput(let text, let terminalId):
+            handleTerminalInput(text, terminalId: terminalId, connection: connection)
         }
     }
 }

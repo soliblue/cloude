@@ -2,7 +2,14 @@
   "name": "cloude-linux-relay",
   "version": "1.0.0",
   "type": "module",
-  "bin": { "cloude-agent": "./index.js" },
-  "scripts": { "start": "node index.js" },
-  "dependencies": { "ws": "^8.18.0" }
+  "bin": {
+    "cloude-agent": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-pty": "^1.1.0",
+    "ws": "^8.18.0"
+  }
 }

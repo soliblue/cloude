@@ -18,6 +18,7 @@ class WebSocketServer: ObservableObject {
     private let authToken: String
 
     var onMessage: ((ClientMessage, NWConnection) -> Void)?
+    var onDisconnect: ((NWConnection) -> Void)?
 
     init(port: UInt16 = 8765, authToken: String) {
         self.port = port
@@ -131,6 +132,7 @@ class WebSocketServer: ObservableObject {
         connections.removeAll { $0 === connection }
         authenticatedConnections.remove(ObjectIdentifier(connection))
         connectedClients = connections.count
+        onDisconnect?(connection)
     }
 
     func isAuthenticated(_ connection: NWConnection) -> Bool {

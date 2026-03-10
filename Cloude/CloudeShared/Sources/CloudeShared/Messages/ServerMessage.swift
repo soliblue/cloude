@@ -54,10 +54,10 @@ public enum ServerMessage: Codable {
     case plans(stages: [String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
     case usageStats(stats: UsageStats)
-    case terminalOutput(output: String, exitCode: Int?, isError: Bool)
+    case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, plan, stats, exitCode, isError, command
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, plan, stats, exitCode, isError, command, terminalId
     }
 
     public init(from decoder: Decoder) throws {
@@ -285,7 +285,8 @@ public enum ServerMessage: Codable {
             let output = try container.decode(String.self, forKey: .output)
             let exitCode = try container.decodeIfPresent(Int.self, forKey: .exitCode)
             let isError = try container.decodeIfPresent(Bool.self, forKey: .isError) ?? false
-            self = .terminalOutput(output: output, exitCode: exitCode, isError: isError)
+            let terminalId = try container.decodeIfPresent(String.self, forKey: .terminalId)
+            self = .terminalOutput(output: output, exitCode: exitCode, isError: isError, terminalId: terminalId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

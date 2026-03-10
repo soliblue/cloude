@@ -14,6 +14,7 @@ export class ClaudeCodeRunner {
     this.accumulatedOutput = ''
     this.sessionId = null
     this.pendingRunStats = null
+    this.superseded = false
   }
 
   run({ prompt, workingDirectory, sessionId, isNewSession, imagesBase64, filesBase64, forkSession, model, effort }) {
@@ -71,12 +72,14 @@ export class ClaudeCodeRunner {
 
     this.process.on('close', (code) => {
       if (this.lineBuffer.trim()) this.processLine(this.lineBuffer)
-      if (this.pendingRunStats) {
-        this.onEvent({ ...this.pendingRunStats, conversationId: this.conversationId })
-        this.pendingRunStats = null
+      if (!this.superseded) {
+        if (this.pendingRunStats) {
+          this.onEvent({ ...this.pendingRunStats, conversationId: this.conversationId })
+          this.pendingRunStats = null
+        }
+        this.onEvent({ type: 'status', state: 'idle', conversationId: this.conversationId })
       }
-      this.onEvent({ type: 'status', state: 'idle', conversationId: this.conversationId })
-      log(`Claude exited with code ${code} (conv=${this.conversationId.slice(0, 8)})`)
+      log(`Claude exited with code ${code}${this.superseded ? ' (superseded)' : ''} (conv=${this.conversationId.slice(0, 8)})`)
     })
   }
 
@@ -189,12 +192,20 @@ export class ClaudeCodeRunner {
     }
   }
 
-  abort() {
-    if (!this.process) return
-    this.process.kill('SIGINT')
-    setTimeout(() => {
-      if (this.process && !this.process.killed) this.process.kill('SIGTERM')
-    }, 2000)
+  abort({ supersede = false } = {}) {
+    if (!this.process) return Promise.resolve()
+    if (supersede) this.superseded = true
+    return new Promise((resolve) => {
+      this.process.on('close', resolve)
+      this.process.kill('SIGINT')
+      setTimeout(() => {
+        if (this.process && this.process.exitCode === null) this.process.kill('SIGTERM')
+      }, 2000)
+      setTimeout(() => {
+        if (this.process && this.process.exitCode === null) this.process.kill('SIGKILL')
+        resolve()
+      }, 5000)
+    })
   }
 }
 
@@ -206,11 +217,11 @@ export class RunnerManager {
 
   setBroadcast(fn) { this.broadcast = fn }
 
-  run(opts) {
+  async run(opts) {
     const convId = opts.conversationId || crypto.randomUUID()
     const existing = this.runners.get(convId)
-    if (existing && existing.runner.process && !existing.runner.process.killed) {
-      existing.runner.abort()
+    if (existing && existing.runner.process && existing.runner.process.exitCode === null) {
+      await existing.runner.abort({ supersede: true })
     }
 
     const runner = new ClaudeCodeRunner(convId, (event) => {
@@ -227,10 +238,10 @@ export class RunnerManager {
     })
   }
 
-  abort(conversationId) {
+  async abort(conversationId) {
     const entry = this.runners.get(conversationId)
-    if (entry && entry.runner.process) {
-      entry.runner.abort()
+    if (entry && entry.runner.process && entry.runner.process.exitCode === null) {
+      await entry.runner.abort()
     } else if (this.broadcast) {
       this.broadcast({ type: 'status', state: 'idle', conversationId })
     }
