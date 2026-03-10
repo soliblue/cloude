@@ -105,7 +105,7 @@ struct MainChatView: View {
             }
 
             VStack(spacing: 0) {
-                if !widgetEditing {
+                if !widgetEditing && windowManager.activeWindow?.type != .terminal {
                     GlobalInputBar(
                         inputText: $inputText,
                         attachedImages: $attachedImages,
