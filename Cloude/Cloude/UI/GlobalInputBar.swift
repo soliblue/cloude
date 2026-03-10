@@ -314,7 +314,6 @@ struct GlobalInputBar: View {
             .opacity(1 - Double(min(horizontalSwipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.5)
 
             actionButton
-                .frame(maxHeight: .infinity)
         }
         .fixedSize(horizontal: false, vertical: true)
     }

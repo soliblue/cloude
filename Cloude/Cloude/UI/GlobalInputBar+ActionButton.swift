@@ -66,8 +66,9 @@ extension GlobalInputBar {
             } label: {
                 actionButtonLabel
             } primaryAction: {
-                onSend()
+                if canSend { onSend() }
             }
+            .disabled(environmentMismatch)
         }
     }
 
