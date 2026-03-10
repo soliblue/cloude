@@ -51,10 +51,6 @@ export function handleCloudeCommand(command, conversationId, broadcast, workingD
       broadcast({ type: 'haptic', style: args || 'medium' })
       break
 
-    case 'speak':
-      if (args) broadcast({ type: 'speak', text: args })
-      break
-
     case 'switch':
       if (args) broadcast({ type: 'switch_conversation', conversationId: args })
       break
@@ -68,10 +64,6 @@ export function handleCloudeCommand(command, conversationId, broadcast, workingD
 
     case 'screenshot':
       broadcast({ type: 'screenshot', conversationId })
-      break
-
-    case 'schedule':
-      if (args) handleScheduleCommand(args, conversationId, broadcast)
       break
 
     default:
@@ -155,8 +147,4 @@ function parseSimpleQuestion(args) {
     return { id: crypto.randomUUID(), label: opt.trim(), description: null }
   })
   return [{ id: crypto.randomUUID(), text: questionText, options, multiSelect: multi }]
-}
-
-function handleScheduleCommand(args, conversationId, broadcast) {
-  log(`Schedule command not yet implemented on Linux agent: ${args}`)
 }

@@ -135,10 +135,6 @@ export function handleMessage(msg, ws, ctx) {
       break
 
     case 'request_missed_response':
-    case 'request_suggestions':
-    case 'get_scheduled_tasks':
-    case 'toggle_scheduled_task':
-    case 'delete_scheduled_task':
       break
 
     case 'transcribe':

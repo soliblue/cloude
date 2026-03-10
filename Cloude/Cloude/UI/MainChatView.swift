@@ -21,8 +21,6 @@ struct MainChatView: View {
     @State var pendingGitChecks: [String] = []
     @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
-    @State var suggestions: [String] = []
-    @AppStorage("enableSuggestions") var enableSuggestions = false
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?
     @State var showConversationSearch = false
@@ -110,7 +108,6 @@ struct MainChatView: View {
                         inputText: $inputText,
                         attachedImages: $attachedImages,
                         attachedFiles: $attachedFiles,
-                        suggestions: $suggestions,
                         isConnected: activeEnvConnection?.isAuthenticated ?? false,
                         isWhisperReady: activeEnvConnection?.isWhisperReady ?? false,
                         isTranscribing: activeEnvConnection?.isTranscribing ?? false,
@@ -160,7 +157,6 @@ struct MainChatView: View {
                 drafts[oldId] = (inputText, attachedImages, currentEffort, currentModel)
                 cleanupEmptyConversation(for: oldId)
             }
-            suggestions = []
             if let newId = newId, let draft = drafts[newId] {
                 inputText = draft.text
                 attachedImages = draft.images
@@ -276,12 +272,6 @@ struct MainChatView: View {
                 if windowIndex < windowManager.windows.count {
                     windowManager.markRead(windowManager.windows[windowIndex].id)
                 }
-            }
-            suggestions = []
-        }
-        .onChange(of: connection.agentState) { oldState, newState in
-            if oldState != .idle && newState == .idle && !isHeartbeatActive && enableSuggestions {
-                requestSuggestions()
             }
         }
         .modifier(HeartbeatIntervalModifier(

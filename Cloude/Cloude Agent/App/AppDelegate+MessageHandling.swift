@@ -54,9 +54,6 @@ extension AppDelegate {
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
 
-        case .synthesize:
-            break
-
         case .setHeartbeatInterval(let minutes):
             Log.info("setHeartbeatInterval: \(String(describing: minutes))")
             HeartbeatService.shared.setInterval(minutes)
@@ -125,13 +122,6 @@ extension AppDelegate {
             Log.info("Found \(sessions.count) sessions")
             server.sendMessage(.remoteSessionList(sessions: sessions), to: connection)
 
-        case .requestSuggestions(let context, let workingDirectory, let conversationId):
-            Log.info("Suggestions request")
-            autocompleteService.suggest(context: context, workingDirectory: workingDirectory) { [weak self] suggestions in
-                Log.info("Suggestions result: \(suggestions)")
-                self?.server.sendMessage(.suggestionsResult(suggestions: suggestions, conversationId: conversationId), to: connection)
-            }
-
         case .suggestName(let text, let context, let conversationId):
             Log.info("Name suggestion request for \(conversationId.prefix(8))")
             autocompleteService.suggestName(text: text, context: context) { [weak self] name, symbol in
@@ -153,22 +143,6 @@ extension AppDelegate {
             Log.info("Received getUsageStats request")
             let stats = UsageStatsService.readStats()
             server.sendMessage(.usageStats(stats: stats), to: connection)
-
-        case .getScheduledTasks:
-            Log.info("Received getScheduledTasks request")
-            let tasks = SchedulerService.shared.getAllTasks()
-            server.sendMessage(.scheduledTasks(tasks: tasks), to: connection)
-
-        case .toggleScheduledTask(let taskId, let isActive):
-            Log.info("Toggle scheduled task \(taskId.prefix(8)) -> \(isActive)")
-            if let updated = SchedulerService.shared.toggleTask(taskId: taskId, isActive: isActive) {
-                server.broadcast(.scheduledTaskUpdated(task: updated))
-            }
-
-        case .deleteScheduledTask(let taskId):
-            Log.info("Delete scheduled task \(taskId.prefix(8))")
-            SchedulerService.shared.deleteTask(taskId: taskId)
-            server.broadcast(.scheduledTaskDeleted(taskId: taskId))
 
         case .terminalExec(let command, let workingDirectory):
             handleTerminalExec(command, workingDirectory: workingDirectory, connection: connection)

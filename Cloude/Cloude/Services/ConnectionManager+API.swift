@@ -44,9 +44,6 @@ extension ConnectionManager {
     }
 
     func getUsageStats(environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getUsageStats) }
-    func getScheduledTasks(environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getScheduledTasks) }
-    func toggleScheduledTask(taskId: String, isActive: Bool, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.toggleScheduledTask(taskId: taskId, isActive: isActive)) }
-    func deleteScheduledTask(taskId: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.deleteScheduledTask(taskId: taskId)) }
     func listDirectory(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.listDirectory(path: path)) }
     func getFile(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFile(path: path)) }
     func getFileFullQuality(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFileFullQuality(path: path)) }
@@ -75,10 +72,6 @@ extension ConnectionManager {
             conn.isTranscribing = true
             conn.send(.transcribe(audioBase64: audioBase64))
         }
-    }
-
-    func requestSuggestions(context: [String], workingDirectory: String?, conversationId: UUID?) {
-        connectionForSend(conversationId: conversationId)?.send(.requestSuggestions(context: context, workingDirectory: workingDirectory, conversationId: conversationId?.uuidString))
     }
 
     func requestNameSuggestion(text: String, context: [String], conversationId: UUID) {

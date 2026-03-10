@@ -21,8 +21,6 @@ public enum ServerMessage: Codable {
     case gitCommitResult(success: Bool, message: String?)
     case transcription(text: String)
     case whisperReady(ready: Bool)
-    case ttsAudio(audioBase64: String, messageId: String)
-    case kokoroReady(ready: Bool)
     case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories(sections: [MemorySection])
     case renameConversation(name: String, conversationId: String)
@@ -52,18 +50,14 @@ public enum ServerMessage: Codable {
     case teammateSpawned(teammate: TeammateInfo, conversationId: String?)
     case teammateUpdate(teammateId: String, status: TeammateStatus?, lastMessage: String?, lastMessageAt: Date?, conversationId: String?)
     case teamDeleted(conversationId: String?)
-    case suggestionsResult(suggestions: [String], conversationId: String?)
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
     case plans(stages: [String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
     case usageStats(stats: UsageStats)
-    case scheduledTasks(tasks: [ScheduledTask])
-    case scheduledTaskUpdated(task: ScheduledTask)
-    case scheduledTaskDeleted(taskId: String)
     case terminalOutput(output: String, exitCode: Int?, isError: Bool)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, suggestions, stages, stage, filename, plan, audioBase64, messageId, stats, tasks, task, taskId, isActive, exitCode, isError, command
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, plan, stats, exitCode, isError, command
     }
 
     public init(from decoder: Decoder) throws {
@@ -158,13 +152,6 @@ public enum ServerMessage: Codable {
         case "whisper_ready":
             let ready = try container.decode(Bool.self, forKey: .ready)
             self = .whisperReady(ready: ready)
-        case "tts_audio":
-            let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
-            let messageId = try container.decode(String.self, forKey: .messageId)
-            self = .ttsAudio(audioBase64: audioBase64, messageId: messageId)
-        case "kokoro_ready":
-            let ready = try container.decode(Bool.self, forKey: .ready)
-            self = .kokoroReady(ready: ready)
         case "heartbeat_config":
             let intervalMinutes = try container.decodeIfPresent(Int.self, forKey: .intervalMinutes)
             let unreadCount = try container.decode(Int.self, forKey: .unreadCount)
@@ -279,10 +266,6 @@ public enum ServerMessage: Codable {
         case "team_deleted":
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .teamDeleted(conversationId: conversationId)
-        case "suggestions_result":
-            let suggestions = try container.decode([String].self, forKey: .suggestions)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .suggestionsResult(suggestions: suggestions, conversationId: conversationId)
         case "name_suggestion":
             let name = try container.decode(String.self, forKey: .name)
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
@@ -298,15 +281,6 @@ public enum ServerMessage: Codable {
         case "usage_stats":
             let stats = try container.decode(UsageStats.self, forKey: .stats)
             self = .usageStats(stats: stats)
-        case "scheduled_tasks":
-            let tasks = try container.decode([ScheduledTask].self, forKey: .tasks)
-            self = .scheduledTasks(tasks: tasks)
-        case "scheduled_task_updated":
-            let task = try container.decode(ScheduledTask.self, forKey: .task)
-            self = .scheduledTaskUpdated(task: task)
-        case "scheduled_task_deleted":
-            let taskId = try container.decode(String.self, forKey: .taskId)
-            self = .scheduledTaskDeleted(taskId: taskId)
         case "terminal_output":
             let output = try container.decode(String.self, forKey: .output)
             let exitCode = try container.decodeIfPresent(Int.self, forKey: .exitCode)

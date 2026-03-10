@@ -12,8 +12,9 @@ extension MainChatView {
 
     func addWindowWithNewChat() {
         let activeWorkingDir = activeWindowWorkingDirectory()
+        let activeEnvId = activeWindowEnvironmentId()
         let newWindowId = windowManager.addWindow()
-        let newConv = conversationStore.newConversation(workingDirectory: activeWorkingDir)
+        let newConv = conversationStore.newConversation(workingDirectory: activeWorkingDir, environmentId: activeEnvId)
         windowManager.linkToCurrentConversation(newWindowId, conversation: newConv)
     }
 
@@ -24,6 +25,15 @@ extension MainChatView {
             return conversationStore.currentConversation?.workingDirectory
         }
         return conv.workingDirectory
+    }
+
+    func activeWindowEnvironmentId() -> UUID? {
+        guard let activeWindow = windowManager.activeWindow,
+              let convId = activeWindow.conversationId,
+              let conv = conversationStore.conversation(withId: convId) else {
+            return conversationStore.currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
+        }
+        return conv.environmentId ?? environmentStore.activeEnvironmentId
     }
 
     func syncActiveWindowToStore() {
@@ -67,15 +77,6 @@ extension MainChatView {
             return
         }
         connection.searchFiles(query: query, workingDirectory: workingDir)
-    }
-
-    func requestSuggestions() {
-        guard let conv = currentConversation,
-              !conv.messages.isEmpty else { return }
-        let recent = conv.messages.suffix(6)
-        let context = recent.map { $0.text }
-        let workingDir = activeWindowWorkingDirectory()
-        connection.requestSuggestions(context: context, workingDirectory: workingDir, conversationId: conv.id)
     }
 
     func fetchLatestScreenshot() {

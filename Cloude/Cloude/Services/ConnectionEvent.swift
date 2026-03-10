@@ -16,7 +16,6 @@ enum ConnectionEvent {
     case gitDiff(path: String, diff: String)
     case disconnect(conversationId: UUID, output: ConversationOutput)
     case transcription(String)
-    case ttsAudio(data: Data, messageId: String)
     case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case heartbeatSkipped(conversationId: UUID?)
     case memories([MemorySection])
@@ -28,15 +27,9 @@ enum ConnectionEvent {
     case plans([String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
 
-    // Scheduled Tasks
-    case scheduledTasks([ScheduledTask])
-    case scheduledTaskUpdated(ScheduledTask)
-    case scheduledTaskDeleted(taskId: String)
-
     // UI / orchestration
     case authenticated
     case usageStats(UsageStats)
-    case suggestionsResult(suggestions: [String], conversationId: UUID?)
     case renameConversation(conversationId: UUID, name: String)
     case setConversationSymbol(conversationId: UUID, symbol: String?)
     case sessionIdReceived(conversationId: UUID, sessionId: String)

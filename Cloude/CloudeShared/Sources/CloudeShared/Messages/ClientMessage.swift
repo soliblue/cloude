@@ -22,7 +22,6 @@ public enum ClientMessage: Codable {
     case gitDiff(path: String, file: String?)
     case gitCommit(path: String, message: String, files: [String])
     case transcribe(audioBase64: String)
-    case synthesize(text: String, messageId: String, voice: String?)
     case setHeartbeatInterval(minutes: Int?)
     case getHeartbeatConfig
     case markHeartbeatRead
@@ -34,18 +33,14 @@ public enum ClientMessage: Codable {
     case syncHistory(sessionId: String, workingDirectory: String)
     case searchFiles(query: String, workingDirectory: String)
     case listRemoteSessions(workingDirectory: String)
-    case requestSuggestions(context: [String], workingDirectory: String?, conversationId: String?)
     case suggestName(text: String, context: [String], conversationId: String)
     case getPlans(workingDirectory: String)
     case deletePlan(stage: String, filename: String, workingDirectory: String)
     case getUsageStats
-    case getScheduledTasks
-    case toggleScheduledTask(taskId: String, isActive: Bool)
-    case deleteScheduledTask(taskId: String)
     case terminalExec(command: String, workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, messageId, voice, taskId, isActive, command
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, command
     }
 
     public init(from decoder: Decoder) throws {
@@ -102,11 +97,6 @@ public enum ClientMessage: Codable {
         case "transcribe":
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)
-        case "synthesize":
-            let text = try container.decode(String.self, forKey: .text)
-            let messageId = try container.decode(String.self, forKey: .messageId)
-            let voice = try container.decodeIfPresent(String.self, forKey: .voice)
-            self = .synthesize(text: text, messageId: messageId, voice: voice)
         case "set_heartbeat_interval":
             let minutes = try container.decodeIfPresent(Int.self, forKey: .minutes)
             self = .setHeartbeatInterval(minutes: minutes)
@@ -136,11 +126,6 @@ public enum ClientMessage: Codable {
         case "list_remote_sessions":
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .listRemoteSessions(workingDirectory: workingDirectory)
-        case "request_suggestions":
-            let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
-            let workingDirectory = try container.decodeIfPresent(String.self, forKey: .workingDirectory)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .requestSuggestions(context: context, workingDirectory: workingDirectory, conversationId: conversationId)
         case "suggest_name":
             let text = try container.decode(String.self, forKey: .text)
             let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
@@ -156,15 +141,6 @@ public enum ClientMessage: Codable {
             self = .deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
         case "get_usage_stats":
             self = .getUsageStats
-        case "get_scheduled_tasks":
-            self = .getScheduledTasks
-        case "toggle_scheduled_task":
-            let taskId = try container.decode(String.self, forKey: .taskId)
-            let isActive = try container.decode(Bool.self, forKey: .isActive)
-            self = .toggleScheduledTask(taskId: taskId, isActive: isActive)
-        case "delete_scheduled_task":
-            let taskId = try container.decode(String.self, forKey: .taskId)
-            self = .deleteScheduledTask(taskId: taskId)
         case "terminal_exec":
             let command = try container.decode(String.self, forKey: .command)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
@@ -223,11 +199,6 @@ public enum ClientMessage: Codable {
         case .transcribe(let audioBase64):
             try container.encode("transcribe", forKey: .type)
             try container.encode(audioBase64, forKey: .audioBase64)
-        case .synthesize(let text, let messageId, let voice):
-            try container.encode("synthesize", forKey: .type)
-            try container.encode(text, forKey: .text)
-            try container.encode(messageId, forKey: .messageId)
-            try container.encodeIfPresent(voice, forKey: .voice)
         case .setHeartbeatInterval(let minutes):
             try container.encode("set_heartbeat_interval", forKey: .type)
             try container.encodeIfPresent(minutes, forKey: .minutes)
@@ -257,11 +228,6 @@ public enum ClientMessage: Codable {
         case .listRemoteSessions(let workingDirectory):
             try container.encode("list_remote_sessions", forKey: .type)
             try container.encode(workingDirectory, forKey: .workingDirectory)
-        case .requestSuggestions(let context, let workingDirectory, let conversationId):
-            try container.encode("request_suggestions", forKey: .type)
-            try container.encode(context, forKey: .context)
-            try container.encodeIfPresent(workingDirectory, forKey: .workingDirectory)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .suggestName(let text, let context, let conversationId):
             try container.encode("suggest_name", forKey: .type)
             try container.encode(text, forKey: .text)
@@ -277,15 +243,6 @@ public enum ClientMessage: Codable {
             try container.encode(workingDirectory, forKey: .workingDirectory)
         case .getUsageStats:
             try container.encode("get_usage_stats", forKey: .type)
-        case .getScheduledTasks:
-            try container.encode("get_scheduled_tasks", forKey: .type)
-        case .toggleScheduledTask(let taskId, let isActive):
-            try container.encode("toggle_scheduled_task", forKey: .type)
-            try container.encode(taskId, forKey: .taskId)
-            try container.encode(isActive, forKey: .isActive)
-        case .deleteScheduledTask(let taskId):
-            try container.encode("delete_scheduled_task", forKey: .type)
-            try container.encode(taskId, forKey: .taskId)
         case .terminalExec(let command, let workingDirectory):
             try container.encode("terminal_exec", forKey: .type)
             try container.encode(command, forKey: .command)

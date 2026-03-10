@@ -41,14 +41,6 @@ extension MainChatView {
         case .fileSearchResults(let files, _):
             fileSearchResults = files
 
-        case .suggestionsResult(let newSuggestions, let convId):
-            guard let activeWindow = windowManager.activeWindow,
-                  activeWindow.conversationId == convId,
-                  inputText.isEmpty else { break }
-            withAnimation(.easeIn(duration: 0.2)) {
-                suggestions = newSuggestions
-            }
-
         case .gitStatus(let path, let status):
             // MainChatView only uses this to annotate known working directories with their branch.
             if gitBranches[path] == nil, !status.branch.isEmpty {
