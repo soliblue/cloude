@@ -142,6 +142,10 @@ export function handleMessage(msg, ws, ctx) {
       handleTranscribe(msg.audioBase64, ws, sendTo)
       break
 
+    case 'terminal_exec':
+      handleTerminalExec(msg.command, msg.workingDirectory, ws, sendTo)
+      break
+
     default:
       log(`Unknown message type: ${msg.type}`)
   }
@@ -591,4 +595,25 @@ function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
   } catch (e) {
     sendTo(ws, { type: 'history_sync_error', sessionId, error: e.message })
   }
+}
+
+function handleTerminalExec(command, workingDirectory, ws, sendTo) {
+  const cwd = workingDirectory ? workingDirectory.replace(/^~/, process.env.HOME) : process.env.HOME
+  log(`Terminal exec: ${command} (cwd: ${cwd})`)
+
+  const proc = spawn('bash', ['-c', command], { cwd, env: { ...process.env, TERM: 'dumb' } })
+  let stdout = ''
+  let stderr = ''
+
+  proc.stdout.on('data', d => { stdout += d })
+  proc.stderr.on('data', d => { stderr += d })
+
+  proc.on('close', code => {
+    const output = stdout + (stderr ? (stdout ? '\n' : '') + stderr : '')
+    sendTo(ws, { type: 'terminal_output', output, exitCode: code, isError: code !== 0 })
+  })
+
+  proc.on('error', err => {
+    sendTo(ws, { type: 'terminal_output', output: err.message, exitCode: 1, isError: true })
+  })
 }

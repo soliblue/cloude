@@ -4,12 +4,14 @@ enum WindowType: String, CaseIterable, Codable {
     case chat
     case files
     case gitChanges
+    case terminal
 
     var icon: String {
         switch self {
         case .chat: return "bubble.left.and.bubble.right"
         case .files: return "folder"
         case .gitChanges: return "point.3.connected.trianglepath.dotted"
+        case .terminal: return "terminal"
         }
     }
 
@@ -18,6 +20,7 @@ enum WindowType: String, CaseIterable, Codable {
         case .chat: return "Chat"
         case .files: return "Files"
         case .gitChanges: return "Changes"
+        case .terminal: return "Terminal"
         }
     }
 }

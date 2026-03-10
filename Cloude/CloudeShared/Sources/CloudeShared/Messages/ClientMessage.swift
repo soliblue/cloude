@@ -42,9 +42,10 @@ public enum ClientMessage: Codable {
     case getScheduledTasks
     case toggleScheduledTask(taskId: String, isActive: Bool)
     case deleteScheduledTask(taskId: String)
+    case terminalExec(command: String, workingDirectory: String)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, messageId, voice, taskId, isActive
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, messageId, voice, taskId, isActive, command
     }
 
     public init(from decoder: Decoder) throws {
@@ -164,6 +165,10 @@ public enum ClientMessage: Codable {
         case "delete_scheduled_task":
             let taskId = try container.decode(String.self, forKey: .taskId)
             self = .deleteScheduledTask(taskId: taskId)
+        case "terminal_exec":
+            let command = try container.decode(String.self, forKey: .command)
+            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
+            self = .terminalExec(command: command, workingDirectory: workingDirectory)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }
@@ -281,6 +286,10 @@ public enum ClientMessage: Codable {
         case .deleteScheduledTask(let taskId):
             try container.encode("delete_scheduled_task", forKey: .type)
             try container.encode(taskId, forKey: .taskId)
+        case .terminalExec(let command, let workingDirectory):
+            try container.encode("terminal_exec", forKey: .type)
+            try container.encode(command, forKey: .command)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
         }
     }
 }

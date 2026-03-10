@@ -38,12 +38,17 @@ extension MainChatView {
                     connection: connection,
                     rootPath: conversation?.workingDirectory
                 )
+            case .terminal:
+                TerminalView(
+                    connection: connection,
+                    rootPath: conversation?.workingDirectory
+                )
             }
         }
     }
 
     func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
-        HStack(spacing: 9) {
+        HStack(spacing: 0) {
             HStack(spacing: 0) {
                 ForEach(Array(WindowType.allCases.enumerated()), id: \.element) { index, type in
                     if index > 0 {
@@ -74,68 +79,114 @@ extension MainChatView {
 
             Spacer()
 
-            Button(action: {
-                if let conv = conversation, conv.sessionId != nil {
-                    windowManager.setActive(window.id)
-                    if let newConv = conversationStore.duplicateConversation(conv) {
-                        windowManager.linkToCurrentConversation(window.id, conversation: newConv)
+            HStack(spacing: 0) {
+                Button(action: {
+                    if let conv = conversation {
+                        exportConversation(conv)
                     }
-                }
-            }) {
-                Image(systemName: "arrow.triangle.branch")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .padding(7)
-            }
-            .buttonStyle(.plain)
-            .disabled(conversation?.sessionId == nil)
-
-            Divider()
-                .frame(height: 20)
-
-            Button(action: {
-                windowManager.setActive(window.id)
-                refreshConversation(for: window)
-            }) {
-                if let sid = window.conversation(in: conversationStore)?.sessionId,
-                   refreshingSessionIds.contains(sid) {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                        .frame(width: 15, height: 15)
-                        .padding(7)
-                } else {
-                    Image(systemName: "arrow.clockwise")
+                }) {
+                    Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(.secondary)
-                        .padding(7)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
                 }
-            }
-            .buttonStyle(.plain)
-            .disabled(
-                window.conversationId.map({ connection.output(for: $0).isRunning }) ?? false ||
-                    window.conversationId
-                        .flatMap({ conversationStore.conversation(withId: $0)?.sessionId })
-                        .map({ refreshingSessionIds.contains($0) }) ?? false
-            )
+                .buttonStyle(.plain)
+                .disabled(conversation == nil || conversation?.messages.isEmpty == true)
 
-            Divider()
-                .frame(height: 20)
+                Divider()
+                    .frame(height: 20)
 
-            Button(action: {
-                windowManager.setActive(window.id)
-                windowManager.removeWindow(window.id)
-            }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .padding(7)
+                Button(action: {
+                    if let conv = conversation, conv.sessionId != nil {
+                        windowManager.setActive(window.id)
+                        if let newConv = conversationStore.duplicateConversation(conv) {
+                            windowManager.linkToCurrentConversation(window.id, conversation: newConv)
+                        }
+                    }
+                }) {
+                    Image(systemName: "arrow.triangle.branch")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                }
+                .buttonStyle(.plain)
+                .disabled(conversation?.sessionId == nil)
+
+                Divider()
+                    .frame(height: 20)
+
+                Button(action: {
+                    windowManager.setActive(window.id)
+                    refreshConversation(for: window)
+                }) {
+                    if let sid = window.conversation(in: conversationStore)?.sessionId,
+                       refreshingSessionIds.contains(sid) {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                            .frame(width: 15, height: 15)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                    }
+                }
+                .buttonStyle(.plain)
+                .disabled(
+                    window.conversationId.map({ connection.output(for: $0).isRunning }) ?? false ||
+                        window.conversationId
+                            .flatMap({ conversationStore.conversation(withId: $0)?.sessionId })
+                            .map({ refreshingSessionIds.contains($0) }) ?? false
+                )
+
+                Divider()
+                    .frame(height: 20)
+
+                Button(action: {
+                    windowManager.setActive(window.id)
+                    windowManager.removeWindow(window.id)
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 7)
         .padding(.top, 0)
         .padding(.bottom, 7)
         .background(Color.oceanSecondary)
+    }
+
+    private func exportConversation(_ conversation: Conversation) {
+        var lines: [String] = []
+        let messages = conversationStore.messages(for: conversation)
+
+        for message in messages {
+            if message.isUser {
+                lines.append("**User**: \(message.text)")
+            } else {
+                var parts: [String] = []
+                let text = message.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !text.isEmpty { parts.append(text) }
+                for tool in message.toolCalls {
+                    let input = tool.input ?? ""
+                    parts.append("> **\(tool.name)**: \(input)")
+                }
+                lines.append(parts.joined(separator: "\n\n"))
+            }
+        }
+
+        let markdown = lines.joined(separator: "\n\n---\n\n")
+        UIPasteboard.general.string = markdown
     }
 
     private func refreshConversation(for window: ChatWindow) {
