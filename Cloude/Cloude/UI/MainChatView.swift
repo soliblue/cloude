@@ -173,10 +173,6 @@ struct MainChatView: View {
                 currentEffort = currentConversation?.defaultEffort
                 currentModel = currentConversation?.defaultModel
             }
-            if windowManager.windows.count == 1 { syncActiveWindowToStore() }
-        }
-        .onChange(of: conversationStore.currentConversation?.id) { _, _ in
-            if windowManager.windows.count == 1 { updateActiveWindowLink() }
         }
         .sheet(item: $editingWindow) { window in
             WindowEditSheet(

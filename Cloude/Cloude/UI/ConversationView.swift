@@ -24,7 +24,7 @@ struct ConversationView: View {
         if let conversation = conversation {
             return store.conversation(withId: conversation.id) ?? conversation
         }
-        return store.currentConversation
+        return nil
     }
 
     private var messages: [ChatMessage] {

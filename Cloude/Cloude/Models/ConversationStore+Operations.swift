@@ -5,9 +5,6 @@ extension ConversationStore {
     private func mutate(_ conversationId: UUID, _ mutation: (inout Conversation) -> Void) -> Bool {
         guard let idx = conversations.firstIndex(where: { $0.id == conversationId }) else { return false }
         mutation(&conversations[idx])
-        if currentConversation?.id == conversationId {
-            currentConversation = conversations[idx]
-        }
         saveConversation(conversations[idx])
         return true
     }
@@ -20,14 +17,9 @@ extension ConversationStore {
         conversations.first { $0.sessionId == sessionId }
     }
 
-    func selectConversation(_ conversation: Conversation) {
-        currentConversation = conversations.first { $0.id == conversation.id }
-    }
-
     func newConversation(workingDirectory: String? = nil, environmentId: UUID? = nil) -> Conversation {
         let conversation = Conversation(workingDirectory: workingDirectory, environmentId: environmentId)
         conversations.insert(conversation, at: 0)
-        currentConversation = conversation
         saveConversation(conversation)
         return conversation
     }
@@ -38,7 +30,6 @@ extension ConversationStore {
 
     func addConversation(_ conversation: Conversation) {
         conversations.insert(conversation, at: 0)
-        currentConversation = conversation
         saveConversation(conversation)
     }
 
@@ -82,9 +73,6 @@ extension ConversationStore {
 
 func deleteConversation(_ conversation: Conversation) {
         conversations.removeAll { $0.id == conversation.id }
-        if currentConversation?.id == conversation.id {
-            currentConversation = listableConversations.first
-        }
         deleteConversationFile(conversation.id)
     }
 
@@ -99,7 +87,6 @@ func deleteConversation(_ conversation: Conversation) {
             environmentId: conversation.environmentId
         )
         conversations.insert(newConversation, at: 0)
-        currentConversation = newConversation
         saveConversation(newConversation)
         return newConversation
     }

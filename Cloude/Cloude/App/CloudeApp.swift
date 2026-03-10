@@ -100,7 +100,7 @@ struct CloudeApp: App {
                 fromCache: plansFromCache,
                 onOpenFile: { path in
                     showPlans = false
-                    let envId = conversationStore.currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
+                    let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         filePreviewEnvironmentId = envId
                         filePathToPreview = path
@@ -116,7 +116,7 @@ struct CloudeApp: App {
             switch url.host {
             case "file":
                 let path = url.path.removingPercentEncoding ?? url.path
-                filePreviewEnvironmentId = conversationStore.currentConversation?.environmentId
+                filePreviewEnvironmentId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
                 filePathToPreview = path
             case "memory":
                 openMemories()
@@ -128,7 +128,7 @@ struct CloudeApp: App {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 wasBackgrounded = true
-                lastActiveSessionId = conversationStore.currentConversation?.sessionId
+                lastActiveSessionId = windowManager.activeWindow?.conversation(in: conversationStore)?.sessionId
                 if requireBiometricAuth {
                     isUnlocked = false
                 }
@@ -168,7 +168,7 @@ struct CloudeApp: App {
                     msg.wasInterrupted = false
                 }
                 conversationStore.objectWillChange.send()
-            } else if let conversation = conversationStore.currentConversation {
+            } else if let conversation = windowManager.activeWindow?.conversation(in: conversationStore) {
                 let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
                 conversationStore.addMessage(message, to: conversation)
             }
@@ -273,13 +273,14 @@ struct CloudeApp: App {
 
         case .switchConversation(let convId):
             if let conv = conversationStore.findConversation(withId: convId) {
-                conversationStore.selectConversation(conv)
+                let targetId = windowManager.activeWindowId ?? windowManager.windows.first?.id
+                if let targetId { windowManager.linkToCurrentConversation(targetId, conversation: conv) }
             }
 
         case .question(let questions, let convId):
             if let convId = convId {
                 conversationStore.pendingQuestion = PendingQuestion(conversationId: convId, questions: questions)
-            } else if let currentId = conversationStore.currentConversation?.id {
+            } else if let currentId = windowManager.activeWindow?.conversation(in: conversationStore)?.id {
                 conversationStore.pendingQuestion = PendingQuestion(conversationId: currentId, questions: questions)
             }
 
@@ -296,7 +297,7 @@ struct CloudeApp: App {
                 guard let jpegData = image.jpegData(compressionQuality: 0.7) else { return }
                 let base64 = jpegData.base64EncodedString()
 
-                let targetConvId = convId ?? conversationStore.currentConversation?.id
+                let targetConvId = convId ?? windowManager.activeWindow?.conversation(in: conversationStore)?.id
                 guard let targetConvId else { return }
                 guard let conv = conversationStore.findConversation(withId: targetConvId) else { return }
 
@@ -395,7 +396,7 @@ struct CloudeApp: App {
             isLoadingPlans = true
         }
         let activeEnvConn = connection.connection(for: environmentStore.activeEnvironmentId)
-        if let wd = conversationStore.currentConversation?.workingDirectory ?? activeEnvConn?.defaultWorkingDirectory {
+        if let wd = windowManager.activeWindow?.conversation(in: conversationStore)?.workingDirectory ?? activeEnvConn?.defaultWorkingDirectory {
             connection.getPlans(workingDirectory: wd)
         }
         showPlans = true

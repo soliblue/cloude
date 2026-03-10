@@ -6,7 +6,7 @@ extension MainChatView {
     func initializeFirstWindow() {
         guard let firstWindow = windowManager.windows.first,
               firstWindow.conversationId == nil,
-              let conversation = conversationStore.currentConversation else { return }
+              let conversation = conversationStore.listableConversations.first else { return }
         windowManager.linkToCurrentConversation(firstWindow.id, conversation: conversation)
     }
 
@@ -22,7 +22,7 @@ extension MainChatView {
         guard let activeWindow = windowManager.activeWindow,
               let convId = activeWindow.conversationId,
               let conv = conversationStore.conversation(withId: convId) else {
-            return conversationStore.currentConversation?.workingDirectory
+            return nil
         }
         return conv.workingDirectory
     }
@@ -31,24 +31,9 @@ extension MainChatView {
         guard let activeWindow = windowManager.activeWindow,
               let convId = activeWindow.conversationId,
               let conv = conversationStore.conversation(withId: convId) else {
-            return conversationStore.currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
+            return environmentStore.activeEnvironmentId
         }
         return conv.environmentId ?? environmentStore.activeEnvironmentId
-    }
-
-    func syncActiveWindowToStore() {
-        guard let activeWindow = windowManager.activeWindow,
-              let convId = activeWindow.conversationId,
-              let conv = conversationStore.conversation(withId: convId) else { return }
-        conversationStore.selectConversation(conv)
-    }
-
-    func updateActiveWindowLink() {
-        guard let activeId = windowManager.activeWindowId else { return }
-        windowManager.linkToCurrentConversation(
-            activeId,
-            conversation: conversationStore.currentConversation
-        )
     }
 
     func checkGitForAllDirectories() {
