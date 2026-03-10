@@ -86,4 +86,43 @@ extension AppDelegate {
             server.sendMessage(.gitCommitResult(success: false, message: error.localizedDescription), to: connection)
         }
     }
+
+    func handleTerminalExec(_ command: String, workingDirectory: String, connection: NWConnection) {
+        let cwd = workingDirectory.isEmpty ? NSHomeDirectory() : workingDirectory.expandingTildeInPath
+        Log.info("Terminal exec: \(command.prefix(80)) (cwd: \(cwd))")
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/bin/bash")
+            process.arguments = ["-c", command]
+            process.currentDirectoryURL = URL(fileURLWithPath: cwd)
+            process.environment = ProcessInfo.processInfo.environment.merging([
+                "TERM": "xterm-256color",
+                "FORCE_COLOR": "1",
+                "CLICOLOR_FORCE": "1"
+            ]) { _, new in new }
+
+            let stdoutPipe = Pipe()
+            let stderrPipe = Pipe()
+            process.standardOutput = stdoutPipe
+            process.standardError = stderrPipe
+
+            do {
+                try process.run()
+            } catch {
+                self?.server.sendMessage(.terminalOutput(output: error.localizedDescription, exitCode: 1, isError: true), to: connection)
+                return
+            }
+
+            let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+            let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+
+            let stdout = String(data: stdoutData, encoding: .utf8) ?? ""
+            let stderr = String(data: stderrData, encoding: .utf8) ?? ""
+            let output = stdout + (stderr.isEmpty ? "" : (stdout.isEmpty ? "" : "\n") + stderr)
+            let code = Int(process.terminationStatus)
+            self?.server.sendMessage(.terminalOutput(output: output, exitCode: code, isError: code != 0), to: connection)
+        }
+    }
 }

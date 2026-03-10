@@ -53,7 +53,7 @@ extension FilePreviewView {
     func loadFullQuality() {
         isLoadingFullQuality = true
         loadProgress = nil
-        connection.getFileFullQuality(path: path)
+        connection.getFileFullQuality(path: path, environmentId: environmentId)
     }
 
     func loadFile() {
@@ -69,7 +69,7 @@ extension FilePreviewView {
 
         isLoading = true
         loadProgress = nil
-        connection.getFile(path: path)
+        connection.getFile(path: path, environmentId: environmentId)
 
         let filePath = path
         connection.events
