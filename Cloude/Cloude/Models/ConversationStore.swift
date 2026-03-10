@@ -60,7 +60,6 @@ struct HeartbeatConfig {
 @MainActor
 class ConversationStore: ObservableObject {
     @Published var conversations: [Conversation] = []
-    @Published var currentConversation: Conversation?
     @Published var pendingQuestion: PendingQuestion?
     @Published var questionInputFocused: Bool = false
     @Published var heartbeatConfig = HeartbeatConfig()
@@ -152,7 +151,6 @@ class ConversationStore: ObservableObject {
         }
 
         ensureHeartbeatExists()
-        currentConversation = listableConversations.first
 
         if let timestamp = UserDefaults.standard.object(forKey: heartbeatTriggeredKey) as? Date {
             heartbeatConfig.lastTriggeredAt = timestamp
