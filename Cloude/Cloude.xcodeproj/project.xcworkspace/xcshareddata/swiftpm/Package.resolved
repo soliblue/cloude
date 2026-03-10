@@ -10,24 +10,6 @@
       }
     },
     {
-      "identity" : "kokoro-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mlalma/kokoro-ios.git",
-      "state" : {
-        "revision" : "4d6d1d8ff8cd012014180c9cd4cf0151e7682354",
-        "version" : "1.0.11"
-      }
-    },
-    {
-      "identity" : "misakiswift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mlalma/MisakiSwift",
-      "state" : {
-        "revision" : "6835a1ce4a8854075c89f18ff75c74b13ef58e15",
-        "version" : "1.0.6"
-      }
-    },
-    {
       "identity" : "mlx-swift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ml-explore/mlx-swift",

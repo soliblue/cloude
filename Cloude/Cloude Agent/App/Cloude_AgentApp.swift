@@ -39,8 +39,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         installSignalHandlers()
         setupPopover()
         setupHeartbeat()
-        setupScheduler()
-
         if let portOwner = ProcessMonitor.checkPortOwner(server.port) {
             Log.startup("⚠️ Port \(server.port) in use: \(portOwner)")
         }
@@ -69,14 +67,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupHeartbeat() {
         let heartbeat = HeartbeatService.shared
         heartbeat.runnerManager = runnerManager
-    }
-
-    private func setupScheduler() {
-        let scheduler = SchedulerService.shared
-        scheduler.runnerManager = runnerManager
-        scheduler.onTaskUpdated = { [weak self] task in
-            self?.server.broadcast(.scheduledTaskUpdated(task: task))
-        }
     }
 
     private func setupMenuBar() {

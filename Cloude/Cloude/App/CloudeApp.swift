@@ -23,9 +23,6 @@ struct CloudeApp: App {
     @State private var planStages: [String: [PlanItem]] = [:]
     @State private var isLoadingPlans = false
     @State private var plansFromCache = false
-    @State private var showScheduledTasks = false
-    @State private var scheduledTasks: [ScheduledTask] = []
-    @State private var isLoadingScheduledTasks = false
     @State private var wasBackgrounded = false
     @State private var lastActiveSessionId: String? = nil
     @State private var isUnlocked = false
@@ -110,16 +107,6 @@ struct CloudeApp: App {
                         filePathToPreview = path
                     }
                 }
-            )
-        }
-        .sheet(isPresented: $showScheduledTasks) {
-            ScheduledTasksSheet(
-                tasks: $scheduledTasks,
-                isLoading: isLoadingScheduledTasks,
-                connection: connection,
-                conversationStore: conversationStore,
-                windowManager: windowManager,
-                onOpenConversation: { showScheduledTasks = false }
             )
         }
         .sheet(item: $filePathToPreview) { path in
@@ -218,20 +205,6 @@ struct CloudeApp: App {
 
         case .planDeleted(let stage, let filename):
             planStages[stage]?.removeAll { $0.filename == filename }
-
-        case .scheduledTasks(let tasks):
-            scheduledTasks = tasks
-            isLoadingScheduledTasks = false
-
-        case .scheduledTaskUpdated(let task):
-            if let idx = scheduledTasks.firstIndex(where: { $0.id == task.id }) {
-                scheduledTasks[idx] = task
-            } else {
-                scheduledTasks.append(task)
-            }
-
-        case .scheduledTaskDeleted(let taskId):
-            scheduledTasks.removeAll { $0.id == taskId }
 
         case .renameConversation(let convId, let name):
             if let conv = conversationStore.findConversation(withId: convId) {

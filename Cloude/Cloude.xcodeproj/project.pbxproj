@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		C2HIGHLIGHT012F2619AE007FD3E4 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C2HIGHLIGHT022F2619AE007FD3E4 /* HighlightSwift */; };
-		C2KOKORO012F2619AE007FD3E4 /* KokoroSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C2KOKORO022F2619AE007FD3E4 /* KokoroSwift */; };
 		C2LIVEACT012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2LIVEACT022F2619AE007FD3E4 /* CloudeShared */; };
 		C2LIVEACT032F2619AE007FD3E4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2LIVEACT042F2619AE007FD3E4 /* WidgetKit.framework */; };
 		C2LIVEACT052F2619AE007FD3E4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2LIVEACT062F2619AE007FD3E4 /* SwiftUI.framework */; };
@@ -110,7 +109,6 @@
 			files = (
 				C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */,
 				C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */,
-				C2KOKORO012F2619AE007FD3E4 /* KokoroSwift in Frameworks */,
 				C2MLX012F2619AE007FD3E4 /* MLX in Frameworks */,
 				C2MLXUTIL012F2619AE007FD3E4 /* MLXUtilsLibrary in Frameworks */,
 			);
@@ -207,7 +205,6 @@
 			packageProductDependencies = (
 				C2SHARED042F2619AE007FD3E4 /* CloudeShared */,
 				C2WHISPER022F2619AE007FD3E4 /* WhisperKit */,
-				C2KOKORO022F2619AE007FD3E4 /* KokoroSwift */,
 				C2MLX022F2619AE007FD3E4 /* MLX */,
 				C2MLXUTIL022F2619AE007FD3E4 /* MLXUtilsLibrary */,
 			);
@@ -272,7 +269,6 @@
 				C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */,
 				C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 				C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
-				C2KOKORO032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "kokoro-ios" */,
 				C2MLX032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "mlx-swift" */,
 				C2MLXUTIL032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "MLXUtilsLibrary" */,
 			);
@@ -743,14 +739,6 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		C2KOKORO032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "kokoro-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mlalma/kokoro-ios.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 		C2MLX032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "mlx-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ml-explore/mlx-swift";
@@ -782,11 +770,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */;
 			productName = HighlightSwift;
-		};
-		C2KOKORO022F2619AE007FD3E4 /* KokoroSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C2KOKORO032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "kokoro-ios" */;
-			productName = KokoroSwift;
 		};
 		C2LIVEACT022F2619AE007FD3E4 /* CloudeShared */ = {
 			isa = XCSwiftPackageProductDependency;

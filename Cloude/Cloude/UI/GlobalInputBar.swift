@@ -15,7 +15,6 @@ struct GlobalInputBar: View {
     @Binding var inputText: String
     @Binding var attachedImages: [AttachedImage]
     @Binding var attachedFiles: [AttachedFile]
-    @Binding var suggestions: [String]
     let isConnected: Bool
     let isWhisperReady: Bool
     let isTranscribing: Bool
@@ -111,10 +110,7 @@ struct GlobalInputBar: View {
         guard let atIndex = inputText.lastIndex(of: "@") else { return nil }
         let afterAt = inputText[inputText.index(after: atIndex)...]
         if afterAt.contains(where: { $0 == " " || $0 == "\n" }) { return nil }
-        let mention = String(afterAt)
-        let hasExtension = mention.contains(".") && !mention.hasSuffix(".")
-        if hasExtension { return nil }
-        return mention
+        return String(afterAt)
     }
 
     private var showFileSuggestions: Bool {
@@ -124,7 +120,7 @@ struct GlobalInputBar: View {
     private var showCommandSuggestions: Bool {
         if filteredCommands.isEmpty { return false }
         if inputText.isEmpty && !isInputFocused { return false }
-        if inputText.isEmpty && !suggestions.isEmpty && !isRunning { return false }
+        if inputText.isEmpty && !isRunning { return false }
         return true
     }
 
@@ -158,30 +154,6 @@ struct GlobalInputBar: View {
                         }
                     }
                 )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-
-            if !suggestions.isEmpty && inputText.count < 20 && !isRunning && !showFileSuggestions {
-                HStack(spacing: 8) {
-                    ForEach(suggestions, id: \.self) { suggestion in
-                        Button(action: {
-                            inputText = suggestion
-                            suggestions = []
-                        }) {
-                            Text(suggestion)
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Capsule())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
@@ -232,7 +204,6 @@ struct GlobalInputBar: View {
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))
         .animation(.easeOut(duration: 0.15), value: attachedFiles.map(\.id))
-        .animation(.easeOut(duration: 0.2), value: suggestions)
         .gesture(inputBarDragGesture)
         .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
         .onChange(of: selectedItem) { _, newItem in
@@ -274,11 +245,6 @@ struct GlobalInputBar: View {
                     if !Task.isCancelled {
                         onFileSearch?(query)
                     }
-                }
-            }
-            if new.count >= 20 && !suggestions.isEmpty {
-                withAnimation(.easeOut(duration: 0.15)) {
-                    suggestions = []
                 }
             }
         }
@@ -356,9 +322,8 @@ struct GlobalInputBar: View {
 
     private func selectFile(_ file: String) {
         guard let atIndex = inputText.lastIndex(of: "@") else { return }
-        let fileName = file.lastPathComponent
         let beforeAt = String(inputText[..<atIndex])
-        inputText = beforeAt + "@" + fileName + " "
+        inputText = beforeAt + file + " "
     }
 
 }

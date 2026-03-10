@@ -91,13 +91,6 @@ extension ServerMessage {
         case .whisperReady(let ready):
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
-        case .ttsAudio(let audioBase64, let messageId):
-            try container.encode("tts_audio", forKey: .type)
-            try container.encode(audioBase64, forKey: .audioBase64)
-            try container.encode(messageId, forKey: .messageId)
-        case .kokoroReady(let ready):
-            try container.encode("kokoro_ready", forKey: .type)
-            try container.encode(ready, forKey: .ready)
         case .heartbeatConfig(let intervalMinutes, let unreadCount):
             try container.encode("heartbeat_config", forKey: .type)
             try container.encodeIfPresent(intervalMinutes, forKey: .intervalMinutes)
@@ -212,10 +205,6 @@ extension ServerMessage {
         case .teamDeleted(let conversationId):
             try container.encode("team_deleted", forKey: .type)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .suggestionsResult(let suggestions, let conversationId):
-            try container.encode("suggestions_result", forKey: .type)
-            try container.encode(suggestions, forKey: .suggestions)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .nameSuggestion(let name, let symbol, let conversationId):
             try container.encode("name_suggestion", forKey: .type)
             try container.encode(name, forKey: .name)
@@ -231,15 +220,6 @@ extension ServerMessage {
         case .usageStats(let stats):
             try container.encode("usage_stats", forKey: .type)
             try container.encode(stats, forKey: .stats)
-        case .scheduledTasks(let tasks):
-            try container.encode("scheduled_tasks", forKey: .type)
-            try container.encode(tasks, forKey: .tasks)
-        case .scheduledTaskUpdated(let task):
-            try container.encode("scheduled_task_updated", forKey: .type)
-            try container.encode(task, forKey: .task)
-        case .scheduledTaskDeleted(let taskId):
-            try container.encode("scheduled_task_deleted", forKey: .type)
-            try container.encode(taskId, forKey: .taskId)
         case .terminalOutput(let output, let exitCode, let isError):
             try container.encode("terminal_output", forKey: .type)
             try container.encode(output, forKey: .output)

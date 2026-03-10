@@ -30,7 +30,6 @@ extension EnvironmentConnection {
         case .gitDiffResult(let path, let diff):          mgr.events.send(.gitDiff(path: path, diff: diff))
         case .transcription(let text):                    handleTranscription(mgr, text)
         case .whisperReady(let ready):                    isWhisperReady = ready
-        case .ttsAudio, .kokoroReady:                     break
         case .heartbeatConfig(let min, let count):        mgr.events.send(.heartbeatConfig(intervalMinutes: min, unreadCount: count))
         case .heartbeatSkipped(let c):                    handleHeartbeatSkipped(mgr, conversationId: c)
         case .memories(let sections):                     mgr.events.send(.memories(sections))
@@ -56,14 +55,10 @@ extension EnvironmentConnection {
         case .teammateSpawned(let mate, let c):           handleTeammateSpawned(mgr, teammate: mate, conversationId: c)
         case .teammateUpdate(let tid, let st, let msg, let at, let c): handleTeammateUpdate(mgr, teammateId: tid, status: st, lastMessage: msg, lastMessageAt: at, conversationId: c)
         case .teamDeleted(let c):                         handleTeamDeleted(mgr, conversationId: c)
-        case .suggestionsResult(let s, let c):              mgr.events.send(.suggestionsResult(suggestions: s, conversationId: c.flatMap { UUID(uuidString: $0) }))
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(mgr, name: name, symbol: sym, conversationId: c)
         case .plans(let stages):                          mgr.events.send(.plans(stages))
         case .planDeleted(let stage, let filename):       mgr.events.send(.planDeleted(stage: stage, filename: filename))
         case .usageStats(let stats):                        mgr.events.send(.usageStats(stats))
-        case .scheduledTasks(let tasks):                  mgr.events.send(.scheduledTasks(tasks))
-        case .scheduledTaskUpdated(let task):             mgr.events.send(.scheduledTaskUpdated(task))
-        case .scheduledTaskDeleted(let taskId):           mgr.events.send(.scheduledTaskDeleted(taskId: taskId))
         case .terminalOutput(let out, let code, let err):  mgr.events.send(.terminalOutput(output: out, exitCode: code, isError: err))
         case .fileChange, .image, .gitCommitResult:       break
         }

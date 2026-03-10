@@ -2,8 +2,6 @@ import Foundation
 
 @MainActor
 class AutocompleteService {
-    private var currentProcess: Process?
-
     private var claudePath: String {
         let paths = [
             "/usr/local/bin/claude",
@@ -17,88 +15,6 @@ class AutocompleteService {
             }
         }
         return "claude"
-    }
-
-    func suggest(context: [String], workingDirectory: String?, completion: @escaping ([String]) -> Void) {
-        cancel()
-
-        var contextBlock = ""
-        if !context.isEmpty {
-            contextBlock = context.enumerated().map { i, msg in
-                (i % 2 == 0 ? "User: " : "Assistant: ") + msg
-            }.joined(separator: "\n")
-        }
-
-        let prompt = """
-        Given this conversation:
-        \(contextBlock)
-
-        Suggest exactly 1 short follow-up message the user might send next. It should be 2-6 words, natural and actionable. Output ONLY a JSON array of 1 string, nothing else. Example: ["Push to git"]
-        """
-
-        let process = Process()
-        let outputPipe = Pipe()
-
-        let command = "\(claudePath) --model haiku -p \(shellEscape(prompt)) --max-turns 1 --output-format text"
-
-        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        process.arguments = ["-l", "-c", command]
-        if let wd = workingDirectory {
-            process.currentDirectoryURL = URL(fileURLWithPath: wd)
-        }
-        process.standardOutput = outputPipe
-        process.standardError = FileHandle.nullDevice
-
-        var env = ProcessInfo.processInfo.environment
-        env["NO_COLOR"] = "1"
-        process.environment = env
-
-        currentProcess = process
-
-        let timeoutWork = DispatchWorkItem { [weak self] in
-            Task { @MainActor in
-                if self?.currentProcess === process && process.isRunning {
-                    process.terminate()
-                }
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: timeoutWork)
-
-        process.terminationHandler = { [weak self] _ in
-            timeoutWork.cancel()
-            let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
-            guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                  !output.isEmpty else {
-                Task { @MainActor in self?.currentProcess = nil }
-                return
-            }
-
-            var jsonString = output
-            if let start = jsonString.firstIndex(of: "["), let end = jsonString.lastIndex(of: "]") {
-                jsonString = String(jsonString[start...end])
-            }
-
-            guard let jsonData = jsonString.data(using: .utf8),
-                  let suggestions = try? JSONDecoder().decode([String].self, from: jsonData),
-                  !suggestions.isEmpty else {
-                Task { @MainActor in self?.currentProcess = nil }
-                return
-            }
-
-            let filtered = Array(suggestions.prefix(1).filter { !$0.isEmpty })
-            Task { @MainActor in
-                guard self?.currentProcess === process else { return }
-                self?.currentProcess = nil
-                if !filtered.isEmpty { completion(filtered) }
-            }
-        }
-
-        do {
-            try process.run()
-        } catch {
-            Log.error("Suggestions failed to start: \(error)")
-            currentProcess = nil
-        }
     }
 
     private static let availableSymbols = [
@@ -193,13 +109,6 @@ class AutocompleteService {
         } catch {
             Log.error("Name suggestion failed to start: \(error)")
         }
-    }
-
-    func cancel() {
-        if let process = currentProcess, process.isRunning {
-            process.terminate()
-        }
-        currentProcess = nil
     }
 
     private func shellEscape(_ string: String) -> String {
