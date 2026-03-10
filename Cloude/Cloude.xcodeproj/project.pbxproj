@@ -17,6 +17,7 @@
 		C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED022F2619AE007FD3E4 /* CloudeShared */; };
 		C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED042F2619AE007FD3E4 /* CloudeShared */; };
 		C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2WHISPER022F2619AE007FD3E4 /* WhisperKit */; };
+		FBBE98152F6098BA00C0CA19 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = C2SWTERM022F2619AE007FD3E4 /* SwiftTerm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +99,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBBE98152F6098BA00C0CA19 /* SwiftTerm in Frameworks */,
 				C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */,
 				C2HIGHLIGHT012F2619AE007FD3E4 /* HighlightSwift in Frameworks */,
 			);
@@ -757,20 +759,20 @@
 				version = 0.0.6;
 			};
 		};
-		C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.0;
-			};
-		};
 		C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.0;
+			};
+		};
+		C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -806,15 +808,15 @@
 			package = C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */;
 			productName = CloudeShared;
 		};
-		C2WHISPER022F2619AE007FD3E4 /* WhisperKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */;
-			productName = WhisperKit;
-		};
 		C2SWTERM022F2619AE007FD3E4 /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
+		};
+		C2WHISPER022F2619AE007FD3E4 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
