@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import CloudeShared
 
 struct ChatMessageList: View {
@@ -21,12 +22,14 @@ struct ChatMessageList: View {
     var windowManager: WindowManager?
     var onSelectConversation: ((Conversation) -> Void)?
     var onNewConversation: (() -> Void)?
+    var environmentStore: EnvironmentStore?
 
     @State private var lastUserMessageCount = 0
     @State private var isInitialLoad = true
     @State private var isBottomVisible = true
 @State private var scrollViewportHeight: CGFloat = 0
     @State private var userHasScrolled = false
+    @State private var refreshingMessageId: UUID?
 
     private var bottomId: String {
         "bottom-\(conversationId?.uuidString ?? "none")"
@@ -62,7 +65,12 @@ struct ChatMessageList: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if showEmptyState {
-                EmptyConversationView()
+                EmptyConversationView(
+                    connection: connection,
+                    conversationStore: conversationStore,
+                    environmentStore: environmentStore,
+                    conversation: conversation
+                )
             }
 
             if !showEmptyState || !hasRequiredDependencies {
@@ -156,6 +164,10 @@ userHasScrolled = false
                 isInitialLoad = false
             }
         }
+        .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
+            if case .historySync = event { refreshingMessageId = nil }
+            if case .historySyncError = event { refreshingMessageId = nil }
+        }
         .task(id: conversationId) {
             if !messages.isEmpty {
                 isInitialLoad = false
@@ -174,7 +186,8 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
                 message: message,
                 skills: connection?.skills ?? [],
                 onRefresh: message.isUser ? nil : { refreshMessage(message) },
-                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
+                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) },
+                isRefreshing: refreshingMessageId == message.id
             )
             .readingProgress(
                 isAssistant: !message.isUser,
@@ -194,10 +207,8 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
     private func refreshMessage(_ message: ChatMessage) {
         guard let conversation, let sessionId = conversation.sessionId,
               let workingDir = conversation.workingDirectory, !workingDir.isEmpty else { return }
-        if let store = conversationStore, let index = store.messages(for: conversation).lastIndex(where: { $0.id == message.id }) {
-            store.truncateMessages(for: conversation, from: index)
-        }
-        connection?.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
+        refreshingMessageId = message.id
+        connection?.syncHistory(sessionId: sessionId, workingDirectory: workingDir, environmentId: conversation.environmentId)
     }
 
     private var sisyphusSection: some View {

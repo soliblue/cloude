@@ -13,6 +13,7 @@ extension MainChatView {
                 ConversationView(
                     connection: connection,
                     store: conversationStore,
+                    environmentStore: environmentStore,
                     conversation: conversation,
                     window: window,
                     windowManager: windowManager,
@@ -88,11 +89,14 @@ extension MainChatView {
                 Button(action: {
                     if let conv = conversation {
                         exportConversation(conv)
+                        exportCopied = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { exportCopied = false }
                     }
                 }) {
-                    Image(systemName: "square.and.arrow.up")
+                    Image(systemName: exportCopied ? "checkmark" : "square.and.arrow.up")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(exportCopied ? .green : .secondary)
+                        .contentTransition(.symbolEffect(.replace))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)
                 }
@@ -124,6 +128,7 @@ extension MainChatView {
 
                 Button(action: {
                     windowManager.setActive(window.id)
+                    refreshTrigger.toggle()
                     refreshConversation(for: window)
                 }) {
                     if let sid = window.conversation(in: conversationStore)?.sessionId,
@@ -137,12 +142,14 @@ extension MainChatView {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(.secondary)
+                            .symbolEffect(.rotate, options: .nonRepeating, value: refreshTrigger)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 7)
                     }
                 }
                 .buttonStyle(.plain)
                 .disabled(
+                    environmentDisconnected(for: conversation) ||
                     window.conversationId.map({ connection.output(for: $0).isRunning }) ?? false ||
                         window.conversationId
                             .flatMap({ conversationStore.conversation(withId: $0)?.sessionId })
@@ -194,6 +201,13 @@ extension MainChatView {
         UIPasteboard.general.string = markdown
     }
 
+    func environmentDisconnected(for conversation: Conversation?) -> Bool {
+        if let envId = conversation?.environmentId {
+            return !(connection.connection(for: envId)?.isAuthenticated ?? false)
+        }
+        return false
+    }
+
     private func refreshConversation(for window: ChatWindow) {
         guard let convId = window.conversationId,
               let conv = conversationStore.conversation(withId: convId),
@@ -204,7 +218,7 @@ extension MainChatView {
         if let lastUserIndex = messages.lastIndex(where: { $0.isUser }) {
             conversationStore.truncateMessages(for: conv, from: lastUserIndex + 1)
         }
-        connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
+        connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir, environmentId: conv.environmentId)
     }
 }
 

@@ -90,13 +90,13 @@ extension MainChatView {
         var conversation = activeWindow.conversation(in: conversationStore)
         if conversation == nil {
             let workingDir = activeWindowWorkingDirectory()
-            conversation = conversationStore.newConversation(workingDirectory: workingDir)
+            conversation = conversationStore.newConversation(workingDirectory: workingDir, environmentId: activeWindowEnvironmentId())
             windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         }
         guard let conv = conversation else { return }
 
         if conv.environmentId == nil {
-            conversationStore.setEnvironmentId(conv, environmentId: environmentStore.activeEnvironmentId)
+            conversationStore.setEnvironmentId(conv, environmentId: activeWindowEnvironmentId())
         }
 
         let isRunning = connection.output(for: conv.id).isRunning

@@ -29,6 +29,8 @@ struct MainChatView: View {
     @State var usageStats: UsageStats?
     @State var awaitingUsageStats = false
     @State var refreshingSessionIds: Set<String> = []
+    @State var refreshTrigger = false
+    @State var exportCopied = false
     @State var heartbeatEnvironmentId: UUID?
     var onShowPlans: (() -> Void)?
     var onShowMemories: (() -> Void)?

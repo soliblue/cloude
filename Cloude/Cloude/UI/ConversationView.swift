@@ -4,6 +4,7 @@ import CloudeShared
 struct ConversationView: View {
     @ObservedObject var connection: ConnectionManager
     @ObservedObject var store: ConversationStore
+    var environmentStore: EnvironmentStore?
     @Environment(\.scenePhase) var scenePhase
 
     let conversation: Conversation?
@@ -86,7 +87,8 @@ struct ConversationView: View {
                     window: window,
                     windowManager: windowManager,
                     onSelectConversation: onSelectRecentConversation,
-                    onNewConversation: onNewConversation
+                    onNewConversation: onNewConversation,
+                    environmentStore: environmentStore
                 )
 
                 if let mates = output?.teammates, !mates.isEmpty {
