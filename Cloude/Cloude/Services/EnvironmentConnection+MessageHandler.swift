@@ -48,7 +48,6 @@ extension EnvironmentConnection {
         case .clipboard(let text):                        mgr.events.send(.clipboard(text))
         case .openURL(let url):                           mgr.events.send(.openURL(url))
         case .haptic(let style):                          mgr.events.send(.haptic(style))
-        case .speak(let text):                            mgr.events.send(.speak(text))
         case .question(let qs, let c):                    handleQuestion(mgr, questions: qs, conversationId: c)
         case .screenshot(let c):                          handleScreenshot(mgr, conversationId: c)
         case .teamCreated(let name, _, let c):            handleTeamCreated(mgr, teamName: name, conversationId: c)

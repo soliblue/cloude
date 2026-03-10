@@ -108,12 +108,6 @@ extension AppDelegate {
             server.broadcast(.haptic(style: style))
             Log.info("Haptic: \(style)")
 
-        case "speak":
-            guard parts.count >= 2 else { return }
-            let text = parts[1]
-            server.broadcast(.speak(text: text))
-            Log.info("Speak: \(text.prefix(50))")
-
         case "switch":
             guard parts.count >= 2 else { return }
             let targetId = parts[1]
