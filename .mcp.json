@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "node",
       "args": [
-        "/Users/soli/Desktop/CODING/cloude/.claude/widgets-mcp/server.js"
+        "/home/soli/projects/cloude/.claude/widgets-mcp/server.js"
       ],
       "env": {}
     }
