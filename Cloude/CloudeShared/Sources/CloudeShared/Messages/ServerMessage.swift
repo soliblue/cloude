@@ -39,7 +39,6 @@ public enum ServerMessage: Codable {
     case clipboard(text: String)
     case openURL(url: String)
     case haptic(style: String)
-    case speak(text: String)
     case switchConversation(conversationId: String)
     case question(questions: [Question], conversationId: String?)
     case fileSearchResults(files: [String], query: String)
@@ -223,9 +222,6 @@ public enum ServerMessage: Codable {
         case "haptic":
             let style = try container.decode(String.self, forKey: .style)
             self = .haptic(style: style)
-        case "speak":
-            let text = try container.decode(String.self, forKey: .text)
-            self = .speak(text: text)
         case "switch_conversation":
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             self = .switchConversation(conversationId: conversationId)

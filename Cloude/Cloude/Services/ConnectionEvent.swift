@@ -41,7 +41,6 @@ enum ConnectionEvent {
     case clipboard(String)
     case openURL(String)
     case haptic(String)
-    case speak(String)
     case question(questions: [Question], conversationId: UUID?)
     case screenshot(conversationId: UUID?)
     case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)

@@ -1,7 +1,6 @@
 import SwiftUI
 import Combine
 import CloudeShared
-import AVFoundation
 import UIKit
 
 extension String: @retroactive Identifiable {
@@ -271,11 +270,6 @@ struct CloudeApp: App {
             default: generator = UIImpactFeedbackGenerator(style: .medium)
             }
             generator.impactOccurred()
-
-        case .speak(let text):
-            let utterance = AVSpeechUtterance(string: text)
-            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-            AVSpeechSynthesizer().speak(utterance)
 
         case .switchConversation(let convId):
             if let conv = conversationStore.findConversation(withId: convId) {

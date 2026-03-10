@@ -162,9 +162,6 @@ extension ServerMessage {
         case .haptic(let style):
             try container.encode("haptic", forKey: .type)
             try container.encode(style, forKey: .style)
-        case .speak(let text):
-            try container.encode("speak", forKey: .type)
-            try container.encode(text, forKey: .text)
         case .switchConversation(let conversationId):
             try container.encode("switch_conversation", forKey: .type)
             try container.encode(conversationId, forKey: .conversationId)
