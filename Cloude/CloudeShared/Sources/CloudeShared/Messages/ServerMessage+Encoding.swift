@@ -240,6 +240,11 @@ extension ServerMessage {
         case .scheduledTaskDeleted(let taskId):
             try container.encode("scheduled_task_deleted", forKey: .type)
             try container.encode(taskId, forKey: .taskId)
+        case .terminalOutput(let output, let exitCode, let isError):
+            try container.encode("terminal_output", forKey: .type)
+            try container.encode(output, forKey: .output)
+            try container.encodeIfPresent(exitCode, forKey: .exitCode)
+            try container.encode(isError, forKey: .isError)
         }
     }
 }
