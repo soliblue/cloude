@@ -64,6 +64,7 @@ extension EnvironmentConnection {
         case .scheduledTasks(let tasks):                  mgr.events.send(.scheduledTasks(tasks))
         case .scheduledTaskUpdated(let task):             mgr.events.send(.scheduledTaskUpdated(task))
         case .scheduledTaskDeleted(let taskId):           mgr.events.send(.scheduledTaskDeleted(taskId: taskId))
+        case .terminalOutput(let out, let code, let err):  mgr.events.send(.terminalOutput(output: out, exitCode: code, isError: err))
         case .fileChange, .image, .gitCommitResult:       break
         }
     }

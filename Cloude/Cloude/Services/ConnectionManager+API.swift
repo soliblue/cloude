@@ -85,6 +85,10 @@ extension ConnectionManager {
         connectionForSend(conversationId: conversationId)?.send(.suggestName(text: text, context: context, conversationId: conversationId.uuidString))
     }
 
+    func terminalExec(command: String, workingDirectory: String, environmentId: UUID? = nil) {
+        connectionForSend(environmentId: environmentId)?.send(.terminalExec(command: command, workingDirectory: workingDirectory))
+    }
+
     func send(_ message: ClientMessage, environmentId: UUID? = nil) {
         connectionForSend(environmentId: environmentId)?.send(message)
     }
