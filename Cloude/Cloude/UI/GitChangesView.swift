@@ -4,6 +4,7 @@ import CloudeShared
 struct GitChangesView: View {
     @ObservedObject var connection: ConnectionManager
     var rootPath: String?
+    var environmentId: UUID?
 
     @State private var gitStatus: GitStatusInfo?
     @State private var isLoading = false
@@ -28,7 +29,7 @@ struct GitChangesView: View {
         }
         .navigationTitle("Git Changes")
         .sheet(item: $selectedFile) { file in
-            GitDiffView(connection: connection, repoPath: repoPath, file: file)
+            GitDiffView(connection: connection, repoPath: repoPath, file: file, environmentId: environmentId)
         }
         .onAppear { loadStatus() }
         .refreshable { loadStatus() }
@@ -90,6 +91,6 @@ struct GitChangesView: View {
     private func loadStatus() {
         isLoading = true
         gitStatus = nil
-        connection.gitStatus(path: repoPath)
+        connection.gitStatus(path: repoPath, environmentId: environmentId)
     }
 }

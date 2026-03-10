@@ -56,7 +56,7 @@ struct FilePreviewView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 if let folder = browsingFolder {
-                    FileBrowserView(connection: connection, rootPath: folder)
+                    FileBrowserView(connection: connection, rootPath: folder, environmentId: environmentId)
                 } else {
                     FileViewerBreadcrumb(path: path) { folderPath in
                         if fileEntry != nil {

@@ -27,7 +27,7 @@ extension FilePreviewView {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if directoryEntries != nil {
-            FileBrowserView(connection: connection, rootPath: path)
+            FileBrowserView(connection: connection, rootPath: path, environmentId: environmentId)
         } else if let error = errorMessage {
             ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
         } else if let data = fileData {
