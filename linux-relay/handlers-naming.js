@@ -48,13 +48,15 @@ Prefer outline versions of icons (e.g. "star" over "star.fill") unless only a .f
 
   log(`Name suggestion request for ${conversationId.slice(0, 8)}`)
 
-  const proc = spawn('bash', ['-c', command], { env: { ...process.env, NO_COLOR: '1' } })
+  const { CLAUDECODE, ...cleanEnv } = process.env
+  const env = { ...cleanEnv, NO_COLOR: '1', PATH: cleanEnv.PATH || '/usr/local/bin:/usr/bin:/bin' }
+  const proc = spawn('bash', ['-c', command], { env, stdio: ['ignore', 'pipe', 'pipe'] })
   let stdout = ''
   let stderr = ''
 
   const timeout = setTimeout(() => {
     proc.kill('SIGTERM')
-    log('Name suggestion timed out')
+    log(`Name suggestion timed out. stderr: ${stderr.trim().slice(0, 200)}`)
   }, 15000)
 
   proc.stdout.on('data', d => { stdout += d })
@@ -62,6 +64,8 @@ Prefer outline versions of icons (e.g. "star" over "star.fill") unless only a .f
 
   proc.on('close', code => {
     clearTimeout(timeout)
+    if (stderr.trim()) log(`Name suggestion stderr: ${stderr.trim().slice(0, 200)}`)
+    if (code !== 0) log(`Name suggestion exited with code ${code}`)
     const output = stdout.trim()
     if (!output) return
 
