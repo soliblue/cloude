@@ -17,77 +17,33 @@ Control Claude Code from your iPhone. Your phone becomes a remote terminal for C
 
 The relay spawns Claude Code CLI processes and streams their output over WebSocket. The iOS app is a native chat UI. Use Tailscale for encrypted remote access, or connect directly on local WiFi.
 
-## Quick Start (Mac)
+## Quick Start
 
-### 1. Install Tailscale (both devices)
-
-```bash
-# Mac
-brew install --cask tailscale
-
-# iPhone - App Store
-```
-
-Sign in with the same account on both.
-
-### 2. Open in Xcode
+### Mac
 
 ```bash
 open Cloude/Cloude.xcodeproj
 ```
 
-### 3. Build the relay
+1. Build **Cloude Agent** target (remove App Sandbox in Signing & Capabilities first)
+2. Build **Cloude** target on your iPhone (add `App Transport Security Settings` > `Allow Arbitrary Loads` = YES in Info tab)
+3. Copy auth token from the menu bar icon, enter it in the app with your Mac's IP and port 8765
 
-1. Select **Cloude Agent** target
-2. Go to **Signing & Capabilities**
-3. **Remove App Sandbox** (click X on it)
-4. Build and run (Cmd+R)
-
-### 4. Build the iOS app
-
-1. Select **Cloude** target
-2. Go to **Info** tab
-3. Add `App Transport Security Settings` > `Allow Arbitrary Loads` = YES
-4. Build and run on your iPhone
-
-### 5. Connect
-
-1. Click the cloud icon in Mac menu bar > copy auth token
-2. On iPhone, enter:
-   - Server: your Mac's Tailscale IP (`tailscale ip -4`)
-   - Port: 8765
-   - Token: paste from step 1
-
-Done.
-
-## Quick Start (Linux)
-
-### 1. Install Node.js and Claude Code
+### Linux
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
 sudo apt-get install -y nodejs
-npm install -g @anthropic-ai/claude-code
-claude login
-```
-
-### 2. Install the relay
-
-```bash
+npm install -g @anthropic-ai/claude-code && claude login
 git clone https://github.com/soliblue/cloude.git
-cd cloude/linux-relay
-sudo bash install.sh
+cd cloude/linux-relay && sudo bash install.sh
 ```
 
-This creates a systemd service, generates an auth token, and starts the relay on port 8765.
+The install script creates a systemd service, generates an auth token, and starts the relay on port 8765. Get your token with `cat /opt/cloude-agent/data/auth-token`.
 
-### 3. Connect from iPhone
+### Connect
 
-1. Get the auth token: `cat /opt/cloude-agent/data/auth-token`
-2. On iPhone, enter:
-   - Server: your server's Tailscale IP (or public IP)
-   - Port: 8765
-   - Token: paste from step 1
+On iPhone, enter your machine's IP (Tailscale IP recommended), port 8765, and the auth token. For remote access, install [Tailscale](https://tailscale.com) on both devices.
 
 ## Features
 
