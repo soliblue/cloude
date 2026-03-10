@@ -239,11 +239,21 @@ export class RunnerManager {
 
   abort(conversationId) {
     const entry = this.runners.get(conversationId)
-    if (entry) entry.runner.abort()
+    if (entry && entry.runner.process) {
+      entry.runner.abort()
+    } else if (this.broadcast) {
+      this.broadcast({ type: 'status', state: 'idle', conversationId })
+    }
   }
 
   abortAll() {
-    for (const [, entry] of this.runners) entry.runner.abort()
+    for (const [convId, entry] of this.runners) {
+      if (entry.runner.process) {
+        entry.runner.abort()
+      } else if (this.broadcast) {
+        this.broadcast({ type: 'status', state: 'idle', conversationId: convId })
+      }
+    }
   }
 
   getSessionId(conversationId) {
