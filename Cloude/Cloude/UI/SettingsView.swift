@@ -7,7 +7,6 @@ struct SettingsView: View {
     private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
-    @AppStorage("enableSuggestions") private var enableSuggestions = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("showCodeLineNumbers") private var showCodeLineNumbers = true
     @State var selectedEnvironmentPage: Int = 0
@@ -66,10 +65,6 @@ struct SettingsView: View {
             .foregroundColor(.primary)
             .sheet(isPresented: $showThemePicker) {
                 ThemePickerView()
-            }
-
-            SettingsRow(icon: "text.bubble", color: .indigo) {
-                Toggle("Smart Suggestions", isOn: $enableSuggestions)
             }
 
             SettingsRow(icon: "text.word.spacing", color: .cyan) {

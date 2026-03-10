@@ -11,7 +11,6 @@ Both relays implement the same WebSocket protocol and handle the same message ty
 The JS relay is missing these Mac-only features that need porting:
 
 - **HeartbeatService** - timer-based autonomous sessions, interval config, unread tracking
-- **SchedulerService** - recurring/one-time cron tasks
 - **AutocompleteService** - conversation name suggestions
 - **ResponseStore** - missed response storage when iOS disconnects
 - **MemoryService** - reads both CLAUDE.md and CLAUDE.local.md (JS only reads local)
@@ -20,7 +19,7 @@ File/git/history/plans/terminal/transcribe handlers are functionally identical.
 
 ## Approach
 
-1. Port the 5 missing services to Node.js
+1. Port the 4 missing services to Node.js
 2. Wrap JS relay in a lightweight native shell for macOS menu bar (Electron/Tauri) if menu bar UI is still wanted
 3. Drop the Swift agent, use JS relay on both platforms
 4. Update fastlane/build scripts accordingly
