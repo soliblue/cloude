@@ -4,7 +4,7 @@ import { handleGitStatus, handleGitDiff, handleGitCommit } from './handlers-git.
 import { handleGetUsageStats, handleListRemoteSessions, handleSyncHistory } from './handlers-history.js'
 import { handleGetMemories, handleGetPlans, handleDeletePlan } from './handlers-plans.js'
 import { handleSuggestName } from './handlers-naming.js'
-import { handleTranscribe, handleTerminalExec } from './handlers-terminal.js'
+import { handleTranscribe, handleTerminalExec, handleTerminalInput, cleanupTerminal } from './handlers-terminal.js'
 
 export function handleMessage(msg, ws, ctx) {
   const { manager, broadcast, sendTo } = ctx
@@ -115,7 +115,11 @@ export function handleMessage(msg, ws, ctx) {
       break
 
     case 'terminal_exec':
-      handleTerminalExec(msg.command, msg.workingDirectory, ws, sendTo)
+      handleTerminalExec(msg.command, msg.workingDirectory, msg.terminalId, ws, sendTo)
+      break
+
+    case 'terminal_input':
+      handleTerminalInput(msg.text, msg.terminalId, ws)
       break
 
     default:

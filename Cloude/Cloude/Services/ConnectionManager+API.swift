@@ -78,8 +78,12 @@ extension ConnectionManager {
         connectionForSend(conversationId: conversationId)?.send(.suggestName(text: text, context: context, conversationId: conversationId.uuidString))
     }
 
-    func terminalExec(command: String, workingDirectory: String, environmentId: UUID? = nil) {
-        connectionForSend(environmentId: environmentId)?.send(.terminalExec(command: command, workingDirectory: workingDirectory))
+    func terminalExec(command: String, workingDirectory: String, terminalId: String? = nil, environmentId: UUID? = nil) {
+        connectionForSend(environmentId: environmentId)?.send(.terminalExec(command: command, workingDirectory: workingDirectory, terminalId: terminalId))
+    }
+
+    func terminalInput(text: String, terminalId: String? = nil, environmentId: UUID? = nil) {
+        connectionForSend(environmentId: environmentId)?.send(.terminalInput(text: text, terminalId: terminalId))
     }
 
     func send(_ message: ClientMessage, environmentId: UUID? = nil) {

@@ -181,6 +181,7 @@
 			name = Cloude;
 			packageProductDependencies = (
 				C2SHARED022F2619AE007FD3E4 /* CloudeShared */,
+				C2SWTERM022F2619AE007FD3E4 /* SwiftTerm */,
 			);
 			productName = Cloude;
 			productReference = C2B3BBA02F2619AE007FD3E4 /* Cloude.app */;
@@ -271,6 +272,7 @@
 				C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
 				C2MLX032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "mlx-swift" */,
 				C2MLXUTIL032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "MLXUtilsLibrary" */,
+				C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C2B3BBA12F2619AE007FD3E4 /* Products */;
@@ -763,6 +765,14 @@
 				minimumVersion = 0.9.0;
 			};
 		};
+		C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -800,6 +810,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */;
 			productName = WhisperKit;
+		};
+		C2SWTERM022F2619AE007FD3E4 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

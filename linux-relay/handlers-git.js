@@ -24,7 +24,7 @@ export function handleGitDiff(path, file, ws, sendTo) {
   try {
     const cmd = file ? `git diff HEAD -- '${file}'` : 'git diff HEAD'
     const diff = execSync(cmd, { cwd: path, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 })
-    sendTo(ws, { type: 'git_diff_result', path, diff })
+    sendTo(ws, { type: 'git_diff_result', path: file || path, diff })
   } catch (e) {
     sendTo(ws, { type: 'error', message: e.message })
   }

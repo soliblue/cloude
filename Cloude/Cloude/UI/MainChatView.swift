@@ -68,6 +68,7 @@ struct MainChatView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
+            .background(PageSwipeDisabler())
             .onChange(of: currentPageIndex) { oldIndex, newIndex in
                 if oldIndex > 0 {
                     let oldWindowIndex = oldIndex - 1
@@ -99,7 +100,9 @@ struct MainChatView: View {
                 }
             }
             .onTapGesture {
-                if !widgetEditing { dismissKeyboard() }
+                if !widgetEditing && windowManager.activeWindow?.type != .terminal {
+                    dismissKeyboard()
+                }
             }
 
             VStack(spacing: 0) {
@@ -279,5 +282,44 @@ struct MainChatView: View {
             conversationStore: conversationStore,
             connection: connection
         ))
+    }
+
+}
+
+struct PageSwipeDisabler: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            guard let hostingView = view.findHostingParent() else { return }
+            hostingView.disableHorizontalScrollViews()
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+extension UIView {
+    func findHostingParent() -> UIView? {
+        var current: UIView? = self
+        while let parent = current?.superview {
+            let typeName = String(describing: type(of: parent))
+            if typeName.contains("UIHostingView") || typeName.contains("HostingView") {
+                return parent
+            }
+            current = parent
+        }
+        return superview
+    }
+
+    func disableHorizontalScrollViews() {
+        for subview in subviews {
+            if let scrollView = subview as? UIScrollView,
+               !scrollView.alwaysBounceVertical,
+               scrollView.isPagingEnabled {
+                scrollView.isScrollEnabled = false
+            }
+            subview.disableHorizontalScrollViews()
+        }
     }
 }
