@@ -601,7 +601,7 @@ function handleTerminalExec(command, workingDirectory, ws, sendTo) {
   const cwd = workingDirectory ? workingDirectory.replace(/^~/, process.env.HOME) : process.env.HOME
   log(`Terminal exec: ${command} (cwd: ${cwd})`)
 
-  const proc = spawn('bash', ['-c', command], { cwd, env: { ...process.env, TERM: 'dumb' } })
+  const proc = spawn('bash', ['-c', command], { cwd, env: { ...process.env, TERM: 'xterm-256color', FORCE_COLOR: '1', CLICOLOR_FORCE: '1' } })
   let stdout = ''
   let stderr = ''
 
