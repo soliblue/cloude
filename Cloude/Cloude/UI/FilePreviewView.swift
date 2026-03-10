@@ -30,6 +30,7 @@ struct FilePreviewView: View {
     @State var browsingFolder: String?
     @State var showSource = false
     @AppStorage("wrapCodeLines") var wrapCodeLines = true
+    @AppStorage("showCodeLineNumbers") var showLineNumbers = true
     @State var chunkProgress: (current: Int, total: Int)?
 
     init(file: FileEntry, connection: ConnectionManager, environmentId: UUID? = nil, onBrowseFolder: ((String) -> Void)? = nil) {

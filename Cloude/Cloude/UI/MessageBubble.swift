@@ -7,6 +7,7 @@ struct MessageBubble: View {
     var skills: [Skill] = []
     var onRefresh: (() -> Void)?
     var onToggleCollapse: (() -> Void)?
+    var isRefreshing: Bool = false
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
     @State private var showTextSelection = false
@@ -130,9 +131,10 @@ struct MessageBubble: View {
                             withAnimation { showCopiedToast = false }
                         }
                     } label: {
-                        Image(systemName: "square.on.square")
+                        Image(systemName: showCopiedToast ? "checkmark" : "square.on.square")
                             .font(.system(size: 9))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(showCopiedToast ? .green : .secondary)
+                            .contentTransition(.symbolEffect(.replace))
                     }
                     .buttonStyle(.plain)
                     if let onRefresh {
@@ -140,8 +142,10 @@ struct MessageBubble: View {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: 9))
                                 .foregroundColor(.secondary)
+                                .symbolEffect(.rotate, options: .repeating, isActive: isRefreshing)
                         }
                         .buttonStyle(.plain)
+                        .disabled(isRefreshing)
                     }
                 }
                 .foregroundColor(.secondary)
@@ -162,12 +166,6 @@ struct MessageBubble: View {
                             TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
                         }
                     )
-                }
-            }
-            .overlay(alignment: .top) {
-                if showCopiedToast {
-                    CopiedToast()
-                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
             .overlay {

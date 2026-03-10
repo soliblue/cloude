@@ -201,8 +201,15 @@ struct TerminalView: View {
         }
     }
 
+    private var isEnvironmentConnected: Bool {
+        if let envId = environmentId {
+            return connection.connection(for: envId)?.isAuthenticated ?? false
+        }
+        return false
+    }
+
     private var canSend: Bool {
-        !commandText.isEmpty || isExecuting
+        isEnvironmentConnected && (!commandText.isEmpty || isExecuting)
     }
 
     private var inputBar: some View {
