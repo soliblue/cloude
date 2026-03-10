@@ -2,6 +2,8 @@ import { WebSocketServer } from 'ws'
 import { log } from './log.js'
 import { handleMessage } from './handlers.js'
 import { RunnerManager } from './runner.js'
+import { loadSkills } from './skills.js'
+import { DEFAULT_PROJECT } from './shared.js'
 
 export function createServer(port, token, dataDir) {
   const wss = new WebSocketServer({ port })
@@ -35,8 +37,10 @@ export function createServer(port, token, dataDir) {
         if (msg.token === token) {
           authenticated.add(ws)
           sendTo(ws, { type: 'auth_result', success: true })
-          sendTo(ws, { type: 'default_working_directory', path: process.env.CLOUDE_PROJECT || `${process.env.HOME}/projects/cloude` })
+          sendTo(ws, { type: 'default_working_directory', path: DEFAULT_PROJECT })
           sendTo(ws, { type: 'whisper_ready', ready: true })
+          const skills = loadSkills(DEFAULT_PROJECT)
+          if (skills.length) sendTo(ws, { type: 'skills', skills })
           log('Client authenticated')
         } else {
           sendTo(ws, { type: 'auth_result', success: false, message: 'Invalid token' })

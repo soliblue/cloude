@@ -3,17 +3,7 @@ import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
 import { log } from './log.js'
 import { handleCloudeCommand } from './commands.js'
-
-function extractToolInput(name, input) {
-  if (!input || typeof input !== 'object') return typeof input === 'string' ? input : JSON.stringify(input)
-  if (name === 'Bash' && input.command) return input.command
-  if (name === 'Read' && input.file_path) return input.file_path
-  if (name === 'Write' && input.file_path) return input.file_path
-  if (name === 'Edit' && input.file_path) return input.file_path
-  if (name === 'Grep' && input.pattern) return input.pattern
-  if (name === 'Glob' && input.pattern) return input.pattern
-  return JSON.stringify(input)
-}
+import { extractToolInput } from './shared.js'
 
 export class ClaudeCodeRunner {
   constructor(conversationId, onEvent) {
