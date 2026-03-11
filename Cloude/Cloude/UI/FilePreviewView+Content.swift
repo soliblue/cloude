@@ -102,40 +102,43 @@ extension FilePreviewView {
     @ViewBuilder
     private func sourceTextView(_ text: String) -> some View {
         let lines = text.components(separatedBy: "\n")
-        ScrollView(wrapCodeLines ? .vertical : [.vertical, .horizontal]) {
-            HStack(alignment: .top, spacing: 0) {
-                if showLineNumbers && lines.count > 1 {
-                    VStack(alignment: .trailing, spacing: 0) {
-                        ForEach(1...lines.count, id: \.self) { num in
-                            Text("\(num)")
-                                .font(.system(size: 12, design: .monospaced))
-                                .foregroundStyle(.tertiary)
-                                .frame(height: 17)
+        ScrollView(.vertical) {
+            ScrollView(.horizontal, showsIndicators: !wrapCodeLines) {
+                HStack(alignment: .top, spacing: 0) {
+                    if showLineNumbers && lines.count > 1 {
+                        VStack(alignment: .trailing, spacing: 0) {
+                            ForEach(1...lines.count, id: \.self) { num in
+                                Text("\(num)")
+                                    .font(.system(size: 12, design: .monospaced))
+                                    .foregroundStyle(.tertiary)
+                                    .frame(height: 17)
+                            }
                         }
+                        .padding(.leading, 12)
+                        .padding(.trailing, 8)
+                        .padding(.top, 16)
+
+                        Divider()
                     }
-                    .padding(.leading, 12)
-                    .padding(.trailing, 8)
-                    .padding(.top, 16)
 
-                    Divider()
-                }
-
-                if let highlighted = highlightedCode {
-                    Text(highlighted)
-                        .font(.system(size: 12, design: .monospaced))
-                        .fixedSize(horizontal: !wrapCodeLines, vertical: false)
-                        .textSelection(.enabled)
-                        .padding()
-                        .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
-                } else {
-                    Text(text)
-                        .font(.system(size: 12, design: .monospaced))
-                        .fixedSize(horizontal: !wrapCodeLines, vertical: false)
-                        .textSelection(.enabled)
-                        .padding()
-                        .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
+                    if let highlighted = highlightedCode {
+                        Text(highlighted)
+                            .font(.system(size: 12, design: .monospaced))
+                            .fixedSize(horizontal: !wrapCodeLines, vertical: false)
+                            .textSelection(.enabled)
+                            .padding()
+                            .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
+                    } else {
+                        Text(text)
+                            .font(.system(size: 12, design: .monospaced))
+                            .fixedSize(horizontal: !wrapCodeLines, vertical: false)
+                            .textSelection(.enabled)
+                            .padding()
+                            .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
+                    }
                 }
             }
+            .scrollDisabled(wrapCodeLines)
         }
         .background(Color.oceanSystemBackground)
     }
