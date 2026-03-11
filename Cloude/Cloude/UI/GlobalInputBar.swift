@@ -59,14 +59,14 @@ struct GlobalInputBar: View {
     private static let placeholders = [
         "Swipe up to record a voice note",
         "Type / to see available commands",
-        "Check the Git tab for changes",
-        "Long press a message to copy",
-        "Swipe between windows below",
-        "Try /compact to reduce context",
+        "Hold send for images and files",
+        "Swipe left on queued messages to delete",
         "Swipe left here to clear text",
+        "Add multiple environments in settings",
+        "Type @ to reference a file",
         "Tap the header to switch chats",
-        "The heartbeat runs on a schedule",
-        "Try /usage to see your stats"
+        "Browse files in the middle tab",
+        "Try /compact to reduce context"
     ]
 
     private var placeholder: String {
