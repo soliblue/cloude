@@ -68,7 +68,7 @@ struct CloudeApp: App {
                         .buttonStyle(.borderless)
                     }
                     ToolbarItem(placement: .principal) {
-                        navTitlePill
+                        environmentIndicators
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
@@ -328,44 +328,18 @@ struct CloudeApp: App {
     }
 
     @ViewBuilder
-    private var navTitlePill: some View {
-        if !windowManager.isHeartbeatShowing {
-            let conversation = windowManager.activeWindow?.conversation(in: conversationStore)
-            Button(action: {
-                NotificationCenter.default.post(name: .editActiveWindow, object: nil)
-            }) {
-                HStack(spacing: 5) {
-                    if let conv = conversation {
-                        Text(conv.name)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .lineLimit(1)
-                            .contentTransition(.numericText())
-                            .animation(.easeInOut(duration: 0.3), value: conv.name)
-                    } else {
-                        Text("Select chat...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    if let folder = conversation?.workingDirectory?.nilIfEmpty?.lastPathComponent {
-                        Text("• \(folder)")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-                    if let conv = conversation, conv.totalCost > 0 {
-                        Text("• $\(String(format: "%.2f", conv.totalCost))")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                }
+    private var environmentIndicators: some View {
+        HStack(spacing: 8) {
+            ForEach(environmentStore.environments) { env in
+                let conn = connection.connection(for: env.id)
+                let isAuthenticated = conn?.isAuthenticated ?? false
+                let isConnecting = (conn?.isConnected ?? false) && !isAuthenticated
+
+                Image(systemName: env.symbol)
+                    .font(.system(size: 14, weight: isAuthenticated ? .semibold : .regular))
+                    .foregroundColor(isAuthenticated || isConnecting ? .accentColor : .secondary.opacity(0.4))
+                    .modifier(StreamingPulseModifier(isStreaming: isConnecting))
             }
-            .buttonStyle(.plain)
         }
     }
 
