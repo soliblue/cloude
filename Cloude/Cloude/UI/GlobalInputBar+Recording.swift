@@ -63,16 +63,11 @@ extension GlobalInputBar {
     func stopRecording() {
         UIApplication.shared.isIdleTimerDisabled = false
         let data = audioRecorder.stopRecording()
+        if let data = data {
+            onTranscribe?(data)
+        }
         withAnimation(.easeOut(duration: Constants.transitionDuration)) {
             showRecordingOverlay = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
-            withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-                showInputBar = true
-            }
-            if let data = data {
-                onTranscribe?(data)
-            }
         }
     }
 
