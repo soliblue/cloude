@@ -97,19 +97,17 @@ struct EnvironmentCard: View {
                     Divider().frame(height: 20)
                 }
 
-                if isConnected {
-                    Button("Disconnect", action: onDisconnect)
-                        .font(.subheadline)
-                        .buttonStyle(.bordered)
-                        .tint(.accentColor)
-                        .controlSize(.small)
-                } else {
-                    Button("Connect", action: onConnect)
-                        .font(.subheadline)
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-                        .disabled(env.host.isEmpty || env.token.isEmpty)
+                Button(action: {
+                    if isConnected { onDisconnect() }
+                    else if !isConnecting { onConnect() }
+                }) {
+                    Image(systemName: "power")
+                        .font(.system(size: 16))
+                        .foregroundStyle(isConnected || isConnecting ? Color.accentColor : .secondary)
+                        .modifier(StreamingPulseModifier(isStreaming: isConnecting))
                 }
+                .buttonStyle(.plain)
+                .disabled(env.host.isEmpty || env.token.isEmpty)
             }
 
             VStack(spacing: 0) {

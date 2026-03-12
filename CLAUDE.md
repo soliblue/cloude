@@ -224,6 +224,11 @@ JSON format for `--questions`:
 
 ## Code Style
 
+### App Colors
+- **Accent color is orange** (rgb 0.8/0.447/0.341) - set in `AccentColor.colorset`, NOT the iOS default blue. `Color.accentColor` everywhere in the app resolves to this warm orange/coral.
+- Background colors come from the theme system (`AppTheme` in `Theme.swift`) - ocean dark is the default with deep navy tones
+- The `Colors.swift` file maps theme palette values to `Color.ocean*` static properties
+
 ### Simplicity-First
 - **Less is more** - always prefer the simplest solution
 - **Code should be beautiful** - treat it like art
