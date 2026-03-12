@@ -276,6 +276,13 @@ struct GlobalInputBar: View {
                 idleTime = Date()
             }
         }
+        .onChange(of: isTranscribing) { _, transcribing in
+            if !transcribing {
+                withAnimation(.easeOut(duration: Constants.transitionDuration)) {
+                    showInputBar = true
+                }
+            }
+        }
         .onReceive(AudioRecorder.pendingAudioCleared) { _ in
             audioRecorder.hasPendingAudio = false
         }
