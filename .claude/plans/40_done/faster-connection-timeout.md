@@ -1,0 +1,10 @@
+# Faster Connection Timeout
+
+## Problem
+Unreachable environments show "Connecting..." for ~60 seconds (iOS default TCP timeout) before failing.
+
+## Solution
+Set `timeoutIntervalForRequest = 10` on the URLSession configuration. Unreachable hosts now fail in 10 seconds instead of 60.
+
+## File Changed
+- `EnvironmentConnection.swift` - `reconnect()` method

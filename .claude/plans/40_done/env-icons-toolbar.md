@@ -1,4 +1,5 @@
 # Environment Icons in Toolbar
+<!-- build: 86 -->
 
 ## Summary
 Show all environment SF Symbol icons in the navigation bar toolbar (between settings logo and power button). Connected environments get accent color, connecting ones pulse, disconnected ones are dimmed.

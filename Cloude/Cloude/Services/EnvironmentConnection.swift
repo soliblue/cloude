@@ -66,7 +66,9 @@ class EnvironmentConnection: ObservableObject, Identifiable {
             return
         }
 
-        session = URLSession(configuration: .default)
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 10
+        session = URLSession(configuration: config)
         webSocket = session?.webSocketTask(with: url)
         webSocket?.resume()
 

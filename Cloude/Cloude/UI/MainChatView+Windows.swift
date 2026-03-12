@@ -75,6 +75,18 @@ extension MainChatView {
 
             Spacer()
 
+            if let envId = conversation?.environmentId,
+               let env = environmentStore.environments.first(where: { $0.id == envId }) {
+                Image(systemName: env.symbol)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .frame(width: 28, height: 28)
+                    .background(Color.secondary.opacity(0.12))
+                    .clipShape(Circle())
+            }
+
+            Spacer()
+
             HStack(spacing: 0) {
                 Button(action: {
                     if let conv = conversation {
