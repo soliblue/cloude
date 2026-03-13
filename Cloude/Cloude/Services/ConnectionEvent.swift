@@ -3,7 +3,7 @@ import CloudeShared
 
 enum ConnectionEvent {
     // Files
-    case directoryListing(path: String, entries: [FileEntry])
+    case directoryListing(path: String, entries: [FileEntry], environmentId: UUID?)
     case fileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool)
     case fileChunk(path: String, chunkIndex: Int, totalChunks: Int, data: String, mimeType: String, size: Int64)
     case fileThumbnail(path: String, data: String, fullSize: Int64)
@@ -12,7 +12,7 @@ enum ConnectionEvent {
 
     // Chat/session
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], interruptedConversationId: UUID?, interruptedMessageId: UUID?)
-    case gitStatus(path: String, status: GitStatusInfo)
+    case gitStatus(path: String, status: GitStatusInfo, environmentId: UUID?)
     case gitDiff(path: String, diff: String)
     case disconnect(conversationId: UUID, output: ConversationOutput)
     case transcription(String)

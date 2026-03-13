@@ -108,7 +108,7 @@ extension FilePreviewView {
                     } else {
                         errorMessage = "Failed to decode thumbnail"
                     }
-                case .directoryListing(let p, let entries):
+                case .directoryListing(let p, let entries, _):
                     guard p == filePath else { return }
                     directoryEntries = entries
                     isLoading = false
