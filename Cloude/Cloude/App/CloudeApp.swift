@@ -337,10 +337,19 @@ struct CloudeApp: App {
                     let isAuthenticated = conn?.isAuthenticated ?? false
                     let isConnecting = (conn?.isConnected ?? false) && !isAuthenticated
 
-                    Image(systemName: env.symbol)
-                        .font(.system(size: 11, weight: isAuthenticated ? .semibold : .regular))
-                        .foregroundColor(isAuthenticated || isConnecting ? .accentColor : .secondary.opacity(0.4))
-                        .modifier(StreamingPulseModifier(isStreaming: isConnecting))
+                    Button(action: {
+                        if isAuthenticated || isConnecting {
+                            connection.disconnectEnvironment(env.id, clearCredentials: false)
+                        } else {
+                            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                        }
+                    }) {
+                        Image(systemName: env.symbol)
+                            .font(.system(size: 11, weight: isAuthenticated ? .semibold : .regular))
+                            .foregroundColor(isAuthenticated || isConnecting ? .accentColor : .secondary.opacity(0.4))
+                            .modifier(StreamingPulseModifier(isStreaming: isConnecting))
+                    }
+                    .buttonStyle(.plain)
                 }
             }
 
@@ -433,7 +442,7 @@ struct CloudeApp: App {
 
     private func connectAllConfiguredEnvironments() {
         for env in environmentStore.environments where !env.host.isEmpty && !env.token.isEmpty {
-            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token)
+            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
         }
     }
 

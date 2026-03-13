@@ -10,6 +10,7 @@ extension MainChatView {
         let allFilesBase64 = encodeFiles(attachedFiles)
 
         guard !text.isEmpty || allImagesBase64 != nil || allFilesBase64 != nil else { return }
+        MessageHistory.save(text)
 
         if text.lowercased().trimmingCharacters(in: .whitespaces) == "/usage" {
             inputText = ""

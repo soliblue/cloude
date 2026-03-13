@@ -9,9 +9,14 @@ extension GlobalInputBar {
         isRunning && !isInputFocused && (showStopButton || !canSend)
     }
 
+    var shouldShowRefreshButton: Bool {
+        !isEnvironmentDisconnected && !isRunning && !canSend && onRefresh != nil
+    }
+
     var actionButtonIcon: String {
         if isEnvironmentDisconnected { return "power" }
         if shouldShowStopButton { return "stop.fill" }
+        if shouldShowRefreshButton { return "arrow.clockwise" }
         if willQueue { return "clock.fill" }
         return "paperplane.fill"
     }
@@ -20,6 +25,10 @@ extension GlobalInputBar {
     var actionButton: some View {
         if isEnvironmentDisconnected {
             Button(action: { onConnect?() }) {
+                actionButtonLabel
+            }
+        } else if shouldShowRefreshButton {
+            Button(action: { onRefresh?() }) {
                 actionButtonLabel
             }
         } else if shouldShowStopButton {
@@ -80,10 +89,10 @@ extension GlobalInputBar {
     var actionButtonLabel: some View {
         Image(systemName: actionButtonIcon)
             .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton ? .white : .secondary.opacity(0.5))
+            .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? .white : .secondary.opacity(0.5))
             .frame(width: 56)
             .frame(maxHeight: .infinity)
-            .background(isEnvironmentDisconnected || canSend || shouldShowStopButton ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
+            .background(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
             .contentShape(Rectangle())
             .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
             .animation(.easeInOut(duration: 0.2), value: canSend)

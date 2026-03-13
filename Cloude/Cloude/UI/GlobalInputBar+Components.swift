@@ -190,6 +190,30 @@ struct SkillPill: View {
     }
 }
 
+struct HistorySuggestions: View {
+    let suggestions: [String]
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(suggestions, id: \.self) { text in
+                    Button(action: { onSelect(text) }) {
+                        Text(text)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+        }
+    }
+}
+
 struct FileSuggestionsList: View {
     let files: [String]
     let onSelect: (String) -> Void

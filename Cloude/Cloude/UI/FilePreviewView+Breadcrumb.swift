@@ -5,12 +5,21 @@ private let maxComponentLength = 20
 
 struct FileViewerBreadcrumb: View {
     let path: String
+    var environmentSymbol: String? = nil
     let onNavigate: (String) -> Void
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 2) {
+                    if let symbol = environmentSymbol {
+                        Image(systemName: symbol)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 8))
+                            .foregroundColor(.secondary)
+                    }
                     ForEach(components) { component in
                         if component.path.isEmpty {
                             Text(component.name)
@@ -77,53 +86,20 @@ struct FileViewerBreadcrumb: View {
 struct FileViewerActions: View {
     let path: String
     let fileData: Data?
-    let isCodeFile: Bool
-    let onGitDiff: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: 12) {
-            if let data = fileData {
-                ShareLink(item: temporaryFileURL(data: data), preview: SharePreview(fileName)) {
-                    Image(systemName: "square.and.arrow.up")
-                }
-
-                Divider()
-                    .frame(height: 20)
-
-                Button(action: { copyToClipboard(data) }) {
-                    Image(systemName: "doc.on.doc")
-                }
+        if let data = fileData {
+            ShareLink(item: temporaryFileURL(data: data), preview: SharePreview(path.lastPathComponent)) {
+                Image(systemName: "square.and.arrow.up")
             }
-
-            if isCodeFile, let onGitDiff {
-                Divider()
-                    .frame(height: 20)
-
-                Button(action: onGitDiff) {
-                    Image(systemName: "chevron.left.forwardslash.chevron.right")
-                }
-            }
+            .font(.body)
         }
-        .padding(.horizontal, 12)
-        .font(.body)
-    }
-
-    private var fileName: String {
-        path.lastPathComponent
     }
 
     private func temporaryFileURL(data: Data) -> URL {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(path.lastPathComponent)
         try? data.write(to: url)
         return url
-    }
-
-    private func copyToClipboard(_ data: Data) {
-        if let text = String(data: data, encoding: .utf8) {
-            UIPasteboard.general.string = text
-        } else {
-            UIPasteboard.general.setData(data, forPasteboardType: "public.data")
-        }
     }
 }
 

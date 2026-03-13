@@ -69,7 +69,10 @@ struct ChatMessageList: View {
                     connection: connection,
                     conversationStore: conversationStore,
                     environmentStore: environmentStore,
-                    conversation: conversation
+                    conversation: conversation,
+                    windowManager: windowManager,
+                    window: window,
+                    onSelectConversation: onSelectConversation
                 )
             }
 
@@ -111,7 +114,7 @@ userHasScrolled = false
         }
         .coordinateSpace(name: "chatScroll")
         .scrollContentBackground(.hidden)
-        .scrollDismissesKeyboard(.immediately)
+        .scrollDismissesKeyboard(.interactively)
         .background {
             GeometryReader { geo in
                 Color.clear.onAppear { scrollViewportHeight = geo.size.height }

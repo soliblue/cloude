@@ -58,7 +58,7 @@ struct FilePreviewView: View {
                 if let folder = browsingFolder {
                     FileBrowserView(connection: connection, rootPath: folder, environmentId: environmentId)
                 } else {
-                    FileViewerBreadcrumb(path: path) { folderPath in
+                    FileViewerBreadcrumb(path: path, environmentSymbol: connection.connection(for: environmentId)?.symbol) { folderPath in
                         if fileEntry != nil {
                             dismiss()
                             onBrowseFolder?(folderPath)
@@ -83,32 +83,34 @@ struct FilePreviewView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    FileViewerActions(
-                        path: path,
-                        fileData: fileData,
-                        isCodeFile: contentType.isTextBased,
-                        onGitDiff: contentType.isTextBased ? { loadGitDiff() } : nil
-                    )
+                    FileViewerActions(path: path, fileData: fileData)
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .principal) {
                     HStack(spacing: 12) {
-                        if contentType.isTextBased && fileData != nil {
+                        if contentType.isTextBased, let _ = fileData {
+                            Button(action: { loadGitDiff() }) {
+                                Image(systemName: "chevron.left.forwardslash.chevron.right")
+                            }
+                            Divider()
+                                .frame(height: 20)
                             Button(action: { wrapCodeLines.toggle() }) {
                                 Image(systemName: wrapCodeLines ? "text.word.spacing" : "arrow.left.and.right.text.vertical")
                             }
                         }
                         if contentType.hasRenderedView && fileData != nil {
+                            Divider()
+                                .frame(height: 20)
                             Button(action: { showSource.toggle() }) {
                                 Image(systemName: showSource ? "doc.richtext" : "curlybraces")
                             }
-                            Divider()
-                                .frame(height: 20)
-                        }
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "xmark")
                         }
                     }
-                    .padding(.horizontal, 12)
+                    .font(.body)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                    }
                     .font(.body)
                 }
             }
