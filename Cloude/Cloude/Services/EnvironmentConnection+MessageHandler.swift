@@ -97,5 +97,13 @@ extension EnvironmentConnection {
         let next = gitStatusQueue.removeFirst()
         gitStatusInFlightPath = next
         send(.gitStatus(path: next))
+
+        gitStatusTimeoutTask?.cancel()
+        gitStatusTimeoutTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(10))
+            guard !Task.isCancelled, let self, self.gitStatusInFlightPath == next else { return }
+            self.gitStatusInFlightPath = nil
+            self.sendNextGitStatusIfNeeded()
+        }
     }
 }

@@ -42,6 +42,7 @@ struct CloudeApp: App {
                 }
             }
             .environmentObject(connection)
+            .environment(\.appTheme, appTheme)
             .preferredColorScheme(appTheme.colorScheme)
         }
     }

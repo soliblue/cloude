@@ -89,6 +89,12 @@ struct GitChangesView: View {
     }
 
     private func loadStatus() {
+        if let conn = connection.connection(for: environmentId) {
+            if conn.gitStatusInFlightPath != nil {
+                conn.gitStatusTimeoutTask?.cancel()
+                conn.gitStatusInFlightPath = nil
+            }
+        }
         isLoading = true
         gitStatus = nil
         connection.gitStatus(path: repoPath, environmentId: environmentId)

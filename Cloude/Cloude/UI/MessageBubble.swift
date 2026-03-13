@@ -13,6 +13,7 @@ struct MessageBubble: View {
     @State private var showTextSelection = false
     @State private var showLongPressMenu = false
     @State private var menuPressY: CGFloat = 0
+    @Environment(\.appTheme) private var appTheme
     private var hasInteractiveWidgets: Bool {
         message.toolCalls.contains { WidgetRegistry.isWidget($0.name) }
     }
@@ -35,9 +36,9 @@ struct MessageBubble: View {
         if message.wasInterrupted {
             return Color.orange.opacity(0.15)
         } else if message.isUser {
-            return Color.oceanBackground
+            return Color(hex: appTheme.palette.background)
         } else {
-            return Color.oceanGray6.opacity(0.3)
+            return Color(hex: appTheme.palette.gray6).opacity(0.3)
         }
     }
 

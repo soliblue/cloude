@@ -28,6 +28,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     var runningConversationId: UUID?
     var gitStatusQueue: [String] = []
     var gitStatusInFlightPath: String?
+    var gitStatusTimeoutTask: Task<Void, Never>?
     var fileCache = FileCache()
     var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
     var interruptedSession: (conversationId: UUID, sessionId: String, messageId: UUID)?
