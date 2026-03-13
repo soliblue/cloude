@@ -14,22 +14,46 @@ export function createServer(port, token, dataDir) {
 
   function broadcast(msg) {
     const data = JSON.stringify(msg)
+    let sent = 0
     for (const client of wss.clients) {
       if (authenticated.has(client) && client.readyState === 1) {
         client.send(data)
+        sent++
       }
     }
+    if (msg.type !== 'stream_output') log(`=> ${msg.type} (to ${sent} clients)`)
   }
 
   function sendTo(ws, msg) {
-    if (ws.readyState === 1) ws.send(JSON.stringify(msg))
+    if (ws.readyState === 1) {
+      log(`-> ${msg.type}${msg.conversationId ? ` (conv=${msg.conversationId.slice(0, 8)})` : ""}`)
+      ws.send(JSON.stringify(msg))
+    }
   }
 
   manager.setBroadcast(broadcast)
 
+  const pingInterval = setInterval(() => {
+    for (const client of wss.clients) {
+      if (client.missedPings >= 3) {
+        log(`Terminating stale connection (missed ${client.missedPings} pings)`)
+        cleanupTerminal(client)
+        authenticated.delete(client)
+        client.terminate()
+        continue
+      }
+      client.missedPings = (client.missedPings || 0) + 1
+      client.ping()
+    }
+  }, 30000)
+
+  wss.on("close", () => clearInterval(pingInterval))
+
   wss.on("connection", (ws, req) => {
     connectionCount++
     const ip = req.socket.remoteAddress
+    ws.missedPings = 0
+    ws.on("pong", () => { ws.missedPings = 0 })
     log(`Client connected (#${connectionCount} from ${ip})`)
     sendTo(ws, { type: "auth_required" })
 
