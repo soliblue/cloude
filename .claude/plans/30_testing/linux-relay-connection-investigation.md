@@ -69,3 +69,11 @@ Server side is clean. The problem is on iOS.
 - [x] Added ExecStartPre to systemd service (fuser -k 8765/tcp)
 - [x] Increased ping tolerance from 1 missed ping (30s) to 3 missed pings (90s)
 - [x] Verified server correctly sends all responses with conversationId
+
+## iOS Fixes Applied (2026-03-13)
+Investigated all 4 iOS suspects. Fixed #1 and added resilience for #2:
+
+- [x] **Suspect #1 (FIXED)**: `isConnected` no longer set on `webSocket.resume()`. Now deferred until server sends `auth_required` (proves TCP handshake completed). Prevents UI from showing "connected" before socket is actually open.
+- [x] **Connection timeout**: If no `auth_required` within 10s, auto-reconnects instead of hanging silently.
+- [x] **Send failure recovery**: If `webSocket.send()` errors, triggers `handleDisconnect()` + auto-reconnect (throttled to max once per 5s to prevent loops).
+- [x] Suspect #3 (manager nil) and #4 (nil conversationId) are edge cases that can't easily be triggered in normal use - left as-is.

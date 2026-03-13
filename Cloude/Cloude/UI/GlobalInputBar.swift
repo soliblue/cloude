@@ -24,8 +24,10 @@ struct GlobalInputBar: View {
     let conversationDefaultEffort: EffortLevel?
     let conversationDefaultModel: ModelSelection?
     let environmentMismatch: Bool
+    let isEnvironmentDisconnected: Bool
     let onSend: () -> Void
     var onStop: (() -> Void)?
+    var onConnect: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
     var onFileSearch: ((String) -> Void)?
     @Binding var currentEffort: EffortLevel?
