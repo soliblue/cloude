@@ -11,13 +11,7 @@ extension EnvironmentConnection {
         switch message {
         case .output(let text, let conversationId):       handleOutput(mgr, text: text, conversationId: conversationId)
         case .status(let state, let conversationId):      handleStatus(mgr, state: state, conversationId: conversationId)
-        case .authRequired:
-            connectionTimeoutTask?.cancel()
-            if !isConnected {
-                isConnected = true
-                mgr.objectWillChange.send()
-            }
-            authenticate()
+        case .authRequired:                               authenticate()
         case .authResult(let success, let msg):           handleAuthResult(mgr, success: success, errorMessage: msg)
         case .error(let msg):                             handleError(mgr, msg)
         case .toolCall(let n, let i, let t, let p, let c, let pos): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos)
