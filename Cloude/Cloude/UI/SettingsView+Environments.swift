@@ -34,7 +34,7 @@ extension SettingsView {
 
     private func connectEnvironment(_ env: ServerEnvironment) {
         environmentStore.setActive(env.id)
-        connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token)
+        connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
     }
 
     private func syncIfActive(_ env: ServerEnvironment) {

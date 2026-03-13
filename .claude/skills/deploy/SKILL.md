@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: Deploy Cloude to TestFlight, install to iPhone, and build the Mac agent. Use when pushing changes and deploying, or when asked to "deploy", "push and deploy", "send to TestFlight", "install to phone", "deploy to iPhone", "wireless install", or "direct install".
+description: Deploy Cloude to TestFlight, install to iPhone, and build the Mac agent. Use when asked to "deploy", "send to TestFlight", "install to phone", "deploy to iPhone", "wireless install", or "direct install".
 user-invocable: true
 icon: airplane.departure
 aliases: [distribute, ship, release]
@@ -19,16 +19,6 @@ Smart deployment workflow for Cloude. Deploys only what has changes (or everythi
 - `/deploy --phone` — force direct-to-phone install (skip TestFlight)
 
 When a flag is provided, skip the auto-detection logic and deploy the specified component directly.
-
-## Pre-Deployment Checklist
-
-**CRITICAL: This is a PUBLIC repo. Before committing, review for:**
-- API keys, tokens, secrets, passwords
-- `.env` files or their contents
-- Personal information, private URLs
-- Keychain data, auth tokens
-
-If unsure about any file, ASK before committing.
 
 ## Determine What Needs Deployment
 
@@ -91,22 +81,7 @@ osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --sho
 
 ## Deployment Steps
 
-### 1. Git Push (if changes exist)
-
-```bash
-git add .
-git commit -m "$(cat <<'EOF'
-feat: Short description of changes
-
-- Bullet point details if needed
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
-EOF
-)"
-git push
-```
-
-### 2. iOS Deploy: Use the Script
+### 1. iOS Deploy: Use the Script
 
 **ALWAYS use the deploy script. NEVER run manual commands.**
 
@@ -127,11 +102,10 @@ The script automatically:
 ```
 Fails if phone is not connected (no TestFlight fallback).
 
-### 3. Deploy Based on What Changed
+### 2. Deploy Based on What Changed
 
 **Both (default when in doubt):**
 ```bash
-# Git push first, then deploy both
 osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --show-toplevel) && source .env && fastlane mac build_agent"'
 .claude/skills/deploy/deploy-ios.sh
 ```
@@ -217,5 +191,4 @@ The WebSocket server has built-in retry logic — if port 8765 is still in use, 
 - **CRITICAL**: Mac agent builds MUST use the `osascript` Terminal approach — never run fastlane mac build_agent directly
 - **Deploying both is the default** — run osascript for agent + deploy script for iOS
 - Always prefix fastlane commands with `source .env &&` to load API credentials
-- Get confirmation before pushing to git
 - If iOS signing fails, check App Store Connect certificates

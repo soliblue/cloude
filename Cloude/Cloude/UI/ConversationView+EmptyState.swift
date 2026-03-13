@@ -8,6 +8,10 @@ struct EmptyConversationView: View {
         "claude-explorer",
     ]
 
+    private static let animatedCharacters: Set<String> = [
+        "claude-boxer",
+    ]
+
     var connection: ConnectionManager?
     var conversationStore: ConversationStore?
     var environmentStore: EnvironmentStore?
@@ -76,10 +80,15 @@ struct EmptyConversationView: View {
         VStack(spacing: 16) {
             Spacer()
 
-            Image(character)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 100, height: 100)
+            if Self.animatedCharacters.contains(character) {
+                AnimatedGIFView(name: "\(character)-anim", playOnce: true)
+                    .frame(width: 100, height: 100)
+            } else {
+                Image(character)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100, height: 100)
+            }
 
             if let envStore = environmentStore, let conn = connection,
                let convStore = conversationStore, let conv = conversation,
