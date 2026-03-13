@@ -81,9 +81,10 @@ class ConnectionManager: ObservableObject {
         connections.values.first { $0.isAuthenticated }
     }
 
-    func connectEnvironment(_ envId: UUID, host: String, port: UInt16, token: String) {
+    func connectEnvironment(_ envId: UUID, host: String, port: UInt16, token: String, symbol: String = "laptopcomputer") {
         let conn = connections[envId] ?? EnvironmentConnection(environmentId: envId)
         conn.manager = self
+        conn.symbol = symbol
         connections[envId] = conn
         conn.connect(host: host, port: port, token: token)
     }

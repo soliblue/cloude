@@ -6,6 +6,7 @@ import CloudeShared
 @MainActor
 class EnvironmentConnection: ObservableObject, Identifiable {
     let environmentId: UUID
+    var symbol: String = "laptopcomputer"
 
     @Published var isConnected = false
     @Published var isAuthenticated = false

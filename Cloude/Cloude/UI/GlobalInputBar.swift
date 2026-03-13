@@ -40,7 +40,7 @@ struct GlobalInputBar: View {
     @FocusState var isInputFocused: Bool
     @StateObject var audioRecorder = AudioRecorder()
     @State private var placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
-    @State private var textFieldId = UUID()
+
     @State var swipeOffset: CGFloat = 0
     @State var horizontalSwipeOffset: CGFloat = 0
     @State var isSwipingToRecord = false
@@ -252,7 +252,6 @@ struct GlobalInputBar: View {
             showStopButton = false
             if !old.isEmpty && new.isEmpty {
                 placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
-                textFieldId = UUID()
             }
             if let query = atMentionQuery {
                 fileSearchDebounce?.cancel()
@@ -320,7 +319,7 @@ struct GlobalInputBar: View {
                     .focused($isInputFocused)
                     .foregroundColor(isSlashCommand ? .cyan : .primary)
                     .onSubmit { if canSend { onSend() } }
-                    .id(textFieldId)
+                    .id("inputField")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)

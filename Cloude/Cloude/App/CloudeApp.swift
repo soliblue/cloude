@@ -100,11 +100,13 @@ struct CloudeApp: App {
                 isLoading: isLoadingPlans,
                 fromCache: plansFromCache,
                 onOpenFile: { path in
-                    showPlans = false
                     let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        filePreviewEnvironmentId = envId
-                        filePathToPreview = path
+                    if connection.connection(for: envId)?.isAuthenticated == true {
+                        showPlans = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            filePreviewEnvironmentId = envId
+                            filePathToPreview = path
+                        }
                     }
                 }
             )
@@ -116,9 +118,11 @@ struct CloudeApp: App {
             guard url.scheme == "cloude" else { return }
             switch url.host {
             case "file":
-                let path = url.path.removingPercentEncoding ?? url.path
-                filePreviewEnvironmentId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-                filePathToPreview = path
+                let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
+                if connection.connection(for: envId)?.isAuthenticated == true {
+                    filePreviewEnvironmentId = envId
+                    filePathToPreview = url.path.removingPercentEncoding ?? url.path
+                }
             case "memory":
                 openMemories()
             default:
