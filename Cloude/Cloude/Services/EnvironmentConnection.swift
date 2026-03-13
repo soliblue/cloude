@@ -29,8 +29,6 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     var gitStatusQueue: [String] = []
     var gitStatusInFlightPath: String?
     var gitStatusTimeoutTask: Task<Void, Never>?
-    var connectionTimeoutTask: Task<Void, Never>?
-    private var lastReconnectTime: Date?
     var fileCache = FileCache()
     var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
     var interruptedSession: (conversationId: UUID, sessionId: String, messageId: UUID)?
@@ -61,7 +59,6 @@ class EnvironmentConnection: ObservableObject, Identifiable {
 
     func reconnect() {
         guard hasCredentials else { return }
-        lastReconnectTime = Date()
         disconnect(clearCredentials: false)
         connectionToken = UUID()
 
@@ -70,23 +67,15 @@ class EnvironmentConnection: ObservableObject, Identifiable {
             return
         }
 
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 10
-        session = URLSession(configuration: config)
+        session = URLSession(configuration: .default)
         webSocket = session?.webSocketTask(with: url)
         webSocket?.resume()
 
+        isConnected = true
         lastError = nil
-        let token = connectionToken
-        receiveMessage(token: token)
+        manager?.objectWillChange.send()
 
-        connectionTimeoutTask?.cancel()
-        connectionTimeoutTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(10))
-            guard !Task.isCancelled, let self, token == self.connectionToken, !self.isConnected else { return }
-            self.lastError = "Connection timeout"
-            self.reconnect()
-        }
+        receiveMessage(token: connectionToken)
     }
 
     func reconnectIfNeeded() {
@@ -126,12 +115,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
         webSocket?.send(.string(text)) { [weak self] error in
             if let error = error {
                 Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    self.lastError = error.localizedDescription
-                    self.handleDisconnect()
-                    if self.lastReconnectTime.map({ Date().timeIntervalSince($0) > 5 }) ?? true {
-                        self.reconnectIfNeeded()
-                    }
+                    self?.lastError = error.localizedDescription
                 }
             }
         }
