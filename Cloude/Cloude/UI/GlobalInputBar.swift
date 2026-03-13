@@ -28,6 +28,7 @@ struct GlobalInputBar: View {
     let onSend: () -> Void
     var onStop: (() -> Void)?
     var onConnect: (() -> Void)?
+    var onRefresh: (() -> Void)?
     var onTranscribe: ((Data) -> Void)?
     var onFileSearch: ((String) -> Void)?
     @Binding var currentEffort: EffortLevel?
@@ -126,6 +127,11 @@ struct GlobalInputBar: View {
         return true
     }
 
+    private var historySuggestions: [String] {
+        guard !showFileSuggestions, !showCommandSuggestions else { return [] }
+        return MessageHistory.suggestions(for: inputText)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if audioRecorder.hasPendingAudio && !audioRecorder.isRecording && !isTranscribing {
@@ -154,6 +160,14 @@ struct GlobalInputBar: View {
                             inputText += " "
                             isInputFocused = true
                         }
+                    }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if !historySuggestions.isEmpty {
+                HistorySuggestions(
+                    suggestions: historySuggestions,
+                    onSelect: { text in
+                        inputText = text
                     }
                 )
                 .transition(.move(edge: .bottom).combined(with: .opacity))

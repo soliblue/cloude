@@ -56,16 +56,18 @@ extension MainChatView {
         HStack(spacing: 0) {
             HStack(spacing: 0) {
                 ForEach(Array(WindowType.allCases.enumerated()), id: \.element) { index, type in
+                    let envConnected = type == .chat || (conversation?.environmentId).flatMap({ connection.connection(for: $0)?.isConnected }) ?? false
                     if index > 0 {
                         Divider()
                             .frame(height: 20)
                     }
                     Button(action: {
-                        windowManager.setWindowType(window.id, type: type)
+                        if envConnected { windowManager.setWindowType(window.id, type: type) }
                     }) {
                         Image(systemName: type.icon)
                             .font(.system(size: 15, weight: window.type == type ? .semibold : .regular))
                             .foregroundColor(window.type == type ? .accentColor : .secondary)
+                            .opacity(envConnected ? 1 : 0.3)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 7)
                     }
@@ -77,12 +79,22 @@ extension MainChatView {
 
             if let envId = conversation?.environmentId,
                let env = environmentStore.environments.first(where: { $0.id == envId }) {
-                Image(systemName: env.symbol)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(Color.secondary.opacity(0.12))
-                    .clipShape(Circle())
+                let envConnected = connection.connection(for: envId)?.isConnected ?? false
+                Button(action: {
+                    if envConnected {
+                        connection.disconnectEnvironment(envId, clearCredentials: false)
+                    } else {
+                        connection.connectEnvironment(envId, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                    }
+                }) {
+                    Image(systemName: env.symbol)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(envConnected ? .accentColor : .secondary)
+                        .frame(width: 28, height: 28)
+                        .background((envConnected ? Color.accentColor : Color.secondary).opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
             }
 
             Spacer()
@@ -210,7 +222,7 @@ extension MainChatView {
         return false
     }
 
-    private func refreshConversation(for window: ChatWindow) {
+    func refreshConversation(for window: ChatWindow) {
         guard let convId = window.conversationId,
               let conv = conversationStore.conversation(withId: convId),
               let sessionId = conv.sessionId,

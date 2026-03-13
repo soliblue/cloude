@@ -122,10 +122,20 @@ struct MainChatView: View {
                         conversationDefaultEffort: currentConversation?.defaultEffort,
                         conversationDefaultModel: currentConversation?.defaultModel,
                         environmentMismatch: hasEnvironmentMismatch,
-                        isEnvironmentDisconnected: activeEnvConnection?.hasCredentials == true && activeEnvConnection?.isAuthenticated != true,
+                        isEnvironmentDisconnected: activeEnvConnection?.isAuthenticated != true,
                         onSend: sendMessage,
                         onStop: stopActiveConversation,
-                        onConnect: { activeEnvConnection?.reconnect() },
+                        onConnect: {
+                            let envId = currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
+                            if let envId, let env = environmentStore.environments.first(where: { $0.id == envId }) {
+                                connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                            }
+                        },
+                        onRefresh: {
+                            if let window = windowManager.activeWindow {
+                                refreshConversation(for: window)
+                            }
+                        },
                         onTranscribe: transcribeAudio,
                         onFileSearch: searchFiles,
                         currentEffort: $currentEffort,
@@ -255,11 +265,11 @@ struct MainChatView: View {
             guard authed else { return }
             replayQueuedMessagesIfNeeded()
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-            isKeyboardVisible = true
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+            withAnimation(keyboardAnimation(from: notification)) { isKeyboardVisible = true }
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            isKeyboardVisible = false
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { notification in
+            withAnimation(keyboardAnimation(from: notification)) { isKeyboardVisible = false }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
             fetchLatestScreenshot()
@@ -282,6 +292,15 @@ struct MainChatView: View {
             conversationStore: conversationStore,
             connection: connection
         ))
+    }
+
+    func keyboardAnimation(from notification: Notification) -> Animation {
+        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.25
+        let curveRaw = notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt ?? 0
+        if UIView.AnimationCurve(rawValue: Int(curveRaw)) == .easeInOut {
+            return .easeInOut(duration: duration)
+        }
+        return .easeOut(duration: duration)
     }
 
 }
