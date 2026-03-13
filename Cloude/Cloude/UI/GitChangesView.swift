@@ -34,7 +34,7 @@ struct GitChangesView: View {
         .onAppear { loadStatus() }
         .refreshable { loadStatus() }
         .onReceive(connection.events) { event in
-            if case let .gitStatus(path, status) = event, path == repoPath {
+            if case let .gitStatus(path, status, envId) = event, path == repoPath, envId == environmentId {
                 gitStatus = status
                 isLoading = false
             }

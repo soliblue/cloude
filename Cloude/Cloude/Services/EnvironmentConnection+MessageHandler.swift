@@ -21,7 +21,7 @@ extension EnvironmentConnection {
         case .noMissedResponse(let sid):                  handleNoMissedResponse(sessionId: sid)
         case .sessionId(let id, let c):                   handleSessionId(mgr, id, conversationId: c)
         case .messageUUID(let uuid, let c):               handleMessageUUID(mgr, uuid, conversationId: c)
-        case .directoryListing(let path, let entries):    mgr.events.send(.directoryListing(path: path, entries: entries))
+        case .directoryListing(let path, let entries):    mgr.events.send(.directoryListing(path: path, entries: entries, environmentId: environmentId))
         case .fileContent(let p, let d, let m, let s, let t): handleFileContent(mgr, path: p, data: d, mimeType: m, size: s, truncated: t)
         case .fileChunk(let p, let ci, let tc, let d, let m, let s): handleFileChunk(mgr, path: p, chunkIndex: ci, totalChunks: tc, data: d, mimeType: m, size: s)
         case .fileThumbnail(let p, let d, let fs):        mgr.events.send(.fileThumbnail(path: p, data: d, fullSize: fs))

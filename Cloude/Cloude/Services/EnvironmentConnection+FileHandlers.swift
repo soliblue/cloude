@@ -32,7 +32,7 @@ extension EnvironmentConnection {
     func handleGitStatusResult(_ mgr: ConnectionManager, _ status: GitStatusInfo) {
         let path = gitStatusInFlightPath ?? ""
         gitStatusInFlightPath = nil
-        mgr.events.send(.gitStatus(path: path, status: status))
+        mgr.events.send(.gitStatus(path: path, status: status, environmentId: environmentId))
         sendNextGitStatusIfNeeded()
     }
 

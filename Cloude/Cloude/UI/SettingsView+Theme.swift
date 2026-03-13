@@ -15,16 +15,16 @@ struct ThemePickerView: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(AppTheme.allCases, id: \.self) { theme in
-                        ThemeCard(theme: theme, isSelected: appTheme == theme)
+                        ThemeCard(theme: theme, isSelected: appTheme == theme, currentTheme: appTheme)
                             .onTapGesture { appThemeRaw = theme.rawValue }
                     }
                 }
                 .padding(16)
             }
-            .background(Color.oceanBackground)
+            .background(Color(hex: appTheme.palette.background))
             .navigationTitle("Theme")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color(hex: appTheme.palette.secondary), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -41,6 +41,7 @@ struct ThemePickerView: View {
 struct ThemeCard: View {
     let theme: AppTheme
     let isSelected: Bool
+    let currentTheme: AppTheme
 
     var body: some View {
         VStack(spacing: 0) {
@@ -70,7 +71,7 @@ struct ThemeCard: View {
             }
             .padding(.bottom, 10)
         }
-        .background(Color.oceanSecondary)
+        .background(Color(hex: currentTheme.palette.secondary))
         .cornerRadius(9)
         .overlay(
             RoundedRectangle(cornerRadius: 9)

@@ -32,7 +32,7 @@ struct FileBrowserView: View {
             loadDirectory()
         }
         .onReceive(connection.events) { event in
-            if case let .directoryListing(path, newEntries) = event {
+            if case let .directoryListing(path, newEntries, envId) = event, envId == environmentId {
                 currentPath = path
                 entries = newEntries
                 isLoading = false

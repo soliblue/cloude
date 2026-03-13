@@ -41,7 +41,7 @@ extension MainChatView {
         case .fileSearchResults(let files, _):
             fileSearchResults = files
 
-        case .gitStatus(let path, let status):
+        case .gitStatus(let path, let status, _):
             // MainChatView only uses this to annotate known working directories with their branch.
             if gitBranches[path] == nil, !status.branch.isEmpty {
                 gitBranches[path] = status.branch
