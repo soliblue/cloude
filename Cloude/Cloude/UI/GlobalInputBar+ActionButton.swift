@@ -10,6 +10,7 @@ extension GlobalInputBar {
     }
 
     var actionButtonIcon: String {
+        if isEnvironmentDisconnected { return "power" }
         if shouldShowStopButton { return "stop.fill" }
         if willQueue { return "clock.fill" }
         return "paperplane.fill"
@@ -17,7 +18,11 @@ extension GlobalInputBar {
 
     @ViewBuilder
     var actionButton: some View {
-        if shouldShowStopButton {
+        if isEnvironmentDisconnected {
+            Button(action: { onConnect?() }) {
+                actionButtonLabel
+            }
+        } else if shouldShowStopButton {
             Button(action: { onStop?() }) {
                 actionButtonLabel
             }
@@ -75,10 +80,10 @@ extension GlobalInputBar {
     var actionButtonLabel: some View {
         Image(systemName: actionButtonIcon)
             .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(canSend || shouldShowStopButton ? .white : .secondary.opacity(0.5))
+            .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton ? .white : .secondary.opacity(0.5))
             .frame(width: 56)
             .frame(maxHeight: .infinity)
-            .background(canSend || shouldShowStopButton ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
+            .background(isEnvironmentDisconnected || canSend || shouldShowStopButton ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
             .contentShape(Rectangle())
             .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
             .animation(.easeInOut(duration: 0.2), value: canSend)

@@ -29,6 +29,8 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     var gitStatusQueue: [String] = []
     var gitStatusInFlightPath: String?
     var gitStatusTimeoutTask: Task<Void, Never>?
+    var connectionTimeoutTask: Task<Void, Never>?
+    private var lastReconnectTime: Date?
     var fileCache = FileCache()
     var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
     var interruptedSession: (conversationId: UUID, sessionId: String, messageId: UUID)?
@@ -59,6 +61,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
 
     func reconnect() {
         guard hasCredentials else { return }
+        lastReconnectTime = Date()
         disconnect(clearCredentials: false)
         connectionToken = UUID()
 
@@ -73,11 +76,17 @@ class EnvironmentConnection: ObservableObject, Identifiable {
         webSocket = session?.webSocketTask(with: url)
         webSocket?.resume()
 
-        isConnected = true
         lastError = nil
-        manager?.objectWillChange.send()
+        let token = connectionToken
+        receiveMessage(token: token)
 
-        receiveMessage(token: connectionToken)
+        connectionTimeoutTask?.cancel()
+        connectionTimeoutTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(10))
+            guard !Task.isCancelled, let self, token == self.connectionToken, !self.isConnected else { return }
+            self.lastError = "Connection timeout"
+            self.reconnect()
+        }
     }
 
     func reconnectIfNeeded() {
@@ -117,7 +126,12 @@ class EnvironmentConnection: ObservableObject, Identifiable {
         webSocket?.send(.string(text)) { [weak self] error in
             if let error = error {
                 Task { @MainActor [weak self] in
-                    self?.lastError = error.localizedDescription
+                    guard let self else { return }
+                    self.lastError = error.localizedDescription
+                    self.handleDisconnect()
+                    if self.lastReconnectTime.map({ Date().timeIntervalSince($0) > 5 }) ?? true {
+                        self.reconnectIfNeeded()
+                    }
                 }
             }
         }
