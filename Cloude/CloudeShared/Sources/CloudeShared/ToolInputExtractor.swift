@@ -40,7 +40,7 @@ public enum ToolInputExtractor {
             let msgType = input?["type"] as? String ?? "message"
             return "\(msgType) → \(target)"
         default:
-            if name.hasPrefix("mcp__widgets__"), let input = input,
+            if name.hasPrefix("mcp__"), let input = input,
                let data = try? JSONSerialization.data(withJSONObject: input),
                let json = String(data: data, encoding: .utf8) {
                 return json

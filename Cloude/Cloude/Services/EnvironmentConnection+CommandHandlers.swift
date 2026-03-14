@@ -3,38 +3,6 @@ import Combine
 import CloudeShared
 
 extension EnvironmentConnection {
-    func handleRenameConversation(_ mgr: ConnectionManager, conversationId: String, name: String) {
-        if let id = UUID(uuidString: conversationId) {
-            mgr.events.send(.renameConversation(conversationId: id, name: name))
-        }
-    }
-
-    func handleSetConversationSymbol(_ mgr: ConnectionManager, conversationId: String, symbol: String?) {
-        if let id = UUID(uuidString: conversationId) {
-            mgr.events.send(.setConversationSymbol(conversationId: id, symbol: symbol))
-        }
-    }
-
-    func handleDeleteConversation(_ mgr: ConnectionManager, conversationId: String) {
-        if let id = UUID(uuidString: conversationId) {
-            mgr.events.send(.deleteConversation(conversationId: id))
-        }
-    }
-
-    func handleSwitchConversation(_ mgr: ConnectionManager, conversationId: String) {
-        if let id = UUID(uuidString: conversationId) {
-            mgr.events.send(.switchConversation(conversationId: id))
-        }
-    }
-
-    func handleQuestion(_ mgr: ConnectionManager, questions: [Question], conversationId: String?) {
-        mgr.events.send(.question(questions: questions, conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
-    }
-
-    func handleScreenshot(_ mgr: ConnectionManager, conversationId: String?) {
-        mgr.events.send(.screenshot(conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
-    }
-
     func handleNameSuggestion(_ mgr: ConnectionManager, name: String, symbol: String?, conversationId: String) {
         if let id = UUID(uuidString: conversationId) {
             mgr.events.send(.renameConversation(conversationId: id, name: name))

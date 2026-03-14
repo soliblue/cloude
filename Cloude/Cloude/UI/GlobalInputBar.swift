@@ -49,6 +49,7 @@ struct GlobalInputBar: View {
     @State private var idleTime: Date = Date()
     @State var showStopButton = false
     @State var refreshRotateTrigger = 0
+    @State var sendBounceTrigger = 0
     @State private var fileSearchDebounce: Task<Void, Never>?
 
     enum Constants {

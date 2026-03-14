@@ -192,3 +192,4 @@ The WebSocket server has built-in retry logic — if port 8765 is still in use, 
 - **Deploying both is the default** — run osascript for agent + deploy script for iOS
 - Always prefix fastlane commands with `source .env &&` to load API credentials
 - If iOS signing fails, check App Store Connect certificates
+- **Every deploy must have tickets**: If the changes being deployed don't have a corresponding plan in `plans/30_testing/`, create one before deploying. Every feature/fix ships with a ticket - no exceptions.

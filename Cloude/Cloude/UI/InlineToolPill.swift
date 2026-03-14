@@ -11,19 +11,25 @@ struct InlineToolPill: View {
         return BashCommandParser.chainedCommandsWithOperators(for: input)
     }
 
+    private var isIOSControl: Bool { ToolCallLabel.isIOSControl(toolCall.name) }
+
     var body: some View {
-        pillContent
-        .highPriorityGesture(
-            TapGesture()
-                .onEnded {
-                    showDetail = true
-                }
-        )
-        .onLongPressGesture {
-            showDetail = true
-        }
-        .sheet(isPresented: $showDetail) {
-            ToolDetailSheet(toolCall: toolCall, children: children)
+        if isIOSControl {
+            pillContent
+        } else {
+            pillContent
+            .highPriorityGesture(
+                TapGesture()
+                    .onEnded {
+                        showDetail = true
+                    }
+            )
+            .onLongPressGesture {
+                showDetail = true
+            }
+            .sheet(isPresented: $showDetail) {
+                ToolDetailSheet(toolCall: toolCall, children: children)
+            }
         }
     }
 

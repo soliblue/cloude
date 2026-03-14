@@ -10,7 +10,7 @@ const server = new Server(
 const tools = [
   {
     name: "function_plot",
-    description: "Render an interactive 2D function plot with parameter sliders. The user can drag sliders to change parameters and see the curve update in real-time.",
+    description: "Render an interactive 2D function plot with parameter sliders. User drags sliders to change parameters and see the curve update in real-time. Use for: algorithm complexity visualization (O(n) vs O(n log n)), easing curves, signal processing, math explanations.",
     inputSchema: {
       type: "object",
       properties: {
@@ -50,7 +50,7 @@ const tools = [
   },
   {
     name: "interactive_function",
-    description: "Render an interactive calculator with sliders for inputs and a live-computed output. Like a mini spreadsheet.",
+    description: "Render an interactive calculator with sliders for inputs and a live-computed output. Use for: cost estimators (API pricing by token count), performance calculators (throughput vs latency), capacity planning, unit conversions.",
     inputSchema: {
       type: "object",
       properties: {
@@ -135,7 +135,7 @@ const tools = [
   },
   {
     name: "matching",
-    description: "Render a matching exercise with two columns. User taps one item from the left column then one from the right to create a pair.",
+    description: "Render a matching exercise with two columns. User taps one item from the left column then one from the right to create a pair. Use for: mapping APIs to endpoints, protocols to conforming types, env vars to their purpose.",
     inputSchema: {
       type: "object",
       properties: {
@@ -158,7 +158,7 @@ const tools = [
   },
   {
     name: "categorization",
-    description: "Render a categorization exercise. Items appear at the top and the user taps to sort them into labeled category buckets.",
+    description: "Render a categorization exercise. Items appear at the top and user taps to sort them into labeled buckets. Use for: sorting files by layer (UI/Services/Models), grouping dependencies by purpose, triaging issues by severity.",
     inputSchema: {
       type: "object",
       properties: {
@@ -251,7 +251,7 @@ const tools = [
   },
   {
     name: "bar_chart",
-    description: "Render a bar chart for comparing values. Great for histograms, frequency distributions, and category comparisons.",
+    description: "Render a bar chart for comparing values. Use for: bundle sizes by module, LOC per file, test counts by status (pass/fail/skip), build times, dependency counts, API response time comparisons.",
     inputSchema: {
       type: "object",
       properties: {
@@ -276,7 +276,7 @@ const tools = [
   },
   {
     name: "pie_chart",
-    description: "Render a pie chart showing proportions. Great for percentages, fractions, and part-of-whole relationships.",
+    description: "Render a pie chart showing proportions. Use for: code composition (Swift vs ObjC), test coverage breakdown, error distribution by type, disk usage by category.",
     inputSchema: {
       type: "object",
       properties: {
@@ -299,7 +299,7 @@ const tools = [
   },
   {
     name: "scatter_plot",
-    description: "Render a scatter plot for showing data point relationships and correlations.",
+    description: "Render a scatter plot for showing relationships and correlations. Use for: file size vs complexity, test duration vs coverage, coupling vs cohesion analysis.",
     inputSchema: {
       type: "object",
       properties: {
@@ -325,7 +325,7 @@ const tools = [
   },
   {
     name: "line_chart",
-    description: "Render a data-driven line chart for time series, trends, and sequences. Unlike function_plot, this takes explicit data points.",
+    description: "Render a data-driven line chart for time series and trends. Use for: build time trends, crash rates over releases, API latency over time, git commit frequency, memory/CPU usage patterns.",
     inputSchema: {
       type: "object",
       properties: {
@@ -360,7 +360,7 @@ const tools = [
   },
   {
     name: "step_reveal",
-    description: "Render a step-by-step reveal exercise. Steps are hidden and revealed one at a time as the user taps 'Next'. Forces active thinking before seeing each answer.",
+    description: "Render a step-by-step reveal. Steps are hidden and revealed one at a time as the user taps 'Next'. Use for: debugging walkthroughs, explaining complex algorithms, migration checklists, deployment runbooks, onboarding sequences.",
     inputSchema: {
       type: "object",
       properties: {
@@ -376,7 +376,7 @@ const tools = [
   },
   {
     name: "timeline",
-    description: "Render a vertical timeline of events. Each event has a date, title, optional description, SF Symbol icon, and color dot.",
+    description: "Render a vertical timeline of events with SF Symbol icons and colored dots. Use for: git history visualization, deployment history, incident timelines, release changelogs, project milestones, request lifecycle (client → server → db → response).",
     inputSchema: {
       type: "object",
       properties: {
@@ -402,7 +402,7 @@ const tools = [
   },
   {
     name: "image_carousel",
-    description: "Render an image or swipeable image carousel. Supports local file paths and web URLs. Single image shows inline, multiple images show as a swipeable carousel with page dots.",
+    description: "Render an image or swipeable image carousel from local file paths or web URLs. Use for: showing screenshots, before/after UI comparisons, design references, architecture diagrams as images.",
     inputSchema: {
       type: "object",
       properties: {
@@ -425,7 +425,7 @@ const tools = [
   },
   {
     name: "color_palette",
-    description: "Render a color palette with labeled swatches. Great for showing theme colors, brand palettes, design systems, or any set of colors with context.",
+    description: "Render a color palette with labeled swatches. Use for: app theme colors, design system tokens, proposing UI color changes, showing current vs proposed palettes.",
     inputSchema: {
       type: "object",
       properties: {
@@ -448,7 +448,7 @@ const tools = [
   },
   {
     name: "tree",
-    description: "Render a collapsible tree diagram. Great for file structures, org charts, decision trees. Nodes can have SF Symbol icons and are collapsible.",
+    description: "Render a collapsible tree diagram. Use for: project folder structures, module dependency trees, class/protocol hierarchies, view hierarchies, decision trees, architecture overviews. Nodes can have SF Symbol icons and are collapsible. PREFER this over markdown code blocks for any hierarchical structure.",
     inputSchema: {
       type: "object",
       properties: {

@@ -16,7 +16,6 @@ struct ToolDetailSheet: View {
     }
 
     private var displayName: String {
-        if toolCall.isMemoryCommand { return "Memory" }
         if toolCall.isScript { return "Script" }
         if toolCall.name == "Bash", let input = toolCall.input {
             let chained = BashCommandParser.chainedCommandsWithOperators(for: input)
@@ -99,7 +98,9 @@ struct ToolDetailSheet: View {
                         fileSection(path)
                     }
 
-                    if let output = displayedOutput {
+                    if toolCall.name == "Read", let output = toolCall.resultOutput, !output.isEmpty {
+                        readOutputSection(output)
+                    } else if let output = displayedOutput {
                         outputSection(output)
                     }
 

@@ -26,10 +26,28 @@ struct ToolCallLabel: View {
         ToolCall(name: name, input: input)
     }
 
-    private var isMemoryCommand: Bool { toolCallProxy.isMemoryCommand }
     private var isScript: Bool { toolCallProxy.isScript }
 
+    static func isIOSControl(_ name: String) -> Bool { name.hasPrefix("mcp__ios__") }
+
+    private static let iosDisplayNames: [String: String] = [
+        "rename": "Rename", "symbol": "Symbol", "notify": "Notify",
+        "clipboard": "Clipboard", "open": "Open", "haptic": "Haptic",
+        "switch": "Switch", "delete": "Delete", "skip": "Skip", "screenshot": "Screenshot"
+    ]
+
+    private static let iosIcons: [String: String] = [
+        "rename": "character.cursor.ibeam", "symbol": "star.square", "notify": "bell.fill",
+        "clipboard": "doc.on.clipboard", "open": "safari", "haptic": "iphone.radiowaves.left.and.right",
+        "switch": "arrow.left.arrow.right", "delete": "trash", "skip": "forward.fill", "screenshot": "camera.viewfinder"
+    ]
+
+    private var iosAction: String? {
+        ToolCallLabel.isIOSControl(name) ? String(name.dropFirst("mcp__ios__".count)) : nil
+    }
+
     private var displayName: String {
+        if let action = iosAction { return ToolCallLabel.iosDisplayNames[action] ?? action.capitalized }
         if WidgetRegistry.isWidget(name) { return WidgetRegistry.displayName(name) }
         if name == "TodoWrite" { return "Tasks" }
         if name == "TeamCreate" { return "Team" }
@@ -40,7 +58,6 @@ struct ToolCallLabel: View {
             return "/\(skillName)"
         }
         guard name == "Bash", let input = input, !input.isEmpty else { return name }
-        if isMemoryCommand { return "Memory" }
         if isScript { return "Script" }
         let parsed = BashCommandParser.parse(input)
         var cmd = parsed.command
@@ -58,20 +75,24 @@ struct ToolCallLabel: View {
     private var displayDetail: String? {
         guard let input = input, !input.isEmpty else { return nil }
 
+        if let action = iosAction {
+            let json = input.data(using: .utf8).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
+            switch action {
+            case "rename": return (json["name"] as? String).map { truncateText($0, maxLength: 12) }
+            case "symbol": return json["symbol"] as? String
+            case "notify": return (json["message"] as? String).map { truncateText($0, maxLength: 12) }
+            case "clipboard": return (json["text"] as? String).map { truncateText($0, maxLength: 12) }
+            case "open": return (json["url"] as? String).map { truncateText($0, maxLength: 12) }
+            case "haptic": return json["style"] as? String
+            default: return nil
+            }
+        }
+
         switch name {
         case "Read", "Write", "Edit":
             let filename = input.lastPathComponent
             return truncateFilename(filename, maxLength: 8)
         case "Bash":
-            if isMemoryCommand {
-                let parts = input.split(separator: " ", maxSplits: 3)
-                if parts.count >= 4 {
-                    let text = String(parts[3])
-                    let truncated = text.prefix(12)
-                    return truncated.count < text.count ? "\(truncated)..." : text
-                }
-                return nil
-            }
             if isScript { return nil }
             return bashDisplayDetail(input)
         case "Glob", "Grep":
@@ -122,7 +143,7 @@ struct ToolCallLabel: View {
         case "grep", "rg":                 return parsed.firstArg.map { truncateText($0, maxLength: 8) } ?? ""
         case "echo":                        return truncateText(parsed.allArgs.joined(separator: " "), maxLength: 9)
         case "export":                      return parsed.firstArg.map { $0.split(separator: "=").first.map(String.init) ?? $0 } ?? ""
-        case "cloude":                      return parsed.subcommand ?? ""
+        case "claude":                      return parsed.subcommand ?? ""
         default:                            return ""
         }
     }
@@ -191,9 +212,9 @@ struct ToolCallLabel: View {
     }
 
     var iconName: String {
+        if let action = iosAction { return ToolCallLabel.iosIcons[action] ?? "iphone" }
         switch name {
         case "Bash":
-            if isMemoryCommand { return "brain" }
             if isScript { return "scroll" }
             return bashIconName(input ?? "")
         case "Read": return "doc.text"
@@ -208,7 +229,6 @@ struct ToolCallLabel: View {
         case "AskUserQuestion": return "questionmark.bubble"
         case "NotebookEdit": return "text.book.closed"
         case "Skill": return "command"
-        case "Memory": return "brain"
         case "TeamCreate": return "person.3.fill"
         case "TeamDelete": return "person.3.fill"
         case "SendMessage": return "paperplane.fill"
@@ -247,8 +267,8 @@ struct ToolCallLabel: View {
 }
 
 func toolCallColor(for name: String, input: String? = nil) -> Color {
+    if ToolCallLabel.isIOSControl(name) { return .mint }
     if name == "Bash", let cmd = input {
-        if cmd.hasPrefix("cloude memory ") { return .pink }
         if BashCommandParser.isScript(cmd) { return .teal }
         return bashCommandColor(cmd)
     }
@@ -264,7 +284,6 @@ func toolCallColor(for name: String, input: String? = nil) -> Color {
     case "Skill": return .purple
     case "NotebookEdit": return .purple
     case "AskUserQuestion": return .orange
-    case "Memory": return .pink
     case "TeamCreate", "TeamDelete": return .cyan
     case "SendMessage": return .teal
     default:
