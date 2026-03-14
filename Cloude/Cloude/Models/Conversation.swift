@@ -136,9 +136,7 @@ struct ToolCall: Codable {
         case name, input, toolId, parentToolId, textPosition, state, resultSummary, resultOutput
     }
 
-    var isMemoryCommand: Bool {
-        name == "Bash" && (input?.hasPrefix("cloude memory ") ?? false)
-    }
+
 
     var isScript: Bool {
         guard name == "Bash", let input else { return false }

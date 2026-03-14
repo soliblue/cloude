@@ -98,23 +98,9 @@ extension ServerMessage {
         case .memories(let sections):
             try container.encode("memories", forKey: .type)
             try container.encode(sections, forKey: .sections)
-        case .renameConversation(let name, let conversationId):
-            try container.encode("rename_conversation", forKey: .type)
-            try container.encode(name, forKey: .name)
-            try container.encode(conversationId, forKey: .conversationId)
-        case .setConversationSymbol(let symbol, let conversationId):
-            try container.encode("set_conversation_symbol", forKey: .type)
-            try container.encodeIfPresent(symbol, forKey: .symbol)
-            try container.encode(conversationId, forKey: .conversationId)
         case .processList(let processes):
             try container.encode("process_list", forKey: .type)
             try container.encode(processes, forKey: .processes)
-        case .memoryAdded(let target, let section, let text, let conversationId):
-            try container.encode("memory_added", forKey: .type)
-            try container.encode(target, forKey: .target)
-            try container.encode(section, forKey: .section)
-            try container.encode(text, forKey: .text)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .defaultWorkingDirectory(let path):
             try container.encode("default_working_directory", forKey: .type)
             try container.encode(path, forKey: .path)
@@ -129,9 +115,6 @@ extension ServerMessage {
             try container.encode("history_sync_error", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
             try container.encode(error, forKey: .error)
-        case .heartbeatSkipped(let conversationId):
-            try container.encode("heartbeat_skipped", forKey: .type)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .fileChunk(let path, let chunkIndex, let totalChunks, let data, let mimeType, let size):
             try container.encode("file_chunk", forKey: .type)
             try container.encode(path, forKey: .path)
@@ -145,30 +128,6 @@ extension ServerMessage {
             try container.encode(path, forKey: .path)
             try container.encode(data, forKey: .data)
             try container.encode(fullSize, forKey: .fullSize)
-        case .deleteConversation(let conversationId):
-            try container.encode("delete_conversation", forKey: .type)
-            try container.encode(conversationId, forKey: .conversationId)
-        case .notify(let title, let body, let conversationId):
-            try container.encode("notify", forKey: .type)
-            try container.encodeIfPresent(title, forKey: .title)
-            try container.encode(body, forKey: .body)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .clipboard(let text):
-            try container.encode("clipboard", forKey: .type)
-            try container.encode(text, forKey: .text)
-        case .openURL(let url):
-            try container.encode("open_url", forKey: .type)
-            try container.encode(url, forKey: .url)
-        case .haptic(let style):
-            try container.encode("haptic", forKey: .type)
-            try container.encode(style, forKey: .style)
-        case .switchConversation(let conversationId):
-            try container.encode("switch_conversation", forKey: .type)
-            try container.encode(conversationId, forKey: .conversationId)
-        case .question(let questions, let conversationId):
-            try container.encode("question", forKey: .type)
-            try container.encode(questions, forKey: .questions)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .fileSearchResults(let files, let query):
             try container.encode("file_search_results", forKey: .type)
             try container.encode(files, forKey: .files)
@@ -179,9 +138,6 @@ extension ServerMessage {
         case .messageUUID(let uuid, let conversationId):
             try container.encode("message_uuid", forKey: .type)
             try container.encode(uuid, forKey: .uuid)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .screenshot(let conversationId):
-            try container.encode("screenshot", forKey: .type)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .teamCreated(let teamName, let leadAgentId, let conversationId):
             try container.encode("team_created", forKey: .type)

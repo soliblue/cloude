@@ -37,23 +37,4 @@ extension EnvironmentConnection {
         sendNextGitStatusIfNeeded()
     }
 
-    func handleHeartbeatSkipped(_ mgr: ConnectionManager, conversationId: String?) {
-        if let convId = targetConversationId(from: conversationId) {
-            mgr.output(for: convId).skipped = true
-        }
-        mgr.events.send(.heartbeatSkipped(conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
-    }
-
-    func handleMemoryAdded(_ mgr: ConnectionManager, target: String, section: String, text: String, conversationId: String?) {
-        if let convId = targetConversationId(from: conversationId) {
-            let memoryCall = ToolCall(
-                name: "Memory",
-                input: "\(target): \(section) - \(text)",
-                toolId: UUID().uuidString,
-                parentToolId: nil,
-                textPosition: mgr.output(for: convId).text.count
-            )
-            mgr.output(for: convId).toolCalls.append(memoryCall)
-        }
-    }
 }

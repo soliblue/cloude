@@ -4,7 +4,15 @@
       "type": "stdio",
       "command": "node",
       "args": [
-        "/home/soli/projects/cloude/.claude/widgets-mcp/server.js"
+        ".claude/widgets-mcp/server.js"
+      ],
+      "env": {}
+    },
+    "ios": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        ".claude/ios-mcp/server.js"
       ],
       "env": {}
     }

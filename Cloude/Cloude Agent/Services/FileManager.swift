@@ -16,7 +16,7 @@ class FileService {
             let contents = try fileManager.contentsOfDirectory(
                 at: url,
                 includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey],
-                options: [.skipsHiddenFiles]
+                options: []
             )
 
             let entries = contents.compactMap { FileEntry.from(url: $0) }

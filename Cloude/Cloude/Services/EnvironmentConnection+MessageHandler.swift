@@ -31,25 +31,13 @@ extension EnvironmentConnection {
         case .transcription(let text):                    handleTranscription(mgr, text)
         case .whisperReady(let ready):                    isWhisperReady = ready
         case .heartbeatConfig(let min, let count):        mgr.events.send(.heartbeatConfig(intervalMinutes: min, unreadCount: count))
-        case .heartbeatSkipped(let c):                    handleHeartbeatSkipped(mgr, conversationId: c)
         case .memories(let sections):                     mgr.events.send(.memories(sections))
-        case .memoryAdded(let t, let s, let txt, let c):  handleMemoryAdded(mgr, target: t, section: s, text: txt, conversationId: c)
         case .skills(let s):                              handleSkills(mgr, s)
         case .defaultWorkingDirectory(let path):          defaultWorkingDirectory = path
         case .processList(let procs):                     processes = procs
         case .historySync(let sid, let msgs):             mgr.events.send(.historySync(sessionId: sid, messages: msgs))
         case .historySyncError(let sid, let err):          mgr.events.send(.historySyncError(sessionId: sid, error: err))
         case .remoteSessionList:                          break
-        case .renameConversation(let name, let c):        handleRenameConversation(mgr, conversationId: c, name: name)
-        case .setConversationSymbol(let sym, let c):      handleSetConversationSymbol(mgr, conversationId: c, symbol: sym)
-        case .deleteConversation(let c):                  handleDeleteConversation(mgr, conversationId: c)
-        case .switchConversation(let c):                  handleSwitchConversation(mgr, conversationId: c)
-        case .notify(let title, let body, _):             mgr.events.send(.notify(title: title, body: body))
-        case .clipboard(let text):                        mgr.events.send(.clipboard(text))
-        case .openURL(let url):                           mgr.events.send(.openURL(url))
-        case .haptic(let style):                          mgr.events.send(.haptic(style))
-        case .question(let qs, let c):                    handleQuestion(mgr, questions: qs, conversationId: c)
-        case .screenshot(let c):                          handleScreenshot(mgr, conversationId: c)
         case .teamCreated(let name, _, let c):            handleTeamCreated(mgr, teamName: name, conversationId: c)
         case .teammateSpawned(let mate, let c):           handleTeammateSpawned(mgr, teammate: mate, conversationId: c)
         case .teammateUpdate(let tid, let st, let msg, let at, let c): handleTeammateUpdate(mgr, teammateId: tid, status: st, lastMessage: msg, lastMessageAt: at, conversationId: c)

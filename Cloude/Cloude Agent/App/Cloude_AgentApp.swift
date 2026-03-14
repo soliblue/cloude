@@ -32,7 +32,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Thread.sleep(forTimeInterval: 2.0)
         }
 
-        CLIInstaller.installIfNeeded()
         NSApp.setActivationPolicy(.accessory)
         setupMenuBar()
         setupServices()
@@ -99,9 +98,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId, textPosition in
-            if name == "Bash", let cmd = input, cmd.hasPrefix("cloude ") {
-                self?.handleCloudeCommand(cmd, conversationId: conversationId)
-            }
             self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition))
         }
 

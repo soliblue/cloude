@@ -83,7 +83,10 @@ extension GlobalInputBar {
             } label: {
                 actionButtonLabel
             } primaryAction: {
-                if canSend { onSend() }
+                if canSend {
+                    sendBounceTrigger += 1
+                    onSend()
+                }
             }
             .disabled(environmentMismatch)
         }
@@ -92,6 +95,7 @@ extension GlobalInputBar {
     var actionButtonLabel: some View {
         Image(systemName: actionButtonIcon)
             .symbolEffect(.rotate, value: refreshRotateTrigger)
+            .symbolEffect(.bounce, value: sendBounceTrigger)
             .font(.system(size: 16, weight: .semibold))
             .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? .white : .secondary.opacity(0.5))
             .frame(width: 56)

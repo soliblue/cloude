@@ -81,13 +81,20 @@ extension MainChatView {
         }
     }
 
-    private func loadLatestPhoto() {
+    private func loadLatestPhoto(attempt: Int = 0) {
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         options.fetchLimit = 1
-        options.predicate = NSPredicate(format: "mediaType == %d", PHAssetMediaType.image.rawValue)
+        let cutoff = Date().addingTimeInterval(-3)
+        options.predicate = NSPredicate(format: "mediaType == %d AND creationDate > %@", PHAssetMediaType.image.rawValue, cutoff as NSDate)
 
         let result = PHAsset.fetchAssets(with: options)
+        if result.firstObject == nil, attempt < 5 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.loadLatestPhoto(attempt: attempt + 1)
+            }
+            return
+        }
         guard let asset = result.firstObject else { return }
 
         let imageOptions = PHImageRequestOptions()

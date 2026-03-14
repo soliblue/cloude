@@ -23,28 +23,16 @@ public enum ServerMessage: Codable {
     case whisperReady(ready: Bool)
     case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories(sections: [MemorySection])
-    case renameConversation(name: String, conversationId: String)
-    case setConversationSymbol(symbol: String?, conversationId: String)
     case processList(processes: [AgentProcessInfo])
-    case memoryAdded(target: String, section: String, text: String, conversationId: String?)
     case defaultWorkingDirectory(path: String)
     case skills([Skill])
     case historySync(sessionId: String, messages: [HistoryMessage])
     case historySyncError(sessionId: String, error: String)
-    case heartbeatSkipped(conversationId: String?)
     case fileChunk(path: String, chunkIndex: Int, totalChunks: Int, data: String, mimeType: String, size: Int64)
     case fileThumbnail(path: String, data: String, fullSize: Int64)
-    case deleteConversation(conversationId: String)
-    case notify(title: String?, body: String, conversationId: String?)
-    case clipboard(text: String)
-    case openURL(url: String)
-    case haptic(style: String)
-    case switchConversation(conversationId: String)
-    case question(questions: [Question], conversationId: String?)
     case fileSearchResults(files: [String], query: String)
     case remoteSessionList(sessions: [RemoteSession])
     case messageUUID(uuid: String, conversationId: String?)
-    case screenshot(conversationId: String?)
     case teamCreated(teamName: String, leadAgentId: String, conversationId: String?)
     case teammateSpawned(teammate: TeammateInfo, conversationId: String?)
     case teammateUpdate(teammateId: String, status: TeammateStatus?, lastMessage: String?, lastMessageAt: Date?, conversationId: String?)
@@ -56,7 +44,7 @@ public enum ServerMessage: Codable {
     case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, branch, ahead, behind, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, target, section, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, title, body, url, style, questions, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, plan, stats, exitCode, isError, command, terminalId
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, stats, exitCode, isError, terminalId
     }
 
     public init(from decoder: Decoder) throws {
@@ -158,23 +146,9 @@ public enum ServerMessage: Codable {
         case "memories":
             let sections = try container.decode([MemorySection].self, forKey: .sections)
             self = .memories(sections: sections)
-        case "rename_conversation":
-            let name = try container.decode(String.self, forKey: .name)
-            let conversationId = try container.decode(String.self, forKey: .conversationId)
-            self = .renameConversation(name: name, conversationId: conversationId)
-        case "set_conversation_symbol":
-            let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
-            let conversationId = try container.decode(String.self, forKey: .conversationId)
-            self = .setConversationSymbol(symbol: symbol, conversationId: conversationId)
         case "process_list":
             let processes = try container.decode([AgentProcessInfo].self, forKey: .processes)
             self = .processList(processes: processes)
-        case "memory_added":
-            let target = try container.decode(String.self, forKey: .target)
-            let section = try container.decode(String.self, forKey: .section)
-            let text = try container.decode(String.self, forKey: .text)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .memoryAdded(target: target, section: section, text: text, conversationId: conversationId)
         case "default_working_directory":
             let path = try container.decode(String.self, forKey: .path)
             self = .defaultWorkingDirectory(path: path)
@@ -189,9 +163,6 @@ public enum ServerMessage: Codable {
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             let error = try container.decode(String.self, forKey: .error)
             self = .historySyncError(sessionId: sessionId, error: error)
-        case "heartbeat_skipped":
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .heartbeatSkipped(conversationId: conversationId)
         case "file_chunk":
             let path = try container.decode(String.self, forKey: .path)
             let chunkIndex = try container.decode(Int.self, forKey: .chunkIndex)
@@ -205,30 +176,6 @@ public enum ServerMessage: Codable {
             let data = try container.decode(String.self, forKey: .data)
             let fullSize = try container.decode(Int64.self, forKey: .fullSize)
             self = .fileThumbnail(path: path, data: data, fullSize: fullSize)
-        case "delete_conversation":
-            let conversationId = try container.decode(String.self, forKey: .conversationId)
-            self = .deleteConversation(conversationId: conversationId)
-        case "notify":
-            let title = try container.decodeIfPresent(String.self, forKey: .title)
-            let body = try container.decode(String.self, forKey: .body)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .notify(title: title, body: body, conversationId: conversationId)
-        case "clipboard":
-            let text = try container.decode(String.self, forKey: .text)
-            self = .clipboard(text: text)
-        case "open_url":
-            let url = try container.decode(String.self, forKey: .url)
-            self = .openURL(url: url)
-        case "haptic":
-            let style = try container.decode(String.self, forKey: .style)
-            self = .haptic(style: style)
-        case "switch_conversation":
-            let conversationId = try container.decode(String.self, forKey: .conversationId)
-            self = .switchConversation(conversationId: conversationId)
-        case "question":
-            let questions = try container.decode([Question].self, forKey: .questions)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .question(questions: questions, conversationId: conversationId)
         case "file_search_results":
             let files = try container.decode([String].self, forKey: .files)
             let query = try container.decode(String.self, forKey: .query)
@@ -240,9 +187,6 @@ public enum ServerMessage: Codable {
             let uuid = try container.decode(String.self, forKey: .uuid)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             self = .messageUUID(uuid: uuid, conversationId: conversationId)
-        case "screenshot":
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            self = .screenshot(conversationId: conversationId)
         case "team_created":
             let teamName = try container.decode(String.self, forKey: .teamName)
             let leadAgentId = try container.decode(String.self, forKey: .leadAgentId)

@@ -22,18 +22,9 @@ Claude Code automatically loads both `CLAUDE.md` and `CLAUDE.local.md` from proj
 
 **NEVER USE AskUserQuestion TOOL** - The iOS app cannot handle interactive question prompts from the CLI. When you need to ask the user something, just ask in plain text in your response. The user will reply in the next message. Do not use the AskUserQuestion tool - it will break the conversation flow.
 
-**NAMING IS AUTOMATIC** - A background Sonnet agent automatically generates a conversation name + SF Symbol on the 1st and 2nd user messages, then every 5 assistant messages. You do NOT need to call `cloude rename` or `cloude symbol` on the first few messages. The name appears in the header within a few seconds.
+**NAMING IS AUTOMATIC** - A background Sonnet agent automatically generates a conversation name + SF Symbol on the 1st and 2nd user messages, then every 5 assistant messages. You do NOT need to call `mcp__ios__rename` or `mcp__ios__symbol` on the first few messages. The name appears in the header within a few seconds. You can still rename later if the topic shifts significantly (~10+ messages in).
 
-- You can still call `cloude rename` / `cloude symbol` later if the topic shifts significantly (~10+ messages in)
-- **NEVER chain `cloude` commands** with `&&` or `;` — always run each `cloude` command as its own separate Bash call
-- Pass the name/symbol directly with NO quotes: `cloude rename Memory Fix` not `cloude rename "Memory Fix"`
-
-**Rebuilding the Mac agent** - Claude Code cannot spawn inside another Claude Code session, so you MUST launch agent builds in a separate Terminal via osascript:
-```bash
-osascript -e 'tell application "Terminal" to do script "sleep 3 && pushd /Users/soli/Desktop/CODING/cloude && source .env && fastlane mac build_agent"'
-```
-**IMPORTANT**: Use `pushd` not `cd` in the osascript command — the system instruction to "avoid cd" causes Claude to unconsciously strip `cd` from commands, resulting in the Terminal opening in `~` instead of the project directory. `pushd` bypasses this. The `sleep 3` gives the old agent time to shut down.
-**NEVER run `fastlane mac build_agent` directly** — it kills the agent hosting your session. The WebSocket server has retry logic (up to 5 attempts) if the port is still in use. The iOS app will reconnect automatically.
+**NEVER run `fastlane mac build_agent` directly** — it kills the agent hosting your session. Use the `/deploy` skill instead.
 
 ## Multi-Agent Workflow
 
@@ -47,50 +38,7 @@ osascript -e 'tell application "Terminal" to do script "sleep 3 && pushd /Users/
 
 ### Plans Directory
 
-The `.claude/plans/` directory is the single source of truth for tracking work. Every change gets a ticket.
-
-**Lifecycle**: `00_backlog/ → 10_next/ → 20_active/ → 30_testing/ → 40_done/`
-
-**Rules:**
-- **Every code change needs a plan ticket** — if a plan already exists, move it. If not, create one.
-- **Create the ticket in `.claude/plans/20_active/` BEFORE writing any code** — this is non-negotiable. Plan first, implement second.
-- After implementing a change, move the plan to `30_testing/`
-- When the user confirms it works, move to `40_done/`
-- At **5+ items in 30_testing/**, stop adding features — tell the user to test first
-- Other agents can read plans to understand what's in progress and avoid conflicts
-- Only move your own plans (multi-agent coordination)
-- Don't modify another agent's plan unless collaborating explicitly
-- Plans are a communication channel between agents across sessions
-
-**Ad-hoc requests** (no existing ticket): When the user asks for a quick change that has no plan, create a small plan file directly in `30_testing/` after implementing it. This ensures nothing gets lost.
-
-
-## Deployment Setup
-
-### App Store Connect
-- **iOS App Bundle ID**: `soli.Cloude`
-- **Mac Agent Bundle ID**: `soli.Cloude-Agent`
-- **Team ID**: `Q9U8224WWM`
-- **SKU**: `cloude-ios`
-
-### iOS App Capabilities
-- App Groups (`group.soli.Cloude`)
-- Push Notifications
-- Siri
-- Time Sensitive Notifications
-- Associated Domains
-- iCloud (with CloudKit)
-
-### First-Time Setup
-
-1. Create App in App Store Connect (Bundle ID: `soli.Cloude`, SKU: `cloude-ios`, Platform: iOS)
-2. Register App ID in Developer Portal with capabilities listed above
-3. Create `.env` file (gitignored) with App Store Connect API key credentials
-4. App icons must NOT have alpha/transparency (App Store rejects it)
-5. Set `ITSAppUsesNonExemptEncryption = NO` in Info.plist
-
-### Mac Agent Distribution
-The Mac agent cannot go on the Mac App Store (requires sandboxing which breaks CLI spawning). Instead, use `fastlane mac release_agent` to create a notarized DMG for direct distribution.
+Every code change needs a plan ticket in `.claude/plans/`. Lifecycle: `00_backlog/ → 10_next/ → 20_active/ → 30_testing/ → 40_done/`. Use the `/plan` skill for full rules. Key rules: create ticket before coding, only move your own plans, at 5+ items in `30_testing/` stop and test first.
 
 ## Project Structure
 
@@ -132,14 +80,14 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 - `ConnectionManager`: WebSocket client connecting to Mac agent
 - UI split into component files (see UI Component Map below for details)
 - **Path Links**: Full absolute paths starting with `/Users/` render as clickable file pills in tool results and inline text, opening file preview or folder browser
-- **Question UI**: `ConversationView+Question` renders multiple-choice questions from `cloude ask` commands
+- **Question UI**: `ConversationView+Question` renders multiple-choice questions (to be redesigned as a widget)
 
 ### macOS Agent (Cloude Agent)
 - `WebSocketServer`: Accepts connections from iOS app, handles auth
 - `ClaudeCodeRunner`: Spawns Claude Code CLI process with `--dangerously-skip-permissions`
 - `AuthManager`: Generates and stores 256-bit auth token in Keychain
 - `HeartbeatService`: Runs from project root (set automatically when chatting from a project)
-- `MemoryService`: Writes to CLAUDE.md and CLAUDE.local.md via `cloude memory` commands
+- `MemoryService`: Writes to CLAUDE.md and CLAUDE.local.md
 
 ### CloudeShared Package (Swift PM)
 - **Message Contracts**: `ClientMessage` and `ServerMessage` define WebSocket protocol
@@ -164,63 +112,11 @@ The Claude Code CLI *is* the product - it has the agentic loop, file access, bas
 
 ### Heartbeat Execution
 
-Heartbeat is autonomous - no user request, you decide what to do. Triggered by timer or manual button. Be proactive: check personal tasks in CLAUDE.local.md, update memory, check git status, explore codebase. Use `cloude skip` if nothing useful to do. Be concise.
+Heartbeat is autonomous - no user request, you decide what to do. Triggered by timer or manual button. Be proactive: check personal tasks in CLAUDE.local.md, update memory, check git status, explore codebase. Use `mcp__ios__skip` if nothing useful to do. Be concise.
 
-### Cloude Commands
+### iOS Control (MCP)
 
-Control the iOS app via Bash commands. The Mac agent intercepts these and sends them to iOS.
-
-**Supported commands (ONLY use these - never invent new ones):**
-```bash
-cloude rename UI Polish      # Set conversation name (1-2 words, no quotes)
-cloude symbol paintbrush.pointed  # Set SF Symbol icon (no quotes)
-cloude memory local Notes Learned something new  # Add to CLAUDE.local.md
-cloude memory project Notes Project-specific info  # Add to CLAUDE.md
-cloude skip                  # Signal heartbeat skip (nothing useful to do)
-cloude delete                # Delete the current conversation
-cloude notify Task complete! # Send a push notification to iOS
-cloude clipboard <text>      # Copy text to iOS clipboard
-cloude open https://...      # Open a URL on iOS
-cloude haptic <style>        # Trigger haptic feedback (light/medium/heavy/rigid/soft)
-cloude speak Hello world     # Text-to-speech on iOS
-cloude switch <conv-id>      # Switch to a different conversation by UUID
-cloude ask --q "Question?" --options "A,B,C"  # Ask user a multiple-choice question
-cloude screenshot              # Capture iOS screen and send back as image
-```
-
-**Asking Questions (`cloude ask`):**
-Use for multiple-choice questions — renders as tappable option buttons in iOS. User's answers come back as the next message (e.g., "Color? Blue\nSize? M, L"). For open-ended questions, just ask in plain text instead.
-
-Formats:
-```bash
-# Simple (single question, single-select)
-cloude ask --q "What color?" --options "Red,Blue,Green"
-
-# With descriptions (colon separates label:description)
-cloude ask --q "Which approach?" --options "A:Fast but complex,B:Simple but slow"
-
-# Multi-select (user can pick multiple)
-cloude ask --q "Which languages?" --options "Swift,Python,Rust" --multi
-
-# Multiple questions (JSON array) - PREFERRED for 2+ questions
-cloude ask --questions '[{"q":"Coffee or tea?","options":["Coffee","Tea"]},{"q":"Languages?","options":["Swift","Python","Rust"],"multi":true}]'
-```
-
-JSON format for `--questions`:
-- `q`: question text (required)
-- `options`: array of strings (required)
-- `multi`: boolean for multi-select (optional, default false)
-
-**Memory command:**
-- Use `local` for personal memories (CLAUDE.local.md) - preferences, history, identity
-- Use `project` for project docs (CLAUDE.md) - architecture, workflows, code style
-- Section names: use any existing section header in the target file
-- Add memories proactively when you learn something worth remembering
-
-**Conversation naming:**
-- Update every ~10 messages or whenever the topic shifts significantly using `cloude rename` / `cloude symbol`
-- Names: short, memorable, 1-2 words describing the topic (NO quotes around the name)
-- Symbols: Be specific and creative - avoid repetitive/generic icons. Pick symbols that uniquely represent the topic (e.g., `pill.circle` for tool pills, `arrow.triangle.branch` for git work, `cube.transparent` for 3D stuff, `waveform` for audio). NO quotes around the symbol name.
+Control the iOS app via `mcp__ios__*` tool calls. The Mac agent intercepts these from the Claude Code output stream and routes them to the iOS app. Available tools: `rename`, `symbol`, `notify`, `clipboard`, `open`, `haptic`, `switch`, `delete`, `skip`, `screenshot`. Each tool is self-documenting - check the tool descriptions for usage details.
 
 ## Code Style
 
@@ -315,6 +211,27 @@ let role = user.isAdmin ? "admin" : "user"
 - Loading indicators should disappear once actual content is available (avoid redundant UI)
 - Never use brace notation like {1-6} when referencing files in chat - each file must be a full absolute path to render as a tappable pill
 
+### Widgets vs Extended Markdown
+
+The iOS app has two systems for rich content: **markdown extensions** (inline, parsed from text) and **MCP widgets** (structured tool calls via `mcp__widgets__*`).
+
+**Markdown extensions** (what the parser already handles):
+- **File paths**: Bare `/Users/...` paths render as tappable pills with file-type icons
+- **Code blocks**: Syntax highlighting, line numbers, copy button, text wrap toggle
+- **Tables**: Pipe-delimited `| col | col |` with header row highlighting
+- **Collapsible headers**: `## Header` sections can expand/collapse
+- **Checkboxes**: `- [ ]` and `- [x]` render as visual checkboxes
+- **Blockquotes**: `> text` with left border
+
+**When to use markdown**: Text-heavy explanations, code snippets, file references, simple tables, lists. Anything that flows naturally in a sentence.
+
+**When to use widgets** (`mcp__widgets__*` tool calls):
+- **Interactive content**: Sliders, tappable elements, flip cards, drag-to-order
+- **Visual/spatial data**: Charts, trees, timelines, color palettes
+- **Structured data better shown visually**: Hierarchies (tree), sequences (timeline), comparisons (bar chart), proportions (pie chart)
+
+**Rule of thumb**: If markdown can express it clearly, use markdown. If the data has structure that benefits from interactivity or spatial layout, use a widget.
+
 ### iOS UI Conventions
 - Use SF Symbols instead of text for toolbar buttons (e.g., `xmark` for Cancel, `checkmark` for Done/Save, `trash` for Delete)
 - Sheets should use NavigationStack with `.toolbar` for header buttons, not custom HStacks
@@ -362,7 +279,6 @@ When the user screenshots the app and says "change this", use this map to find t
 | Message list | `ConversationView+Components.swift:ChatMessageList` | All bubbles + cost banner |
 | Tool pill | `InlineToolPill.swift` | Colored tool call indicator |
 | Tool sheet | `ToolDetailSheet.swift` + `ToolDetailSheet+Content.swift` | Full tool detail popup |
-| Cost banner | `ConversationView+CostBanner.swift` | Warning when cost is high |
 | Queued bubble | `ConversationView+Components.swift:SwipeToDeleteBubble` | Swipeable pending message |
 | Scroll button | `ConversationView+Components.swift:scrollToBottomButton` | Floating down-arrow button |
 | Run stats | `MessageBubble+Components.swift:RunStatsView` | Duration + cost inline |
