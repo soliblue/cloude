@@ -1,13 +1,14 @@
 import SwiftUI
 
 struct ThemePickerView: View {
-    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.oceanDark.rawValue
-    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.vanGogh.rawValue
+    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8)
     ]
 
     var body: some View {
@@ -19,7 +20,7 @@ struct ThemePickerView: View {
                             .onTapGesture { appThemeRaw = theme.rawValue }
                     }
                 }
-                .padding(16)
+                .padding(12)
             }
             .background(Color(hex: appTheme.palette.background))
             .navigationTitle("Theme")
@@ -48,28 +49,23 @@ struct ThemeCard: View {
             HStack(spacing: 3) {
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.background))
-                    .frame(height: 48)
+                    .frame(height: 32)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.secondary))
-                    .frame(height: 48)
+                    .frame(height: 32)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.surface))
-                    .frame(height: 48)
+                    .frame(height: 32)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.fill))
-                    .frame(height: 48)
+                    .frame(height: 32)
             }
             .padding(8)
 
-            HStack(spacing: 6) {
-                Image(systemName: theme.icon)
-                    .font(.system(size: 12))
-                    .foregroundColor(isSelected ? .accentColor : .secondary)
-                Text(theme.rawValue)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? .primary : .secondary)
-            }
-            .padding(.bottom, 10)
+            Text(theme.rawValue)
+                .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                .foregroundColor(isSelected ? .primary : .secondary)
+                .padding(.bottom, 8)
         }
         .background(Color(hex: currentTheme.palette.secondary))
         .cornerRadius(9)

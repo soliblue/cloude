@@ -3,8 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var connection: ConnectionManager
     @ObservedObject var environmentStore: EnvironmentStore
-    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.oceanDark.rawValue
-    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .oceanDark }
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.vanGogh.rawValue
+    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
@@ -52,7 +52,7 @@ struct SettingsView: View {
     private var preferencesSection: some View {
         Section {
             Button(action: { showThemePicker = true }) {
-                SettingsRow(icon: appTheme.icon, color: .purple) {
+                SettingsRow(icon: "paintpalette.fill", color: .purple) {
                     Text("Theme")
                     Spacer()
                     Text(appTheme.rawValue)
