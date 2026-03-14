@@ -88,8 +88,9 @@ struct FilePreviewView: View {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 12) {
                         if contentType.isTextBased, let _ = fileData {
-                            Button(action: { loadGitDiff() }) {
-                                Image(systemName: "chevron.left.forwardslash.chevron.right")
+                            Button(action: { toggleDiff() }) {
+                                Image(systemName: showDiff ? "doc.text" : "chevron.left.forwardslash.chevron.right")
+                                    .foregroundStyle(showDiff ? .accent : .primary)
                             }
                             Divider()
                                 .frame(height: 20)
@@ -114,29 +115,22 @@ struct FilePreviewView: View {
                     .font(.body)
                 }
             }
-            .sheet(isPresented: $showDiff) {
-                FileDiffSheet(
-                    fileName: fileName,
-                    diff: diffText,
-                    isLoading: isDiffLoading
-                )
-            }
         }
         .onAppear { loadFile() }
         .onReceive(connection.events) { event in
-            if case let .gitDiff(gitPath, text) = event {
-                if gitPath == path || gitPath.hasSuffix("/" + path) {
-                    diffText = text
-                    isDiffLoading = false
-                }
+            if case let .gitDiff(_, text) = event, isDiffLoading {
+                diffText = text
+                isDiffLoading = false
             }
         }
     }
 
-    func loadGitDiff() {
-        isDiffLoading = true
-        diffText = nil
-        showDiff = true
-        connection.gitDiff(path: path.deletingLastPathComponent, file: path, environmentId: environmentId)
+    func toggleDiff() {
+        showDiff.toggle()
+        if showDiff && diffText == nil {
+            isDiffLoading = true
+            let workDir = connection.connection(for: environmentId)?.defaultWorkingDirectory ?? path.deletingLastPathComponent
+            connection.gitDiff(path: workDir, file: path, environmentId: environmentId)
+        }
     }
 }

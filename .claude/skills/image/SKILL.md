@@ -1,12 +1,12 @@
 ---
 name: image
-description: Generate images using Gemini. Use for illustrations, mockups, photos, diagrams, art, visual references — anything where a picture adds value. Also edits existing images.
+description: Generate images using Gemini, and animate them with Veo. Use for illustrations, mockups, photos, diagrams, art, visual references, and character animations.
 user-invocable: true
 icon: paintbrush.pointed.fill
-aliases: [paint, draw, img, generate image]
+aliases: [paint, draw, img, generate image, animate]
 parameters:
   - name: description
-    placeholder: Describe the image...
+    placeholder: Describe the image or animation...
     required: true
 ---
 
@@ -127,18 +127,60 @@ Default output: `.claude/skills/image/output/misc/`
 
 Files are named `{output}.{ext}` where ext matches what Gemini returns (usually png).
 
-## Video Generation (Veo)
+## Animation (Veo + Background Removal)
 
-Generate videos from images using Google Veo via the same Gemini API key.
+Animate a static image into a looping GIF/video using Google Veo for video generation and background removal for transparency.
 
-**Available models** (list with `client.models.list()`, filter for `veo`):
+### High-Level Pipeline
+
+There are two approaches to animate a character:
+
+**Approach A: Green screen + ffmpeg chromakey** (fast, good for simple shapes)
+1. Place character on `#00FF00` green canvas (match Veo's aspect ratio - 16:9 = 1280x720)
+2. Send to Veo for video generation
+3. `ffmpeg -vf "chromakey=0x00FF00:0.25:0.08,format=rgba"` to remove green
+4. Crop + optimize with gifsicle
+
+**Approach B: Green screen + per-frame AI bg removal** (slower, cleaner edges)
+1. Place character on `#00FF00` green canvas (match Veo's aspect ratio)
+2. Send to Veo for video generation
+3. Extract frames: `ffmpeg -i video.mp4 /tmp/frames/frame-%04d.png`
+4. Remove background per frame using AI model (see Background Removal below)
+5. Crop + optimize with gifsicle
+
+**When to use which:**
+- **Approach A** (chromakey): Fast, works well when character has no green and edges are clean. Can leave slight green fringe on anti-aliased edges.
+- **Approach B** (AI removal): Slower (0.8s/frame with rembg default) but handles complex edges, hair, transparency perfectly. Use when chromakey leaves artifacts.
+
+### Background Removal Options
+
+**Local models** (free, offline):
+- `rembg` default model - 0.8s/frame, good quality, best speed/quality tradeoff
+- `rembg` with BiRefNet (`new_session("birefnet-general")`) - 16s/frame, highest quality, use for final output
+- `transparent-background` (InSPyReNet) - alternative, similar quality to rembg
+
+**Online APIs** (better edge quality, costs money):
+- remove.bg - industry standard, 50 free/month, best edge handling
+- withoutBG - open source + hosted API, 50 free credits
+- Clipdrop - good precision, has API
+
+**ffmpeg chromakey** (instant, no ML):
+- `chromakey=0x00FF00:similarity:blend` - similarity 0.25, blend 0.08 works well
+- Best for solid green backgrounds, no per-frame cost
+- Can chain: `chromakey=green,chromakey=black` but careful with character outlines
+
+### Veo API Reference
+
+**Available models**:
 - `veo-2.0-generate-001`
-- `veo-3.0-generate-001`
-- `veo-3.0-fast-generate-001`
-- `veo-3.1-generate-preview`
-- `veo-3.1-fast-generate-preview`
+- `veo-3.0-generate-001` / `veo-3.0-fast-generate-001`
+- `veo-3.1-generate-preview` / `veo-3.1-fast-generate-preview`
 
-**Aspect ratios**: Only `16:9` (default) and `9:16` supported. No 1:1.
+**Aspect ratios**: Only `16:9` (default) and `9:16`. No 1:1.
+
+**Duration**: 4, 6, or 8 seconds (`duration_seconds` parameter). Min is 4s.
+
+**GenerateVideosConfig parameters**: `aspect_ratio`, `number_of_videos`, `duration_seconds`, `fps`, `resolution` ("720p", "1080p", "4k"), `seed`
 
 **Image-to-video example**:
 ```python
@@ -148,15 +190,15 @@ import time, httpx
 
 client = genai.Client(api_key="YOUR_KEY")
 
-img_bytes = open("input.jpg", "rb").read()
-image = types.Image(image_bytes=img_bytes, mime_type="image/jpeg")
+img_bytes = open("input.png", "rb").read()
+image = types.Image(image_bytes=img_bytes, mime_type="image/png")
 
 operation = client.models.generate_videos(
     model="veo-3.0-generate-001",
     prompt="Description of the animation...",
     image=image,
     config=types.GenerateVideosConfig(
-        aspect_ratio="9:16",
+        duration_seconds=4,
         number_of_videos=1,
     ),
 )
@@ -175,13 +217,18 @@ for vid in operation.result.generated_videos:
 **Key notes**:
 - `types.Image` requires both `image_bytes` and `mime_type`
 - Download requires appending `&key=` to the video URI (auth not included automatically)
-- Videos are 8 seconds, 24fps, 720p
-- For looping animations: ask for "seamless loop where first and last frames are identical"
-- For green screen: generate with `#00FF00` background, then chroma key in post
+- Input image should match the output aspect ratio (16:9 = 1280x720, 9:16 = 720x1280) to avoid black bars
+- For looping: prompt with "seamless loop where first and last frames are identical"
 
-**Green screen chroma key + GIF pipeline**:
-1. Generate image on green background (Gemini `--edit`)
-2. Send to Veo for animation
-3. Extract frames: `ffmpeg -i video.mp4 /tmp/frames/frame-%04d.png`
-4. Chroma key green + 1px alpha erosion (PIL `ImageFilter.MinFilter(3)`)
-5. Optimize with `gifsicle -O3 --lossy=30 --colors 128`
+### GIF Optimization
+
+After extracting transparent frames:
+```bash
+# Assemble GIF from frames (PIL)
+frames[0].save("raw.gif", save_all=True, append_images=frames[1:], loop=0, duration=42, disposal=2)
+
+# Optimize with gifsicle (requires: brew install gifsicle)
+gifsicle -O3 --lossy=30 --colors 128 raw.gif -o optimized.gif
+```
+
+Typical sizes: 192 frames (8s@24fps) = 2-4MB optimized. Reduce frames (every Nth) for smaller files.
