@@ -167,7 +167,10 @@ struct MarkdownTableView: View {
                     }
                 }
             }
+            .padding(.horizontal, 16)
         }
+        .padding(.horizontal, -16)
+        .scrollClipDisabled()
     }
 }
 
