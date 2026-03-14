@@ -7,7 +7,7 @@ export function handleListDirectory(dirPath, ws, sendTo) {
   const resolved = dirPath === '~' || !dirPath ? process.env.HOME : dirPath.replace(/^~/, process.env.HOME)
   try {
     const items = readdirSync(resolved, { withFileTypes: true })
-    const entries = items.filter(d => !d.name.startsWith('.')).map(d => {
+    const entries = items.map(d => {
       const fullPath = join(resolved, d.name)
       try {
         const st = statSync(fullPath)
