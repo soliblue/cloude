@@ -2,7 +2,6 @@ import { spawn } from 'child_process'
 import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
 import { log } from './log.js'
-import { handleCloudeCommand } from './commands.js'
 import { extractToolInput } from './shared.js'
 
 export class ClaudeCodeRunner {
@@ -137,9 +136,6 @@ export class ClaudeCodeRunner {
             conversationId: cid,
             textPosition: this.accumulatedOutput.length
           })
-          if (block.name === 'Bash' && inputStr && inputStr.startsWith('cloude ')) {
-            this._cloudeCommand = inputStr
-          }
         }
       }
       if (json.uuid) {
@@ -165,10 +161,6 @@ export class ClaudeCodeRunner {
             }
             this.onEvent({ type: 'tool_result', toolId: block.tool_use_id, summary, output, conversationId: cid })
 
-            if (this._cloudeCommand) {
-              handleCloudeCommand(this._cloudeCommand, cid, this.onEvent, this._cwd)
-              this._cloudeCommand = null
-            }
           }
         }
       } else if (typeof content === 'string') {

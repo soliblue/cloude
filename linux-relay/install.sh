@@ -13,14 +13,6 @@ sudo npm install --production
 
 mkdir -p "$DATA_DIR"
 
-# Install cloude stub CLI
-CLAUDE_DIR=$(dirname $(which claude 2>/dev/null || echo "/usr/local/bin/claude"))
-sudo tee "$CLAUDE_DIR/cloude" > /dev/null << 'STUB'
-#!/bin/bash
-exit 0
-STUB
-sudo chmod 755 "$CLAUDE_DIR/cloude"
-
 # Create systemd service
 sudo tee /etc/systemd/system/cloude-agent.service > /dev/null << EOF
 [Unit]
