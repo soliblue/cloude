@@ -126,3 +126,62 @@ This creates a grid template, sends it to Gemini asking it to fill each cell, th
 Default output: `.claude/skills/image/output/misc/`
 
 Files are named `{output}.{ext}` where ext matches what Gemini returns (usually png).
+
+## Video Generation (Veo)
+
+Generate videos from images using Google Veo via the same Gemini API key.
+
+**Available models** (list with `client.models.list()`, filter for `veo`):
+- `veo-2.0-generate-001`
+- `veo-3.0-generate-001`
+- `veo-3.0-fast-generate-001`
+- `veo-3.1-generate-preview`
+- `veo-3.1-fast-generate-preview`
+
+**Aspect ratios**: Only `16:9` (default) and `9:16` supported. No 1:1.
+
+**Image-to-video example**:
+```python
+from google import genai
+from google.genai import types
+import time, httpx
+
+client = genai.Client(api_key="YOUR_KEY")
+
+img_bytes = open("input.jpg", "rb").read()
+image = types.Image(image_bytes=img_bytes, mime_type="image/jpeg")
+
+operation = client.models.generate_videos(
+    model="veo-3.0-generate-001",
+    prompt="Description of the animation...",
+    image=image,
+    config=types.GenerateVideosConfig(
+        aspect_ratio="9:16",
+        number_of_videos=1,
+    ),
+)
+
+while not operation.done:
+    time.sleep(10)
+    operation = client.operations.get(operation)
+
+for vid in operation.result.generated_videos:
+    url = vid.video.uri + "&key=YOUR_KEY"
+    resp = httpx.get(url, follow_redirects=True)
+    with open("output.mp4", "wb") as f:
+        f.write(resp.content)
+```
+
+**Key notes**:
+- `types.Image` requires both `image_bytes` and `mime_type`
+- Download requires appending `&key=` to the video URI (auth not included automatically)
+- Videos are 8 seconds, 24fps, 720p
+- For looping animations: ask for "seamless loop where first and last frames are identical"
+- For green screen: generate with `#00FF00` background, then chroma key in post
+
+**Green screen chroma key + GIF pipeline**:
+1. Generate image on green background (Gemini `--edit`)
+2. Send to Veo for animation
+3. Extract frames: `ffmpeg -i video.mp4 /tmp/frames/frame-%04d.png`
+4. Chroma key green + 1px alpha erosion (PIL `ImageFilter.MinFilter(3)`)
+5. Optimize with `gifsicle -O3 --lossy=30 --colors 128`

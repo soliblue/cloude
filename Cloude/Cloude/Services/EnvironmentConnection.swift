@@ -11,7 +11,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     @Published var isConnected = false
     @Published var isAuthenticated = false
     @Published var isWhisperReady = false
-    @Published var isTranscribing = false
+    @Published var isTranscribing = false { didSet { if isTranscribing != oldValue { manager?.objectWillChange.send() } } }
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
     @Published var processes: [AgentProcessInfo] = []
