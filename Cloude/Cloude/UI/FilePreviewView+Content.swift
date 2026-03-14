@@ -30,8 +30,30 @@ extension FilePreviewView {
             FileBrowserView(connection: connection, rootPath: path, environmentId: environmentId)
         } else if let error = errorMessage {
             ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
+        } else if showDiff {
+            diffContent
         } else if let data = fileData {
             fileContent(data)
+        }
+    }
+
+    @ViewBuilder
+    var diffContent: some View {
+        if isDiffLoading {
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if let diff = diffText, !diff.isEmpty {
+            ScrollView([.horizontal, .vertical], showsIndicators: false) {
+                DiffTextView(diff: diff)
+                    .padding()
+            }
+            .background(Color.oceanSystemBackground)
+        } else {
+            ContentUnavailableView(
+                "No Changes",
+                systemImage: "checkmark.circle",
+                description: Text("No unstaged changes for this file")
+            )
         }
     }
 

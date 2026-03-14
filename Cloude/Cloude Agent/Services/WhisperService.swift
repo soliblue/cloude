@@ -13,7 +13,7 @@ class WhisperService: ObservableObject {
     @Published var downloadProgress: Double = 0
 
     private var whisperKit: WhisperKit?
-    private let modelVariant = "base"
+    private let modelVariant = "medium"
 
     var onReady: (() -> Void)?
 
