@@ -48,6 +48,7 @@ struct GlobalInputBar: View {
     @State var showRecordingOverlay = false
     @State private var idleTime: Date = Date()
     @State var showStopButton = false
+    @State var refreshRotateTrigger = 0
     @State private var fileSearchDebounce: Task<Void, Never>?
 
     enum Constants {

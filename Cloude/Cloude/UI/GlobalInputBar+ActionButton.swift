@@ -28,7 +28,10 @@ extension GlobalInputBar {
                 actionButtonLabel
             }
         } else if shouldShowRefreshButton {
-            Button(action: { onRefresh?() }) {
+            Button(action: {
+                refreshRotateTrigger += 1
+                onRefresh?()
+            }) {
                 actionButtonLabel
             }
         } else if shouldShowStopButton {
@@ -88,6 +91,7 @@ extension GlobalInputBar {
 
     var actionButtonLabel: some View {
         Image(systemName: actionButtonIcon)
+            .symbolEffect(.rotate, value: refreshRotateTrigger)
             .font(.system(size: 16, weight: .semibold))
             .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? .white : .secondary.opacity(0.5))
             .frame(width: 56)
