@@ -25,6 +25,12 @@ struct ThemePalette {
 enum AppTheme: String, CaseIterable {
     case monet = "Monet"
     case turner = "Turner"
+    case morisot = "Morisot"
+    case sorolla = "Sorolla"
+    case cezanne = "Cézanne"
+    case saffron = "Saffron"
+    case celadon = "Celadon"
+    case wedgwood = "Wedgwood"
     case hokusai = "Hokusai"
     case caravaggio = "Caravaggio"
     case whistler = "Whistler"
@@ -47,7 +53,7 @@ enum AppTheme: String, CaseIterable {
 
     var colorScheme: ColorScheme {
         switch self {
-        case .monet, .turner: return .light
+        case .monet, .turner, .morisot, .sorolla, .cezanne, .saffron, .celadon, .wedgwood: return .light
         default: return .dark
         }
     }
@@ -64,6 +70,36 @@ enum AppTheme: String, CaseIterable {
                 background: 0xFDF6E3, secondary: 0xEEE8D5, surface: 0xDDD6C1,
                 gray6: 0xEEE8D5, groupedSecondary: 0xEEE8D5, tertiary: 0xDDD6C1,
                 fill: 0xD0C8AD, systemBackground: 0xFDF6E3)
+        case .morisot:
+            return ThemePalette(
+                background: 0xF3EDF6, secondary: 0xE8DFF0, surface: 0xD9CDE5,
+                gray6: 0xE8DFF0, groupedSecondary: 0xE8DFF0, tertiary: 0xD9CDE5,
+                fill: 0xC4B3D4, systemBackground: 0xF3EDF6)
+        case .sorolla:
+            return ThemePalette(
+                background: 0xF5F8FC, secondary: 0xE8EEF6, surface: 0xDAE3F0,
+                gray6: 0xE8EEF6, groupedSecondary: 0xE8EEF6, tertiary: 0xDAE3F0,
+                fill: 0xC5D2E3, systemBackground: 0xF5F8FC)
+        case .cezanne:
+            return ThemePalette(
+                background: 0xF4F2EC, secondary: 0xE8E4D8, surface: 0xDAD4C4,
+                gray6: 0xE8E4D8, groupedSecondary: 0xE8E4D8, tertiary: 0xDAD4C4,
+                fill: 0xC5BDAA, systemBackground: 0xF4F2EC)
+        case .saffron:
+            return ThemePalette(
+                background: 0xF7EFD4, secondary: 0xEDE3BE, surface: 0xDFD3A6,
+                gray6: 0xEDE3BE, groupedSecondary: 0xEDE3BE, tertiary: 0xDFD3A6,
+                fill: 0xC9BA85, systemBackground: 0xF7EFD4)
+        case .celadon:
+            return ThemePalette(
+                background: 0xE4EDE6, secondary: 0xD5E2D8, surface: 0xC2D4C6,
+                gray6: 0xD5E2D8, groupedSecondary: 0xD5E2D8, tertiary: 0xC2D4C6,
+                fill: 0xA5BAA9, systemBackground: 0xE4EDE6)
+        case .wedgwood:
+            return ThemePalette(
+                background: 0xDDE6F0, secondary: 0xCDD8E8, surface: 0xBBC9DD,
+                gray6: 0xCDD8E8, groupedSecondary: 0xCDD8E8, tertiary: 0xBBC9DD,
+                fill: 0xA0B4CC, systemBackground: 0xDDE6F0)
         case .hokusai:
             return ThemePalette(
                 background: 0x2E3440, secondary: 0x3B4252, surface: 0x434C5E,
