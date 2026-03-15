@@ -1,6 +1,6 @@
 import Foundation
 
-public struct EditInfo: Codable, Equatable {
+public struct EditInfo: Codable, Equatable, Sendable {
     public let oldString: String
     public let newString: String
 
