@@ -67,10 +67,8 @@ struct TerminalView: View {
                     bridge.feed(output)
                 }
 
-                if let code = exitCode {
+                if exitCode != nil {
                     isExecuting = false
-                    let color = code == 0 ? "32" : "31"
-                    bridge.feed("\r\n\u{1B}[\(color)m[exit \(code)]\u{1B}[0m\r\n")
                 }
             }
         }
@@ -227,12 +225,6 @@ struct TerminalView: View {
                 .onSubmit { isExecuting ? sendInput() : executeCommand() }
                 .padding(.horizontal, 8)
 
-            if isExecuting {
-                ProgressView()
-                    .scaleEffect(0.7)
-                    .padding(.trailing, 4)
-            }
-
             Button(action: { isExecuting ? sendInput() : executeCommand() }) {
                 Image(systemName: "paperplane.fill")
                     .font(.system(size: 16, weight: .semibold))
@@ -286,11 +278,13 @@ class NoKeyboardTerminalView: SwiftTerm.TerminalView {}
 struct SwiftTermWrapper: UIViewRepresentable {
     let bridge: TerminalBridge
 
+    @Environment(\.appTheme) private var theme
+
     func makeUIView(context: Context) -> NoKeyboardTerminalView {
         let tv = NoKeyboardTerminalView(frame: .zero)
         tv.terminalDelegate = context.coordinator
         tv.nativeBackgroundColor = UIColor(Color.oceanBackground)
-        tv.nativeForegroundColor = .white
+        tv.nativeForegroundColor = theme.colorScheme == .light ? .black : .white
         tv.font = UIFont.monospacedSystemFont(ofSize: 10, weight: .regular)
         tv.isUserInteractionEnabled = true
         tv.isScrollEnabled = true
@@ -300,7 +294,10 @@ struct SwiftTermWrapper: UIViewRepresentable {
         return tv
     }
 
-    func updateUIView(_ uiView: NoKeyboardTerminalView, context: Context) {}
+    func updateUIView(_ uiView: NoKeyboardTerminalView, context: Context) {
+        uiView.nativeBackgroundColor = UIColor(Color.oceanBackground)
+        uiView.nativeForegroundColor = theme.colorScheme == .light ? .black : .white
+    }
 
     func makeCoordinator() -> Coordinator { Coordinator(bridge: bridge) }
 

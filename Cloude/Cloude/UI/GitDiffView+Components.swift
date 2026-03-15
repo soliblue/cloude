@@ -2,11 +2,12 @@ import SwiftUI
 
 struct DiffTextView: View {
     let diff: String
+    var language: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(parsedLines.enumerated()), id: \.offset) { _, line in
-                DiffLineView(line: line)
+                DiffLineView(line: line, language: language)
             }
         }
         .font(.system(size: 12, design: .monospaced))
@@ -53,6 +54,7 @@ struct DiffLine {
 
 struct DiffLineView: View {
     let line: DiffLine
+    var language: String?
 
     var body: some View {
         switch line.type {
@@ -69,8 +71,7 @@ struct DiffLineView: View {
                 Text("+")
                     .foregroundStyle(.green.opacity(0.6))
                     .frame(width: 12)
-                Text(line.text)
-                    .foregroundStyle(.green)
+                Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
             .padding(.horizontal, 8)
@@ -81,8 +82,7 @@ struct DiffLineView: View {
                 Text("-")
                     .foregroundStyle(.red.opacity(0.6))
                     .frame(width: 12)
-                Text(line.text)
-                    .foregroundStyle(.red)
+                Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
             .padding(.horizontal, 8)
@@ -92,8 +92,7 @@ struct DiffLineView: View {
             HStack(spacing: 6) {
                 Text(" ")
                     .frame(width: 12)
-                Text(line.text)
-                    .foregroundStyle(.primary.opacity(0.7))
+                Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
             .padding(.horizontal, 8)

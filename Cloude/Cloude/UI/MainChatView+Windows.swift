@@ -107,7 +107,7 @@ extension MainChatView {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { exportCopied = false }
                     }
                 }) {
-                    Image(systemName: exportCopied ? "checkmark" : "square.and.arrow.up")
+                    Image(systemName: exportCopied ? "checkmark" : "doc.on.doc")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(exportCopied ? .green : .secondary)
                         .contentTransition(.symbolEffect(.replace))

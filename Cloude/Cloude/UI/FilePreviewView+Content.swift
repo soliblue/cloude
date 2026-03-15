@@ -44,7 +44,7 @@ extension FilePreviewView {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let diff = diffText, !diff.isEmpty {
             ScrollView([.horizontal, .vertical], showsIndicators: false) {
-                DiffTextView(diff: diff)
+                DiffTextView(diff: diff, language: SyntaxHighlighter.languageForPath(fileName))
                     .padding()
             }
             .background(Color.oceanSystemBackground)

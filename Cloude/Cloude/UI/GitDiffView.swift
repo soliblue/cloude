@@ -17,6 +17,7 @@ struct GitDiffView: View {
                 fileHeader
                 Divider()
                 diffContent
+                Spacer(minLength: 0)
             }
             .navigationTitle(fileName)
             .navigationBarTitleDisplayMode(.inline)
@@ -30,12 +31,9 @@ struct GitDiffView: View {
             .onAppear { loadDiff() }
         }
         .onReceive(connection.events) { event in
-            if case let .gitDiff(path, diffText) = event {
-                // Server returns the file path; match against the requested file.
-                if path == file.path || path.hasSuffix("/" + file.path) {
-                    diff = diffText
-                    isLoading = false
-                }
+            if case let .gitDiff(_, diffText) = event {
+                diff = diffText
+                isLoading = false
             }
         }
     }
@@ -62,7 +60,7 @@ struct GitDiffView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let diff = diff, !diff.isEmpty {
                 ScrollView([.horizontal, .vertical], showsIndicators: false) {
-                    DiffTextView(diff: diff)
+                    DiffTextView(diff: diff, language: SyntaxHighlighter.languageForPath(file.path))
                         .padding()
                 }
             } else {

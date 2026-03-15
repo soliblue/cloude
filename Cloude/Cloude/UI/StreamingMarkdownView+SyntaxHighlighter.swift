@@ -22,6 +22,31 @@ struct SyntaxHighlighter {
         "i8", "i16", "i32", "i64", "i128", "u8", "u16", "u32", "u64", "u128", "f32", "f64", "usize", "isize", "Vec", "Box", "Rc", "Arc", "Option"
     ]
 
+    static func languageForPath(_ path: String) -> String? {
+        let ext = (path as NSString).pathExtension.lowercased()
+        let map: [String: String] = [
+            "swift": "swift", "m": "objectivec", "h": "objectivec",
+            "c": "c", "cpp": "cpp", "hpp": "cpp",
+            "py": "python", "rb": "ruby", "go": "go", "rs": "rust",
+            "java": "java", "kt": "kotlin",
+            "js": "javascript", "ts": "typescript",
+            "jsx": "javascript", "tsx": "typescript",
+            "html": "html", "css": "css", "scss": "scss",
+            "json": "json", "xml": "xml", "yaml": "yaml", "yml": "yaml",
+            "toml": "toml", "md": "markdown",
+            "sh": "bash", "bash": "bash", "zsh": "bash",
+            "sql": "sql", "r": "r", "lua": "lua",
+            "dockerfile": "dockerfile", "makefile": "makefile",
+        ]
+        if ext.isEmpty {
+            let name = (path as NSString).lastPathComponent.lowercased()
+            if name == "dockerfile" { return "dockerfile" }
+            if name == "makefile" { return "makefile" }
+            return nil
+        }
+        return map[ext]
+    }
+
     static func highlight(_ code: String, language: String?) -> AttributedString {
         var result = AttributedString()
         let lines = code.components(separatedBy: "\n")

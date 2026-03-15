@@ -24,6 +24,7 @@ struct ThemePalette {
 
 enum AppTheme: String, CaseIterable {
     case monet = "Monet"
+    case vermeer = "Vermeer"
     case turner = "Turner"
     case morisot = "Morisot"
     case sorolla = "Sorolla"
@@ -53,7 +54,7 @@ enum AppTheme: String, CaseIterable {
 
     var colorScheme: ColorScheme {
         switch self {
-        case .monet, .turner, .morisot, .sorolla, .cezanne, .saffron, .celadon, .wedgwood: return .light
+        case .monet, .vermeer, .turner, .morisot, .sorolla, .cezanne, .saffron, .celadon, .wedgwood: return .light
         default: return .dark
         }
     }
@@ -65,6 +66,11 @@ enum AppTheme: String, CaseIterable {
                 background: 0xFFFFFF, secondary: 0xF2F2F7, surface: 0xE5E5EA,
                 gray6: 0xF2F2F7, groupedSecondary: 0xF2F2F7, tertiary: 0xE5E5EA,
                 fill: 0xD1D1D6, systemBackground: 0xFFFFFF)
+        case .vermeer:
+            return ThemePalette(
+                background: 0xF8F8FB, secondary: 0xF2F2F7, surface: 0xE5E5EA,
+                gray6: 0xF2F2F7, groupedSecondary: 0xF2F2F7, tertiary: 0xE5E5EA,
+                fill: 0xD1D1D6, systemBackground: 0xF8F8FB)
         case .turner:
             return ThemePalette(
                 background: 0xFDF6E3, secondary: 0xEEE8D5, surface: 0xDDD6C1,

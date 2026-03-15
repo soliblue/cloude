@@ -15,7 +15,7 @@ struct FileDiffSheet: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let diff, !diff.isEmpty {
                     ScrollView([.horizontal, .vertical], showsIndicators: false) {
-                        DiffTextView(diff: diff)
+                        DiffTextView(diff: diff, language: SyntaxHighlighter.languageForPath(fileName))
                             .padding()
                     }
                 } else {

@@ -280,12 +280,6 @@ struct MainChatView: View {
                 connection.send(.markHeartbeatRead)
                 conversationStore.markHeartbeatRead()
             }
-            if newIndex > 0 {
-                let windowIndex = newIndex - 1
-                if windowIndex < windowManager.windows.count {
-                    windowManager.markRead(windowManager.windows[windowIndex].id)
-                }
-            }
         }
         .modifier(HeartbeatIntervalModifier(
             showIntervalPicker: $showIntervalPicker,
