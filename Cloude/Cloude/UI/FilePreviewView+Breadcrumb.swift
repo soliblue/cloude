@@ -83,25 +83,6 @@ struct FileViewerBreadcrumb: View {
     }
 }
 
-struct FileViewerActions: View {
-    let path: String
-    let fileData: Data?
-
-    var body: some View {
-        if let data = fileData {
-            ShareLink(item: temporaryFileURL(data: data), preview: SharePreview(path.lastPathComponent)) {
-                Image(systemName: "square.and.arrow.up")
-            }
-            .font(.body)
-        }
-    }
-
-    private func temporaryFileURL(data: Data) -> URL {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(path.lastPathComponent)
-        try? data.write(to: url)
-        return url
-    }
-}
 
 private extension String {
     var truncatedBreadcrumb: String {

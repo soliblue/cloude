@@ -59,7 +59,7 @@ extension ConnectionManager {
         }
     }
 
-    func gitDiff(path: String, file: String? = nil, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.gitDiff(path: path, file: file)) }
+    func gitDiff(path: String, file: String? = nil, staged: Bool = false, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.gitDiff(path: path, file: file, staged: staged)) }
     func gitCommit(path: String, message: String, files: [String], environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.gitCommit(path: path, message: message, files: files)) }
     func getProcesses(environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getProcesses) }
     func killProcess(pid: Int32, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.killProcess(pid: pid)) }

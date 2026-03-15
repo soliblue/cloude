@@ -47,7 +47,7 @@ export function handleMessage(msg, ws, ctx) {
       break
 
     case 'git_diff':
-      handleGitDiff(msg.path, msg.file, ws, sendTo)
+      handleGitDiff(msg.path, msg.file, msg.staged, ws, sendTo)
       break
 
     case 'git_commit':

@@ -41,13 +41,9 @@ extension FilePreviewView {
     var diffContent: some View {
         if isDiffLoading {
             ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let diff = diffText, !diff.isEmpty {
-            ScrollView([.horizontal, .vertical], showsIndicators: false) {
-                DiffTextView(diff: diff, language: SyntaxHighlighter.languageForPath(fileName))
-                    .padding()
-            }
-            .background(Color.oceanSystemBackground)
+            DiffScrollView(diff: diff, fileName: fileName)
+                .background(Color.oceanSystemBackground)
         } else {
             ContentUnavailableView(
                 "No Changes",
