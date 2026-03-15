@@ -9,15 +9,6 @@ struct TreeWidget: View {
 
     var body: some View {
         WidgetContainer {
-            WidgetHeader(icon: "filemenu.and.selection", title: title ?? "Tree", color: .yellow) {
-                WidgetButton(icon: "arrow.up.left.and.arrow.down.right", color: .yellow, enabled: !collapsed.isEmpty) {
-                    collapsed = []
-                }
-                WidgetButton(icon: "arrow.down.right.and.arrow.up.left", color: .yellow, enabled: true) {
-                    collapseAll(root)
-                }
-            }
-
             if let root {
                 nodeView(root, depth: 0, isLast: true, prefixSegments: [])
             }
@@ -36,9 +27,9 @@ struct TreeWidget: View {
                         .fill(Color.secondary.opacity(0.2))
                         .frame(width: 1)
                         .frame(maxHeight: .infinity)
-                        .padding(.horizontal, 9)
+                        .padding(.horizontal, 7)
                 } else {
-                    Color.clear.frame(width: 20)
+                    Color.clear.frame(width: 16)
                 }
             }
 
@@ -46,18 +37,20 @@ struct TreeWidget: View {
                 HStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.secondary.opacity(0.2))
-                        .frame(width: 12, height: 1)
-                        .padding(.top, 10)
-                    Spacer(minLength: 4)
+                        .frame(width: 10, height: 1)
+                        .padding(.top, 8)
+                    Spacer(minLength: 3)
                 }
-                .frame(width: 16)
+                .frame(width: 13)
             }
 
             Image(systemName: node.icon)
-                .font(.system(size: 12))
+                .font(.system(size: 10))
                 .foregroundColor(node.iconColor)
-                .frame(width: 18)
-                .padding(.top, 2)
+                .frame(width: 14)
+                .padding(.top, 1.5)
+
+            Spacer().frame(width: 5)
 
             if hasChildren {
                 Button {
@@ -67,16 +60,16 @@ struct TreeWidget: View {
                 } label: {
                     HStack(spacing: 4) {
                         Text(node.label)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                         Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 8, weight: .bold))
+                            .font(.system(size: 7, weight: .bold))
                             .foregroundColor(.secondary)
                     }
                 }
                 .buttonStyle(.plain)
             } else {
                 Text(node.label)
-                    .font(.system(size: 13))
+                    .font(.system(size: 12))
             }
 
             Spacer()
