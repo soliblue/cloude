@@ -53,7 +53,7 @@ struct TypeAnswerWidget: View {
                 .font(.system(size: 15))
                 .textFieldStyle(.plain)
                 .padding(10)
-                .background(Color.oceanGray6.opacity(0.5))
+                .background(Color.themeGray6.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .focused($isFocused)
                 .disabled(checked)

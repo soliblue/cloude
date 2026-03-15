@@ -1,5 +1,9 @@
 import SwiftUI
 
+extension Notification.Name {
+    static let showFullscreenColor = Notification.Name("showFullscreenColor")
+}
+
 struct ColorPaletteWidget: View {
     let data: [String: Any]
 
@@ -12,34 +16,80 @@ struct ColorPaletteWidget: View {
         }
     }
 
+    private var useGrid: Bool { colors.count > 3 }
+
     var body: some View {
-        WidgetContainer {
-            WidgetHeader(icon: "paintpalette", title: title ?? "Color Palette", color: .purple)
-
-            VStack(spacing: 0) {
-                ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
-                    HStack(spacing: 0) {
-                        Color(hexString: color.hex)
-                            .frame(height: 56)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(color.hex.uppercased())
-                                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                .foregroundColor(.primary)
-                            if let label = color.label {
-                                Text(label)
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.secondary)
-                            }
+        if useGrid {
+            let rows = stride(from: 0, to: colors.count, by: 2).map { i in
+                Array(colors[i..<min(i + 2, colors.count)])
+            }
+            VStack(spacing: 1) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    HStack(spacing: 1) {
+                        ForEach(Array(row.enumerated()), id: \.offset) { _, color in
+                            colorSwatch(color)
                         }
-                        .padding(.horizontal, 12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .frame(height: 56)
-                        .background(Color.oceanGray6.opacity(0.5))
                     }
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 8))
+        } else {
+            VStack(spacing: 1) {
+                ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
+                    colorSwatch(color)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
+    private func colorSwatch(_ color: (hex: String, label: String?)) -> some View {
+        HStack(spacing: 0) {
+            Color(hexString: color.hex)
+                .frame(width: useGrid ? 40 : nil, height: 44)
+                .frame(maxWidth: useGrid ? nil : .infinity)
+
+            VStack(alignment: .leading, spacing: 1) {
+                if let label = color.label {
+                    Text(label)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                }
+                Text(color.hex.uppercased())
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 44)
+            .background(Color.themeGray6.opacity(0.5))
+        }
+        .onLongPressGesture(minimumDuration: 0.2) {
+            NotificationCenter.default.post(name: .showFullscreenColor, object: color.hex)
+        }
+    }
+}
+
+struct FullscreenColorOverlay: View {
+    @State private var hex: String?
+
+    var body: some View {
+        ZStack {
+            if let hex {
+                Color(hexString: hex)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                    .onTapGesture {
+                        withAnimation(.easeOut(duration: 0.2)) { self.hex = nil }
+                    }
+            }
+        }
+        .animation(.easeIn(duration: 0.2), value: hex)
+        .onReceive(NotificationCenter.default.publisher(for: .showFullscreenColor)) { notif in
+            if let color = notif.object as? String {
+                withAnimation(.easeIn(duration: 0.2)) { hex = color }
+            }
         }
     }
 }

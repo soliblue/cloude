@@ -110,7 +110,7 @@ struct ToolDetailSheet: View {
                 }
                 .padding()
             }
-            .background(Color.oceanBackground)
+            .background(Color.themeBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -140,7 +140,7 @@ struct ToolDetailSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
     }
 
     @ViewBuilder
@@ -156,7 +156,7 @@ struct ToolDetailSheet: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(Color.oceanGray6.opacity(0.5))
+            .background(Color.themeGray6.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }

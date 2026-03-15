@@ -41,6 +41,7 @@ struct CloudeApp: App {
                     mainContent
                 }
             }
+            .overlay { FullscreenColorOverlay() }
             .environmentObject(connection)
             .environment(\.appTheme, appTheme)
             .preferredColorScheme(appTheme.colorScheme)
@@ -59,7 +60,7 @@ struct CloudeApp: App {
                 onShowSettings: { showSettings = true }
             )
             .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+                .toolbarBackground(Color.themeSecondary, for: .navigationBar)
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {

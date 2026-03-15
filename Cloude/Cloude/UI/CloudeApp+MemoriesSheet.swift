@@ -79,11 +79,11 @@ struct MemoriesSheet: View {
                     }
                 }
             }
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
         }
         .presentationBackground {
             ZStack {
-                Rectangle().fill(Color.oceanBackground)
+                Rectangle().fill(Color.themeBackground)
                 GeometryReader { geo in
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
@@ -118,9 +118,9 @@ struct MemorySectionCard: View {
 
     private var backgroundColor: Color {
         switch depth {
-        case 0: return Color.oceanSecondary
-        case 1: return Color.oceanTertiary
-        default: return Color.oceanFill
+        case 0: return Color.themeSecondary
+        case 1: return Color.themeTertiary
+        default: return Color.themeFill
         }
     }
 
@@ -196,9 +196,9 @@ struct MemoryItemCard: View {
 
     private var backgroundColor: Color {
         switch depth {
-        case 0: return Color.oceanTertiary
-        case 1: return Color.oceanFill
-        default: return Color.oceanSurface
+        case 0: return Color.themeTertiary
+        case 1: return Color.themeFill
+        default: return Color.themeSurface
         }
     }
 

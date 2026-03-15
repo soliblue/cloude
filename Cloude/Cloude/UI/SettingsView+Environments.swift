@@ -166,7 +166,7 @@ struct EnvironmentCard: View {
                 .padding(.vertical, 10)
             }
             .padding(.horizontal, 12)
-            .background(Color.oceanSecondary)
+            .background(Color.themeSecondary)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
             Spacer().frame(height: 2)

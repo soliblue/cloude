@@ -58,7 +58,7 @@ struct GitDiffView: View {
                 .lineLimit(1)
         }
         .padding()
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
     }
 
     private var diffContent: some View {

@@ -104,14 +104,13 @@ struct FilePreviewView: View {
                         }
                     }
                     .font(.body)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 16)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                     }
                     .font(.body)
-                    .padding(.horizontal, 8)
                 }
             }
         }

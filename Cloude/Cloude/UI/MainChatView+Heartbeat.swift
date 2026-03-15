@@ -99,7 +99,7 @@ extension MainChatView {
         .padding(.horizontal, 11)
         .padding(.top, 0)
         .padding(.bottom, 7)
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
     }
 
     private var heartbeatEnvironmentMenu: some View {

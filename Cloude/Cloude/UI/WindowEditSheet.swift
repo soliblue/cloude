@@ -97,9 +97,9 @@ struct WindowEditSheet: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
         }
         .presentationDetents([.large])
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
     }
 }

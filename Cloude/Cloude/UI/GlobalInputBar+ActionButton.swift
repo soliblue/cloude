@@ -141,7 +141,7 @@ extension GlobalInputBar {
             .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? .white : .secondary.opacity(0.5))
             .frame(width: 56)
             .frame(maxHeight: .infinity)
-            .background(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
+            .background(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? Color.accentColor : Color.themeSecondary.opacity(0.5))
             .contentShape(Rectangle())
             .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
             .animation(.easeInOut(duration: 0.2), value: canSend)

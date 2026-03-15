@@ -23,6 +23,9 @@ extension MainChatView {
                     onSelectRecentConversation: { conv in
                         windowManager.linkToCurrentConversation(window.id, conversation: conv)
                     },
+                    onSeeAllConversations: {
+                        showConversationSearch = true
+                    },
                     onNewConversation: {
                         let workingDir = activeWindowWorkingDirectory()
                         let newConv = conversationStore.newConversation(workingDirectory: workingDir, environmentId: activeWindowEnvironmentId())
@@ -189,7 +192,7 @@ extension MainChatView {
         .padding(.horizontal, 7)
         .padding(.top, 0)
         .padding(.bottom, 7)
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
     }
 
     private func exportConversation(_ conversation: Conversation) {

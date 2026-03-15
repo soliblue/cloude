@@ -43,7 +43,7 @@ extension FilePreviewView {
             ProgressView()
         } else if let diff = diffText, !diff.isEmpty {
             DiffScrollView(diff: diff, fileName: fileName)
-                .background(Color.oceanSystemBackground)
+                .background(Color.themeSystemBackground)
         } else {
             ContentUnavailableView(
                 "No Changes",
@@ -95,7 +95,7 @@ extension FilePreviewView {
                 CSVTableView(text: text, delimiter: fileExtension == "tsv" ? "\t" : ",")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .background(Color.oceanSystemBackground)
+            .background(Color.themeSystemBackground)
         case .html:
             HTMLRenderedView(html: text)
         case .json:
@@ -114,7 +114,7 @@ extension FilePreviewView {
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.oceanSystemBackground)
+        .background(Color.themeSystemBackground)
     }
 
     @ViewBuilder
@@ -157,7 +157,7 @@ extension FilePreviewView {
                 }
             }
         }
-        .background(Color.oceanSystemBackground)
+        .background(Color.themeSystemBackground)
     }
 
     @ViewBuilder

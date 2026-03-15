@@ -56,7 +56,7 @@ struct LockScreenView: View {
             .padding(.horizontal, 32)
             .padding(.bottom, 48)
         }
-        .background(Color.oceanBackground)
+        .background(Color.themeBackground)
         .onAppear {
             authenticate()
         }

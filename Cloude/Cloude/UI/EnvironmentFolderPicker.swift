@@ -91,7 +91,7 @@ struct EnvironmentFolderPicker: View {
             .buttonStyle(.plain)
             .opacity(isEnvConnected ? 1 : 0.4)
         }
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(
@@ -127,7 +127,7 @@ struct EnvironmentFolderPicker: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

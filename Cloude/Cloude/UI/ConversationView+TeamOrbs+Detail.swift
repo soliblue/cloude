@@ -39,11 +39,11 @@ struct TeammateDetailSheet: View {
                 }
             }
             .background(.ultraThinMaterial)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
     }
 
     private var headerSection: some View {

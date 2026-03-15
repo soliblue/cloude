@@ -52,7 +52,7 @@ struct WindowHeaderView: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            .background(Color.oceanSecondary)
+            .background(Color.themeSecondary)
         }
         .buttonStyle(.plain)
     }

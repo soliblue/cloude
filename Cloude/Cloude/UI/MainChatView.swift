@@ -151,7 +151,7 @@ struct MainChatView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { }
-            .background(Color.oceanBackground)
+            .background(Color.themeBackground)
         }
         .onReceive(NotificationCenter.default.publisher(for: .widgetInputActive)) { note in
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -251,7 +251,7 @@ struct MainChatView: View {
             } else {
                 ProgressView("Loading usage stats...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.oceanBackground)
+                    .background(Color.themeBackground)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .editActiveWindow)) { _ in

@@ -71,7 +71,7 @@ extension SettingsView {
         } footer: {
             Text("Running Claude Code processes on the Mac agent")
         }
-        .listRowBackground(Color.oceanSecondary)
+        .listRowBackground(Color.themeSecondary)
     }
 
     @ViewBuilder var securityRow: some View {
@@ -102,6 +102,6 @@ extension SettingsView {
             }
             .foregroundColor(.primary)
         }
-        .listRowBackground(Color.oceanSecondary)
+        .listRowBackground(Color.themeSecondary)
     }
 }

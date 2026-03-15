@@ -24,10 +24,10 @@ struct SettingsView: View {
             }
             .contentMargins(.top, 8, for: .scrollContent)
             .scrollContentBackground(.hidden)
-            .background(Color.oceanBackground)
+            .background(Color.themeBackground)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -77,7 +77,7 @@ struct SettingsView: View {
 
             securityRow
         }
-        .listRowBackground(Color.oceanSecondary)
+        .listRowBackground(Color.themeSecondary)
     }
 
 }

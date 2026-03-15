@@ -43,7 +43,7 @@ struct StepRevealWidget: View {
                         }
                     }
                     .padding(10)
-                    .background(Color.oceanGray6.opacity(0.3))
+                    .background(Color.themeGray6.opacity(0.3))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
             }

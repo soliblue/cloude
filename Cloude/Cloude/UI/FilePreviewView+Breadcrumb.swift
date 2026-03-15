@@ -51,7 +51,7 @@ struct FileViewerBreadcrumb: View {
                 proxy.scrollTo("current-file", anchor: .trailing)
             }
         }
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
     }
 
     private var fileName: String {
