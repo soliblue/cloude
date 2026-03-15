@@ -82,6 +82,13 @@ public enum ToolInputExtractor {
         return extractDisplayDetail(name: name, input: parsed)
     }
 
+    public static func extractEditInfo(input: [String: Any]?) -> EditInfo? {
+        guard let input,
+              let oldString = input["old_string"] as? String,
+              let newString = input["new_string"] as? String else { return nil }
+        return EditInfo(oldString: oldString, newString: newString)
+    }
+
     private static func truncate(_ string: String, to limit: Int) -> String {
         if string.count > limit {
             return String(string.prefix(limit - 3)) + "..."

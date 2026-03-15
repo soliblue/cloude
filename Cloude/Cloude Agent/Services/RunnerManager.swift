@@ -23,7 +23,7 @@ class RunnerManager: ObservableObject {
 
     var onOutput: ((String, String) -> Void)?
     var onSessionId: ((String, String) -> Void)?
-    var onToolCall: ((String, String?, String, String?, String, Int?) -> Void)?
+    var onToolCall: ((String, String?, String, String?, String, Int?, EditInfo?) -> Void)?
     var onToolResult: ((String, String?, String?, String) -> Void)?
     var onRunStats: ((Int, Double, String?, String) -> Void)?
     var onComplete: ((String, String?) -> Void)?
@@ -117,14 +117,14 @@ class RunnerManager: ObservableObject {
             self.onSessionId?(sessionId, conversationId)
         }
 
-        runner.onToolCall = { [weak self] name, input, toolId, parentToolId, textPosition in
+        runner.onToolCall = { [weak self] name, input, toolId, parentToolId, textPosition, editInfo in
             guard let self else { return }
             if var convRunner = self.activeRunners[conversationId] {
-                let storedCall = StoredToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: textPosition)
+                let storedCall = StoredToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: textPosition, editInfo: editInfo)
                 convRunner.accumulatedToolCalls.append(storedCall)
                 self.activeRunners[conversationId] = convRunner
             }
-            self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition)
+            self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition, editInfo)
         }
 
         runner.onToolResult = { [weak self] toolId, summary, output in

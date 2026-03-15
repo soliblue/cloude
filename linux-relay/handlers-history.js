@@ -148,7 +148,9 @@ export function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
           if (item.type === 'text' && item.text) {
             contentItem = { type: 'text', text: item.text }
           } else if (item.type === 'tool_use' && item.name && item.id) {
-            contentItem = { type: 'tool_use', toolName: item.name, toolId: item.id, toolInput: extractToolInput(item.name, item.input) }
+            const editInfo = item.name === 'Edit' && item.input?.old_string != null && item.input?.new_string != null
+              ? { oldString: item.input.old_string, newString: item.input.new_string } : null
+            contentItem = { type: 'tool_use', toolName: item.name, toolId: item.id, toolInput: extractToolInput(item.name, item.input), editInfo }
           }
 
           if (contentItem) {
@@ -173,7 +175,9 @@ export function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
         if (item.type === 'text') {
           text += item.text
         } else if (item.type === 'tool_use') {
-          toolCalls.push({ name: item.toolName, input: item.toolInput || null, toolId: item.toolId, parentToolId: null, textPosition: text.length })
+          const tc = { name: item.toolName, input: item.toolInput || null, toolId: item.toolId, parentToolId: null, textPosition: text.length }
+          if (item.editInfo) tc.editInfo = item.editInfo
+          toolCalls.push(tc)
         }
       }
       if (text || toolCalls.length) {

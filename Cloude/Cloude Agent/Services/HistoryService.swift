@@ -14,6 +14,7 @@ struct HistoryService {
         let toolName: String?
         let toolId: String?
         let toolInput: String?
+        let editInfo: EditInfo?
     }
 
     static func getHistory(sessionId: String, workingDirectory: String) -> Result<[HistoryMessage], HistoryError> {
@@ -70,13 +71,14 @@ struct HistoryService {
 
                         let contentItem: ContentItem
                         if itemType == "text", let text = item["text"] as? String {
-                            contentItem = ContentItem(type: "text", text: text, toolName: nil, toolId: nil, toolInput: nil)
+                            contentItem = ContentItem(type: "text", text: text, toolName: nil, toolId: nil, toolInput: nil, editInfo: nil)
                         } else if itemType == "tool_use",
                                   let name = item["name"] as? String,
                                   let toolId = item["id"] as? String {
                             let inputDict = item["input"] as? [String: Any]
                             let inputStr = extractToolInput(name: name, input: inputDict)
-                            contentItem = ContentItem(type: "tool_use", text: nil, toolName: name, toolId: toolId, toolInput: inputStr)
+                            let editInfo = name == "Edit" ? ToolInputExtractor.extractEditInfo(input: inputDict) : nil
+                            contentItem = ContentItem(type: "tool_use", text: nil, toolName: name, toolId: toolId, toolInput: inputStr, editInfo: editInfo)
                         } else {
                             continue
                         }
@@ -108,7 +110,7 @@ struct HistoryService {
                               let name = item.toolName,
                               let toolId = item.toolId {
                         let position = accumulatedText.count
-                        toolCalls.append(StoredToolCall(name: name, input: item.toolInput, toolId: toolId, textPosition: position))
+                        toolCalls.append(StoredToolCall(name: name, input: item.toolInput, toolId: toolId, textPosition: position, editInfo: item.editInfo))
                     }
                 }
 
@@ -128,7 +130,7 @@ struct HistoryService {
                     let combinedText = prev.text + separator + msg.text
                     let textOffset = prev.text.count + separator.count
                     let adjustedTools = msg.toolCalls.map { tool in
-                        StoredToolCall(name: tool.name, input: tool.input, toolId: tool.toolId, parentToolId: tool.parentToolId, textPosition: (tool.textPosition ?? 0) + textOffset)
+                        StoredToolCall(name: tool.name, input: tool.input, toolId: tool.toolId, parentToolId: tool.parentToolId, textPosition: (tool.textPosition ?? 0) + textOffset, editInfo: tool.editInfo)
                     }
                     merged[lastIdx] = HistoryMessage(isUser: false, text: combinedText, timestamp: prev.timestamp, toolCalls: prev.toolCalls + adjustedTools, serverUUID: prev.serverUUID ?? msg.serverUUID, model: prev.model ?? msg.model)
                 } else {

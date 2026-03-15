@@ -18,6 +18,20 @@ extension ToolDetailSheet {
         }
     }
 
+    func editDiffSection(_ editInfo: EditInfo) -> some View {
+        let language = toolCall.filePath.flatMap { SyntaxHighlighter.languageForPath($0) }
+        return VStack(alignment: .leading, spacing: 8) {
+            Label("Changes", systemImage: "arrow.left.arrow.right")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.secondary)
+
+            DiffTextView(diff: editInfo.toUnifiedDiff(), language: language)
+                .padding(8)
+                .background(Color.themeGray6.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
     func readOutputSection(_ output: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Content", systemImage: "doc.text")

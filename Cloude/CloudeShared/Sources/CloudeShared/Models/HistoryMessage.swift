@@ -6,13 +6,15 @@ public struct StoredToolCall: Codable {
     public let toolId: String
     public let parentToolId: String?
     public let textPosition: Int?
+    public let editInfo: EditInfo?
 
-    public init(name: String, input: String?, toolId: String, parentToolId: String? = nil, textPosition: Int? = nil) {
+    public init(name: String, input: String?, toolId: String, parentToolId: String? = nil, textPosition: Int? = nil, editInfo: EditInfo? = nil) {
         self.name = name
         self.input = input
         self.toolId = toolId
         self.parentToolId = parentToolId
         self.textPosition = textPosition
+        self.editInfo = editInfo
     }
 }
 
