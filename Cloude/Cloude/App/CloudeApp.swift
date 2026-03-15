@@ -335,25 +335,27 @@ struct CloudeApp: App {
     @ViewBuilder
     private var environmentIndicators: some View {
         VStack(spacing: 4) {
-            HStack(spacing: 8) {
-                ForEach(environmentStore.environments) { env in
-                    let conn = connection.connection(for: env.id)
-                    let isAuthenticated = conn?.isAuthenticated ?? false
-                    let isConnecting = (conn?.isConnected ?? false) && !isAuthenticated
+            if environmentStore.environments.count > 1 {
+                HStack(spacing: 8) {
+                    ForEach(environmentStore.environments) { env in
+                        let conn = connection.connection(for: env.id)
+                        let isAuthenticated = conn?.isAuthenticated ?? false
+                        let isConnecting = (conn?.isConnected ?? false) && !isAuthenticated
 
-                    Button(action: {
-                        if isAuthenticated || isConnecting {
-                            connection.disconnectEnvironment(env.id, clearCredentials: false)
-                        } else {
-                            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                        Button(action: {
+                            if isAuthenticated || isConnecting {
+                                connection.disconnectEnvironment(env.id, clearCredentials: false)
+                            } else {
+                                connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                            }
+                        }) {
+                            Image(systemName: env.symbol)
+                                .font(.system(size: 11, weight: isAuthenticated ? .semibold : .regular))
+                                .foregroundColor(isAuthenticated || isConnecting ? .accentColor : .secondary.opacity(0.4))
+                                .modifier(StreamingPulseModifier(isStreaming: isConnecting))
                         }
-                    }) {
-                        Image(systemName: env.symbol)
-                            .font(.system(size: 11, weight: isAuthenticated ? .semibold : .regular))
-                            .foregroundColor(isAuthenticated || isConnecting ? .accentColor : .secondary.opacity(0.4))
-                            .modifier(StreamingPulseModifier(isStreaming: isConnecting))
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
 

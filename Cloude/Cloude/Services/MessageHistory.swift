@@ -2,8 +2,8 @@ import Foundation
 
 struct MessageHistory {
     private static let key = "messageHistory_v1"
-    private static let maxEntries = 50
-    private static let maxLength = 50
+    private static let maxEntries = 500
+    private static let maxLength = 100
 
     static func save(_ text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
