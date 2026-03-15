@@ -143,7 +143,6 @@ struct ToolCallLabel: View {
         case "grep", "rg":                 return parsed.firstArg.map { truncateText($0, maxLength: 8) } ?? ""
         case "echo":                        return truncateText(parsed.allArgs.joined(separator: " "), maxLength: 9)
         case "export":                      return parsed.firstArg.map { $0.split(separator: "=").first.map(String.init) ?? $0 } ?? ""
-        case "claude":                      return parsed.subcommand ?? ""
         default:                            return ""
         }
     }

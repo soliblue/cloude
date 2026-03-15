@@ -130,9 +130,9 @@ extension FilePreviewView {
                     VStack(alignment: .trailing, spacing: 0) {
                         ForEach(1...lines.count, id: \.self) { num in
                             Text("\(num)")
-                                .font(.system(size: 12, design: .monospaced))
+                                .font(.system(size: 10, design: .monospaced))
                                 .foregroundStyle(.tertiary)
-                                .frame(height: 17)
+                                .frame(height: 13.5)
                         }
                     }
                     .padding(.leading, 12)
@@ -144,14 +144,16 @@ extension FilePreviewView {
 
                 if let highlighted = highlightedCode {
                     Text(highlighted)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.system(size: 10, design: .monospaced))
+                        .lineSpacing(1.5)
                         .fixedSize(horizontal: !wrapCodeLines, vertical: false)
                         .textSelection(.enabled)
                         .padding()
                         .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
                 } else {
                     Text(text)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.system(size: 10, design: .monospaced))
+                        .lineSpacing(1.5)
                         .fixedSize(horizontal: !wrapCodeLines, vertical: false)
                         .textSelection(.enabled)
                         .padding()

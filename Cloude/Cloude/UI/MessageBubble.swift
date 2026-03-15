@@ -76,7 +76,7 @@ struct MessageBubble: View {
                             Text(message.text)
                         }
                     } else if hasToolCalls {
-                        InterleavedMessageContent(text: message.text, toolCalls: message.toolCalls)
+                        StreamingMarkdownView(text: message.text, toolCalls: message.toolCalls)
                     } else if !message.text.isEmpty {
                         StreamingMarkdownView(text: message.text)
                     }
@@ -157,7 +157,7 @@ struct MessageBubble: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
             .sheet(isPresented: $showTextSelection) {
-                TextSelectionSheet(text: message.text, isMarkdown: !message.isUser)
+                TextSelectionSheet(text: message.text)
             }
             .sheet(isPresented: $showTeamDashboard) {
                 if let team = message.teamSummary {
@@ -211,23 +211,6 @@ struct MessageBubble: View {
                         }
                     }
             )
-    }
-}
-
-struct CopiedToast: View {
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "checkmark.circle.fill")
-            Text("Copied")
-        }
-        .font(.subheadline.weight(.medium))
-        .foregroundColor(.white)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(Color(.darkGray))
-        .cornerRadius(15)
-        .shadow(radius: 4)
-        .padding(.top, 8)
     }
 }
 
@@ -295,15 +278,6 @@ struct ConditionalClip: ViewModifier {
     }
 }
 
-struct InterleavedMessageContent: View {
-    let text: String
-    let toolCalls: [ToolCall]
-
-    var body: some View {
-        StreamingMarkdownView(text: text, toolCalls: toolCalls)
-    }
-}
-
 struct TeamSummaryBadge: View {
     let summary: TeamSummary
     let onTap: () -> Void
@@ -338,7 +312,6 @@ struct TeamSummaryBadge: View {
 
 struct TextSelectionSheet: View {
     let text: String
-    var isMarkdown: Bool = false
     @Environment(\.dismiss) private var dismiss
     @State private var showCopied = false
 

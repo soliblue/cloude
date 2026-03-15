@@ -328,11 +328,6 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
         }
     }
 
-    private func scrollToMessage(_ id: UUID, anchor: UnitPoint = .top) {
-        withAnimation(.easeOut(duration: 0.2)) {
-            scrollProxy?.scrollTo(id, anchor: anchor)
-        }
-    }
 }
 
 struct QueuedBubble: View {
