@@ -8,21 +8,21 @@ struct SlashCommandBubble: View {
     var isSkill: Bool = true
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
             Text(command)
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .font(.system(size: 9, weight: .semibold, design: .monospaced))
             if let args = args {
                 Text(args)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.system(size: 9, design: .monospaced))
                     .opacity(0.7)
                     .lineLimit(1)
             }
         }
         .foregroundStyle(isSkill ? skillGradient : builtInGradient)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .background(SkillPillBackground(isSkill: isSkill))
     }
 }
