@@ -104,7 +104,7 @@ struct EmptyConversationView: View {
                                 }
                             }) {
                                 Label {
-                                    Text("\(env.host):\(env.port)")
+                                    Text(env.host)
                                 } icon: {
                                     Image(systemName: env.symbol)
                                 }
@@ -115,7 +115,7 @@ struct EmptyConversationView: View {
                             Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
                                 .font(.system(size: 14))
                                 .foregroundColor(.accentColor)
-                            Text(selectedEnv.map { "\($0.host):\($0.port)" } ?? "Select environment")
+                            Text(selectedEnv?.host ?? "Select environment")
                                 .font(.caption.monospaced())
                                 .foregroundColor(.secondary)
                             Spacer()
