@@ -84,25 +84,25 @@ struct DiffLineView: View {
         case .added:
             HStack(spacing: 6) {
                 Text("+")
-                    .foregroundStyle(.green.opacity(0.6))
+                    .foregroundStyle(Color.pastelGreen.opacity(0.6))
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.green.opacity(0.12))
+            .background(Color.pastelGreen.opacity(0.12))
         case .removed:
             HStack(spacing: 6) {
                 Text("-")
-                    .foregroundStyle(.red.opacity(0.6))
+                    .foregroundStyle(Color.pastelRed.opacity(0.6))
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.red.opacity(0.12))
+            .background(Color.pastelRed.opacity(0.12))
         case .context:
             HStack(spacing: 6) {
                 Text(" ")

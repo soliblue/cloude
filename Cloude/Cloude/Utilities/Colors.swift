@@ -10,6 +10,9 @@ extension Color {
     static var themeFill: Color { Color(hex: AppTheme.current.palette.fill) }
     static var themeSystemBackground: Color { Color(hex: AppTheme.current.palette.systemBackground) }
 
+    static let pastelGreen = Color(hex: 0x7AB87A)
+    static let pastelRed = Color(hex: 0xB54E5E)
+
     init(hex: UInt, alpha: Double = 1.0) {
         self.init(
             .sRGB,

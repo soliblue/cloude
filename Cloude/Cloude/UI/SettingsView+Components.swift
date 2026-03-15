@@ -64,9 +64,9 @@ struct ConnectionStatusCard: View {
     }
 
     private var statusColor: Color {
-        if connection.isAuthenticated { return .green }
+        if connection.isAuthenticated { return .pastelGreen }
         if connection.isConnected { return .yellow }
-        if connection.lastError != nil { return .red }
+        if connection.lastError != nil { return .pastelRed }
         return .gray
     }
 

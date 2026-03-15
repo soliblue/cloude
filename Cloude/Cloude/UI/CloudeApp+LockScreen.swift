@@ -50,7 +50,7 @@ struct LockScreenView: View {
                 if showError {
                     Text("Authentication failed. Please try again.")
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundColor(.pastelRed)
                 }
             }
             .padding(.horizontal, 32)

@@ -57,16 +57,35 @@ struct GitChangesView: View {
             }
 
             Spacer()
+
+            let totalAdd = status.files.compactMap(\.additions).reduce(0, +)
+            let totalDel = status.files.compactMap(\.deletions).reduce(0, +)
+            if totalAdd > 0 || totalDel > 0 {
+                HStack(spacing: 4) {
+                    if totalAdd > 0 {
+                        Text("+\(totalAdd)")
+                            .foregroundColor(.pastelGreen)
+                    }
+                    if totalDel > 0 {
+                        Text("-\(totalDel)")
+                            .foregroundColor(.pastelRed)
+                    }
+                }
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                Text("·")
+                    .foregroundColor(.secondary)
+            }
+
             if !status.stagedFiles.isEmpty {
                 Text("\(status.stagedFiles.count) staged")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.green)
+                    .foregroundColor(.pastelGreen)
                 Text("·")
                     .foregroundColor(.secondary)
             }
             Text("\(status.unstagedFiles.count) changed")
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(status.hasChanges ? .orange : .green)
+                .foregroundColor(status.hasChanges ? .orange : .pastelGreen)
         }
         .font(.system(size: 11))
         .foregroundColor(.secondary)

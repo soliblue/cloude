@@ -8,7 +8,7 @@ extension SettingsView {
                 HStack {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: 20))
-                        .foregroundColor(.green)
+                        .foregroundColor(.pastelGreen)
                     Text("No Claude processes running")
                         .foregroundColor(.secondary)
                 }
@@ -76,7 +76,7 @@ extension SettingsView {
 
     @ViewBuilder var securityRow: some View {
         if BiometricAuth.isAvailable {
-            SettingsRow(icon: BiometricAuth.biometricIcon, color: .green) {
+            SettingsRow(icon: BiometricAuth.biometricIcon, color: .pastelGreen) {
                 Toggle("Require \(BiometricAuth.biometricName)", isOn: $requireBiometricAuth)
             }
         }

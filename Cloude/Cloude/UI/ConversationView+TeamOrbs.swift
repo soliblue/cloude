@@ -125,9 +125,9 @@ struct TeammateOrbRow: View {
         let (text, color): (String, Color) = {
             switch teammate.status {
             case .spawning: return ("Spawn", .orange)
-            case .working: return ("Work", .green)
+            case .working: return ("Work", .pastelGreen)
             case .idle: return ("Idle", .secondary)
-            case .shutdown: return ("Off", .red)
+            case .shutdown: return ("Off", .pastelRed)
             }
         }()
         return Text(text).foregroundColor(color)

@@ -163,9 +163,9 @@ struct TeamDashboardSheet: View {
         let (text, color): (String, Color) = {
             switch status {
             case .spawning: return ("Spawning", .orange)
-            case .working: return ("Active", .green)
+            case .working: return ("Active", .pastelGreen)
             case .idle: return ("Idle", .secondary)
-            case .shutdown: return ("Offline", .red)
+            case .shutdown: return ("Offline", .pastelRed)
             }
         }()
 

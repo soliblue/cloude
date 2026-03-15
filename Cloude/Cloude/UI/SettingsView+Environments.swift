@@ -175,7 +175,7 @@ struct EnvironmentCard: View {
     }
 
     private var statusColor: Color {
-        if isConnected { return .green }
+        if isConnected { return .pastelGreen }
         if isConnecting { return .yellow }
         return .gray
     }
