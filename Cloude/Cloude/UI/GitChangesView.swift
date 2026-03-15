@@ -69,18 +69,12 @@ struct GitChangesView: View {
     }
 
     private func filesList(_ files: [GitFileStatus]) -> some View {
-        Group {
-            if files.isEmpty {
-                ContentUnavailableView("No Changes", systemImage: "checkmark.circle", description: Text("Working tree clean"))
-            } else {
-                List(files) { file in
-                    GitFileRow(file: file) {
-                        selectedFile = file
-                    }
-                }
-                .listStyle(.plain)
+        List(files) { file in
+            GitFileRow(file: file) {
+                selectedFile = file
             }
         }
+        .listStyle(.plain)
     }
 
     private func loadStatus() {
