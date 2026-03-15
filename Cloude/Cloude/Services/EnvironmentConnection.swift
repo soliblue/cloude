@@ -63,7 +63,9 @@ class EnvironmentConnection: ObservableObject, Identifiable {
         disconnect(clearCredentials: false)
         connectionToken = UUID()
 
-        guard let url = URL(string: "ws://\(savedHost):\(savedPort)") else {
+        let isIP = savedHost.allSatisfy { $0.isNumber || $0 == "." || $0 == ":" }
+        let scheme = isIP ? "ws" : "wss"
+        guard let url = URL(string: "\(scheme)://\(savedHost):\(savedPort)") else {
             lastError = "Invalid URL"
             return
         }

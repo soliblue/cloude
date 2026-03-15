@@ -47,6 +47,14 @@ Cloude/
 linux-relay/                       # Node.js relay for Linux/cloud (systemd service)
 ```
 
+### Connectivity
+Both the Mac agent and Linux relay are accessible over Cloudflare Tunnels (preferred over Tailscale):
+- **Mac agent**: `wss://cloude-home.soli.blue` (tunnel `cloude-home`, config `~/.cloudflared/config.yml`, runs as launchd agent)
+- **Linux relay (medina)**: `wss://cloude-medina.soli.blue` (tunnel `agentpit` on medina, config `~/.cloudflared/config.yml`)
+- Both proxy `http://127.0.0.1:8765` through Cloudflare's edge with automatic TLS
+- No port forwarding, no VPN needed. Works from any network.
+- Tailscale still works but drains iOS battery. Cloudflare Tunnel is lighter weight.
+
 ### Style
 - **No comments** - no inline, no docstrings, no headers (except file name/module line)
 - **No em dashes** anywhere - not in code, commits, chat, or generated text

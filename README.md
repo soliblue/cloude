@@ -15,7 +15,7 @@ Control Claude Code from your iPhone. Your phone becomes a remote terminal for C
                               └──────────────┘
 ```
 
-The relay spawns Claude Code CLI processes and streams their output over WebSocket. The iOS app is a native chat UI. Use Tailscale for encrypted remote access, or connect directly on local WiFi.
+The relay spawns Claude Code CLI processes and streams their output over WebSocket. The iOS app is a native chat UI. Use Cloudflare Tunnel for encrypted remote access (recommended), or connect directly on local WiFi.
 
 ## Quick Start
 
@@ -43,7 +43,42 @@ The install script creates a systemd service, generates an auth token, and start
 
 ### Connect
 
-On iPhone, enter your machine's IP (Tailscale IP recommended), port 8765, and the auth token. For remote access, install [Tailscale](https://tailscale.com) on both devices.
+On iPhone, enter your machine's hostname, port, and auth token.
+
+### Remote Access
+
+**Cloudflare Tunnel (recommended)** - free, no VPN app needed, automatic TLS:
+
+```bash
+# Install cloudflared
+brew install cloudflare/cloudflare/cloudflared   # Mac
+sudo apt install cloudflared                       # Linux
+
+# Login and create tunnel
+cloudflared login                                  # select your zone
+cloudflared tunnel create cloude
+
+# Configure (~/.cloudflared/config.yml)
+cat > ~/.cloudflared/config.yml << EOF
+tunnel: <TUNNEL_ID>
+credentials-file: ~/.cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: cloude.yourdomain.com
+    service: http://127.0.0.1:8765
+  - service: http_status:404
+EOF
+
+# Create DNS route and run
+cloudflared tunnel route dns cloude cloude.yourdomain.com
+cloudflared service install  # runs on boot
+```
+
+In the iOS app, connect to `cloude.yourdomain.com` on port `443`. The app auto-detects domain names and uses `wss://` (encrypted WebSocket).
+
+**Tailscale (alternative)** - works but drains iOS battery since it runs a VPN:
+
+Install [Tailscale](https://tailscale.com) on both devices, then connect using the Tailscale IP on port `8765`.
 
 ## Features
 
@@ -175,7 +210,7 @@ Built for iPhone, not a web wrapper.
 - macOS 14+ or Linux (Ubuntu 22.04+)
 - iOS 17+
 - [Claude Code CLI](https://claude.ai/claude-code) installed
-- Tailscale (recommended for secure remote access)
+- Cloudflare Tunnel (recommended) or Tailscale for remote access
 
 ## TestFlight Deployment
 
