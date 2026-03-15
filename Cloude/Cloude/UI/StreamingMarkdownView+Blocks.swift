@@ -24,7 +24,7 @@ struct CodeBlock: View {
 
             codeContent
         }
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
         .cornerRadius(6)
     }
 
@@ -105,7 +105,7 @@ struct CodeBlock: View {
         .padding(.leading, 12)
         .padding(.vertical, 12)
         .padding(.trailing, 4)
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
     }
 
     private var lineHeight: CGFloat {
@@ -119,7 +119,7 @@ struct BlockquoteView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             Rectangle()
-                .fill(Color.oceanSurface)
+                .fill(Color.themeSurface)
                 .frame(width: 3)
             Text(text)
                 .font(.body)

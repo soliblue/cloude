@@ -110,7 +110,7 @@ struct PlansSheet: View {
             .toolbarBackground(.hidden, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
         .onAppear {
             if stages[selectedStage]?.isEmpty ?? true {
                 if let first = stageOrder.first(where: { !(stages[$0]?.isEmpty ?? true) }) {

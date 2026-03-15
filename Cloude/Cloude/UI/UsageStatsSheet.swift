@@ -72,7 +72,7 @@ struct UsageStatsSheet: View {
             .toolbarBackground(.hidden, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
     }
 
     private var heroRow: some View {

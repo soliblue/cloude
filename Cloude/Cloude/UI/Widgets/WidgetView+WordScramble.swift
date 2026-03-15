@@ -58,7 +58,7 @@ struct WordScrambleWidget: View {
                             .foregroundColor(checked ? (isCorrect ? .green : .red) : .primary)
                     }
                     .frame(width: 32, height: 38)
-                    .background(hasLetter ? Color.yellow.opacity(0.1) : Color.oceanGray6.opacity(0.5))
+                    .background(hasLetter ? Color.yellow.opacity(0.1) : Color.themeGray6.opacity(0.5))
                     .overlay(
                         Rectangle()
                             .frame(height: 2)
@@ -88,7 +88,7 @@ struct WordScrambleWidget: View {
                             Text(String(scrambledLetters[index]))
                                 .font(.system(size: 16, weight: .medium, design: .monospaced))
                                 .frame(width: 36, height: 36)
-                                .background(Color.oceanGray6.opacity(0.5))
+                                .background(Color.themeGray6.opacity(0.5))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)

@@ -57,7 +57,7 @@ struct FlashcardDeckWidget: View {
                         .padding(.vertical, 24)
                         .padding(.horizontal, 16)
                         .frame(maxWidth: .infinity)
-                        .background(Color.oceanGray6.opacity(0.5))
+                        .background(Color.themeGray6.opacity(0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)

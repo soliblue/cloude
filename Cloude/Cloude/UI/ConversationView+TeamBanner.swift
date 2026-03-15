@@ -87,7 +87,7 @@ struct TeamDashboardSheet: View {
                                 .padding(.top, 8)
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 8)
-                                .background(Color.oceanTertiary)
+                                .background(Color.themeTertiary)
                             }
                         }
                     }
@@ -106,11 +106,11 @@ struct TeamDashboardSheet: View {
                 }
             }
             .background(.ultraThinMaterial)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
     }
 
     private func teammateRow(_ mate: TeammateInfo) -> some View {

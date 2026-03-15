@@ -80,9 +80,9 @@ struct SymbolPickerSheet: View {
             }
             .background(.ultraThinMaterial)
             .scrollContentBackground(.hidden)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
     }
 }

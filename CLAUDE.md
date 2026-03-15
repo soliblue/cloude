@@ -79,7 +79,7 @@ if let subject = args.subject {
 - UI files: no logic. Logic files: no SwiftUI.
 - Sheets: use NavigationStack + `.toolbar`, not custom HStacks
 - SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
-- Toolbar groups: `HStack(spacing: 12)` + `.padding(.horizontal, 8)`, `Divider().frame(height: 20)` between buttons
+- **Toolbar layout**: Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: 12)` with `.padding(.horizontal, 16)`, use `Divider().frame(height: 20)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
 - Use markdown for text-heavy content. Use `mcp__widgets__*` for interactive/visual content (charts, trees, timelines, flashcards, drag-to-order).
 
 ### UI Component Map

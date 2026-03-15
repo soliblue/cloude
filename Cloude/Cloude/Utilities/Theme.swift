@@ -26,23 +26,26 @@ enum AppTheme: String, CaseIterable {
     case monet = "Monet"
     case vermeer = "Vermeer"
     case turner = "Turner"
-    case morisot = "Morisot"
-    case sorolla = "Sorolla"
     case cezanne = "Cézanne"
     case saffron = "Saffron"
     case celadon = "Celadon"
+    case morisot = "Morisot"
+    case sorolla = "Sorolla"
     case wedgwood = "Wedgwood"
+    case malevich = "Malevich"
     case hokusai = "Hokusai"
     case caravaggio = "Caravaggio"
     case whistler = "Whistler"
-    case hiroshige = "Hiroshige"
+    case bauder = "Bauder"
     case vanGogh = "Van Gogh"
+    case hiroshige = "Hiroshige"
+    case majorelle = "Majorelle"
     case gaudi = "Gaudí"
     case klimt = "Klimt"
     case hundertwasser = "Hundertwasser"
-    case majorelle = "Majorelle"
+    case mahfouz = "Mahfouz"
+    case tawfik = "Tawfik"
     case rothko = "Rothko"
-    case malevich = "Malevich"
 
     static var current: AppTheme {
         if let raw = UserDefaults.standard.string(forKey: "appTheme"),
@@ -156,6 +159,21 @@ enum AppTheme: String, CaseIterable {
                 background: 0x140A0E, secondary: 0x241218, surface: 0x3A1C26,
                 gray6: 0x241218, groupedSecondary: 0x241218, tertiary: 0x3A1C26,
                 fill: 0x522A38, systemBackground: 0x140A0E)
+        case .bauder:
+            return ThemePalette(
+                background: 0x131A24, secondary: 0x1A2332, surface: 0x243044,
+                gray6: 0x1A2332, groupedSecondary: 0x1A2332, tertiary: 0x243044,
+                fill: 0x2E3D54, systemBackground: 0x131A24)
+        case .mahfouz:
+            return ThemePalette(
+                background: 0x1A1408, secondary: 0x261E0E, surface: 0x1E2A38,
+                gray6: 0x261E0E, groupedSecondary: 0x261E0E, tertiary: 0x1E2A38,
+                fill: 0x2E3A4C, systemBackground: 0x1A1408)
+        case .tawfik:
+            return ThemePalette(
+                background: 0x0F1218, secondary: 0x181D26, surface: 0x302218,
+                gray6: 0x181D26, groupedSecondary: 0x181D26, tertiary: 0x302218,
+                fill: 0x4A3422, systemBackground: 0x0F1218)
         case .malevich:
             return ThemePalette(
                 background: 0x000000, secondary: 0x0A0A0A, surface: 0x161616,

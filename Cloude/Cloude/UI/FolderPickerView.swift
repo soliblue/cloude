@@ -24,10 +24,10 @@ struct FolderPickerView: View {
                 Divider()
                 selectButton
             }
-            .background(Color.oceanBackground)
+            .background(Color.themeBackground)
             .navigationTitle("Select Folder")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { dismiss() }) {
@@ -36,7 +36,7 @@ struct FolderPickerView: View {
                 }
             }
         }
-        .presentationBackground(Color.oceanBackground)
+        .presentationBackground(Color.themeBackground)
         .onAppear { loadDirectory() }
         .onReceive(connection.events) { event in
             if case let .directoryListing(path, newEntries, envId) = event, envId == environmentId {

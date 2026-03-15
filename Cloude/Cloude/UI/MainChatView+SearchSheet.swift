@@ -7,6 +7,7 @@ struct ConversationSearchSheet: View {
     let onSelect: (Conversation) -> Void
 
     @State private var searchText = ""
+    @State private var isSearchFocused = false
     @Environment(\.dismiss) private var dismiss
 
     private var results: [Conversation] {
@@ -66,7 +67,7 @@ struct ConversationSearchSheet: View {
                                     }
                                 }
                             }
-                            .background(Color.oceanSecondary)
+                            .background(Color.themeSecondary)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                     }
@@ -74,11 +75,12 @@ struct ConversationSearchSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
             }
-            .background(Color.oceanBackground)
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search conversations...")
+            .background(Color.themeBackground)
+            .searchable(text: $searchText, isPresented: $isSearchFocused, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search conversations...")
+            .onAppear { isSearchFocused = true }
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.oceanSecondary, for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

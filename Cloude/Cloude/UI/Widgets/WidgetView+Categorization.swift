@@ -68,7 +68,7 @@ struct CategorizationWidget: View {
                                 .font(.system(size: 13, weight: .medium))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
-                                .background(selectedCategory != nil ? Color.mint.opacity(0.1) : Color.oceanGray6.opacity(0.5))
+                                .background(selectedCategory != nil ? Color.mint.opacity(0.1) : Color.themeGray6.opacity(0.5))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)
@@ -115,7 +115,7 @@ struct CategorizationWidget: View {
                         .foregroundColor(.secondary)
                 }
                 .padding(10)
-                .background(isSelected ? Color.mint.opacity(0.12) : Color.oceanGray6.opacity(0.5))
+                .background(isSelected ? Color.mint.opacity(0.12) : Color.themeGray6.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)

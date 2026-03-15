@@ -102,7 +102,7 @@ struct TerminalView: View {
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color.oceanSecondary)
+                            .background(Color.themeSecondary)
                             .cornerRadius(8)
                         }
                         .buttonStyle(.plain)
@@ -114,7 +114,7 @@ struct TerminalView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .background(Color.oceanBackground)
+        .background(Color.themeBackground)
     }
 
     private var historyStrip: some View {
@@ -130,7 +130,7 @@ struct TerminalView: View {
                             .lineLimit(1)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.oceanSecondary)
+                            .background(Color.themeSecondary)
                             .cornerRadius(6)
                     }
                     .buttonStyle(.plain)
@@ -139,7 +139,7 @@ struct TerminalView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
         }
-        .background(Color.oceanBackground)
+        .background(Color.themeBackground)
     }
 
     private let terminalKeys: [(String, String)] = [
@@ -177,7 +177,7 @@ struct TerminalView: View {
                             .foregroundColor(label == "ctrl" && ctrlActive ? .accentColor : .secondary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
-                            .background(label == "ctrl" && ctrlActive ? Color.accentColor.opacity(0.2) : Color.oceanSecondary)
+                            .background(label == "ctrl" && ctrlActive ? Color.accentColor.opacity(0.2) : Color.themeSecondary)
                             .cornerRadius(6)
                     }
                     .buttonStyle(.plain)
@@ -186,7 +186,7 @@ struct TerminalView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
         }
-        .background(Color.oceanBackground)
+        .background(Color.themeBackground)
     }
 
     private func sendKeySequence(_ sequence: String) {
@@ -231,12 +231,12 @@ struct TerminalView: View {
                     .foregroundColor(canSend ? .white : .secondary.opacity(0.5))
                     .frame(width: 56)
                     .frame(maxHeight: .infinity)
-                    .background(canSend ? Color.accentColor : Color.oceanSecondary.opacity(0.5))
+                    .background(canSend ? Color.accentColor : Color.themeSecondary.opacity(0.5))
             }
             .disabled(!canSend)
         }
         .frame(height: 44)
-        .background(Color.oceanSecondary)
+        .background(Color.themeSecondary)
     }
 
     private func executeCommand() {
@@ -283,7 +283,7 @@ struct SwiftTermWrapper: UIViewRepresentable {
     func makeUIView(context: Context) -> NoKeyboardTerminalView {
         let tv = NoKeyboardTerminalView(frame: .zero)
         tv.terminalDelegate = context.coordinator
-        tv.nativeBackgroundColor = UIColor(Color.oceanBackground)
+        tv.nativeBackgroundColor = UIColor(Color.themeBackground)
         tv.nativeForegroundColor = theme.colorScheme == .light ? .black : .white
         tv.font = UIFont.monospacedSystemFont(ofSize: 10, weight: .regular)
         tv.isUserInteractionEnabled = true
@@ -295,7 +295,7 @@ struct SwiftTermWrapper: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: NoKeyboardTerminalView, context: Context) {
-        uiView.nativeBackgroundColor = UIColor(Color.oceanBackground)
+        uiView.nativeBackgroundColor = UIColor(Color.themeBackground)
         uiView.nativeForegroundColor = theme.colorScheme == .light ? .black : .white
     }
 

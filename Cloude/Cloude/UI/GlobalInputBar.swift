@@ -326,7 +326,7 @@ struct GlobalInputBar: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.oceanSecondary.opacity(0.8))
+            .background(Color.themeSecondary.opacity(0.8))
             .offset(x: -horizontalSwipeOffset * 0.3)
             .opacity(1 - Double(min(horizontalSwipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.5)
 

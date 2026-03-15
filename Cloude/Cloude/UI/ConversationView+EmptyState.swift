@@ -19,6 +19,7 @@ struct EmptyConversationView: View {
     var windowManager: WindowManager?
     var window: ChatWindow?
     var onSelectConversation: ((Conversation) -> Void)?
+    var onSeeAll: (() -> Void)?
 
     @State private var character: String
 
@@ -29,7 +30,8 @@ struct EmptyConversationView: View {
         conversation: Conversation? = nil,
         windowManager: WindowManager? = nil,
         window: ChatWindow? = nil,
-        onSelectConversation: ((Conversation) -> Void)? = nil
+        onSelectConversation: ((Conversation) -> Void)? = nil,
+        onSeeAll: (() -> Void)? = nil
     ) {
         self.connection = connection
         self.conversationStore = conversationStore
@@ -38,6 +40,7 @@ struct EmptyConversationView: View {
         self.windowManager = windowManager
         self.window = window
         self.onSelectConversation = onSelectConversation
+        self.onSeeAll = onSeeAll
         _character = State(initialValue: Self.characters.randomElement()!)
     }
 
@@ -47,7 +50,7 @@ struct EmptyConversationView: View {
         return store.listableConversations
             .filter { !$0.isEmpty && !openIds.contains($0.id) }
             .sorted { $0.lastMessageAt > $1.lastMessageAt }
-            .prefix(3)
+            .prefix(5)
             .map { $0 }
     }
 
@@ -88,12 +91,31 @@ struct EmptyConversationView: View {
             }
 
             Spacer()
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var recentConversationsList: some View {
         VStack(spacing: 0) {
+            if let onSeeAll {
+                HStack {
+                    Spacer()
+                    Button(action: onSeeAll) {
+                        HStack(spacing: 4) {
+                            Text("See all")
+                                .font(.caption)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 9, weight: .semibold))
+                        }
+                        .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 4)
+            }
+
             ForEach(recentConversations) { conv in
                 Button(action: { onSelectConversation?(conv) }) {
                     HStack(spacing: 10) {

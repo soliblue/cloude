@@ -21,6 +21,7 @@ struct ChatMessageList: View {
     var window: ChatWindow?
     var windowManager: WindowManager?
     var onSelectConversation: ((Conversation) -> Void)?
+    var onSeeAllConversations: (() -> Void)?
     var onNewConversation: (() -> Void)?
     var environmentStore: EnvironmentStore?
 
@@ -72,7 +73,8 @@ struct ChatMessageList: View {
                     conversation: conversation,
                     windowManager: windowManager,
                     window: window,
-                    onSelectConversation: onSelectConversation
+                    onSelectConversation: onSelectConversation,
+                    onSeeAll: onSeeAllConversations
                 )
             }
 
@@ -84,7 +86,7 @@ struct ChatMessageList: View {
                 scrollToBottomButton
             }
         }
-        .background(Color.oceanBackground)
+        .background(Color.themeBackground)
         .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = messages.isEmpty
@@ -157,9 +159,6 @@ userHasScrolled = false
         .onChange(of: currentOutput) { oldValue, newValue in
             if !newValue.isEmpty && isInitialLoad {
                 isInitialLoad = false
-            }
-            if isBottomVisible && !newValue.isEmpty && !userHasScrolled {
-                proxy.scrollTo(bottomId, anchor: .bottom)
             }
         }
         .onChange(of: messages.count) { _, newCount in
@@ -305,7 +304,7 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
     private var scrollToBottomButton: some View {
         if !isBottomVisible && !messages.isEmpty {
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.oceanSecondary)
+                .fill(Color.themeSecondary)
                 .frame(width: 44, height: 44)
                 .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
                 .overlay {
