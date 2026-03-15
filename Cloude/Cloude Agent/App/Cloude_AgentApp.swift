@@ -97,8 +97,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self?.server.broadcast(.sessionId(id: sessionId, conversationId: conversationId))
         }
 
-        runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId, textPosition in
-            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition))
+        runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId, textPosition, editInfo in
+            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo))
         }
 
         runnerManager.onToolResult = { [weak self] toolId, summary, output, conversationId in

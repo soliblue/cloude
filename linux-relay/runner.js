@@ -127,7 +127,7 @@ export class ClaudeCodeRunner {
       for (const block of json.message.content) {
         if (block.type === 'tool_use') {
           const inputStr = extractToolInput(block.name, block.input)
-          this.onEvent({
+          const event = {
             type: 'tool_call',
             name: block.name,
             input: inputStr,
@@ -135,7 +135,11 @@ export class ClaudeCodeRunner {
             parentToolId: json.parent_tool_use_id || null,
             conversationId: cid,
             textPosition: this.accumulatedOutput.length
-          })
+          }
+          if (block.name === 'Edit' && block.input?.old_string != null && block.input?.new_string != null) {
+            event.editInfo = { oldString: block.input.old_string, newString: block.input.new_string }
+          }
+          this.onEvent(event)
         }
       }
       if (json.uuid) {

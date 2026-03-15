@@ -63,11 +63,11 @@ extension EnvironmentConnection {
         }
     }
 
-    func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?) {
+    func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
         let currentTextLength = mgr.output(for: convId).fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
-        mgr.output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing))
+        mgr.output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
         if name.hasPrefix("mcp__ios__") {
             handleIOSToolCall(mgr, name: name, input: input, conversationId: conversationId)
             return
@@ -138,7 +138,7 @@ extension EnvironmentConnection {
     func handleMissedResponse(_ mgr: ConnectionManager, sessionId: String, text: String, storedToolCalls: [StoredToolCall]) {
         var interruptedConvId: UUID?
         var interruptedMsgId: UUID?
-        let toolCalls = storedToolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition) }
+        let toolCalls = storedToolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition, editInfo: $0.editInfo) }
         if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
             interruptedConvId = interrupted.conversationId
             interruptedMsgId = interrupted.messageId

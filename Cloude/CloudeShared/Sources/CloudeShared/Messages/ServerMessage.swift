@@ -13,7 +13,7 @@ public enum ServerMessage: Codable {
     case sessionId(id: String, conversationId: String?)
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall])
     case noMissedResponse(sessionId: String)
-    case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?)
+    case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil)
     case toolResult(toolId: String, summary: String?, output: String?, conversationId: String?)
     case runStats(durationMs: Int, costUsd: Double, model: String?, conversationId: String?)
     case gitStatusResult(status: GitStatusInfo)
@@ -44,7 +44,7 @@ public enum ServerMessage: Codable {
     case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, stats, exitCode, isError, terminalId
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo
     }
 
     public init(from decoder: Decoder) throws {
@@ -109,7 +109,8 @@ public enum ServerMessage: Codable {
             let parentToolId = try container.decodeIfPresent(String.self, forKey: .parentToolId)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             let textPosition = try container.decodeIfPresent(Int.self, forKey: .textPosition)
-            self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition)
+            let editInfo = try container.decodeIfPresent(EditInfo.self, forKey: .editInfo)
+            self = .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo)
         case "tool_result":
             let toolId = try container.decode(String.self, forKey: .toolId)
             let summary = try container.decodeIfPresent(String.self, forKey: .summary)

@@ -1,4 +1,5 @@
 import Foundation
+import CloudeShared
 
 struct Conversation: Codable, Identifiable {
     let id: UUID
@@ -108,8 +109,9 @@ struct ToolCall: Codable {
     var state: ToolCallState
     var resultSummary: String?
     var resultOutput: String?
+    var editInfo: EditInfo?
 
-    init(name: String, input: String?, toolId: String = UUID().uuidString, parentToolId: String? = nil, textPosition: Int? = nil, state: ToolCallState = .complete) {
+    init(name: String, input: String?, toolId: String = UUID().uuidString, parentToolId: String? = nil, textPosition: Int? = nil, state: ToolCallState = .complete, editInfo: EditInfo? = nil) {
         self.name = name
         self.input = input
         self.toolId = toolId
@@ -118,6 +120,7 @@ struct ToolCall: Codable {
         self.state = state
         self.resultSummary = nil
         self.resultOutput = nil
+        self.editInfo = editInfo
     }
 
     init(from decoder: Decoder) throws {
@@ -130,10 +133,11 @@ struct ToolCall: Codable {
         state = try container.decodeIfPresent(ToolCallState.self, forKey: .state) ?? .complete
         resultSummary = try container.decodeIfPresent(String.self, forKey: .resultSummary)
         resultOutput = try container.decodeIfPresent(String.self, forKey: .resultOutput)
+        editInfo = try container.decodeIfPresent(EditInfo.self, forKey: .editInfo)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case name, input, toolId, parentToolId, textPosition, state, resultSummary, resultOutput
+        case name, input, toolId, parentToolId, textPosition, state, resultSummary, resultOutput, editInfo
     }
 
 

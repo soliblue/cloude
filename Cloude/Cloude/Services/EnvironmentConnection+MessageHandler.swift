@@ -14,7 +14,7 @@ extension EnvironmentConnection {
         case .authRequired:                               authenticate()
         case .authResult(let success, let msg):           handleAuthResult(mgr, success: success, errorMessage: msg)
         case .error(let msg):                             handleError(mgr, msg)
-        case .toolCall(let n, let i, let t, let p, let c, let pos): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos)
+        case .toolCall(let n, let i, let t, let p, let c, let pos, let ei): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos, editInfo: ei)
         case .toolResult(let id, let sum, let out, let c):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c)
         case .runStats(let ms, let cost, let m, let c):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c)
         case .missedResponse(let sid, let t, _, let tc):  handleMissedResponse(mgr, sessionId: sid, text: t, storedToolCalls: tc)

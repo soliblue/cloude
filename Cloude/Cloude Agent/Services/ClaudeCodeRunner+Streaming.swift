@@ -106,10 +106,12 @@ extension ClaudeCodeRunner {
                 if block["type"] as? String == "tool_use",
                    let toolName = block["name"] as? String,
                    let toolId = block["id"] as? String {
-                    let input = extractToolInput(name: toolName, input: block["input"] as? [String: Any])
+                    let inputDict = block["input"] as? [String: Any]
+                    let input = extractToolInput(name: toolName, input: inputDict)
+                    let editInfo = toolName == "Edit" ? ToolInputExtractor.extractEditInfo(input: inputDict) : nil
                     let textPosition = accumulatedOutput.count
                     events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolId))
-                    onToolCall?(toolName, input, toolId, parentToolId, textPosition)
+                    onToolCall?(toolName, input, toolId, parentToolId, textPosition, editInfo)
                 }
             }
         }

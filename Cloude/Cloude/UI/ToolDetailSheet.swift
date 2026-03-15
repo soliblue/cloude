@@ -90,7 +90,8 @@ struct ToolDetailSheet: View {
                         todoSection(todos)
                     } else if !chainedCommands.isEmpty {
                         chainSection
-                    } else if let input = toolCall.input, !input.isEmpty {
+                    } else if let input = toolCall.input, !input.isEmpty,
+                              toolCall.editInfo == nil {
                         inputSection(input)
                     }
 
@@ -98,7 +99,9 @@ struct ToolDetailSheet: View {
                         fileSection(path)
                     }
 
-                    if toolCall.name == "Read", let output = toolCall.resultOutput, !output.isEmpty {
+                    if let editInfo = toolCall.editInfo {
+                        editDiffSection(editInfo)
+                    } else if toolCall.name == "Read", let output = toolCall.resultOutput, !output.isEmpty {
                         readOutputSection(output)
                     } else if let output = displayedOutput {
                         outputSection(output)

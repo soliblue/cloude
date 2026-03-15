@@ -54,7 +54,7 @@ extension ServerMessage {
         case .noMissedResponse(let sessionId):
             try container.encode("no_missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
-        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition):
+        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition, let editInfo):
             try container.encode("tool_call", forKey: .type)
             try container.encode(name, forKey: .name)
             try container.encodeIfPresent(input, forKey: .input)
@@ -62,6 +62,7 @@ extension ServerMessage {
             try container.encodeIfPresent(parentToolId, forKey: .parentToolId)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
             try container.encodeIfPresent(textPosition, forKey: .textPosition)
+            try container.encodeIfPresent(editInfo, forKey: .editInfo)
         case .toolResult(let toolId, let summary, let output, let conversationId):
             try container.encode("tool_result", forKey: .type)
             try container.encode(toolId, forKey: .toolId)

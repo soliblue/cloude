@@ -86,7 +86,8 @@ extension CloudeApp {
                             input: $0.input,
                             toolId: $0.toolId,
                             parentToolId: $0.parentToolId,
-                            textPosition: $0.textPosition
+                            textPosition: $0.textPosition,
+                            editInfo: $0.editInfo
                         )
                     }
                     return ChatMessage(
