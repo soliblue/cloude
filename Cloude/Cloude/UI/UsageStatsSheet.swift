@@ -6,6 +6,7 @@ struct UsageStatsSheet: View {
     let stats: UsageStats
     @Environment(\.dismiss) private var dismiss
     @State private var selectedTimeRange: TimeRange?
+    @State private var chartPage = 0
 
     private let timeRanges = [
         TimeRange(label: "7d", days: 7),
@@ -34,7 +35,7 @@ struct UsageStatsSheet: View {
         if let days = selectedTimeRange?.days {
             return Array(stats.dailyActivity.suffix(days))
         }
-        return Array(stats.dailyActivity.suffix(14))
+        return stats.dailyActivity
     }
 
     private var sortedModels: [(name: String, tokens: ModelTokens)] {
@@ -91,19 +92,71 @@ struct UsageStatsSheet: View {
         .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
+    private let chartModes: [(icon: String, label: String, color: Color)] = [
+        ("message.fill", "Messages", .blue),
+        ("square.stack.fill", "Sessions", .purple),
+        ("wrench.fill", "Tool Calls", .orange)
+    ]
+
     private var activityChart: some View {
-        InteractiveBarChart(
-            title: "Activity",
-            data: recentActivity,
-            xValue: { chartDateLabel($0.date) },
-            yValue: { $0.messageCount },
-            formatYValue: formatNumber,
-            detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.messageCount)) msgs, \($0.sessionCount) sessions" },
-            barColor: { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
-            showTimeRangePicker: true,
-            timeRanges: timeRanges,
-            selectedRange: $selectedTimeRange
-        )
+        VStack(spacing: 10) {
+            HStack(spacing: 6) {
+                ForEach(0..<chartModes.count, id: \.self) { i in
+                    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { chartPage = i } }) {
+                        Image(systemName: chartModes[i].icon)
+                            .font(.system(size: 12))
+                            .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(0.4))
+                            .frame(width: 32, height: 28)
+                            .background(chartPage == i ? chartModes[i].color.opacity(0.15) : .clear)
+                            .cornerRadius(6)
+                    }
+                }
+            }
+
+            Group {
+                switch chartPage {
+                case 0:
+                    InteractiveBarChart(
+                        title: "Messages",
+                        data: recentActivity,
+                        xValue: { chartDateLabel($0.date) },
+                        yValue: { $0.messageCount },
+                        formatYValue: formatNumber,
+                        detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.messageCount)) msgs" },
+                        barColor: { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
+                        showTimeRangePicker: true,
+                        timeRanges: timeRanges,
+                        selectedRange: $selectedTimeRange
+                    )
+                case 1:
+                    InteractiveBarChart(
+                        title: "Sessions",
+                        data: recentActivity,
+                        xValue: { chartDateLabel($0.date) },
+                        yValue: { $0.sessionCount },
+                        formatYValue: formatNumber,
+                        detailText: { "\(chartDateLabel($0.date)) — \($0.sessionCount) sessions" },
+                        barColor: { _, selected in selected ? .accentColor : .purple.opacity(0.6) },
+                        showTimeRangePicker: true,
+                        timeRanges: timeRanges,
+                        selectedRange: $selectedTimeRange
+                    )
+                default:
+                    InteractiveBarChart(
+                        title: "Tool Calls",
+                        data: recentActivity,
+                        xValue: { chartDateLabel($0.date) },
+                        yValue: { $0.toolCallCount },
+                        formatYValue: formatNumber,
+                        detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.toolCallCount)) tools" },
+                        barColor: { _, selected in selected ? .accentColor : .orange.opacity(0.6) },
+                        showTimeRangePicker: true,
+                        timeRanges: timeRanges,
+                        selectedRange: $selectedTimeRange
+                    )
+                }
+            }
+        }
     }
 
     private var modelsSection: some View {

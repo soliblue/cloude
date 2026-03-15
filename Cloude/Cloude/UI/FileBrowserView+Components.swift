@@ -55,15 +55,17 @@ struct FileRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 12) {
-                Image(systemName: entry.icon)
-                    .font(.title2)
-                    .foregroundColor(iconColor)
-                    .frame(width: 32)
+                Image(systemName: entry.isDirectory ? "folder.fill" : fileIconName(for: entry.name))
+                    .font(.body)
+                    .foregroundColor(entry.isDirectory ? .blue : fileIconColor(for: entry.name))
+                    .frame(width: 28)
 
-                VStack(alignment: .leading, spacing: 2) {
+                HStack {
                     Text(entry.name)
-                        .font(.body)
+                        .font(.system(size: 14))
                         .lineLimit(1)
+
+                    Spacer()
 
                     HStack(spacing: 8) {
                         if !entry.isDirectory {
@@ -71,16 +73,8 @@ struct FileRow: View {
                         }
                         Text(entry.modified, style: .date)
                     }
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                if entry.isDirectory {
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
             }
             .contentShape(Rectangle())
@@ -88,15 +82,4 @@ struct FileRow: View {
         .buttonStyle(.plain)
     }
 
-    private var iconColor: Color {
-        if entry.isDirectory {
-            return .blue
-        } else if entry.isImage {
-            return .green
-        } else if entry.isVideo {
-            return .purple
-        } else {
-            return .secondary
-        }
-    }
 }

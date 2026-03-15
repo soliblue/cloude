@@ -48,7 +48,7 @@ enum AppTheme: String, CaseIterable {
            let theme = AppTheme(rawValue: raw) {
             return theme
         }
-        return .vanGogh
+        return .majorelle
     }
 
     var colorScheme: ColorScheme {
