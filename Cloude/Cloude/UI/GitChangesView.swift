@@ -42,34 +42,29 @@ struct GitChangesView: View {
     }
 
     private func statusHeader(_ status: GitStatusInfo) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.triangle.branch")
-                    Text(status.branch)
-                        .font(.headline)
-                }
-
-                HStack(spacing: 12) {
-                    if status.ahead > 0 {
-                        Label("\(status.ahead) ahead", systemImage: "arrow.up")
-                    }
-                    if status.behind > 0 {
-                        Label("\(status.behind) behind", systemImage: "arrow.down")
-                    }
-                    if status.ahead == 0 && status.behind == 0 {
-                        Text("Up to date")
-                    }
-                }
-                .font(.caption)
+        HStack(spacing: 8) {
+            Image(systemName: "arrow.triangle.branch")
+                .font(.system(size: 12))
                 .foregroundColor(.secondary)
+            Text(status.branch)
+                .font(.system(size: 14, weight: .semibold))
+
+            if status.ahead > 0 {
+                Label("\(status.ahead)", systemImage: "arrow.up")
             }
+            if status.behind > 0 {
+                Label("\(status.behind)", systemImage: "arrow.down")
+            }
+
             Spacer()
             Text("\(status.files.count)")
-                .font(.title2.bold())
+                .font(.system(size: 14, weight: .bold))
                 .foregroundColor(status.hasChanges ? .orange : .green)
         }
-        .padding()
+        .font(.system(size: 11))
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .background(Color.oceanSecondary)
     }
 

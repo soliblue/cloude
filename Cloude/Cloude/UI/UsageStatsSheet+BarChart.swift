@@ -58,19 +58,31 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
                 }
             }
 
-            Chart(data) { point in
-                BarMark(
-                    x: .value("X", xValue(point)),
+            Chart(Array(data.enumerated()), id: \.element.id) { idx, point in
+                LineMark(
+                    x: .value("X", idx),
+                    y: .value("Y", yValue(point))
+                )
+                .foregroundStyle(barColor(point, false))
+                .interpolationMethod(.catmullRom)
+                .lineStyle(StrokeStyle(lineWidth: 2))
+
+                PointMark(
+                    x: .value("X", idx),
                     y: .value("Y", yValue(point))
                 )
                 .foregroundStyle(barColor(point, selectedPoint?.id == point.id))
-                .cornerRadius(2)
+                .symbolSize(selectedPoint?.id == point.id ? 40 : 20)
             }
             .chartXAxis {
-                AxisMarks(values: .automatic(desiredCount: 5)) { _ in
-                    AxisValueLabel()
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary.opacity(0.6))
+                AxisMarks(values: .automatic(desiredCount: 5)) { value in
+                    AxisValueLabel {
+                        if let idx = value.as(Int.self), idx >= 0, idx < data.count {
+                            Text(xValue(data[idx]))
+                                .font(.system(size: 9))
+                                .foregroundStyle(.secondary.opacity(0.6))
+                        }
+                    }
                 }
             }
             .chartYAxis {
@@ -91,8 +103,8 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
                             DragGesture(minimumDistance: 0)
                                 .onChanged { value in
                                     let x = value.location.x - geo[proxy.plotFrame!].origin.x
-                                    if let xStr: String = proxy.value(atX: x) {
-                                        selectedPoint = data.first { xValue($0) == xStr }
+                                    if let idx: Int = proxy.value(atX: x), idx >= 0, idx < data.count {
+                                        selectedPoint = data[idx]
                                     }
                                 }
                                 .onEnded { _ in

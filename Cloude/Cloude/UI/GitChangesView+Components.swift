@@ -7,34 +7,38 @@ struct GitFileRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
-                statusBadge
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(fileName)
-                        .font(.body)
-                        .lineLimit(1)
+            HStack(spacing: 8) {
+                Text(file.status)
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(.white)
+                    .frame(width: 22, height: 18)
+                    .background(statusColor)
+                    .cornerRadius(3)
+
+                HStack(spacing: 0) {
                     Text(filePath)
-                        .font(.caption)
+                        .font(.system(size: 12))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
+                    Text(fileName)
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(1)
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-    private var statusBadge: some View {
-        Text(file.status)
-            .font(.system(.caption, design: .monospaced).bold())
-            .foregroundColor(.white)
-            .frame(width: 28, height: 22)
-            .background(statusColor)
-            .cornerRadius(3)
+    private var statusIcon: String {
+        switch file.status {
+        case "M": return "square.and.pencil"
+        case "A": return "plus"
+        case "D": return "trash"
+        case "R", "C": return "arrow.right"
+        case "??": return "plus"
+        default: return "circle"
+        }
     }
 
     private var statusColor: Color {
@@ -54,19 +58,6 @@ struct GitFileRow: View {
 
     private var filePath: String {
         let dir = file.path.deletingLastPathComponent
-        return dir.isEmpty ? "." : dir
-    }
-}
-
-extension GitChangesView {
-    func statusIcon(for status: String) -> String {
-        switch status {
-        case "M": return "pencil.circle.fill"
-        case "A": return "plus.circle.fill"
-        case "D": return "minus.circle.fill"
-        case "R": return "arrow.right.circle.fill"
-        case "??": return "questionmark.circle.fill"
-        default: return "circle.fill"
-        }
+        return dir.isEmpty || dir == "." ? "" : dir + "/"
     }
 }
