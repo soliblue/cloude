@@ -212,7 +212,7 @@ if !allConversations.isEmpty {
                 .font(.system(size: 16))
                 .foregroundColor(.accentColor)
                 .frame(width: 32)
-            Text("\(env.host):\(env.port)")
+            Text(env.host)
                 .font(.subheadline.monospaced())
                 .foregroundColor(.secondary)
                 .lineLimit(1)
@@ -241,7 +241,7 @@ if !allConversations.isEmpty {
                     }
                 }) {
                     Label {
-                        Text("\(env.host):\(env.port)")
+                        Text(env.host)
                     } icon: {
                         Image(systemName: env.symbol)
                     }
@@ -253,7 +253,7 @@ if !allConversations.isEmpty {
                     .font(.system(size: 16))
                     .foregroundColor(.accentColor)
                     .frame(width: 32)
-                Text(selectedEnv.map { "\($0.host):\($0.port)" } ?? "Select environment")
+                Text(selectedEnv?.host ?? "Select environment")
                     .font(.subheadline.monospaced())
                     .foregroundColor(.secondary)
                     .lineLimit(1)
