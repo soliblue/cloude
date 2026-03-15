@@ -28,11 +28,52 @@ extension GlobalInputBar {
                 actionButtonLabel
             }
         } else if shouldShowRefreshButton {
-            Button(action: {
+            Menu {
+                Button(action: { showPhotoPicker = true }) {
+                    Label("Photo", systemImage: "photo")
+                }
+
+                Button(action: { showFilePicker = true }) {
+                    Label("File", systemImage: "doc")
+                }
+
+                Button(action: startRecording) {
+                    Label("Record", systemImage: "mic.fill")
+                }
+                .disabled(!canRecord)
+
+                Divider()
+
+                Menu {
+                    Button(action: { setEffort(nil) }) {
+                        Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
+                    }
+                    ForEach(EffortLevel.allCases, id: \.self) { level in
+                        Button(action: { setEffort(level) }) {
+                            Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
+                        }
+                    }
+                } label: {
+                    Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
+                }
+
+                Menu {
+                    Button(action: { setModel(nil) }) {
+                        Label("Auto", systemImage: currentModel == nil ? "checkmark" : "circle")
+                    }
+                    ForEach(ModelSelection.allCases, id: \.self) { model in
+                        Button(action: { setModel(model) }) {
+                            Label(model.displayName, systemImage: currentModel == model ? "checkmark" : "circle")
+                        }
+                    }
+                } label: {
+                    Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
+                }
+            } label: {
+                actionButtonLabel
+            } primaryAction: {
                 refreshRotateTrigger += 1
                 onRefresh?()
-            }) {
-                actionButtonLabel
             }
         } else if shouldShowStopButton {
             Button(action: { onStop?() }) {

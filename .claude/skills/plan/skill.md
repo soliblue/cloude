@@ -8,12 +8,12 @@ aliases: [ticket, plans, 00_backlog]
 
 # Plan Skill
 
-Plans are lightweight ticket files that live in `plans/`. Each plan is a single markdown file that moves through folders as it progresses.
+Plans are lightweight ticket files that live in `.claude/plans/`. Each plan is a single markdown file that moves through folders as it progresses.
 
 ## Folder Structure
 
 ```
-plans/
+.claude/plans/
 ├── 00_backlog/    # Ideas and future work. Low priority, no timeline.
 ├── 10_next/       # Priority items. Pick from here when starting work.
 ├── 20_active/     # Currently being worked on by an agent.
@@ -104,7 +104,7 @@ What it should look like after.
 ### Show plans
 ```bash
 # List all plans by stage
-ls plans/00_backlog/ plans/10_next/ plans/20_active/ plans/30_testing/
+ls .claude/plans/00_backlog/ .claude/plans/10_next/ .claude/plans/20_active/ .claude/plans/30_testing/
 ```
 
 ### Create a plan
@@ -113,16 +113,16 @@ Write a new file in the appropriate folder (usually `00_backlog/` or `10_next/`)
 ### Move a plan
 ```bash
 # Promote to 10_next
-mv plans/00_backlog/my-feature.md plans/10_next/
+mv .claude/plans/00_backlog/my-feature.md .claude/plans/10_next/
 
 # Start working on it
-mv plans/10_next/my-feature.md plans/20_active/
+mv .claude/plans/10_next/my-feature.md .claude/plans/20_active/
 
 # Done coding, needs 30_testing
-mv plans/20_active/my-feature.md plans/30_testing/
+mv .claude/plans/20_active/my-feature.md .claude/plans/30_testing/
 
 # Tested and deployed
-mv plans/30_testing/my-feature.md plans/40_done/
+mv .claude/plans/30_testing/my-feature.md .claude/plans/40_done/
 ```
 
 ### Pick 10_next work
@@ -134,7 +134,7 @@ Send plans to Codex for review and pipe feedback directly into the plan file. Co
 
 ### Single plan
 ```bash
-PLAN="plans/10_next/my-feature.md"
+PLAN=".claude/plans/10_next/my-feature.md"
 echo -e "\n## Codex Review\n" >> "$PLAN" && \
 codex exec -s read-only -C "$(git rev-parse --show-toplevel)" \
   "Review this plan for the Cloude project (iOS app + Mac agent for remote Claude Code). Give feedback on the approach, flag risks or missing considerations, and suggest improvements. Here is the plan: $(cat "$PLAN")" \
@@ -143,7 +143,7 @@ codex exec -s read-only -C "$(git rev-parse --show-toplevel)" \
 
 ### Batch review (all plans in a folder)
 ```bash
-for plan in plans/10_next/*.md; do
+for plan in .claude/plans/10_next/*.md; do
   echo -e "\n## Codex Review\n" >> "$plan" && \
   codex exec -s read-only -C "$(git rev-parse --show-toplevel)" \
     "Review this plan for the Cloude project (iOS app + Mac agent for remote Claude Code). Give feedback on the approach, flag risks or missing considerations, and suggest improvements. Here is the plan: $(cat "$plan")" \

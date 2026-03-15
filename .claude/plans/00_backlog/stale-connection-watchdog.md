@@ -2,6 +2,8 @@
 
 WebSocket connections silently die when the phone switches networks (wifi/cellular). Neither side detects it. The app shows "connected" and waits forever for a response that will never come. File browser empty, git tab stuck, chat hanging. Reconnecting manually fixes it.
 
+**Note (2026-03-15):** This issue does not reproduce when connecting via Cloudflare Tunnels (current setup). Only relevant when connecting directly over the machine's IP address on the same wifi. Since tunnels are the primary connection method now, deprioritized to backlog.
+
 ## Goals
 - Detect stale connections when the app sends ANY request and gets no response
 - Auto-reconnect without ping/pong (no relay changes)

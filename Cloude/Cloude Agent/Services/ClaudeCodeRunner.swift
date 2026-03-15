@@ -97,9 +97,6 @@ class ClaudeCodeRunner: ObservableObject {
         errorPipe = Pipe()
 
         var finalPrompt = prompt
-        if let effortLevel = effort {
-            finalPrompt = "/effort \(effortLevel)\n\n\(prompt)"
-        }
         if !tempFilePaths.isEmpty {
             let readLines = tempFilePaths.map { "Read the file at \($0)" }.joined(separator: "\n")
             finalPrompt = "\(readLines)\n\n\(finalPrompt)"
@@ -112,6 +109,9 @@ class ClaudeCodeRunner: ObservableObject {
         var command = claudePath
         if let model = model {
             command += " --model \(model)"
+        }
+        if let effort = effort {
+            command += " --effort \(effort)"
         }
         if let sid = sessionId {
             if forkSession {

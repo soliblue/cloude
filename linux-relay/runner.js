@@ -18,7 +18,6 @@ export class ClaudeCodeRunner {
 
   run({ prompt, workingDirectory, sessionId, isNewSession, imagesBase64, filesBase64, forkSession, model, effort }) {
     let fullPrompt = prompt
-    if (effort) fullPrompt = `/effort ${effort}\n\n${fullPrompt}`
     if (filesBase64 && filesBase64.length > 0) {
       const prefix = filesBase64.map(f => `Read the file at ${f.name}`).join('\n')
       fullPrompt = `${prefix}\n${fullPrompt}`
@@ -26,6 +25,7 @@ export class ClaudeCodeRunner {
 
     const args = ['--dangerously-skip-permissions', '--output-format', 'stream-json', '--verbose', '--include-partial-messages']
     if (model) args.push('--model', model)
+    if (effort) args.push('--effort', effort)
     if (!isNewSession && sessionId) {
       args.push('--resume', sessionId)
       if (forkSession) args.push('--fork-session')
