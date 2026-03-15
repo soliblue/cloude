@@ -21,7 +21,6 @@ struct EmptyConversationView: View {
     var onSelectConversation: ((Conversation) -> Void)?
 
     @State private var character: String
-    @State private var showFolderPicker = false
 
     init(
         connection: ConnectionManager? = nil,
@@ -40,25 +39,6 @@ struct EmptyConversationView: View {
         self.window = window
         self.onSelectConversation = onSelectConversation
         _character = State(initialValue: Self.characters.randomElement()!)
-    }
-
-    private var selectedEnv: ServerEnvironment? {
-        if let envId = conversation?.environmentId {
-            return environmentStore?.environments.first { $0.id == envId }
-        }
-        return environmentStore?.environments.first { $0.id == environmentStore?.activeEnvironmentId }
-    }
-
-    private var isEnvConnected: Bool {
-        guard let envId = conversation?.environmentId ?? environmentStore?.activeEnvironmentId else { return false }
-        return connection?.connection(for: envId)?.isConnected ?? false
-    }
-
-    private var folderDisplayName: String {
-        if let dir = conversation?.workingDirectory, !dir.isEmpty {
-            return dir
-        }
-        return "Select folder"
     }
 
     private var recentConversations: [Conversation] {
@@ -93,76 +73,12 @@ struct EmptyConversationView: View {
             if let envStore = environmentStore, let conn = connection,
                let convStore = conversationStore, let conv = conversation,
                conv.sessionId == nil {
-                VStack(spacing: 0) {
-                    Menu {
-                        ForEach(envStore.environments) { env in
-                            Button(action: {
-                                convStore.setEnvironmentId(conv, environmentId: env.id)
-                                envStore.setActive(env.id)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    if isEnvConnected { showFolderPicker = true }
-                                }
-                            }) {
-                                Label {
-                                    Text(env.host)
-                                } icon: {
-                                    Image(systemName: env.symbol)
-                                }
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                                .font(.system(size: 14))
-                                .foregroundColor(.accentColor)
-                            Text(selectedEnv?.host ?? "Select environment")
-                                .font(.caption.monospaced())
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Image(systemName: "chevron.up.chevron.down")
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                    }
-
-                    Divider()
-                        .padding(.horizontal, 14)
-
-                    Button(action: { if isEnvConnected { showFolderPicker = true } }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "folder.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(.accentColor)
-                            Text(folderDisplayName)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 10))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                    }
-                    .buttonStyle(.plain)
-                    .opacity(isEnvConnected ? 1 : 0.4)
-                    .sheet(isPresented: $showFolderPicker) {
-                        FolderPickerView(
-                            connection: conn,
-                            environmentId: conv.environmentId ?? envStore.activeEnvironmentId,
-                            onSelect: { path in
-                                convStore.setWorkingDirectory(conv, path: path)
-                                showFolderPicker = false
-                            }
-                        )
-                    }
-                }
-                .background(Color.oceanSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                EnvironmentFolderPicker(
+                    environmentStore: envStore,
+                    connection: conn,
+                    conversationStore: convStore,
+                    conversation: conv
+                )
                 .padding(.horizontal, 48)
                 .padding(.top, 8)
             }
