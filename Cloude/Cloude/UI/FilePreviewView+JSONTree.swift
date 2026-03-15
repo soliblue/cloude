@@ -96,7 +96,7 @@ private struct JSONNodeView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .font(.system(size: 13, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
         }
         .buttonStyle(.plain)
         .padding(.vertical, 3)
@@ -110,7 +110,7 @@ private struct JSONNodeView: View {
             HStack(spacing: 4) {
                 Spacer().frame(width: 14)
                 Text(closeBrace)
-                    .font(.system(size: 13, design: .monospaced))
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundColor(.secondary)
             }
             .padding(.vertical, 1)
@@ -127,7 +127,7 @@ private struct JSONNodeView: View {
             }
             content()
         }
-        .font(.system(size: 13, design: .monospaced))
+        .font(.system(size: 10, design: .monospaced))
         .padding(.vertical, 3)
     }
 

@@ -252,12 +252,6 @@ struct UsageStatsSheet: View {
         return "\(n)"
     }
 
-    private func shortDate(_ dateStr: String) -> String {
-        let parts = dateStr.split(separator: "-")
-        guard parts.count == 3, let day = Int(parts[2]) else { return dateStr }
-        return "\(day)"
-    }
-
     private func chartDateLabel(_ dateStr: String) -> String {
         let parts = dateStr.split(separator: "-")
         guard parts.count == 3, let month = Int(parts[1]), let day = Int(parts[2]) else { return dateStr }

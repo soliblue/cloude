@@ -111,9 +111,9 @@ This creates a grid template, sends it to Gemini asking it to fill each cell, th
 - Style transfer works: "make this look like a watercolor painting"
 
 **What to avoid:**
-- Vague prompts like "make it better" — be specific
-- Extremely long prompts — Gemini works best with concise, clear descriptions
-- Conflicting instructions — "photorealistic cartoon" confuses the model
+- Vague prompts like "make it better" -- be specific
+- Extremely long prompts -- Gemini works best with concise, clear descriptions
+- Conflicting instructions -- "photorealistic cartoon" confuses the model
 
 ## After Generating
 
@@ -131,43 +131,98 @@ Files are named `{output}.{ext}` where ext matches what Gemini returns (usually 
 
 Animate a static image into a looping GIF/video using Google Veo for video generation and background removal for transparency.
 
-### High-Level Pipeline
+### Full Pipeline (Proven)
 
-There are two approaches to animate a character:
-
-**Approach A: Green screen + ffmpeg chromakey** (fast, good for simple shapes)
-1. Place character on `#00FF00` green canvas (match Veo's aspect ratio - 16:9 = 1280x720)
-2. Send to Veo for video generation
-3. `ffmpeg -vf "chromakey=0x00FF00:0.25:0.08,format=rgba"` to remove green
-4. Crop + optimize with gifsicle
-
-**Approach B: Green screen + per-frame AI bg removal** (slower, cleaner edges)
-1. Place character on `#00FF00` green canvas (match Veo's aspect ratio)
-2. Send to Veo for video generation
+1. Place character on **magenta (#FF00FF)** canvas at 1280x720 (Veo's 16:9)
+2. Send to Veo for 4s video generation (use latest: `veo-3.1-generate-preview` or `veo-3.1-fast-generate-preview`)
 3. Extract frames: `ffmpeg -i video.mp4 /tmp/frames/frame-%04d.png`
-4. Remove background per frame using AI model (see Background Removal below)
-5. Crop + optimize with gifsicle
+4. Remove background per frame (see Background Removal below)
+5. Crop all frames with a **single union bounding box** (NOT per-frame crop -- that causes jitter)
+6. Assemble GIF + optimize with gifsicle
 
-**When to use which:**
-- **Approach A** (chromakey): Fast, works well when character has no green and edges are clean. Can leave slight green fringe on anti-aliased edges.
-- **Approach B** (AI removal): Slower (0.8s/frame with rembg default) but handles complex edges, hair, transparency perfectly. Use when chromakey leaves artifacts.
+### Background Removal
 
-### Background Removal Options
+This is the hardest part of the pipeline. We tested extensively. The right approach depends on what you're removing backgrounds from.
 
-**Local models** (free, offline):
-- `rembg` default model - 0.8s/frame, good quality, best speed/quality tradeoff
-- `rembg` with BiRefNet (`new_session("birefnet-general")`) - 16s/frame, highest quality, use for final output
-- `transparent-background` (InSPyReNet) - alternative, similar quality to rembg
+#### For pixel art / hard-edge characters: Hybrid Color Key (BEST)
 
-**Online APIs** (better edge quality, costs money):
-- remove.bg - industry standard, 50 free/month, best edge handling
-- withoutBG - open source + hosted API, 50 free credits
-- Clipdrop - good precision, has API
+ML models are designed for photos, not pixel art. A color-based approach is better for hard edges. But pure color keying can eat character pixels that happen to share the bg color. The solution: **Apple Vision mask to protect the character + aggressive color key to remove the background + color replacement for fringe pixels**.
 
-**ffmpeg chromakey** (instant, no ML):
-- `chromakey=0x00FF00:similarity:blend` - similarity 0.25, blend 0.08 works well
-- Best for solid green backgrounds, no per-frame cost
-- Can chain: `chromakey=green,chromakey=black` but careful with character outlines
+```python
+from PIL import Image
+import numpy as np
+from scipy import ndimage
+
+img = Image.open('frame.png').convert('RGBA')
+vision = Image.open('vision-mask.png').convert('RGBA')  # from Vision tool
+
+data = np.array(img, dtype=np.float32)
+vision_data = np.array(vision)
+foreground = vision_data[:,:,3] > 128
+
+r, g, b = data[:,:,0], data[:,:,1], data[:,:,2]
+magenta = (r / 255.0) * (1.0 - g / 255.0) * (b / 255.0)
+green = (1.0 - r / 255.0) * (g / 255.0) * (1.0 - b / 255.0)
+
+# Step 1: remove everything outside Vision's foreground
+data[~foreground] = [0, 0, 0, 0]
+
+# Step 2: fix magenta/green fringe pixels INSIDE foreground
+# by replacing their color with nearest clean neighbor average
+bad_inside = foreground & ((magenta > 0.15) | (green > 0.15))
+clean_fg = foreground & (magenta <= 0.15) & (green <= 0.15)
+
+if bad_inside.any() and clean_fg.any():
+    for ch in range(3):
+        channel = data[:,:,ch].copy()
+        kernel = np.ones((5,5)) / 25
+        clean_vals = channel * clean_fg
+        clean_count = np.maximum(ndimage.convolve(clean_fg.astype(float), kernel), 1e-10)
+        smoothed = ndimage.convolve(clean_vals, kernel) / clean_count
+        data[bad_inside, ch] = smoothed[bad_inside]
+
+result = Image.fromarray(data.astype(np.uint8))
+```
+
+**Apple Vision mask generation** (compile once, reuse forever):
+```bash
+# Compile the Vision bg removal tool
+swiftc -o /tmp/vision_remove_bg /tmp/vision_remove_bg.swift -framework Vision -framework CoreImage -framework AppKit
+
+# Use per frame
+/tmp/vision_remove_bg input.png output.png
+```
+
+The Swift source for the Vision tool is at `/tmp/vision_remove_bg.swift`. It uses `VNGenerateForegroundInstanceMaskRequest` which runs on the Neural Engine -- fast and free.
+
+#### For photos / complex subjects: ML models
+
+| Model | Speed | Quality | Notes |
+|-------|-------|---------|-------|
+| rembg (default u2net) | 0.8s/frame | Good | Best speed/quality tradeoff |
+| rembg (BiRefNet) | 16s/frame | Great | `new_session("birefnet-general")`, too slow for batch |
+| Apple Vision | ~0.5s/frame | Great | Neural Engine, no pip deps, best for batch |
+| remove.bg API | instant | Perfect | 50 free/month, best edge handling, costs money |
+
+**Key finding**: All ML models (rembg, BiRefNet, Apple Vision) produce nearly identical results on the same input. The differences are marginal. For photos they all work well. For pixel art they all fail the same way -- they can't distinguish "white background" from "white pixel that's part of the character." That's why the hybrid color key approach exists.
+
+#### What NOT to do
+
+- **Don't use rembg on pixel art with white/light elements** -- it eats the white parts of the character (eyes, highlights, paintbrush tips)
+- **Don't autocrop each frame independently** -- the bounding box shifts per frame causing jitter. Compute the union bbox across ALL frames, then crop every frame with that single box
+- **Don't assume Veo keeps your background color** -- Veo can change background color mid-video (e.g. magenta for first half, green for second half). Always handle multiple bg colors
+- **Don't use ffmpeg chromakey on video-compressed frames** -- video compression creates anti-aliased edges that blend the bg color into the character outline. A tolerance-based approach (magenta score > threshold) handles this better than exact color matching
+
+### Background Color Choice
+
+| Color | Pros | Cons |
+|-------|------|------|
+| **Magenta (#FF00FF)** | Zero overlap with most characters, easy to detect | Veo sometimes shifts to green mid-video |
+| Green (#00FF00) | Traditional green screen | Overlaps with any green in the character |
+| White (#FFFFFF) | Clean for ML models | ML can't distinguish white bg from white character parts |
+| Blue (#0000FF) | Low overlap with warm characters | Can overlap with blue elements |
+
+**Winner: Magenta** -- but always also handle green as a fallback since Veo can switch colors.
 
 ### Veo API Reference
 
@@ -194,7 +249,7 @@ img_bytes = open("input.png", "rb").read()
 image = types.Image(image_bytes=img_bytes, mime_type="image/png")
 
 operation = client.models.generate_videos(
-    model="veo-3.0-generate-001",
+    model="veo-3.1-generate-preview",
     prompt="Description of the animation...",
     image=image,
     config=types.GenerateVideosConfig(
@@ -220,15 +275,36 @@ for vid in operation.result.generated_videos:
 - Input image should match the output aspect ratio (16:9 = 1280x720, 9:16 = 720x1280) to avoid black bars
 - For looping: prompt with "seamless loop where first and last frames are identical"
 
-### GIF Optimization
+### GIF Assembly
 
-After extracting transparent frames:
+```python
+from PIL import Image
+import os
+
+# Load transparent frames, compute UNION bounding box
+frames = [Image.open(f) for f in sorted(frame_files)]
+min_x, min_y, max_x, max_y = 9999, 9999, 0, 0
+for f in frames:
+    bbox = f.getbbox()
+    if bbox:
+        min_x, min_y = min(min_x, bbox[0]), min(min_y, bbox[1])
+        max_x, max_y = max(max_x, bbox[2]), max(max_y, bbox[3])
+
+# Crop ALL frames with the SAME box (prevents jitter)
+cropped = [f.crop((min_x, min_y, max_x, max_y)) for f in frames]
+
+# Save
+cropped[0].save("raw.gif", save_all=True, append_images=cropped[1:],
+                loop=0, duration=42, disposal=2)
+```
+
 ```bash
-# Assemble GIF from frames (PIL)
-frames[0].save("raw.gif", save_all=True, append_images=frames[1:], loop=0, duration=42, disposal=2)
-
 # Optimize with gifsicle (requires: brew install gifsicle)
 gifsicle -O3 --lossy=30 --colors 128 raw.gif -o optimized.gif
 ```
 
-Typical sizes: 192 frames (8s@24fps) = 2-4MB optimized. Reduce frames (every Nth) for smaller files.
+Typical sizes: 192 frames (8s@24fps) = 1-2MB optimized. Reduce frames (every Nth) for smaller files.
+
+### remove.bg API
+
+API keys in `habibi/.env` (`REMOVEBG_API_KEY` and `REMOVEBG_API_KEY_ALT`). 50 free credits/month per key. Best absolute quality but limited credits. Save for final output, not iteration.
