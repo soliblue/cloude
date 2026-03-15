@@ -21,6 +21,21 @@ export function handleGitStatus(path, ws, sendTo) {
       if (x !== ' ' && x !== '!') files.push({ status: x, path: filePath, staged: true })
       if (y !== ' ' && y !== '!') files.push({ status: y, path: filePath, staged: false })
     }
+    const parseNumstat = (output) => {
+      const stats = {}
+      for (const line of output.split('\n').filter(Boolean)) {
+        const [add, del, file] = line.split('\t')
+        if (file && add !== '-') stats[file] = { additions: parseInt(add) || 0, deletions: parseInt(del) || 0 }
+      }
+      return stats
+    }
+    let unstagedStats = {}, stagedStats = {}
+    try { unstagedStats = parseNumstat(execSync('git diff --numstat', { cwd: path, encoding: 'utf8' })) } catch {}
+    try { stagedStats = parseNumstat(execSync('git diff --cached --numstat', { cwd: path, encoding: 'utf8' })) } catch {}
+    for (const f of files) {
+      const stats = f.staged ? stagedStats : unstagedStats
+      if (stats[f.path]) { f.additions = stats[f.path].additions; f.deletions = stats[f.path].deletions }
+    }
     sendTo(ws, { type: 'git_status_result', status: { branch, ahead, behind, files } })
   } catch (e) {
     sendTo(ws, { type: 'error', message: e.message })
