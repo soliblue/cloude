@@ -6,7 +6,6 @@ import CloudeShared
 class WindowManager: ObservableObject {
     @Published var windows: [ChatWindow] = [ChatWindow()]
     @Published var activeWindowId: UUID?
-    @Published var unreadWindowIds: Set<UUID> = []
     @Published var isHeartbeatShowing = false
 
     private let windowsKey = "windowManager_windows"
@@ -127,15 +126,4 @@ class WindowManager: ObservableObject {
         navigateToWindow(at: currentIndex + 1)
     }
 
-    func markUnread(_ windowId: UUID) {
-        unreadWindowIds.insert(windowId)
-    }
-
-    func markRead(_ windowId: UUID) {
-        unreadWindowIds.remove(windowId)
-    }
-
-    func windowForConversation(_ conversationId: UUID) -> ChatWindow? {
-        windows.first { $0.conversationId == conversationId }
-    }
 }

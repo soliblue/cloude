@@ -321,12 +321,6 @@ struct CloudeApp: App {
                 )
             }
 
-        case .conversationOutputStarted(let convId):
-            if let window = windowManager.windowForConversation(convId),
-               window.id != windowManager.activeWindowId {
-                windowManager.markUnread(window.id)
-            }
-
         default:
             break
         }

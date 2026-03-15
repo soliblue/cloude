@@ -45,36 +45,29 @@ extension MainChatView {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
-            VStack(spacing: 4) {
-                Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                    .font(.system(size: 22))
-                    .foregroundStyle(
-                        isScheduled || isHeartbeatActive
-                            ? AnyShapeStyle(LinearGradient(
-                                colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ))
-                            : AnyShapeStyle(.secondary)
-                    )
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                    .frame(height: 28)
-                    .overlay(alignment: .topTrailing) {
-                        if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
-                            Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(minWidth: 14, minHeight: 14)
-                                .background(Circle().fill(Color.accentColor))
-                                .offset(x: 4, y: -4)
-                        }
+            Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
+                .font(.system(size: 22))
+                .foregroundStyle(
+                    isScheduled || isHeartbeatActive
+                        ? AnyShapeStyle(LinearGradient(
+                            colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        : AnyShapeStyle(.secondary)
+                )
+                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+                .frame(height: 28)
+                .overlay(alignment: .topTrailing) {
+                    if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
+                        Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(minWidth: 14, minHeight: 14)
+                            .background(Circle().fill(Color.accentColor))
+                            .offset(x: 4, y: -4)
                     }
-
-                Circle()
-                    .fill(Color.clear)
-                    .frame(width: 6, height: 6)
-            }
-            .frame(height: 39)
+                }
         }
         .buttonStyle(.plain)
     }
@@ -95,12 +88,10 @@ extension MainChatView {
             let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
             let conversation = window.conversation(in: conversationStore)
 
-            let hasUnread = windowManager.unreadWindowIds.contains(window.id)
-
             Button {
                 withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index + 1 }
             } label: {
-                windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming, hasUnread: hasUnread)
+                windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
             }
             .buttonStyle(.plain)
             .simultaneousGesture(
@@ -110,17 +101,10 @@ extension MainChatView {
             )
         } else {
             Button(action: addWindowWithNewChat) {
-                VStack(spacing: 4) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 22, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
-
-                    Circle()
-                        .fill(Color.clear)
-                        .frame(width: 6, height: 6)
-                }
-                .frame(height: 39)
+                Image(systemName: "plus")
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
         }
@@ -131,17 +115,10 @@ extension MainChatView {
         Button {
             showConversationSearch = true
         } label: {
-            VStack(spacing: 4) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 22))
-                    .foregroundStyle(.secondary)
-                    .frame(height: 28)
-
-                Circle()
-                    .fill(Color.clear)
-                    .frame(width: 6, height: 6)
-            }
-            .frame(height: 39)
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 22))
+                .foregroundStyle(.secondary)
+                .frame(height: 28)
         }
         .buttonStyle(.plain)
     }
@@ -155,32 +132,24 @@ extension MainChatView {
     }
 
     @ViewBuilder
-    func windowIndicatorIcon(conversation: Conversation?, isActive: Bool, isStreaming: Bool, hasUnread: Bool = false) -> some View {
+    func windowIndicatorIcon(conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
         let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
-        VStack(spacing: 4) {
-            Group {
-                if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
-                    Image(systemName: symbol)
-                        .font(.system(size: 22, weight: weight))
-                        .foregroundStyle(color)
-                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                } else {
-                    let size: CGFloat = isActive || isStreaming ? 15 : 10
-                    Circle()
-                        .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
-                        .frame(width: size, height: size)
-                        .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                }
+        Group {
+            if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
+                Image(systemName: symbol)
+                    .font(.system(size: 22, weight: weight))
+                    .foregroundStyle(color)
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+            } else {
+                let size: CGFloat = isActive || isStreaming ? 15 : 10
+                Circle()
+                    .fill(color.opacity(isActive || isStreaming ? 1.0 : 0.3))
+                    .frame(width: size, height: size)
+                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             }
-            .frame(height: 28)
-
-            Circle()
-                .fill(Color.accentColor)
-                .frame(width: 6, height: 6)
-                .opacity(hasUnread && !isActive ? 1 : 0)
         }
-        .frame(height: 39)
+        .frame(height: 28)
     }
 }

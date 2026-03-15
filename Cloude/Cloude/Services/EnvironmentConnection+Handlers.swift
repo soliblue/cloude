@@ -10,8 +10,7 @@ extension EnvironmentConnection {
             if !out.isRunning {
                 out.isRunning = true
                 runningConversationId = convId
-                mgr.events.send(.conversationOutputStarted(conversationId: convId))
-            }
+}
         } else if let convId = runningConversationId {
             mgr.output(for: convId).appendText(text)
         }

@@ -26,7 +26,7 @@ extension ToolDetailSheet {
 
             CodeBlock(
                 code: Self.stripReadLineNumbers(output),
-                language: toolCall.filePath.flatMap { Self.languageForPath($0) }
+                language: toolCall.filePath.flatMap { SyntaxHighlighter.languageForPath($0) }
             )
         }
     }
@@ -43,31 +43,6 @@ extension ToolDetailSheet {
                 return line
             }
             .joined(separator: "\n")
-    }
-
-    static func languageForPath(_ path: String) -> String? {
-        let ext = (path as NSString).pathExtension.lowercased()
-        let map: [String: String] = [
-            "swift": "swift", "m": "objectivec", "h": "objectivec",
-            "c": "c", "cpp": "cpp", "hpp": "cpp",
-            "py": "python", "rb": "ruby", "go": "go", "rs": "rust",
-            "java": "java", "kt": "kotlin",
-            "js": "javascript", "ts": "typescript",
-            "jsx": "javascript", "tsx": "typescript",
-            "html": "html", "css": "css", "scss": "scss",
-            "json": "json", "xml": "xml", "yaml": "yaml", "yml": "yaml",
-            "toml": "toml", "md": "markdown",
-            "sh": "bash", "bash": "bash", "zsh": "bash",
-            "sql": "sql", "r": "r", "lua": "lua",
-            "dockerfile": "dockerfile", "makefile": "makefile",
-        ]
-        if ext.isEmpty {
-            let name = (path as NSString).lastPathComponent.lowercased()
-            if name == "dockerfile" { return "dockerfile" }
-            if name == "makefile" { return "makefile" }
-            return nil
-        }
-        return map[ext]
     }
 
     func outputSection(_ output: String) -> some View {
