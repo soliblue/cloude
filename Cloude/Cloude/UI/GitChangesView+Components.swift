@@ -24,6 +24,22 @@ struct GitFileRow: View {
                         .font(.system(size: 13, weight: .medium))
                         .lineLimit(1)
                 }
+
+                Spacer()
+
+                if let additions = file.additions, let deletions = file.deletions {
+                    HStack(spacing: 4) {
+                        if additions > 0 {
+                            Text("+\(additions)")
+                                .foregroundColor(.pastelGreen)
+                        }
+                        if deletions > 0 {
+                            Text("-\(deletions)")
+                                .foregroundColor(.pastelRed)
+                        }
+                    }
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                }
             }
             .contentShape(Rectangle())
         }
@@ -44,8 +60,8 @@ struct GitFileRow: View {
     private var statusColor: Color {
         switch file.status {
         case "M": return .orange
-        case "A": return .green
-        case "D": return .red
+        case "A": return .pastelGreen
+        case "D": return .pastelRed
         case "R", "C": return .blue
         case "??": return .gray
         default: return .secondary

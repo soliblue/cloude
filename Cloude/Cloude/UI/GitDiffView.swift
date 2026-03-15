@@ -45,10 +45,10 @@ struct GitDiffView: View {
             if file.staged {
                 Text("Staged")
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.green)
+                    .foregroundColor(.pastelGreen)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color.green.opacity(0.15))
+                    .background(Color.pastelGreen.opacity(0.15))
                     .cornerRadius(4)
             }
             Spacer()
@@ -92,8 +92,8 @@ struct GitDiffView: View {
     private var statusColor: Color {
         switch file.status {
         case "M": return .orange
-        case "A": return .green
-        case "D": return .red
+        case "A": return .pastelGreen
+        case "D": return .pastelRed
         default: return .secondary
         }
     }

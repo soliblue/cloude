@@ -25,7 +25,6 @@ struct ChatMessageList: View {
     var onNewConversation: (() -> Void)?
     var environmentStore: EnvironmentStore?
 
-    @State private var lastUserMessageCount = 0
     @State private var isInitialLoad = true
     @State private var isBottomVisible = true
 @State private var scrollViewportHeight: CGFloat = 0
@@ -139,7 +138,6 @@ userHasScrolled = false
         )
         .onAppear {
             scrollProxy = proxy
-            lastUserMessageCount = userMessageCount
             if !messages.isEmpty {
                 isInitialLoad = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
@@ -154,7 +152,6 @@ userHasScrolled = false
                     proxy.scrollTo(bottomId, anchor: .bottom)
                 }
             }
-            lastUserMessageCount = newCount
         }
         .onChange(of: currentOutput) { oldValue, newValue in
             if !newValue.isEmpty && isInitialLoad {

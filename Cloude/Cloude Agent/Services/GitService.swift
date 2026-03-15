@@ -14,7 +14,18 @@ struct GitService {
 
         let branch = runGit(["branch", "--show-current"], at: path).trimmingCharacters(in: .whitespacesAndNewlines)
         let (ahead, behind) = getAheadBehind(at: path)
-        let files = parseStatus(runGit(["status", "--porcelain"], at: path))
+        var files = parseStatus(runGit(["status", "--porcelain"], at: path))
+
+        let unstagedStats = parseNumstat(runGit(["diff", "--numstat"], at: path))
+        let stagedStats = parseNumstat(runGit(["diff", "--cached", "--numstat"], at: path))
+
+        for i in files.indices {
+            let stats = files[i].staged ? stagedStats : unstagedStats
+            if let (add, del) = stats[files[i].path] {
+                files[i].additions = add
+                files[i].deletions = del
+            }
+        }
 
         return .success(GitStatusInfo(branch: branch, ahead: ahead, behind: behind, files: files))
     }
@@ -77,6 +88,18 @@ struct GitService {
             return (0, 0)
         }
         return (ahead, behind)
+    }
+
+    private static func parseNumstat(_ output: String) -> [String: (Int, Int)] {
+        var result: [String: (Int, Int)] = [:]
+        for line in output.split(separator: "\n") {
+            let parts = line.split(separator: "\t")
+            guard parts.count >= 3,
+                  let add = Int(parts[0]),
+                  let del = Int(parts[1]) else { continue }
+            result[String(parts[2])] = (add, del)
+        }
+        return result
     }
 
     private static func parseStatus(_ output: String) -> [GitFileStatus] {

@@ -15,10 +15,10 @@ struct ConnectionStatus: View {
 
     private var statusColor: Color {
         if connection.isAuthenticated {
-            return connection.isAnyRunning ? .orange : .green
+            return connection.isAnyRunning ? .orange : .pastelGreen
         } else if connection.isConnected {
             return .yellow
         }
-        return .red
+        return .pastelRed
     }
 }

@@ -120,9 +120,9 @@ struct TeammateDetailSheet: View {
     private var statusColor: Color {
         switch teammate.status {
         case .spawning: return .orange
-        case .working: return .green
+        case .working: return .pastelGreen
         case .idle: return .secondary
-        case .shutdown: return .red
+        case .shutdown: return .pastelRed
         }
     }
 

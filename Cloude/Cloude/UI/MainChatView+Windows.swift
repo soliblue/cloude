@@ -112,7 +112,7 @@ extension MainChatView {
                 }) {
                     Image(systemName: exportCopied ? "checkmark" : "doc.on.doc")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(exportCopied ? .green : .secondary)
+                        .foregroundColor(exportCopied ? .pastelGreen : .secondary)
                         .contentTransition(.symbolEffect(.replace))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 7)

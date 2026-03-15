@@ -29,46 +29,7 @@ extension GlobalInputBar {
             }
         } else if shouldShowRefreshButton {
             Menu {
-                Button(action: { showPhotoPicker = true }) {
-                    Label("Photo", systemImage: "photo")
-                }
-
-                Button(action: { showFilePicker = true }) {
-                    Label("File", systemImage: "doc")
-                }
-
-                Button(action: startRecording) {
-                    Label("Record", systemImage: "mic.fill")
-                }
-                .disabled(!canRecord)
-
-                Divider()
-
-                Menu {
-                    Button(action: { setEffort(nil) }) {
-                        Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
-                    }
-                    ForEach(EffortLevel.allCases, id: \.self) { level in
-                        Button(action: { setEffort(level) }) {
-                            Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
-                        }
-                    }
-                } label: {
-                    Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
-                }
-
-                Menu {
-                    Button(action: { setModel(nil) }) {
-                        Label("Auto", systemImage: currentModel == nil ? "checkmark" : "circle")
-                    }
-                    ForEach(ModelSelection.allCases, id: \.self) { model in
-                        Button(action: { setModel(model) }) {
-                            Label(model.displayName, systemImage: currentModel == model ? "checkmark" : "circle")
-                        }
-                    }
-                } label: {
-                    Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
-                }
+                attachmentAndOptionsMenu
             } label: {
                 actionButtonLabel
             } primaryAction: {
@@ -81,46 +42,7 @@ extension GlobalInputBar {
             }
         } else {
             Menu {
-                Button(action: { showPhotoPicker = true }) {
-                    Label("Photo", systemImage: "photo")
-                }
-
-                Button(action: { showFilePicker = true }) {
-                    Label("File", systemImage: "doc")
-                }
-
-                Button(action: startRecording) {
-                    Label("Record", systemImage: "mic.fill")
-                }
-                .disabled(!canRecord)
-
-                Divider()
-
-                Menu {
-                    Button(action: { setEffort(nil) }) {
-                        Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
-                    }
-                    ForEach(EffortLevel.allCases, id: \.self) { level in
-                        Button(action: { setEffort(level) }) {
-                            Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
-                        }
-                    }
-                } label: {
-                    Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
-                }
-
-                Menu {
-                    Button(action: { setModel(nil) }) {
-                        Label("Auto", systemImage: currentModel == nil ? "checkmark" : "circle")
-                    }
-                    ForEach(ModelSelection.allCases, id: \.self) { model in
-                        Button(action: { setModel(model) }) {
-                            Label(model.displayName, systemImage: currentModel == model ? "checkmark" : "circle")
-                        }
-                    }
-                } label: {
-                    Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
-                }
+                attachmentAndOptionsMenu
             } label: {
                 actionButtonLabel
             } primaryAction: {
@@ -130,6 +52,45 @@ extension GlobalInputBar {
                 }
             }
             .disabled(environmentMismatch)
+        }
+    }
+
+    @ViewBuilder
+    var attachmentAndOptionsMenu: some View {
+        Button(action: { showPhotoPicker = true }) {
+            Label("Photo", systemImage: "photo")
+        }
+        Button(action: { showFilePicker = true }) {
+            Label("File", systemImage: "doc")
+        }
+        Button(action: startRecording) {
+            Label("Record", systemImage: "mic.fill")
+        }
+        .disabled(!canRecord)
+        Divider()
+        Menu {
+            Button(action: { setEffort(nil) }) {
+                Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
+            }
+            ForEach(EffortLevel.allCases, id: \.self) { level in
+                Button(action: { setEffort(level) }) {
+                    Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
+                }
+            }
+        } label: {
+            Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
+        }
+        Menu {
+            Button(action: { setModel(nil) }) {
+                Label("Auto", systemImage: currentModel == nil ? "checkmark" : "circle")
+            }
+            ForEach(ModelSelection.allCases, id: \.self) { model in
+                Button(action: { setModel(model) }) {
+                    Label(model.displayName, systemImage: currentModel == model ? "checkmark" : "circle")
+                }
+            }
+        } label: {
+            Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
         }
     }
 

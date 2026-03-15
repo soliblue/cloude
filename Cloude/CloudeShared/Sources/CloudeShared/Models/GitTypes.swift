@@ -5,11 +5,15 @@ public struct GitFileStatus: Codable, Identifiable {
     public let status: String
     public let path: String
     public let staged: Bool
+    public var additions: Int?
+    public var deletions: Int?
 
-    public init(status: String, path: String, staged: Bool = false) {
+    public init(status: String, path: String, staged: Bool = false, additions: Int? = nil, deletions: Int? = nil) {
         self.status = status
         self.path = path
         self.staged = staged
+        self.additions = additions
+        self.deletions = deletions
     }
 
     public var statusDescription: String {

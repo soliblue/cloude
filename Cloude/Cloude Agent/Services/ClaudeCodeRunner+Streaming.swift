@@ -9,125 +9,150 @@ extension ClaudeCodeRunner {
         lineBuffer = lines.last ?? ""
 
         for line in lines.dropLast() {
-            guard !line.isEmpty,
-                  let data = line.data(using: .utf8),
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                continue
+            if line.isEmpty { continue }
+            if let data = line.data(using: .utf8),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                handleStreamEvent(json)
             }
+        }
+    }
 
-            let type = json["type"] as? String ?? ""
+    private func handleStreamEvent(_ json: [String: Any]) {
+        let type = json["type"] as? String ?? ""
 
-            if type == "system",
-               let subtype = json["subtype"] as? String {
-                if subtype == "init", let sessionId = json["session_id"] as? String {
-                    if activeModel == nil, let model = json["model"] as? String {
-                        activeModel = model
-                    }
-                    events.send(.sessionId(sessionId))
-                    onSessionId?(sessionId)
+        if type == "system" {
+            handleSystemEvent(json)
+        }
+
+        handleContentBlockEvent(type: type, json: json)
+
+        let parentToolUseId = json["parent_tool_use_id"] as? String
+
+        if type == "assistant" {
+            handleAssistantMessage(json, parentToolId: parentToolUseId)
+        }
+
+        if type == "user" {
+            handleUserMessage(json)
+        }
+
+        if type == "result" {
+            handleResultEvent(json)
+        }
+    }
+
+    private func handleSystemEvent(_ json: [String: Any]) {
+        if let subtype = json["subtype"] as? String {
+            if subtype == "init", let sessionId = json["session_id"] as? String {
+                if activeModel == nil, let model = json["model"] as? String {
+                    activeModel = model
                 }
-                if subtype == "status", let status = json["status"] as? String {
-                    if status == "compacting" {
-                        events.send(.status(.compacting))
-                        onStatus?(.compacting)
-                    }
-                }
+                events.send(.sessionId(sessionId))
+                onSessionId?(sessionId)
             }
-
-            let contentBlock: (type: String, json: [String: Any])? = {
-                if type == "stream_event",
-                   let event = json["event"] as? [String: Any],
-                   let eventType = event["type"] as? String {
-                    return (eventType, event)
-                }
-                if type == "content_block_start" || type == "content_block_delta" {
-                    return (type, json)
-                }
-                return nil
-            }()
-
-            if let cb = contentBlock {
-                if cb.type == "content_block_start" {
-                    if !accumulatedOutput.isEmpty && !accumulatedOutput.hasSuffix("\n") {
-                        accumulatedOutput += "\n\n"
-                        onOutput?("\n\n")
-                    }
-                }
-                if cb.type == "content_block_delta",
-                   let delta = cb.json["delta"] as? [String: Any],
-                   let deltaText = delta["text"] as? String {
-                    accumulatedOutput += deltaText
-                    events.send(.output(deltaText))
-                    onOutput?(deltaText)
+            if subtype == "status", let status = json["status"] as? String {
+                if status == "compacting" {
+                    events.send(.status(.compacting))
+                    onStatus?(.compacting)
                 }
             }
+        }
+    }
 
-            let parentToolUseId = json["parent_tool_use_id"] as? String
+    private func handleContentBlockEvent(type: String, json: [String: Any]) {
+        let contentBlock: (type: String, json: [String: Any])? = {
+            if type == "stream_event",
+               let event = json["event"] as? [String: Any],
+               let eventType = event["type"] as? String {
+                return (eventType, event)
+            }
+            if type == "content_block_start" || type == "content_block_delta" {
+                return (type, json)
+            }
+            return nil
+        }()
 
-            if type == "assistant",
-               let message = json["message"] as? [String: Any],
-               let content = message["content"] as? [[String: Any]] {
-                if let uuid = json["uuid"] as? String {
-                    onMessageUUID?(uuid)
+        if let cb = contentBlock {
+            if cb.type == "content_block_start" {
+                if !accumulatedOutput.isEmpty && !accumulatedOutput.hasSuffix("\n") {
+                    accumulatedOutput += "\n\n"
+                    onOutput?("\n\n")
                 }
-                for block in content {
-                    if block["type"] as? String == "text",
-                       let blockText = block["text"] as? String {
-                        if !accumulatedOutput.contains(blockText) {
-                            accumulatedOutput += blockText
-                            onOutput?(blockText)
-                        }
+            }
+            if cb.type == "content_block_delta",
+               let delta = cb.json["delta"] as? [String: Any],
+               let deltaText = delta["text"] as? String {
+                accumulatedOutput += deltaText
+                events.send(.output(deltaText))
+                onOutput?(deltaText)
+            }
+        }
+    }
+
+    private func handleAssistantMessage(_ json: [String: Any], parentToolId: String?) {
+        if let message = json["message"] as? [String: Any],
+           let content = message["content"] as? [[String: Any]] {
+            if let uuid = json["uuid"] as? String {
+                onMessageUUID?(uuid)
+            }
+            for block in content {
+                if block["type"] as? String == "text",
+                   let blockText = block["text"] as? String {
+                    if !accumulatedOutput.contains(blockText) {
+                        accumulatedOutput += blockText
+                        onOutput?(blockText)
                     }
-                    if block["type"] as? String == "tool_use",
-                       let toolName = block["name"] as? String,
-                       let toolId = block["id"] as? String {
-                        let input = extractToolInput(name: toolName, input: block["input"] as? [String: Any])
-                        let textPosition = accumulatedOutput.count
-                        events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolUseId))
-                        onToolCall?(toolName, input, toolId, parentToolUseId, textPosition)
+                }
+                if block["type"] as? String == "tool_use",
+                   let toolName = block["name"] as? String,
+                   let toolId = block["id"] as? String {
+                    let input = extractToolInput(name: toolName, input: block["input"] as? [String: Any])
+                    let textPosition = accumulatedOutput.count
+                    events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolId))
+                    onToolCall?(toolName, input, toolId, parentToolId, textPosition)
+                }
+            }
+        }
+    }
+
+    private func handleUserMessage(_ json: [String: Any]) {
+        if let message = json["message"] as? [String: Any] {
+            if let content = message["content"] as? String {
+                if content.hasPrefix("<local-command-stdout>") && content.hasSuffix("</local-command-stdout>") {
+                    let start = content.index(content.startIndex, offsetBy: "<local-command-stdout>".count)
+                    let end = content.index(content.endIndex, offsetBy: -"</local-command-stdout>".count)
+                    let extracted = String(content[start..<end])
+                    accumulatedOutput += extracted
+                    events.send(.output(extracted))
+                    onOutput?(extracted)
+                }
+            } else if let contentBlocks = message["content"] as? [[String: Any]] {
+                for block in contentBlocks {
+                    if block["type"] as? String == "tool_result",
+                       let toolUseId = block["tool_use_id"] as? String {
+                        let (summary, output) = extractResultInfo(from: block)
+                        events.send(.toolResult(toolId: toolUseId, summary: summary, output: output))
+                        onToolResult?(toolUseId, summary, output)
+                        parseTeamResult(from: block)
                     }
                 }
             }
+        }
+    }
 
-            if type == "user",
-               let message = json["message"] as? [String: Any] {
-                if let content = message["content"] as? String {
-                    if content.hasPrefix("<local-command-stdout>") && content.hasSuffix("</local-command-stdout>") {
-                        let start = content.index(content.startIndex, offsetBy: "<local-command-stdout>".count)
-                        let end = content.index(content.endIndex, offsetBy: -"</local-command-stdout>".count)
-                        let extracted = String(content[start..<end])
-                        accumulatedOutput += extracted
-                        events.send(.output(extracted))
-                        onOutput?(extracted)
-                    }
-                } else if let contentBlocks = message["content"] as? [[String: Any]] {
-                    for block in contentBlocks {
-                        if block["type"] as? String == "tool_result",
-                           let toolUseId = block["tool_use_id"] as? String {
-                            let (summary, output) = extractResultInfo(from: block)
-                            events.send(.toolResult(toolId: toolUseId, summary: summary, output: output))
-                            onToolResult?(toolUseId, summary, output)
-                            parseTeamResult(from: block)
-                        }
-                    }
-                }
-            }
-
-            if type == "result" {
-                if let sessionId = json["session_id"] as? String {
-                    events.send(.sessionId(sessionId))
-                    onSessionId?(sessionId)
-                }
-                if let durationMs = json["duration_ms"] as? Int,
-                   let costUsd = json["total_cost_usd"] as? Double {
-                    let model = json["model"] as? String ?? activeModel
-                    pendingRunStats = (durationMs, costUsd, model)
-                }
-                if let result = json["result"] as? String, accumulatedOutput.isEmpty {
-                    events.send(.output(result))
-                    onOutput?(result)
-                }
-            }
+    private func handleResultEvent(_ json: [String: Any]) {
+        if let sessionId = json["session_id"] as? String {
+            events.send(.sessionId(sessionId))
+            onSessionId?(sessionId)
+        }
+        if let durationMs = json["duration_ms"] as? Int,
+           let costUsd = json["total_cost_usd"] as? Double {
+            let model = json["model"] as? String ?? activeModel
+            pendingRunStats = (durationMs, costUsd, model)
+        }
+        if let result = json["result"] as? String, accumulatedOutput.isEmpty {
+            events.send(.output(result))
+            onOutput?(result)
         }
     }
 

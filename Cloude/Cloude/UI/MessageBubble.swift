@@ -126,15 +126,11 @@ struct MessageBubble: View {
                     }
                     Spacer()
                     Button {
-                        ClipboardHelper.copy(message.text)
-                        withAnimation { showCopiedToast = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            withAnimation { showCopiedToast = false }
-                        }
+                        CopyFeedback.perform(message.text, showToast: $showCopiedToast)
                     } label: {
                         Image(systemName: showCopiedToast ? "checkmark" : "square.on.square")
                             .font(.system(size: 9))
-                            .foregroundColor(showCopiedToast ? .green : .secondary)
+                            .foregroundColor(showCopiedToast ? .pastelGreen : .secondary)
                             .contentTransition(.symbolEffect(.replace))
                     }
                     .buttonStyle(.plain)
@@ -182,11 +178,7 @@ struct MessageBubble: View {
                         BubbleActionMenu(
                             message: message,
                             onCopy: {
-                                ClipboardHelper.copy(message.text)
-                                withAnimation { showCopiedToast = true }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                    withAnimation { showCopiedToast = false }
-                                }
+                                CopyFeedback.perform(message.text, showToast: self.$showCopiedToast)
                             },
                             onSelectText: { showTextSelection = true },
                             onToggleCollapse: onToggleCollapse,
@@ -310,67 +302,13 @@ struct TeamSummaryBadge: View {
     }
 }
 
-struct TextSelectionSheet: View {
-    let text: String
-    @Environment(\.dismiss) private var dismiss
-    @State private var showCopied = false
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                PlainSelectableText(text: text)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        ClipboardHelper.copy(text)
-                        withAnimation { showCopied = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                            withAnimation { showCopied = false }
-                        }
-                    } label: {
-                        Image(systemName: showCopied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(showCopied ? .green : .secondary)
-                    }
-                }
-            }
+struct CopyFeedback {
+    static func perform(_ text: String, showToast: Binding<Bool>) {
+        ClipboardHelper.copy(text)
+        withAnimation { showToast.wrappedValue = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation { showToast.wrappedValue = false }
         }
     }
 }
-
-struct PlainSelectableText: UIViewRepresentable {
-    let text: String
-
-    func makeUIView(context: Context) -> UITextView {
-        let textView = UITextView()
-        textView.isEditable = false
-        textView.isSelectable = true
-        textView.isScrollEnabled = false
-        textView.backgroundColor = .clear
-        textView.font = .preferredFont(forTextStyle: .body)
-        textView.textColor = .label
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = 0
-        textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        textView.setContentHuggingPriority(.defaultHigh, for: .vertical)
-        return textView
-    }
-
-    func updateUIView(_ textView: UITextView, context: Context) {
-        textView.text = text
-        textView.invalidateIntrinsicContentSize()
-    }
-}
-
-
 

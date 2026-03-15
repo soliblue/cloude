@@ -57,7 +57,7 @@ struct CodeBlock: View {
             } label: {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                     .font(.caption2)
-                    .foregroundStyle(copied ? .green : .secondary)
+                    .foregroundStyle(copied ? Color.pastelGreen : .secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
         }
