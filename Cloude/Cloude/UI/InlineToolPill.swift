@@ -61,6 +61,7 @@ struct InlineToolPill: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
+        .fixedSize(horizontal: false, vertical: true)
         .overlay {
             if isExecuting {
                 ShimmerOverlay(phase: shimmerPhase)
@@ -100,6 +101,7 @@ struct InlineToolPill: View {
                 Text(parsed.command.isEmpty ? "cmd" : parsed.command)
                     .font(.system(size: 9, weight: .semibold, design: .monospaced))
                     .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
+                    .lineLimit(1)
             }
             if chainedCommands.count > 3 {
                 Text("+\(chainedCommands.count - 3)")

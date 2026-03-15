@@ -1,5 +1,20 @@
 import SwiftUI
 
+struct DiffScrollView: View {
+    let diff: String
+    var fileName: String?
+
+    var body: some View {
+        GeometryReader { geo in
+            ScrollView([.horizontal, .vertical], showsIndicators: false) {
+                DiffTextView(diff: diff, language: fileName.flatMap { SyntaxHighlighter.languageForPath($0) })
+                    .padding()
+                    .frame(minWidth: geo.size.width, minHeight: geo.size.height, alignment: .topLeading)
+            }
+        }
+    }
+}
+
 struct DiffTextView: View {
     let diff: String
     var language: String?

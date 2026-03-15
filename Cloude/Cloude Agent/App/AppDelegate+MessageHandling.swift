@@ -45,8 +45,8 @@ extension AppDelegate {
         case .gitStatus(let path):
             handleGitStatus(path, connection: connection)
 
-        case .gitDiff(let path, let file):
-            handleGitDiff(path, file: file, connection: connection)
+        case .gitDiff(let path, let file, let staged):
+            handleGitDiff(path, file: file, staged: staged, connection: connection)
 
         case .gitCommit(let path, let message, let files):
             handleGitCommit(path, message: message, files: files, connection: connection)

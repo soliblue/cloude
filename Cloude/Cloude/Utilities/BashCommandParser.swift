@@ -56,7 +56,7 @@ struct BashCommandParser {
     }
 
     static func splitChainedWithOperators(_ input: String) -> [ChainedCommand] {
-        if isScript(input) {
+        if isScript(input) || input.contains("<<") {
             return [ChainedCommand(command: input, operatorAfter: nil)]
         }
 

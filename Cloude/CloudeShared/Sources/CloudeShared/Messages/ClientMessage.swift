@@ -19,7 +19,7 @@ public enum ClientMessage: Codable {
     case getFileFullQuality(path: String)
     case requestMissedResponse(sessionId: String)
     case gitStatus(path: String)
-    case gitDiff(path: String, file: String?)
+    case gitDiff(path: String, file: String?, staged: Bool)
     case gitCommit(path: String, message: String, files: [String])
     case transcribe(audioBase64: String)
     case setHeartbeatInterval(minutes: Int?)
@@ -41,7 +41,7 @@ public enum ClientMessage: Codable {
     case terminalInput(text: String, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged
     }
 
     public init(from decoder: Decoder) throws {
@@ -89,7 +89,8 @@ public enum ClientMessage: Codable {
         case "git_diff":
             let path = try container.decode(String.self, forKey: .path)
             let file = try container.decodeIfPresent(String.self, forKey: .file)
-            self = .gitDiff(path: path, file: file)
+            let staged = try container.decodeIfPresent(Bool.self, forKey: .staged) ?? false
+            self = .gitDiff(path: path, file: file, staged: staged)
         case "git_commit":
             let path = try container.decode(String.self, forKey: .path)
             let message = try container.decode(String.self, forKey: .message)
@@ -193,10 +194,11 @@ public enum ClientMessage: Codable {
         case .gitStatus(let path):
             try container.encode("git_status", forKey: .type)
             try container.encode(path, forKey: .path)
-        case .gitDiff(let path, let file):
+        case .gitDiff(let path, let file, let staged):
             try container.encode("git_diff", forKey: .type)
             try container.encode(path, forKey: .path)
             try container.encodeIfPresent(file, forKey: .file)
+            if staged { try container.encode(true, forKey: .staged) }
         case .gitCommit(let path, let message, let files):
             try container.encode("git_commit", forKey: .type)
             try container.encode(path, forKey: .path)

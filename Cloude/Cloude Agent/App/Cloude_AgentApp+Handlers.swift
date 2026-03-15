@@ -67,9 +67,9 @@ extension AppDelegate {
         }
     }
 
-    func handleGitDiff(_ path: String, file: String?, connection: NWConnection) {
+    func handleGitDiff(_ path: String, file: String?, staged: Bool, connection: NWConnection) {
         let expandedPath = path.expandingTildeInPath
-        switch GitService.getDiff(at: expandedPath, file: file) {
+        switch GitService.getDiff(at: expandedPath, file: file, staged: staged) {
         case .success(let diff):
             server.sendMessage(.gitDiffResult(path: expandedPath, diff: diff), to: connection)
         case .failure(let error):

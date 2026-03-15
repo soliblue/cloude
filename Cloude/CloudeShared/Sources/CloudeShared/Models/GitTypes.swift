@@ -1,13 +1,15 @@
 import Foundation
 
 public struct GitFileStatus: Codable, Identifiable {
-    public var id: String { path }
+    public var id: String { path + (staged ? "-staged" : "-unstaged") }
     public let status: String
     public let path: String
+    public let staged: Bool
 
-    public init(status: String, path: String) {
+    public init(status: String, path: String, staged: Bool = false) {
         self.status = status
         self.path = path
+        self.staged = staged
     }
 
     public var statusDescription: String {
@@ -24,8 +26,8 @@ public struct GitFileStatus: Codable, Identifiable {
         }
     }
 
-    public var isStaged: Bool {
-        status.first?.isUppercase == true && status.first != "?"
+    public var isDeleted: Bool {
+        status == "D"
     }
 }
 
@@ -46,11 +48,11 @@ public struct GitStatusInfo: Codable {
         !files.isEmpty
     }
 
-    public var stagedCount: Int {
-        files.filter { $0.isStaged }.count
+    public var stagedFiles: [GitFileStatus] {
+        files.filter { $0.staged }
     }
 
-    public var unstagedCount: Int {
-        files.count - stagedCount
+    public var unstagedFiles: [GitFileStatus] {
+        files.filter { !$0.staged }
     }
 }

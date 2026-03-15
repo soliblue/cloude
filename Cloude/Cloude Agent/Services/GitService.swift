@@ -19,13 +19,15 @@ struct GitService {
         return .success(GitStatusInfo(branch: branch, ahead: ahead, behind: behind, files: files))
     }
 
-    static func getDiff(at path: String, file: String?) -> Result<String, Error> {
+    static func getDiff(at path: String, file: String?, staged: Bool = false) -> Result<String, Error> {
         guard isGitRepository(at: path) else {
             return .failure(GitError.notARepository)
         }
 
         var args = ["diff"]
+        if staged { args.append("--cached") }
         if let file = file {
+            args.append("--")
             args.append(file)
         }
 
@@ -78,13 +80,28 @@ struct GitService {
     }
 
     private static func parseStatus(_ output: String) -> [GitFileStatus] {
-        output.split(separator: "\n").compactMap { line in
-            let line = String(line)
-            guard line.count > 3 else { return nil }
-            let status = String(line.prefix(2)).trimmingCharacters(in: .whitespaces)
+        var results: [GitFileStatus] = []
+        for rawLine in output.split(separator: "\n") {
+            let line = String(rawLine)
+            guard line.count > 3 else { continue }
+            let xy = line.prefix(2)
+            let x = xy[xy.startIndex]
+            let y = xy[xy.index(after: xy.startIndex)]
             let path = String(line.dropFirst(3))
-            return GitFileStatus(status: status.isEmpty ? "??" : status, path: path)
+
+            if x == "?" {
+                results.append(GitFileStatus(status: "??", path: path, staged: false))
+                continue
+            }
+
+            if x != " " && x != "!" {
+                results.append(GitFileStatus(status: String(x), path: path, staged: true))
+            }
+            if y != " " && y != "!" {
+                results.append(GitFileStatus(status: String(y), path: path, staged: false))
+            }
         }
+        return results
     }
 }
 

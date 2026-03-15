@@ -17,12 +17,11 @@ struct GitDiffView: View {
                 fileHeader
                 Divider()
                 diffContent
-                Spacer(minLength: 0)
             }
             .navigationTitle(fileName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                     }
@@ -43,6 +42,15 @@ struct GitDiffView: View {
             Label(file.statusDescription, systemImage: statusIcon)
                 .font(.subheadline)
                 .foregroundColor(statusColor)
+            if file.staged {
+                Text("Staged")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.green)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.green.opacity(0.15))
+                    .cornerRadius(4)
+            }
             Spacer()
             Text(file.path)
                 .font(.caption)
@@ -57,16 +65,13 @@ struct GitDiffView: View {
         Group {
             if isLoading {
                 ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let diff = diff, !diff.isEmpty {
-                ScrollView([.horizontal, .vertical], showsIndicators: false) {
-                    DiffTextView(diff: diff, language: SyntaxHighlighter.languageForPath(file.path))
-                        .padding()
-                }
+                DiffScrollView(diff: diff, fileName: file.path)
             } else {
                 ContentUnavailableView("No Diff", systemImage: "doc.text", description: Text("No changes to show"))
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var fileName: String {
@@ -96,6 +101,6 @@ struct GitDiffView: View {
     private func loadDiff() {
         isLoading = true
         diff = nil
-        connection.gitDiff(path: repoPath, file: file.path, environmentId: environmentId)
+        connection.gitDiff(path: repoPath, file: file.path, staged: file.staged, environmentId: environmentId)
     }
 }

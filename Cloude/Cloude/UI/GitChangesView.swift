@@ -57,8 +57,15 @@ struct GitChangesView: View {
             }
 
             Spacer()
-            Text("\(status.files.count)")
-                .font(.system(size: 14, weight: .bold))
+            if !status.stagedFiles.isEmpty {
+                Text("\(status.stagedFiles.count) staged")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.green)
+                Text("·")
+                    .foregroundColor(.secondary)
+            }
+            Text("\(status.unstagedFiles.count) changed")
+                .font(.system(size: 11, weight: .medium))
                 .foregroundColor(status.hasChanges ? .orange : .green)
         }
         .font(.system(size: 11))
@@ -69,9 +76,30 @@ struct GitChangesView: View {
     }
 
     private func filesList(_ files: [GitFileStatus]) -> some View {
-        List(files) { file in
-            GitFileRow(file: file) {
-                selectedFile = file
+        let staged = files.filter { $0.staged }
+        let unstaged = files.filter { !$0.staged }
+        return List {
+            if !staged.isEmpty {
+                Section {
+                    ForEach(staged) { file in
+                        GitFileRow(file: file) { selectedFile = file }
+                    }
+                } header: {
+                    Text("Staged")
+                        .font(.system(size: 11, weight: .semibold))
+                        .textCase(.uppercase)
+                }
+            }
+            if !unstaged.isEmpty {
+                Section {
+                    ForEach(unstaged) { file in
+                        GitFileRow(file: file) { selectedFile = file }
+                    }
+                } header: {
+                    Text("Changes")
+                        .font(.system(size: 11, weight: .semibold))
+                        .textCase(.uppercase)
+                }
             }
         }
         .listStyle(.plain)

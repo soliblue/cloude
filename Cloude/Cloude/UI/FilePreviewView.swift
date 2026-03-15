@@ -83,9 +83,6 @@ struct FilePreviewView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    FileViewerActions(path: path, fileData: fileData)
-                }
-                ToolbarItem(placement: .principal) {
                     HStack(spacing: 12) {
                         if contentType.isTextBased, let _ = fileData {
                             Button(action: { toggleDiff() }) {
@@ -107,12 +104,14 @@ struct FilePreviewView: View {
                         }
                     }
                     .font(.body)
+                    .padding(.horizontal, 8)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                     }
                     .font(.body)
+                    .padding(.horizontal, 8)
                 }
             }
         }
