@@ -8,8 +8,7 @@ extension MainChatView {
         VStack(spacing: 0) {
             windowHeader(for: window, conversation: conversation)
 
-            switch window.type {
-            case .chat:
+            ZStack {
                 ConversationView(
                     connection: connection,
                     store: conversationStore,
@@ -32,25 +31,33 @@ extension MainChatView {
                         windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
-            case .files:
-                FileBrowserView(
-                    connection: connection,
-                    rootPath: conversation?.workingDirectory,
-                    environmentId: conversation?.environmentId
-                )
-            case .gitChanges:
-                GitChangesView(
-                    connection: connection,
-                    rootPath: conversation?.workingDirectory,
-                    environmentId: conversation?.environmentId
-                )
-            case .terminal:
-                TerminalView(
-                    connection: connection,
-                    rootPath: conversation?.workingDirectory,
-                    environmentId: conversation?.environmentId,
-                    terminalId: window.id.uuidString
-                )
+                .opacity(window.type == .chat ? 1 : 0)
+                .allowsHitTesting(window.type == .chat)
+
+                if window.type == .files {
+                    FileBrowserView(
+                        connection: connection,
+                        rootPath: conversation?.workingDirectory,
+                        environmentId: conversation?.environmentId
+                    )
+                }
+
+                if window.type == .gitChanges {
+                    GitChangesView(
+                        connection: connection,
+                        rootPath: conversation?.workingDirectory,
+                        environmentId: conversation?.environmentId
+                    )
+                }
+
+                if window.type == .terminal {
+                    TerminalView(
+                        connection: connection,
+                        rootPath: conversation?.workingDirectory,
+                        environmentId: conversation?.environmentId,
+                        terminalId: window.id.uuidString
+                    )
+                }
             }
         }
     }

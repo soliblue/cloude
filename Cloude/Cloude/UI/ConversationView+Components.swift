@@ -139,7 +139,7 @@ userHasScrolled = false
         )
         .onAppear {
             scrollProxy = proxy
-            if !messages.isEmpty {
+            if !messages.isEmpty && isInitialLoad {
                 isInitialLoad = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                     proxy.scrollTo(bottomId)
