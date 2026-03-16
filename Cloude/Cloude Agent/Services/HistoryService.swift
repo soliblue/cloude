@@ -39,6 +39,7 @@ struct HistoryService {
 
             var userMessages: [(uuid: String, timestamp: Date, text: String)] = []
             var assistantMessages: [String: (timestamp: Date, model: String?, items: [ContentItem])] = [:]
+            var toolResults: [String: String] = [:]
 
             for line in lines {
                 guard let data = line.data(using: .utf8),
@@ -55,6 +56,22 @@ struct HistoryService {
                     if let messageObj = json["message"] as? [String: Any] {
                         if let content = messageObj["content"] as? String {
                             userMessages.append((uuid, timestamp, content))
+                        } else if let contentArray = messageObj["content"] as? [[String: Any]] {
+                            for item in contentArray {
+                                if let itemType = item["type"] as? String,
+                                   itemType == "tool_result",
+                                   let toolUseId = item["tool_use_id"] as? String {
+                                    var output = ""
+                                    if let text = item["content"] as? String {
+                                        output = text
+                                    } else if let contentParts = item["content"] as? [[String: Any]] {
+                                        output = contentParts.compactMap { $0["text"] as? String }.joined(separator: "\n")
+                                    }
+                                    if !output.isEmpty {
+                                        toolResults[toolUseId] = String(output.prefix(5000))
+                                    }
+                                }
+                            }
                         }
                     }
                 } else if type == "assistant" {
@@ -110,7 +127,7 @@ struct HistoryService {
                               let name = item.toolName,
                               let toolId = item.toolId {
                         let position = accumulatedText.count
-                        toolCalls.append(StoredToolCall(name: name, input: item.toolInput, toolId: toolId, textPosition: position, editInfo: item.editInfo))
+                        toolCalls.append(StoredToolCall(name: name, input: item.toolInput, toolId: toolId, textPosition: position, editInfo: item.editInfo, resultContent: toolResults[toolId]))
                     }
                 }
 
@@ -130,7 +147,7 @@ struct HistoryService {
                     let combinedText = prev.text + separator + msg.text
                     let textOffset = prev.text.count + separator.count
                     let adjustedTools = msg.toolCalls.map { tool in
-                        StoredToolCall(name: tool.name, input: tool.input, toolId: tool.toolId, parentToolId: tool.parentToolId, textPosition: (tool.textPosition ?? 0) + textOffset, editInfo: tool.editInfo)
+                        StoredToolCall(name: tool.name, input: tool.input, toolId: tool.toolId, parentToolId: tool.parentToolId, textPosition: (tool.textPosition ?? 0) + textOffset, editInfo: tool.editInfo, resultContent: tool.resultContent)
                     }
                     merged[lastIdx] = HistoryMessage(isUser: false, text: combinedText, timestamp: prev.timestamp, toolCalls: prev.toolCalls + adjustedTools, serverUUID: prev.serverUUID ?? msg.serverUUID, model: prev.model ?? msg.model)
                 } else {

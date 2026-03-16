@@ -138,7 +138,11 @@ extension EnvironmentConnection {
     func handleMissedResponse(_ mgr: ConnectionManager, sessionId: String, text: String, storedToolCalls: [StoredToolCall]) {
         var interruptedConvId: UUID?
         var interruptedMsgId: UUID?
-        let toolCalls = storedToolCalls.map { ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition, editInfo: $0.editInfo) }
+        let toolCalls = storedToolCalls.map {
+            var tc = ToolCall(name: $0.name, input: $0.input, toolId: $0.toolId, parentToolId: $0.parentToolId, textPosition: $0.textPosition, editInfo: $0.editInfo)
+            tc.resultOutput = $0.resultContent
+            return tc
+        }
         if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
             interruptedConvId = interrupted.conversationId
             interruptedMsgId = interrupted.messageId

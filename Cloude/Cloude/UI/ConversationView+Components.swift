@@ -113,6 +113,7 @@ userHasScrolled = false
                     .onDisappear { isBottomVisible = false }
             }
         }
+        .defaultScrollAnchor(.bottom)
         .coordinateSpace(name: "chatScroll")
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
@@ -141,7 +142,7 @@ userHasScrolled = false
             if !messages.isEmpty {
                 isInitialLoad = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    proxy.scrollTo(bottomId, anchor: .bottom)
+                    proxy.scrollTo(bottomId)
                 }
             }
         }
@@ -149,7 +150,7 @@ userHasScrolled = false
             if newCount == oldCount + 1 {
                 userHasScrolled = false
                 withAnimation(.easeOut(duration: 0.25)) {
-                    proxy.scrollTo(bottomId, anchor: .bottom)
+                    proxy.scrollTo(bottomId)
                 }
             }
         }
@@ -314,7 +315,7 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
                         .onEnded {
                             userHasScrolled = false
                             withAnimation(.easeOut(duration: 0.2)) {
-                                scrollProxy?.scrollTo(bottomId, anchor: .bottom)
+                                scrollProxy?.scrollTo(bottomId)
                             }
                         }
                 )
