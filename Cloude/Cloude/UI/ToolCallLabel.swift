@@ -231,10 +231,20 @@ struct ToolCallLabel: View {
         case "TeamCreate": return "person.3.fill"
         case "TeamDelete": return "person.3.fill"
         case "SendMessage": return "paperplane.fill"
+        case "Agent": return agentIconName
         default:
             if WidgetRegistry.isWidget(name) { return WidgetRegistry.iconName(name) }
             return "gear"
         }
+    }
+
+    private static let agentIcons = [
+        "diamond.fill", "pentagon.fill", "hexagon.fill", "seal.fill", "octagon.fill", "shield.fill"
+    ]
+
+    private var agentIconName: String {
+        let hash = abs((input ?? "").hashValue)
+        return ToolCallLabel.agentIcons[hash % ToolCallLabel.agentIcons.count]
     }
 
     private func bashIconName(_ cmd: String) -> String {
@@ -285,6 +295,7 @@ func toolCallColor(for name: String, input: String? = nil) -> Color {
     case "AskUserQuestion": return .orange
     case "TeamCreate", "TeamDelete": return .cyan
     case "SendMessage": return .teal
+    case "Agent": return .yellow
     default:
         if WidgetRegistry.isWidget(name) { return WidgetRegistry.color(name) }
         return .secondary
