@@ -55,6 +55,23 @@ Both the Mac agent and Linux relay are accessible over Cloudflare Tunnels (prefe
 - No port forwarding, no VPN needed. Works from any network.
 - Tailscale still works but drains iOS battery. Cloudflare Tunnel is lighter weight.
 
+### Server Hardening
+A VPS is a computer exposed to the entire internet. Without hardening, anyone can scan your IP and probe open ports directly, bypassing Cloudflare entirely. The Cloudflare Tunnel creates a safe path (domain -> Cloudflare edge -> tunnel -> localhost), but that only helps if the raw IP is locked down.
+
+**SSH** (`/etc/ssh/sshd_config.d/hardening.conf`):
+- Password authentication disabled (key-only)
+- Root login restricted to key-only (`prohibit-password`)
+
+**Firewall** (UFW):
+- Default: deny all incoming
+- Port 22 (SSH): open (key-only auth makes brute force impractical)
+- Port 80/443 (HTTP/S): allowed only from [Cloudflare IP ranges](https://www.cloudflare.com/ips/)
+- Port 8765 (WebSocket relay): allowed only from 127.0.0.1 (Cloudflare Tunnel connects locally)
+
+**Why this matters**: Without these rules, someone who knows (or scans for) your server IP can hit the relay or nginx directly, skipping Cloudflare's DDoS protection, WAF, and rate limiting. With them, the domain is the only way in, and every request passes through Cloudflare first.
+
+**For new deployments**, run the setup script: `linux-relay/scripts/harden-firewall.sh`
+
 ### Style
 - **No comments** - no inline, no docstrings, no headers (except file name/module line)
 - **No em dashes** anywhere - not in code, commits, chat, or generated text
