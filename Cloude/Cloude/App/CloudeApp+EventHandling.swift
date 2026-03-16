@@ -8,13 +8,15 @@ extension CloudeApp {
         switch event {
         case .missedResponse(_, let text, _, let storedToolCalls, let interruptedConvId, let interruptedMsgId):
             let toolCalls = storedToolCalls.map {
-                ToolCall(
+                var tc = ToolCall(
                     name: $0.name,
                     input: $0.input,
                     toolId: $0.toolId,
                     parentToolId: $0.parentToolId,
                     textPosition: $0.textPosition
                 )
+                tc.resultOutput = $0.resultContent
+                return tc
             }
             if let convId = interruptedConvId,
                let msgId = interruptedMsgId,
@@ -81,7 +83,7 @@ extension CloudeApp {
             if let conv = conversationStore.findConversation(withSessionId: sessionId) {
                 let newMessages = historyMessages.map { msg in
                     let toolCalls = msg.toolCalls.map {
-                        ToolCall(
+                        var tc = ToolCall(
                             name: $0.name,
                             input: $0.input,
                             toolId: $0.toolId,
@@ -89,6 +91,8 @@ extension CloudeApp {
                             textPosition: $0.textPosition,
                             editInfo: $0.editInfo
                         )
+                        tc.resultOutput = $0.resultContent
+                        return tc
                     }
                     return ChatMessage(
                         isUser: msg.isUser,

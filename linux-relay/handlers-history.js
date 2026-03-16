@@ -127,6 +127,7 @@ export function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
     const entries = parseJSONL(sessionFile)
     const userMessages = []
     const assistantMessages = {}
+    const toolResults = {}
 
     for (const entry of entries) {
       const { type, uuid, timestamp, message } = entry
@@ -135,6 +136,18 @@ export function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
       if (type === 'user') {
         if (typeof message.content === 'string') {
           userMessages.push({ uuid, timestamp, text: message.content })
+        } else if (Array.isArray(message.content)) {
+          for (const item of message.content) {
+            if (item.type === 'tool_result' && item.tool_use_id) {
+              let output = ''
+              if (typeof item.content === 'string') {
+                output = item.content
+              } else if (Array.isArray(item.content)) {
+                output = item.content.filter(p => p.type === 'text').map(p => p.text).join('\n')
+              }
+              if (output) toolResults[item.tool_use_id] = output.slice(0, 5000)
+            }
+          }
         }
       } else if (type === 'assistant') {
         if (!Array.isArray(message.content)) continue
@@ -177,6 +190,7 @@ export function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
         } else if (item.type === 'tool_use') {
           const tc = { name: item.toolName, input: item.toolInput || null, toolId: item.toolId, parentToolId: null, textPosition: text.length }
           if (item.editInfo) tc.editInfo = item.editInfo
+          if (toolResults[item.toolId]) tc.resultContent = toolResults[item.toolId]
           toolCalls.push(tc)
         }
       }
