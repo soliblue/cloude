@@ -31,6 +31,7 @@ extension MainChatView {
                         windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .opacity(window.type == .chat ? 1 : 0)
                 .allowsHitTesting(window.type == .chat)
 

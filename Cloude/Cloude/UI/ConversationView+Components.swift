@@ -95,7 +95,8 @@ userHasScrolled = false
 
     private func scrollableContent(proxy: ScrollViewProxy, userMessageCount: Int) -> some View {
         ScrollView(showsIndicators: false) {
-            LazyVStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
+                LazyVStack(alignment: .leading, spacing: 0) {
                 messageListSection(viewportHeight: scrollViewportHeight)
                 if agentState == .running && currentOutput.isEmpty && currentToolCalls.isEmpty && currentRunStats == nil && !isCompacting {
                     sisyphusSection
@@ -112,6 +113,9 @@ userHasScrolled = false
                     .onAppear { isBottomVisible = true }
                     .onDisappear { isBottomVisible = false }
             }
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: scrollViewportHeight)
         }
         .defaultScrollAnchor(.bottom)
         .coordinateSpace(name: "chatScroll")
