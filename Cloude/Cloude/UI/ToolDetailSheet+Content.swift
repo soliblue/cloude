@@ -59,6 +59,20 @@ extension ToolDetailSheet {
             .joined(separator: "\n")
     }
 
+    func markdownOutputSection(_ output: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Output", systemImage: "arrow.left.circle")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.secondary)
+
+            StreamingMarkdownView(text: output)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.themeGray6.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
     func outputSection(_ output: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Output", systemImage: "arrow.left.circle")

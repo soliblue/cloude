@@ -57,6 +57,7 @@ struct ToolCallLabel: View {
             let skillName = input.split(separator: ":", maxSplits: 1).first.map(String.init) ?? input
             return "/\(skillName)"
         }
+        if name == "Agent" { return agentCodename }
         guard name == "Bash", let input = input, !input.isEmpty else { return name }
         if isScript { return "Script" }
         let parsed = BashCommandParser.parse(input)
@@ -242,9 +243,20 @@ struct ToolCallLabel: View {
         "diamond.fill", "pentagon.fill", "hexagon.fill", "seal.fill", "octagon.fill", "shield.fill"
     ]
 
+    static let agentCodenames = [
+        "Claudius", "Solai", "Layl", "Archie", "Zein",
+        "Ahmed", "Gaudi", "Zima", "Hundertwasser", "Bauder",
+        "Alan", "Ali", "Kai", "Luna"
+    ]
+
     private var agentIconName: String {
         let hash = abs((input ?? "").hashValue)
         return ToolCallLabel.agentIcons[hash % ToolCallLabel.agentIcons.count]
+    }
+
+    private var agentCodename: String {
+        let hash = abs((input ?? "").hashValue)
+        return ToolCallLabel.agentCodenames[hash % ToolCallLabel.agentCodenames.count]
     }
 
     private func bashIconName(_ cmd: String) -> String {
