@@ -130,18 +130,13 @@ userHasScrolled = false
         }
         .simultaneousGesture(
             TapGesture()
-                .onEnded {
-                    if !userHasScrolled { userHasScrolled = true }
-                    onInteraction?()
-                }
+                .onEnded { onInteraction?() }
         )
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 5)
-                .onChanged { _ in
-                    if !userHasScrolled { userHasScrolled = true }
-                }
-                .onEnded { _ in }
-        )
+        .onScrollPhaseChange { _, newPhase in
+            if newPhase == .interacting {
+                userHasScrolled = true
+            }
+        }
         .onAppear {
             scrollProxy = proxy
             if !messages.isEmpty && isInitialLoad {
