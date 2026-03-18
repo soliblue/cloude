@@ -139,12 +139,8 @@ extension CloudeApp {
                 if let targetId { windowManager.linkToCurrentConversation(targetId, conversation: conv) }
             }
 
-        case .question(let questions, let convId):
-            if let convId = convId {
-                conversationStore.pendingQuestion = PendingQuestion(conversationId: convId, questions: questions)
-            } else if let currentId = windowManager.activeWindow?.conversation(in: conversationStore)?.id {
-                conversationStore.pendingQuestion = PendingQuestion(conversationId: currentId, questions: questions)
-            }
+        case .question:
+            break
 
         case .screenshot(let convId):
             DispatchQueue.main.async {

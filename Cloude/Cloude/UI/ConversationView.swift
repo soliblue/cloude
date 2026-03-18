@@ -19,8 +19,6 @@ struct ConversationView: View {
     var onSeeAllConversations: (() -> Void)?
     var onNewConversation: (() -> Void)?
 
-    @State private var scrollProxy: ScrollViewProxy?
-
     private var effectiveConversation: Conversation? {
         if let conversation = conversation {
             return store.conversation(withId: conversation.id) ?? conversation
@@ -71,7 +69,6 @@ struct ConversationView: View {
                     currentOutput: output?.text ?? "",
                     currentToolCalls: output?.toolCalls ?? [],
                     currentRunStats: isCompact ? nil : output?.runStats,
-                    scrollProxy: $scrollProxy,
                     agentState: isThisConversationRunning ? .running : .idle,
                     conversationId: effectiveConversation?.id,
                     isCompacting: output?.isCompacting ?? false,
