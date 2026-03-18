@@ -8,7 +8,6 @@ struct ChatMessageList: View {
     let currentOutput: String
     let currentToolCalls: [ToolCall]
     let currentRunStats: (durationMs: Int, costUsd: Double, model: String?)?
-    @Binding var scrollProxy: ScrollViewProxy?
     let agentState: AgentState
     let conversationId: UUID?
     var isCompacting: Bool = false
@@ -27,14 +26,8 @@ struct ChatMessageList: View {
     var conversationOutput: ConversationOutput?
 
     @State private var isInitialLoad = true
-    @State private var isBottomVisible = true
-@State private var scrollViewportHeight: CGFloat = 0
-    @State private var userHasScrolled = false
+    @State private var scrollViewportHeight: CGFloat = 0
     @State private var refreshingMessageId: UUID?
-
-    private var bottomId: String {
-        "bottom-\(conversationId?.uuidString ?? "none")"
-    }
 
     private var streamingId: String {
         "streaming-\(conversationId?.uuidString ?? "none")"
@@ -53,8 +46,6 @@ struct ChatMessageList: View {
     }
 
     var body: some View {
-        let userMessageCount = messages.filter { $0.isUser }.count
-
         ZStack(alignment: .bottomTrailing) {
             if showLoadingIndicator {
                 VStack {
@@ -79,41 +70,28 @@ struct ChatMessageList: View {
             }
 
             if !showEmptyState || !hasRequiredDependencies {
-                ScrollViewReader { proxy in
-                    scrollableContent(proxy: proxy, userMessageCount: userMessageCount)
-                }
-
-                scrollToBottomButton
+                scrollableContent
             }
         }
         .background(Color.themeBackground)
-        .animation(.easeInOut(duration: 0.2), value: isBottomVisible)
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = messages.isEmpty
-userHasScrolled = false
         }
     }
 
-    private func scrollableContent(proxy: ScrollViewProxy, userMessageCount: Int) -> some View {
+    private var scrollableContent: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                messageListSection(viewportHeight: scrollViewportHeight)
-                if agentState == .running && currentOutput.isEmpty && currentToolCalls.isEmpty && currentRunStats == nil && !isCompacting {
-                    sisyphusSection
+                    messageListSection(viewportHeight: scrollViewportHeight)
+                    if agentState == .running && currentOutput.isEmpty && currentToolCalls.isEmpty && currentRunStats == nil && !isCompacting {
+                        sisyphusSection
+                    }
+                    if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
+                        streamingSection
+                    }
+                    queuedMessagesSection
                 }
-                if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
-                    streamingSection
-                }
-                questionSection
-                queuedMessagesSection
-
-                Color.clear
-                    .frame(height: 80)
-                    .id(bottomId)
-                    .onAppear { isBottomVisible = true }
-                    .onDisappear { isBottomVisible = false }
-            }
                 Spacer(minLength: 0)
             }
             .frame(minHeight: scrollViewportHeight)
@@ -132,26 +110,9 @@ userHasScrolled = false
             TapGesture()
                 .onEnded { onInteraction?() }
         )
-        .onScrollPhaseChange { _, newPhase in
-            if newPhase == .interacting {
-                userHasScrolled = true
-            }
-        }
         .onAppear {
-            scrollProxy = proxy
             if !messages.isEmpty && isInitialLoad {
                 isInitialLoad = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    proxy.scrollTo(bottomId)
-                }
-            }
-        }
-        .onChange(of: userMessageCount) { oldCount, newCount in
-            if newCount == oldCount + 1 {
-                userHasScrolled = false
-                withAnimation(.easeOut(duration: 0.25)) {
-                    proxy.scrollTo(bottomId)
-                }
             }
         }
         .onChange(of: currentOutput) { oldValue, newValue in
@@ -229,89 +190,12 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
         }
     }
 
-    @ViewBuilder
-    private var questionSection: some View {
-        if let pending = conversationStore?.pendingQuestion,
-           pending.conversationId == conversationId {
-            QuestionView(
-                questions: pending.questions,
-                isStreaming: agentState == .running || agentState == .compacting,
-                onSubmit: { answer in
-                    conversationStore?.pendingQuestion = nil
-                    conversationStore?.questionInputFocused = false
-                    if let conv = conversation, let store = conversationStore {
-                        let userMessage = ChatMessage(isUser: true, text: answer)
-                        store.addMessage(userMessage, to: conv)
-                        connection?.sendChat(
-                            answer,
-                            workingDirectory: conv.workingDirectory,
-                            sessionId: conv.sessionId,
-                            isNewSession: false,
-                            conversationId: conv.id,
-                            conversationName: conv.name,
-                            conversationSymbol: conv.symbol,
-                            environmentId: conv.environmentId
-                        )
-                    }
-                },
-                onDismiss: {
-                    conversationStore?.questionInputFocused = false
-                    if let conv = conversation, let store = conversationStore {
-                        let skipMessage = ChatMessage(isUser: true, text: "(skipped question)")
-                        store.addMessage(skipMessage, to: conv)
-                    }
-                    conversationStore?.pendingQuestion = nil
-                },
-                onFocusChange: { focused in
-                    conversationStore?.questionInputFocused = focused
-                    if focused {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            withAnimation {
-                                scrollProxy?.scrollTo("question-input", anchor: .bottom)
-                            }
-                        }
-                    }
-                }
-            )
-            .id("question-input")
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-        }
-    }
-
     private var queuedMessagesSection: some View {
         ForEach(queuedMessages) { message in
             QueuedBubble(message: message, skills: connection?.skills ?? []) {
                 onDeleteQueued?(message.id)
             }
             .id("\(message.id)-queued")
-        }
-    }
-
-    @ViewBuilder
-    private var scrollToBottomButton: some View {
-        if !isBottomVisible && !messages.isEmpty {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.themeSecondary)
-                .frame(width: 44, height: 44)
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-                .overlay {
-                    Image(systemName: "arrow.down")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.primary)
-                }
-                .highPriorityGesture(
-                    TapGesture()
-                        .onEnded {
-                            userHasScrolled = false
-                            withAnimation(.easeOut(duration: 0.2)) {
-                                scrollProxy?.scrollTo(bottomId)
-                            }
-                        }
-                )
-                .padding(.trailing, 16)
-                .padding(.bottom, 8)
-                .transition(.opacity.combined(with: .scale(scale: 0.8)))
         }
     }
 

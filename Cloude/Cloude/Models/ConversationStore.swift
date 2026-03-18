@@ -2,11 +2,6 @@ import Foundation
 import Combine
 import CloudeShared
 
-struct PendingQuestion: Equatable {
-    let conversationId: UUID
-    let questions: [Question]
-}
-
 struct HeartbeatConfig {
     var intervalMinutes: Int?
     var unreadCount: Int = 0
@@ -60,8 +55,6 @@ struct HeartbeatConfig {
 @MainActor
 class ConversationStore: ObservableObject {
     @Published var conversations: [Conversation] = []
-    @Published var pendingQuestion: PendingQuestion?
-    @Published var questionInputFocused: Bool = false
     @Published var heartbeatConfig = HeartbeatConfig()
 
     private let legacySaveKey = "saved_conversations_v2"

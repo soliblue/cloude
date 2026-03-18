@@ -7,8 +7,6 @@ struct HeartbeatChatView: View {
     @Binding var inputText: String
     @Binding var attachedImages: [AttachedImage]
     var isKeyboardVisible: Bool
-    @State private var scrollProxy: ScrollViewProxy?
-
     private var heartbeat: Conversation {
         conversationStore.heartbeatConversation
     }
@@ -24,7 +22,6 @@ struct HeartbeatChatView: View {
             currentOutput: convOutput.text,
             currentToolCalls: convOutput.toolCalls,
             currentRunStats: convOutput.runStats,
-            scrollProxy: $scrollProxy,
             agentState: convOutput.isRunning ? .running : .idle,
             conversationId: Heartbeat.conversationId,
             onDeleteQueued: { messageId in
