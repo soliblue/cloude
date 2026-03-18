@@ -255,8 +255,7 @@ struct ToolCallLabel: View {
     }
 
     private var agentCodename: String {
-        let hash = abs((input ?? "").hashValue)
-        return ToolCallLabel.agentCodenames[hash % ToolCallLabel.agentCodenames.count]
+        ToolCallLabel.agentCodenames[Int.random(in: 0..<ToolCallLabel.agentCodenames.count)]
     }
 
     private func bashIconName(_ cmd: String) -> String {
