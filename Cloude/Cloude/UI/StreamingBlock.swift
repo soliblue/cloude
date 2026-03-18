@@ -8,6 +8,7 @@ enum StreamingBlock: Identifiable {
     case horizontalRule(id: String)
     case header(id: String, level: Int, content: AttributedString, segments: [InlineSegment])
     case toolGroup(id: String, tools: [ToolCall])
+    case xml(id: String, nodes: [XMLNode])
 
     var id: String {
         switch self {
@@ -18,6 +19,7 @@ enum StreamingBlock: Identifiable {
         case .horizontalRule(let id): return id
         case .header(let id, _, _, _): return id
         case .toolGroup(let id, _): return id
+        case .xml(let id, _): return id
         }
     }
 }

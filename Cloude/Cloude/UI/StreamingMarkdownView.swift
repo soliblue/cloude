@@ -266,6 +266,9 @@ struct StreamingBlockView: View {
 
         case .toolGroup(_, let tools):
             ToolGroupView(tools: tools)
+
+        case .xml(_, let nodes):
+            XMLBlockView(nodes: nodes)
         }
     }
 }
