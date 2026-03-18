@@ -4,9 +4,11 @@ struct StreamingMarkdownView: View {
     let text: String
     var toolCalls: [ToolCall] = []
     var isComplete: Bool = true
-    @State private var cachedBlocks: [StreamingBlock] = []
-    @State private var cachedText: String = ""
-    @State private var cachedToolCount: Int = 0
+    @State private var frozenBlocks: [StreamingBlock] = []
+    @State private var frozenUpTo: String = ""
+    @State private var tailBlocks: [StreamingBlock] = []
+    @State private var lastText: String = ""
+    @State private var lastToolCount: Int = 0
     @State private var collapsedHeaders: Set<String> = []
 
     var body: some View {
@@ -21,31 +23,67 @@ struct StreamingMarkdownView: View {
             }
         }
         .animation(isComplete ? nil : .easeOut(duration: 0.6), value: text)
-        .onAppear { updateCacheIfNeeded() }
-        .onChange(of: text) { _, _ in updateCacheIfNeeded() }
-        .onChange(of: toolCalls.count) { _, _ in updateCacheIfNeeded() }
+        .onAppear { updateIncremental() }
+        .onChange(of: text) { _, _ in updateIncremental() }
+        .onChange(of: toolCalls.count) { _, _ in updateIncremental() }
     }
 
-    private var blocks: [StreamingBlock] {
-        if cachedText == text && cachedToolCount == toolCalls.count {
-            return cachedBlocks
-        }
-        if toolCalls.isEmpty {
-            return StreamingMarkdownParser.parse(text)
-        }
-        return StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
+    private var allBlocks: [StreamingBlock] {
+        frozenBlocks + tailBlocks
     }
 
-    private func updateCacheIfNeeded() {
-        if cachedText != text || cachedToolCount != toolCalls.count {
-            if toolCalls.isEmpty {
-                cachedBlocks = StreamingMarkdownParser.parse(text)
-            } else {
-                cachedBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
+    private func updateIncremental() {
+        if text == lastText && toolCalls.count == lastToolCount { return }
+        lastText = text
+        lastToolCount = toolCalls.count
+
+        if !toolCalls.isEmpty {
+            frozenBlocks = []
+            frozenUpTo = ""
+            tailBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
+            return
+        }
+
+        let splitIndex = stableSplitPoint(in: text)
+
+        if let splitIndex {
+            let frozenStr = String(text[text.startIndex..<splitIndex])
+            if frozenStr != frozenUpTo {
+                frozenBlocks = StreamingMarkdownParser.parse(frozenStr)
+                frozenUpTo = frozenStr
             }
-            cachedText = text
-            cachedToolCount = toolCalls.count
+            let tail = String(text[splitIndex...])
+            tailBlocks = StreamingMarkdownParser.parse(tail)
+        } else {
+            tailBlocks = StreamingMarkdownParser.parse(text)
         }
+    }
+
+    private func stableSplitPoint(in text: String) -> String.Index? {
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+        var insideFence = false
+        var lastBlankOutsideFence: Int? = nil
+
+        for (i, line) in lines.enumerated() {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("```") || trimmed.hasPrefix("~~~") {
+                insideFence = !insideFence
+            }
+            if !insideFence && trimmed.isEmpty && i > 0 {
+                lastBlankOutsideFence = i
+            }
+        }
+
+        if let blankLine = lastBlankOutsideFence, blankLine < lines.count - 1 {
+            var offset = 0
+            for i in 0...blankLine {
+                offset += lines[i].count + 1
+            }
+            if offset <= text.count {
+                return text.index(text.startIndex, offsetBy: offset)
+            }
+        }
+        return nil
     }
 
     private func toggleCollapse(_ headerId: String) {
@@ -57,7 +95,7 @@ struct StreamingMarkdownView: View {
     }
 
     private var contentTree: [ContentNode] {
-        buildTree(from: blocks)
+        buildTree(from: allBlocks)
     }
 
     private func buildTree(from blocks: [StreamingBlock]) -> [ContentNode] {

@@ -7,7 +7,7 @@ import CloudeShared
 final class ConversationOutput: ObservableObject {
     weak var parent: ConnectionManager?
 
-    @Published var text: String = "" { didSet { if text != oldValue { parent?.objectWillChange.send() } } }
+    @Published var text: String = "" { didSet { if oldValue.isEmpty != text.isEmpty { parent?.objectWillChange.send() } } }
     @Published var toolCalls: [ToolCall] = [] { didSet { parent?.objectWillChange.send() } }
     @Published var runStats: (durationMs: Int, costUsd: Double, model: String?)? { didSet { parent?.objectWillChange.send() } }
     @Published var isRunning: Bool = false { didSet { if isRunning != oldValue { parent?.objectWillChange.send() } } }

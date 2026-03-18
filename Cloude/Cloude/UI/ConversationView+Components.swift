@@ -24,6 +24,7 @@ struct ChatMessageList: View {
     var onSeeAllConversations: (() -> Void)?
     var onNewConversation: (() -> Void)?
     var environmentStore: EnvironmentStore?
+    var conversationOutput: ConversationOutput?
 
     @State private var isInitialLoad = true
     @State private var isBottomVisible = true
@@ -225,22 +226,12 @@ private func messageListSection(viewportHeight: CGFloat) -> some View {
         .transition(.opacity)
     }
 
+    @ViewBuilder
     private var streamingSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            if isCompacting {
-                CompactingIndicator()
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-            }
-            if !currentOutput.isEmpty || !currentToolCalls.isEmpty || currentRunStats != nil {
-                StreamingInterleavedOutput(
-                    text: currentOutput,
-                    toolCalls: currentToolCalls,
-                    runStats: currentRunStats
-                )
-            }
+        if let output = conversationOutput {
+            StreamingContentObserver(output: output, isCompacting: isCompacting)
+                .id(streamingId)
         }
-        .id(streamingId)
     }
 
     @ViewBuilder
@@ -343,6 +334,28 @@ struct QueuedBubble: View {
                     Label("Delete", systemImage: "trash")
                 }
             }
+    }
+}
+
+struct StreamingContentObserver: View {
+    @ObservedObject var output: ConversationOutput
+    var isCompacting: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if isCompacting {
+                CompactingIndicator()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+            }
+            if !output.text.isEmpty || !output.toolCalls.isEmpty || output.runStats != nil {
+                StreamingInterleavedOutput(
+                    text: output.text,
+                    toolCalls: output.toolCalls,
+                    runStats: output.runStats
+                )
+            }
+        }
     }
 }
 
