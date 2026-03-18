@@ -103,6 +103,8 @@ struct ToolDetailSheet: View {
                         editDiffSection(editInfo)
                     } else if toolCall.name == "Read", let output = toolCall.resultOutput, !output.isEmpty {
                         readOutputSection(output)
+                    } else if toolCall.name == "Agent", let output = toolCall.resultOutput, !output.isEmpty {
+                        markdownOutputSection(output)
                     } else if let output = displayedOutput {
                         outputSection(output)
                     }
