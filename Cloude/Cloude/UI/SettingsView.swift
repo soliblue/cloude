@@ -7,6 +7,7 @@ struct SettingsView: View {
     private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
+    @AppStorage("debugOverlayEnabled") private var debugOverlayEnabled = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("showCodeLineNumbers") private var showCodeLineNumbers = true
     @State var selectedEnvironmentPage: Int = 0
@@ -76,6 +77,10 @@ struct SettingsView: View {
             }
 
             securityRow
+
+            SettingsRow(icon: "ant.fill", color: .orange) {
+                Toggle("Debug Overlay", isOn: $debugOverlayEnabled)
+            }
         }
         .listRowBackground(Color.themeSecondary)
     }

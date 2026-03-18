@@ -30,6 +30,8 @@ struct CloudeApp: App {
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.vanGogh.rawValue
     private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
     @AppStorage("requireBiometricAuth") private var requireBiometricAuth = false
+    @AppStorage("debugOverlayEnabled") private var debugOverlayEnabled = false
+    @ObservedObject private var debugMetrics = DebugMetrics.shared
     @Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
@@ -42,6 +44,11 @@ struct CloudeApp: App {
                 }
             }
             .overlay { FullscreenColorOverlay() }
+            .overlay {
+                if debugOverlayEnabled {
+                    DebugOverlayView(metrics: debugMetrics)
+                }
+            }
             .environmentObject(connection)
             .environment(\.appTheme, appTheme)
             .preferredColorScheme(appTheme.colorScheme)
@@ -130,7 +137,13 @@ struct CloudeApp: App {
                 break
             }
         }
-        .onAppear { loadAndConnect() }
+        .onAppear {
+            loadAndConnect()
+            if debugOverlayEnabled { debugMetrics.start(observing: connection.objectWillChange) }
+        }
+        .onChange(of: debugOverlayEnabled) { _, enabled in
+            if enabled { debugMetrics.start(observing: connection.objectWillChange) } else { debugMetrics.stop() }
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 wasBackgrounded = true
