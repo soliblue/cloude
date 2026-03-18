@@ -90,7 +90,8 @@ struct ConversationView: View {
                     onSelectConversation: onSelectRecentConversation,
                     onSeeAllConversations: onSeeAllConversations,
                     onNewConversation: onNewConversation,
-                    environmentStore: environmentStore
+                    environmentStore: environmentStore,
+                    conversationOutput: output
                 )
 
                 if let mates = output?.teammates, !mates.isEmpty {

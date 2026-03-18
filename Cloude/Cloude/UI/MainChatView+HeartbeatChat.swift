@@ -29,7 +29,8 @@ struct HeartbeatChatView: View {
             conversationId: Heartbeat.conversationId,
             onDeleteQueued: { messageId in
                 conversationStore.removePendingMessage(messageId, from: heartbeat)
-            }
+            },
+            conversationOutput: convOutput
         )
         .onAppear {
             if !convOutput.isRunning {
