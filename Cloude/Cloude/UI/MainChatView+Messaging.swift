@@ -49,6 +49,7 @@ extension MainChatView {
         if let activeId = windowManager.activeWindowId {
             drafts.removeValue(forKey: activeId)
         }
+        dismissKeyboard()
     }
 
     private func encodeFiles(_ files: [AttachedFile]) -> [AttachedFilePayload]? {

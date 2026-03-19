@@ -126,7 +126,11 @@ struct ChatMessageList: View {
             if new > 0 && isInitialLoad {
                 isInitialLoad = false
             }
-            if new > old, messages.last?.isUser == true {
+        }
+        .onChange(of: messages.last?.id) { _, _ in
+            guard messages.last?.isUser == true else { return }
+            Task { @MainActor in
+                await Task.yield()
                 scrollPos.scrollTo(edge: .bottom)
             }
         }
