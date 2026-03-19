@@ -63,7 +63,7 @@ extension ConversationStore {
         mutate(conversation.id) { $0.workingDirectory = path }
     }
 
-    func setDefaultEffort(_ conversation: Conversation, effort: EffortLevel) {
+    func setDefaultEffort(_ conversation: Conversation, effort: EffortLevel?) {
         mutate(conversation.id) { $0.defaultEffort = effort }
     }
 
