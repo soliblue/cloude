@@ -186,6 +186,16 @@ struct MainChatView: View {
                 currentModel = currentConversation?.defaultModel
             }
         }
+        .onChange(of: currentModel) { _, model in
+            if let conv = currentConversation, model != conv.defaultModel {
+                conversationStore.setDefaultModel(conv, model: model)
+            }
+        }
+        .onChange(of: currentEffort) { _, effort in
+            if let conv = currentConversation, effort != conv.defaultEffort {
+                conversationStore.setDefaultEffort(conv, effort: effort)
+            }
+        }
         .sheet(item: $editingWindow) { window in
             WindowEditSheet(
                 window: window,
