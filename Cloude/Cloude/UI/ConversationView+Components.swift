@@ -28,6 +28,7 @@ struct ChatMessageList: View {
     @State private var isInitialLoad = true
     @State private var scrollViewportHeight: CGFloat = 0
     @State private var refreshingMessageId: UUID?
+    @State private var scrollPos = ScrollPosition()
 
     private var streamingId: String {
         "streaming-\(conversationId?.uuidString ?? "none")"
@@ -97,6 +98,7 @@ struct ChatMessageList: View {
             .frame(minHeight: scrollViewportHeight)
         }
         .defaultScrollAnchor(.bottom)
+        .scrollPosition($scrollPos)
         .coordinateSpace(name: "chatScroll")
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
@@ -120,9 +122,12 @@ struct ChatMessageList: View {
                 isInitialLoad = false
             }
         }
-        .onChange(of: messages.count) { _, newCount in
-            if newCount > 0 && isInitialLoad {
+        .onChange(of: messages.count) { old, new in
+            if new > 0 && isInitialLoad {
                 isInitialLoad = false
+            }
+            if new > old, messages.last?.isUser == true {
+                scrollPos.scrollTo(edge: .bottom)
             }
         }
         .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
