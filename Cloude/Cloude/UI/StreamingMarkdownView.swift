@@ -12,7 +12,7 @@ struct StreamingMarkdownView: View {
     @State private var collapsedHeaders: Set<String> = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(contentTree.enumerated()), id: \.offset) { _, node in
                 ContentNodeView(
                     node: node,
@@ -20,9 +20,9 @@ struct StreamingMarkdownView: View {
                     isComplete: isComplete,
                     onToggle: { toggleCollapse($0) }
                 )
+                .padding(.bottom, 8)
             }
         }
-        .animation(isComplete ? nil : .easeOut(duration: 0.6), value: text)
         .onAppear { updateIncremental() }
         .onChange(of: text) { _, _ in updateIncremental() }
         .onChange(of: toolCalls.count) { _, _ in updateIncremental() }
@@ -55,6 +55,8 @@ struct StreamingMarkdownView: View {
             let tail = String(text[splitIndex...])
             tailBlocks = StreamingMarkdownParser.parse(tail)
         } else {
+            frozenBlocks = []
+            frozenUpTo = ""
             tailBlocks = StreamingMarkdownParser.parse(text)
         }
     }
@@ -64,17 +66,28 @@ struct StreamingMarkdownView: View {
         var insideFence = false
         var lastBlankOutsideFence: Int? = nil
 
+        var prevWasBlank = false
+        var prevBlankIndex: Int? = nil
+
         for (i, line) in lines.enumerated() {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             if trimmed.hasPrefix("```") || trimmed.hasPrefix("~~~") {
                 insideFence = !insideFence
             }
             if !insideFence && trimmed.isEmpty && i > 0 {
-                lastBlankOutsideFence = i
+                prevWasBlank = true
+                prevBlankIndex = i
+            } else if !insideFence && !trimmed.isEmpty && prevWasBlank {
+                if let blankIdx = prevBlankIndex {
+                    lastBlankOutsideFence = blankIdx
+                }
+                prevWasBlank = false
+            } else {
+                prevWasBlank = false
             }
         }
 
-        if let blankLine = lastBlankOutsideFence, blankLine < lines.count - 1 {
+        if let blankLine = lastBlankOutsideFence {
             var offset = 0
             for i in 0...blankLine {
                 offset += lines[i].count + 1

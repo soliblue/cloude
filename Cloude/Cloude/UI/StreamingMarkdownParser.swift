@@ -15,6 +15,11 @@ struct StreamingMarkdownParser {
             let isLastLine = (i == lines.count - 1)
             let trimmed = line.trimmingCharacters(in: .whitespaces)
 
+            if trimmed.isEmpty {
+                i += 1
+                continue
+            }
+
             if line.hasPrefix("```") {
                 blocks.append(parseCodeBlock(lines: lines, index: &i))
                 continue
@@ -138,6 +143,7 @@ struct StreamingMarkdownParser {
         while i < lines.count {
             let l = lines[i]
             let lt = l.trimmingCharacters(in: .whitespaces)
+            if lt.isEmpty { break }
             if l.hasPrefix("```") { break }
             if lt.hasPrefix("|") && l.contains("|") { break }
             if lt.hasPrefix(">") { break }
