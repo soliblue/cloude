@@ -13,15 +13,11 @@ struct CodeBlock: View {
     private var wrap: Bool { wrapOverride ?? defaultWrap }
     private var lineNumbers: Bool { lineNumbersOverride ?? defaultLineNumbers }
     private var lines: [String] { code.components(separatedBy: "\n") }
-    private var isSingleLine: Bool { lines.count == 1 }
 
     var body: some View {
         VStack(spacing: 0) {
-            if !isSingleLine {
-                toolbar
-                Divider().overlay(Color.gray.opacity(0.3))
-            }
-
+            toolbar
+            Divider().overlay(Color.gray.opacity(0.3))
             codeContent
         }
         .background(Color.themeSecondary)
@@ -69,7 +65,7 @@ struct CodeBlock: View {
     private var codeContent: some View {
         if wrap {
             HStack(alignment: .top, spacing: 0) {
-                if lineNumbers && !isSingleLine {
+                if lineNumbers {
                     lineNumberColumn
                 }
                 Text(SyntaxHighlighter.highlight(code, language: language))
@@ -81,7 +77,7 @@ struct CodeBlock: View {
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 0) {
-                    if lineNumbers && !isSingleLine {
+                    if lineNumbers {
                         lineNumberColumn
                     }
                     Text(SyntaxHighlighter.highlight(code, language: language))
