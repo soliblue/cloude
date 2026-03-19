@@ -68,26 +68,18 @@ extension GlobalInputBar {
         }
         .disabled(!canRecord)
         Divider()
-        Menu {
-            Button(action: { setEffort(nil) }) {
-                Label(conversationDefaultEffort?.displayName ?? "Default", systemImage: currentEffort == nil ? "checkmark" : "circle")
-            }
+        Picker(selection: Binding(get: { currentEffort }, set: { setEffort($0) })) {
+            Text(conversationDefaultEffort?.displayName ?? "Default").tag(EffortLevel?.none)
             ForEach(EffortLevel.allCases, id: \.self) { level in
-                Button(action: { setEffort(level) }) {
-                    Label(level.displayName, systemImage: currentEffort == level ? "checkmark" : "circle")
-                }
+                Text(level.displayName).tag(EffortLevel?.some(level))
             }
         } label: {
             Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
         }
-        Menu {
-            Button(action: { setModel(nil) }) {
-                Label("Auto", systemImage: currentModel == nil ? "checkmark" : "circle")
-            }
+        Picker(selection: Binding(get: { currentModel }, set: { setModel($0) })) {
+            Text("Auto").tag(ModelSelection?.none)
             ForEach(ModelSelection.allCases, id: \.self) { model in
-                Button(action: { setModel(model) }) {
-                    Label(model.displayName, systemImage: currentModel == model ? "checkmark" : "circle")
-                }
+                Text(model.displayName).tag(ModelSelection?.some(model))
             }
         } label: {
             Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")

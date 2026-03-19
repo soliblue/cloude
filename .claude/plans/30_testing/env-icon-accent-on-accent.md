@@ -1,4 +1,5 @@
 # Fix env icon accent-on-accent color in window header
+<!-- build: 94 -->
 
 The environment icon shown in the middle of the window header uses `.accentColor` for the SF Symbol foreground on top of a `Color.accentColor.opacity(0.12)` background when connected. This creates an accent-on-accent-tint combination that looks visually muddy — low contrast, hard to read, doesn't feel intentional.
 
