@@ -12,27 +12,35 @@ extension MainChatView {
         guard !text.isEmpty || allImagesBase64 != nil || allFilesBase64 != nil else { return }
         MessageHistory.save(text)
 
-        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/usage" {
+        dismissKeyboard()
+        DispatchQueue.main.async {
             inputText = ""
+            attachedImages = []
+            attachedFiles = []
+            if let activeId = windowManager.activeWindowId {
+                drafts.removeValue(forKey: activeId)
+            }
+        }
+
+        let trimmedLower = text.lowercased().trimmingCharacters(in: .whitespaces)
+
+        if trimmedLower == "/usage" {
             awaitingUsageStats = true
             connection.getUsageStats(environmentId: currentConversation?.environmentId ?? environmentStore.activeEnvironmentId)
             return
         }
 
-        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/plans" {
-            inputText = ""
+        if trimmedLower == "/plans" {
             onShowPlans?()
             return
         }
 
-        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/memories" {
-            inputText = ""
+        if trimmedLower == "/memories" {
             onShowMemories?()
             return
         }
 
-        if text.lowercased().trimmingCharacters(in: .whitespaces) == "/settings" {
-            inputText = ""
+        if trimmedLower == "/settings" {
             onShowSettings?()
             return
         }
@@ -42,14 +50,6 @@ extension MainChatView {
         } else {
             sendConversationMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
         }
-
-        inputText = ""
-        attachedImages = []
-        attachedFiles = []
-        if let activeId = windowManager.activeWindowId {
-            drafts.removeValue(forKey: activeId)
-        }
-        dismissKeyboard()
     }
 
     private func encodeFiles(_ files: [AttachedFile]) -> [AttachedFilePayload]? {
