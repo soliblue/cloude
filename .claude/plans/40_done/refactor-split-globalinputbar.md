@@ -1,7 +1,9 @@
-# Split GlobalInputBar.swift
+# Split GlobalInputBar.swift {scissors}
 <!-- priority: 10 -->
 <!-- tags: input, refactor -->
 <!-- build: 56 -->
+
+> Split 635-line GlobalInputBar into 3 files for main bar, slash commands, and sub-components.
 
 ## Changes
 635 lines → 3 files:

@@ -1,6 +1,8 @@
-# Widget UI Polish
+# Widget UI Polish {paintbrush}
+<!-- priority: 5 -->
+<!-- tags: widget, ui -->
 
-Iterate on the visual design and UX of chat widgets. The core architecture and all 14 widgets are working — this is about making each one feel polished and native.
+> Polish visual design and UX of all 14 chat widgets to feel native and consistent.
 
 ## Areas to Improve
 - Error Correction: error words still slightly distinguishable from normal text (button vs plain text rendering)

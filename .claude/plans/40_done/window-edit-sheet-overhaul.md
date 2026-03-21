@@ -1,7 +1,9 @@
-# Window Edit Sheet Overhaul
+# Window Edit Sheet Overhaul {window.shade.open}
 <!-- priority: 10 -->
-<!-- tags: windows -->
+<!-- tags: ui, settings -->
 <!-- build: 56 -->
+
+> Overhauled window edit sheet with top-pinned content, toolbar actions, flat conversation list, and compact layout.
 
 ## Changes (Build 39-40)
 

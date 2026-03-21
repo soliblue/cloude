@@ -1,9 +1,9 @@
-# WebSocket Server Retry on Port Conflict
+# WebSocket Server Retry on Port Conflict {arrow.clockwise.circle}
 <!-- priority: 10 -->
-<!-- tags: agent -->
+<!-- tags: agent, connection -->
 <!-- build: 56 -->
 
-Agent auto-retries port binding up to 5 times with increasing delay (2s, 4s, 6s, 8s, 10s) when "address already in use". Fastlane deploy now uses SIGKILL + 3s wait for clean agent restarts.
+> Added auto-retry with increasing delay for port binding conflicts and SIGKILL-based agent restarts.
 
 ## Files
 - `Cloude/Cloude Agent/Services/WebSocketServer.swift` - retry logic in `start()` + `retryStartIfNeeded()`

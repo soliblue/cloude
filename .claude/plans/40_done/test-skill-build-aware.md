@@ -1,6 +1,9 @@
-# Test Skill: Build-Aware Testing
-<!-- priority: 2 -->
+# Test Skill: Build-Aware Testing {hammer.fill}
+<!-- priority: 10 -->
+<!-- tags: skills -->
 <!-- build: 56 -->
+
+> Made /test skill filter testable features by comparing plan build tags against the current app build number.
 
 **Feature**: Test skill automatically filters testable features based on build number comparison.
 

@@ -2,7 +2,7 @@
 <!-- priority: 7 -->
 <!-- tags: skill, integration, communication -->
 
-> Read and send iMessages via SQLite (chat.db) + AppleScript. Handles macOS Ventura+ attributedBody decoding via Python. No dependencies beyond system Python.
+> Built iMessage skill for reading and sending messages via SQLite and AppleScript.
 
 ## Architecture
 - **Read**: Python script reads `~/Library/Messages/chat.db` directly, decodes both `text` and `attributedBody` formats

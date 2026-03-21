@@ -1,4 +1,8 @@
-# Disable File Preview When Disconnected
+# Disable File Preview When Disconnected {eye.slash}
+<!-- priority: 10 -->
+<!-- tags: ui, file-preview, connection -->
+
+> Disabled file path pill taps when environment is disconnected.
 
 ## Summary
 File path pills in chat and plans sheet file links now do nothing when the environment is not connected, matching the pattern of other disabled UI elements (send button, terminal tab, etc.).

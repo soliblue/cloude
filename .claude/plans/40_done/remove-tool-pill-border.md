@@ -1,8 +1,9 @@
-# Remove Tool Pill Border
+# Remove Tool Pill Border {capsule}
+<!-- priority: 10 -->
+<!-- tags: ui, tool-pill -->
 <!-- build: 63 -->
 
-**Status:** testing
-**Tags:** ui, chat
+> Removed colored stroke border from tool pills, keeping only shimmer overlay when executing.
 
 ## What
 Remove the colored stroke border from tool pills — they now render with no border, just the shimmer overlay when executing.

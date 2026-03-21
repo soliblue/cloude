@@ -1,5 +1,8 @@
-# Smaller Slash Command Pills
-<!-- build: 82 -->
+# Smaller Slash Command Pills {textformat.size.smaller}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
+
+> Reduced slash command suggestion pill size by ~20% with tighter spacing and padding.
 
 Reduced the size of `/command` suggestion pills above the input bar by ~20%.
 

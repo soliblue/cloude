@@ -1,7 +1,9 @@
-# Conversation Cost Tracking
+# Conversation Cost Tracking {dollarsign.circle}
 <!-- priority: 10 -->
 <!-- tags: conversations, ui -->
 <!-- build: 56 -->
+
+> Added running cost display per conversation by summing costUsd across messages with live updates during streaming.
 
 Show running cost per conversation. We already get `costUsd` per message from Claude CLI — just need to sum and display it.
 

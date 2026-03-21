@@ -1,7 +1,9 @@
-# Fix: Blank file preview for code files
+# Fix: Blank file preview for code files {doc.text}
 <!-- priority: 10 -->
-<!-- tags: files, ui -->
+<!-- tags: file-preview, ui -->
 <!-- build: 56 -->
+
+> Fixed blank file preview for code files by gating rendered view on content types that support it.
 
 ## Problem
 Opening Swift (and other code) files in the file preview showed a completely blank content area. The path breadcrumb was visible but no code was rendered.

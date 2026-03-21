@@ -1,7 +1,8 @@
-# Streaming Text UX Plan
+# Streaming Text UX Plan {text.word.spacing}
 <!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 56 -->
+<!-- tags: ui, streaming -->
+
+> Built display buffer and scroll pinning for smooth streaming text, decoupling network jitter from visual rendering.
 
 ## The Problem (How It Feels Today)
 

@@ -1,4 +1,8 @@
-# Ocean Blue Theme Cleanup
+# Ocean Blue Theme Cleanup {paintpalette}
+<!-- priority: 10 -->
+<!-- tags: theme, ui -->
+
+> Made the dark theme more bluish (Material Ocean style) and removed white backgrounds from pixel art characters.
 
 ## Status: Testing
 

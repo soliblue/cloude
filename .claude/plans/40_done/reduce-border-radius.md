@@ -1,4 +1,8 @@
-# Reduce Border Radius ~25%
+# Reduce Border Radius ~25% {square}
+<!-- priority: 10 -->
+<!-- tags: ui, theme -->
+
+> Reduced all cornerRadius values by ~25% and converted circular buttons to rounded rectangles.
 
 ## Summary
 Reduced all cornerRadius values across the app by ~25% for a tighter, more angular look. Also converted circular buttons (send, scroll-to-bottom, connection status) to rounded rectangles for consistency.

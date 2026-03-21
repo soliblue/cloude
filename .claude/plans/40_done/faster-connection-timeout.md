@@ -1,4 +1,8 @@
-# Faster Connection Timeout
+# Faster Connection Timeout {bolt}
+<!-- priority: 10 -->
+<!-- tags: connection -->
+
+> Reduced connection timeout from 60s to 10s for unreachable environments.
 
 ## Problem
 Unreachable environments show "Connecting..." for ~60 seconds (iOS default TCP timeout) before failing.

@@ -1,4 +1,8 @@
-# Gaming Creatures Video — Full Recipe
+# Gaming Creatures Video Recipe {gamecontroller.fill}
+<!-- priority: 10 -->
+<!-- tags: skills -->
+
+> Documented full pipeline for gaming creatures compilation video using Gemini frames and Sora animation.
 
 The third compilation video (`03-gaming-creatures.mp4`) came out incredible. This documents the exact pipeline so we can reproduce and extend it.
 

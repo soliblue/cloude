@@ -1,8 +1,9 @@
-# Tool Pill Compact Spacing
+# Tool Pill Compact Spacing {arrow.down.right.and.arrow.up.left}
+<!-- priority: 10 -->
+<!-- tags: tool-pill, ui -->
 <!-- build: 64 -->
 
-**Status:** testing
-**Tags:** ui, chat
+> Tightened tool pill internal padding and inter-pill spacing for a more compact layout.
 
 ## What
 Tighten tool pill spacing now that borders are removed — less internal padding and less gap between pills.

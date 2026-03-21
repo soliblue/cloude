@@ -1,4 +1,8 @@
-# Pipe & Shell Operator Support in Tool Pills
+# Pipe & Shell Operator Support in Tool Pills {arrow.right.arrow.left}
+<!-- priority: 10 -->
+<!-- tags: tool-pill, ui -->
+
+> Extended tool pill chain display to support all shell operators including pipes and ||.
 
 ## Status: Testing
 

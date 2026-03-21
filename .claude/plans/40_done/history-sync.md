@@ -1,6 +1,9 @@
-# History Sync (Hybrid, Single-Conversation Refresh)
+# History Sync (Hybrid, Single-Conversation Refresh) {arrow.triangle.2.circlepath}
 <!-- priority: 10 -->
+<!-- tags: streaming, connection -->
 <!-- build: 56 -->
+
+> Sync conversation history from Mac CLI on user-triggered refresh while keeping local iOS storage.
 
 ## Goal
 Use Mac CLI history as the single source of truth for a conversation when the user triggers refresh, while keeping all conversations stored locally on iOS.

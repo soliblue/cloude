@@ -1,5 +1,9 @@
-# File Preview Toolbar Cleanup
+# File Preview Toolbar Cleanup {wrench}
+<!-- priority: 10 -->
+<!-- tags: ui, file-preview -->
 <!-- build: 86 -->
+
+> Reorganized file preview toolbar layout and removed redundant copy button.
 
 - Share button alone on the left
 - Git diff, wrap lines, source toggle centered in principal placement

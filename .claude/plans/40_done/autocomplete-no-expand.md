@@ -1,7 +1,9 @@
-# Autocomplete Suggestions Should Not Expand Input Field
+# Autocomplete Suggestions Should Not Expand Input Field {text.line.first.and.arrowtriangle.forward}
 <!-- priority: 10 -->
 <!-- tags: input -->
 <!-- build: 56 -->
+
+> Fixed multi-line autocomplete suggestions expanding the input bar by clamping suggestion text to single line.
 
 ## Problem
 

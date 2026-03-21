@@ -1,4 +1,8 @@
-# Debug Overlay: Extended Metrics
+# Debug Overlay: Extended Metrics {gauge.with.dots.needle.33percent}
+<!-- priority: 5 -->
+<!-- tags: ui, connection -->
+
+> Add RAM, storage, WebSocket log, and view body eval metrics to the debug overlay for diagnosing issues without Xcode.
 
 The debug overlay currently shows FPS and OWC/sec. Add more metrics incrementally as needed.
 

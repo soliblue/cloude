@@ -1,4 +1,8 @@
-# Message Editing & Conversation Branching
+# Message Editing & Conversation Branching {arrow.triangle.branch}
+<!-- priority: 6 -->
+<!-- tags: ui, agent, relay -->
+
+> Edit sent messages and branch conversations like ChatGPT's edit feature with branch navigation.
 
 ## Goal
 Edit sent messages and branch conversations — like ChatGPT's edit feature with `< 1/2 >` navigation.

@@ -1,9 +1,9 @@
-# Hide Model/Effort from Edit Sheet
+# Hide Model/Effort from Edit Sheet {eye.slash}
 <!-- priority: 10 -->
-<!-- tags: ui -->
+<!-- tags: ui, settings -->
 <!-- build: 56 -->
 
-Removed the model selector (cpu icon) and thinking level (brain icon) menus from the window edit sheet toolbar. These controls are redundant since they already exist under the send button and are automatically applied per conversation.
+> Removed redundant model selector and thinking level menus from window edit sheet toolbar.
 
 ## Changes
 - `WindowEditSheet.swift`: Removed effort level Menu and model selector Menu from toolbar

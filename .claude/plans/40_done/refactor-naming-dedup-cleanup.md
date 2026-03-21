@@ -1,4 +1,8 @@
-# Refactor: Naming, Deduplication & File Size Cleanup
+# Refactor: Naming, Deduplication & File Size Cleanup {pencil.and.list.clipboard}
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+
+> Phase 2 refactor: renamed files to domain-accurate names, flattened folders, deduplicated utilities.
 
 **Status**: 20_active
 **Agent**: Cloude (Opus)

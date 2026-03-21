@@ -1,4 +1,8 @@
-# File Preview Cache
+# File Preview Cache {internaldrive}
+<!-- priority: 10 -->
+<!-- tags: file-preview -->
+
+> Added LRU cache (15 entries) for decoded file data so reopening files is instant.
 
 LRU cache (max 15 entries) for decoded file data on iOS. Reopening a previously viewed file is instant — no round-trip to the Mac agent.
 

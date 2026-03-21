@@ -1,4 +1,8 @@
-# Fix Scroll Jump on Streaming Finish & Pending Message Replay
+# Fix Scroll Jump on Streaming Finish & Pending Message Replay {arrow.up.and.down.text.horizontal}
+<!-- priority: 7 -->
+<!-- tags: ui, streaming -->
+
+> Scroll position jumps when streaming finishes or pending messages replay because SwiftUI view identity breaks during content transitions.
 
 ## Problem
 

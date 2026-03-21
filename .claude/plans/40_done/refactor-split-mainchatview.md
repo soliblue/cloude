@@ -1,7 +1,9 @@
-# Split MainChatView.swift
+# Split MainChatView.swift {scissors}
 <!-- priority: 10 -->
 <!-- tags: refactor, ui -->
 <!-- build: 56 -->
+
+> Split 795-line MainChatView into 5 focused files for body, heartbeat, page indicator, and more.
 
 ## Changes
 795 lines → 5 files:

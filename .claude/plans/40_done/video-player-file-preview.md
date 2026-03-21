@@ -1,6 +1,8 @@
-# Video Player in File Preview
+# Video Player in File Preview {play.fill}
+<!-- priority: 10 -->
+<!-- tags: ui, file-preview -->
 
-MP4 files (like Sora-generated videos) currently have no playback support in the iOS app. They show as raw files with no preview. Need native video playback like we have for images.
+> Added native video playback with AVPlayer for MP4 files in the file preview view.
 
 ## Desired Outcome
 

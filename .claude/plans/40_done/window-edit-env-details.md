@@ -1,6 +1,8 @@
-# Window Edit Sheet - Environment Details
+# Window Edit Sheet - Environment Details {rectangle.and.pencil.and.ellipsis}
+<!-- priority: 10 -->
+<!-- tags: ui, settings -->
 
-Show environment connection info in the window edit sheet: icon on the left, then host (IP), then port.
+> Show environment connection info (icon, host, port) in the window edit sheet.
 
 ## Changes
 - Updated env row in `WindowEditSheet+Form.swift` to show icon + host + :port instead of just icon + name

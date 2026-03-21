@@ -1,4 +1,8 @@
-# Refactor Phase 3: Parent+Feature Naming & FilePreview Merge
+# Refactor Phase 3: Parent+Feature Naming & FilePreview Merge {arrow.triangle.branch}
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+
+> Phase 3 refactor: standardized Parent+Feature naming, merged FilePreview files, removed dead code.
 
 ## Status: Testing
 

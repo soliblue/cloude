@@ -1,7 +1,9 @@
-# Split Cloude_AgentApp.swift
+# Split Cloude_AgentApp.swift {scissors}
 <!-- priority: 10 -->
 <!-- tags: agent, refactor -->
 <!-- build: 56 -->
+
+> Split 526-line AgentApp into 3 focused files for command parsing, message handling, and setup.
 
 ## Changes
 526 lines → 3 files (+ existing Handlers):

@@ -1,4 +1,8 @@
-# Grid Multi-Image Generation
+# Grid Multi-Image Generation {square.grid.2x2}
+<!-- priority: 10 -->
+<!-- tags: skills -->
+
+> Added grid template mode to generate 4 or 9 image variations in a single Gemini API call.
 
 Generate 4 or 9 image variations in a single Gemini API call using a grid template approach.
 

@@ -1,7 +1,9 @@
-# Empty Conversation Characters
+# Empty Conversation Characters {person.crop.artframe}
 <!-- priority: 10 -->
-<!-- tags: conversations -->
+<!-- tags: ui -->
 <!-- build: 56 -->
+
+> Replaced empty state with random pixel art Claude characters in WindowEditForm.
 
 ## Changes
 - Replaced WindowEditForm empty state with random pixel art Claude character

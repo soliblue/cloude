@@ -1,8 +1,8 @@
-# Tool Detail Popover
+# Tool Detail Popover {doc.text.magnifyingglass}
 <!-- priority: 10 -->
-<!-- tags: tools, ui -->
+<!-- tags: tool-pill, ui -->
 <!-- build: 56 -->
 
-Tap tool pill → sheet with full details: complete input (not truncated), output/result, duration. Syntax-highlighted preview for file tools, command output for Bash.
+> Added tap-to-open detail sheet on tool pills showing full input, output, duration, and syntax-highlighted previews.
 
 **Files:** `ChatView+MessageBubble.swift`, new `ToolDetailSheet.swift`

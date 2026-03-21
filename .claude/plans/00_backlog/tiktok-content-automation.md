@@ -1,4 +1,8 @@
-# TikTok Content Automation Skill
+# TikTok Content Automation Skill {video.fill}
+<!-- priority: 5 -->
+<!-- tags: skills -->
+
+> Build a skill that automates TikTok slideshow creation and posting, inspired by Oliver Henry's system that hit 500K views in 5 days using an AI agent.
 
 ## Status: next
 

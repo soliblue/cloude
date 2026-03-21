@@ -1,5 +1,9 @@
-# Input Bar Autocomplete History
+# Input Bar Autocomplete History {clock.arrow.circlepath}
+<!-- priority: 10 -->
+<!-- tags: input, ui -->
 <!-- build: 86 -->
+
+> Added autocomplete suggestions based on previously sent messages stored locally.
 
 - Autocomplete suggestions based on previously sent messages
 - Local/on-device storage via UserDefaults for instant speed

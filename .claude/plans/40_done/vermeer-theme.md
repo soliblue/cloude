@@ -1,7 +1,9 @@
-# Vermeer Theme - Dimmed Light Theme
+# Vermeer Theme - Dimmed Light Theme {sun.dust.fill}
+<!-- priority: 10 -->
+<!-- tags: theme -->
 <!-- build: 86 -->
 
-Light theme with a softer background for nighttime use. Identical to Monet except background/systemBackground use `0xF0F0F5` instead of `0xFFFFFF`.
+> Added Vermeer light theme with dimmed backgrounds for comfortable nighttime use.
 
 ## Desired Outcome
 A light theme that doesn't blind you in the dark. All colors match Monet, just the white backgrounds are slightly dimmed.

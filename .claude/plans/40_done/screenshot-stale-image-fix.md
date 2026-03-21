@@ -1,5 +1,8 @@
-# Screenshot Stale Image Fix
-<!-- build: 86 -->
+# Screenshot Stale Image Fix {camera.badge.clock}
+<!-- priority: 10 -->
+<!-- tags: ui -->
+
+> Fixed race condition where screenshot attachment grabbed a stale photo by filtering by creation date and retrying.
 
 Race condition where screenshot attachment could grab a stale photo from the library instead of the actual screenshot.
 

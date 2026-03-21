@@ -1,7 +1,9 @@
-# Memory Glass Fill Background
+# Memory Glass Fill Background {drop.fill}
+<!-- priority: 10 -->
+<!-- tags: ui, memory -->
 <!-- build: 65 -->
 
-Replace the memory usage indicator pill (progress bar in toolbar) with a "glass of water" fill effect. The entire Memories sheet background fills from the bottom based on usage percentage — at 28% usage, the bottom 28% has a subtle gradient tint.
+> Replaced memory usage progress bar with a glass-of-water fill effect on the sheet background. The entire Memories sheet background fills from the bottom based on usage percentage — at 28% usage, the bottom 28% has a subtle gradient tint.
 
 ## Changes
 - Removed `MemoryUsageIndicator` view (capsule progress bar)

@@ -1,4 +1,8 @@
-# Preserve scroll position when switching tabs
+# Preserve scroll position when switching tabs {scroll}
+<!-- priority: 10 -->
+<!-- tags: ui, streaming -->
+
+> Fixed scroll position resetting to bottom when switching between conversation tabs.
 
 `onAppear` on the `ScrollViewReader` unconditionally scrolls to the bottom every time it fires — but it fires in two distinct situations, both of which lose the user's reading position.
 

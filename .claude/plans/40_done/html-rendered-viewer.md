@@ -1,6 +1,6 @@
-# HTML Rendered Viewer
+# HTML Rendered Viewer {safari}
 <!-- priority: 10 -->
-<!-- tags: files -->
+<!-- tags: file-preview -->
 <!-- build: 56 -->
 
-File viewer defaults to rendered HTML for `.html`/`.htm` files using WKWebView. JavaScript is disabled for security. Background matches system theme. Toggle to source shows syntax-highlighted HTML markup.
+> Added rendered HTML preview for .html/.htm files using WKWebView with source toggle.

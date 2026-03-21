@@ -1,7 +1,9 @@
-# Refactor R2: Extract updateConversation() helper
+# Refactor R2: Extract updateConversation() helper {arrow.triangle.2.circlepath}
 <!-- priority: 10 -->
-<!-- tags: conversations, refactor -->
+<!-- tags: refactor -->
 <!-- build: 56 -->
+
+> Extracted repeated conversation update pattern into a shared updateConversation() helper.
 
 ## Status: Active
 

@@ -1,7 +1,9 @@
-# ConnectionManager + RunnerManager Refactor
+# ConnectionManager + RunnerManager Refactor {arrow.triangle.2.circlepath}
 <!-- priority: 10 -->
 <!-- tags: refactor -->
 <!-- build: 56 -->
+
+> Broke up 30+ case handleMessage switch, replaced tuple with ActiveTeam struct, and standardized conversationId parameter ordering.
 
 ## Status: Testing
 

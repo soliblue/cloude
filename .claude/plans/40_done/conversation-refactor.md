@@ -1,7 +1,9 @@
-# Conversation Architecture Refactor
+# Conversation Architecture Refactor {arrow.triangle.merge}
 <!-- priority: 10 -->
 <!-- tags: conversations, heartbeat, input, refactor, ui -->
 <!-- build: 56 -->
+
+> Flattened dual chat architecture (ProjectStore + HeartbeatStore) into single ConversationStore with shared ConversationView component.
 
 ## Background
 

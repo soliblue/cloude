@@ -1,5 +1,8 @@
-# Sisyphus Timer Leak Fix
-<!-- build: 82 -->
+# Sisyphus Timer Leak Fix {timer}
+<!-- priority: 10 -->
+<!-- tags: ui -->
+
+> Fixed loading animation running at 2x speed on subsequent messages by replacing stacking Timers with TimelineView.
 
 ## What
 Loading animation ran 2x speed on the 2nd message because `Timer.scheduledTimer` was never invalidated — each `onAppear` stacked a new timer.

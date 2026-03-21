@@ -1,3 +1,5 @@
-# Logo Horizontal Padding
+# Logo Horizontal Padding {arrow.left.and.right}
+<!-- priority: 10 -->
+<!-- tags: ui, header -->
 
-Increased horizontal padding on the status logo from 6 to 12 so it doesn't sit too close to the edges.
+> Increased status logo horizontal padding from 6 to 12 for better spacing.

@@ -1,4 +1,8 @@
-# Claude Code Release Notes Skill
+# Claude Code Release Notes Skill {newspaper.fill}
+<!-- priority: 6 -->
+<!-- tags: skills, agent, relay -->
+
+> Skill that fetches Claude Code changelogs, identifies breaking CLI changes, and auto-fixes or reports affected Cloude code.
 
 Create a skill that retrieves Claude Code release notes from Anthropic, parses CLI changes, and automatically updates the Cloude app to fix compatibility issues.
 

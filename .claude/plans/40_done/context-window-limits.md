@@ -1,7 +1,9 @@
-# Context Window Limits
+# Context Window Limits {exclamationmark.triangle}
 <!-- priority: 10 -->
 <!-- tags: ui, windows -->
 <!-- build: 56 -->
+
+> Added configurable cost thresholds and warning banners to prevent runaway conversation costs with 1M token windows.
 
 Opus 4.6 supports up to 1M tokens. Without guardrails, a single long conversation could burn through significant API costs before Claude CLI's internal compaction kicks in. We need control over context usage.
 

@@ -1,4 +1,8 @@
-# Collaborative Whiteboard
+# Collaborative Whiteboard {hand.draw.fill}
+<!-- priority: 6 -->
+<!-- tags: ui, widget -->
+
+> Shared infinite canvas where Soli draws by touch and Claude participates via MCP tools for visual thinking beyond text.
 
 A shared visual thinking space in the iOS app. Soli draws by touch, Claude participates via MCP tools. A new medium for thinking together beyond text.
 

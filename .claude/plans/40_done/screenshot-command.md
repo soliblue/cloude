@@ -1,6 +1,8 @@
-# Screenshot Command
+# Screenshot Command {camera.viewfinder}
 <!-- priority: 10 -->
-<!-- build: 56 -->
+<!-- tags: agent, ui -->
+
+> Added `cloude screenshot` command that captures the iOS screen and sends it back as an image.
 
 Add `cloude screenshot` command that captures the iOS screen and sends it back to the conversation as an image.
 

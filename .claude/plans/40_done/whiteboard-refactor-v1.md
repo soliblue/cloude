@@ -1,7 +1,9 @@
-# Whiteboard Refactor v1
+# Whiteboard Refactor v1 {pencil.and.ruler}
+<!-- priority: 10 -->
+<!-- tags: refactor, ui -->
 <!-- build: 103 -->
 
-Architecture cleanup and bug fixes for the whiteboard, informed by Codex review + refactor skill analysis.
+> Refactored whiteboard architecture with transaction pattern, DRY helpers, bug fixes for paths/ellipses/arrows, and MCP parity.
 
 ## Changes
 
@@ -32,6 +34,9 @@ Architecture cleanup and bug fixes for the whiteboard, informed by Codex review 
 - `whiteboard_update` now supports: `points`, `closed`, `from`, `to`, `type`
 - Event handler passes new fields through to store
 - Updated tool descriptions (cascade delete, created IDs)
+
+## Known Bugs
+- **Arrows and text not rendering**: When adding mixed element types in a single `whiteboard_add` call, arrows and text elements are silently dropped. Only rects and ellipses survive. Reproduced by drawing the architecture diagram - first batch lost all arrows/text, second batch (arrows + text only) also didn't render. Likely a deserialization or store insertion issue for non-shape element types.
 
 ## Files Modified
 - `Services/WhiteboardStore.swift` - major rewrite

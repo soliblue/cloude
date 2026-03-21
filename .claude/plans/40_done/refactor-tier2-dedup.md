@@ -1,7 +1,9 @@
-# Refactor Tier 2: Deduplication
+# Refactor Tier 2: Deduplication {arrow.triangle.merge}
 <!-- priority: 10 -->
 <!-- tags: refactor -->
 <!-- build: 56 -->
+
+> Reduced repeated patterns across stores and models.
 
 ## Status: Active
 

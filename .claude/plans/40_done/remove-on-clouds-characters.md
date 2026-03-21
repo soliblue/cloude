@@ -1,5 +1,9 @@
-# Remove On-Clouds Characters
+# Remove On-Clouds Characters {cloud.slash}
+<!-- priority: 10 -->
+<!-- tags: ui -->
 <!-- build: 82 -->
+
+> Removed three "on clouds" pixel art characters from the empty chat state.
 
 Remove the three "on clouds" pixel art characters from the empty chat state.
 

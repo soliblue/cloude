@@ -1,6 +1,8 @@
-# Majorelle Theme
+# Majorelle Theme {paintpalette}
+<!-- priority: 10 -->
+<!-- tags: theme, ui -->
 
-New dark theme for the iOS app inspired by Jardin Majorelle and YSL.
+> Added Majorelle dark theme inspired by Jardin Majorelle with deep indigo-blue palette.
 
 ## Palette
 - Deep indigo-black base (`#0C0F1F`) - more purple than Ocean Dark's navy

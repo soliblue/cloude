@@ -1,7 +1,9 @@
-# Window Header Simplify
+# Window Header Simplify {rectangle.topthird.inset.filled}
 <!-- priority: 10 -->
-<!-- tags: ui, windows -->
+<!-- tags: ui, header -->
 <!-- build: 56 -->
+
+> Simplified window header by removing tab icons and adding conversation title on left with refresh/close buttons on right.
 
 ## Status: Testing
 

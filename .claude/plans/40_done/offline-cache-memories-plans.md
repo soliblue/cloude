@@ -1,11 +1,8 @@
-# Offline Cache for Memories & Plans
+# Offline Cache for Memories & Plans {arrow.down.circle}
+<!-- priority: 10 -->
+<!-- tags: ui, memory, plans -->
 
-> Cache memories and plans on iOS so they're available offline
-> Show cached data instantly, refresh when connected
-> Simple JSON file persistence with dedicated cache service
-
-<!-- priority: 2 -->
-<!-- tags: ui,reliability -->
+> Cached memories and plans on iOS for offline access with instant display and background refresh.
 
 ## Problem
 

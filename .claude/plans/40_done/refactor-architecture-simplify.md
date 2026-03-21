@@ -1,4 +1,8 @@
-# Refactor: Simplify Architecture + File Layout
+# Refactor: Simplify Architecture + File Layout {folder.badge.gearshape}
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+
+> Simplified iOS app architecture and file layout for easier navigation and maintenance.
 
 ## Goal
 Make the Cloude iOS app easier to navigate and maintain without losing features.

@@ -1,4 +1,8 @@
-# Scroll Overshoot Fix in Long Conversations
+# Scroll Overshoot Fix in Long Conversations {arrow.down.to.line}
+<!-- priority: 10 -->
+<!-- tags: ui, streaming -->
+
+> Fixed scroll overshooting past content in long conversations by adding delayed correction scrolls.
 
 Sending a message in a long conversation sometimes scrolled to an empty screen. Root cause: `LazyVStack` hasn't calculated full content height when `scrollTo` fires, so it overshoots past content.
 

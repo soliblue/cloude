@@ -2,7 +2,7 @@
 <!-- priority: 7 -->
 <!-- tags: skill, integration, apple -->
 
-> Create, complete, list, and search reminders via AppleScript. Syncs across all Apple devices via iCloud. Inspired by OpenClaw's apple-reminders skill.
+> Built Apple Reminders skill with CRUD operations and search via AppleScript.
 
 ## Approach
 Shell scripts wrapping `osascript` — same as calendar skill. No dependencies.

@@ -1,5 +1,9 @@
-# Environment Icons in Toolbar
+# Environment Icons in Toolbar {rectangle.grid.1x2}
+<!-- priority: 10 -->
+<!-- tags: ui, env, header -->
 <!-- build: 86 -->
+
+> Added all environment SF Symbol icons to the navigation toolbar with connection state coloring.
 
 ## Summary
 Show all environment SF Symbol icons in the navigation bar toolbar (between settings logo and power button). Connected environments get accent color, connecting ones pulse, disconnected ones are dimmed.

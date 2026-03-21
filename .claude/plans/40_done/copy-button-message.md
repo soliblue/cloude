@@ -1,5 +1,9 @@
-# Copy Button on Assistant Messages
+# Copy Button on Assistant Messages {doc.on.doc}
+<!-- priority: 10 -->
+<!-- tags: ui -->
 <!-- build: 67 -->
+
+> Added inline copy button to assistant message bubble footer next to the refresh button.
 
 **Status**: Testing
 **Created**: 2026-02-08

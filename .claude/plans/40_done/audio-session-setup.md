@@ -1,5 +1,6 @@
-# Audio Session Setup
+# Audio Session Setup {mic.fill}
 <!-- priority: 10 -->
+<!-- tags: input -->
 <!-- build: 56 -->
 
-Audio session category set to `.playAndRecord` in `AudioRecorder.swift` for voice input.
+> Set audio session category to `.playAndRecord` in AudioRecorder.swift for voice input.

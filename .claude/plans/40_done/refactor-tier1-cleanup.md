@@ -1,7 +1,9 @@
-# Refactor Tier 1: Quick Cleanup
+# Refactor Tier 1: Quick Cleanup {broom}
 <!-- priority: 10 -->
-<!-- tags: refactor, tools, ui -->
+<!-- tags: refactor, ui -->
 <!-- build: 56 -->
+
+> Low-risk cleanup tasks reducing noise and improving organization.
 
 ## Status: Active
 

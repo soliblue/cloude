@@ -1,7 +1,9 @@
-# Keyboard Dismiss Animation
+# Keyboard Dismiss Animation {keyboard.chevron.compact.down}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
 <!-- build: 86 -->
 
-Animate input bar transition when keyboard dismisses instead of snapping instantly.
+> Animated input bar transition when keyboard dismisses instead of snapping instantly.
 
 ## Changes
 - `MainChatView.swift`: Wrap `isKeyboardVisible` state changes in `withAnimation` using the keyboard notification's duration/curve

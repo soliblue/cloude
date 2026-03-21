@@ -1,6 +1,8 @@
-# Widget Interactions Feedback
+# Widget Interactions Feedback {arrow.uturn.backward.circle}
+<!-- priority: 6 -->
+<!-- tags: widget, agent, relay, input -->
 
-Send widget interaction data back to Claude so it knows what the user did.
+> Send widget interaction data back to Claude so it knows what the user did.
 
 ## Problem
 

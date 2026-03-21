@@ -1,7 +1,8 @@
-# Streaming + Tool Input Dedup
+# Streaming + Tool Input Dedup {arrow.triangle.merge}
 <!-- priority: 10 -->
-<!-- tags: input, tools -->
-<!-- build: 56 -->
+<!-- tags: streaming, refactor -->
+
+> Unified duplicate content-block handling and extracted shared tool input parsing into CloudeShared.
 
 ## Status: active
 

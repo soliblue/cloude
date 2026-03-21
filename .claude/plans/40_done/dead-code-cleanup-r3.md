@@ -1,4 +1,8 @@
-# Dead Code Cleanup Round 3
+# Dead Code Cleanup Round 3 {trash}
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+
+> Removed unused views, methods, and parameters across MessageBubble, ConversationView, ToolCallLabel, and UsageStatsSheet.
 
 Removed unused code across multiple UI files:
 

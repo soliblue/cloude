@@ -1,4 +1,8 @@
-# Stale Connection Watchdog
+# Stale Connection Watchdog {wifi.exclamationmark}
+<!-- priority: 5 -->
+<!-- tags: connection, relay -->
+
+> Detect silently dead WebSocket connections via a send-triggered watchdog timer and auto-reconnect.
 
 WebSocket connections silently die when the phone switches networks (wifi/cellular). Neither side detects it. The app shows "connected" and waits forever for a response that will never come. File browser empty, git tab stuck, chat hanging. Reconnecting manually fixes it.
 

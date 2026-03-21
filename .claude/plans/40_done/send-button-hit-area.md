@@ -1,7 +1,8 @@
-# Send Button Hit Area + Pill Style
+# Send Button Hit Area + Pill Style {circle.fill}
 <!-- priority: 10 -->
 <!-- tags: input -->
-<!-- build: 56 -->
+
+> Redesigned send/action button as a filled circle pill with generous hit area and animated state transitions.
 
 Redesigned the send/action button as a prominent pill:
 - **Filled circle** with accent background + white icon when active (can send or stop)

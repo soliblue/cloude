@@ -1,4 +1,8 @@
-# Session Model Override
+# Session Model Override {cpu}
+<!-- priority: 6 -->
+<!-- tags: ui, settings, agent -->
+
+> Allow setting a session-wide model override by tapping the logo, instead of only per-message model selection.
 
 ## Problem
 Currently, model selection only happens per-message via the send button menu. Users should be able to set a session-wide model preference that overrides the default model selection.

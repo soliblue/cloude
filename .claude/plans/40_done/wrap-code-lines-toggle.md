@@ -1,7 +1,9 @@
-# Wrap Code Lines Toggle
+# Wrap Code Lines Toggle {arrow.turn.down.right}
+<!-- priority: 10 -->
+<!-- tags: file-preview, settings -->
 <!-- build: 82 -->
 
-Add a persistent user preference for wrapping code lines in file preview.
+> Added persistent toggle for code line wrapping in file preview with toolbar button and settings row.
 
 ## Changes
 - `FilePreviewView.swift`: Added `@AppStorage("wrapCodeLines")` + toolbar toggle button

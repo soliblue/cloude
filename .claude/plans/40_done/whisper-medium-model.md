@@ -1,6 +1,8 @@
-# Whisper Medium Model Upgrade
+# Whisper Medium Model Upgrade {waveform}
+<!-- priority: 10 -->
+<!-- tags: input, agent -->
 
-Upgraded WhisperKit model from `base` (74M params) to `medium` (769M params) for better transcription accuracy, especially with multilingual audio.
+> Upgraded WhisperKit from base to medium model for better transcription accuracy with multilingual audio.
 
 ## Changes
 - `WhisperService.swift`: Changed `modelVariant` from `"base"` to `"medium"`

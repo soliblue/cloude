@@ -1,4 +1,8 @@
-# Skill: Safari Browser
+# Skill: Safari Browser {safari}
+<!-- priority: 10 -->
+<!-- tags: skills -->
+
+> Built Safari skill for accessing open tabs, history, bookmarks, and reading list via AppleScript and SQLite.
 
 ## What
 Access Safari tabs, history, bookmarks, and reading list via AppleScript + SQLite.

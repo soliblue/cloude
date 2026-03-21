@@ -1,4 +1,8 @@
-# Skill: Apple Music
+# Skill: Apple Music {music.note}
+<!-- priority: 10 -->
+<!-- tags: skills -->
+
+> Built Apple Music skill for playback control, library search, and playlist management via AppleScript.
 
 ## What
 Control Apple Music — now playing, search library, playback control, playlists.

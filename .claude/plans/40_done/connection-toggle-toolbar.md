@@ -1,4 +1,8 @@
-# Connection Toggle Toolbar Button
+# Connection Toggle Toolbar Button {power}
+<!-- priority: 10 -->
+<!-- tags: ui, connection -->
+
+> Added connection toggle button to main toolbar with red/green power icon for disconnect/reconnect.
 
 **Stage**: testing
 **Created**: 2026-02-08

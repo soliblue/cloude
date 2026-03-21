@@ -1,5 +1,7 @@
-# Video & Audio File Pills
+# Video & Audio File Pills {play.rectangle.fill}
+<!-- priority: 10 -->
+<!-- tags: ui, file-preview, markdown -->
 
-Added `.mp4`, `.mov`, `.m4v`, `.avi`, `.webm` (video) and `.mp3`, `.m4a`, `.wav`, `.aac`, `.ogg` (audio) extensions to `looksLikeFilePath` so they render as tappable file pills in chat.
+> Added video and audio file extensions to looksLikeFilePath so they render as tappable file pills in chat.
 
 **Files:** `StreamingMarkdownParser+Inline.swift`

@@ -1,7 +1,9 @@
-# Logo Transparent Background Fix
+# Logo Transparent Background Fix {photo}
+<!-- priority: 10 -->
+<!-- tags: ui, header -->
 <!-- build: 77 -->
 
-Fix the logo in the top-left toolbar having an iOS-applied tinted background.
+> Fixed logo toolbar tint by adding .renderingMode(.original) to prevent template rendering.
 
 ## Changes
 - Added `.renderingMode(.original)` to the logo `Image` in `CloudeApp+StatusLogo.swift`

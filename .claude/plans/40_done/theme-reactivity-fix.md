@@ -1,5 +1,9 @@
-# Theme Reactivity Fix
+# Theme Reactivity Fix {paintbrush.pointed.fill}
+<!-- priority: 10 -->
+<!-- tags: theme, ui -->
 <!-- build: 86 -->
+
+> Fixed theme picker cards and existing messages not updating colors when switching themes by adding reactive environment key.
 
 ## Problem
 When switching themes, some UI elements kept the old theme colors:

@@ -1,6 +1,8 @@
 # Stop Button Fix {stop.fill}
+<!-- priority: 10 -->
+<!-- tags: relay -->
 
-> Fix stop button not working when Claude process has already finished on Linux relay
+> Fixed stop button by sending idle status when aborting an already-exited process on Linux relay.
 
 When iOS sends `abort` but the process has already exited, the relay now sends back `status: idle` instead of silently doing nothing. This unsticks the iOS app from the "running" state.
 

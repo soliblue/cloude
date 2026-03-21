@@ -1,5 +1,9 @@
-# Empty State: More Recent Chats + See All
+# Empty State: More Recent Chats + See All {list.bullet}
+<!-- priority: 10 -->
+<!-- tags: ui -->
 <!-- build: 86 -->
+
+> Increased recent chats from 3 to 5 in empty state and added "See all" button to open search.
 
 Show 5 recent conversations (up from 3) in the empty window state, with a subtle "See all >" button that opens the conversation search sheet. Content pushed up for better visual balance.
 

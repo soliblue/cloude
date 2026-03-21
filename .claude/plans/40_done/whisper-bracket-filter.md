@@ -1,6 +1,9 @@
-# Whisper Bracket Filter
+# Whisper Bracket Filter {waveform.slash}
 <!-- priority: 10 -->
+<!-- tags: input, agent -->
 <!-- build: 56 -->
+
+> Replaced hardcoded bracket annotation checks with a regex to strip all [BLANK_AUDIO], [MUSIC], etc. from Whisper output.
 
 ## Summary
 Filter out all `[...]` bracket annotations from Whisper transcription output, not just `[BLANK_AUDIO]` and `[silence]`.

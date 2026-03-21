@@ -1,6 +1,8 @@
 # File Preview Environment Routing {doc.viewfinder}
+<!-- priority: 10 -->
+<!-- tags: file-preview, env -->
 
-> Fix file preview sending get_file to wrong relay when multiple environments are connected
+> Fixed file preview sending get_file to wrong relay when multiple environments are connected.
 
 ## Problem
 

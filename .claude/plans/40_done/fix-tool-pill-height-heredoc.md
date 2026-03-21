@@ -1,5 +1,9 @@
-# Fix Tool Pill Height and Heredoc Parsing
+# Fix Tool Pill Height and Heredoc Parsing {capsule}
+<!-- priority: 10 -->
+<!-- tags: ui, tool-pill -->
 <!-- build: 86 -->
+
+> Fixed tool pill vertical stretching and heredoc commands being split into separate labels.
 
 Two fixes for InlineToolPill display bugs.
 

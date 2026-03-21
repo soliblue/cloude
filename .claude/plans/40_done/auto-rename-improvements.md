@@ -1,4 +1,8 @@
-# Auto-Rename Improvements
+# Auto-Rename Improvements {pencil.line}
+<!-- priority: 10 -->
+<!-- tags: ui -->
+
+> Improved auto-naming with 2nd-message trigger, richer context (10 messages), and rewritten prompt for descriptive names.
 
 ## Problem
 - Auto-naming only fired on the 1st user message, then every 5th assistant message

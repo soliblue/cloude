@@ -1,7 +1,9 @@
-# Rich File Preview
+# Rich File Preview {doc.text.image}
 <!-- priority: 10 -->
-<!-- tags: files, ui -->
+<!-- tags: file-preview, ui -->
 <!-- build: 56 -->
+
+> Added full file viewer with navigation and actions when opening files from chat path pills.
 
 When opening a file from chat (via path pill tap), show a full file viewer with contextual actions instead of a bare preview.
 

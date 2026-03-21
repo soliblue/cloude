@@ -1,4 +1,8 @@
-# Environment Chat Ownership
+# Environment Chat Ownership {lock.laptopcomputer}
+<!-- priority: 10 -->
+<!-- tags: env, connection -->
+
+> Added environment ownership to conversations, preventing cross-environment message sends.
 
 conversations should track which environment they belong to, preventing users from sending messages when connected to a different environment.
 

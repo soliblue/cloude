@@ -1,4 +1,8 @@
-# Theme Reorder & New Themes
+# Theme Reorder & New Themes {swatchpalette.fill}
+<!-- priority: 10 -->
+<!-- tags: theme, ui -->
+
+> Added Bauder, Mahfouz, and Tawfik themes, reordered by color family, and renamed ocean* properties to theme*.
 
 ## Changes
 - Added Bauder theme (dark steel-blue, named after Christopher Bauder)

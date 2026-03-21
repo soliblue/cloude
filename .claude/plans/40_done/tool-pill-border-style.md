@@ -1,5 +1,9 @@
-# Tool Pill Border Style
+# Tool Pill Border Style {circle.dashed}
+<!-- priority: 10 -->
+<!-- tags: tool-pill, ui -->
 <!-- build: 62 -->
+
+> Changed tool pills from colored background fill to colored border outline for a subtler look.
 
 ## Summary
 Changed tool pills from colored background fill to colored border outline for a more subtle, cleaner look.

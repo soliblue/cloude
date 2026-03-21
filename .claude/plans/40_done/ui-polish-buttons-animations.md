@@ -1,4 +1,8 @@
-# UI Polish - Button States and Animations
+# UI Polish - Button States and Animations {wand.and.stars}
+<!-- priority: 10 -->
+<!-- tags: ui -->
+
+> Added button disable states, rotation/checkmark animations, line numbers in file preview, and empty state env selector.
 
 ## Changes
 - Disable refresh button when environment is not connected

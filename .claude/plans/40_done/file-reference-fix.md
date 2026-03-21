@@ -1,4 +1,8 @@
-# File Reference Fix (@mention)
+# File Reference Fix (@mention) {at}
+<!-- priority: 10 -->
+<!-- tags: input -->
+
+> Fixed file @mention inserting filename instead of full path and suggestions disappearing on dot.
 
 Fixed two issues preventing file references from working in the input bar:
 

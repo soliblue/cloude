@@ -2,7 +2,7 @@
 <!-- priority: 5 -->
 <!-- tags: skill, integration, apple -->
 
-> Access Photos.app via AppleScript. List albums, browse recent photos, export by date/album. iPhone photos sync via iCloud.
+> Built Apple Photos skill for browsing albums and exporting photos via AppleScript.
 
 ## Permissions Needed
 - Automation → Photos.app (prompted on first use)

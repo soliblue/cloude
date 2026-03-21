@@ -1,4 +1,8 @@
-# Reading Progress Indicator
+# Reading Progress Indicator {circle.dotted.circle}
+<!-- priority: 10 -->
+<!-- tags: ui, streaming -->
+
+> Added vertical dot indicator on long messages showing scroll position within the message.
 
 ## What
 Vertical dot indicator on the right edge of long assistant messages showing scroll position within the message.

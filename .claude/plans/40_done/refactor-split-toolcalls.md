@@ -1,7 +1,9 @@
-# Split ChatView+ToolCalls.swift
+# Split ChatView+ToolCalls.swift {scissors}
 <!-- priority: 10 -->
-<!-- tags: refactor, tools -->
+<!-- tags: refactor, tool-pill -->
 <!-- build: 56 -->
+
+> Split 856-line ToolCalls into 4 files for file icons, bash icons, command parsing, and more.
 
 ## Changes
 856 lines → 4 files:

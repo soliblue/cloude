@@ -1,6 +1,6 @@
-# Agent Logger Infrastructure
+# Agent Logger Infrastructure {doc.text}
 <!-- priority: 10 -->
 <!-- tags: agent -->
 <!-- build: 56 -->
 
-Built `Logger.swift` with `Log.info()`, `Log.error()`, `Log.debug()` methods. File logging to `~/Library/Logs/Cloude/agent.log`. Used across 10+ agent service files.
+> Built `Logger.swift` with `Log.info()`, `Log.error()`, `Log.debug()` methods for file logging across 10+ agent service files.

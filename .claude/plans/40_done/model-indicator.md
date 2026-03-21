@@ -1,7 +1,9 @@
-# Show Model Name Per Response
+# Show Model Name Per Response {cpu}
+<!-- priority: 10 -->
+<!-- tags: ui, streaming -->
 <!-- build: 70 -->
 
-## Status: Testing
+> Added model name display in run stats bar below each assistant message.
 
 ## Summary
 Show the model name (e.g. "Opus", "Sonnet", "Haiku") in the run stats bar below each assistant message. Now works for all cases: explicit model selection, default model, and conversation refresh.

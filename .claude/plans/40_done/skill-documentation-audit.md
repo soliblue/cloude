@@ -1,4 +1,8 @@
-# Skill Documentation Audit & Fixes
+# Skill Documentation Audit & Fixes {doc.text.magnifyingglass}
+<!-- priority: 10 -->
+<!-- tags: skills -->
+
+> Audited all skills for hard-coded paths, missing frontmatter, stale references, and inconsistent documentation.
 
 Comprehensive audit revealed multiple issues with skill implementation and documentation.
 

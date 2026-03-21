@@ -1,7 +1,9 @@
-# Team Summary in Saved Messages
+# Team Summary in Saved Messages {person.3.fill}
 <!-- priority: 10 -->
 <!-- tags: messages, teams -->
 <!-- build: 56 -->
+
+> Persist team info as a tappable badge in assistant message footers so team contributions survive after the team session ends.
 
 ## Problem
 When a team finishes, the banner and orbs disappear and there's no trace that the response was team-built. Scrolling back through history, you can't tell which messages had a team behind them.

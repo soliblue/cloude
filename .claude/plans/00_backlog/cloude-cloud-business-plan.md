@@ -1,4 +1,8 @@
-# Cloude Cloud - Business Plan
+# Cloude Cloud - Business Plan {cloud.fill}
+<!-- priority: 7 -->
+<!-- tags: plans, security, connection -->
+
+> Business plan for hosted Cloude environments: per-user VMs on Hetzner controlled entirely from the iOS app.
 
 ## Vision
 "Your own AI computer from your phone." A hosted environment where anyone - technical or not - gets a personal machine with Claude Code running on it, controlled entirely from the Cloude iOS app. No terminal, no SSH, no complexity.

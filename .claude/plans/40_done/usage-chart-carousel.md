@@ -1,7 +1,9 @@
-# Usage Chart Carousel
+# Usage Chart Carousel {chart.bar.xaxis}
+<!-- priority: 10 -->
+<!-- tags: ui, settings -->
 <!-- build: 86 -->
 
-Add multiple daily charts in a swipeable carousel to the usage sheet. Currently there's one "Activity" bar chart showing messages/day. Add sessions/day and tool calls/day as additional pages.
+> Added swipeable carousel of daily bar charts (Messages, Sessions, Tool Calls) with shared time range picker to the usage sheet.
 
 ## Goals
 - Swipeable carousel of bar charts: Messages, Sessions, Tool Calls

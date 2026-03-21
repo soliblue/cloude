@@ -1,4 +1,8 @@
-# Streaming Completion Detection
+# Streaming Completion Detection {checkmark.circle.trianglebadge.exclamationmark}
+<!-- priority: 7 -->
+<!-- tags: streaming, relay, connection -->
+
+> Long responses sometimes leave the app stuck in "running" state after the CLI finishes, requiring manual stop.
 
 **Tags:** reliability, bug
 

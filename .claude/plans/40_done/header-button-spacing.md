@@ -1,6 +1,8 @@
-# Header Button Spacing Fix
+# Header Button Spacing Fix {arrow.left.and.right}
+<!-- priority: 10 -->
+<!-- tags: ui, header -->
 
-Remove extra spacing between right-side header buttons to match the left-side tab buttons.
+> Removed extra spacing between right-side header buttons to match the left-side tab buttons.
 
 ## Problem
 

@@ -1,4 +1,8 @@
-# Conversation Search
+# Conversation Search {magnifyingglass}
+<!-- priority: 10 -->
+<!-- tags: ui -->
+
+> Added conversation search sheet accessible from bottom switcher bar, searching across names, directories, and message content.
 
 ## What
 - Search icon in bottom switcher bar now opens a conversation search sheet

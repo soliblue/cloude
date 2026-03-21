@@ -1,5 +1,9 @@
+# Fix: Queued messages invisible when sent offline {eye.slash}
+<!-- priority: 10 -->
+<!-- tags: ui, connection -->
 <!-- build: 71 -->
-# Fix: Queued messages invisible when sent offline
+
+> Fixed queued messages disappearing by including them in empty state check.
 
 **Status:** testing
 **Created:** 2026-02-12

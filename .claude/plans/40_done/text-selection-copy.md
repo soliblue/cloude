@@ -1,6 +1,8 @@
-# Text Selection & Partial Copy
+# Text Selection & Partial Copy {text.cursor}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
 
-Long press any message to open text in a selectable sheet (ChatGPT-style).
+> Added long-press gesture on messages to open a selectable text sheet for partial copy.
 
 ## Changes
 1. Long press on any message (user or assistant) opens `TextSelectionSheet`

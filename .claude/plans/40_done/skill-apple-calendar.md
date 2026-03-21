@@ -2,7 +2,7 @@
 <!-- priority: 8 -->
 <!-- tags: skill, integration, apple -->
 
-> Read, create, update, and delete calendar events via AppleScript. Multi-calendar support, search, recurring events. Inspired by OpenClaw's apple-calendar skill.
+> Built Apple Calendar skill with CRUD operations, search, and recurring events via AppleScript.
 
 ## Approach
 Shell scripts wrapping `osascript` AppleScript commands — same pattern as OpenClaw. No API keys, no dependencies. Runs on the Mac agent.

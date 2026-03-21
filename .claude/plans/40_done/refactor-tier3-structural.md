@@ -1,7 +1,9 @@
-# Refactor Tier 3: Structural Improvements
+# Refactor Tier 3: Structural Improvements {building.columns}
 <!-- priority: 10 -->
 <!-- tags: refactor -->
 <!-- build: 56 -->
+
+> Larger architectural refactors improving structure after Tier 1+2 stabilized.
 
 ## Status: Active
 

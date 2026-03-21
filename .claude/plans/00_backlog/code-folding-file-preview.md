@@ -1,4 +1,8 @@
-# Code Folding in File Preview
+# Code Folding in File Preview {chevron.down.square}
+<!-- priority: 5 -->
+<!-- tags: ui, file-preview -->
+
+> Auto-collapse deeply nested code blocks in file preview, showing high-level structure first with expandable sections.
 
 Auto-collapse leaf nodes in code files viewed in FilePreviewView. Show high-level structure first — functions visible, innermost blocks (if/else inside loops inside functions) collapsed.
 

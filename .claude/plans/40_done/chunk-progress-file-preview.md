@@ -1,4 +1,8 @@
-# Chunk Progress for File Path Preview
+# Chunk Progress for File Path Preview {arrow.down.circle}
+<!-- priority: 10 -->
+<!-- tags: file-preview, ui -->
+
+> Added chunk download progress bar to FilePathPreviewView for large files by porting Combine event subscription from FilePreviewView.
 
 `FilePathPreviewView` (chat file pill path) doesn't show chunk download progress for large files. It uses `connection.onFileContent` callback which only fires when all chunks are assembled.
 

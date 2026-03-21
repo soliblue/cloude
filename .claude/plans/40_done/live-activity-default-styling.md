@@ -1,7 +1,9 @@
-# Live Activity Default Styling
+# Live Activity Default Styling {livephoto}
+<!-- priority: 10 -->
+<!-- tags: ui, theme -->
 <!-- build: 67 -->
 
-Removed custom orange accent color and forced backgrounds from Live Activity indicators. Now uses system default colors throughout.
+> Removed custom accent and forced backgrounds from Live Activity, using system defaults.
 
 ## Changes
 - Removed `Color.cloudeAccent` custom color

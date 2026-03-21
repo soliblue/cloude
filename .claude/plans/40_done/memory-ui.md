@@ -1,9 +1,9 @@
-# Memory UI Plan
+# Memory UI Plan {brain.head.profile}
 <!-- priority: 10 -->
-<!-- tags: ui -->
+<!-- tags: ui, memory -->
 <!-- build: 56 -->
 
-Structured memory display instead of raw markdown rendering.
+> Built structured memory display with parsed sections instead of raw markdown.
 
 ## Current State
 
