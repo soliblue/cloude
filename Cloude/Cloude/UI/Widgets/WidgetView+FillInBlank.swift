@@ -2,18 +2,18 @@ import SwiftUI
 
 struct FillInBlankWidget: View {
     let data: [String: Any]
-    @State private var answers: [String] = []
-    @State private var checked = false
-    @State private var revealed = false
-    @State private var originalAnswers: [String] = []
-    @FocusState private var focusedBlank: Int?
+    @State var answers: [String] = []
+    @State var checked = false
+    @State var revealed = false
+    @State var originalAnswers: [String] = []
+    @FocusState var focusedBlank: Int?
 
-    private var text: String { data["text"] as? String ?? "" }
-    private var blanks: [String] { data["blanks"] as? [String] ?? [] }
+    var text: String { data["text"] as? String ?? "" }
+    var blanks: [String] { data["blanks"] as? [String] ?? [] }
     private var hint: String? { data["hint"] as? String }
     private var hasInput: Bool { answers.contains { !$0.isEmpty } }
 
-    private var allCorrect: Bool {
+    var allCorrect: Bool {
         zip(answers, blanks).allSatisfy { typed, correct in
             typed.trimmingCharacters(in: .whitespaces).lowercased() == correct.lowercased()
         }
@@ -21,7 +21,7 @@ struct FillInBlankWidget: View {
 
     private var hasWrong: Bool { checked && !allCorrect }
 
-    private enum Token: Identifiable {
+    enum Token: Identifiable {
         case word(String)
         case blank(Int)
 
@@ -33,7 +33,7 @@ struct FillInBlankWidget: View {
         }
     }
 
-    private var tokens: [Token] {
+    var tokens: [Token] {
         var result: [Token] = []
         var remaining = text
         var blankIdx = 0
@@ -100,69 +100,5 @@ struct FillInBlankWidget: View {
         .onChange(of: focusedBlank) { _, newValue in
             NotificationCenter.default.post(name: .widgetInputActive, object: newValue != nil)
         }
-    }
-
-    private func isBlankCorrect(_ index: Int) -> Bool {
-        guard index < answers.count, index < blanks.count else { return false }
-        return answers[index].trimmingCharacters(in: .whitespaces).lowercased() == blanks[index].lowercased()
-    }
-
-    private func isOriginallyCorrect(_ index: Int) -> Bool {
-        guard index < originalAnswers.count, index < blanks.count else { return false }
-        return originalAnswers[index].trimmingCharacters(in: .whitespaces).lowercased() == blanks[index].lowercased()
-    }
-
-    private func blankField(index: Int) -> some View {
-        let correct = checked ? isBlankCorrect(index) : nil
-        let wasRevealed = revealed && correct == true && !isOriginallyCorrect(index)
-        let width = max(CGFloat(blanks[index].count) * 10, 60)
-
-        return TextField("", text: binding(for: index))
-            .font(.system(size: 15, weight: checked ? .semibold : .regular))
-            .multilineTextAlignment(.center)
-            .foregroundColor(
-                checked
-                    ? (wasRevealed ? .orange : (correct == true ? .green : .red))
-                    : .primary
-            )
-            .frame(width: width)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 4)
-            .background(
-                checked
-                    ? (wasRevealed ? Color.orange.opacity(0.1) : (correct == true ? Color.green.opacity(0.1) : Color.red.opacity(0.1)))
-                    : Color.secondary.opacity(0.1)
-            )
-            .overlay(
-                Rectangle()
-                    .frame(height: 1.5)
-                    .foregroundColor(
-                        checked
-                            ? (wasRevealed ? .orange : (correct == true ? .green : .red))
-                            : (focusedBlank == index ? .orange : .secondary.opacity(0.4))
-                    ),
-                alignment: .bottom
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 4))
-            .focused($focusedBlank, equals: index)
-            .disabled(checked)
-            .onSubmit {
-                if index + 1 < blanks.count {
-                    focusedBlank = index + 1
-                } else {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        originalAnswers = answers
-                        checked = true
-                        focusedBlank = nil
-                    }
-                }
-            }
-    }
-
-    private func binding(for index: Int) -> Binding<String> {
-        Binding(
-            get: { index < answers.count ? answers[index] : "" },
-            set: { if index < answers.count { answers[index] = $0 } }
-        )
     }
 }

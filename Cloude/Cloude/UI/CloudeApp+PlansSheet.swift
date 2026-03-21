@@ -8,11 +8,11 @@ struct PlansSheet: View {
     var onOpenFile: ((String) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var selectedStage = "active"
-    @State private var selectedTags: Set<String> = []
+    @State var selectedTags: Set<String> = []
 
-    private let stageOrder = ["backlog", "next", "active", "testing", "done"]
+    let stageOrder = ["backlog", "next", "active", "testing", "done"]
 
-    private func stageIcon(_ stage: String) -> String {
+    func stageIcon(_ stage: String) -> String {
         switch stage {
         case "backlog": return "tray.full"
         case "next": return "arrow.right.circle"
@@ -23,15 +23,15 @@ struct PlansSheet: View {
         }
     }
 
-    private var stagesWithCounts: [(String, Int)] {
+    var stagesWithCounts: [(String, Int)] {
         stageOrder.map { ($0, stages[$0]?.count ?? 0) }
     }
 
-    private var currentPlans: [PlanItem] {
+    var currentPlans: [PlanItem] {
         stages[selectedStage] ?? []
     }
 
-    private var filteredAndSortedPlans: [PlanItem] {
+    var filteredAndSortedPlans: [PlanItem] {
         let filtered = selectedTags.isEmpty
             ? currentPlans
             : currentPlans.filter { plan in
@@ -41,7 +41,7 @@ struct PlansSheet: View {
         return filtered.sorted { ($0.priority ?? Int.max) < ($1.priority ?? Int.max) }
     }
 
-    private var availableTags: [String] {
+    var availableTags: [String] {
         Array(Set(stages.values.flatMap { $0 }.compactMap { $0.tags }.flatMap { $0 })).sorted()
     }
 
@@ -120,7 +120,7 @@ struct PlansSheet: View {
         }
     }
 
-    private var stagePicker: some View {
+    var stagePicker: some View {
         HStack(spacing: 0) {
             ForEach(stagesWithCounts, id: \.0) { stage, count in
                 Button(action: { withAnimation(.easeInOut(duration: 0.15)) { selectedStage = stage } }) {
@@ -144,163 +144,5 @@ struct PlansSheet: View {
         .background(.white.opacity(0.08))
         .cornerRadius(9)
         .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
-    }
-
-    private var tagFilterChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                Button(action: { selectedTags.removeAll() }) {
-                    Text("All")
-                        .font(.system(size: 12, weight: .medium))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(selectedTags.isEmpty ? Color.accentColor.opacity(0.1) : .white.opacity(0.06))
-                        .foregroundColor(selectedTags.isEmpty ? .accentColor : .secondary.opacity(0.7))
-                        .clipShape(Capsule())
-                        .overlay(Capsule().strokeBorder(selectedTags.isEmpty ? Color.accentColor.opacity(0.2) : .white.opacity(0.1), lineWidth: 0.5))
-                }
-                .buttonStyle(.plain)
-
-                ForEach(availableTags, id: \.self) { tag in
-                    Button(action: {
-                        if selectedTags.contains(tag) {
-                            selectedTags.remove(tag)
-                        } else {
-                            selectedTags.insert(tag)
-                        }
-                    }) {
-                        Text(tag)
-                            .font(.system(size: 12, weight: .medium))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(selectedTags.contains(tag) ? tagColor(tag).opacity(0.12) : .white.opacity(0.06))
-                            .foregroundColor(selectedTags.contains(tag) ? tagColor(tag) : .secondary.opacity(0.7))
-                            .clipShape(Capsule())
-                            .overlay(Capsule().strokeBorder(selectedTags.contains(tag) ? tagColor(tag).opacity(0.2) : .white.opacity(0.1), lineWidth: 0.5))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-    }
-
-    private func tagColor(_ tag: String) -> Color {
-        switch tag {
-        case "ui": return .blue
-        case "agent": return .purple
-        case "security": return .red
-        case "reliability": return .orange
-        case "heartbeat": return .pink
-        case "memory": return .green
-        case "autonomy": return .indigo
-        case "plans": return .teal
-        case "refactor": return .gray
-        case "teams": return .cyan
-        case "files": return .brown
-        case "git": return .mint
-        case "tools": return .yellow
-        case "input": return .blue
-        case "markdown": return .purple
-        case "conversations": return .green
-        case "windows": return .indigo
-        case "messages": return .orange
-        case "skills": return .pink
-        case "performance": return .red
-        default: return .secondary
-        }
-    }
-}
-
-struct PlanCard: View {
-    let plan: PlanItem
-    let stage: String
-    var onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            ZStack(alignment: .topTrailing) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        if let icon = plan.icon {
-                            Image(systemName: icon)
-                                .font(.system(size: 14))
-                                .foregroundColor(.accentColor)
-                        }
-                        Text(plan.title)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                        Spacer()
-                    }
-
-                    if let description = plan.description {
-                        Text(description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(3)
-                            .multilineTextAlignment(.leading)
-                    }
-
-                    if let tags = plan.tags, !tags.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 6) {
-                                ForEach(tags, id: \.self) { tag in
-                                    Text(tag)
-                                        .font(.system(size: 10, weight: .medium))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(tagColor(tag).opacity(0.1))
-                                        .foregroundColor(tagColor(tag).opacity(0.8))
-                                        .clipShape(Capsule())
-                                }
-                            }
-                        }
-                        .padding(.top, 4)
-                    }
-                }
-
-                if stage == "done", let build = plan.build {
-                    Text("\(build)")
-                        .font(.system(size: 10, weight: .medium).monospacedDigit())
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
-                        .background(.white.opacity(0.06))
-                        .foregroundColor(.secondary.opacity(0.6))
-                        .clipShape(Capsule())
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(.white.opacity(0.08))
-            .cornerRadius(9)
-            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func tagColor(_ tag: String) -> Color {
-        switch tag {
-        case "ui": return .blue
-        case "agent": return .purple
-        case "security": return .red
-        case "reliability": return .orange
-        case "heartbeat": return .pink
-        case "memory": return .green
-        case "autonomy": return .indigo
-        case "plans": return .teal
-        case "refactor": return .gray
-        case "teams": return .cyan
-        case "files": return .brown
-        case "git": return .mint
-        case "tools": return .yellow
-        case "input": return .blue
-        case "markdown": return .purple
-        case "conversations": return .green
-        case "windows": return .indigo
-        case "messages": return .orange
-        case "skills": return .pink
-        case "performance": return .red
-        default: return .secondary
-        }
     }
 }

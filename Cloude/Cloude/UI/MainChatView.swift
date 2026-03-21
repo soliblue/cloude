@@ -72,23 +72,7 @@ struct MainChatView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .background(PageSwipeDisabler())
-            .onChange(of: currentPageIndex) { oldIndex, newIndex in
-                if oldIndex > 0 {
-                    let oldWindowIndex = oldIndex - 1
-                    if oldWindowIndex < windowManager.windows.count {
-                        let oldWindow = windowManager.windows[oldWindowIndex]
-                        if let convId = oldWindow.conversationId,
-                           let conv = conversationStore.conversation(withId: convId),
-                           conv.isEmpty {
-                            conversationStore.deleteConversation(conv)
-                            windowManager.removeWindow(oldWindow.id)
-                        }
-                    }
-                }
-                if newIndex > 0 {
-                    windowManager.navigateToWindow(at: newIndex - 1)
-                }
-            }
+            .onChange(of: currentPageIndex, handlePageChange)
             .onAppear {
                 if let activeId = windowManager.activeWindowId,
                    let index = windowManager.windowIndex(for: activeId) {
@@ -108,51 +92,7 @@ struct MainChatView: View {
                 }
             }
 
-            VStack(spacing: 0) {
-                if !widgetEditing && windowManager.activeWindow?.type != .terminal {
-                    GlobalInputBar(
-                        inputText: $inputText,
-                        attachedImages: $attachedImages,
-                        attachedFiles: $attachedFiles,
-                        isConnected: activeEnvConnection?.isAuthenticated ?? false,
-                        isWhisperReady: activeEnvConnection?.isWhisperReady ?? false,
-                        isTranscribing: activeEnvConnection?.isTranscribing ?? false,
-                        isRunning: activeConversationIsRunning,
-                        skills: activeEnvConnection?.skills ?? [],
-                        fileSearchResults: fileSearchResults,
-                        conversationDefaultEffort: currentConversation?.defaultEffort,
-                        conversationDefaultModel: currentConversation?.defaultModel,
-                        environmentMismatch: hasEnvironmentMismatch,
-                        isEnvironmentDisconnected: activeEnvConnection?.isAuthenticated != true,
-                        onSend: sendMessage,
-                        onStop: stopActiveConversation,
-                        onConnect: {
-                            let envId = currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
-                            if let envId, let env = environmentStore.environments.first(where: { $0.id == envId }) {
-                                connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
-                            }
-                        },
-                        onRefresh: {
-                            if let window = windowManager.activeWindow {
-                                refreshConversation(for: window)
-                            }
-                        },
-                        onTranscribe: transcribeAudio,
-                        onFileSearch: searchFiles,
-                        currentEffort: $currentEffort,
-                        currentModel: $currentModel
-                    )
-                }
-
-                if !widgetEditing {
-                    pageIndicator()
-                        .frame(height: 44)
-                        .padding(.bottom, isKeyboardVisible ? 12 : 4)
-                }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture { }
-            .background(Color.themeBackground)
+            inputSection()
         }
         .onReceive(NotificationCenter.default.publisher(for: .widgetInputActive)) { note in
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -170,108 +110,18 @@ struct MainChatView: View {
             currentEffort = currentConversation?.defaultEffort
             currentModel = currentConversation?.defaultModel
         }
-        .onChange(of: windowManager.activeWindowId) { oldId, newId in
-            if let oldId = oldId {
-                drafts[oldId] = (inputText, attachedImages, currentEffort, currentModel)
-                cleanupEmptyConversation(for: oldId)
-            }
-            if let newId = newId, let draft = drafts[newId] {
-                inputText = draft.text
-                attachedImages = draft.images
-                currentEffort = draft.effort
-                currentModel = draft.model
-            } else {
-                inputText = ""
-                attachedImages = []
-                currentEffort = currentConversation?.defaultEffort
-                currentModel = currentConversation?.defaultModel
-            }
-        }
-        .onChange(of: currentModel) { _, model in
-            if let conv = currentConversation, model != conv.defaultModel {
-                conversationStore.setDefaultModel(conv, model: model)
-            }
-        }
-        .onChange(of: currentEffort) { _, effort in
-            if let conv = currentConversation, effort != conv.defaultEffort {
-                conversationStore.setDefaultEffort(conv, effort: effort)
-            }
-        }
-        .sheet(item: $editingWindow) { window in
-            WindowEditSheet(
-                window: window,
-                conversationStore: conversationStore,
-                windowManager: windowManager,
-                connection: connection,
-                environmentStore: environmentStore,
-                onSelectConversation: { conv in
-                    if let oldConvId = window.conversationId,
-                       let oldConv = conversationStore.conversation(withId: oldConvId),
-                       oldConv.isEmpty, oldConv.id != conv.id {
-                        conversationStore.deleteConversation(oldConv)
-                    }
-                    windowManager.linkToCurrentConversation(window.id, conversation: conv)
-                    editingWindow = nil
-                },
-                onNewConversation: {
-                    if let oldConvId = window.conversationId,
-                       let oldConv = conversationStore.conversation(withId: oldConvId),
-                       oldConv.isEmpty {
-                        conversationStore.deleteConversation(oldConv)
-                    }
-                    let workingDir = activeWindowWorkingDirectory()
-                    let newConv = conversationStore.newConversation(workingDirectory: workingDir, environmentId: environmentStore.activeEnvironmentId)
-                    windowManager.linkToCurrentConversation(window.id, conversation: newConv)
-                    editingWindow = nil
-                },
-                onDismiss: { editingWindow = nil },
-                onRefresh: {
-                    guard let convId = window.conversationId,
-                          let conv = conversationStore.conversation(withId: convId),
-                          let sessionId = conv.sessionId,
-                          let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
-                    connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
-                    try? await Task.sleep(nanoseconds: 1_000_000_000)
-                },
-                onDuplicate: { newConv in
-                    windowManager.linkToCurrentConversation(window.id, conversation: newConv)
-                    editingWindow = nil
-                }
-            )
-        }
-        .sheet(isPresented: $showConversationSearch) {
-            ConversationSearchSheet(
-                conversationStore: conversationStore,
-                windowManager: windowManager,
-                onSelect: { conv in
-                    showConversationSearch = false
-                    if let activeWindow = windowManager.activeWindow {
-                        if let oldConvId = activeWindow.conversationId,
-                           let oldConv = conversationStore.conversation(withId: oldConvId),
-                           oldConv.isEmpty, oldConv.id != conv.id {
-                            conversationStore.deleteConversation(oldConv)
-                        }
-                        windowManager.linkToCurrentConversation(activeWindow.id, conversation: conv)
-                    }
-                }
-            )
-        }
-        .sheet(isPresented: $showUsageStats) {
-            if let stats = usageStats {
-                UsageStatsSheet(stats: stats)
-            } else {
-                ProgressView("Loading usage stats...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.themeBackground)
-            }
-        }
+        .onChange(of: windowManager.activeWindowId, handleActiveWindowChange)
+        .onChange(of: currentModel, handleModelChange)
+        .onChange(of: currentEffort, handleEffortChange)
+        .sheet(item: $editingWindow) { _ in editWindowSheet() }
+        .sheet(isPresented: $showConversationSearch) { conversationSearchSheetContent() }
+        .sheet(isPresented: $showUsageStats) { usageStatsSheetContent() }
         .onReceive(NotificationCenter.default.publisher(for: .editActiveWindow)) { _ in
             if let window = windowManager.activeWindow {
                 editingWindow = window
             }
         }
         .onReceive(connection.events, perform: handleConnectionEvent)
-        // Fallback: a PassthroughSubject can be missed if this view isn't mounted yet.
         .onChange(of: connection.isAuthenticated) { _, authed in
             guard authed else { return }
             replayQueuedMessagesIfNeeded()
@@ -285,13 +135,7 @@ struct MainChatView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
             fetchLatestScreenshot()
         }
-        .onChange(of: currentPageIndex) { oldIndex, newIndex in
-            windowManager.isHeartbeatShowing = newIndex == 0
-            if oldIndex == 0 && newIndex != 0 {
-                connection.send(.markHeartbeatRead)
-                conversationStore.markHeartbeatRead()
-            }
-        }
+        .onChange(of: currentPageIndex, handleHeartbeatPageChange)
         .modifier(HeartbeatIntervalModifier(
             showIntervalPicker: $showIntervalPicker,
             conversationStore: conversationStore,

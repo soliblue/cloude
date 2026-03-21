@@ -8,17 +8,7 @@ struct BarChartWidget: View {
 
     private var title: String? { data["title"] as? String }
     private var unit: String? { data["unit"] as? String }
-    private var barColor: Color {
-        switch data["color"] as? String {
-        case "green": return .green
-        case "orange": return .orange
-        case "purple": return .purple
-        case "red": return .red
-        case "teal": return .teal
-        case "pink": return .pink
-        default: return .blue
-        }
-    }
+    private var barColor: Color { .fromName(data["color"] as? String) }
     private var bars: [(label: String, value: Double)] {
         guard let arr = data["bars"] as? [[String: Any]] else { return [] }
         return arr.compactMap { bar in
