@@ -99,19 +99,7 @@ struct TreeWidget: View {
     }
 
     private func parseColor(_ name: String?, hasChildren: Bool) -> Color {
-        if let name {
-            switch name {
-            case "red": return .red
-            case "orange": return .orange
-            case "yellow": return .yellow
-            case "green": return .green
-            case "blue": return .blue
-            case "teal": return .teal
-            case "purple": return .purple
-            case "pink": return .pink
-            default: break
-            }
-        }
+        if let name { return .fromName(name, default: hasChildren ? .yellow : .blue) }
         return hasChildren ? .yellow : .blue
     }
 }

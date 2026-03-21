@@ -57,18 +57,14 @@ class ConversationStore: ObservableObject {
     @Published var conversations: [Conversation] = []
     @Published var heartbeatConfig = HeartbeatConfig()
 
-    private let legacySaveKey = "saved_conversations_v2"
-    private let heartbeatTriggeredKey = "heartbeatLastTriggered"
+    let legacySaveKey = "saved_conversations_v2"
+    let heartbeatTriggeredKey = "heartbeatLastTriggered"
 
-    private static var conversationsDirectory: URL {
+    static var conversationsDirectory: URL {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let dir = docs.appendingPathComponent("conversations", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
-    }
-
-    private func fileURL(for id: UUID) -> URL {
-        Self.conversationsDirectory.appendingPathComponent("\(id.uuidString).json")
     }
 
     var heartbeatConversation: Conversation {
@@ -107,60 +103,6 @@ class ConversationStore: ObservableObject {
 
     init() {
         load()
-    }
-
-    func save() {
-        for conversation in conversations {
-            saveConversation(conversation)
-        }
-    }
-
-    func saveConversation(_ conversation: Conversation) {
-        if let data = try? JSONEncoder().encode(conversation) {
-            try? data.write(to: fileURL(for: conversation.id))
-        }
-    }
-
-    func deleteConversationFile(_ id: UUID) {
-        try? FileManager.default.removeItem(at: fileURL(for: id))
-    }
-
-    private func load() {
-        if let legacy: [Conversation] = UserDefaults.standard.codable([Conversation].self, forKey: legacySaveKey), !legacy.isEmpty {
-            conversations = legacy
-            for conversation in conversations {
-                saveConversation(conversation)
-            }
-            UserDefaults.standard.removeObject(forKey: legacySaveKey)
-        } else {
-            let dir = Self.conversationsDirectory
-            if let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
-                conversations = files.compactMap { url in
-                    guard url.pathExtension == "json",
-                          let data = try? Data(contentsOf: url) else { return nil }
-                    return try? JSONDecoder().decode(Conversation.self, from: data)
-                }
-            }
-        }
-
-        ensureHeartbeatExists()
-
-        if let timestamp = UserDefaults.standard.object(forKey: heartbeatTriggeredKey) as? Date {
-            heartbeatConfig.lastTriggeredAt = timestamp
-        }
-    }
-
-    private func ensureHeartbeatExists() {
-        if !conversations.contains(where: { $0.id == Heartbeat.conversationId }) {
-            let heartbeat = Conversation(
-                name: "Heartbeat",
-                symbol: "heart.fill",
-                id: Heartbeat.conversationId,
-                sessionId: Heartbeat.sessionId
-            )
-            conversations.append(heartbeat)
-            saveConversation(heartbeat)
-        }
     }
 
     func handleHeartbeatConfig(intervalMinutes: Int?, unreadCount: Int) {

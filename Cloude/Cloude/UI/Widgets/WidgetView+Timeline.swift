@@ -56,16 +56,6 @@ struct TimelineWidget: View {
     }
 
     private func parseColor(_ name: String?) -> Color {
-        switch name {
-        case "red": return .red
-        case "orange": return .orange
-        case "yellow": return .yellow
-        case "green": return .green
-        case "teal": return .teal
-        case "purple": return .purple
-        case "pink": return .pink
-        case "indigo": return .indigo
-        default: return .blue
-        }
+        .fromName(name)
     }
 }

@@ -1,0 +1,88 @@
+// MessageBubble+Footer.swift
+
+import SwiftUI
+
+struct MessageImageThumbnails: View {
+    let message: ChatMessage
+
+    var body: some View {
+        if let thumbnails = message.imageThumbnails, thumbnails.count > 1 {
+            HStack(spacing: 4) {
+                ForEach(thumbnails.indices, id: \.self) { index in
+                    if let imageData = Data(base64Encoded: thumbnails[index]),
+                       let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 36, height: 36)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                }
+            }
+        } else if let imageBase64 = message.imageBase64,
+                  let imageData = Data(base64Encoded: imageBase64),
+                  let uiImage = UIImage(data: imageData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 36, height: 36)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+    }
+}
+
+struct UserMessageFooter: View {
+    let timestamp: Date
+    let textCount: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            StatLabel(icon: "clock", text: DateFormatters.messageTimestamp(timestamp))
+            StatLabel(icon: "textformat.size", text: "\(textCount)")
+        }
+        .foregroundColor(.secondary)
+    }
+}
+
+struct AssistantMessageFooter: View {
+    let message: ChatMessage
+    @Binding var showCopiedToast: Bool
+    let onShowTeamDashboard: () -> Void
+    let onRefresh: (() -> Void)?
+    let isRefreshing: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if let team = message.teamSummary {
+                TeamSummaryBadge(summary: team, onTap: onShowTeamDashboard)
+            }
+            HStack(spacing: 8) {
+                if let durationMs = message.durationMs, let costUsd = message.costUsd {
+                    StatLabel(icon: "clock", text: DateFormatters.messageTimestamp(message.timestamp))
+                    RunStatsView(durationMs: durationMs, costUsd: costUsd, model: message.model)
+                }
+                Spacer()
+                Button {
+                    CopyFeedback.perform(message.text, showToast: $showCopiedToast)
+                } label: {
+                    Image(systemName: showCopiedToast ? "checkmark" : "square.on.square")
+                        .font(.system(size: 9))
+                        .foregroundColor(showCopiedToast ? .pastelGreen : .secondary)
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                .buttonStyle(.plain)
+                if let onRefresh {
+                    Button(action: onRefresh) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 9))
+                            .foregroundColor(.secondary)
+                            .symbolEffect(.rotate, options: .repeating, isActive: isRefreshing)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isRefreshing)
+                }
+            }
+            .foregroundColor(.secondary)
+        }
+    }
+}

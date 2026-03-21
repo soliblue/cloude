@@ -129,69 +129,6 @@ struct BlockquoteView: View {
     }
 }
 
-struct MarkdownTableView: View {
-    let rows: [[String]]
-
-    private var columnCount: Int {
-        rows.map(\.count).max() ?? 0
-    }
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            Grid(alignment: .leading, horizontalSpacing: 0, verticalSpacing: 0) {
-                ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
-                    if rowIndex > 0 {
-                        Divider()
-                    }
-                    GridRow {
-                        ForEach(0..<columnCount, id: \.self) { colIndex in
-                            TableCell(
-                                text: colIndex < row.count ? row[colIndex].trimmingCharacters(in: .whitespaces) : "",
-                                isHeader: rowIndex == 0
-                            )
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .frame(minWidth: 60)
-                            .background(rowIndex == 0 ? Color.gray.opacity(0.08) : Color.clear)
-                            .overlay(alignment: .leading) {
-                                if colIndex > 0 {
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(width: 1)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-        .padding(.horizontal, -16)
-        .scrollClipDisabled()
-    }
-}
-
-private struct TableCell: View {
-    let text: String
-    let isHeader: Bool
-
-    var body: some View {
-        Text(parseInlineMarkdown())
-            .font(isHeader ? .caption.bold() : .caption)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-    }
-
-    private func parseInlineMarkdown() -> AttributedString {
-        if let attributed = try? AttributedString(
-            markdown: text,
-            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
-        ) {
-            return attributed
-        }
-        return AttributedString(text)
-    }
-}
-
 struct HorizontalRuleView: View {
     var body: some View {
         Divider()
