@@ -97,30 +97,32 @@ struct WhiteboardGestureView: UIViewRepresentable {
         }
 
         @objc func handleOneDrag(_ gesture: UIPanGestureRecognizer) {
-            guard let view = gesture.view else { return }
-            let location = gesture.location(in: view)
-            let translation = gesture.translation(in: view)
+            if let view = gesture.view {
+                let location = gesture.location(in: view)
+                let translation = gesture.translation(in: view)
 
-            switch gesture.state {
-            case .began:
-                dragStart = location
-                onOneDrag(.began, dragStart, location, CGSize(width: translation.x, height: translation.y))
-            case .changed:
-                onOneDrag(.changed, dragStart, location, CGSize(width: translation.x, height: translation.y))
-            case .ended, .cancelled:
-                onOneDrag(.ended, dragStart, location, CGSize(width: translation.x, height: translation.y))
-            default:
-                break
+                switch gesture.state {
+                case .began:
+                    dragStart = location
+                    onOneDrag(.began, dragStart, location, CGSize(width: translation.x, height: translation.y))
+                case .changed:
+                    onOneDrag(.changed, dragStart, location, CGSize(width: translation.x, height: translation.y))
+                case .ended, .cancelled:
+                    onOneDrag(.ended, dragStart, location, CGSize(width: translation.x, height: translation.y))
+                default:
+                    break
+                }
             }
         }
 
         @objc func handleTwoPan(_ gesture: UIPanGestureRecognizer) {
-            guard let view = gesture.view else { return }
-            let translation = gesture.translation(in: view)
-            let phase: GesturePhase = gesture.state == .began ? .began : gesture.state == .changed ? .changed : .ended
-            onTwoPan(phase, CGSize(width: translation.x, height: translation.y))
-            if gesture.state == .ended || gesture.state == .cancelled {
-                gesture.setTranslation(.zero, in: view)
+            if let view = gesture.view {
+                let translation = gesture.translation(in: view)
+                let phase: GesturePhase = gesture.state == .began ? .began : gesture.state == .changed ? .changed : .ended
+                onTwoPan(phase, CGSize(width: translation.x, height: translation.y))
+                if gesture.state == .ended || gesture.state == .cancelled {
+                    gesture.setTranslation(.zero, in: view)
+                }
             }
         }
 
@@ -137,6 +139,7 @@ struct WhiteboardGestureView: UIViewRepresentable {
 extension WhiteboardSheet {
     enum DragIntent {
         case movingElement(id: String, startX: Double, startY: Double)
+        case movingPath(id: String, startPoints: [[Double]])
         case drawing(id: String)
         case sizingShape(id: String, startPoint: CGPoint)
     }
@@ -145,18 +148,17 @@ extension WhiteboardSheet {
         switch store.activeTool {
         case .hand:
             editingTextId = nil
-            if let element = store.elementAt(point: point, viewport: store.state.viewport, canvasSize: canvasSize) {
+            if let element = store.elementAt(point: point, canvasSize: canvasSize) {
                 store.selectedElementId = element.id
             } else {
                 store.selectedElementId = nil
             }
         case .rect, .ellipse:
-            let boardPoint = store.screenToBoard(point, viewport: store.state.viewport, canvasSize: canvasSize)
-            store.placeShape(at: boardPoint)
+            let boardPoint = store.screenToBoard(point, canvasSize: canvasSize)
+            _ = store.placeShape(at: boardPoint)
         case .text:
-            let boardPoint = store.screenToBoard(point, viewport: store.state.viewport, canvasSize: canvasSize)
-            let element = WhiteboardElement(type: .text, x: boardPoint.x, y: boardPoint.y, label: "", stroke: store.activeColor)
-            store.addElement(element)
+            let boardPoint = store.screenToBoard(point, canvasSize: canvasSize)
+            let element = store.createText(at: boardPoint)
             store.selectedElementId = element.id
             store.activeTool = .hand
             editingTextValue = ""
@@ -164,7 +166,7 @@ extension WhiteboardSheet {
         case .pencil:
             break
         case .arrow:
-            if let element = store.elementAt(point: point, viewport: store.state.viewport, canvasSize: canvasSize) {
+            if let element = store.elementAt(point: point, canvasSize: canvasSize) {
                 if let sourceId = store.arrowSourceId {
                     if sourceId != element.id {
                         store.addArrow(from: sourceId, to: element.id)
@@ -180,7 +182,7 @@ extension WhiteboardSheet {
     }
 
     func handleGestureDoubleTap(at point: CGPoint) {
-        if let element = store.elementAt(point: point, viewport: store.state.viewport, canvasSize: canvasSize) {
+        if let element = store.elementAt(point: point, canvasSize: canvasSize) {
             store.selectedElementId = element.id
             editingTextValue = element.label ?? ""
             editingTextId = element.id
@@ -192,143 +194,96 @@ extension WhiteboardSheet {
         case .began:
             switch store.activeTool {
             case .hand:
-                if let element = store.elementAt(point: start, viewport: store.state.viewport, canvasSize: canvasSize) {
-                    dragIntent = .movingElement(id: element.id, startX: element.x, startY: element.y)
+                if let element = store.elementAt(point: start, canvasSize: canvasSize) {
+                    store.beginTransaction()
+                    if element.type == .path {
+                        dragIntent = .movingPath(id: element.id, startPoints: element.points ?? [])
+                    } else {
+                        dragIntent = .movingElement(id: element.id, startX: element.x, startY: element.y)
+                    }
                     store.selectedElementId = element.id
                 }
             case .pencil:
-                let boardPoint = store.screenToBoard(current, viewport: store.state.viewport, canvasSize: canvasSize)
-                let element = WhiteboardElement(type: .path, stroke: store.activeColor, points: [[boardPoint.x, boardPoint.y]], closed: false)
-                store.addElement(element)
-                dragIntent = .drawing(id: element.id)
+                let boardPoint = store.screenToBoard(current, canvasSize: canvasSize)
+                let id = store.beginPath(at: boardPoint)
+                dragIntent = .drawing(id: id)
             case .rect, .ellipse:
-                let boardPoint = store.screenToBoard(start, viewport: store.state.viewport, canvasSize: canvasSize)
-                let element = WhiteboardElement(
-                    type: store.activeTool == .rect ? .rect : .ellipse,
-                    x: boardPoint.x, y: boardPoint.y, w: 1, h: 1,
-                    fill: store.activeColor
-                )
-                store.addElement(element)
-                dragIntent = .sizingShape(id: element.id, startPoint: boardPoint)
+                let boardPoint = store.screenToBoard(start, canvasSize: canvasSize)
+                let type: WhiteboardElementType = store.activeTool == .rect ? .rect : .ellipse
+                let id = store.beginShape(type: type, at: boardPoint)
+                dragIntent = .sizingShape(id: id, startPoint: boardPoint)
             case .text, .arrow:
                 break
             }
 
         case .changed:
-            let scale = canvasSize.width / 1000.0 * store.state.viewport.zoom
+            let s = store.scale(for: canvasSize)
             switch dragIntent {
             case .movingElement(let id, let startX, let startY):
-                if let index = store.state.elements.firstIndex(where: { $0.id == id }) {
-                    store.state.elements[index].x = startX + translation.width / scale
-                    store.state.elements[index].y = startY + translation.height / scale
-                }
+                store.moveElementDirect(id: id, x: startX + translation.width / s, y: startY + translation.height / s)
+            case .movingPath(let id, let startPoints):
+                store.movePathDirect(id: id, startPoints: startPoints, dx: translation.width / s, dy: translation.height / s)
             case .drawing(let id):
-                let boardPoint = store.screenToBoard(current, viewport: store.state.viewport, canvasSize: canvasSize)
-                if let index = store.state.elements.firstIndex(where: { $0.id == id }),
-                   let points = store.state.elements[index].points,
-                   let last = points.last {
-                    let dx = boardPoint.x - last[0]
-                    let dy = boardPoint.y - last[1]
-                    if dx * dx + dy * dy >= 4 {
-                        store.state.elements[index].points?.append([boardPoint.x, boardPoint.y])
-                    }
-                }
+                let boardPoint = store.screenToBoard(current, canvasSize: canvasSize)
+                store.appendPathPoint(id: id, point: [boardPoint.x, boardPoint.y])
             case .sizingShape(let id, let startPoint):
-                let currentBoard = store.screenToBoard(current, viewport: store.state.viewport, canvasSize: canvasSize)
-                if let index = store.state.elements.firstIndex(where: { $0.id == id }) {
-                    let x = min(startPoint.x, currentBoard.x)
-                    let y = min(startPoint.y, currentBoard.y)
-                    let w = abs(currentBoard.x - startPoint.x)
-                    let h = abs(currentBoard.y - startPoint.y)
-                    store.state.elements[index].x = x
-                    store.state.elements[index].y = y
-                    store.state.elements[index].w = max(w, 5)
-                    store.state.elements[index].h = max(h, 5)
-                }
+                let currentBoard = store.screenToBoard(current, canvasSize: canvasSize)
+                let x = min(startPoint.x, currentBoard.x)
+                let y = min(startPoint.y, currentBoard.y)
+                let w = abs(currentBoard.x - startPoint.x)
+                let h = abs(currentBoard.y - startPoint.y)
+                store.resizeElementDirect(id: id, x: x, y: y, w: w, h: h)
             case .none:
                 break
             }
 
         case .ended:
             if case .drawing(let id) = dragIntent {
-                if let index = store.state.elements.firstIndex(where: { $0.id == id }),
-                   var points = store.state.elements[index].points {
-                    points = simplifyPath(points, epsilon: 2.0)
-                    store.state.elements[index].points = points
-                }
+                store.finalizePath(id: id)
             }
             if case .sizingShape = dragIntent {
                 store.activeTool = .hand
             }
+            store.commitTransaction()
             dragIntent = nil
         }
     }
 
     func handleGestureTwoPan(phase: WhiteboardGestureView.GesturePhase, translation: CGSize) {
-        let scale = canvasSize.width / 1000.0 * store.state.viewport.zoom
+        let s = store.scale(for: canvasSize)
         switch phase {
         case .began:
+            store.beginTransaction()
             panStart = CGPoint(x: store.state.viewport.x, y: store.state.viewport.y)
         case .changed:
             if let start = panStart {
-                store.state.viewport.x = start.x + translation.width / scale
-                store.state.viewport.y = start.y + translation.height / scale
+                store.panViewportDirect(x: start.x + translation.width / s, y: start.y + translation.height / s)
             }
         case .ended:
             panStart = nil
+            store.commitTransaction()
         }
     }
 
     func handleGesturePinch(phase: WhiteboardGestureView.GesturePhase, scale: CGFloat) {
+        if phase == .began {
+            store.beginTransaction()
+        }
         if phase == .changed {
             if let selectedId = store.selectedElementId,
                let index = store.state.elements.firstIndex(where: { $0.id == selectedId }) {
-                let centerX = store.state.elements[index].x + store.state.elements[index].w / 2
-                let centerY = store.state.elements[index].y + store.state.elements[index].h / 2
-                let newW = max(20, store.state.elements[index].w * Double(scale))
-                let newH = max(20, store.state.elements[index].h * Double(scale))
-                store.state.elements[index].w = newW
-                store.state.elements[index].h = newH
-                store.state.elements[index].x = centerX - newW / 2
-                store.state.elements[index].y = centerY - newH / 2
+                let el = store.state.elements[index]
+                let centerX = el.x + el.w / 2
+                let centerY = el.y + el.h / 2
+                let newW = max(20, el.w * Double(scale))
+                let newH = max(20, el.h * Double(scale))
+                store.resizeElementDirect(id: selectedId, x: centerX - newW / 2, y: centerY - newH / 2, w: newW, h: newH)
             } else {
-                store.state.viewport.zoom = max(0.3, min(5.0, store.state.viewport.zoom * scale))
+                store.zoomViewportDirect(zoom: store.state.viewport.zoom * scale)
             }
         }
-    }
-
-    func simplifyPath(_ points: [[Double]], epsilon: Double) -> [[Double]] {
-        guard points.count > 2 else { return points }
-        var maxDist = 0.0
-        var maxIndex = 0
-        let first = points[0]
-        let last = points[points.count - 1]
-
-        for i in 1..<(points.count - 1) {
-            let dist = perpendicularDistance(point: points[i], lineStart: first, lineEnd: last)
-            if dist > maxDist {
-                maxDist = dist
-                maxIndex = i
-            }
+        if phase == .ended {
+            store.commitTransaction()
         }
-
-        if maxDist > epsilon {
-            let left = simplifyPath(Array(points[0...maxIndex]), epsilon: epsilon)
-            let right = simplifyPath(Array(points[maxIndex..<points.count]), epsilon: epsilon)
-            return left.dropLast() + right
-        }
-        return [first, last]
-    }
-
-    private func perpendicularDistance(point: [Double], lineStart: [Double], lineEnd: [Double]) -> Double {
-        let dx = lineEnd[0] - lineStart[0]
-        let dy = lineEnd[1] - lineStart[1]
-        let lineLenSq = dx * dx + dy * dy
-        if lineLenSq == 0 {
-            let ex = point[0] - lineStart[0]
-            let ey = point[1] - lineStart[1]
-            return sqrt(ex * ex + ey * ey)
-        }
-        return abs(dy * point[0] - dx * point[1] + lineEnd[0] * lineStart[1] - lineEnd[1] * lineStart[0]) / sqrt(lineLenSq)
     }
 }

@@ -7,6 +7,22 @@ const server = new Server(
   { capabilities: { tools: {} } }
 );
 
+const elementProperties = {
+  id: { type: "string", description: "Optional stable ID for later update/remove" },
+  type: { type: "string", enum: ["rect", "ellipse", "text", "path", "arrow"] },
+  x: { type: "number", description: "X position (0-1000)" },
+  y: { type: "number", description: "Y position (0-1000)" },
+  w: { type: "number", description: "Width" },
+  h: { type: "number", description: "Height" },
+  label: { type: "string", description: "Text content (for text, or label inside shapes)" },
+  fill: { type: "string", description: "Fill hex color e.g. #FF6B6B" },
+  stroke: { type: "string", description: "Stroke hex color e.g. #FFFFFF" },
+  points: { type: "array", items: { type: "array", items: { type: "number" } }, description: "Path points as [[x,y], ...]" },
+  closed: { type: "boolean", description: "Close the path?" },
+  from: { type: "string", description: "Arrow source element ID" },
+  to: { type: "string", description: "Arrow target element ID" },
+};
+
 const tools = [
   {
     name: "rename",
@@ -111,7 +127,7 @@ const tools = [
   },
   {
     name: "whiteboard_add",
-    description: "Add elements to the collaborative whiteboard. Auto-opens if closed. Coordinate space: 0-1000 virtual units. Center is (500, 500).",
+    description: "Add elements to the collaborative whiteboard. Auto-opens if closed. Coordinate space: 0-1000 virtual units. Center is (500, 500). Returns the IDs of created elements.",
     inputSchema: {
       type: "object",
       properties: {
@@ -120,21 +136,7 @@ const tools = [
           description: "Elements to place on the canvas",
           items: {
             type: "object",
-            properties: {
-              id: { type: "string", description: "Optional stable ID for later update/remove" },
-              type: { type: "string", enum: ["rect", "ellipse", "text", "path", "arrow"] },
-              x: { type: "number", description: "X position (0-1000)" },
-              y: { type: "number", description: "Y position (0-1000)" },
-              w: { type: "number", description: "Width" },
-              h: { type: "number", description: "Height" },
-              label: { type: "string", description: "Text content (for text, or label inside shapes)" },
-              fill: { type: "string", description: "Fill hex color e.g. #FF6B6B" },
-              stroke: { type: "string", description: "Stroke hex color e.g. #FFFFFF" },
-              points: { type: "array", items: { type: "array", items: { type: "number" } }, description: "Path points as [[x,y], ...]" },
-              closed: { type: "boolean", description: "Close the path?" },
-              from: { type: "string", description: "Arrow source element ID" },
-              to: { type: "string", description: "Arrow target element ID" },
-            },
+            properties: elementProperties,
             required: ["type"],
           },
         },
@@ -144,7 +146,7 @@ const tools = [
   },
   {
     name: "whiteboard_remove",
-    description: "Remove elements from the whiteboard by their IDs.",
+    description: "Remove elements from the whiteboard by their IDs. Also removes any arrows connected to deleted elements.",
     inputSchema: {
       type: "object",
       properties: {
@@ -155,18 +157,12 @@ const tools = [
   },
   {
     name: "whiteboard_update",
-    description: "Update fields on an existing whiteboard element. Only provided fields are changed.",
+    description: "Update fields on an existing whiteboard element. Only provided fields are changed. Supports all element properties.",
     inputSchema: {
       type: "object",
       properties: {
         id: { type: "string", description: "Element ID to modify" },
-        x: { type: "number" },
-        y: { type: "number" },
-        w: { type: "number" },
-        h: { type: "number" },
-        label: { type: "string" },
-        fill: { type: "string" },
-        stroke: { type: "string" },
+        ...elementProperties,
       },
       required: ["id"],
     },

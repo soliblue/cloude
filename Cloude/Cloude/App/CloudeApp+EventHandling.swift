@@ -219,7 +219,12 @@ extension CloudeApp {
                     h: json["h"] as? Double,
                     label: json["label"] as? String,
                     fill: json["fill"] as? String,
-                    stroke: json["stroke"] as? String
+                    stroke: json["stroke"] as? String,
+                    points: json["points"] as? [[Double]],
+                    closed: json["closed"] as? Bool,
+                    from: json["from"] as? String,
+                    to: json["to"] as? String,
+                    type: (json["type"] as? String).flatMap { WhiteboardElementType(rawValue: $0) }
                 )
             }
 
