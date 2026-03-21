@@ -45,6 +45,11 @@ extension MainChatView {
             return
         }
 
+        if trimmedLower == "/whiteboard" {
+            onShowWhiteboard?()
+            return
+        }
+
         if isHeartbeatActive {
             sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
         } else {

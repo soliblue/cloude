@@ -38,4 +38,5 @@ let builtInCommands: [SlashCommand] = [
     SlashCommand(name: "plans", description: "View plans by stage", icon: "list.bullet.clipboard"),
     SlashCommand(name: "memories", description: "View memories", icon: "brain"),
     SlashCommand(name: "settings", description: "Open settings", icon: "gearshape"),
+    SlashCommand(name: "whiteboard", description: "Open whiteboard", icon: "pencil.and.outline"),
 ]

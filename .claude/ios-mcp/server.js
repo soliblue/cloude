@@ -109,6 +109,78 @@ const tools = [
       properties: {},
     },
   },
+  {
+    name: "whiteboard_add",
+    description: "Add elements to the collaborative whiteboard. Auto-opens if closed. Coordinate space: 0-1000 virtual units. Center is (500, 500).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        elements: {
+          type: "array",
+          description: "Elements to place on the canvas",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string", description: "Optional stable ID for later update/remove" },
+              type: { type: "string", enum: ["rect", "ellipse", "text", "path", "arrow"] },
+              x: { type: "number", description: "X position (0-1000)" },
+              y: { type: "number", description: "Y position (0-1000)" },
+              w: { type: "number", description: "Width" },
+              h: { type: "number", description: "Height" },
+              label: { type: "string", description: "Text content (for text, or label inside shapes)" },
+              fill: { type: "string", description: "Fill hex color e.g. #FF6B6B" },
+              stroke: { type: "string", description: "Stroke hex color e.g. #FFFFFF" },
+              points: { type: "array", items: { type: "array", items: { type: "number" } }, description: "Path points as [[x,y], ...]" },
+              closed: { type: "boolean", description: "Close the path?" },
+              from: { type: "string", description: "Arrow source element ID" },
+              to: { type: "string", description: "Arrow target element ID" },
+            },
+            required: ["type"],
+          },
+        },
+      },
+      required: ["elements"],
+    },
+  },
+  {
+    name: "whiteboard_remove",
+    description: "Remove elements from the whiteboard by their IDs.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ids: { type: "array", items: { type: "string" }, description: "Element IDs to delete" },
+      },
+      required: ["ids"],
+    },
+  },
+  {
+    name: "whiteboard_update",
+    description: "Update fields on an existing whiteboard element. Only provided fields are changed.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Element ID to modify" },
+        x: { type: "number" },
+        y: { type: "number" },
+        w: { type: "number" },
+        h: { type: "number" },
+        label: { type: "string" },
+        fill: { type: "string" },
+        stroke: { type: "string" },
+      },
+      required: ["id"],
+    },
+  },
+  {
+    name: "whiteboard_clear",
+    description: "Clear all elements from the whiteboard.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "whiteboard_snapshot",
+    description: "Get the current whiteboard canvas as JSON. Sends the full state (viewport + all elements) back as a user message in the conversation.",
+    inputSchema: { type: "object", properties: {} },
+  },
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
