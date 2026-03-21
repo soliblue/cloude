@@ -59,7 +59,7 @@ struct CategorizationWidget: View {
                     ForEach(unplaced, id: \.self) { item in
                         Button {
                             if let cat = selectedCategory {
-                                withAnimation(.easeInOut(duration: 0.2)) {
+                                withAnimation(.quickTransition) {
                                     placements[item] = cat
                                 }
                             }

@@ -25,7 +25,7 @@ struct MemorySectionCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.quickTransition) {
                     if isExpanded {
                         expandedPaths.remove(section.id)
                     } else {

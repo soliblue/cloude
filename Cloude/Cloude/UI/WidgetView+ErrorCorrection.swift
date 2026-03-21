@@ -67,7 +67,7 @@ struct ErrorCorrectionWidget: View {
             .clipShape(RoundedRectangle(cornerRadius: 4))
         } else if segment.correction != nil {
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.quickTransition) {
                     _ = revealed.insert(index)
                 }
             } label: {

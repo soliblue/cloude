@@ -142,6 +142,6 @@ struct ConversationView: View {
               let sessionId = conv.sessionId,
               let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
         connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        try? await Task.sleep(for: .seconds(1))
     }
 }

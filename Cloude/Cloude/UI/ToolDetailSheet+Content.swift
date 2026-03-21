@@ -89,7 +89,7 @@ extension ToolDetailSheet {
                 if outputNeedsTruncation {
                     Divider()
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(.quickTransition) {
                             outputExpanded.toggle()
                         }
                     } label: {

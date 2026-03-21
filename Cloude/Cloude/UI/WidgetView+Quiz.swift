@@ -49,7 +49,7 @@ struct QuizWidget: View {
     private func optionButton(index: Int, text: String) -> some View {
         Button {
             if !answered {
-                withAnimation(.easeInOut(duration: 0.2)) { selectedIndex = index }
+                withAnimation(.quickTransition) { selectedIndex = index }
             }
         } label: {
             HStack(spacing: 10) {

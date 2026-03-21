@@ -1,4 +1,5 @@
 # Whiteboard Refactor v1
+<!-- build: 103 -->
 
 Architecture cleanup and bug fixes for the whiteboard, informed by Codex review + refactor skill analysis.
 
