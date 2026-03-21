@@ -2,7 +2,7 @@
 <!-- priority: 9 -->
 <!-- tags: ui -->
 
-> Strip nav toolbar and window header down to essentials, move actions to context menu.
+> Declutter the top of the app. Nav toolbar has redundant env icons and useless power button. Window header is packed with rarely-used action buttons. Strip both down.
 
 ## Current State
 
@@ -45,7 +45,7 @@ Long press on bottom bar window icon -> opens WindowEditSheet
 
 **Bottom bar window icon**:
 - Tap: navigate (unchanged)
-- Long press: context menu with Refresh, Export, Fork
+- Long press: context menu with Refresh, Export, Fork, Edit
 
 ## Detailed Changes
 
@@ -56,7 +56,7 @@ Long press on bottom bar window icon -> opens WindowEditSheet
 // DELETE entire ToolbarItem(placement: .topBarTrailing) block
 ```
 
-**Move navTitlePill to trailing** (line 31-33):
+**Move navTitlePill to trailing** (lines 31-33):
 ```swift
 // CHANGE placement from .principal to .topBarTrailing
 // CHANGE environmentIndicators to navTitlePill
@@ -281,5 +281,5 @@ Decision: leave them for now. They're small standalone structs. Removing unused 
 ## Risk
 
 - Low. All removed functionality is either relocated (to context menu) or redundant (env icons, power button).
-- `connectAllConfiguredEnvironments` deletion needs a grep to confirm no other callers.
+- `connectAllConfiguredEnvironments` confirmed no other callers (only power button).
 - Context menu UX is standard iOS, no custom gesture handling needed.
