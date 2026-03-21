@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join, extname } from 'path'
 import { execSync } from 'child_process'
-import { MIME_TYPES, MAX_CHUNK, toAppleTimestamp } from './shared.js'
+import { MIME_TYPES, MAX_CHUNK, toAppleTimestamp, sendError } from './shared.js'
 
 export function handleListDirectory(dirPath, ws, sendTo) {
   const resolved = dirPath === '~' || !dirPath ? process.env.HOME : dirPath.replace(/^~/, process.env.HOME)
@@ -29,7 +29,7 @@ export function handleListDirectory(dirPath, ws, sendTo) {
     })
     sendTo(ws, { type: 'directory_listing', path: resolved, entries })
   } catch (e) {
-    sendTo(ws, { type: 'error', message: e.message })
+    sendError(ws, sendTo, e)
   }
 }
 
@@ -59,7 +59,7 @@ export function handleGetFile(filePath, ws, sendTo) {
       sendTo(ws, { type: 'file_content', path: filePath, data: b64, mimeType, size: st.size, truncated: false })
     }
   } catch (e) {
-    sendTo(ws, { type: 'error', message: e.message })
+    sendError(ws, sendTo, e)
   }
 }
 

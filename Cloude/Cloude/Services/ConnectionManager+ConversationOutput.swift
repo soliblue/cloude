@@ -88,6 +88,12 @@ final class ConversationOutput: ObservableObject {
         }
     }
 
+    func completeExecutingTools() {
+        for i in toolCalls.indices where toolCalls[i].state == .executing {
+            toolCalls[i].state = .complete
+        }
+    }
+
     func reset() {
         stopDraining()
         fullText = ""

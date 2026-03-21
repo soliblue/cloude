@@ -111,9 +111,7 @@ class ConnectionManager: ObservableObject {
 
     func clearAllRunningStates() {
         for output in conversationOutputs.values {
-            for i in output.toolCalls.indices where output.toolCalls[i].state == .executing {
-                output.toolCalls[i].state = .complete
-            }
+            output.completeExecutingTools()
             output.isRunning = false
             output.isCompacting = false
         }

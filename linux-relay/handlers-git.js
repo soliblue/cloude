@@ -1,4 +1,5 @@
 import { execSync } from 'child_process'
+import { sendError } from './shared.js'
 
 export function handleGitStatus(path, ws, sendTo) {
   try {
@@ -38,7 +39,7 @@ export function handleGitStatus(path, ws, sendTo) {
     }
     sendTo(ws, { type: 'git_status_result', status: { branch, ahead, behind, files } })
   } catch (e) {
-    sendTo(ws, { type: 'error', message: e.message })
+    sendError(ws, sendTo, e)
   }
 }
 
@@ -51,7 +52,7 @@ export function handleGitDiff(path, file, staged, ws, sendTo) {
     const diff = execSync(cmd, { cwd: path, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 })
     sendTo(ws, { type: 'git_diff_result', path: file || path, diff })
   } catch (e) {
-    sendTo(ws, { type: 'error', message: e.message })
+    sendError(ws, sendTo, e)
   }
 }
 

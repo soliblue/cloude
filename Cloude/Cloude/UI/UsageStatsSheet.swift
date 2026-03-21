@@ -44,11 +44,7 @@ struct UsageStatsSheet: View {
     }
 
     func modelDisplayName(_ name: String) -> String {
-        if name.contains("opus-4-6") { return "Opus 4.6" }
-        if name.contains("opus-4-5") { return "Opus 4.5" }
-        if name.contains("sonnet") { return "Sonnet" }
-        if name.contains("haiku") { return "Haiku" }
-        return name.components(separatedBy: "-").prefix(2).joined(separator: " ").capitalized
+        ModelIdentity(name).displayName
     }
 
     var maxOutputTokens: Int { sortedModels.first?.tokens.outputTokens ?? 1 }
