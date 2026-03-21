@@ -1,6 +1,8 @@
-# Terminal Exec - Mac Agent
+# Terminal Exec - Mac Agent {terminal.fill}
+<!-- priority: 10 -->
+<!-- tags: agent -->
 
-> Add terminalExec message handler to Mac agent for feature parity with Linux relay
+> Add terminalExec message handler to Mac agent for feature parity with Linux relay.
 
 ## Changes
 - `AppDelegate+MessageHandling.swift`: Added `terminalExec` case routing to handler

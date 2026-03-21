@@ -1,7 +1,9 @@
-# Hide Port from Environment Picker
+# Hide Port from Environment Picker {network}
+<!-- priority: 10 -->
+<!-- tags: ui, env -->
 <!-- build: 86 -->
 
-Remove port number from environment pickers everywhere - just show the hostname.
+> Removed port number from environment pickers, showing only hostname.
 
 ## Changes
 - `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude/UI/ConversationView+EmptyState.swift`: Removed port from empty state picker

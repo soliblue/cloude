@@ -1,5 +1,6 @@
-# Auth Rate Limiting
+# Auth Rate Limiting {lock.shield}
 <!-- priority: 10 -->
+<!-- tags: security -->
 <!-- build: 56 -->
 
-Rate limiting for auth attempts in `AuthManager.swift`. 3 max attempts with 5-minute lockout window. `isRateLimited()` and `recordFailedAttempt()` methods.
+> Added rate limiting for auth attempts (3 max, 5-minute lockout) in AuthManager.swift.

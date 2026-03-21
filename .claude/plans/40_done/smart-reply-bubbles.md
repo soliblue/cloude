@@ -1,7 +1,8 @@
-# Smart Reply Bubbles
+# Smart Reply Bubbles {text.bubble}
 <!-- priority: 10 -->
-<!-- tags: input, messages, ui -->
-<!-- build: 56 -->
+<!-- tags: input, ui -->
+
+> Replaced ghost-text autocomplete with tappable suggestion bubbles that appear above the input bar when agent goes idle.
 
 Replace inline ghost-text autocomplete with contextual suggestion bubbles.
 

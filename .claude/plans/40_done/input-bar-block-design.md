@@ -1,3 +1,5 @@
-# Input Bar Block Design
+# Input Bar Block Design {rectangle.split.2x1}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
 
-Edge-to-edge block layout for the input bar. Two flush blocks: left = text input, right = action button. No padding gaps, maximum screen real estate.
+> Redesigned input bar with edge-to-edge block layout for maximum screen real estate.

@@ -1,5 +1,9 @@
-# Environment Switcher
+# Environment Switcher {arrow.triangle.2.circlepath}
+<!-- priority: 10 -->
+<!-- tags: ui, settings, env -->
 <!-- build: 82 -->
+
+> Built swipeable card carousel in Settings for saving and switching between multiple Mac agent connections.
 
 Swipeable card carousel in Settings to save and switch between multiple Mac agent connections (e.g., work machine + personal machine). Each environment gets a claude-on-clouds character avatar.
 

@@ -1,7 +1,9 @@
-# Heartbeat Default Model: Sonnet
+# Heartbeat Default Model: Sonnet {cpu}
 <!-- priority: 10 -->
 <!-- tags: heartbeat -->
 <!-- build: 56 -->
+
+> Made manual heartbeats default to Sonnet instead of the most expensive model.
 
 ## Problem
 Automatic heartbeats already use `model: "sonnet"` (HeartbeatService.swift line 98), but manual heartbeats pass `model: nil` which defaults to the best (most expensive) model. Manual heartbeats should also default to Sonnet since heartbeats are background maintenance tasks that don't need Opus.

@@ -1,4 +1,8 @@
-# Market agent-pit.com
+# Market agent-pit.com {megaphone}
+<!-- priority: 10 -->
+<!-- tags: agent -->
+
+> Marketed agent-pit.com gaming hub across AI agent communities.
 
 ## What is agent-pit.com
 - Two games on Solana: 1v1 dice duels (0.01-10 SOL wager, higher roll wins) and daily lottery (0.1 SOL/ticket, midnight UTC draw)

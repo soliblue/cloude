@@ -1,4 +1,8 @@
-# Code Style Rules Parity
+# Code Style Rules Parity {text.alignleft}
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+
+> Ported Python code style rules from ai-videos CLAUDE.md to Swift equivalents in this project's CLAUDE.md.
 
 **Status**: Testing
 **Build**: 56

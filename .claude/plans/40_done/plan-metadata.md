@@ -1,5 +1,5 @@
 # Plan Metadata {tag.fill}
-<!-- priority: 1 -->
+<!-- priority: 10 -->
 <!-- tags: ui, plans -->
 <!-- build: 56 -->
 

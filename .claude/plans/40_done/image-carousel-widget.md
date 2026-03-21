@@ -1,6 +1,8 @@
-# Image Carousel Widget
+# Image Carousel Widget {photo.on.rectangle}
+<!-- priority: 10 -->
+<!-- tags: widget, ui -->
 
-Display images inline in chat. Single image shows directly, multiple images as swipeable carousel with page dots. Tap opens FilePreviewView.
+> Added inline image carousel widget with swipeable images and tap-to-preview.
 
 ## Changes
 - `CloudeApp.swift`: Added `.environmentObject(connection)` so widgets can access ConnectionManager

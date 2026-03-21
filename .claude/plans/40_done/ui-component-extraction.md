@@ -1,7 +1,9 @@
-# UI Component Extraction Refactor
+# UI Component Extraction Refactor {square.on.square.squareshape.controlhandles}
 <!-- priority: 10 -->
-<!-- tags: ui -->
+<!-- tags: ui, refactor -->
 <!-- build: 56 -->
+
+> Deduplicated conversation headers, extracted subviews from ChatMessageList, and simplified StreamingMarkdownParser.
 
 ## Status: Active
 

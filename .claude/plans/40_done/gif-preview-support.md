@@ -1,5 +1,9 @@
-# GIF Preview Support
+# GIF Preview Support {play.rectangle}
+<!-- priority: 10 -->
+<!-- tags: file-preview -->
 <!-- build: 82 -->
+
+> Added animated GIF playback in file preview using native UIImageView animation.
 
 Add animated GIF playback in FilePreviewView. Currently GIFs render as static images.
 

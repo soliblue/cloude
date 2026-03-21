@@ -1,5 +1,9 @@
-# Fix Streaming Markdown Layout Jump
+# Fix Streaming Markdown Layout Jump {text.justify.leading}
+<!-- priority: 10 -->
+<!-- tags: streaming, markdown -->
 <!-- build: 100 -->
+
+> Fixed three streaming markdown layout jump issues across block spacing, animation, and paragraph splitting.
 
 Three fixes across two builds for streaming markdown layout jumps:
 

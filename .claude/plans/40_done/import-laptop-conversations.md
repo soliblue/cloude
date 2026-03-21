@@ -1,9 +1,9 @@
-# Import Laptop Conversations
+# Import Laptop Conversations {square.and.arrow.down}
 <!-- priority: 10 -->
 <!-- tags: conversations -->
 <!-- build: 56 -->
 
-"From Laptop" section in conversation picker to import conversations from laptop Claude Code sessions.
+> Added "From Laptop" section in conversation picker to import laptop Claude Code sessions.
 
 ## Files
 - Cloude/Cloude/UI/ (conversation picker)

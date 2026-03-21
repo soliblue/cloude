@@ -1,4 +1,8 @@
-# Sticky Tasks Above Input Bar
+# Sticky Tasks Above Input Bar {checklist}
+<!-- priority: 6 -->
+<!-- tags: ui, streaming -->
+
+> Show a compact live task strip above the input bar so active TodoWrite progress is always visible during streaming.
 
 When Claude is working and has active tasks (TodoWrite with incomplete items), there's no persistent visibility into progress. You have to scroll up or tap a tool pill to see what's being worked on. During streaming this is especially annoying since new messages push the task list out of view.
 

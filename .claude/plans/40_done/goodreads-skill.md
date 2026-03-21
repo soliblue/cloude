@@ -1,4 +1,8 @@
-# Goodreads Skill
+# Goodreads Skill {book}
+<!-- priority: 10 -->
+<!-- tags: skills -->
+
+> Built skill to access Goodreads reading history via RSS feed, fetching books into searchable CSV.
 
 ## Summary
 Skill to access Soli's Goodreads reading history via RSS feed. Fetches book data into a local CSV for search, analysis, and context about his intellectual journey.

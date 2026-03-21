@@ -1,4 +1,8 @@
-# PDF Preview Support
+# PDF Preview Support {doc.richtext}
+<!-- priority: 10 -->
+<!-- tags: file-preview, ui -->
+
+> Added native PDF viewing in file previews using PDFKit.
 
 Add native PDF viewing in file previews using PDFKit.
 

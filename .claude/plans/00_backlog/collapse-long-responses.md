@@ -1,5 +1,6 @@
 # Collapse Long Previous Responses {arrow.up.and.down.text.horizontal}
 <!-- priority: 7 -->
+<!-- tags: ui, streaming -->
 
 > Older assistant responses (10+ lines) take up too much vertical space on mobile. Scrolling through long conversations means wading through walls of already-read text. Auto-collapse previous responses beyond a threshold.
 

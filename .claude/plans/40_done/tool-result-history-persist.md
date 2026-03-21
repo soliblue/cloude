@@ -1,4 +1,8 @@
-# Persist Tool Results Through History Reload
+# Persist Tool Results Through History Reload {externaldrive.fill}
+<!-- priority: 10 -->
+<!-- tags: tool-pill, agent, relay -->
+
+> Made tool result content persist through history reload by parsing tool_result from JSONL on both Mac agent and Linux relay.
 
 ## What Changed
 - `StoredToolCall` now carries `resultContent: String?`

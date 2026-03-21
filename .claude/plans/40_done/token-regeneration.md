@@ -1,5 +1,6 @@
-# Token Regeneration
+# Token Regeneration {key.fill}
 <!-- priority: 10 -->
+<!-- tags: connection, security -->
 <!-- build: 56 -->
 
-`regenerateToken()` method in `AuthManager.swift` for creating new auth tokens programmatically.
+> Added regenerateToken() method to AuthManager for programmatic auth token creation.

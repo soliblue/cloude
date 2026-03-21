@@ -2,7 +2,7 @@
 <!-- priority: 8 -->
 <!-- tags: skill, integration, communication -->
 
-> Read, compose, reply, search, and organize emails. Support Gmail (primary) via IMAP/SMTP or Google API. Inspired by OpenClaw's himalaya integration.
+> Built email skill for reading, composing, and searching emails via himalaya CLI.
 
 ## Approach
 Two options (decide during implementation):

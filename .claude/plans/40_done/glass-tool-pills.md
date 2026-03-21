@@ -1,5 +1,9 @@
-# Glass Tool Pills
+# Glass Tool Pills {capsule}
+<!-- priority: 10 -->
+<!-- tags: ui, tool-pill -->
 <!-- build: 82 -->
+
+> Restyled tool call pills with glass effect and reduced size by ~20%.
 
 **Status**: Done
 **Created**: 2026-03-01

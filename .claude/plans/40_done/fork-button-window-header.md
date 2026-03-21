@@ -1,4 +1,8 @@
-# Fork Button in Window Header
+# Fork Button in Window Header {arrow.triangle.branch}
+<!-- priority: 10 -->
+<!-- tags: ui, header -->
+
+> Added fork/duplicate conversation button to the window header toolbar.
 
 **Stage**: Testing
 **Build**: 56

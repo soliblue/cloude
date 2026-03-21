@@ -1,6 +1,8 @@
-# Header Environment Indicator
+# Header Environment Indicator {server.rack}
+<!-- priority: 10 -->
+<!-- tags: ui, header, env -->
 
-Show the current environment's icon in the window header, centered between the left tab switcher buttons and the right action buttons.
+> Added environment icon centered in the window header between tab buttons and action buttons.
 
 ## Why
 When multi-environment support lands, users need to know which environment they're talking to at a glance. Even before that, it grounds the UI - you're talking to a specific machine.

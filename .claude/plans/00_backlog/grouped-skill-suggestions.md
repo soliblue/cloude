@@ -1,4 +1,8 @@
-# Grouped Skill Suggestions
+# Grouped Skill Suggestions {square.grid.2x2}
+<!-- priority: 6 -->
+<!-- tags: ui, input, skills -->
+
+> Skill suggestions show as a flat horizontal scroll of pills, making 20+ skills hard to scan without grouping.
 
 ## Problem
 When typing `/`, skills show as a flat horizontal scroll of pills. With 20+ skills, this is hard to scan — no hierarchy, no grouping, just a wall of pills.

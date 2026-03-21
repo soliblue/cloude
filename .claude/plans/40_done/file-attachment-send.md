@@ -1,8 +1,8 @@
 # File Attachment via Send Button {paperclip}
-
-> Attach files from iPhone (PDFs, documents, code, etc.) and send them to Claude — same UX as photo attachments
-
+<!-- priority: 10 -->
 <!-- tags: ui, input -->
+
+> Attach files from iPhone (PDFs, documents, code, etc.) and send them to Claude with same UX as photo attachments.
 
 ## Changes
 - **GlobalInputBar**: Added "File" option to send button menu, `.fileImporter` for document picker, `AttachedFile` model

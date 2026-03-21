@@ -1,4 +1,8 @@
-# Code Block Toolbar Enhancements
+# Code Block Toolbar Enhancements {wrench.fill}
+<!-- priority: 10 -->
+<!-- tags: ui, markdown, settings -->
+
+> Enhanced code blocks with always-visible toolbar, word wrap toggle, line numbers toggle, and per-snippet overrides via toolbar buttons.
 
 ## Summary
 Enhance `CodeBlock` in chat with a proper toolbar: always show copy button (even without language), add word wrap toggle and line numbers toggle. Global defaults in Settings, per-snippet overrides via toolbar buttons.

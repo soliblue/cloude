@@ -1,8 +1,8 @@
-# Tool Call Input Parsing Fix
+# Tool Call Input Parsing Fix {wrench.and.screwdriver}
 <!-- priority: 10 -->
-<!-- tags: input, tools -->
+<!-- tags: input, tool-pill -->
 <!-- build: 56 -->
 
-Tool call detail view assumes JSON input, but agent sends plain strings for Read, Write, Edit, Bash. Fix parsing to handle both string and JSON inputs correctly.
+> Fixed tool detail view to handle both plain string and JSON inputs from the agent.
 
 **Files:** `ConnectionManager+API.swift`

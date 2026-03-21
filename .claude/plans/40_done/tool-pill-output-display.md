@@ -1,7 +1,9 @@
-# Tool Pill Sheet - Rich Output Display
+# Tool Pill Sheet - Rich Output Display {doc.richtext}
+<!-- priority: 10 -->
+<!-- tags: tool-pill, ui -->
 <!-- build: 86 -->
 
-Improve how Read, Write, and Edit tool results are displayed in the ToolDetailSheet.
+> Added syntax-highlighted code block rendering for Read tool output in the tool detail sheet.
 
 ## Phase 1: Rich Read output (current)
 

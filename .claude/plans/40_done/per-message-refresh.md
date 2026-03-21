@@ -1,5 +1,5 @@
 # Per-Message Refresh {arrow.clockwise.circle}
-<!-- priority: 2 -->
+<!-- priority: 10 -->
 <!-- tags: ui, chat, ux -->
 
 > Add a refresh button on assistant response bubbles to re-generate individual messages.

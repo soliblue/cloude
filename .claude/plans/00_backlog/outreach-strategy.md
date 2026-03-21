@@ -1,4 +1,8 @@
-# Outreach Strategy — Align Online Persona with Offline Reality
+# Outreach Strategy {megaphone}
+<!-- priority: 7 -->
+<!-- tags: agent -->
+
+> Align Soli's online presence with his IRL impact to get recognition from companies like Anthropic.
 
 ## Context
 Soli's IRL impact is massive (rockstar employee, 30 VisionPro demos, 6 Claude Code sessions/week, founding CTO experience) but his online presence doesn't reflect it. Goal: get recognition from companies like Anthropic where his work would be a perfect fit.

@@ -1,5 +1,8 @@
-<!-- build: 86 -->
-# Search bar auto-focus
+# Search bar auto-focus {magnifyingglass}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
+
+> Auto-focus the search bar and show keyboard when opening the conversation search sheet.
 
 ## What changed
 Opening the conversation search sheet now auto-focuses the search bar and brings up the keyboard.

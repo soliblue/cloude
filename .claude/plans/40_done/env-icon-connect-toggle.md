@@ -1,5 +1,9 @@
-# Environment Icon Connect/Disconnect Toggle
+# Environment Icon Connect/Disconnect Toggle {power}
+<!-- priority: 10 -->
+<!-- tags: ui, env, connection -->
 <!-- build: 86 -->
+
+> Made environment icons tappable to toggle connect/disconnect state.
 
 - Top-level env icons (above conversation name in CloudeApp) are now tappable
 - Connected/connecting envs disconnect on tap

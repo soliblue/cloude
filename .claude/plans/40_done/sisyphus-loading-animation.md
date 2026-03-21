@@ -1,5 +1,8 @@
-# Sisyphus Loading Animation
-<!-- build: 82 -->
+# Sisyphus Loading Animation {figure.walk}
+<!-- priority: 10 -->
+<!-- tags: ui, streaming -->
+
+> Added a Sisyphus boulder-pushing animation while waiting for the first token from Claude.
 
 ## What
 Small loading animation in the chat area while waiting for the first token from Claude. A tiny character pushes a ball up a hill, it rolls back, repeat — Sisyphus myth.

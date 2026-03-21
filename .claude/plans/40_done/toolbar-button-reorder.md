@@ -1,7 +1,9 @@
-# Toolbar Button Reorder
+# Toolbar Button Reorder {arrow.left.arrow.right}
+<!-- priority: 10 -->
+<!-- tags: ui, header -->
 <!-- build: 61 -->
 
-Swapped Settings and Plans button positions in the main toolbar.
+> Swapped Settings and Plans button positions in the main toolbar.
 
 **Before**: Plans | Memories | Settings ... [Logo] ... Power
 **After**: Settings | Memories | Plans ... [Logo] ... Power

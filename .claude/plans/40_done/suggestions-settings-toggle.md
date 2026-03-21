@@ -1,4 +1,8 @@
-# Suggestions Settings Toggle
+# Suggestions Settings Toggle {switch.2}
+<!-- priority: 10 -->
+<!-- tags: settings, ui -->
+
+> Added a toggle in Settings to enable/disable smart reply suggestions, defaulting to off.
 
 **Status**: Testing
 

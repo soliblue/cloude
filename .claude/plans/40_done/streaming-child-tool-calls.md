@@ -1,4 +1,8 @@
-# Streaming Child Tool Calls Bug
+# Streaming Child Tool Calls Bug {arrow.triangle.branch}
+<!-- priority: 10 -->
+<!-- tags: streaming, tool-pill -->
+
+> Fixed nested tool calls not rendering during streaming by extracting children from the full toolCalls array.
 
 ## Problem
 Nested/child tool calls (e.g., Explorer spawning multiple sub-tool-calls) render correctly when loading a saved conversation but NOT during real-time streaming.

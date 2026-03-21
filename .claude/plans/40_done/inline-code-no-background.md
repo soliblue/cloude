@@ -1,6 +1,8 @@
-# Inline Code: Remove Background Color
+# Inline Code: Remove Background Color {chevron.left.forwardslash.chevron.right}
+<!-- priority: 10 -->
+<!-- tags: ui, markdown -->
 
-Removed `backgroundColor` from inline code rendering. Inline code still renders monospaced, just without the `.secondary.opacity(0.1)` background.
+> Removed background color from inline code rendering, keeping only monospaced font.
 
 **Files:** `StreamingMarkdownView+InlineText.swift`
 

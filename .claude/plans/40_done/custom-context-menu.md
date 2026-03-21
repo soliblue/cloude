@@ -1,4 +1,8 @@
-# Custom Context Menu (No Zoom)
+# Custom Context Menu (No Zoom) {hand.tap}
+<!-- priority: 10 -->
+<!-- tags: ui -->
+
+> Replaced iOS contextMenu zoom animation with custom long-press overlay on message bubbles.
 
 ## Problem
 - iOS `.contextMenu` causes a zoom-out/shrink preview animation on long-press

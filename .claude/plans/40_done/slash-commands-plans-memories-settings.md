@@ -1,5 +1,8 @@
-# Slash Commands for Plans, Memories, Settings
-<!-- build: 82 -->
+# Slash Commands for Plans, Memories, Settings {slash.circle}
+<!-- priority: 10 -->
+<!-- tags: ui, settings, plans, memory -->
+
+> Added /plans, /memories, and /settings as built-in slash commands that open their respective sheets.
 
 Added `/plans`, `/memories`, and `/settings` as built-in slash commands:
 - `/plans` opens the plans sheet (removed clipboard button from toolbar)

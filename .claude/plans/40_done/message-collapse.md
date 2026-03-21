@@ -1,6 +1,8 @@
-# Message Collapse
+# Message Collapse {rectangle.compress.vertical}
+<!-- priority: 10 -->
+<!-- tags: ui, streaming -->
 
-Long-press context menu option to collapse assistant messages with expand/collapse toggle. Persists across conversation switches and app restarts.
+> Added long-press collapse/expand for assistant messages with persistent state.
 
 ## Implementation
 - `isCollapsed: Bool` on `ChatMessage` model (Codable, defaults to `false`)

@@ -1,6 +1,8 @@
-# Parallel Environment Connections
+# Parallel Environment Connections {point.3.connected.trianglepath.dotted}
+<!-- priority: 10 -->
+<!-- tags: connection, env -->
 
-Connect to all environments simultaneously instead of one at a time. Stream responses from multiple machines in parallel.
+> Enabled simultaneous connections to all environments for parallel streaming.
 
 ## Why
 Multi-agent support already exists (add/switch servers). But switching disconnects from the previous one. With Medina + Mac both running, you should be able to chat on both at the same time across different windows.

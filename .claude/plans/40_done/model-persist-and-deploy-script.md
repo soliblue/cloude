@@ -1,4 +1,8 @@
-# Model Selection Persistence + Deploy Script
+# Model Selection Persistence + Deploy Script {arrow.clockwise}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
+
+> Fixed model selection persisting across window switches and added deploy-ios.sh script.
 
 ## Changes
 

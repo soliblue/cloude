@@ -1,6 +1,8 @@
-# Widget Access Across Chat
+# Widget Access Across Chat {rectangle.stack.badge.magnifyingglass}
+<!-- priority: 5 -->
+<!-- tags: widget, ui -->
 
-Make it easy to find and jump to widgets scattered throughout a long conversation.
+> Make it easy to find and jump to widgets scattered throughout a long conversation.
 
 ## Problem
 Widgets get buried in chat history. If a conversation has 50+ messages and 5 widgets, there's no way to quickly find or revisit them without scrolling through everything.

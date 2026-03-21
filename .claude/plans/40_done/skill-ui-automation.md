@@ -2,7 +2,7 @@
 <!-- priority: 9 -->
 <!-- tags: skill, automation, accessibility -->
 
-> Interact with any Mac app via the Accessibility API. See the screen, click buttons, type text, navigate menus. Zero dependencies — pure Swift compiled with `swiftc`. Gives Cloude hands on the desktop.
+> Built Mac UI automation skill using Accessibility API for screenshots, clicking, typing, and navigating any app.
 
 ## Approach
 Small Swift CLI (~200 lines) using:

@@ -1,8 +1,8 @@
 # Linux Relay Modular Refactor {wrench.and.screwdriver}
+<!-- priority: 10 -->
+<!-- tags: refactor, relay -->
 
-> Split monolithic handlers.js into domain-specific modules for maintainability
-
-<!-- tags: refactor, linux-relay -->
+> Split monolithic handlers.js into domain-specific modules for maintainability.
 
 ## Changes
 

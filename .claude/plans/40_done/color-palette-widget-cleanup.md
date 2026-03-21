@@ -1,4 +1,8 @@
-# Color Palette Widget Cleanup
+# Color Palette Widget Cleanup {paintpalette}
+<!-- priority: 10 -->
+<!-- tags: widget, ui -->
+
+> Simplified color palette widget by removing header/container, using compact swatches with 2-column grid layout.
 
 ## Changes
 - Removed WidgetHeader (no icon/title bar)

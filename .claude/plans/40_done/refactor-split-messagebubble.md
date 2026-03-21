@@ -1,7 +1,9 @@
-# Split ChatView+MessageBubble.swift
+# Split ChatView+MessageBubble.swift {scissors}
 <!-- priority: 10 -->
-<!-- tags: messages, refactor, tools -->
+<!-- tags: messages, refactor, tool-pill -->
 <!-- build: 56 -->
+
+> Split 505-line MessageBubble into separate files for message bubbles and tool pills.
 
 ## Changes
 505 lines → 2 files:

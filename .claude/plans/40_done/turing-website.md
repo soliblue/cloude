@@ -1,6 +1,8 @@
-# Turing Machine Website
+# Turing Machine Website {function}
+<!-- priority: 10 -->
+<!-- tags: ui -->
 
-Deploy interactive Turing machine visualization to turing.soli.blue via Cloudflare Pages.
+> Built and deployed interactive Turing machine visualization to turing.soli.blue via Cloudflare Pages.
 
 ## Done
 - [x] Created project at `/Users/soli/Desktop/CODING/turing/`

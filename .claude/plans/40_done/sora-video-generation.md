@@ -1,5 +1,8 @@
-# Sora Video Generation Skill
-<!-- priority: 5 -->
+# Sora Video Generation Skill {film}
+<!-- priority: 10 -->
+<!-- tags: skills -->
+
+> Built /video skill for generating videos via Sora using Playwright automation with proxy and session persistence.
 
 Give Claude the ability to generate videos using Sora via Soli's ChatGPT Pro subscription ($200/mo, Sora included).
 

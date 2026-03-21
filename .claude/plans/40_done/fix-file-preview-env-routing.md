@@ -1,4 +1,8 @@
-# Fix file preview environment routing
+# Fix file preview environment routing {arrow.triangle.swap}
+<!-- priority: 10 -->
+<!-- tags: file-preview, env -->
+
+> Fixed file preview routing to wrong environment by using window-specific environment ID.
 
 ## Problem
 File preview was routing to the wrong environment (e.g. "medine" instead of "work") when multiple environments are connected. Only reproducible with 2+ environments.

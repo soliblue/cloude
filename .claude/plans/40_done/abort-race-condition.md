@@ -1,4 +1,8 @@
-# Fix abort race condition in linux-relay
+# Fix abort race condition in linux-relay {bolt.trianglebadge.exclamationmark}
+<!-- priority: 10 -->
+<!-- tags: relay, connection -->
+
+> Fixed race condition where pressing stop on iOS could leave two agents running simultaneously by making abort await process exit before spawning new ones.
 
 ## Problem
 Pressing stop on iOS didn't reliably kill the Claude process. If a new message was sent before the old process died, two agents would run simultaneously in the same session. The old process dying also broadcast a false `idle` status, confusing the iOS UI.

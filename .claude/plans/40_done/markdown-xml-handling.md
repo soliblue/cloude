@@ -1,6 +1,8 @@
-# Markdown XML Tag Handling
+# Markdown XML Tag Handling {chevron.left.slash.chevron.right}
+<!-- priority: 10 -->
+<!-- tags: markdown, ui -->
 
-Agent tool results (and other tool outputs) contain XML tags like `<usage>`, `<system-reminder>`, etc. mixed into markdown content. Currently these render as raw visible text in `StreamingMarkdownView`.
+> Styled XML tags in markdown as labeled inline blocks instead of raw text.
 
 ## Goals
 - XML blocks outside code fences render as styled inline blocks (like code blocks but for XML)

@@ -1,4 +1,8 @@
-# Commercial Launch
+# Commercial Launch {cart.fill}
+<!-- priority: 6 -->
+<!-- tags: plans, security -->
+
+> Full public launch checklist: rebranding, landing page, Stripe payments, App Store submission, and multi-tenant infrastructure.
 
 Full public launch: rebranding, landing page, payments, App Store.
 

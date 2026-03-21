@@ -1,6 +1,9 @@
-# Dead Code and Unused Imports Cleanup
+# Dead Code and Unused Imports Cleanup {trash}
 <!-- priority: 10 -->
+<!-- tags: refactor -->
 <!-- build: 56 -->
+
+> Removed dead functions, unused scroll state vars, unused imports, and fixed force unwraps.
 
 **Status**: Active
 **Agent**: Cleanup agent

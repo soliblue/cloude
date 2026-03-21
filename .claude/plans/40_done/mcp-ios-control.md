@@ -1,4 +1,8 @@
-# MCP iOS Control - Replace cloude CLI with MCP tools
+# MCP iOS Control - Replace cloude CLI with MCP tools {wrench}
+<!-- priority: 10 -->
+<!-- tags: agent, relay -->
+
+> Replaced cloude CLI commands with MCP tool servers for app control and rich content.
 
 ## Summary
 Replaced the `cloude` CLI command system with two MCP servers: `mcp__ios__*` for app control and `mcp__widgets__*` for rich content. iOS app now handles control tool calls directly from the stream instead of relying on Mac agent command parsing.

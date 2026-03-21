@@ -1,5 +1,8 @@
-# Stop Button Shows Immediately When Input Empty
-<!-- build: 82 -->
+# Stop Button Shows Immediately When Input Empty {stop.fill}
+<!-- priority: 10 -->
+<!-- tags: input, ui -->
+
+> Show stop button immediately during streaming when input is empty instead of a 3-second delay.
 
 ## Problem
 When streaming with empty input (not focused), a disabled send button showed for ~3 seconds before the stop button appeared. Confusing UX.

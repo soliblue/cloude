@@ -1,4 +1,8 @@
-# Refresh Button Rotate Animation
+# Refresh Button Rotate Animation {arrow.clockwise}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
+
+> Added rotate animation to the refresh button in GlobalInputBar.
 
 Ad-hoc request. Added `.symbolEffect(.rotate)` to the refresh button in GlobalInputBar.
 

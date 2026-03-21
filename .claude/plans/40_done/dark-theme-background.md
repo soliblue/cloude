@@ -1,4 +1,8 @@
-# Dark Theme Background & Ocean Palette Consistency
+# Dark Theme Background & Ocean Palette Consistency {paintpalette.fill}
+<!-- priority: 10 -->
+<!-- tags: ui, theme -->
+
+> Fixed ocean palette consistency across settings, search, window edit, and empty conversation backgrounds.
 
 **Status**: Testing
 **Changed**: Colors.swift, ConversationView+Components.swift, SettingsView.swift, ConversationSearchSheet.swift, WindowEditForm.swift

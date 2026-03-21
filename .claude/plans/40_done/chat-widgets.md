@@ -1,5 +1,9 @@
-# Chat Widgets (Interactive Elements in Responses)
+# Chat Widgets (Interactive Elements in Responses) {puzzlepiece.fill}
+<!-- priority: 10 -->
+<!-- tags: widget, ui -->
 <!-- build: 82 -->
+
+> Built plugin system for rich interactive widgets (function plots, fill-in-blank, calculators) rendered as native SwiftUI views inline in chat.
 
 ## Summary
 Plugin system for rich interactive elements in chat. Claude calls widget "tools" via Bash, they render as native SwiftUI views inline in the conversation. Stateless, locally interactive, zero protocol pollution. iOS-only changes + a skill file.

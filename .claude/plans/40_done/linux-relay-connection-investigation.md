@@ -1,4 +1,8 @@
-# Linux Relay Connection Investigation
+# Linux Relay Connection Investigation {magnifyingglass}
+<!-- priority: 10 -->
+<!-- tags: relay, connection -->
+
+> Investigated relay crash and EADDRINUSE failures after syntax error in server.js.
 
 ## Problem
 Soli sent a message from iOS, never got a response, had to restart the app. We can't tell what went wrong because logging is insufficient and the relay has process management issues.

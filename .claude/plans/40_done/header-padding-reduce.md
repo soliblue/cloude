@@ -1,6 +1,8 @@
-# Reduce Header Horizontal Padding
+# Reduce Header Horizontal Padding {arrow.right.and.line.vertical.and.arrow.left}
+<!-- priority: 10 -->
+<!-- tags: ui, header -->
 
-Reduced the window header's outer horizontal padding from 11pt to 7pt for a tighter feel on the top-left toolbar buttons.
+> Reduced header horizontal padding from 11pt to 7pt for a tighter toolbar feel.
 
 ## Changes
 - `MainChatView.swift`: `.padding(.horizontal, 11)` → `.padding(.horizontal, 7)`

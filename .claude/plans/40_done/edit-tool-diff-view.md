@@ -1,4 +1,8 @@
-# Edit Tool Diff View
+# Edit Tool Diff View {arrow.left.arrow.right}
+<!-- priority: 10 -->
+<!-- tags: ui, tool-pill -->
+
+> Added inline diff view to Edit tool detail sheet showing old_string/new_string changes.
 
 ## Problem
 When tapping an Edit tool pill, the detail sheet only shows the file path and a "updated successfully" confirmation. The CLI has `old_string` and `new_string` in the tool_use input, but `ToolInputExtractor` discards them, keeping only `file_path`.

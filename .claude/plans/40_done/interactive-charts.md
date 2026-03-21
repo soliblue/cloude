@@ -1,5 +1,9 @@
-# Interactive Chart Widgets
+# Interactive Chart Widgets {hand.tap}
+<!-- priority: 10 -->
+<!-- tags: widget, ui -->
 <!-- build: 82 -->
+
+> Added tap/drag interactivity to all four chart widgets for data point inspection.
 
 ## Summary
 Add tap/drag interactivity to all four chart widgets so users can inspect data points.

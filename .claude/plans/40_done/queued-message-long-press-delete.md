@@ -1,5 +1,9 @@
-# Queued Message: Long Press to Delete
+# Queued Message: Long Press to Delete {hand.tap}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
 <!-- build: 82 -->
+
+> Replaced swipe-to-delete on queued messages with long-press context menu for consistency.
 
 ## Problem
 Swipe-to-delete on queued messages was causing interaction issues. Inconsistent with the rest of the app which uses long-press context menus.

@@ -1,4 +1,8 @@
-# Shared Environment + Folder Picker Component
+# Shared Environment + Folder Picker Component {folder.badge.gearshape}
+<!-- priority: 10 -->
+<!-- tags: ui, env -->
+
+> Unified environment and folder picker into a single reusable component used in both empty state and window edit sheet.
 
 The empty state and window edit sheet both have environment pickers and folder pickers but with different UI/UX and duplicated code. Unify into one reusable component.
 

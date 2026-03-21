@@ -1,8 +1,8 @@
-# Tool Pill Icons
+# Tool Pill Icons {square.grid.2x2}
 <!-- priority: 10 -->
-<!-- tags: tools -->
+<!-- tags: tool-pill, ui -->
 <!-- build: 56 -->
 
-Add SF Symbol icons to tool call pills. Map by tool name: Read → doc.text, Write → doc.badge.plus, Edit → pencil.line, Bash → terminal, Grep → magnifyingglass, etc.
+> Added SF Symbol icons to tool pills mapped by tool name (Read, Write, Edit, Bash, Grep, etc.).
 
 **Files:** `ChatView+MessageBubble.swift` (InlineToolPill)

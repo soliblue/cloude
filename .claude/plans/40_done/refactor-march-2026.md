@@ -1,4 +1,8 @@
-# Refactor: March 2026 Cleanup
+# Refactor: March 2026 Cleanup {wrench.and.screwdriver}
+<!-- priority: 10 -->
+<!-- tags: refactor -->
+
+> Major cleanup pass extracting shared helpers, splitting large files, and removing dead state.
 
 ## HIGH Priority
 - [x] ProcessMonitor: Extract shared `findProcesses(matching:excludingSelf:)` to deduplicate 95% identical code

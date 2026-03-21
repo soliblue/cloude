@@ -1,5 +1,9 @@
-# Animated Empty State - Boxer
+# Animated Empty State - Boxer {figure.boxing}
+<!-- priority: 10 -->
+<!-- tags: ui -->
 <!-- build: 86 -->
+
+> Added animated boxer pixel art character to empty chat state using GIF player via UIViewRepresentable.
 
 Generated a new boxer pixel art character matching the style of the other 3 (painter, builder, explorer) using Gemini image generation. Then used Google Veo 3.0 image-to-video to create an 8-second boxing idle animation on green screen. Chroma keyed the green background, optimized with gifsicle (128 colors, O3), and integrated into the empty chat state.
 

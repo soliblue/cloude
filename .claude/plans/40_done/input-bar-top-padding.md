@@ -1,5 +1,7 @@
-# Remove Extra Top Padding on Input Bar
+# Remove Extra Top Padding on Input Bar {arrow.up.and.down}
+<!-- priority: 10 -->
+<!-- tags: ui, input -->
 
-Removed the 12pt top padding above the input bar (`.padding(.vertical, 12)` → `.padding(.bottom, 12)`). The gap between the chat content and input bar was unnecessary.
+> Removed unnecessary 12pt top padding above the input bar.
 
 **File:** `GlobalInputBar.swift` line 229

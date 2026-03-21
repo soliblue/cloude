@@ -1,7 +1,9 @@
-# Codex Skill
+# Codex Skill {terminal}
 <!-- priority: 10 -->
 <!-- tags: skills -->
 <!-- build: 56 -->
+
+> Created /codex skill to get second opinions from OpenAI's Codex CLI in read-only sandbox mode.
 
 ## Summary
 Add a `/codex` skill to get second opinions from OpenAI's Codex CLI on code questions.

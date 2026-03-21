@@ -1,6 +1,8 @@
-# Fix Table Column Alignment
+# Fix Table Column Alignment {tablecells}
 <!-- priority: 10 -->
-<!-- build: 56 -->
+<!-- tags: markdown, ui -->
+
+> Fixed markdown table column alignment by replacing HStack with SwiftUI Grid for uniform column widths.
 
 Columns in markdown tables weren't aligned across rows — each row sized independently.
 

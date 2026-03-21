@@ -1,7 +1,9 @@
-# Rich Tool Rendering — Phase 2: Result Previews
+# Rich Tool Rendering — Phase 2: Result Previews {text.below.photo}
 <!-- priority: 10 -->
-<!-- tags: tools -->
+<!-- tags: tool-pill, ui -->
 <!-- build: 56 -->
+
+> Added brief result summaries as second lines on completed tool pills.
 
 Show brief result summary as a second line on completed tool pills:
 - `↳ 241 lines` for Read

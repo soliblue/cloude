@@ -1,4 +1,8 @@
-# Reliable Scroll-to-Bottom
+# Reliable Scroll-to-Bottom {arrow.down.to.line}
+<!-- priority: 10 -->
+<!-- tags: ui, streaming -->
+
+> Fixed streaming auto-scroll with isolated invalidation, boosting FPS from ~10 to 55+ during streaming.
 
 ## Status
 Streaming auto-scroll is solved. Two remaining gaps for full scroll reliability.

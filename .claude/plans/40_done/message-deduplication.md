@@ -1,7 +1,9 @@
-# Message Deduplication Plan
+# Message Deduplication Plan {doc.on.doc}
 <!-- priority: 10 -->
-<!-- tags: messages -->
+<!-- tags: streaming -->
 <!-- build: 56 -->
+
+> Fixed duplicate messages appearing after app restart.
 
 ## Problem
 

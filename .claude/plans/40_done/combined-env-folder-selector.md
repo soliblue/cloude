@@ -1,5 +1,9 @@
-# Combined Environment + Folder Selector
+# Combined Environment + Folder Selector {rectangle.on.rectangle}
+<!-- priority: 10 -->
+<!-- tags: ui, env -->
 <!-- build: 86 -->
+
+> Grouped environment and folder pickers into a single card with auto-open folder picker on env change and disabled state when disconnected.
 
 - Environment and folder pickers grouped into a single rounded card
 - Environment row on top, folder row below, separated by a divider

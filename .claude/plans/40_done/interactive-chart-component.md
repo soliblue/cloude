@@ -1,7 +1,8 @@
-# Interactive Chart Component
+# Interactive Chart Component {chart.bar.xaxis}
+<!-- priority: 10 -->
+<!-- tags: ui, widget -->
 
-**Status**: Done
-**Created**: 2026-02-10
+> Refactored activity chart into a reusable InteractiveBarChart component.
 
 ## What
 Refactored the activity chart in UsageStatsSheet into a reusable `InteractiveBarChart` component.

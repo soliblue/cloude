@@ -1,4 +1,8 @@
-# Show Skill Suggestions on Empty Input
+# Show Skill Suggestions on Empty Input {lightbulb}
+<!-- priority: 10 -->
+<!-- tags: ui, input, skills -->
+
+> Show skill command pills when input bar is empty and focused for better discoverability.
 
 ## Problem
 Skills are only discoverable when typing `/` — new users or casual use misses them entirely. The input bar shows rotating placeholder text when empty, but could also surface skill pills as a discovery mechanism.

@@ -1,6 +1,9 @@
-# Native Image Generation
+# Native Image Generation {photo.badge.plus}
 <!-- priority: 10 -->
+<!-- tags: skills, agent -->
 <!-- build: 56 -->
+
+> Added native image generation capability so Claude can decide when to generate images without being told.
 
 Teach Claude to use image models (primarily Nano Banana Pro / Gemini image gen) as a native capability — knowing when and how to generate images without being explicitly told to.
 

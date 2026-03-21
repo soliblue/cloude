@@ -1,4 +1,8 @@
-# Conversation Artifacts
+# Conversation Artifacts {doc.on.doc.fill}
+<!-- priority: 6 -->
+<!-- tags: ui, file-preview -->
+
+> Surface generated content (plans, code, documents) as trackable artifacts instead of losing them in chat scroll.
 
 ## Problem
 When Claude generates substantial content (travel plans, code, documents, analysis), it gets lost in chat scroll. No way to track, revisit, or iterate on generated outputs.

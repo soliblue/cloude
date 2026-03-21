@@ -1,6 +1,8 @@
-# Header Tab Buttons
+# Header Tab Buttons {rectangle.3.group}
+<!-- priority: 10 -->
+<!-- tags: ui, header -->
 
-Move conversation info to nav toolbar center, replace window header title pill with Chat/Files/Git tab icon buttons.
+> Replaced window header title pill with Chat/Files/Git tab icon buttons.
 
 ## Changes
 - CloudeApp.swift: Added `.principal` toolbar item with conversation name/folder/cost (no SF symbol)

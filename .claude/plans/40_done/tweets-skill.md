@@ -1,7 +1,9 @@
-# Tweets Skill
+# Tweets Skill {bird}
 <!-- priority: 10 -->
 <!-- tags: skills -->
 <!-- build: 56 -->
+
+> Created /tweets skill for searching, analyzing, and using Soli's Twitter archive as context.
 
 ## Summary
 Create a `/tweets` skill that provides access to Soli's Twitter archive for context, analysis, and conversation. The tweet data should be available locally but never pushed to git.

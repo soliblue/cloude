@@ -1,6 +1,8 @@
-# Unified Consult Skill
+# Unified Consult Skill {brain.head.profile}
+<!-- priority: 10 -->
+<!-- tags: skills -->
 
-Merged `/codex` and `/secondbrain` into a single `/consult` skill that routes to Codex (OpenAI) or different Claude models (Haiku, Sonnet, Opus). One skill, multiple brains. All read-only.
+> Merged /codex and /secondbrain into a single /consult skill routing to Codex or Claude models.
 
 ## Changes
 - Created `.claude/skills/consult/SKILL.md` with routing logic

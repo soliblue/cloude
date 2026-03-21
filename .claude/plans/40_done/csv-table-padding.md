@@ -1,9 +1,9 @@
-# CSV Table — Remove Unnecessary Horizontal Padding
+# CSV Table - Remove Unnecessary Horizontal Padding {rectangle.compress.horizontal}
+<!-- priority: 10 -->
+<!-- tags: ui, file-preview -->
 <!-- build: 60 -->
 
-<!-- status: testing -->
-<!-- priority: low -->
-<!-- tags: ui, files -->
+> Removed unnecessary horizontal padding from CSV table viewer by dropping the scrollingContent wrapper.
 
 ## Problem
 CSV files rendered in the file viewer had unnecessary white padding on the left and right sides. The `scrollingContent` wrapper added 16pt padding on all sides, but CSVTableView already handles its own horizontal cell padding internally.

@@ -2,7 +2,7 @@
 <!-- priority: 5 -->
 <!-- tags: skill, integration, apple -->
 
-> Search, read, and create contacts via AppleScript. Lookup phone numbers, emails, birthdays. Enables other skills (email, calendar) to resolve names to contact info.
+> Built Apple Contacts skill for searching and reading contacts via AppleScript.
 
 ## Approach
 AppleScript via `osascript`. Read-heavy — creating/editing contacts less common.
