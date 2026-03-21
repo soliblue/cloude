@@ -15,7 +15,7 @@ extension UsageStatsSheet {
         VStack(spacing: 10) {
             HStack(spacing: 6) {
                 ForEach(0..<chartModes.count, id: \.self) { i in
-                    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { chartPage = i } }) {
+                    Button(action: { withAnimation(.quickTransition) { chartPage = i } }) {
                         Image(systemName: chartModes[i].icon)
                             .font(.system(size: 12))
                             .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(0.4))

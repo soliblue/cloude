@@ -56,7 +56,7 @@ struct GlobalInputBar: View {
         static let swipeThreshold: CGFloat = 60
         static let transitionDuration: Double = 0.15
         static let stopButtonDelay: TimeInterval = 3.0
-        static let fileSearchDebounceNanos: UInt64 = 150_000_000
+        static let fileSearchDebounce: Duration = .milliseconds(150)
         static let maxImageAttachments = 5
         static let placeholderRotationInterval: TimeInterval = 8
     }
@@ -112,7 +112,7 @@ struct GlobalInputBar: View {
                 if let query = atMentionQuery {
                     fileSearchDebounce?.cancel()
                     fileSearchDebounce = Task {
-                        try? await Task.sleep(nanoseconds: Constants.fileSearchDebounceNanos)
+                        try? await Task.sleep(for: Constants.fileSearchDebounce)
                         if !Task.isCancelled {
                             onFileSearch?(query)
                         }
@@ -135,7 +135,7 @@ struct GlobalInputBar: View {
             }
             .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
                 if isRunning && !isInputFocused && Date().timeIntervalSince(idleTime) >= Constants.stopButtonDelay {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(.quickTransition) {
                         showStopButton = true
                     }
                 }

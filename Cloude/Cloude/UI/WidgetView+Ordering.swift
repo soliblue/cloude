@@ -44,7 +44,7 @@ struct OrderingWidget: View {
                 FlowLayout(spacing: 8) {
                     ForEach(remaining, id: \.self) { item in
                         Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
+                            withAnimation(.quickTransition) {
                                 selectedOrder.append(item)
                             }
                         } label: {
@@ -94,7 +94,7 @@ struct OrderingWidget: View {
             if checked && !revealed {
                 HStack(spacing: 8) {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(.quickTransition) {
                             if index > 0 { selectedOrder.swapAt(index, index - 1) }
                         }
                     } label: {
@@ -106,7 +106,7 @@ struct OrderingWidget: View {
                     .disabled(index == 0)
 
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(.quickTransition) {
                             if index < selectedOrder.count - 1 { selectedOrder.swapAt(index, index + 1) }
                         }
                     } label: {
@@ -121,7 +121,7 @@ struct OrderingWidget: View {
 
             if !checked {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(.quickTransition) {
                         selectedOrder.removeAll { $0 == item }
                     }
                 } label: {

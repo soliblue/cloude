@@ -59,7 +59,7 @@ struct TypeAnswerWidget: View {
                 .disabled(checked)
                 .onSubmit {
                     if !userInput.isEmpty {
-                        withAnimation(.easeInOut(duration: 0.2)) { checked = true }
+                        withAnimation(.quickTransition) { checked = true }
                         isFocused = false
                     }
                 }

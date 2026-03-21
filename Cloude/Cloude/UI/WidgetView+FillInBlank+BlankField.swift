@@ -49,7 +49,7 @@ extension FillInBlankWidget {
                 if index + 1 < blanks.count {
                     focusedBlank = index + 1
                 } else {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(.quickTransition) {
                         originalAnswers = answers
                         checked = true
                         focusedBlank = nil

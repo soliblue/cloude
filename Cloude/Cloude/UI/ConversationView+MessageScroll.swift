@@ -66,7 +66,7 @@ extension ChatMessageList {
                 isInitialLoad = false
                 return
             }
-            try? await Task.sleep(nanoseconds: 300_000_000)
+            try? await Task.sleep(for: .milliseconds(300))
             if isInitialLoad {
                 isInitialLoad = false
             }

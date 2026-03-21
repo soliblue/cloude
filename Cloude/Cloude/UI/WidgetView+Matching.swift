@@ -108,7 +108,7 @@ struct MatchingWidget: View {
 
         return Button {
             if !isMatched, let left = selectedLeft {
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.quickTransition) {
                     matched[left] = item
                     selectedLeft = nil
                 }

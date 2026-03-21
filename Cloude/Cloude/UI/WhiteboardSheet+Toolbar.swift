@@ -45,8 +45,8 @@ extension WhiteboardSheet {
 
             toolBar
         }
-        .animation(.easeInOut(duration: 0.2), value: store.activeTool)
-        .animation(.easeInOut(duration: 0.2), value: store.selectedElementId != nil)
+        .animation(.quickTransition, value: store.activeTool)
+        .animation(.quickTransition, value: store.selectedElementId != nil)
     }
 
     private var toolBar: some View {

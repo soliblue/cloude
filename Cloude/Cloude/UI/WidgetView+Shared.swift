@@ -1,5 +1,9 @@
 import SwiftUI
 
+extension Animation {
+    static let quickTransition = Animation.easeInOut(duration: 0.2)
+}
+
 extension Notification.Name {
     static let widgetInputActive = Notification.Name("widgetInputActive")
     static let editActiveWindow = Notification.Name("editActiveWindow")
@@ -62,7 +66,7 @@ struct WidgetButton: View {
 
     var body: some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) { action() }
+            withAnimation(.quickTransition) { action() }
         } label: {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .medium))

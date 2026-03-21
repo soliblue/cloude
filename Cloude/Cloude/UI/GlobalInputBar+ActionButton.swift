@@ -96,8 +96,8 @@ extension GlobalInputBar {
             .frame(maxHeight: .infinity)
             .background(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? Color.accentColor : Color.themeSecondary.opacity(0.5))
             .contentShape(Rectangle())
-            .animation(.easeInOut(duration: 0.2), value: actionButtonIcon)
-            .animation(.easeInOut(duration: 0.2), value: canSend)
+            .animation(.quickTransition, value: actionButtonIcon)
+            .animation(.quickTransition, value: canSend)
     }
 
     func setEffort(_ level: EffortLevel?) {
