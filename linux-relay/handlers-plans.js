@@ -1,10 +1,10 @@
 import { readdirSync, readFileSync, existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { log } from './log.js'
-import { DEFAULT_PROJECT } from './shared.js'
+import { resolveProject, sendError } from './shared.js'
 
 export function handleGetMemories(workingDirectory, ws, sendTo) {
-  const dir = workingDirectory || DEFAULT_PROJECT
+  const dir = resolveProject(workingDirectory)
   const sections = []
   for (const file of ['CLAUDE.local.md']) {
     const path = join(dir, file)
@@ -23,7 +23,7 @@ export function handleGetMemories(workingDirectory, ws, sendTo) {
 }
 
 export function handleGetPlans(workingDirectory, ws, sendTo) {
-  const dir = workingDirectory || DEFAULT_PROJECT
+  const dir = resolveProject(workingDirectory)
   const stages = {}
   const plansDir = join(dir, '.claude', 'plans')
   log(`Plans dir: ${plansDir} (exists: ${existsSync(plansDir)}, workingDirectory: ${workingDirectory})`)
@@ -74,13 +74,13 @@ export function handleGetPlans(workingDirectory, ws, sendTo) {
 const STAGE_TO_FOLDER = { backlog: '00_backlog', next: '10_next', active: '20_active', testing: '30_testing', done: '40_done' }
 
 export function handleDeletePlan(stage, filename, workingDirectory, ws, sendTo) {
-  const dir = workingDirectory || DEFAULT_PROJECT
+  const dir = resolveProject(workingDirectory)
   const folder = STAGE_TO_FOLDER[stage] || stage
   const filePath = join(dir, '.claude', 'plans', folder, filename)
   try {
     unlinkSync(filePath)
     sendTo(ws, { type: 'plan_deleted', stage, filename })
   } catch (e) {
-    sendTo(ws, { type: 'error', message: e.message })
+    sendError(ws, sendTo, e)
   }
 }

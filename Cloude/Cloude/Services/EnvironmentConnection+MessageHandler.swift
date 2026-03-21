@@ -56,9 +56,7 @@ extension EnvironmentConnection {
         if let convId = runningConversationId,
            let output = mgr.conversationOutputs[convId] {
             output.flushBuffer()
-            for i in output.toolCalls.indices where output.toolCalls[i].state == .executing {
-                output.toolCalls[i].state = .complete
-            }
+            output.completeExecutingTools()
             if !output.text.isEmpty {
                 mgr.events.send(.disconnect(conversationId: convId, output: output))
             }

@@ -1,14 +1,14 @@
 import SwiftUI
 import Charts
 
-struct InteractiveBarChart<DataPoint: Identifiable>: View {
+struct InteractiveLineChart<DataPoint: Identifiable>: View {
     let title: String
     let data: [DataPoint]
     let xValue: (DataPoint) -> String
     let yValue: (DataPoint) -> Int
     let formatYValue: (Int) -> String
     let detailText: (DataPoint) -> String
-    let barColor: (DataPoint, Bool) -> Color
+    let lineColor: (DataPoint, Bool) -> Color
     let height: CGFloat
     let showTimeRangePicker: Bool
     let timeRanges: [TimeRange]
@@ -23,7 +23,7 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
         yValue: @escaping (DataPoint) -> Int,
         formatYValue: @escaping (Int) -> String = { "\($0)" },
         detailText: @escaping (DataPoint) -> String,
-        barColor: @escaping (DataPoint, Bool) -> Color = { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
+        lineColor: @escaping (DataPoint, Bool) -> Color = { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
         height: CGFloat = 140,
         showTimeRangePicker: Bool = false,
         timeRanges: [TimeRange] = [],
@@ -35,7 +35,7 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
         self.yValue = yValue
         self.formatYValue = formatYValue
         self.detailText = detailText
-        self.barColor = barColor
+        self.lineColor = lineColor
         self.height = height
         self.showTimeRangePicker = showTimeRangePicker
         self.timeRanges = timeRanges
@@ -63,7 +63,7 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
                     x: .value("X", idx),
                     y: .value("Y", yValue(point))
                 )
-                .foregroundStyle(barColor(point, false))
+                .foregroundStyle(lineColor(point, false))
                 .interpolationMethod(.catmullRom)
                 .lineStyle(StrokeStyle(lineWidth: 2))
 
@@ -71,7 +71,7 @@ struct InteractiveBarChart<DataPoint: Identifiable>: View {
                     x: .value("X", idx),
                     y: .value("Y", yValue(point))
                 )
-                .foregroundStyle(barColor(point, selectedPoint?.id == point.id))
+                .foregroundStyle(lineColor(point, selectedPoint?.id == point.id))
                 .symbolSize(selectedPoint?.id == point.id ? 40 : 20)
             }
             .chartXAxis {

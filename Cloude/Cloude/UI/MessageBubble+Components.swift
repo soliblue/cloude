@@ -1,7 +1,6 @@
 // MessageBubble+Components.swift
 
 import SwiftUI
-import Foundation
 
 struct StatLabel: View {
     let icon: String
@@ -34,10 +33,8 @@ struct RunStatsView: View {
 
     private var modelInfo: (name: String, icon: String)? {
         guard let model else { return nil }
-        if model.contains("opus") { return ("Opus", "crown") }
-        if model.contains("sonnet") { return ("Sonnet", "hare") }
-        if model.contains("haiku") { return ("Haiku", "leaf") }
-        return (model, "cpu")
+        let identity = ModelIdentity(model)
+        return (identity.displayName, identity.icon)
     }
 
     private var formattedDuration: String {

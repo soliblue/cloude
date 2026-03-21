@@ -24,9 +24,7 @@ extension EnvironmentConnection {
         let out = mgr.output(for: convId)
         if state == .idle {
             out.flushBuffer()
-            for i in out.toolCalls.indices where out.toolCalls[i].state == .executing {
-                out.toolCalls[i].state = .complete
-            }
+            out.completeExecutingTools()
             if let stats = out.runStats {
                 let turnCost = max(0, stats.costUsd - out.previousCumulativeCost)
                 out.previousCumulativeCost = stats.costUsd

@@ -29,40 +29,40 @@ extension UsageStatsSheet {
             Group {
                 switch chartPage {
                 case 0:
-                    InteractiveBarChart(
+                    InteractiveLineChart(
                         title: "Messages",
                         data: recentActivity,
                         xValue: { chartDateLabel($0.date) },
                         yValue: { $0.messageCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.messageCount)) msgs" },
-                        barColor: { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
+                        lineColor: { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
                     )
                 case 1:
-                    InteractiveBarChart(
+                    InteractiveLineChart(
                         title: "Sessions",
                         data: recentActivity,
                         xValue: { chartDateLabel($0.date) },
                         yValue: { $0.sessionCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \($0.sessionCount) sessions" },
-                        barColor: { _, selected in selected ? .accentColor : .purple.opacity(0.6) },
+                        lineColor: { _, selected in selected ? .accentColor : .purple.opacity(0.6) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
                     )
                 default:
-                    InteractiveBarChart(
+                    InteractiveLineChart(
                         title: "Tool Calls",
                         data: recentActivity,
                         xValue: { chartDateLabel($0.date) },
                         yValue: { $0.toolCallCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.toolCallCount)) tools" },
-                        barColor: { _, selected in selected ? .accentColor : .orange.opacity(0.6) },
+                        lineColor: { _, selected in selected ? .accentColor : .orange.opacity(0.6) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange

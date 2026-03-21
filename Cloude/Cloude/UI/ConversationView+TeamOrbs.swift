@@ -37,9 +37,5 @@ func teammateColor(_ colorName: String) -> Color {
 }
 
 func modelBadge(_ model: String) -> String {
-    let lower = model.lowercased()
-    if lower.contains("opus") { return "O" }
-    if lower.contains("sonnet") { return "S" }
-    if lower.contains("haiku") { return "H" }
-    return String(model.prefix(1)).uppercased()
+    ModelIdentity(model).badge
 }

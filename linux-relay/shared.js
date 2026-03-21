@@ -2,6 +2,10 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 export const DEFAULT_PROJECT = process.env.CLOUDE_PROJECT || `${process.env.HOME}/projects/cloude`
+
+export function resolveProject(workingDirectory) { return workingDirectory || DEFAULT_PROJECT }
+
+export function sendError(ws, sendTo, e) { sendTo(ws, { type: 'error', message: e.message }) }
 export const APPLE_EPOCH = 978307200
 
 export function toAppleTimestamp(ms) { return ms / 1000 - APPLE_EPOCH }
