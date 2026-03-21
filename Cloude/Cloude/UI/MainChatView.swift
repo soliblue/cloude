@@ -35,6 +35,7 @@ struct MainChatView: View {
     var onShowPlans: (() -> Void)?
     var onShowMemories: (() -> Void)?
     var onShowSettings: (() -> Void)?
+    var onShowWhiteboard: (() -> Void)?
 
     var isHeartbeatActive: Bool { currentPageIndex == 0 }
 

@@ -13,12 +13,14 @@ struct CloudeApp: App {
     @StateObject var conversationStore = ConversationStore()
     @StateObject var windowManager = WindowManager()
     @StateObject var environmentStore = EnvironmentStore()
+    @StateObject var whiteboardStore = WhiteboardStore()
     @State private var showSettings = false
     @State private var showMemories = false
     @State var memorySections: [MemorySection] = []
     @State var isLoadingMemories = false
     @State var memoriesFromCache = false
     @State private var showPlans = false
+    @State var showWhiteboard = false
     @State var planStages: [String: [PlanItem]] = [:]
     @State var isLoadingPlans = false
     @State var plansFromCache = false
@@ -64,7 +66,11 @@ struct CloudeApp: App {
                 environmentStore: environmentStore,
                 onShowPlans: { openPlans() },
                 onShowMemories: { openMemories() },
-                onShowSettings: { showSettings = true }
+                onShowSettings: { showSettings = true },
+                onShowWhiteboard: {
+                    whiteboardStore.load(conversationId: windowManager.activeWindow?.conversation(in: conversationStore)?.id)
+                    showWhiteboard = true
+                }
             )
             .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(Color.themeSecondary, for: .navigationBar)
@@ -118,6 +124,9 @@ struct CloudeApp: App {
                     }
                 }
             )
+        }
+        .fullScreenCover(isPresented: $showWhiteboard) {
+            WhiteboardSheet(store: whiteboardStore)
         }
         .sheet(item: $filePathToPreview) { path in
             FilePreviewView(path: path, connection: connection, environmentId: filePreviewEnvironmentId)
