@@ -2,9 +2,7 @@
 <!-- priority: 7 -->
 <!-- tags: streaming, relay, connection -->
 
-> Long responses sometimes leave the app stuck in "running" state after the CLI finishes, requiring manual stop.
-
-**Tags:** reliability, bug
+> Superseded by `10_next/unified-streaming.md`. Root cause #5 (view-dependent completion) and the duplicate message bug are directly solved by moving completion handling to the app level via `.streamingStarted` event. Remaining root causes (#1-4) are independent and can be addressed separately if still observed.
 
 Long responses sometimes leave the iOS app in a "running" state even after the CLI has finished. The user has to manually hit stop.
 

@@ -173,5 +173,73 @@ AI cursor trail, element appearance animation.
 ## Workflows (no new primitives needed)
 - Sketch-to-structure: user draws rough shapes by hand -> AI requests image snapshot -> interprets the sketch -> clears and redraws with clean structured elements. Requires: image snapshot mode working.
 
+## Tasks
+
+### Bugs (do first)
+- [ ] Fix arrows and text not rendering via MCP: debug JSON decoding in `CloudeApp+WhiteboardHandling.swift`
+- [ ] Fix shapes rendering with unwanted border: only stroke if `stroke` property is set in `WhiteboardSheet+Drawing.swift`
+
+### File splits (do before features)
+- [ ] Split `WhiteboardSheet+Drawing.swift` into `+DrawShapes.swift`, `+DrawArrows.swift`, `+DrawPaths.swift`
+- [ ] Keep `+Drawing.swift` as dispatcher only
+- [ ] Extract whiteboard tools from `server.js` into `handlers-whiteboard.js` in relay
+
+### Core improvements
+- [ ] Add `z: Int?` to `WhiteboardElement`, sort by z at render time
+- [ ] Add `bringToFront`/`sendToBack` to `WhiteboardStore+Elements.swift`
+- [ ] Add z to element schema in `handlers-whiteboard.js`
+- [ ] Add `fontSize: Double?` to `WhiteboardElement`, use in text rendering
+- [ ] Add font size selector to `WhiteboardSheet+ContextBar.swift` for text elements
+- [ ] Add `strokeWidth: Double?`, `strokeStyle: String?`, `opacity: Double?` to `WhiteboardElement`
+- [ ] Apply stroke/opacity in draw methods across `+DrawShapes`, `+DrawArrows`, `+DrawPaths`
+- [ ] Render arrow labels at midpoint in `+DrawArrows.swift`
+- [ ] Verify label text centering inside shapes in `+DrawShapes.swift`
+
+### Hand-drawn aesthetic
+- [ ] Create `WhiteboardSheet+Sketchy.swift` with roughness algorithms (jittered control points, multi-stroke lines)
+- [ ] Integrate sketchy rendering into `+DrawShapes`, `+DrawArrows`, `+DrawPaths`
+
+### Groups
+- [ ] Add `groupId: String?` to `WhiteboardElement`
+- [ ] Add multi-select support (`selectedElementIds: Set<String>`) to `WhiteboardStore`
+- [ ] Create `WhiteboardStore+Groups.swift` with group/ungroup operations
+- [ ] Update hit testing to select whole group on tap
+- [ ] Add group/ungroup buttons to context bar
+- [ ] Render group outline overlay in `+DrawShapes.swift`
+
+### Export & snapshots
+- [ ] Add export button to toolbar
+- [ ] Create `WhiteboardSheet+Export.swift` with `ImageRenderer` -> camera roll
+- [ ] Add "send snapshot" button to toolbar (inject canvas state into conversation)
+- [ ] Add `format` param to `whiteboard_snapshot` tool (json/image/both)
+
+### Layout
+- [ ] Add `layout` param to `whiteboard_add` in `handlers-whiteboard.js` (tree/grid/row/column/radial)
+- [ ] Create `WhiteboardStore+Layout.swift` with layout algorithms
+- [ ] Apply layout in `CloudeApp+WhiteboardHandling.swift` before adding elements
+
+### Viewport & layers
+- [ ] Add `whiteboard_viewport` tool with x/y/zoom params
+- [ ] Handle viewport action in `CloudeApp+WhiteboardHandling.swift`
+- [ ] Add `layer: String?` (base/annotation) to `WhiteboardElement`
+- [ ] Render annotation elements with different visual treatment
+- [ ] Add annotation mode toggle to toolbar
+
+### Regions & references
+- [ ] Add `region` type or `isContainer: Bool` to `WhiteboardElement`
+- [ ] Render regions as dashed/translucent background rects
+- [ ] Auto-associate elements inside region bounds, move with region
+- [ ] Add `messageId: String?` to `WhiteboardElement` for conversation references
+
+### Whiteboard-first mode (stretch)
+- [ ] Embed lightweight input bar in `WhiteboardSheet.swift`
+- [ ] Create `WhiteboardSheet+ResponseOverlay.swift` for AI response toasts
+- [ ] Add entrance animations for new elements
+
+### Bigger ideas (stretch)
+- [ ] Image element type with async loading and Canvas rendering
+- [ ] Multiple pages/whiteboards with tab switching
+- [ ] AI cursor presence trail
+
 ## Open
 - Discovered through use, not planned upfront. Add here as friction surfaces.

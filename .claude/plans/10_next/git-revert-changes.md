@@ -219,3 +219,23 @@ No need for `loadStatus()` call actually - the server sends `gitStatusResult` ba
 
 ### New (0)
 No new files needed.
+
+## Tasks
+
+### Shared models
+- [ ] Add `gitUnstageAll(path:)` and `gitDiscardAll(path:)` cases to `ClientMessage.swift`
+- [ ] Add encoding for both cases in `ClientMessage+Encoding.swift`
+
+### Linux relay
+- [ ] Add `handleGitUnstageAll` and `handleGitDiscardAll` to `handlers-git.js`
+- [ ] Route `git_unstage_all` and `git_discard_all` in `handlers.js`
+
+### Mac agent
+- [ ] Add `unstageAll(at:)` and `discardAll(at:)` to `GitService.swift` with exit status check
+- [ ] Add `handleGitUnstageAll` and `handleGitDiscardAll` to `Cloude_AgentApp+FileHandlers.swift`
+- [ ] Route both cases in `AppDelegate+MessageHandling.swift`
+
+### iOS app
+- [ ] Add `gitUnstageAll(path:)` and `gitDiscardAll(path:)` to `ConnectionManager+API.swift`
+- [ ] Add "Unstage All" button in Staged section header of `GitChangesView.swift`
+- [ ] Add "Discard All" button in Changes section header of `GitChangesView.swift`
