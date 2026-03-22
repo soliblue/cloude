@@ -278,6 +278,24 @@ Decision: leave them for now. They're small standalone structs. Removing unused 
 5. `Cloude/Cloude/UI/MainChatView+PageIndicator.swift` - long press -> context menu
 6. `Cloude/Cloude/UI/MainChatView.swift` - remove `exportCopied` state
 
+## Tasks
+
+### Nav toolbar
+- [ ] Remove power button `ToolbarItem(placement: .topBarTrailing)` from `CloudeApp+MainContent.swift`
+- [ ] Move `navTitlePill` placement from `.principal` to `.topBarTrailing` in `CloudeApp+MainContent.swift`
+- [ ] Delete `environmentIndicators` computed property from `CloudeApp+Toolbar.swift`
+- [ ] Rewrite `navTitlePill` to two-line VStack (name line 1, env symbol + folder + cost line 2) in `CloudeApp+Toolbar.swift`
+- [ ] Delete `connectAllConfiguredEnvironments()` from `CloudeApp+Actions.swift`
+
+### Window header
+- [ ] Rewrite `MainChatView+WindowHeader.swift`: equal-width type buttons + dividers + fixed-width close button
+- [ ] Remove env circle, copy, fork, refresh buttons from header
+
+### Bottom bar
+- [ ] Replace `.simultaneousGesture(LongPressGesture)` with `.contextMenu` on `windowIndicatorButton` in `MainChatView+PageIndicator.swift`
+- [ ] Add Refresh, Export, Fork, Divider, Edit items to context menu
+- [ ] Remove `exportCopied` state from `MainChatView.swift`
+
 ## Risk
 
 - Low. All removed functionality is either relocated (to context menu) or redundant (env icons, power button).

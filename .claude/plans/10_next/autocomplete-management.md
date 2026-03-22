@@ -357,3 +357,39 @@ if MessageHistory.save(text, environmentId: envId) {
 | `Cloude/App/CloudeApp+EventHandling.swift` | Handle `autocompleteData` event |
 | `Cloude Agent/App/AppDelegate+MessageHandling.swift` | Route 3 new messages |
 | `linux-relay/handlers.js` | Route 3 new messages |
+
+## Tasks
+
+### Shared models
+- [ ] Add `getAutocomplete`, `saveAutocompleteEntry(text:)`, `deleteAutocompleteEntry(text:)` to `ClientMessage.swift`
+- [ ] Add encoding for 3 new cases in `ClientMessage+Encoding.swift`
+- [ ] Add `autocompleteData(entries:)` to `ServerMessage.swift`
+- [ ] Add decoding in `ServerMessage+Decoding.swift`
+- [ ] Add encoding in `ServerMessage+Encoding.swift`
+
+### Linux relay
+- [ ] Create `handlers-suggestions.js` with `handleGetAutocomplete`, `handleSaveAutocompleteEntry`, `handleDeleteAutocompleteEntry`
+- [ ] Add background `improveAutocomplete` function (spawn `claude --model sonnet --print`)
+- [ ] Route 3 new message types in `handlers.js`
+
+### Mac agent
+- [ ] Create `SuggestionsService.swift` with `load`, `save`, `delete`, `improve` static methods
+- [ ] Route 3 new cases in `AppDelegate+MessageHandling.swift`
+
+### iOS app - data layer
+- [ ] Add `autocompleteData` case to `ConnectionEvent.swift`
+- [ ] Route `autocompleteData` in `EnvironmentConnection+MessageHandler.swift`
+- [ ] Add `getAutocomplete`, `saveAutocompleteEntry`, `deleteAutocompleteEntry` to `ConnectionManager+API.swift`
+- [ ] Refactor `MessageHistory.swift` to per-env with `replaceAll`, `loadAll`, `suggestions(for:environmentIds:)`
+
+### iOS app - UI
+- [ ] Add `/autocomplete` to `SlashCommand.swift` built-in commands
+- [ ] Add `onShowAutocomplete` callback to `MainChatView.swift`
+- [ ] Handle `/autocomplete` in `MainChatView+Messaging.swift`
+- [ ] Update `sendMessage()` in `MainChatView+Messaging.swift` to save per-env and sync to server
+- [ ] Add state vars (`showAutocomplete`, `autocompleteEntries`, etc.) to `CloudeApp.swift`
+- [ ] Add `openAutocomplete()` to `CloudeApp+Actions.swift`
+- [ ] Wire `onShowAutocomplete` in `CloudeApp+MainContent.swift`
+- [ ] Handle `autocompleteData` event in `CloudeApp+EventHandling.swift`
+- [ ] Create `MainChatView+AutocompleteSheet.swift` (NavigationStack + search + list + delete)
+- [ ] Update `GlobalInputBar+Suggestions.swift` to use per-env `MessageHistory.suggestions`
