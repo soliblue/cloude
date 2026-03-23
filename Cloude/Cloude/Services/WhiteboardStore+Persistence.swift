@@ -12,14 +12,14 @@ extension WhiteboardStore {
                 state = loaded
                 undoStack.removeAll()
                 redoStack.removeAll()
-                selectedElementId = nil
+                selectedElementIds.removeAll()
                 return
             }
         }
         state = WhiteboardState()
         undoStack.removeAll()
         redoStack.removeAll()
-        selectedElementId = nil
+        selectedElementIds.removeAll()
     }
 
     func scheduleSave() {

@@ -52,7 +52,9 @@ extension WhiteboardSheet {
             ForEach(Self.paletteColors, id: \.self) { hex in
                 let currentColor = selectedElement?.fill ?? selectedElement?.stroke
                 Button(action: {
-                    if let id = store.selectedElementId, let el = selectedElement {
+                    if store.selectedIds.count > 1 {
+                        store.recolorMany(ids: store.selectedIds, hex: hex)
+                    } else if let id = store.selectedElementId, let el = selectedElement {
                         if el.type == .path || el.type == .text {
                             store.recolor(id: id, fill: nil, stroke: hex)
                         } else {
@@ -76,38 +78,98 @@ extension WhiteboardSheet {
 
     var contextActionRow: some View {
         HStack(spacing: 4) {
-            contextAction(icon: "square.3.layers.3d.down.backward", disabled: !canMoveBackward) {
-                if let id = store.selectedElementId { store.moveBackward(id: id) }
+            if store.activeTool == .multiSelect {
+                multiSelectActionRow
+            } else {
+                singleSelectActionRow
             }
-            contextAction(icon: "square.3.layers.3d.top.filled", disabled: !canMoveForward) {
-                if let id = store.selectedElementId { store.moveForward(id: id) }
-            }
+        }
+    }
 
-            if selectedElement?.type == .rect || selectedElement?.type == .ellipse {
-                Divider().frame(height: 18).opacity(0.3)
-                contextAction(icon: selectedElement?.type == .rect ? "circle" : "rectangle") {
-                    if let id = store.selectedElementId { store.changeShape(id: id) }
-                }
-            }
+    @ViewBuilder
+    var singleSelectActionRow: some View {
+        contextAction(icon: "square.3.layers.3d.down.backward", disabled: !canMoveBackward) {
+            if let id = store.selectedElementId { store.moveBackward(id: id) }
+        }
+        contextAction(icon: "square.3.layers.3d.top.filled", disabled: !canMoveForward) {
+            if let id = store.selectedElementId { store.moveForward(id: id) }
+        }
 
+        if selectedElement?.type == .rect || selectedElement?.type == .ellipse || selectedElement?.type == .triangle {
             Divider().frame(height: 18).opacity(0.3)
-
-            contextAction(icon: "pencil") {
-                if let id = store.selectedElementId {
-                    editingTextValue = selectedElement?.label ?? ""
-                    editingTextId = id
+            let nextIcon: String = {
+                switch selectedElement?.type {
+                case .rect: return "circle"
+                case .ellipse: return "triangle"
+                case .triangle: return "rectangle"
+                default: return "circle"
                 }
+            }()
+            contextAction(icon: nextIcon) {
+                if let id = store.selectedElementId { store.changeShape(id: id) }
             }
+        }
 
-            contextAction(icon: "plus.square.on.square") {
-                if let id = store.selectedElementId { store.duplicate(id: id) }
-            }
-
+        if selectedElement?.type == .text {
             Divider().frame(height: 18).opacity(0.3)
+            fontSizeButtons
+        }
 
-            contextAction(icon: "trash", tint: .red.opacity(0.8)) {
-                if let id = store.selectedElementId { store.removeElement(id: id) }
+        Divider().frame(height: 18).opacity(0.3)
+
+        contextAction(icon: "pencil") {
+            if let id = store.selectedElementId {
+                editingTextValue = selectedElement?.label ?? ""
+                editingTextId = id
             }
+        }
+
+        contextAction(icon: "plus.square.on.square") {
+            if let id = store.selectedElementId { store.duplicate(id: id) }
+        }
+
+        Divider().frame(height: 18).opacity(0.3)
+
+        contextAction(icon: "trash", tint: .red.opacity(0.8)) {
+            if let id = store.selectedElementId {
+                store.removeElement(id: id)
+            }
+        }
+    }
+
+    @ViewBuilder
+    var multiSelectActionRow: some View {
+        Text("\(store.selectedIds.count)")
+            .font(.system(size: 12, weight: .bold, design: .monospaced))
+            .foregroundColor(.accentColor)
+            .frame(width: 28)
+
+        Divider().frame(height: 18).opacity(0.3)
+
+        contextAction(icon: "square.3.layers.3d.down.backward") {
+            store.moveBackwardMany(ids: store.selectedIds)
+        }
+        contextAction(icon: "square.3.layers.3d.top.filled") {
+            store.moveForwardMany(ids: store.selectedIds)
+        }
+
+        Divider().frame(height: 18).opacity(0.3)
+
+        contextAction(icon: "square.2.layers.3d", disabled: store.selectedIds.count < 2) {
+            store.groupSelected()
+        }
+
+        if store.hasGroup(in: store.selectedIds) {
+            contextAction(icon: "square.2.layers.3d.bottom.filled") {
+                store.ungroupSelected()
+            }
+        }
+
+        Divider().frame(height: 18).opacity(0.3)
+
+        contextAction(icon: "trash", tint: .red.opacity(0.8), disabled: store.selectedIds.isEmpty) {
+            store.removeElements(ids: Array(store.selectedIds))
+            store.clearSelection()
         }
     }
 
@@ -130,6 +192,23 @@ extension WhiteboardSheet {
         }
         .buttonStyle(.plain)
         .disabled(disabled)
+    }
+
+    var fontSizeButtons: some View {
+        HStack(spacing: 2) {
+            contextAction(icon: "textformat.size.smaller") {
+                if let id = store.selectedElementId {
+                    let current = selectedElement?.fontSize ?? 14
+                    store.updateElement(id: id, fontSize: max(8, current - 2))
+                }
+            }
+            contextAction(icon: "textformat.size.larger") {
+                if let id = store.selectedElementId {
+                    let current = selectedElement?.fontSize ?? 14
+                    store.updateElement(id: id, fontSize: min(48, current + 2))
+                }
+            }
+        }
     }
 
     func commitTextEdit() {

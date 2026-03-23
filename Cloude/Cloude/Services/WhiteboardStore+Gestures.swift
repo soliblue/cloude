@@ -62,11 +62,13 @@ extension WhiteboardStore {
             element = WhiteboardElement(type: .rect, x: boardPoint.x - 60, y: boardPoint.y - 35, w: 120, h: 70, fill: activeColor)
         case .ellipse:
             element = WhiteboardElement(type: .ellipse, x: boardPoint.x - 45, y: boardPoint.y - 45, w: 90, h: 90, fill: activeColor)
+        case .triangle:
+            element = WhiteboardElement(type: .triangle, x: boardPoint.x - 50, y: boardPoint.y - 43, w: 100, h: 86, fill: activeColor)
         default:
             return nil
         }
         addElement(element)
-        selectedElementId = element.id
+        selectedElementIds = [element.id]
         activeTool = .hand
         return element
     }

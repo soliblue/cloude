@@ -1,5 +1,9 @@
 import SwiftUI
 
+extension Notification.Name {
+    static let openWhiteboard = Notification.Name("openWhiteboard")
+}
+
 struct InlineToolPill: View {
     let toolCall: ToolCall
     var children: [ToolCall] = []
@@ -12,10 +16,19 @@ struct InlineToolPill: View {
     }
 
     private var isIOSControl: Bool { ToolCallLabel.isIOSControl(toolCall.name) }
+    private var isWhiteboardTool: Bool { ToolCallLabel.isWhiteboardTool(toolCall.name) }
 
     var body: some View {
         if isIOSControl {
             pillContent
+        } else if isWhiteboardTool {
+            pillContent
+                .highPriorityGesture(
+                    TapGesture()
+                        .onEnded {
+                            NotificationCenter.default.post(name: .openWhiteboard, object: nil)
+                        }
+                )
         } else {
             pillContent
             .highPriorityGesture(

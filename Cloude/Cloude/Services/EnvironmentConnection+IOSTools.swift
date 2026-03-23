@@ -44,7 +44,7 @@ extension EnvironmentConnection {
             mgr.events.send(.heartbeatSkipped(conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
         case "screenshot":
             mgr.events.send(.screenshot(conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
-        case "whiteboard_add", "whiteboard_remove", "whiteboard_update", "whiteboard_clear", "whiteboard_snapshot":
+        case "whiteboard_open", "whiteboard_add", "whiteboard_remove", "whiteboard_update", "whiteboard_clear", "whiteboard_snapshot", "whiteboard_viewport", "whiteboard_export":
             let wbAction = String(action.dropFirst("whiteboard_".count))
             mgr.events.send(.whiteboard(action: wbAction, json: json, conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
         default:

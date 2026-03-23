@@ -142,6 +142,7 @@ private struct WhiteboardElementRow: View {
         switch type {
         case .rect: return "rectangle"
         case .ellipse: return "circle"
+        case .triangle: return "triangle"
         case .text: return "textformat"
         case .path: return "pencil.tip"
         case .arrow: return "arrow.right"
