@@ -23,6 +23,12 @@ extension CloudeApp {
                             .foregroundColor(.secondary)
                     }
                     HStack(spacing: 4) {
+                        if let envId = conversation?.environmentId,
+                           let env = environmentStore.environments.first(where: { $0.id == envId }) {
+                            Image(systemName: env.symbol)
+                                .font(.system(size: 9))
+                                .foregroundColor(.secondary)
+                        }
                         if let folder = conversation?.workingDirectory?.nilIfEmpty?.lastPathComponent {
                             Text(folder)
                                 .font(.system(size: 11))
