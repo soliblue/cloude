@@ -4,9 +4,9 @@ import SwiftUI
 import CloudeShared
 
 extension MainChatView {
-    func editWindowSheet() -> some View {
+    func editWindowSheet(_ window: ChatWindow) -> some View {
         WindowEditSheet(
-            window: editingWindow!,
+            window: window,
             conversationStore: conversationStore,
             windowManager: windowManager,
             connection: connection,

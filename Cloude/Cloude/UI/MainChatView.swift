@@ -113,7 +113,7 @@ struct MainChatView: View {
         .onChange(of: windowManager.activeWindowId, handleActiveWindowChange)
         .onChange(of: currentModel, handleModelChange)
         .onChange(of: currentEffort, handleEffortChange)
-        .sheet(item: $editingWindow) { _ in editWindowSheet() }
+        .sheet(item: $editingWindow) { window in editWindowSheet(window) }
         .sheet(isPresented: $showConversationSearch) { conversationSearchSheetContent() }
         .sheet(isPresented: $showUsageStats) { usageStatsSheetContent() }
         .onReceive(NotificationCenter.default.publisher(for: .editActiveWindow)) { _ in
