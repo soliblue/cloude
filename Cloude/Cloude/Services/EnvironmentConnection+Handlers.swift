@@ -15,16 +15,16 @@ extension EnvironmentConnection {
 
     func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?) {
         if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
+            ensureLiveMessage(mgr, convId: convId)
             let out = mgr.output(for: convId)
             out.appendText(text)
             if !out.isRunning {
                 out.isRunning = true
                 runningConversationId = convId
             }
-            ensureLiveMessage(mgr, convId: convId)
         } else if let convId = runningConversationId {
-            mgr.output(for: convId).appendText(text)
             ensureLiveMessage(mgr, convId: convId)
+            mgr.output(for: convId).appendText(text)
         }
     }
 
