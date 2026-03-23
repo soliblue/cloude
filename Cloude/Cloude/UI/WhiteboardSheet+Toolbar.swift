@@ -22,23 +22,47 @@ extension WhiteboardSheet {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button(action: { dismiss() }) {
-                Image(systemName: "xmark")
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+            HStack(spacing: 12) {
+                if onSendSnapshot != nil {
+                    Button(action: {
+                        onSendSnapshot?()
+                    }) {
+                        Image(systemName: "paperplane")
+                            .fontWeight(.medium)
+                            .foregroundColor(isConnected ? .primary : .secondary.opacity(0.3))
+                    }
+                    .disabled(!isConnected)
+
+                    Divider().frame(height: 20)
+                }
+
+                Button(action: { exportAsImage() }) {
+                    Image(systemName: "square.and.arrow.down")
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+                }
+
+                Divider().frame(height: 20)
+
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                }
             }
+            .padding(.horizontal, 16)
         }
     }
 
     @ViewBuilder
     var floatingToolbar: some View {
         VStack(spacing: 8) {
-            if store.selectedElementId != nil && store.activeTool == .hand {
+            if store.activeTool == .multiSelect || (!store.selectedIds.isEmpty && store.activeTool == .hand) {
                 contextBar
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            if store.activeTool != .hand {
+            if store.activeTool != .hand && store.activeTool != .multiSelect {
                 colorBar
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -46,14 +70,17 @@ extension WhiteboardSheet {
             toolBar
         }
         .animation(.quickTransition, value: store.activeTool)
-        .animation(.quickTransition, value: store.selectedElementId != nil)
+        .animation(.quickTransition, value: !store.selectedIds.isEmpty)
+        .animation(.quickTransition, value: store.selectedElementIds.count)
     }
 
     private var toolBar: some View {
         HStack(spacing: 0) {
             toolButton(icon: "hand.draw", tool: .hand)
+            toolButton(icon: "checklist.unchecked", tool: .multiSelect)
             toolButton(icon: "rectangle", tool: .rect)
             toolButton(icon: "circle", tool: .ellipse)
+            toolButton(icon: "triangle", tool: .triangle)
             toolButton(icon: "textformat", tool: .text)
             toolButton(icon: "pencil.tip", tool: .pencil)
             toolButton(icon: "arrow.right", tool: .arrow)
@@ -74,7 +101,7 @@ extension WhiteboardSheet {
             }
             store.arrowSourceId = nil
             if tool != .hand {
-                store.selectedElementId = nil
+                store.selectedElementIds.removeAll()
             }
         }) {
             Image(systemName: icon)

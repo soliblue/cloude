@@ -52,6 +52,7 @@ extension ToolCallLabel {
 
     var iconName: String {
         if let action = iosAction { return ToolCallLabel.iosIcons[action] ?? "iphone" }
+        if ToolCallLabel.isWhiteboardTool(name) { return "rectangle.on.rectangle.angled" }
         switch name {
         case "Bash":
             if isScript { return "scroll" }

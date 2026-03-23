@@ -4,12 +4,15 @@ import SwiftUI
 
 struct WhiteboardSheet: View {
     @ObservedObject var store: WhiteboardStore
+    var onSendSnapshot: (() -> Void)?
+    var isConnected: Bool = false
     @Environment(\.dismiss) var dismiss
     @State var canvasSize: CGSize = .zero
     @State var dragIntent: DragIntent?
     @State var panStart: CGPoint?
     @State var editingTextId: String?
     @State var editingTextValue: String = ""
+    @State var showExportSuccess = false
     @FocusState var isTextFieldFocused: Bool
 
     var body: some View {
@@ -37,8 +40,7 @@ struct WhiteboardSheet: View {
                         }
                     )
 
-                    if let selectedId = store.selectedElementId,
-                       let element = store.state.elements.first(where: { $0.id == selectedId }) {
+                    ForEach(store.state.elements.filter { store.selectedIds.contains($0.id) && $0.type != .arrow }) { element in
                         selectionOverlay(for: element)
                     }
 
@@ -54,10 +56,23 @@ struct WhiteboardSheet: View {
                     }
                 }
             }
-            .navigationTitle("Whiteboard")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
             .toolbarBackground(.hidden, for: .navigationBar)
+            .overlay(alignment: .top) {
+                if showExportSuccess {
+                    Text("Saved to Photos")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.top, 60)
+                }
+            }
+            .animation(.quickTransition, value: showExportSuccess)
         }
         .background(Color.themeBackground)
     }
@@ -73,8 +88,9 @@ struct WhiteboardSheet: View {
 
             drawGrid(context: context)
 
-            let elementDict = Dictionary(store.state.elements.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
-            for element in store.state.elements {
+            let sorted = store.state.elements.sorted { ($0.z ?? 0) < ($1.z ?? 0) }
+            let elementDict = Dictionary(sorted.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+            for element in sorted {
                 drawElement(element, context: context, elementDict: elementDict)
             }
         }

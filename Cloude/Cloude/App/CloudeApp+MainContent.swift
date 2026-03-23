@@ -47,6 +47,10 @@ extension CloudeApp {
                 }
         }
         .onReceive(connection.events, perform: handleConnectionEvent)
+        .onReceive(NotificationCenter.default.publisher(for: .openWhiteboard)) { _ in
+            whiteboardStore.load(conversationId: windowManager.activeWindow?.conversation(in: conversationStore)?.id)
+            showWhiteboard = true
+        }
         .sheet(isPresented: $showSettings) {
             SettingsView(connection: connection, environmentStore: environmentStore)
         }
@@ -71,7 +75,16 @@ extension CloudeApp {
             )
         }
         .fullScreenCover(isPresented: $showWhiteboard) {
-            WhiteboardSheet(store: whiteboardStore)
+            WhiteboardSheet(
+                store: whiteboardStore,
+                onSendSnapshot: {
+                    handleWhiteboardAction(action: "snapshot", json: [:], conversationId: nil)
+                },
+                isConnected: {
+                    let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
+                    return connection.connection(for: envId)?.isAuthenticated ?? false
+                }()
+            )
         }
         .sheet(item: $filePathToPreview) { path in
             FilePreviewView(path: path, connection: connection, environmentId: filePreviewEnvironmentId)

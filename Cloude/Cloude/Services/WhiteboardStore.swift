@@ -7,7 +7,8 @@ import Combine
 @MainActor
 class WhiteboardStore: ObservableObject {
     @Published var state = WhiteboardState()
-    @Published var selectedElementId: String?
+    @Published var selectedElementIds: Set<String> = []
+    var selectedElementId: String? { selectedElementIds.first }
     @Published var activeTool: ActiveTool = .hand
     @Published var activeColor: String = "#FFFFFF"
 
@@ -15,8 +16,10 @@ class WhiteboardStore: ObservableObject {
 
     enum ActiveTool {
         case hand
+        case multiSelect
         case rect
         case ellipse
+        case triangle
         case text
         case pencil
         case arrow
@@ -77,7 +80,7 @@ class WhiteboardStore: ObservableObject {
         if let previous = undoStack.popLast() {
             redoStack.append(state.elements)
             state.elements = previous
-            selectedElementId = nil
+            selectedElementIds.removeAll()
             scheduleSave()
         }
     }
@@ -86,7 +89,7 @@ class WhiteboardStore: ObservableObject {
         if let next = redoStack.popLast() {
             undoStack.append(state.elements)
             state.elements = next
-            selectedElementId = nil
+            selectedElementIds.removeAll()
             scheduleSave()
         }
     }

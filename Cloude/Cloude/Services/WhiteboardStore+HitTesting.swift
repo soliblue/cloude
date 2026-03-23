@@ -8,6 +8,11 @@ extension WhiteboardStore {
         let boardPoint = screenToBoard(point, canvasSize: canvasSize)
         return state.elements.last { element in
             switch element.type {
+            case .triangle:
+                let a = CGPoint(x: element.x + element.w / 2, y: element.y)
+                let b = CGPoint(x: element.x + element.w, y: element.y + element.h)
+                let c = CGPoint(x: element.x, y: element.y + element.h)
+                return pointInTriangle(boardPoint, a: a, b: b, c: c)
             case .rect, .text:
                 return boardPoint.x >= element.x &&
                        boardPoint.x <= element.x + element.w &&
@@ -42,6 +47,18 @@ extension WhiteboardStore {
                 return false
             }
         }
+    }
+
+    func pointInTriangle(_ p: CGPoint, a: CGPoint, b: CGPoint, c: CGPoint) -> Bool {
+        func sign(_ p1: CGPoint, _ p2: CGPoint, _ p3: CGPoint) -> Double {
+            (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y)
+        }
+        let d1 = sign(p, a, b)
+        let d2 = sign(p, b, c)
+        let d3 = sign(p, c, a)
+        let hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0)
+        let hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0)
+        return !(hasNeg && hasPos)
     }
 
     func distanceToSegment(_ p: CGPoint, a: CGPoint, b: CGPoint) -> Double {
