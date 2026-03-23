@@ -43,7 +43,7 @@ extension EnvironmentConnection {
         }
         out.isRunning = (state == .running || state == .compacting)
         out.isCompacting = (state == .compacting)
-        if state == .compacting {
+        if state == .running || state == .compacting {
             ensureLiveMessage(mgr, convId: convId)
         }
         if state == .idle {
