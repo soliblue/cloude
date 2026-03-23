@@ -23,7 +23,7 @@ struct ContentNodeView: View {
     var body: some View {
         switch node {
         case .content(let block):
-            StreamingBlockView(block: block)
+            StreamingBlockView(block: block, isComplete: isComplete)
         case .header(let block, let children):
             HeaderSectionView(
                 block: block,
