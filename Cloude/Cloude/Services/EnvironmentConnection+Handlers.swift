@@ -5,6 +5,14 @@ import Combine
 import CloudeShared
 
 extension EnvironmentConnection {
+    private func ensureLiveMessage(_ mgr: ConnectionManager, convId: UUID) {
+        let out = mgr.output(for: convId)
+        if out.liveMessageId == nil {
+            out.reset()
+            mgr.events.send(.streamingStarted(conversationId: convId))
+        }
+    }
+
     func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?) {
         if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
             let out = mgr.output(for: convId)
@@ -12,9 +20,11 @@ extension EnvironmentConnection {
             if !out.isRunning {
                 out.isRunning = true
                 runningConversationId = convId
-}
+            }
+            ensureLiveMessage(mgr, convId: convId)
         } else if let convId = runningConversationId {
             mgr.output(for: convId).appendText(text)
+            ensureLiveMessage(mgr, convId: convId)
         }
     }
 
@@ -33,6 +43,9 @@ extension EnvironmentConnection {
         }
         out.isRunning = (state == .running || state == .compacting)
         out.isCompacting = (state == .compacting)
+        if state == .compacting {
+            ensureLiveMessage(mgr, convId: convId)
+        }
         if state == .idle {
             LiveActivityManager.shared.endActivity(conversationId: convId)
             runningConversationId = nil
@@ -65,6 +78,7 @@ extension EnvironmentConnection {
 
     func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
+        ensureLiveMessage(mgr, convId: convId)
         let currentTextLength = mgr.output(for: convId).fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
         mgr.output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))

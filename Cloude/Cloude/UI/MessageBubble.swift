@@ -7,21 +7,28 @@ import CloudeShared
 struct MessageBubble: View {
     let message: ChatMessage
     var skills: [Skill] = []
+    var liveOutput: ConversationOutput?
     var onRefresh: (() -> Void)?
     var onToggleCollapse: (() -> Void)?
     var isRefreshing: Bool = false
+    var isCompact: Bool = false
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
     @State private var showTextSelection = false
     @State private var showLongPressMenu = false
     @State private var menuPressY: CGFloat = 0
     @Environment(\.appTheme) private var appTheme
+
+    private var isLive: Bool { liveOutput != nil }
+    private var effectiveText: String { liveOutput?.text ?? message.text }
+    private var effectiveToolCalls: [ToolCall] { liveOutput?.toolCalls ?? message.toolCalls }
+
     private var hasInteractiveWidgets: Bool {
-        message.toolCalls.contains { WidgetRegistry.isWidget($0.name) }
+        effectiveToolCalls.contains { WidgetRegistry.isWidget($0.name) }
     }
 
     private var hasToolCalls: Bool {
-        !message.toolCalls.filter { $0.parentToolId == nil }.isEmpty
+        effectiveToolCalls.contains { $0.parentToolId == nil }
     }
 
     private var isSlashCommand: Bool {
@@ -56,7 +63,7 @@ struct MessageBubble: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
         .sheet(isPresented: $showTextSelection) {
-            TextSelectionSheet(text: message.text)
+            TextSelectionSheet(text: effectiveText)
         }
         .sheet(isPresented: $showTeamDashboard) {
             if let team = message.teamSummary {
@@ -86,10 +93,14 @@ struct MessageBubble: View {
                     if !message.text.isEmpty {
                         Text(message.text)
                     }
+                } else if isLive && (liveOutput?.isCompacting ?? false) {
+                    CompactingIndicator()
                 } else if hasToolCalls {
-                    StreamingMarkdownView(text: message.text, toolCalls: message.toolCalls)
-                } else if !message.text.isEmpty {
-                    StreamingMarkdownView(text: message.text)
+                    StreamingMarkdownView(text: effectiveText, toolCalls: effectiveToolCalls, isComplete: !isLive)
+                } else if !effectiveText.isEmpty {
+                    StreamingMarkdownView(text: effectiveText, isComplete: !isLive)
+                } else if isLive {
+                    SisyphusLoadingView()
                 }
             }
             .font(.body)
@@ -124,9 +135,19 @@ struct MessageBubble: View {
     private var messageFooter: some View {
         if message.isUser {
             UserMessageFooter(timestamp: message.timestamp, textCount: message.text.count)
+        } else if isLive {
+            if !(isCompact), let stats = liveOutput?.runStats {
+                HStack(spacing: 8) {
+                    StatLabel(icon: "clock", text: DateFormatters.messageTimestamp(message.timestamp))
+                    RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd, model: stats.model)
+                    Spacer()
+                }
+                .foregroundColor(.secondary)
+            }
         } else {
             AssistantMessageFooter(
                 message: message,
+                copyText: effectiveText,
                 showCopiedToast: $showCopiedToast,
                 onShowTeamDashboard: { showTeamDashboard = true },
                 onRefresh: onRefresh,
@@ -140,6 +161,7 @@ struct MessageBubble: View {
         if showLongPressMenu {
             BubbleLongPressOverlay(
                 message: message,
+                copyText: effectiveText,
                 menuPressY: menuPressY,
                 showCopiedToast: $showCopiedToast,
                 onSelectText: { showTextSelection = true },

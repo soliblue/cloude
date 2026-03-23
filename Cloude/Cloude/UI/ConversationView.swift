@@ -66,12 +66,9 @@ struct ConversationView: View {
                 ChatMessageList(
                     messages: messages,
                     queuedMessages: queuedMessages,
-                    currentOutput: output?.text ?? "",
-                    currentToolCalls: output?.toolCalls ?? [],
-                    currentRunStats: isCompact ? nil : output?.runStats,
                     agentState: isThisConversationRunning ? .running : .idle,
                     conversationId: effectiveConversation?.id,
-                    isCompacting: output?.isCompacting ?? false,
+                    isCompact: isCompact,
                     onRefresh: refreshMissedResponse,
                     onInteraction: onInteraction,
                     onDeleteQueued: { messageId in
@@ -105,12 +102,19 @@ struct ConversationView: View {
                 handleCompletion()
             }
         }
+        .onAppear {
+            if let output = convOutput, output.isRunning, output.liveMessageId == nil {
+                if let conv = effectiveConversation {
+                    output.liveMessageId = store.insertLiveMessage(into: conv)
+                }
+            }
+        }
     }
 
     private func handleCompletion() {
-        guard let output = convOutput, !output.text.isEmpty, !output.isRunning else { return }
+        guard let output = convOutput, !output.isRunning else { return }
 
-        if scenePhase != .active {
+        if scenePhase != .active && !output.text.isEmpty {
             NotificationManager.showCompletionNotification(preview: output.text)
         }
 

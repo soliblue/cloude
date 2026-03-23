@@ -16,6 +16,27 @@ struct StatLabel: View {
     }
 }
 
+struct CompactingIndicator: View {
+    @State private var pulse = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.system(size: 14, weight: .semibold))
+                .rotationEffect(.degrees(pulse ? 360 : 0))
+                .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: pulse)
+            Text("Compacting")
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+        }
+        .foregroundColor(.cyan)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.cyan.opacity(0.12))
+        .cornerRadius(10)
+        .onAppear { pulse = true }
+    }
+}
+
 struct RunStatsView: View {
     let durationMs: Int
     let costUsd: Double

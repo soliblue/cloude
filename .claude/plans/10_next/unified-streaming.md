@@ -375,26 +375,26 @@ Then delete both files:
 
 ## Tasks
 
-- [ ] Add `liveMessageId: UUID?` to `ConversationOutput`, clear in `reset()`
-- [ ] Add `insertLiveMessage(into:)` to `ConversationStore+Messaging`
-- [ ] Rewrite `finalizeStreamingMessage` to update in-place via `liveMessageId`
-- [ ] Add `case streamingStarted(conversationId:)` to `ConnectionEvent`
-- [ ] Add `ensureLiveMessage` helper, call from `handleOutput`, `handleToolCall`, and `handleStatus(.compacting)`
-- [ ] Handle `.streamingStarted` in `CloudeApp+EventHandling` (insert live message)
-- [ ] Update `.disconnect` handler to use live message
-- [ ] Add `liveOutput` prop + `effectiveText`/`effectiveToolCalls` to `MessageBubble`
-- [ ] Update `messageContent` to use effective values + sisyphus/compacting states
-- [ ] Create `MessageBubble+LiveWrapper.swift` with `ObservedMessageBubble`
-- [ ] Update `messageListSection` to use `ObservedMessageBubble` for live message
-- [ ] Remove `streamingSection` and `sisyphusSection` from scroll content
-- [ ] Remove `currentOutput`/`currentToolCalls`/`currentRunStats`/`isCompacting` from `ChatMessageList`
-- [ ] Simplify `ConversationView` and `HeartbeatChat` ChatMessageList construction
-- [ ] Add `.onAppear` safety check in `ConversationView`
-- [ ] Update `handleCompletion()` guard to allow empty-text finalization (placeholder cleanup)
-- [ ] Update copy/select (`TextSelectionSheet`, `BubbleLongPressOverlay`) to use `effectiveText`
-- [ ] Pass `isCompact` to `MessageBubble`/`ObservedMessageBubble`, suppress live stats when compact
-- [ ] Re-insert live message after `.historySync` `replaceMessages` if still streaming
-- [ ] Move `CompactingIndicator` and `QueuedBubble`, delete dead files
+- [x] Add `liveMessageId: UUID?` to `ConversationOutput`, clear in `reset()`
+- [x] Add `insertLiveMessage(into:)` to `ConversationStore+Messaging`
+- [x] Rewrite `finalizeStreamingMessage` to update in-place via `liveMessageId`
+- [x] Add `case streamingStarted(conversationId:)` to `ConnectionEvent`
+- [x] Add `ensureLiveMessage` helper, call from `handleOutput`, `handleToolCall`, and `handleStatus(.compacting)`
+- [x] Handle `.streamingStarted` in `CloudeApp+EventHandling` (insert live message)
+- [x] Update `.disconnect` handler to use live message
+- [x] Add `liveOutput` prop + `effectiveText`/`effectiveToolCalls` to `MessageBubble`
+- [x] Update `messageContent` to use effective values + sisyphus/compacting states
+- [x] Create `MessageBubble+LiveWrapper.swift` with `ObservedMessageBubble`
+- [x] Update `messageListSection` to use `ObservedMessageBubble` for live message
+- [x] Remove `streamingSection` and `sisyphusSection` from scroll content
+- [x] Remove `currentOutput`/`currentToolCalls`/`currentRunStats`/`isCompacting` from `ChatMessageList`
+- [x] Simplify `ConversationView` and `HeartbeatChat` ChatMessageList construction
+- [x] Add `.onAppear` safety check in `ConversationView`
+- [x] Update `handleCompletion()` guard to allow empty-text finalization (placeholder cleanup)
+- [x] Update copy/select (`TextSelectionSheet`, `BubbleLongPressOverlay`) to use `effectiveText`
+- [x] Pass `isCompact` to `MessageBubble`/`ObservedMessageBubble`, suppress live stats when compact
+- [x] Re-insert live message after `.historySync` `replaceMessages` if still streaming
+- [x] Move `CompactingIndicator` and `QueuedBubble`, delete dead files
 
 ## Verification
 

@@ -8,12 +8,6 @@ extension ChatMessageList {
             VStack(spacing: 0) {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     messageListSection(viewportHeight: scrollViewportHeight)
-                    if agentState == .running && currentOutput.isEmpty && currentToolCalls.isEmpty && currentRunStats == nil && !isCompacting {
-                        sisyphusSection
-                    }
-                    if !currentToolCalls.isEmpty || !currentOutput.isEmpty || currentRunStats != nil || isCompacting {
-                        streamingSection
-                    }
                     queuedMessagesSection
                 }
                 Spacer(minLength: 0)
@@ -37,11 +31,6 @@ extension ChatMessageList {
         )
         .onAppear {
             if !messages.isEmpty && isInitialLoad {
-                isInitialLoad = false
-            }
-        }
-        .onChange(of: currentOutput) { oldValue, newValue in
-            if !newValue.isEmpty && isInitialLoad {
                 isInitialLoad = false
             }
         }
@@ -75,19 +64,30 @@ extension ChatMessageList {
 
     func messageListSection(viewportHeight: CGFloat) -> some View {
         ForEach(messages) { message in
-            MessageBubble(
-                message: message,
-                skills: connection?.skills ?? [],
-                onRefresh: message.isUser ? nil : { refreshMessage(message) },
-                onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) },
-                isRefreshing: refreshingMessageId == message.id
-            )
-            .readingProgress(
-                isAssistant: !message.isUser,
-                isCollapsed: message.isCollapsed,
-                viewportHeight: viewportHeight
-            )
-            .id("\(message.id)-\(message.isQueued)")
+            if let output = conversationOutput, output.liveMessageId == message.id {
+                ObservedMessageBubble(
+                    message: message,
+                    output: output,
+                    skills: connection?.skills ?? [],
+                    isCompact: isCompact,
+                    onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
+                )
+                .id("\(message.id)-\(message.isQueued)")
+            } else {
+                MessageBubble(
+                    message: message,
+                    skills: connection?.skills ?? [],
+                    onRefresh: message.isUser ? nil : { refreshMessage(message) },
+                    onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) },
+                    isRefreshing: refreshingMessageId == message.id
+                )
+                .readingProgress(
+                    isAssistant: !message.isUser,
+                    isCollapsed: message.isCollapsed,
+                    viewportHeight: viewportHeight
+                )
+                .id("\(message.id)-\(message.isQueued)")
+            }
         }
     }
 
@@ -104,24 +104,6 @@ extension ChatMessageList {
         connection?.syncHistory(sessionId: sessionId, workingDirectory: workingDir, environmentId: conversation.environmentId)
     }
 
-    var sisyphusSection: some View {
-        HStack {
-            SisyphusLoadingView()
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .transition(.opacity)
-    }
-
-    @ViewBuilder
-    var streamingSection: some View {
-        if let output = conversationOutput {
-            StreamingContentObserver(output: output, isCompacting: isCompacting)
-                .id(streamingId)
-        }
-    }
-
     var queuedMessagesSection: some View {
         ForEach(queuedMessages) { message in
             QueuedBubble(message: message, skills: connection?.skills ?? []) {
@@ -129,5 +111,20 @@ extension ChatMessageList {
             }
             .id("\(message.id)-queued")
         }
+    }
+}
+
+struct QueuedBubble: View {
+    let message: ChatMessage
+    var skills: [Skill] = []
+    let onDelete: () -> Void
+
+    var body: some View {
+        MessageBubble(message: message, skills: skills)
+            .contextMenu {
+                Button(role: .destructive, action: onDelete) {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
     }
 }

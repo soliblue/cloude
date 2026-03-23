@@ -110,6 +110,7 @@ struct CopyFeedback {
 
 struct BubbleLongPressOverlay: View {
     let message: ChatMessage
+    var copyText: String
     let menuPressY: CGFloat
     @Binding var showCopiedToast: Bool
     let onSelectText: () -> Void
@@ -128,7 +129,7 @@ struct BubbleLongPressOverlay: View {
             BubbleActionMenu(
                 message: message,
                 onCopy: {
-                    CopyFeedback.perform(message.text, showToast: $showCopiedToast)
+                    CopyFeedback.perform(copyText, showToast: $showCopiedToast)
                 },
                 onSelectText: onSelectText,
                 onToggleCollapse: onToggleCollapse,

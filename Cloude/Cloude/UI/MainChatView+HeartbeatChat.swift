@@ -19,9 +19,6 @@ struct HeartbeatChatView: View {
         ChatMessageList(
             messages: heartbeat.messages,
             queuedMessages: heartbeat.pendingMessages,
-            currentOutput: convOutput.text,
-            currentToolCalls: convOutput.toolCalls,
-            currentRunStats: convOutput.runStats,
             agentState: convOutput.isRunning ? .running : .idle,
             conversationId: Heartbeat.conversationId,
             onDeleteQueued: { messageId in
@@ -35,7 +32,7 @@ struct HeartbeatChatView: View {
             }
         }
         .onChange(of: convOutput.isRunning) { wasRunning, isRunning in
-            if wasRunning && !isRunning && !convOutput.text.isEmpty {
+            if wasRunning && !isRunning {
                 handleChatCompletion()
             }
         }
