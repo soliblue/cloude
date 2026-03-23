@@ -29,21 +29,20 @@ extension CloudeApp {
                         .buttonStyle(.borderless)
                     }
                     ToolbarItem(placement: .principal) {
-                        environmentIndicators
+                        navTitlePill
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
-                            if connection.isAuthenticated || connection.isConnected {
-                                connection.disconnectAll(clearCredentials: false)
-                            } else {
-                                connectAllConfiguredEnvironments()
+                            if let window = windowManager.activeWindow {
+                                windowManager.setActive(window.id)
+                                windowManager.removeWindow(window.id)
                             }
                         }) {
-                            Image(systemName: "power")
-                                .foregroundStyle(connection.isAuthenticated || connection.isConnected ? Color.accentColor : .secondary)
+                            Image(systemName: "xmark")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(.secondary)
                         }
-                        .simultaneousGesture(LongPressGesture().onEnded { _ in showSettings = true })
-                        .padding(.horizontal, 8)
+                        .buttonStyle(.borderless)
                     }
                 }
         }
