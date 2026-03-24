@@ -1,4 +1,5 @@
 # History Sync: Preserve Run Stats
+<!-- build: 103 -->
 
 ## Problem
 After refreshing a conversation from the iOS app (history sync), the run stats footer (model, duration, cost) disappears. The `AssistantMessageFooter` gates the entire stats row behind `if let durationMs, let costUsd` - so when either is nil, even the model and timestamp vanish.

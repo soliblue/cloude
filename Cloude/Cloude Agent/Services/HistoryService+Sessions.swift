@@ -12,7 +12,7 @@ extension HistoryService {
     }
 
     static func listSessions(workingDirectory: String) -> [RemoteSession] {
-        let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-")
+        let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ".", with: "-")
         let claudeProjectsDir = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".claude/projects")
             .appendingPathComponent(projectPath)

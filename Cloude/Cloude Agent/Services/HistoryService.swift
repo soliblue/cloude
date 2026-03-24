@@ -8,7 +8,7 @@ enum HistoryError: Error {
 
 struct HistoryService {
     static func getHistory(sessionId: String, workingDirectory: String) -> Result<[HistoryMessage], HistoryError> {
-        let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-")
+        let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ".", with: "-")
 
         let claudeProjectsDir = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".claude/projects")

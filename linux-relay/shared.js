@@ -12,7 +12,7 @@ export function toAppleTimestamp(ms) { return ms / 1000 - APPLE_EPOCH }
 export function toAppleDate(isoString) { return toAppleTimestamp(new Date(isoString).getTime()) }
 
 export function projectDir(workingDirectory) {
-  return join(process.env.HOME, '.claude', 'projects', workingDirectory.replace(/\//g, '-'))
+  return join(process.env.HOME, '.claude', 'projects', workingDirectory.replace(/[/.]/g, '-'))
 }
 
 export function parseJSONL(filePath) {
