@@ -16,6 +16,18 @@ extension ConversationStore {
         }
     }
 
+    func removeMessage(_ messageId: UUID, from conversation: Conversation) {
+        mutate(conversation.id) {
+            $0.messages.removeAll { $0.id == messageId }
+        }
+    }
+
+    func insertLiveMessage(into conversation: Conversation) -> UUID {
+        let message = ChatMessage(isUser: false, text: "")
+        addMessage(message, to: conversation)
+        return message.id
+    }
+
     func queueMessage(_ message: ChatMessage, to conversation: Conversation) {
         mutate(conversation.id) { $0.pendingMessages.append(message) }
     }

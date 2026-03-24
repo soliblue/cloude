@@ -12,7 +12,6 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(attributed)
-                    .contentTransition(.interpolate)
             }
 
         case .code(_, let content, let language, _):
@@ -32,7 +31,6 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(content)
-                    .contentTransition(.interpolate)
             }
 
         case .toolGroup(_, let tools):

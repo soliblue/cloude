@@ -11,18 +11,12 @@ struct StreamingMarkdownView: View {
     @State private var tailBlocks: [StreamingBlock] = []
     @State private var lastText: String = ""
     @State private var lastToolCount: Int = 0
-    @State private var collapsedHeaders: Set<String> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(contentTree.enumerated()), id: \.offset) { _, node in
-                ContentNodeView(
-                    node: node,
-                    collapsedHeaders: collapsedHeaders,
-                    isComplete: isComplete,
-                    onToggle: { toggleCollapse($0) }
-                )
-                .padding(.bottom, 8)
+            ForEach(Array(allBlocks.enumerated()), id: \.offset) { _, block in
+                StreamingBlockView(block: block)
+                    .padding(.bottom, 8)
             }
         }
         .onAppear { updateIncremental() }
@@ -99,17 +93,5 @@ struct StreamingMarkdownView: View {
             }
         }
         return nil
-    }
-
-    private func toggleCollapse(_ headerId: String) {
-        if collapsedHeaders.contains(headerId) {
-            collapsedHeaders.remove(headerId)
-        } else {
-            collapsedHeaders.insert(headerId)
-        }
-    }
-
-    private var contentTree: [ContentNode] {
-        buildContentTree(from: allBlocks)
     }
 }

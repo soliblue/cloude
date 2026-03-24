@@ -3,7 +3,8 @@ import CloudeShared
 
 extension ConversationStore {
     func finalizeStreamingMessage(output: ConversationOutput, conversation: Conversation) {
-        guard !output.text.isEmpty else { return }
+        output.flushBuffer()
+        let freshConv = self.conversation(withId: conversation.id) ?? conversation
 
         let rawText = output.text
         let trimmedText = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -36,31 +37,43 @@ extension ConversationStore {
             )
         }
 
-        let message = ChatMessage(
-            isUser: false,
-            text: trimmedText,
-            toolCalls: adjustedToolCalls,
-            durationMs: output.runStats?.durationMs,
-            costUsd: output.runStats?.costUsd,
-            serverUUID: output.messageUUID,
-            teamSummary: teamSummary,
-            model: output.runStats?.model
-        )
-
-        let freshConv = self.conversation(withId: conversation.id) ?? conversation
-        let isDuplicate: Bool
-        if let uuid = output.messageUUID {
-            isDuplicate = freshConv.messages.contains { $0.serverUUID == uuid }
-        } else {
-            isDuplicate = freshConv.messages.contains { !$0.isUser && $0.text == message.text && abs($0.timestamp.timeIntervalSinceNow) < 5 }
-        }
-        guard !isDuplicate else {
+        if let liveId = output.liveMessageId {
+            if trimmedText.isEmpty && adjustedToolCalls.isEmpty {
+                removeMessage(liveId, from: freshConv)
+            } else {
+                updateMessage(liveId, in: freshConv) { msg in
+                    msg.text = trimmedText
+                    msg.toolCalls = adjustedToolCalls
+                    msg.durationMs = output.runStats?.durationMs
+                    msg.costUsd = output.runStats?.costUsd
+                    msg.serverUUID = output.messageUUID
+                    msg.model = output.runStats?.model
+                    msg.teamSummary = teamSummary
+                }
+            }
             output.reset()
-            return
+        } else if !trimmedText.isEmpty {
+            let isDuplicate: Bool
+            if let uuid = output.messageUUID {
+                isDuplicate = freshConv.messages.contains { $0.serverUUID == uuid }
+            } else {
+                isDuplicate = freshConv.messages.contains { !$0.isUser && $0.text == trimmedText && abs($0.timestamp.timeIntervalSinceNow) < 5 }
+            }
+            if !isDuplicate {
+                let message = ChatMessage(
+                    isUser: false,
+                    text: trimmedText,
+                    toolCalls: adjustedToolCalls,
+                    durationMs: output.runStats?.durationMs,
+                    costUsd: output.runStats?.costUsd,
+                    serverUUID: output.messageUUID,
+                    teamSummary: teamSummary,
+                    model: output.runStats?.model
+                )
+                addMessage(message, to: conversation)
+            }
+            output.reset()
         }
-
-        addMessage(message, to: conversation)
-        output.reset()
     }
 
     func replayQueuedMessages(conversation: Conversation, connection: ConnectionManager) {
