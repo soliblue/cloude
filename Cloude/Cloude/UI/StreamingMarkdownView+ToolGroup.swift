@@ -4,7 +4,6 @@ import SwiftUI
 
 struct StreamingBlockView: View {
     let block: StreamingBlock
-    var isComplete: Bool = true
 
     var body: some View {
         switch block {
@@ -13,8 +12,6 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(attributed)
-                    .contentTransition(.interpolate)
-                    .animation(isComplete ? nil : .easeOut(duration: 0.3), value: attributed)
             }
 
         case .code(_, let content, let language, _):
@@ -34,8 +31,6 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(content)
-                    .contentTransition(.interpolate)
-                    .animation(isComplete ? nil : .easeOut(duration: 0.3), value: content)
             }
 
         case .toolGroup(_, let tools):
