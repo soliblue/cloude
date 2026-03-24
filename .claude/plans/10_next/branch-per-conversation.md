@@ -1,4 +1,8 @@
-# Branch-per-Conversation via Git Worktrees
+# Branch-per-Conversation via Git Worktrees {arrow.triangle.branch}
+<!-- priority: 8 -->
+<!-- tags: git, relay, agent -->
+
+> Isolate each conversation's git state using worktrees so branch switches don't affect other sessions.
 
 ## Context
 
