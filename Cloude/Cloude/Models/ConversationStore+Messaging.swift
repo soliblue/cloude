@@ -50,7 +50,7 @@ extension ConversationStore {
                     msg.teamSummary = teamSummary
                 }
             }
-            DispatchQueue.main.async { output.liveMessageId = nil }
+            output.liveMessageId = nil
         } else if !trimmedText.isEmpty {
             let isDuplicate: Bool
             if let uuid = output.messageUUID {
