@@ -46,7 +46,7 @@ struct FunctionPlotWidget: View {
             WidgetHeader(icon: "chart.xyaxis.line", title: "Function Plot", color: .blue)
 
             Text("f(x) = \(expression)")
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .font(.footnote.weight(.medium).monospaced())
                 .foregroundColor(.primary)
 
             chart
@@ -77,13 +77,13 @@ struct FunctionPlotWidget: View {
         .chartXAxis {
             AxisMarks(position: .bottom) { _ in
                 AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                AxisValueLabel().font(.caption2.monospaced())
             }
         }
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
                 AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                AxisValueLabel().font(.caption2.monospaced())
             }
         }
     }
@@ -100,7 +100,7 @@ struct FunctionPlotWidget: View {
     private func paramSlider(_ param: (name: String, value: Double, min: Double, max: Double, step: Double)) -> some View {
         HStack(spacing: 8) {
             Text(param.name)
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .font(.caption2.weight(.semibold).monospaced())
                 .foregroundColor(.secondary)
                 .frame(width: 20, alignment: .trailing)
 
@@ -115,7 +115,7 @@ struct FunctionPlotWidget: View {
             .tint(.blue)
 
             Text(String(format: "%.2f", paramValues[param.name] ?? param.value))
-                .font(.system(size: 10, design: .monospaced))
+                .font(.caption2.monospaced())
                 .foregroundColor(.secondary)
                 .frame(width: 45, alignment: .trailing)
         }

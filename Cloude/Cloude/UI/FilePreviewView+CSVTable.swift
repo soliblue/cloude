@@ -38,7 +38,7 @@ struct CSVTableView: View {
         HStack(spacing: 0) {
             ForEach(Array(cells.enumerated()), id: \.offset) { i, cell in
                 Text(cell)
-                    .font(.system(size: 10, weight: .semibold, design: .default))
+                    .font(.caption2.weight(.semibold))
                     .lineLimit(1)
                     .frame(width: columnWidth(i), alignment: .leading)
                     .padding(.horizontal, 8)
@@ -53,7 +53,7 @@ struct CSVTableView: View {
         HStack(spacing: 0) {
             ForEach(Array(cells.enumerated()), id: \.offset) { i, cell in
                 Text(cell)
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.caption2.monospaced())
                     .lineLimit(2)
                     .textSelection(.enabled)
                     .frame(width: columnWidth(i), alignment: .leading)

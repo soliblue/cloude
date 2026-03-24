@@ -51,7 +51,7 @@ struct CategorizationWidget: View {
 
             if let instruction {
                 Text(instruction)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.footnote.weight(.medium))
             }
 
             if !unplaced.isEmpty && !checked {
@@ -65,7 +65,7 @@ struct CategorizationWidget: View {
                             }
                         } label: {
                             Text(item)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.footnote.weight(.medium))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
                                 .background(selectedCategory != nil ? Color.mint.opacity(0.1) : Color.themeGray6.opacity(0.5))
@@ -107,11 +107,11 @@ struct CategorizationWidget: View {
             } label: {
                 HStack {
                     Text(name)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundColor(isSelected ? .mint : .primary)
                     Spacer()
                     Text("\(itemsInBucket.count)")
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .font(.caption2.weight(.medium).monospaced())
                         .foregroundColor(.secondary)
                 }
                 .padding(10)
@@ -131,11 +131,11 @@ struct CategorizationWidget: View {
                         HStack(spacing: 4) {
                             if checked {
                                 Image(systemName: isCorrect ? "checkmark" : "xmark")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .font(.caption2.weight(.bold))
                                     .foregroundColor(isCorrect ? .green : .red)
                             }
                             Text(item)
-                                .font(.system(size: 12))
+                                .font(.footnote)
                         }
                         .padding(.horizontal, 8)
                         .padding(.vertical, 5)

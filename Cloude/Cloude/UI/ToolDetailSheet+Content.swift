@@ -97,7 +97,7 @@ extension ToolDetailSheet {
                             Text(outputExpanded ? "Show less" : "Show all \(outputLines?.count ?? 0) lines")
                                 .font(.subheadline.weight(.medium))
                             Image(systemName: outputExpanded ? "chevron.up" : "chevron.down")
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(.caption2.weight(.semibold))
                         }
                         .foregroundColor(.accentColor)
                         .frame(maxWidth: .infinity)

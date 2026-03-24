@@ -33,7 +33,7 @@ struct TeammateDetailSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -53,7 +53,8 @@ struct TeammateDetailSheet: View {
                 .frame(width: 48, height: 48)
                 .overlay {
                     Text(String(teammate.name.prefix(1)).uppercased())
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.subheadline.weight(.bold))
+                        .fontDesign(.rounded)
                         .foregroundColor(.white)
                 }
 
@@ -91,11 +92,11 @@ struct TeammateDetailSheet: View {
     private func messageRow(_ msg: TeammateMessage) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(msg.text)
-                .font(.callout)
+                .font(.subheadline)
                 .foregroundColor(.primary)
 
             Text(formatTime(msg.timestamp))
-                .font(.system(size: 10))
+                .font(.caption2)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

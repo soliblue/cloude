@@ -26,13 +26,14 @@ struct StepRevealWidget: View {
                 ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
                     HStack(alignment: .top, spacing: 10) {
                         Text("\(index + 1)")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .font(.footnote.weight(.bold))
+                            .fontDesign(.rounded)
                             .foregroundColor(index < revealedCount ? .indigo : .secondary.opacity(0.3))
                             .frame(width: 20)
 
                         if index < revealedCount {
                             Text(step)
-                                .font(.system(size: 14))
+                                .font(.footnote)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .transition(.opacity.combined(with: .move(edge: .top)))
                         } else {

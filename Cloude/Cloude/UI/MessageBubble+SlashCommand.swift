@@ -10,12 +10,12 @@ struct SlashCommandBubble: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.caption2.weight(.semibold))
             Text(command)
-                .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                .font(.caption2.weight(.semibold).monospaced())
             if let args = args {
                 Text(args)
-                    .font(.system(size: 9, design: .monospaced))
+                    .font(.caption2.monospaced())
                     .opacity(0.7)
                     .lineLimit(1)
             }

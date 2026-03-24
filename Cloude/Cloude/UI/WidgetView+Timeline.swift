@@ -23,7 +23,7 @@ struct TimelineWidget: View {
                     HStack(alignment: .top, spacing: 12) {
                         VStack(spacing: 0) {
                             Image(systemName: event.icon)
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.caption2.weight(.bold))
                                 .foregroundColor(.white)
                                 .frame(width: 22, height: 22)
                                 .background(event.color, in: Circle())
@@ -38,13 +38,13 @@ struct TimelineWidget: View {
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(event.date)
-                                .font(.system(size: 11, weight: .medium))
+                                .font(.caption2.weight(.medium))
                                 .foregroundColor(.secondary)
                             Text(event.title)
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.footnote.weight(.semibold))
                             if let desc = event.description {
                                 Text(desc)
-                                    .font(.system(size: 12))
+                                    .font(.footnote)
                                     .foregroundColor(.secondary)
                             }
                         }

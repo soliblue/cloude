@@ -27,7 +27,7 @@ extension MainChatView {
         return HStack(spacing: 9) {
             Button(action: triggerHeartbeat) {
                 Image(systemName: "bolt.heart.fill")
-                    .font(.system(size: 14))
+                    .font(.footnote)
                     .foregroundColor(isRunning ? .secondary : .white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -53,7 +53,7 @@ extension MainChatView {
                     .foregroundColor(.secondary)
                 if hasCustomName {
                     Image.safeSymbol(heartbeat.symbol)
-                        .font(.system(size: 12))
+                        .font(.footnote)
                     Text(heartbeat.name)
                 } else {
                     Text("Heartbeat")
@@ -67,7 +67,7 @@ extension MainChatView {
             HStack(spacing: 0) {
                 Button(action: refreshHeartbeat) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.subheadline.weight(.medium))
                         .foregroundColor(isRunning ? .secondary.opacity(0.3) : .secondary)
                         .padding(7)
                 }
@@ -85,7 +85,7 @@ extension MainChatView {
                 Button(action: { showIntervalPicker = true }) {
                     if conversationStore.heartbeatConfig.intervalMinutes == nil {
                         Image(systemName: "clock.badge.xmark")
-                            .font(.system(size: 17))
+                            .font(.subheadline)
                     } else {
                         Text(conversationStore.heartbeatConfig.intervalDisplayText)
                             .font(.caption)
@@ -118,7 +118,7 @@ extension MainChatView {
             }
         } label: {
             Image(systemName: currentEnv?.symbol ?? "laptopcomputer")
-                .font(.system(size: 14))
+                .font(.footnote)
                 .foregroundColor(.secondary)
                 .padding(7)
         }

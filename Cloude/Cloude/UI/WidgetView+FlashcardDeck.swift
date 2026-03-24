@@ -23,7 +23,7 @@ struct FlashcardDeckWidget: View {
         WidgetContainer {
             WidgetHeader(icon: "rectangle.stack", title: title, color: .indigo) {
                 Text("\(currentIndex + 1)/\(cards.count)")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .font(.caption2.weight(.medium).monospaced())
                     .foregroundColor(.secondary)
             }
 
@@ -34,7 +34,7 @@ struct FlashcardDeckWidget: View {
                         currentIndex = currentIndex > 0 ? currentIndex - 1 : cards.count - 1
                     } label: {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.footnote.weight(.semibold))
                             .foregroundColor(.indigo)
                     }
                     .buttonStyle(.plain)
@@ -44,12 +44,12 @@ struct FlashcardDeckWidget: View {
                     } label: {
                         VStack(spacing: 6) {
                             Text(flipped ? "ANSWER" : "QUESTION")
-                                .font(.system(size: 9, weight: .bold))
+                                .font(.caption2.weight(.bold))
                                 .foregroundColor(flipped ? .indigo.opacity(0.5) : .secondary.opacity(0.4))
                                 .tracking(1.5)
 
                             Text(flipped ? card.back : card.front)
-                                .font(.system(size: 16, weight: flipped ? .semibold : .regular))
+                                .font(.subheadline.weight(flipped ? .semibold : .regular))
                                 .foregroundColor(flipped ? .indigo : .primary)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity)
@@ -68,7 +68,7 @@ struct FlashcardDeckWidget: View {
                         currentIndex = currentIndex < cards.count - 1 ? currentIndex + 1 : 0
                     } label: {
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.footnote.weight(.semibold))
                             .foregroundColor(.indigo)
                     }
                     .buttonStyle(.plain)

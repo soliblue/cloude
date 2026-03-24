@@ -44,10 +44,10 @@ struct GitChangesView: View {
     private func statusHeader(_ status: GitStatusInfo) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "arrow.triangle.branch")
-                .font(.system(size: 12))
+                .font(.footnote)
                 .foregroundColor(.secondary)
             Text(status.branch)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.footnote.weight(.semibold))
 
             if status.ahead > 0 {
                 Label("\(status.ahead)", systemImage: "arrow.up")
@@ -71,23 +71,23 @@ struct GitChangesView: View {
                             .foregroundColor(.pastelRed)
                     }
                 }
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(.caption2.weight(.medium).monospaced())
                 Text("·")
                     .foregroundColor(.secondary)
             }
 
             if !status.stagedFiles.isEmpty {
                 Text("\(status.stagedFiles.count) staged")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.caption2.weight(.medium))
                     .foregroundColor(.pastelGreen)
                 Text("·")
                     .foregroundColor(.secondary)
             }
             Text("\(status.unstagedFiles.count) changed")
-                .font(.system(size: 11, weight: .medium))
+                .font(.caption2.weight(.medium))
                 .foregroundColor(status.hasChanges ? .orange : .pastelGreen)
         }
-        .font(.system(size: 11))
+        .font(.caption2)
         .foregroundColor(.secondary)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -105,7 +105,7 @@ struct GitChangesView: View {
                     }
                 } header: {
                     Text("Staged")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.caption2.weight(.semibold))
                         .textCase(.uppercase)
                 }
             }
@@ -116,7 +116,7 @@ struct GitChangesView: View {
                     }
                 } header: {
                     Text("Changes")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.caption2.weight(.semibold))
                         .textCase(.uppercase)
                 }
             }

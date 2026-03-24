@@ -38,9 +38,9 @@ struct BubbleActionMenu: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 16))
+                    .font(.subheadline)
                 Text(label)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.caption2.weight(.medium))
             }
             .foregroundColor(.primary)
             .frame(width: 64, height: 52)
@@ -80,13 +80,15 @@ struct TeamSummaryBadge: View {
                             .frame(width: 14, height: 14)
                             .overlay {
                                 Text(String(member.name.prefix(1)).uppercased())
-                                    .font(.system(size: 7, weight: .bold, design: .rounded))
+                                    .font(.caption2.weight(.bold))
+                                    .fontDesign(.rounded)
                                     .foregroundColor(.white)
                             }
                     }
                 }
                 Text(summary.teamName)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .font(.caption2.weight(.medium))
+                    .fontDesign(.rounded)
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 8)

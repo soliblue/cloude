@@ -13,7 +13,7 @@ extension FilePreviewView {
                     VStack(alignment: .trailing, spacing: 0) {
                         ForEach(1...lines.count, id: \.self) { num in
                             Text("\(num)")
-                                .font(.system(size: 10, design: .monospaced))
+                                .font(.caption2.monospaced())
                                 .foregroundStyle(.tertiary)
                                 .frame(height: 13.5)
                         }
@@ -27,7 +27,7 @@ extension FilePreviewView {
 
                 if let highlighted = highlightedCode {
                     Text(highlighted)
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(.caption2.monospaced())
                         .lineSpacing(1.5)
                         .fixedSize(horizontal: !wrapCodeLines, vertical: false)
                         .textSelection(.enabled)
@@ -35,7 +35,7 @@ extension FilePreviewView {
                         .frame(maxWidth: wrapCodeLines ? .infinity : nil, alignment: .leading)
                 } else {
                     Text(text)
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(.caption2.monospaced())
                         .lineSpacing(1.5)
                         .fixedSize(horizontal: !wrapCodeLines, vertical: false)
                         .textSelection(.enabled)
@@ -51,7 +51,7 @@ extension FilePreviewView {
     func binaryPlaceholder(_ data: Data) -> some View {
         VStack(spacing: 16) {
             Image(systemName: fileEntry?.icon ?? "doc")
-                .font(.system(size: 60))
+                .font(.largeTitle)
                 .foregroundColor(.secondary)
             Text(fileName)
                 .font(.headline)

@@ -17,7 +17,7 @@ struct FileViewerBreadcrumb: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 8))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                     ForEach(components) { component in
@@ -35,7 +35,7 @@ struct FileViewerBreadcrumb: View {
                             .id(component.path)
                         }
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 8))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
 

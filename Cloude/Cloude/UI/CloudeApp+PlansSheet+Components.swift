@@ -7,7 +7,7 @@ extension PlansSheet {
             HStack(spacing: 6) {
                 Button(action: { selectedTags.removeAll() }) {
                     Text("All")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.footnote.weight(.medium))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(selectedTags.isEmpty ? Color.accentColor.opacity(0.1) : .white.opacity(0.06))
@@ -26,7 +26,7 @@ extension PlansSheet {
                         }
                     }) {
                         Text(tag)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.footnote.weight(.medium))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(selectedTags.contains(tag) ? planTagColor(tag).opacity(0.12) : .white.opacity(0.06))

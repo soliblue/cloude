@@ -41,16 +41,16 @@ struct TypeAnswerWidget: View {
             }
 
             Text(question)
-                .font(.system(size: 15, weight: .medium))
+                .font(.subheadline.weight(.medium))
 
             if let hint, !checked {
                 Text(hint)
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundColor(.secondary.opacity(0.7))
             }
 
             TextField("Your answer...", text: $userInput)
-                .font(.system(size: 15))
+                .font(.subheadline)
                 .textFieldStyle(.plain)
                 .padding(10)
                 .background(Color.themeGray6.opacity(0.5))

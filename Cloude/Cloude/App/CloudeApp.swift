@@ -33,6 +33,7 @@ struct CloudeApp: App {
     var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("debugOverlayEnabled") var debugOverlayEnabled = false
+    @AppStorage("textSizeStep") var textSizeStep: Int = TextSizeScale.defaultStep
     @ObservedObject var debugMetrics = DebugMetrics.shared
     @Environment(\.scenePhase) var scenePhase
 
@@ -54,6 +55,7 @@ struct CloudeApp: App {
             .environmentObject(connection)
             .environment(\.appTheme, appTheme)
             .preferredColorScheme(appTheme.colorScheme)
+            .dynamicTypeSize(TextSizeScale.size(for: textSizeStep))
         }
     }
 }

@@ -11,7 +11,7 @@ extension WindowEditForm {
                     Button(action: { onSelectConversation(conv) }) {
                         HStack(spacing: 10) {
                             Image.safeSymbol(conv.symbol)
-                                .font(.system(size: 17))
+                                .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 2) {
@@ -32,7 +32,7 @@ extension WindowEditForm {
                             if let envId = conv.environmentId,
                                let env = environmentStore.environments.first(where: { $0.id == envId }) {
                                 Image.safeSymbol(env.symbol)
-                                    .font(.system(size: 13))
+                                    .font(.footnote)
                                     .foregroundColor(.secondary)
                             }
                             Text(relativeTime(conv.lastMessageAt))

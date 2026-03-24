@@ -14,11 +14,12 @@ struct TeamBannerView: View {
         Button { showDashboard = true } label: {
             HStack(spacing: 0) {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 8, weight: .semibold))
+                    .font(.caption2.weight(.semibold))
                     .foregroundColor(.secondary.opacity(0.5))
 
                 Text(teamName)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(.footnote.weight(.medium))
+                    .fontDesign(.rounded)
                     .foregroundColor(.secondary)
                     .padding(.leading, 4)
 
@@ -100,7 +101,7 @@ struct TeamDashboardSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundColor(.secondary)
                     }
                 }

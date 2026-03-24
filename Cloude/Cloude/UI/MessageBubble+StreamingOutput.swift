@@ -113,7 +113,7 @@ struct StreamingInterleavedOutput: View {
                 if let stats = runStats {
                     HStack(spacing: 5) {
                         Text(Date(), style: .time)
-                            .font(.system(size: 9))
+                            .font(.caption2)
                         RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd, model: stats.model)
                     }
                     .foregroundColor(.secondary)

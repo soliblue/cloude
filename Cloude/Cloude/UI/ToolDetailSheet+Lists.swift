@@ -21,7 +21,7 @@ extension ToolDetailSheet {
                                 .scaleEffect(0.6)
                         } else {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.caption2.weight(.bold))
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -50,7 +50,7 @@ extension ToolDetailSheet {
                 ForEach(Array(todos.enumerated()), id: \.offset) { index, todo in
                     HStack(spacing: 10) {
                         Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.footnote.weight(.medium))
                             .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
                             .frame(width: 20)
 
@@ -84,7 +84,7 @@ extension ToolDetailSheet {
                     VStack(spacing: 0) {
                         HStack(alignment: .top, spacing: 10) {
                             Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.footnote.weight(.medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
                                 .frame(width: 20)
                                 .padding(.top, 2)

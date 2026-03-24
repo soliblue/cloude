@@ -35,11 +35,11 @@ struct ScatterPlotWidget: View {
                             VStack(spacing: 1) {
                                 if let label = point.label {
                                     Text(label)
-                                        .font(.system(size: 10, weight: .semibold))
+                                        .font(.caption2.weight(.semibold))
                                         .foregroundColor(.primary)
                                 }
                                 Text("(\(point.x.formatted()), \(point.y.formatted()))")
-                                    .font(.system(size: 10, design: .monospaced))
+                                    .font(.caption2.monospaced())
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, 6)
@@ -54,13 +54,13 @@ struct ScatterPlotWidget: View {
             .chartXAxis {
                 AxisMarks { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                    AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                    AxisValueLabel().font(.caption2.monospaced())
                 }
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                    AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                    AxisValueLabel().font(.caption2.monospaced())
                 }
             }
             .chartOverlay { proxy in
@@ -97,13 +97,13 @@ struct ScatterPlotWidget: View {
                 HStack {
                     if let xLabel {
                         Text("X: \(xLabel)")
-                            .font(.system(size: 10))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                     Spacer()
                     if let yLabel {
                         Text("Y: \(yLabel)")
-                            .font(.system(size: 10))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                 }

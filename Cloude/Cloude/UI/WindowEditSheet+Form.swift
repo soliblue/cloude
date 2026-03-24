@@ -38,7 +38,7 @@ struct WindowEditForm: View {
             HStack(spacing: 12) {
                 Button(action: { showSymbolPicker = true }) {
                     Image.safeSymbol(symbol.nilIfEmpty, fallback: "circle.dashed")
-                        .font(.system(size: 24))
+                        .font(.subheadline)
                         .frame(width: 48, height: 48)
                         .background(Color.themeSecondary)
                         .clipShape(RoundedRectangle(cornerRadius: 9))

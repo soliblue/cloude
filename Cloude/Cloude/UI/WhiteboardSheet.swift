@@ -62,7 +62,7 @@ struct WhiteboardSheet: View {
             .overlay(alignment: .top) {
                 if showExportSuccess {
                     Text("Saved to Photos")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)

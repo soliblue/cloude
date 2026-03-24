@@ -18,13 +18,13 @@ struct WhiteboardSnapshotPill: View {
         if let state = snapshot {
             HStack(spacing: 4) {
                 Image(systemName: "rectangle.on.rectangle.angled")
-                    .font(.system(size: 9))
+                    .font(.caption2)
                     .foregroundColor(.accentColor)
                 Text("snapshot")
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .font(.caption2.weight(.semibold).monospaced())
                     .foregroundColor(.accentColor)
                 Text("\(state.elements.count) elements")
-                    .font(.system(size: 9, weight: .medium))
+                    .font(.caption2.weight(.medium))
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 8)
@@ -80,44 +80,44 @@ private struct WhiteboardElementRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: elementIcon(element.type))
-                .font(.system(size: 11))
+                .font(.caption2)
                 .foregroundColor(.accentColor)
                 .frame(width: 20)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
                     Text(element.type.rawValue)
-                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                        .font(.footnote.weight(.semibold).monospaced())
                     Text(element.id)
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(.caption2.monospaced())
                         .foregroundColor(.secondary)
                 }
 
                 HStack(spacing: 8) {
                     if element.type != .arrow {
                         Text(String(format: "(%.0f, %.0f)", element.x, element.y))
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.caption2.monospaced())
                             .foregroundColor(.secondary)
                     }
                     if element.type == .rect || element.type == .ellipse {
                         Text(String(format: "%.0f×%.0f", element.w, element.h))
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.caption2.monospaced())
                             .foregroundColor(.secondary)
                     }
                     if let label = element.label, !label.isEmpty {
                         Text("\"\(label)\"")
-                            .font(.system(size: 10))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
                     if let from = element.from, let to = element.to {
                         Text("\(from) → \(to)")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.caption2.monospaced())
                             .foregroundColor(.secondary)
                     }
                     if let points = element.points {
                         Text("\(points.count) pts")
-                            .font(.system(size: 10))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                 }

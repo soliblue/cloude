@@ -12,7 +12,7 @@ struct StatLabel: View {
                 .frame(height: 8)
             Text(text)
         }
-        .font(.system(size: 9))
+        .font(.caption2)
     }
 }
 

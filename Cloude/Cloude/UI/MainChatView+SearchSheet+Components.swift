@@ -5,7 +5,7 @@ extension ConversationSearchSheet {
     func conversationRow(_ conv: Conversation) -> some View {
         HStack(spacing: 10) {
             Image.safeSymbol(conv.symbol)
-                .font(.system(size: 17))
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {

@@ -126,9 +126,9 @@ struct PlansSheet: View {
                 Button(action: { withAnimation(.easeInOut(duration: 0.15)) { selectedStage = stage } }) {
                     VStack(spacing: 3) {
                         Image(systemName: stageIcon(stage))
-                            .font(.system(size: 14, weight: selectedStage == stage ? .semibold : .regular))
+                            .font(.footnote.weight(selectedStage == stage ? .semibold : .regular))
                         Text("\(count)")
-                            .font(.system(size: 11))
+                            .font(.caption2)
                             .foregroundColor(selectedStage == stage ? .accentColor.opacity(0.7) : .secondary.opacity(0.6))
                     }
                     .frame(maxWidth: .infinity)

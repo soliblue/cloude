@@ -43,7 +43,7 @@ struct WordScrambleWidget: View {
 
             if let hint {
                 Text(hint)
-                    .font(.system(size: 14))
+                    .font(.footnote)
                     .foregroundColor(.secondary)
             }
 
@@ -54,7 +54,7 @@ struct WordScrambleWidget: View {
 
                     ZStack {
                         Text(letter)
-                            .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                            .font(.subheadline.weight(.semibold).monospaced())
                             .foregroundColor(checked ? (isCorrect ? .green : .red) : .primary)
                     }
                     .frame(width: 32, height: 38)
@@ -86,7 +86,7 @@ struct WordScrambleWidget: View {
                             }
                         } label: {
                             Text(String(scrambledLetters[index]))
-                                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                                .font(.subheadline.weight(.medium).monospaced())
                                 .frame(width: 36, height: 36)
                                 .background(Color.themeGray6.opacity(0.5))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))

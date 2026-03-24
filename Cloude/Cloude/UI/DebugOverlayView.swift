@@ -33,7 +33,7 @@ struct DebugOverlayView: View {
                 .fill(fpsColor)
                 .frame(width: 6, height: 6)
             Text("\(metrics.fps)fps")
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(.caption2.weight(.medium).monospaced())
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
@@ -46,11 +46,11 @@ struct DebugOverlayView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("Debug")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .font(.footnote.weight(.bold).monospaced())
                 Spacer()
                 Button(action: { expanded = false }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.caption2.weight(.bold))
                         .foregroundColor(.secondary)
                 }
             }
@@ -69,11 +69,11 @@ struct DebugOverlayView: View {
     private func metricRow(_ label: String, value: String, color: Color) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 10, design: .monospaced))
+                .font(.caption2.monospaced())
                 .foregroundColor(.secondary)
             Spacer()
             Text(value)
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .font(.caption2.weight(.semibold).monospaced())
                 .foregroundColor(color)
         }
     }

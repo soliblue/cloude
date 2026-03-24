@@ -39,7 +39,7 @@ extension CloudeApp {
                             }
                         }) {
                             Image(systemName: "xmark")
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.subheadline.weight(.medium))
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.borderless)

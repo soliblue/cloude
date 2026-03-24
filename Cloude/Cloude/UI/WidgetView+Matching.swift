@@ -39,7 +39,7 @@ struct MatchingWidget: View {
 
             if let instruction {
                 Text(instruction)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.footnote.weight(.medium))
             }
 
             HStack(alignment: .top, spacing: 10) {
@@ -83,7 +83,7 @@ struct MatchingWidget: View {
             }
         } label: {
             Text(item)
-                .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                .font(.footnote.weight(isSelected ? .semibold : .regular))
                 .foregroundColor(isMatched ? (isCorrect ? .green : .red) : .primary)
                 .frame(maxWidth: .infinity)
                 .padding(10)
@@ -115,7 +115,7 @@ struct MatchingWidget: View {
             }
         } label: {
             Text(item)
-                .font(.system(size: 13))
+                .font(.footnote)
                 .foregroundColor(isMatched ? (isCorrect ? .green : .red) : .primary)
                 .frame(maxWidth: .infinity)
                 .padding(10)

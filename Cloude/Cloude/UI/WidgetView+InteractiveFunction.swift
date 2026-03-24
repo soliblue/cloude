@@ -55,15 +55,15 @@ struct InteractiveFunctionWidget: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(input.name)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.caption2.weight(.semibold).monospaced())
                     .foregroundColor(.secondary)
                 Spacer()
                 HStack(spacing: 2) {
                     Text(String(format: "%.1f", inputValues[input.name] ?? input.value))
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                        .font(.footnote.weight(.medium).monospaced())
                     if let unit = input.unit {
                         Text(unit)
-                            .font(.system(size: 10))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                 }
@@ -84,18 +84,19 @@ struct InteractiveFunctionWidget: View {
     private var resultView: some View {
         HStack {
             Text(outputConfig.label)
-                .font(.system(size: 13, weight: .medium))
+                .font(.footnote.weight(.medium))
                 .foregroundColor(.secondary)
             Spacer()
             HStack(spacing: 4) {
                 Text(String(format: outputConfig.format, computedResult))
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.subheadline.weight(.bold))
+                    .fontDesign(.rounded)
                     .foregroundColor(.purple)
                     .contentTransition(.numericText())
                     .animation(.easeInOut(duration: 0.15), value: computedResult)
                 if let unit = outputConfig.unit {
                     Text(unit)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.footnote.weight(.medium))
                         .foregroundColor(.secondary)
                 }
             }

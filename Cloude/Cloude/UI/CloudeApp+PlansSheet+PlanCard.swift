@@ -13,11 +13,11 @@ struct PlanCard: View {
                     HStack(spacing: 6) {
                         if let icon = plan.icon {
                             Image(systemName: icon)
-                                .font(.system(size: 14))
+                                .font(.footnote)
                                 .foregroundColor(.accentColor)
                         }
                         Text(plan.title)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundColor(.primary)
                             .lineLimit(1)
                         Spacer()
@@ -36,7 +36,7 @@ struct PlanCard: View {
                             HStack(spacing: 6) {
                                 ForEach(tags, id: \.self) { tag in
                                     Text(tag)
-                                        .font(.system(size: 10, weight: .medium))
+                                        .font(.caption2.weight(.medium))
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
                                         .background(planTagColor(tag).opacity(0.1))
@@ -51,7 +51,7 @@ struct PlanCard: View {
 
                 if stage == "done", let build = plan.build {
                     Text("\(build)")
-                        .font(.system(size: 10, weight: .medium).monospacedDigit())
+                        .font(.caption2.weight(.medium).monospacedDigit())
                         .padding(.horizontal, 8)
                         .padding(.vertical, 5)
                         .background(.white.opacity(0.06))

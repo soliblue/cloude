@@ -27,9 +27,9 @@ struct SkillPill: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: command.icon)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.caption2.weight(.semibold))
             Text("/\(command.name)")
-                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .font(.caption2.weight(.semibold).monospaced())
         }
         .foregroundStyle(command.isSkill ? skillGradient : builtInGradient)
         .padding(.horizontal, 8)
@@ -48,7 +48,7 @@ struct HistorySuggestions: View {
                 ForEach(suggestions, id: \.self) { text in
                     Button(action: { onSelect(text) }) {
                         Text(text)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.caption2.weight(.medium))
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
@@ -96,9 +96,9 @@ struct FilePill: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.caption2.weight(.semibold))
             Text(fileName)
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .font(.caption2.weight(.semibold).monospaced())
                 .lineLimit(1)
         }
         .foregroundStyle(fileGradient)

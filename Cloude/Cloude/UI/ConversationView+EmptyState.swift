@@ -106,7 +106,7 @@ struct EmptyConversationView: View {
                             Text("See all")
                                 .font(.caption)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
+                                .font(.caption2.weight(.semibold))
                         }
                         .foregroundColor(.secondary)
                     }
@@ -120,7 +120,7 @@ struct EmptyConversationView: View {
                 Button(action: { onSelectConversation?(conv) }) {
                     HStack(spacing: 10) {
                         Image.safeSymbol(conv.symbol ?? "bubble.left")
-                            .font(.system(size: 13))
+                            .font(.footnote)
                             .foregroundColor(.secondary)
                             .frame(width: 20)
                         Text(conv.name)
@@ -130,7 +130,7 @@ struct EmptyConversationView: View {
                         Spacer()
                         if let symbol = envSymbol(for: conv) {
                             Image.safeSymbol(symbol)
-                                .font(.system(size: 11))
+                                .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                     }

@@ -6,11 +6,11 @@ extension TerminalView {
             Spacer()
 
             Image(systemName: "terminal")
-                .font(.system(size: 40))
+                .font(.largeTitle)
                 .foregroundColor(.secondary.opacity(0.4))
 
             Text(workingDirectory)
-                .font(.system(size: 13, design: .monospaced))
+                .font(.footnote.monospaced())
                 .foregroundColor(.secondary)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -22,9 +22,9 @@ extension TerminalView {
                         } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: icon)
-                                    .font(.system(size: 11))
+                                    .font(.caption2)
                                 Text(cmd)
-                                    .font(.system(size: 12, design: .monospaced))
+                                    .font(.footnote.monospaced())
                             }
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 10)
@@ -58,12 +58,12 @@ extension TerminalView {
     var inputBar: some View {
         HStack(spacing: 0) {
             Text(isExecuting ? ">" : "$")
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .font(.footnote.weight(.bold).monospaced())
                 .foregroundColor(isExecuting ? .pastelGreen : .accentColor)
                 .padding(.leading, 12)
 
             TextField(isExecuting ? "stdin" : "command", text: $commandText)
-                .font(.system(size: 12, design: .monospaced))
+                .font(.footnote.monospaced())
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .focused($isFocused)
@@ -72,7 +72,7 @@ extension TerminalView {
 
             Button(action: { isExecuting ? sendInput() : executeCommand() }) {
                 Image(systemName: "paperplane.fill")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(canSend ? .white : .secondary.opacity(0.5))
                     .frame(width: 56)
                     .frame(maxHeight: .infinity)

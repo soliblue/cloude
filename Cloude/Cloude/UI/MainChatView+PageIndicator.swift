@@ -46,7 +46,7 @@ extension MainChatView {
             withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
         } label: {
             Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                .font(.system(size: 22))
+                .font(.subheadline)
                 .foregroundStyle(
                     isScheduled || isHeartbeatActive
                         ? AnyShapeStyle(LinearGradient(
@@ -61,7 +61,7 @@ extension MainChatView {
                 .overlay(alignment: .topTrailing) {
                     if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
                         Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
-                            .font(.system(size: 9, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundColor(.white)
                             .frame(minWidth: 14, minHeight: 14)
                             .background(Circle().fill(Color.accentColor))
@@ -102,7 +102,7 @@ extension MainChatView {
         } else {
             Button(action: addWindowWithNewChat) {
                 Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .medium))
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
                     .frame(width: 28, height: 28)
             }
@@ -116,7 +116,7 @@ extension MainChatView {
             showConversationSearch = true
         } label: {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 22))
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .frame(height: 28)
         }
@@ -139,7 +139,7 @@ extension MainChatView {
         Group {
             if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
                 Image(systemName: symbol)
-                    .font(.system(size: 22, weight: weight))
+                    .font(.subheadline.weight(weight))
                     .foregroundStyle(color)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             } else {

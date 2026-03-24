@@ -16,7 +16,7 @@ extension WhiteboardSheet {
             HStack(spacing: 10) {
                 TextField("Label", text: $editingTextValue)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.footnote.weight(.medium))
                     .foregroundColor(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -28,7 +28,7 @@ extension WhiteboardSheet {
 
                 Button(action: { commitTextEdit() }) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundColor(.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -140,7 +140,7 @@ extension WhiteboardSheet {
     @ViewBuilder
     var multiSelectActionRow: some View {
         Text("\(store.selectedIds.count)")
-            .font(.system(size: 12, weight: .bold, design: .monospaced))
+            .font(.footnote.weight(.bold).monospaced())
             .foregroundColor(.accentColor)
             .frame(width: 28)
 
@@ -186,7 +186,7 @@ extension WhiteboardSheet {
     func contextAction(icon: String, tint: Color = .primary.opacity(0.8), disabled: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 14))
+                .font(.footnote)
                 .frame(width: 34, height: 30)
                 .foregroundColor(disabled ? .secondary.opacity(0.3) : tint)
         }

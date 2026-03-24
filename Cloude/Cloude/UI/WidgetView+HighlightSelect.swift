@@ -35,7 +35,7 @@ struct HighlightSelectWidget: View {
             }
 
             Text(instruction)
-                .font(.system(size: 14, weight: .medium))
+                .font(.footnote.weight(.medium))
 
             FlowLayout(spacing: 4) {
                 ForEach(Array(words.enumerated()), id: \.offset) { _, word in
@@ -66,7 +66,7 @@ struct HighlightSelectWidget: View {
             }
         } label: {
             Text(word)
-                .font(.system(size: 15))
+                .font(.subheadline)
                 .foregroundColor(wordColor(isSelected: isSelected, isCorrect: isCorrectWord))
                 .padding(.horizontal, 4)
                 .padding(.vertical, 3)

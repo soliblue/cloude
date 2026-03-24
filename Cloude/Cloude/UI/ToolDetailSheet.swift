@@ -53,9 +53,9 @@ struct ToolDetailSheet: View {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 5) {
                         Image(systemName: iconName)
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.footnote.weight(.semibold))
                         Text(displayName)
-                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .font(.footnote.weight(.semibold).monospaced())
                             .lineLimit(1)
                     }
                     .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
@@ -69,7 +69,7 @@ struct ToolDetailSheet: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.footnote.weight(.semibold))
                             .foregroundColor(.secondary)
                     }
                 }

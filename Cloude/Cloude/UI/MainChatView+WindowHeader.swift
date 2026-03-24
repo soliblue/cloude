@@ -13,7 +13,7 @@ extension MainChatView {
                     if envConnected { windowManager.setWindowType(window.id, type: type) }
                 }) {
                     Image(systemName: type.icon)
-                        .font(.system(size: 15, weight: window.type == type ? .semibold : .regular))
+                        .font(.subheadline.weight(window.type == type ? .semibold : .regular))
                         .foregroundColor(window.type == type ? .accentColor : .secondary)
                         .opacity(envConnected ? 1 : 0.3)
                         .frame(maxWidth: .infinity)

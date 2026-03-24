@@ -23,7 +23,8 @@ struct TeammateOrbRow: View {
             VStack(spacing: 3) {
                 orbCircle
                 Text(teammate.name)
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .font(.caption2.weight(.medium))
+                    .fontDesign(.rounded)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                     .frame(width: 40)
@@ -32,7 +33,7 @@ struct TeammateOrbRow: View {
                     Text("·")
                     statusDot
                 }
-                .font(.system(size: 7))
+                .font(.caption2)
                 .foregroundColor(Color(.tertiaryLabel))
             }
         }
@@ -57,7 +58,8 @@ struct TeammateOrbRow: View {
                 .fill(orbColor.opacity(0.6))
                 .frame(width: 30, height: 30)
             Text(String(teammate.name.prefix(1)).uppercased())
-                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .font(.footnote.weight(.bold))
+                .fontDesign(.rounded)
                 .foregroundColor(.white)
             if !showBubble && teammate.unreadCount > 0 {
                 unreadBadge
@@ -104,7 +106,7 @@ struct TeammateOrbRow: View {
 
     private func speechBubble(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 12))
+            .font(.footnote)
             .foregroundColor(.primary)
             .lineLimit(3)
             .multilineTextAlignment(.leading)

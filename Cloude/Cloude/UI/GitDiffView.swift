@@ -44,7 +44,7 @@ struct GitDiffView: View {
                 .foregroundColor(statusColor)
             if file.staged {
                 Text("Staged")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.caption2.weight(.medium))
                     .foregroundColor(.pastelGreen)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)

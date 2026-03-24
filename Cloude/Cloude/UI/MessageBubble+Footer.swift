@@ -66,7 +66,7 @@ struct AssistantMessageFooter: View {
                     CopyFeedback.perform(message.text, showToast: $showCopiedToast)
                 } label: {
                     Image(systemName: showCopiedToast ? "checkmark" : "square.on.square")
-                        .font(.system(size: 9))
+                        .font(.caption2)
                         .foregroundColor(showCopiedToast ? .pastelGreen : .secondary)
                         .contentTransition(.symbolEffect(.replace))
                 }
@@ -74,7 +74,7 @@ struct AssistantMessageFooter: View {
                 if let onRefresh {
                     Button(action: onRefresh) {
                         Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 9))
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                             .symbolEffect(.rotate, options: .repeating, isActive: isRefreshing)
                     }

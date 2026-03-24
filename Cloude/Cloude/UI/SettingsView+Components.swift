@@ -9,7 +9,7 @@ struct SettingsRow<Content: View>: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 20))
+                .font(.subheadline)
                 .foregroundColor(color)
                 .frame(width: 24)
             content
@@ -31,7 +31,7 @@ struct ConnectionStatusCard: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: statusIcon)
-                    .font(.system(size: 25))
+                    .font(.subheadline)
                     .foregroundColor(statusColor)
             }
 

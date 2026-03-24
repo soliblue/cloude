@@ -45,7 +45,7 @@ struct TreeWidget: View {
             }
 
             Image(systemName: node.icon)
-                .font(.system(size: 10))
+                .font(.caption2)
                 .foregroundColor(node.iconColor)
                 .frame(width: 14)
                 .padding(.top, 1.5)
@@ -60,16 +60,16 @@ struct TreeWidget: View {
                 } label: {
                     HStack(spacing: 4) {
                         Text(node.label)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.footnote.weight(.medium))
                         Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 7, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundColor(.secondary)
                     }
                 }
                 .buttonStyle(.plain)
             } else {
                 Text(node.label)
-                    .font(.system(size: 12))
+                    .font(.footnote)
             }
 
             Spacer()

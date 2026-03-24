@@ -37,7 +37,7 @@ struct OrderingWidget: View {
 
             if let instruction {
                 Text(instruction)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.footnote.weight(.medium))
             }
 
             if !remaining.isEmpty && !checked {
@@ -49,7 +49,7 @@ struct OrderingWidget: View {
                             }
                         } label: {
                             Text(item)
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.footnote.weight(.medium))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
                                 .background(Color.themeGray6.opacity(0.5))
@@ -83,12 +83,13 @@ struct OrderingWidget: View {
     private func orderRow(index: Int, item: String) -> some View {
         HStack(spacing: 8) {
             Text("\(index + 1)")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.caption2.weight(.bold))
+                .fontDesign(.rounded)
                 .foregroundColor(checked ? (correctOrder[index] == item ? .green : .red) : .teal)
                 .frame(width: 20)
 
             Text(item)
-                .font(.system(size: 14))
+                .font(.footnote)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if checked && !revealed {
@@ -99,7 +100,7 @@ struct OrderingWidget: View {
                         }
                     } label: {
                         Image(systemName: "chevron.up")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundColor(index > 0 ? .teal : .secondary.opacity(0.2))
                     }
                     .buttonStyle(.plain)
@@ -111,7 +112,7 @@ struct OrderingWidget: View {
                         }
                     } label: {
                         Image(systemName: "chevron.down")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundColor(index < selectedOrder.count - 1 ? .teal : .secondary.opacity(0.2))
                     }
                     .buttonStyle(.plain)
@@ -126,7 +127,7 @@ struct OrderingWidget: View {
                     }
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.caption2.weight(.semibold))
                         .foregroundColor(.secondary)
                 }
             }

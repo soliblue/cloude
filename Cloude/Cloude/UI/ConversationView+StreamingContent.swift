@@ -44,11 +44,11 @@ struct CompactingIndicator: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "arrow.triangle.2.circlepath")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.footnote.weight(.semibold))
                 .rotationEffect(.degrees(pulse ? 360 : 0))
                 .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: pulse)
             Text("Compacting")
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .font(.footnote.weight(.semibold).monospaced())
         }
         .foregroundColor(.cyan)
         .padding(.horizontal, 10)

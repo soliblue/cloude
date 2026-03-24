@@ -9,7 +9,7 @@ extension TerminalView {
                         commandText = cmd
                     } label: {
                         Text(cmd)
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(.caption2.monospaced())
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                             .padding(.horizontal, 8)
@@ -41,7 +41,7 @@ extension TerminalView {
                         }
                     } label: {
                         Text(label)
-                            .font(.system(size: 12, weight: label == "ctrl" && ctrlActive ? .bold : .medium, design: .monospaced))
+                            .font(.footnote.weight(label == "ctrl" && ctrlActive ? .bold : .medium).monospaced())
                             .foregroundColor(label == "ctrl" && ctrlActive ? .accentColor : .secondary)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)

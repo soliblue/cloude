@@ -29,7 +29,7 @@ struct ErrorCorrectionWidget: View {
 
             if let instruction {
                 Text(instruction)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.footnote.weight(.medium))
             }
 
             FlowLayout(spacing: 2) {
@@ -52,12 +52,12 @@ struct ErrorCorrectionWidget: View {
         if isRevealed, let correction = segment.correction {
             VStack(spacing: 2) {
                 Text(segment.text)
-                    .font(.system(size: 15))
+                    .font(.subheadline)
                     .strikethrough(true, color: .red)
                     .foregroundColor(.red.opacity(0.5))
                     .fixedSize(horizontal: false, vertical: true)
                 Text(correction)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(.green)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -72,14 +72,14 @@ struct ErrorCorrectionWidget: View {
                 }
             } label: {
                 Text(segment.text)
-                    .font(.system(size: 15))
+                    .font(.subheadline)
                     .foregroundColor(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .buttonStyle(.plain)
         } else {
             Text(segment.text)
-                .font(.system(size: 15))
+                .font(.subheadline)
                 .foregroundColor(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         }

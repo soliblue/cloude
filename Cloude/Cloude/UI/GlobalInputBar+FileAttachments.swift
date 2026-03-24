@@ -25,13 +25,13 @@ struct FileAttachmentPill: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: fileIconName(for: file.name))
-                .font(.system(size: 12, weight: .semibold))
+                .font(.caption2.weight(.semibold))
             Text(file.name)
-                .font(.system(size: 11, weight: .medium))
+                .font(.caption2.weight(.medium))
                 .lineLimit(1)
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 14))
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
@@ -57,7 +57,7 @@ struct PendingAudioBanner: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "waveform.circle.fill")
-                .font(.system(size: 20))
+                .font(.subheadline)
                 .foregroundColor(.orange)
 
             Text("Unsent voice note")
@@ -68,7 +68,7 @@ struct PendingAudioBanner: View {
 
             Button(action: onDiscard) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 22))
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)

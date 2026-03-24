@@ -9,7 +9,7 @@ struct ConversationInfoLabel: View {
     var body: some View {
         HStack(spacing: 5) {
             Image.safeSymbol(conversation?.symbol)
-                .font(.system(size: 15))
+                .font(.subheadline)
                 .contentTransition(.symbolEffect(.replace))
             if let conv = conversation {
                 Text(conv.name)
@@ -25,14 +25,14 @@ struct ConversationInfoLabel: View {
             }
             if let folder = conversation?.workingDirectory?.nilIfEmpty?.lastPathComponent {
                 Text("• \(folder)")
-                    .font(.system(size: 12))
+                    .font(.footnote)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
             if showCost, let conv = conversation, conv.totalCost > 0 {
                 Text("• $\(String(format: "%.2f", conv.totalCost))")
-                    .font(.system(size: 12))
+                    .font(.footnote)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }

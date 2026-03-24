@@ -10,11 +10,12 @@ extension TeamDashboardSheet {
                     .frame(width: 28, height: 28)
                 if mate.id == "team-lead" {
                     Image(systemName: "crown.fill")
-                        .font(.system(size: 10))
+                        .font(.caption2)
                         .foregroundColor(.white)
                 } else {
                     Text(String(mate.name.prefix(1)).uppercased())
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.footnote.weight(.bold))
+                        .fontDesign(.rounded)
                         .foregroundColor(.white)
                 }
             }
@@ -41,7 +42,7 @@ extension TeamDashboardSheet {
                 }
                 statusDot(mate.status)
                 Image(systemName: expandedTeammates.contains(mate.id) ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 11))
+                    .font(.caption2)
                     .foregroundColor(Color(.tertiaryLabel))
             }
         }
@@ -75,7 +76,7 @@ extension TeamDashboardSheet {
                     .fill(teammateColor(mate.color).opacity(0.7))
                     .frame(width: 4, height: 4)
                 Text(timeAgo(message.timestamp))
-                    .font(.system(size: 10))
+                    .font(.caption2)
                     .foregroundColor(Color(.tertiaryLabel))
                 Spacer()
             }

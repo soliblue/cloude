@@ -7,7 +7,7 @@ extension EnvironmentCard {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Image(systemName: "server.rack")
-                    .font(.system(size: 20))
+                    .font(.subheadline)
                     .foregroundColor(.blue)
                     .frame(width: 24)
                 TextField("Host", text: $env.host)
@@ -22,7 +22,7 @@ extension EnvironmentCard {
 
             HStack(spacing: 12) {
                 Image(systemName: "number")
-                    .font(.system(size: 20))
+                    .font(.subheadline)
                     .foregroundColor(.blue)
                     .frame(width: 24)
                 TextField("Port", text: portBinding)
@@ -36,7 +36,7 @@ extension EnvironmentCard {
 
             HStack(spacing: 12) {
                 Image(systemName: "key.fill")
-                    .font(.system(size: 20))
+                    .font(.subheadline)
                     .foregroundColor(.orange)
                     .frame(width: 24)
 

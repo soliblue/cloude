@@ -18,7 +18,7 @@ extension FileBrowserView {
                                 .font(.caption2)
                             if component.path != currentPath {
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 8))
+                                    .font(.caption2)
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -62,7 +62,7 @@ struct FileRow: View {
 
                 HStack {
                     Text(entry.name)
-                        .font(.system(size: 14))
+                        .font(.footnote)
                         .lineLimit(1)
 
                     Spacer()
@@ -73,7 +73,7 @@ struct FileRow: View {
                         }
                         Text(entry.modified, style: .date)
                     }
-                    .font(.system(size: 11))
+                    .font(.caption2)
                     .foregroundColor(.secondary)
                 }
             }

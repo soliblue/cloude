@@ -17,7 +17,7 @@ extension FillInBlankWidget {
         let width = max(CGFloat(blanks[index].count) * 10, 60)
 
         return TextField("", text: binding(for: index))
-            .font(.system(size: 15, weight: checked ? .semibold : .regular))
+            .font(.subheadline.weight(checked ? .semibold : .regular))
             .multilineTextAlignment(.center)
             .foregroundColor(
                 checked

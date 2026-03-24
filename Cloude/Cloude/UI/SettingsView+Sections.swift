@@ -7,7 +7,7 @@ extension SettingsView {
             if connection.processes.isEmpty {
                 HStack {
                     Image(systemName: "checkmark.circle")
-                        .font(.system(size: 20))
+                        .font(.subheadline)
                         .foregroundColor(.pastelGreen)
                     Text("No Claude processes running")
                         .foregroundColor(.secondary)
@@ -39,7 +39,7 @@ extension SettingsView {
                         Spacer()
                         Button(action: { connection.killProcess(pid: proc.pid) }) {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 20))
+                                .font(.subheadline)
                         }
                         .buttonStyle(.plain)
                         .tint(.accentColor)
@@ -50,7 +50,7 @@ extension SettingsView {
                     Button(action: { connection.killAllProcesses() }) {
                         HStack {
                             Image(systemName: "xmark.circle")
-                                .font(.system(size: 20))
+                                .font(.subheadline)
                             Text("Kill All Processes")
                         }
                     }
@@ -64,7 +64,7 @@ extension SettingsView {
                 Spacer()
                 Button(action: { connection.getProcesses() }) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                 }
                 .buttonStyle(.plain)
             }
@@ -96,7 +96,7 @@ extension SettingsView {
                     Text("Help & Support")
                     Spacer()
                     Image(systemName: "arrow.up.right")
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
             }

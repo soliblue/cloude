@@ -33,7 +33,7 @@ struct BarChartWidget: View {
                     .annotation(position: .top) {
                         if selectedBar == index {
                             Text(formatValue(bar.value))
-                                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                .font(.caption2.weight(.semibold).monospaced())
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
@@ -47,14 +47,14 @@ struct BarChartWidget: View {
             .chartXAxis {
                 AxisMarks { _ in
                     AxisValueLabel()
-                        .font(.system(size: 10))
+                        .font(.caption2)
                 }
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
                     AxisValueLabel()
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.caption2.monospaced())
                 }
             }
             .chartOverlay { proxy in
@@ -82,7 +82,7 @@ struct BarChartWidget: View {
 
             if let unit {
                 Text("Values in \(unit)")
-                    .font(.system(size: 10))
+                    .font(.caption2)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
             }

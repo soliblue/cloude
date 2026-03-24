@@ -22,7 +22,7 @@ struct QuizWidget: View {
             }
 
             Text(question)
-                .font(.system(size: 15, weight: .medium))
+                .font(.subheadline.weight(.medium))
 
             VStack(spacing: 8) {
                 ForEach(Array(options.enumerated()), id: \.offset) { index, option in
@@ -32,7 +32,7 @@ struct QuizWidget: View {
 
             if answered, let explanation {
                 Text(explanation)
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundColor(.secondary)
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -54,12 +54,12 @@ struct QuizWidget: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: iconName(index: index))
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundColor(iconColor(index: index))
                     .frame(width: 20)
 
                 Text(text)
-                    .font(.system(size: 14))
+                    .font(.footnote)
                     .foregroundColor(.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

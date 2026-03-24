@@ -55,7 +55,7 @@ struct SymbolPickerSheet: View {
                                         dismiss()
                                     }) {
                                         Image(systemName: symbol)
-                                            .font(.system(size: 22))
+                                            .font(.subheadline)
                                             .frame(width: 44, height: 44)
                                             .background(selectedSymbol == symbol ? Color.accentColor.opacity(0.2) : Color.clear)
                                             .cornerRadius(6)

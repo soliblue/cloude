@@ -52,12 +52,12 @@ struct ColorPaletteWidget: View {
             VStack(alignment: .leading, spacing: 1) {
                 if let label = color.label {
                     Text(label)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.caption2.weight(.medium))
                         .foregroundColor(.primary)
                         .lineLimit(1)
                 }
                 Text(color.hex.uppercased())
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.caption2.monospaced())
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 8)

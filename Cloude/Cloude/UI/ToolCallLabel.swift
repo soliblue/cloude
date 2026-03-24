@@ -6,18 +6,15 @@ import CloudeShared
 struct ToolCallLabel: View {
     let name: String
     let input: String?
-    private let iconSize: CGFloat = 10
-    private let textSize: CGFloat = 9
-
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: iconName)
-                .font(.system(size: iconSize, weight: .semibold))
+                .font(.caption2.weight(.semibold))
             Text(displayName)
-                .font(.system(size: textSize, weight: .semibold, design: .monospaced))
+                .font(.caption2.weight(.semibold).monospaced())
             if let detail = displayDetail {
                 Text(detail)
-                    .font(.system(size: textSize, design: .monospaced))
+                    .font(.caption2.monospaced())
                     .opacity(0.85)
             }
         }

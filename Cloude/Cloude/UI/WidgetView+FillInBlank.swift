@@ -81,7 +81,7 @@ struct FillInBlankWidget: View {
                     switch token {
                     case .word(let word):
                         Text(word)
-                            .font(.system(size: 15))
+                            .font(.subheadline)
                     case .blank(let idx):
                         if idx < blanks.count {
                             blankField(index: idx)

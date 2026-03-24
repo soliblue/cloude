@@ -59,7 +59,7 @@ struct RecordingOverlayView: View {
                 Spacer()
 
                 Image(systemName: "waveform")
-                    .font(.system(size: 24))
+                    .font(.subheadline)
                     .foregroundColor(.accentColor.opacity(0.5))
             } else {
                 Circle()
@@ -82,7 +82,7 @@ struct RecordingOverlayView: View {
 
                 Button(action: onStop) {
                     Image(systemName: "stop.circle.fill")
-                        .font(.system(size: 35))
+                        .font(.largeTitle)
                         .foregroundColor(.accentColor.opacity(0.9))
                 }
             }

@@ -105,7 +105,7 @@ extension WhiteboardSheet {
             }
         }) {
             Image(systemName: icon)
-                .font(.system(size: 16))
+                .font(.subheadline)
                 .frame(width: 44, height: 36)
                 .background(store.activeTool == tool ? Color.accentColor.opacity(0.2) : Color.clear)
                 .cornerRadius(8)

@@ -29,7 +29,7 @@ struct EnvironmentCard: View {
         HStack(spacing: 12) {
             Button(action: { showSymbolPicker = true }) {
                 Image(systemName: env.symbol)
-                    .font(.system(size: 24))
+                    .font(.subheadline)
                     .foregroundColor(.accentColor)
                     .frame(width: 36, height: 36)
             }
@@ -52,7 +52,7 @@ struct EnvironmentCard: View {
             if let onDelete {
                 Button(action: { showDeleteConfirm = true }) {
                     Image(systemName: "trash")
-                        .font(.system(size: 14))
+                        .font(.footnote)
                         .foregroundColor(.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -68,7 +68,7 @@ struct EnvironmentCard: View {
                 else if !isConnecting { onConnect() }
             }) {
                 Image(systemName: "power")
-                    .font(.system(size: 16))
+                    .font(.subheadline)
                     .foregroundStyle(isConnected || isConnecting ? Color.accentColor : .secondary)
                     .modifier(StreamingPulseModifier(isStreaming: isConnecting))
             }
@@ -98,7 +98,7 @@ struct AddEnvironmentCard: View {
             onAdd(ServerEnvironment(host: "", port: 8765, token: ""))
         }) {
             Image(systemName: "plus")
-                .font(.system(size: 30, weight: .light))
+                .font(.largeTitle.weight(.light))
                 .foregroundColor(.secondary.opacity(0.5))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

@@ -64,7 +64,7 @@ private struct XMLNodeView: View {
                 if hasChildren {
                     Button { expanded.toggle() } label: {
                         Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                            .font(.system(size: 9, weight: .medium))
+                            .font(.caption2.weight(.medium))
                             .foregroundColor(.secondary)
                             .frame(width: 12, height: 16)
                     }
@@ -74,20 +74,20 @@ private struct XMLNodeView: View {
                 }
 
                 Text(node.tagName)
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .font(.caption2.weight(.medium).monospaced())
                     .foregroundColor(.purple)
 
                 if !node.attributes.isEmpty {
                     ForEach(Array(node.attributes.enumerated()), id: \.offset) { _, attr in
                         Text(attr.key)
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.caption2.monospaced())
                             .foregroundColor(.orange)
                         if !attr.value.isEmpty {
                             Text("=")
-                                .font(.system(size: 10, design: .monospaced))
+                                .font(.caption2.monospaced())
                                 .foregroundColor(.secondary)
                             Text(attr.value)
-                                .font(.system(size: 10, design: .monospaced))
+                                .font(.caption2.monospaced())
                                 .foregroundColor(.green)
                         }
                     }
@@ -95,13 +95,13 @@ private struct XMLNodeView: View {
 
                 if node.isSelfClosing {
                     Text("/")
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(.caption2.monospaced())
                         .foregroundColor(.secondary)
                 }
 
                 if let text = node.textContent, node.children.isEmpty {
                     Text(text)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(.caption2.monospaced())
                         .foregroundColor(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -114,7 +114,7 @@ private struct XMLNodeView: View {
                         HStack(alignment: .top, spacing: 4) {
                             Spacer().frame(width: 12)
                             Text(text)
-                                .font(.system(size: 11, design: .monospaced))
+                                .font(.caption2.monospaced())
                                 .foregroundColor(.primary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }

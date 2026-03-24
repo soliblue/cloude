@@ -49,7 +49,7 @@ struct ImageAttachmentPill: View {
 
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 16))
+                    .font(.subheadline)
                     .foregroundStyle(.white)
                     .background(Circle().fill(Color.black.opacity(0.5)).frame(width: 14, height: 14))
             }
@@ -57,7 +57,7 @@ struct ImageAttachmentPill: View {
 
             if isScreenshot {
                 Image(systemName: "camera.viewfinder")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.caption2.weight(.bold))
                     .foregroundStyle(.white)
                     .padding(3)
                     .background(Circle().fill(Color.black.opacity(0.5)))

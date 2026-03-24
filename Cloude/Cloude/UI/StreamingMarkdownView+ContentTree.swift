@@ -64,7 +64,7 @@ struct HeaderSectionView: View {
             HStack(alignment: .center, spacing: 6) {
                 if isComplete && !children.isEmpty {
                     Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundColor(.secondary)
                         .frame(width: 16)
                 }

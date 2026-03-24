@@ -42,7 +42,7 @@ struct SentenceBuilderWidget: View {
 
             if let hint {
                 Text(hint)
-                    .font(.system(size: 14))
+                    .font(.footnote)
                     .foregroundColor(.secondary)
             }
 
@@ -61,7 +61,7 @@ struct SentenceBuilderWidget: View {
                             let wrong = checked && pos < correctWords.count && word != correctWords[pos]
 
                             Text(word)
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.footnote.weight(.medium))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 7)
                                 .background(correct ? Color.green.opacity(0.15) : wrong ? Color.red.opacity(0.15) : Color.green.opacity(0.1))
@@ -80,7 +80,7 @@ struct SentenceBuilderWidget: View {
                 )
             } else {
                 Text("Tap words below to build the sentence")
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundColor(.secondary.opacity(0.5))
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -101,7 +101,7 @@ struct SentenceBuilderWidget: View {
                             }
                         } label: {
                             Text(scrambledWords[index])
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.footnote.weight(.medium))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
                                 .background(Color.themeGray6.opacity(0.5))

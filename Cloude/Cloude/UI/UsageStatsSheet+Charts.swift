@@ -17,7 +17,7 @@ extension UsageStatsSheet {
                 ForEach(0..<chartModes.count, id: \.self) { i in
                     Button(action: { withAnimation(.quickTransition) { chartPage = i } }) {
                         Image(systemName: chartModes[i].icon)
-                            .font(.system(size: 12))
+                            .font(.footnote)
                             .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(0.4))
                             .frame(width: 32, height: 28)
                             .background(chartPage == i ? chartModes[i].color.opacity(0.15) : .clear)
@@ -75,13 +75,13 @@ extension UsageStatsSheet {
     var modelsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Models")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundColor(.secondary)
 
             ForEach(sortedModels, id: \.name) { model in
                 HStack(spacing: 8) {
                     Text(model.name)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.footnote.weight(.medium))
                         .foregroundColor(.primary)
                         .frame(width: 64, alignment: .leading)
 
@@ -94,7 +94,7 @@ extension UsageStatsSheet {
                     .frame(height: 14)
 
                     Text(formatNumber(model.tokens.outputTokens))
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(.caption2.monospaced())
                         .foregroundColor(.secondary)
                         .frame(minWidth: 36, alignment: .trailing)
                 }
@@ -109,7 +109,7 @@ extension UsageStatsSheet {
     var peakHoursSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Peak Hours")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundColor(.secondary)
 
             let maxCount = stats.hourCounts.values.max() ?? 1
@@ -132,7 +132,7 @@ extension UsageStatsSheet {
                 Text("6p").frame(maxWidth: .infinity)
                 Text("12a").frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .font(.system(size: 9))
+            .font(.caption2)
             .foregroundColor(.secondary.opacity(0.5))
         }
         .padding(14)

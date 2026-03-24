@@ -46,13 +46,13 @@ struct PieChartWidget: View {
                 if let idx = selectedSlice {
                     VStack(spacing: 2) {
                         Text(slices[idx].label)
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.footnote.weight(.semibold))
                             .foregroundColor(.primary)
                         Text(slices[idx].value.formatted())
-                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .font(.footnote.weight(.bold).monospaced())
                             .foregroundColor(colors[idx % colors.count])
                         Text(total > 0 ? String(format: "%.1f%%", slices[idx].value / total * 100) : "")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.caption2.monospaced())
                             .foregroundColor(.secondary)
                     }
                     .transition(.scale.combined(with: .opacity))
@@ -71,10 +71,10 @@ struct PieChartWidget: View {
                             .fill(colors[index % colors.count].opacity(isActive ? 1 : 0.3))
                             .frame(width: 8, height: 8)
                         Text(slice.label)
-                            .font(.system(size: 11))
+                            .font(.caption2)
                             .foregroundColor(isActive ? .primary : .secondary)
                         Text(total > 0 ? String(format: "%.0f%%", slice.value / total * 100) : "")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.caption2.monospaced())
                             .foregroundColor(.secondary)
                     }
                     .onTapGesture {

@@ -29,11 +29,11 @@ struct WidgetHeader<Buttons: View>: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.caption2.weight(.semibold))
                 .foregroundColor(color)
             if let title {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.footnote.weight(.medium))
                     .foregroundColor(.secondary)
             }
             Spacer()
@@ -69,7 +69,7 @@ struct WidgetButton: View {
             withAnimation(.quickTransition) { action() }
         } label: {
             Image(systemName: icon)
-                .font(.system(size: 13, weight: .medium))
+                .font(.footnote.weight(.medium))
                 .foregroundColor(enabled ? color : .secondary.opacity(0.3))
         }
         .buttonStyle(.plain)
@@ -91,9 +91,9 @@ struct WidgetResultBadge: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 10))
+                .font(.caption2)
             Text(isCorrect ? correctText : wrongText)
-                .font(.system(size: 11, weight: .medium))
+                .font(.caption2.weight(.medium))
         }
         .foregroundColor(.secondary)
         .frame(maxWidth: .infinity)
@@ -107,9 +107,9 @@ struct WidgetProgressBadge: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 10))
+                .font(.caption2)
             Text(text)
-                .font(.system(size: 11, weight: .medium))
+                .font(.caption2.weight(.medium))
         }
         .foregroundColor(.secondary)
         .frame(maxWidth: .infinity)

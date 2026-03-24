@@ -53,14 +53,14 @@ struct EnvironmentFolderPicker: View {
             } label: {
                 HStack(spacing: 8) {
                     Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                        .font(.system(size: 14))
+                        .font(.footnote)
                         .foregroundColor(.accentColor)
                     Text(selectedEnv?.host ?? "Select environment")
                         .font(.caption.monospaced())
                         .foregroundColor(.secondary)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 10))
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, 14)
@@ -73,7 +73,7 @@ struct EnvironmentFolderPicker: View {
             Button(action: { if isEnvConnected { showFolderPicker = true } }) {
                 HStack(spacing: 8) {
                     Image(systemName: "folder.fill")
-                        .font(.system(size: 14))
+                        .font(.footnote)
                         .foregroundColor(.accentColor)
                     Text(folderDisplayName)
                         .font(.caption)
@@ -82,7 +82,7 @@ struct EnvironmentFolderPicker: View {
                         .truncationMode(.middle)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 10))
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, 14)
@@ -110,7 +110,7 @@ struct EnvironmentFolderPicker: View {
     private var readOnlyContent: some View {
         HStack(spacing: 8) {
             Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                .font(.system(size: 14))
+                .font(.footnote)
                 .foregroundColor(.accentColor)
             Text(selectedEnv?.host ?? "")
                 .font(.caption.monospaced())

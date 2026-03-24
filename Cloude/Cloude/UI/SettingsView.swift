@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage("debugOverlayEnabled") private var debugOverlayEnabled = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("showCodeLineNumbers") private var showCodeLineNumbers = true
+    @AppStorage("textSizeStep") private var textSizeStep: Int = TextSizeScale.defaultStep
     @State var selectedEnvironmentPage: Int = 0
 
     @Environment(\.dismiss) private var dismiss
@@ -59,7 +60,7 @@ struct SettingsView: View {
                     Text(appTheme.rawValue)
                         .foregroundColor(.secondary)
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13))
+                        .font(.footnote)
                         .foregroundColor(.secondary)
                 }
             }
@@ -74,6 +75,34 @@ struct SettingsView: View {
 
             SettingsRow(icon: "list.number", color: .cyan) {
                 Toggle("Code Line Numbers", isOn: $showCodeLineNumbers)
+            }
+
+            SettingsRow(icon: "textformat.size", color: .accentColor) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Text Size")
+                        Spacer()
+                        Text(TextSizeScale.label(for: textSizeStep))
+                            .foregroundColor(.secondary)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: "textformat.size.smaller")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Slider(
+                            value: Binding(
+                                get: { Double(textSizeStep) },
+                                set: { textSizeStep = Int($0.rounded()) }
+                            ),
+                            in: 0...Double(TextSizeScale.steps.count - 1),
+                            step: 1
+                        )
+                        .tint(.accentColor)
+                        Image(systemName: "textformat.size.larger")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
 
             securityRow
