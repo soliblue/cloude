@@ -184,6 +184,8 @@ done
 
 ## Rules
 
+- **Claude Code edit workaround**: Due to a Claude Code update, the Edit/Write tools may fail on plan files. Use `cat` via Bash to read plans and shell commands (`mv`, `echo`, `cat <<'EOF'`) to create/move/modify them. Workaround until the tooling is fixed.
+
 - One plan per feature/bug/idea
 - **Every code change needs a ticket** — if implementing an ad-hoc request with no existing plan, create a small plan directly in `30_testing/` after implementing it
 - Only move your own plans (multi-agent coordination)
