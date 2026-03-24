@@ -27,6 +27,9 @@ enum ConnectionEvent {
     case plans([String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
 
+    // Streaming lifecycle
+    case streamingStarted(conversationId: UUID)
+
     // UI / orchestration
     case authenticated
     case usageStats(UsageStats)

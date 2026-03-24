@@ -5,12 +5,9 @@ import CloudeShared
 struct ChatMessageList: View {
     let messages: [ChatMessage]
     var queuedMessages: [ChatMessage] = []
-    let currentOutput: String
-    let currentToolCalls: [ToolCall]
-    let currentRunStats: (durationMs: Int, costUsd: Double, model: String?)?
     let agentState: AgentState
     let conversationId: UUID?
-    var isCompacting: Bool = false
+    var isCompact: Bool = false
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
     var onDeleteQueued: ((UUID) -> Void)?
@@ -30,16 +27,16 @@ struct ChatMessageList: View {
     @State var refreshingMessageId: UUID?
     @State var scrollPos = ScrollPosition()
 
-    var streamingId: String {
-        "streaming-\(conversationId?.uuidString ?? "none")"
+    private var isOutputEmpty: Bool {
+        conversationOutput?.text.isEmpty ?? true
     }
 
     private var showLoadingIndicator: Bool {
-        isInitialLoad && messages.isEmpty && conversationId != nil && currentOutput.isEmpty
+        isInitialLoad && messages.isEmpty && conversationId != nil && isOutputEmpty
     }
 
     private var showEmptyState: Bool {
-        !isInitialLoad && messages.isEmpty && queuedMessages.isEmpty && currentOutput.isEmpty && conversationId != nil
+        !isInitialLoad && messages.isEmpty && queuedMessages.isEmpty && isOutputEmpty && conversationId != nil
     }
 
     private var hasRequiredDependencies: Bool {

@@ -19,6 +19,7 @@ final class ConversationOutput: ObservableObject {
     var teamSnapshot: (name: String, members: [TeammateInfo])?
     var lastSavedMessageId: UUID?
     var messageUUID: String?
+    var liveMessageId: UUID?
 
     var previousCumulativeCost: Double = 0
     var fullText: String = ""
@@ -108,6 +109,7 @@ final class ConversationOutput: ObservableObject {
         teamName = nil
         teammates = []
         teamSnapshot = nil
+        liveMessageId = nil
     }
 }
 

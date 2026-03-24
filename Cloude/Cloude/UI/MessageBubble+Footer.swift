@@ -46,6 +46,7 @@ struct UserMessageFooter: View {
 
 struct AssistantMessageFooter: View {
     let message: ChatMessage
+    var copyText: String
     @Binding var showCopiedToast: Bool
     let onShowTeamDashboard: () -> Void
     let onRefresh: (() -> Void)?
@@ -63,7 +64,7 @@ struct AssistantMessageFooter: View {
                 }
                 Spacer()
                 Button {
-                    CopyFeedback.perform(message.text, showToast: $showCopiedToast)
+                    CopyFeedback.perform(copyText, showToast: $showCopiedToast)
                 } label: {
                     Image(systemName: showCopiedToast ? "checkmark" : "square.on.square")
                         .font(.system(size: 9))

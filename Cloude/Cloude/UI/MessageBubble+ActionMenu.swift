@@ -1,6 +1,8 @@
 // MessageBubble+ActionMenu.swift
 
 import SwiftUI
+import UIKit
+import CloudeShared
 
 struct BubbleActionMenu: View {
     let message: ChatMessage
@@ -108,8 +110,69 @@ struct CopyFeedback {
     }
 }
 
+struct BubbleInteractionModifier: ViewModifier {
+    let isLive: Bool
+    let message: ChatMessage
+    let effectiveText: String
+    let hasInteractiveWidgets: Bool
+    @Binding var showCopiedToast: Bool
+    @Binding var showTextSelection: Bool
+    @Binding var showTeamDashboard: Bool
+    @Binding var showLongPressMenu: Bool
+    @Binding var menuPressY: CGFloat
+    let onToggleCollapse: (() -> Void)?
+
+    func body(content: Content) -> some View {
+        if isLive {
+            content
+        } else {
+            content
+                .sheet(isPresented: $showTextSelection) {
+                    TextSelectionSheet(text: effectiveText)
+                }
+                .sheet(isPresented: $showTeamDashboard) {
+                    if let team = message.teamSummary {
+                        TeamDashboardSheet(
+                            teamName: team.teamName,
+                            teammates: team.members.map {
+                                TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
+                            }
+                        )
+                    }
+                }
+                .overlay {
+                    if showLongPressMenu {
+                        BubbleLongPressOverlay(
+                            message: message,
+                            copyText: effectiveText,
+                            menuPressY: menuPressY,
+                            showCopiedToast: $showCopiedToast,
+                            onSelectText: { showTextSelection = true },
+                            onToggleCollapse: onToggleCollapse,
+                            onDismiss: { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
+                        )
+                    }
+                }
+                .contentShape(Rectangle())
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.4)
+                        .sequenced(before: DragGesture(minimumDistance: 0))
+                        .onEnded { value in
+                            if hasInteractiveWidgets { return }
+                            if case .second(true, let drag) = value {
+                                menuPressY = drag?.location.y ?? 0
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showLongPressMenu = true }
+                            }
+                        }
+                )
+        }
+    }
+}
+
 struct BubbleLongPressOverlay: View {
     let message: ChatMessage
+    var copyText: String
     let menuPressY: CGFloat
     @Binding var showCopiedToast: Bool
     let onSelectText: () -> Void
@@ -128,7 +191,7 @@ struct BubbleLongPressOverlay: View {
             BubbleActionMenu(
                 message: message,
                 onCopy: {
-                    CopyFeedback.perform(message.text, showToast: $showCopiedToast)
+                    CopyFeedback.perform(copyText, showToast: $showCopiedToast)
                 },
                 onSelectText: onSelectText,
                 onToggleCollapse: onToggleCollapse,

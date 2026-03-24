@@ -22,9 +22,29 @@ extension CloudeApp {
                 conversationStore.addMessage(message, to: conversation)
             }
 
+        case .streamingStarted(let convId):
+            let output = connection.output(for: convId)
+            if output.liveMessageId == nil, let conv = conversationStore.findConversation(withId: convId) {
+                output.liveMessageId = conversationStore.insertLiveMessage(into: conv)
+            }
+
         case .disconnect(let convId, let output):
-            if output.text.isEmpty { return }
-            if let conv = conversationStore.findConversation(withId: convId) {
+            if let liveId = output.liveMessageId, let conv = conversationStore.findConversation(withId: convId) {
+                if !output.text.isEmpty || !output.toolCalls.isEmpty {
+                    conversationStore.updateMessage(liveId, in: conv) { msg in
+                        msg.text = output.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                        msg.toolCalls = output.toolCalls
+                        msg.wasInterrupted = true
+                    }
+                    if let sessionId = output.newSessionId,
+                       let envConn = connection.connectionForConversation(convId) {
+                        envConn.interruptedSession = (convId, sessionId, liveId)
+                    }
+                } else {
+                    conversationStore.removeMessage(liveId, from: conv)
+                }
+                output.reset()
+            } else if !output.text.isEmpty, let conv = conversationStore.findConversation(withId: convId) {
                 let message = ChatMessage(
                     isUser: false,
                     text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -82,6 +102,10 @@ extension CloudeApp {
                     )
                 }
                 conversationStore.replaceMessages(conv, with: newMessages)
+                let output = connection.output(for: conv.id)
+                if output.isRunning && output.liveMessageId != nil {
+                    output.liveMessageId = conversationStore.insertLiveMessage(into: conv)
+                }
             }
 
         case .deleteConversation(let convId):
