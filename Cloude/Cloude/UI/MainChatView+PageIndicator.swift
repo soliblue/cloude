@@ -4,8 +4,39 @@ extension MainChatView {
     @ViewBuilder
     func pageIndicator() -> some View {
         let maxIndex = windowManager.windows.count - 1
-        HStack(spacing: 20) {
-            windowIndicatorButtons()
+        HStack(spacing: 0) {
+            ForEach(windowManager.windows.indices, id: \.self) { index in
+                let window = windowManager.windows[index]
+                let isActive = currentPageIndex == index
+                let convId = window.conversationId
+                let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
+                let conversation = window.conversation(in: conversationStore)
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index }
+                } label: {
+                    windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .simultaneousGesture(
+                    LongPressGesture().onEnded { _ in
+                        editingWindow = window
+                    }
+                )
+            }
+
+            if windowManager.windows.count < 5 {
+            Button(action: addWindowWithNewChat) {
+                Image(systemName: "plus")
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            }
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
@@ -23,44 +54,6 @@ extension MainChatView {
                     }
                 }
         )
-    }
-
-    @ViewBuilder
-    func windowIndicatorButtons() -> some View {
-        ForEach(0..<5, id: \.self) { index in
-            windowIndicatorButton(at: index)
-        }
-    }
-
-    @ViewBuilder
-    func windowIndicatorButton(at index: Int) -> some View {
-        if index < windowManager.windows.count {
-            let window = windowManager.windows[index]
-            let isActive = currentPageIndex == index
-            let convId = window.conversationId
-            let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
-            let conversation = window.conversation(in: conversationStore)
-
-            Button {
-                withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index }
-            } label: {
-                windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
-            }
-            .buttonStyle(.plain)
-            .simultaneousGesture(
-                LongPressGesture().onEnded { _ in
-                    editingWindow = window
-                }
-            )
-        } else {
-            Button(action: addWindowWithNewChat) {
-                Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
-            }
-            .buttonStyle(.plain)
-        }
     }
 
     @ViewBuilder

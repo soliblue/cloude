@@ -20,7 +20,7 @@ struct WindowEditSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 WindowEditForm(
                     window: window,
                     conversationStore: conversationStore,
