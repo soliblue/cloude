@@ -1,4 +1,6 @@
-# Folder Picker: Filter Hidden Files
+# Folder Picker: Filter Hidden Files {eye.slash}
+<!-- priority: 10 -->
+<!-- tags: ui, windows -->
 
 ## Problem
 The folder/project picker shows hidden files (dotfiles like `.claude`, `.git`, `.config`, etc.) which clutters the view. Most of the time you don't want to see these.

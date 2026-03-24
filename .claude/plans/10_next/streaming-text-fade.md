@@ -1,4 +1,6 @@
-# Streaming Text Fade-In Animation
+# Streaming Text Fade-In Animation {text.badge.star}
+<!-- priority: 10 -->
+<!-- tags: ui, markdown -->
 
 ## Problem
 During streaming, text chunks appear at full opacity instantly (~5 chars per frame at 300 chars/sec). The user wants characters to fade in smoothly from left to right, creating a fluid reveal effect rather than abrupt appearance.

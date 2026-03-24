@@ -1,8 +1,6 @@
-# Toolbar & Window Header Cleanup
-
-**Symbol**: `rectangle.topthird.inset.filled`
-**Priority**: P1
-**Tags**: ui, cleanup
+# Toolbar & Window Header Cleanup {paintbrush}
+<!-- priority: 10 -->
+<!-- tags: ui, cleanup, windows -->
 **Description**: Simplify the toolbar and window header by removing clutter and fixing the nav pill crash.
 
 ## Background

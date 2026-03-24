@@ -37,13 +37,30 @@ Plans are lightweight ticket files that live in `.claude/plans/`. Each plan is a
 
 Filename: `kebab-case-description.md` (e.g., `compact-input-fields.md`)
 
+### Required Metadata
+
+Every plan MUST have these in the first few lines:
+
+```markdown
+# Feature Name {sf.symbol.name}
+<!-- priority: 10 -->
+<!-- tags: ui, agent -->
+```
+
+- **SF Symbol**: Append `{symbol.name}` to the title (e.g., `# My Feature {sparkles}`). Shown as icon in the Plans sheet.
+- **Priority**: `<!-- priority: N -->` where lower = higher priority. Default to 10.
+- **Tags**: `<!-- tags: comma, separated -->` for filtering. Common tags: ui, agent, markdown, conversations, windows, tools, cleanup, security, reliability, performance, teams, files, git, input, skills, messages, refactor.
+- **Build** (testing/done only): `<!-- build: N -->` added by deploy skill.
+
 **Detail scales with stage** — 00_backlog is scannable, detail grows as plans move forward:
 
 ### Backlog (problem + desired outcome, <10 lines)
 00_backlog items describe the **problem** and **desired outcome** only. No implementation details, no open questions, no code sketches. A sentence or two of approach is fine but keep it concise. The goal is scannability — anyone should understand what this is and why it matters in 5 seconds. Detail gets added when moving to `10_next/` or `20_active/`.
 
 ```markdown
-# Feature Name
+# Feature Name {sf.symbol.name}
+<!-- priority: 10 -->
+<!-- tags: ui -->
 
 One or two sentences describing the problem.
 
@@ -57,7 +74,9 @@ What success looks like in one or two sentences. Can mention approach briefly.
 When promoting from 00_backlog, flesh out the approach: goals, rough plan, files, open questions. This is where you scope the work.
 
 ```markdown
-# Feature Name
+# Feature Name {sf.symbol.name}
+<!-- priority: 10 -->
+<!-- tags: ui -->
 
 Background and motivation.
 

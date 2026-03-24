@@ -37,6 +37,7 @@ extension PlansSheet {
                     .buttonStyle(.plain)
                 }
             }
+            .padding(.horizontal, 16)
         }
     }
 }
