@@ -3,6 +3,8 @@
 <!-- priority: 10 -->
 <!-- tags: ui, ux -->
 
+> Full-width page indicator, swipe-to-delete conversations, and empty window cleanup.
+
 ## Changes
 - **Full-width page indicator**: Icons spread across full screen width with equal spacing and large tap targets (44pt)
 - **Plus button hidden at max**: Hide add button when all 5 window slots are used

@@ -50,6 +50,7 @@ Every plan MUST have these in the first few lines:
 - **SF Symbol**: Append `{symbol.name}` to the title (e.g., `# My Feature {sparkles}`). Shown as icon in the Plans sheet.
 - **Priority**: `<!-- priority: N -->` where lower = higher priority. Default to 10.
 - **Tags**: `<!-- tags: comma, separated -->` for filtering. Common tags: ui, agent, markdown, conversations, windows, tools, cleanup, security, reliability, performance, teams, files, git, input, skills, messages, refactor.
+- **Description**: A `> blockquote` line right after the metadata comments. Shown as subtitle on plan cards. Keep it to one sentence.
 - **Build** (testing/done only): `<!-- build: N -->` added by deploy skill.
 
 **Detail scales with stage** — 00_backlog is scannable, detail grows as plans move forward:
@@ -61,6 +62,8 @@ Every plan MUST have these in the first few lines:
 # Feature Name {sf.symbol.name}
 <!-- priority: 10 -->
 <!-- tags: ui -->
+
+> Short one-sentence description shown on plan cards.
 
 One or two sentences describing the problem.
 
@@ -77,6 +80,8 @@ When promoting from 00_backlog, flesh out the approach: goals, rough plan, files
 # Feature Name {sf.symbol.name}
 <!-- priority: 10 -->
 <!-- tags: ui -->
+
+> Short one-sentence description shown on plan cards.
 
 Background and motivation.
 
