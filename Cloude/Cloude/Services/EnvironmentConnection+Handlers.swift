@@ -5,14 +5,18 @@ import Combine
 import CloudeShared
 
 extension EnvironmentConnection {
+    func ensureRunning(_ out: ConversationOutput, conversationId: UUID) {
+        if !out.isRunning {
+            out.isRunning = true
+            runningConversationId = conversationId
+        }
+    }
+
     func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?) {
         if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
             let out = mgr.output(for: convId)
             out.appendText(text)
-            if !out.isRunning {
-                out.isRunning = true
-                runningConversationId = convId
-}
+            ensureRunning(out, conversationId: convId)
         } else if let convId = runningConversationId {
             mgr.output(for: convId).appendText(text)
         }
@@ -65,9 +69,11 @@ extension EnvironmentConnection {
 
     func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
-        let currentTextLength = mgr.output(for: convId).fullText.count
+        let out = mgr.output(for: convId)
+        ensureRunning(out, conversationId: convId)
+        let currentTextLength = out.fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
-        mgr.output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
+        out.toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
         if name.hasPrefix("mcp__ios__") {
             handleIOSToolCall(mgr, name: name, input: input, conversationId: conversationId)
             return
