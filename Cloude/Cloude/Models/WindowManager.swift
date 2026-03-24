@@ -45,7 +45,7 @@ class WindowManager: ObservableObject {
     }
 
     var canRemoveWindow: Bool {
-        !windows.isEmpty
+        windows.count > 1
     }
 
     var openConversationIds: Set<UUID> {
@@ -67,11 +67,12 @@ class WindowManager: ObservableObject {
     }
 
     func removeWindow(_ id: UUID) {
-        guard canRemoveWindow else { return }
-        windows.removeAll { $0.id == id }
+        guard windows.count > 1 else { return }
         if activeWindowId == id {
-            activeWindowId = windows.first?.id
+            let index = windows.firstIndex { $0.id == id } ?? 0
+            activeWindowId = index > 0 ? windows[index - 1].id : windows[1].id
         }
+        windows.removeAll { $0.id == id }
         save()
     }
 
