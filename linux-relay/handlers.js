@@ -5,6 +5,7 @@ import { handleGetUsageStats, handleListRemoteSessions, handleSyncHistory } from
 import { handleGetMemories, handleGetPlans, handleDeletePlan } from './handlers-plans.js'
 import { handleSuggestName } from './handlers-naming.js'
 import { handleTranscribe, handleTerminalExec, handleTerminalInput } from './handlers-terminal.js'
+import { handleAttachBranch, handleListBranches } from './handlers-worktree.js'
 
 export function handleMessage(msg, ws, ctx) {
   const { manager, broadcast, sendTo } = ctx
@@ -113,6 +114,14 @@ export function handleMessage(msg, ws, ctx) {
 
     case 'terminal_input':
       handleTerminalInput(msg.text, msg.terminalId, ws)
+      break
+
+    case 'attach_branch':
+      handleAttachBranch(msg.workingDirectory, msg.branch, msg.conversationId, ws, sendTo)
+      break
+
+    case 'list_branches':
+      handleListBranches(msg.workingDirectory, ws, sendTo)
       break
 
     default:

@@ -142,6 +142,11 @@ extension CloudeApp {
         case .whiteboard(let action, let json, let convId):
             handleWhiteboardAction(action: action, json: json, conversationId: convId)
 
+        case .branchAttached(let branch, let worktreePath, let convId):
+            if let convId, let conv = conversationStore.findConversation(withId: convId) {
+                conversationStore.attachBranch(conv, branch: branch, worktreePath: worktreePath)
+            }
+
         default:
             break
         }

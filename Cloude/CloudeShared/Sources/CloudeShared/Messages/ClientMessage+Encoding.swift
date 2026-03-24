@@ -95,6 +95,14 @@ extension ClientMessage {
             try container.encode("terminal_input", forKey: .type)
             try container.encode(text, forKey: .text)
             try container.encodeIfPresent(terminalId, forKey: .terminalId)
+        case .attachBranch(let branch, let workingDirectory, let conversationId):
+            try container.encode("attach_branch", forKey: .type)
+            try container.encode(branch, forKey: .branch)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
+            try container.encode(conversationId, forKey: .conversationId)
+        case .listBranches(let workingDirectory):
+            try container.encode("list_branches", forKey: .type)
+            try container.encode(workingDirectory, forKey: .workingDirectory)
         }
     }
 }

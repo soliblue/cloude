@@ -46,6 +46,8 @@ extension EnvironmentConnection {
         case .planDeleted(let stage, let filename):       mgr.events.send(.planDeleted(stage: stage, filename: filename))
         case .usageStats(let stats):                        mgr.events.send(.usageStats(stats))
         case .terminalOutput(let out, let code, let err, let tid): mgr.events.send(.terminalOutput(output: out, exitCode: code, isError: err, terminalId: tid))
+        case .branchAttached(let b, let wp, let c):        mgr.events.send(.branchAttached(branch: b, worktreePath: wp, conversationId: c.flatMap { UUID(uuidString: $0) }))
+        case .branchList(let branches, let current):     mgr.events.send(.branchList(branches: branches, current: current))
         case .fileChange, .image, .gitCommitResult:       break
         }
     }

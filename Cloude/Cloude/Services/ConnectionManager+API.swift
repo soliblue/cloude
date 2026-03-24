@@ -85,6 +85,14 @@ extension ConnectionManager {
         connectionForSend(environmentId: environmentId)?.send(.terminalInput(text: text, terminalId: terminalId))
     }
 
+    func attachBranch(branch: String, workingDirectory: String, conversationId: UUID, environmentId: UUID? = nil) {
+        connectionForSend(environmentId: environmentId)?.send(.attachBranch(branch: branch, workingDirectory: workingDirectory, conversationId: conversationId.uuidString))
+    }
+
+    func listBranches(workingDirectory: String, environmentId: UUID? = nil) {
+        connectionForSend(environmentId: environmentId)?.send(.listBranches(workingDirectory: workingDirectory))
+    }
+
     func send(_ message: ClientMessage, environmentId: UUID? = nil) {
         connectionForSend(environmentId: environmentId)?.send(message)
     }

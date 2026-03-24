@@ -87,4 +87,24 @@ extension ConversationStore {
     func clearPendingFork(_ conversation: Conversation) {
         mutate(conversation.id) { $0.pendingFork = false }
     }
+
+    func attachBranch(_ conversation: Conversation, branch: String, worktreePath: String) {
+        mutate(conversation.id) {
+            $0.originalWorkingDirectory = $0.originalWorkingDirectory ?? $0.workingDirectory
+            $0.attachedBranch = branch
+            $0.worktreePath = worktreePath
+            $0.workingDirectory = worktreePath
+        }
+    }
+
+    func detachBranch(_ conversation: Conversation) {
+        mutate(conversation.id) {
+            if let original = $0.originalWorkingDirectory {
+                $0.workingDirectory = original
+            }
+            $0.attachedBranch = nil
+            $0.worktreePath = nil
+            $0.originalWorkingDirectory = nil
+        }
+    }
 }

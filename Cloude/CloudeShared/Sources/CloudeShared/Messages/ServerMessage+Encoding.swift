@@ -98,7 +98,7 @@ extension ServerMessage {
         case .processList, .defaultWorkingDirectory, .skills, .historySync, .historySyncError,
              .fileChunk, .fileThumbnail, .fileSearchResults, .remoteSessionList, .messageUUID,
              .teamCreated, .teammateSpawned, .teammateUpdate, .teamDeleted, .nameSuggestion,
-             .plans, .planDeleted, .usageStats, .terminalOutput:
+             .plans, .planDeleted, .usageStats, .terminalOutput, .branchAttached, .branchList:
             try encodeExtendedCases(&container)
         }
     }

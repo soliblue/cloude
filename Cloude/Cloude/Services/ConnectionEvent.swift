@@ -45,4 +45,8 @@ case lastAssistantMessageCostUpdate(conversationId: UUID, costUsd: Double)
     case screenshot(conversationId: UUID?)
     case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
     case whiteboard(action: String, json: [String: Any], conversationId: UUID?)
+
+    // Git branches
+    case branchAttached(branch: String, worktreePath: String, conversationId: UUID?)
+    case branchList(branches: [String], current: String)
 }

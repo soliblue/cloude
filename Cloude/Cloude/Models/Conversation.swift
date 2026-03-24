@@ -15,6 +15,9 @@ struct Conversation: Codable, Identifiable {
     var defaultEffort: EffortLevel?
     var defaultModel: ModelSelection?
     var environmentId: UUID?
+    var attachedBranch: String?
+    var worktreePath: String?
+    var originalWorkingDirectory: String?
 
     var isEmpty: Bool {
         messages.isEmpty && pendingMessages.isEmpty && sessionId == nil
@@ -74,9 +77,12 @@ struct Conversation: Codable, Identifiable {
         defaultEffort = try container.decodeIfPresent(EffortLevel.self, forKey: .defaultEffort)
         defaultModel = try container.decodeIfPresent(ModelSelection.self, forKey: .defaultModel)
         environmentId = try container.decodeIfPresent(UUID.self, forKey: .environmentId)
+        attachedBranch = try container.decodeIfPresent(String.self, forKey: .attachedBranch)
+        worktreePath = try container.decodeIfPresent(String.self, forKey: .worktreePath)
+        originalWorkingDirectory = try container.decodeIfPresent(String.self, forKey: .originalWorkingDirectory)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel, environmentId
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel, environmentId, attachedBranch, worktreePath, originalWorkingDirectory
     }
 }

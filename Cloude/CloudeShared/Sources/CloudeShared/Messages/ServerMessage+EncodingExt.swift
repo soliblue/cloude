@@ -84,6 +84,15 @@ extension ServerMessage {
             try container.encodeIfPresent(exitCode, forKey: .exitCode)
             try container.encode(isError, forKey: .isError)
             try container.encodeIfPresent(terminalId, forKey: .terminalId)
+        case .branchAttached(let branch, let worktreePath, let conversationId):
+            try container.encode("branch_attached", forKey: .type)
+            try container.encode(branch, forKey: .branch)
+            try container.encode(worktreePath, forKey: .worktreePath)
+            try container.encodeIfPresent(conversationId, forKey: .conversationId)
+        case .branchList(let branches, let current):
+            try container.encode("branch_list", forKey: .type)
+            try container.encode(branches, forKey: .branches)
+            try container.encode(current, forKey: .current)
         default:
             break
         }

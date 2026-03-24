@@ -12,6 +12,9 @@ struct WindowEditForm: View {
     @State private var name: String = ""
     @State private var symbol: String = ""
     @State private var showSymbolPicker = false
+    @State private var showBranchPicker = false
+    @State private var branches: [String] = []
+    @State private var branchSearch: String = ""
     @State var visibleCount = 20
 
     private var conversation: Conversation? {
@@ -67,12 +70,17 @@ struct WindowEditForm: View {
                     conversation: conv,
                     editable: canChangeFolder
                 )
+
+                branchRow(conv)
             }
 
             conversationListSection()
         }
         .sheet(isPresented: $showSymbolPicker) {
             SymbolPickerSheet(selectedSymbol: $symbol)
+        }
+        .sheet(isPresented: $showBranchPicker) {
+            branchPickerSheet()
         }
         .onChange(of: symbol) { _, newValue in
             if let conv = conversation {
@@ -87,5 +95,92 @@ struct WindowEditForm: View {
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
         }
+        .onReceive(connection.events) { event in
+            if case .branchList(let list, _) = event {
+                branches = list
+            }
+        }
+    }
+
+    @ViewBuilder
+    func branchRow(_ conv: Conversation) -> some View {
+        HStack {
+            Image(systemName: "arrow.triangle.branch")
+                .foregroundStyle(.secondary)
+                .frame(width: 24)
+
+            if let branch = conv.attachedBranch {
+                Text(branch)
+                    .font(.subheadline.monospaced())
+                    .lineLimit(1)
+
+                Spacer()
+
+                Button {
+                    conversationStore.detachBranch(conv)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Text("Branch")
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button {
+                    if let wd = conv.workingDirectory {
+                        connection.listBranches(workingDirectory: wd, environmentId: conv.environmentId)
+                    }
+                    showBranchPicker = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 44)
+        .background(Color.themeSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: 9))
+    }
+
+    func branchPickerSheet() -> some View {
+        NavigationStack {
+            List {
+                ForEach(filteredBranches, id: \.self) { branch in
+                    Button {
+                        if let conv = conversation, let wd = conv.originalWorkingDirectory ?? conv.workingDirectory {
+                            connection.attachBranch(branch: branch, workingDirectory: wd, conversationId: conv.id, environmentId: conv.environmentId)
+                        }
+                        showBranchPicker = false
+                    } label: {
+                        Text(branch)
+                            .font(.subheadline.monospaced())
+                            .foregroundStyle(.primary)
+                    }
+                }
+            }
+            .searchable(text: $branchSearch, placement: .navigationBarDrawer(displayMode: .always))
+            .navigationTitle("Attach Branch")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showBranchPicker = false } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .onAppear {
+            branchSearch = ""
+        }
+    }
+
+    var filteredBranches: [String] {
+        branchSearch.isEmpty ? branches : branches.filter { $0.localizedCaseInsensitiveContains(branchSearch) }
     }
 }

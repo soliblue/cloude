@@ -84,6 +84,15 @@ extension ServerMessage {
             let isError = try container.decodeIfPresent(Bool.self, forKey: .isError) ?? false
             let terminalId = try container.decodeIfPresent(String.self, forKey: .terminalId)
             return .terminalOutput(output: output, exitCode: exitCode, isError: isError, terminalId: terminalId)
+        case "branch_attached":
+            let branch = try container.decode(String.self, forKey: .branch)
+            let worktreePath = try container.decode(String.self, forKey: .worktreePath)
+            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
+            return .branchAttached(branch: branch, worktreePath: worktreePath, conversationId: conversationId)
+        case "branch_list":
+            let branches = try container.decode([String].self, forKey: .branches)
+            let current = try container.decode(String.self, forKey: .current)
+            return .branchList(branches: branches, current: current)
         default:
             return nil
         }
