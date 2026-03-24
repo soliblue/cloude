@@ -40,7 +40,6 @@ extension ChatMessageList {
             }
         }
         .onChange(of: messages.last?.id) { _, _ in
-            guard messages.last?.isUser == true else { return }
             Task { @MainActor in
                 await Task.yield()
                 scrollPos.scrollTo(edge: .bottom)
