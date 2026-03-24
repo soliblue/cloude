@@ -53,7 +53,7 @@ extension MainChatView {
               let conversation = conversationStore.conversation(withId: convId),
               conversation.isEmpty else { return }
         conversationStore.deleteConversation(conversation)
-        windowManager.unlinkConversation(windowId)
+        windowManager.removeWindow(windowId)
     }
 
     func searchFiles(_ query: String) {
