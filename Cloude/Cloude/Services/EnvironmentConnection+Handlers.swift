@@ -13,15 +13,19 @@ extension EnvironmentConnection {
         }
     }
 
+    private func ensureRunning(_ out: ConversationOutput, convId: UUID) {
+        if !out.isRunning {
+            out.isRunning = true
+            runningConversationId = convId
+        }
+    }
+
     func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?) {
         if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
             ensureLiveMessage(mgr, convId: convId)
             let out = mgr.output(for: convId)
             out.appendText(text)
-            if !out.isRunning {
-                out.isRunning = true
-                runningConversationId = convId
-            }
+            ensureRunning(out, convId: convId)
         } else if let convId = runningConversationId {
             ensureLiveMessage(mgr, convId: convId)
             mgr.output(for: convId).appendText(text)
@@ -78,9 +82,11 @@ extension EnvironmentConnection {
     func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
         ensureLiveMessage(mgr, convId: convId)
-        let currentTextLength = mgr.output(for: convId).fullText.count
+        let out = mgr.output(for: convId)
+        ensureRunning(out, convId: convId)
+        let currentTextLength = out.fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
-        mgr.output(for: convId).toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
+        out.toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
         if name.hasPrefix("mcp__ios__") {
             handleIOSToolCall(mgr, name: name, input: input, conversationId: conversationId)
             return
