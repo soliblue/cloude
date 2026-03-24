@@ -22,10 +22,6 @@ public enum ClientMessage: Codable {
     case gitDiff(path: String, file: String?, staged: Bool)
     case gitCommit(path: String, message: String, files: [String])
     case transcribe(audioBase64: String)
-    case setHeartbeatInterval(minutes: Int?)
-    case getHeartbeatConfig
-    case markHeartbeatRead
-    case triggerHeartbeat
     case getMemories
     case getProcesses
     case killProcess(pid: Int32)
@@ -41,6 +37,6 @@ public enum ClientMessage: Codable {
     case terminalInput(text: String, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, minutes, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged
     }
 }

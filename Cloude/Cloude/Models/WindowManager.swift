@@ -6,7 +6,6 @@ import CloudeShared
 class WindowManager: ObservableObject {
     @Published var windows: [ChatWindow] = [ChatWindow()]
     @Published var activeWindowId: UUID?
-    @Published var isHeartbeatShowing = false
 
     private let windowsKey = "windowManager_windows"
     private let activeKey = "windowManager_activeWindowId"

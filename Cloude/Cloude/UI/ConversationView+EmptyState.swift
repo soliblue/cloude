@@ -86,6 +86,10 @@ struct EmptyConversationView: View {
                 .padding(.top, 8)
             }
 
+            if onSeeAll != nil {
+                searchButton
+            }
+
             if !recentConversations.isEmpty, onSelectConversation != nil {
                 recentConversationsList
             }
@@ -96,26 +100,29 @@ struct EmptyConversationView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var searchButton: some View {
+        Button(action: { onSeeAll?() }) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                Text("Search conversations...")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color.secondary.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 48)
+        .padding(.top, 8)
+    }
+
     private var recentConversationsList: some View {
         VStack(spacing: 0) {
-            if let onSeeAll {
-                HStack {
-                    Spacer()
-                    Button(action: onSeeAll) {
-                        HStack(spacing: 4) {
-                            Text("See all")
-                                .font(.caption)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 9, weight: .semibold))
-                        }
-                        .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 4)
-            }
-
             ForEach(recentConversations) { conv in
                 Button(action: { onSelectConversation?(conv) }) {
                     HStack(spacing: 10) {

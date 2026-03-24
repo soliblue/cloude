@@ -21,7 +21,6 @@ public enum ServerMessage: Codable {
     case gitCommitResult(success: Bool, message: String?)
     case transcription(text: String)
     case whisperReady(ready: Bool)
-    case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
     case memories(sections: [MemorySection])
     case processList(processes: [AgentProcessInfo])
     case defaultWorkingDirectory(path: String)
@@ -44,6 +43,6 @@ public enum ServerMessage: Codable {
     case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, intervalMinutes, unreadCount, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo
     }
 }

@@ -2,32 +2,6 @@ import SwiftUI
 import CloudeShared
 
 extension MainChatView {
-    func sendHeartbeatMessage(text: String, imagesBase64: [String]?, filesBase64: [AttachedFilePayload]?, thumbnails: [String]?) {
-        let convOutput = connection.output(for: Heartbeat.conversationId)
-        let heartbeat = conversationStore.heartbeatConversation
-
-        if convOutput.isRunning || !connection.isAuthenticated {
-            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
-            conversationStore.queueMessage(userMessage, to: heartbeat)
-        } else {
-            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
-            conversationStore.addMessage(userMessage, to: heartbeat)
-
-            connection.sendChat(
-                text,
-                workingDirectory: nil,
-                sessionId: Heartbeat.sessionId,
-                isNewSession: false,
-                conversationId: Heartbeat.conversationId,
-                imagesBase64: imagesBase64,
-                filesBase64: filesBase64,
-                conversationName: "Heartbeat",
-                conversationSymbol: "heart.fill",
-                environmentId: heartbeatEnvId
-            )
-        }
-    }
-
     func sendConversationMessage(text: String, imagesBase64: [String]?, filesBase64: [AttachedFilePayload]?, thumbnails: [String]?) {
         if windowManager.activeWindow == nil {
             windowManager.addWindow()

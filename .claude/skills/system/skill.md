@@ -25,4 +25,3 @@ bash .claude/skills/system/sysinfo.sh display       # Display status
 - "How's the laptop doing?"
 - "Battery level?"
 - "Am I running low on disk?"
-- Heartbeat: include system health in status checks

@@ -3,6 +3,7 @@ import CloudeShared
 
 struct MemoryService {
     private static let sourceFile = #file
+    static var projectDirectory: String?
 
     enum MemoryTarget {
         case local
@@ -17,7 +18,7 @@ struct MemoryService {
     }
 
     static var projectRoot: String {
-        if let dir = HeartbeatService.shared.projectDirectory {
+        if let dir = projectDirectory {
             return dir
         }
         var url = URL(fileURLWithPath: sourceFile)

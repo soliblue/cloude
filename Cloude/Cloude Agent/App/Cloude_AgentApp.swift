@@ -37,7 +37,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupServices()
         installSignalHandlers()
         setupPopover()
-        setupHeartbeat()
         if let portOwner = ProcessMonitor.checkPortOwner(server.port) {
             Log.startup("⚠️ Port \(server.port) in use: \(portOwner)")
         }
@@ -61,11 +60,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             await WhisperService.shared.initialize()
         }
-    }
-
-    private func setupHeartbeat() {
-        let heartbeat = HeartbeatService.shared
-        heartbeat.runnerManager = runnerManager
     }
 
     private func setupMenuBar() {

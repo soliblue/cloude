@@ -1,24 +1,11 @@
 import SwiftUI
-import CloudeShared
 
 extension MainChatView {
     @ViewBuilder
     func pageIndicator() -> some View {
-        let maxIndex = windowManager.windows.count
-        HStack(spacing: 12) {
-            heartbeatIndicatorButton()
-
-            Divider()
-                .frame(height: 24)
-                .opacity(0.3)
-
+        let maxIndex = windowManager.windows.count - 1
+        HStack(spacing: 20) {
             windowIndicatorButtons()
-
-            Divider()
-                .frame(height: 24)
-                .opacity(0.3)
-
-            searchIndicatorButton()
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
@@ -27,49 +14,15 @@ extension MainChatView {
                 .onEnded { value in
                     let horizontal = abs(value.translation.width)
                     let vertical = abs(value.translation.height)
-                    guard horizontal > vertical else { return }
-                    if value.translation.width > 0 && currentPageIndex < maxIndex {
-                        withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex += 1 }
-                    } else if value.translation.width < 0 && currentPageIndex > 0 {
-                        withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex -= 1 }
+                    if horizontal > vertical {
+                        if value.translation.width > 0 && currentPageIndex < maxIndex {
+                            withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex += 1 }
+                        } else if value.translation.width < 0 && currentPageIndex > 0 {
+                            withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex -= 1 }
+                        }
                     }
                 }
         )
-    }
-
-    @ViewBuilder
-    func heartbeatIndicatorButton() -> some View {
-        let isStreaming = connection.output(for: Heartbeat.conversationId).isRunning
-        let isScheduled = conversationStore.heartbeatConfig.intervalMinutes != nil
-
-        Button {
-            withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = 0 }
-        } label: {
-            Image(systemName: heartbeatIconName(active: isHeartbeatActive, scheduled: isScheduled))
-                .font(.system(size: 22))
-                .foregroundStyle(
-                    isScheduled || isHeartbeatActive
-                        ? AnyShapeStyle(LinearGradient(
-                            colors: [Color.accentColor, Color.accentColor.opacity(0.4)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        : AnyShapeStyle(.secondary)
-                )
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-                .frame(height: 28)
-                .overlay(alignment: .topTrailing) {
-                    if conversationStore.heartbeatConfig.unreadCount > 0 && !isHeartbeatActive {
-                        Text(conversationStore.heartbeatConfig.unreadCount > 9 ? "9+" : "\(conversationStore.heartbeatConfig.unreadCount)")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(minWidth: 14, minHeight: 14)
-                            .background(Circle().fill(Color.accentColor))
-                            .offset(x: 4, y: -4)
-                    }
-                }
-        }
-        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -83,13 +36,13 @@ extension MainChatView {
     func windowIndicatorButton(at index: Int) -> some View {
         if index < windowManager.windows.count {
             let window = windowManager.windows[index]
-            let isActive = currentPageIndex == index + 1
+            let isActive = currentPageIndex == index
             let convId = window.conversationId
             let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
             let conversation = window.conversation(in: conversationStore)
 
             Button {
-                withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index + 1 }
+                withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index }
             } label: {
                 windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
             }
@@ -107,27 +60,6 @@ extension MainChatView {
                     .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
-        }
-    }
-
-    @ViewBuilder
-    func searchIndicatorButton() -> some View {
-        Button {
-            showConversationSearch = true
-        } label: {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 22))
-                .foregroundStyle(.secondary)
-                .frame(height: 28)
-        }
-        .buttonStyle(.plain)
-    }
-
-    func heartbeatIconName(active: Bool, scheduled: Bool) -> String {
-        if scheduled {
-            return active ? "heart.circle.fill" : "heart.fill"
-        } else {
-            return active ? "heart.slash.fill" : "heart.slash"
         }
     }
 

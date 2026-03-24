@@ -60,17 +60,7 @@ extension AppDelegate {
             self?.server.broadcast(.teammateUpdate(teammateId: teammateId, status: status, lastMessage: lastMessage, lastMessageAt: lastMessageAt, conversationId: conversationId))
         }
 
-        runnerManager.onComplete = { [weak self] conversationId, _ in
-            if conversationId == Heartbeat.sessionId {
-                let runner = self?.runnerManager.activeRunners[conversationId]
-                let response = runner?.accumulatedResponse ?? ""
-                let isEmpty = response.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-                              response == "<skip>" ||
-                              response == "."
-                HeartbeatService.shared.handleComplete(isEmpty: isEmpty)
-                let config = HeartbeatService.shared.getConfig()
-                self?.server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount))
-            }
+        runnerManager.onComplete = { _, _ in
         }
     }
 }

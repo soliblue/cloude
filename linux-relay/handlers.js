@@ -88,13 +88,6 @@ export function handleMessage(msg, ws, ctx) {
       handleGetUsageStats(ws, sendTo)
       break
 
-    case 'set_heartbeat_interval':
-    case 'get_heartbeat_config':
-    case 'mark_heartbeat_read':
-    case 'trigger_heartbeat':
-      sendTo(ws, { type: 'heartbeat_config', intervalMinutes: null, unreadCount: 0 })
-      break
-
     case 'sync_history':
       handleSyncHistory(msg.sessionId, msg.workingDirectory, ws, sendTo)
       break

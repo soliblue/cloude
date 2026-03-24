@@ -50,11 +50,7 @@ extension MainChatView {
             return
         }
 
-        if isHeartbeatActive {
-            sendHeartbeatMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
-        } else {
-            sendConversationMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
-        }
+        sendConversationMessage(text: text, imagesBase64: allImagesBase64, filesBase64: allFilesBase64, thumbnails: thumbnails)
     }
 
     private func encodeFiles(_ files: [AttachedFile]) -> [AttachedFilePayload]? {
@@ -72,21 +68,18 @@ extension MainChatView {
     }
 
     var activeConversationIsRunning: Bool {
-        if isHeartbeatActive {
-            return connection.output(for: Heartbeat.conversationId).isRunning
+        if let activeWindow = windowManager.activeWindow,
+           let convId = activeWindow.conversationId {
+            return connection.output(for: convId).isRunning
         }
-        guard let activeWindow = windowManager.activeWindow,
-              let convId = activeWindow.conversationId else { return false }
-        return connection.output(for: convId).isRunning
+        return false
     }
 
     func stopActiveConversation() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
-        if isHeartbeatActive {
-            connection.abort(conversationId: Heartbeat.conversationId)
-        } else if let activeWindow = windowManager.activeWindow,
-                  let convId = activeWindow.conversationId {
+        if let activeWindow = windowManager.activeWindow,
+           let convId = activeWindow.conversationId {
             connection.abort(conversationId: convId)
         }
     }

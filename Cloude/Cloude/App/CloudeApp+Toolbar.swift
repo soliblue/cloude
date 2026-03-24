@@ -4,9 +4,8 @@ import CloudeShared
 extension CloudeApp {
     @ViewBuilder
     var navTitlePill: some View {
-        if !windowManager.isHeartbeatShowing {
-            let conversation = windowManager.activeWindow?.conversation(in: conversationStore)
-            Button(action: {
+        let conversation = windowManager.activeWindow?.conversation(in: conversationStore)
+        Button(action: {
                 NotificationCenter.default.post(name: .editActiveWindow, object: nil)
             }) {
                 VStack(spacing: 2) {
@@ -45,6 +44,5 @@ extension CloudeApp {
                 }
             }
             .buttonStyle(.plain)
-        }
     }
 }

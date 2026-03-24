@@ -51,15 +51,6 @@ extension ClientMessage {
         case .transcribe(let audioBase64):
             try container.encode("transcribe", forKey: .type)
             try container.encode(audioBase64, forKey: .audioBase64)
-        case .setHeartbeatInterval(let minutes):
-            try container.encode("set_heartbeat_interval", forKey: .type)
-            try container.encodeIfPresent(minutes, forKey: .minutes)
-        case .getHeartbeatConfig:
-            try container.encode("get_heartbeat_config", forKey: .type)
-        case .markHeartbeatRead:
-            try container.encode("mark_heartbeat_read", forKey: .type)
-        case .triggerHeartbeat:
-            try container.encode("trigger_heartbeat", forKey: .type)
         case .getMemories:
             try container.encode("get_memories", forKey: .type)
         case .getProcesses:
