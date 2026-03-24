@@ -3,7 +3,7 @@
 import SwiftUI
 
 private struct AppThemeKey: EnvironmentKey {
-    static let defaultValue: AppTheme = .vanGogh
+    static let defaultValue: AppTheme = .majorelle
 }
 
 extension EnvironmentValues {
@@ -16,38 +16,15 @@ extension EnvironmentValues {
 struct ThemePalette {
     let background: UInt
     let secondary: UInt
-    let surface: UInt
-    let gray6: UInt
-    let groupedSecondary: UInt
-    let tertiary: UInt
-    let fill: UInt
-    let systemBackground: UInt
 }
 
 enum AppTheme: String, CaseIterable {
     case monet = "Monet"
-    case vermeer = "Vermeer"
     case turner = "Turner"
-    case cezanne = "Cézanne"
-    case saffron = "Saffron"
-    case celadon = "Celadon"
-    case morisot = "Morisot"
-    case sorolla = "Sorolla"
-    case wedgwood = "Wedgwood"
     case malevich = "Malevich"
-    case hokusai = "Hokusai"
-    case caravaggio = "Caravaggio"
-    case whistler = "Whistler"
     case bauder = "Bauder"
-    case vanGogh = "Van Gogh"
-    case hiroshige = "Hiroshige"
     case majorelle = "Majorelle"
-    case gaudi = "Gaudí"
     case klimt = "Klimt"
-    case hundertwasser = "Hundertwasser"
-    case mahfouz = "Mahfouz"
-    case tawfik = "Tawfik"
-    case rothko = "Rothko"
 
     static var current: AppTheme {
         if let raw = UserDefaults.standard.string(forKey: "appTheme"),
@@ -59,7 +36,7 @@ enum AppTheme: String, CaseIterable {
 
     var colorScheme: ColorScheme {
         switch self {
-        case .monet, .vermeer, .turner, .morisot, .sorolla, .cezanne, .saffron, .celadon, .wedgwood: return .light
+        case .monet, .turner: return .light
         default: return .dark
         }
     }

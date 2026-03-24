@@ -36,7 +36,7 @@ struct QuizWidget: View {
                     .foregroundColor(.secondary)
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.themeGray6.opacity(0.5))
+                    .background(Color.themeSecondary.opacity(0.5))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
 
@@ -90,10 +90,10 @@ struct QuizWidget: View {
     }
 
     private func backgroundColor(index: Int) -> Color {
-        if !answered { return Color.themeGray6.opacity(0.5) }
+        if !answered { return Color.themeSecondary.opacity(0.5) }
         if index == correctIndex { return .green.opacity(0.1) }
         if index == selectedIndex { return .red.opacity(0.1) }
-        return Color.themeGray6.opacity(0.3)
+        return Color.themeSecondary.opacity(0.3)
     }
 
     private func borderColor(index: Int) -> Color {

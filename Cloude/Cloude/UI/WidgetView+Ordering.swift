@@ -52,7 +52,7 @@ struct OrderingWidget: View {
                                 .font(.system(size: 13, weight: .medium))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
-                                .background(Color.themeGray6.opacity(0.5))
+                                .background(Color.themeSecondary.opacity(0.5))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)

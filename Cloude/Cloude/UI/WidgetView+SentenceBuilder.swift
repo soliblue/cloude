@@ -72,7 +72,7 @@ struct SentenceBuilderWidget: View {
                 }
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.themeGray6.opacity(0.3))
+                .background(Color.themeSecondary.opacity(0.3))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
@@ -84,7 +84,7 @@ struct SentenceBuilderWidget: View {
                     .foregroundColor(.secondary.opacity(0.5))
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.themeGray6.opacity(0.3))
+                    .background(Color.themeSecondary.opacity(0.3))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
@@ -104,7 +104,7 @@ struct SentenceBuilderWidget: View {
                                 .font(.system(size: 14, weight: .medium))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
-                                .background(Color.themeGray6.opacity(0.5))
+                                .background(Color.themeSecondary.opacity(0.5))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)

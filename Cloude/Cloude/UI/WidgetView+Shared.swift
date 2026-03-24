@@ -15,7 +15,7 @@ struct WidgetContainer<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) { content() }
             .padding(14)
-            .background(Color.themeGray6.opacity(0.3))
+            .background(Color.themeSecondary.opacity(0.3))
             .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

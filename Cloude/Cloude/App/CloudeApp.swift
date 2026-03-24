@@ -29,8 +29,8 @@ struct CloudeApp: App {
     @State var isUnlocked = false
     @State var filePathToPreview: String? = nil
     @State var filePreviewEnvironmentId: UUID? = nil
-    @AppStorage("appTheme") var appThemeRaw: String = AppTheme.vanGogh.rawValue
-    var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
+    @AppStorage("appTheme") var appThemeRaw: String = AppTheme.majorelle.rawValue
+    var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("debugOverlayEnabled") var debugOverlayEnabled = false
     @ObservedObject var debugMetrics = DebugMetrics.shared

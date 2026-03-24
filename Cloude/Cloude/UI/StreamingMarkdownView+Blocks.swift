@@ -115,7 +115,7 @@ struct BlockquoteView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             Rectangle()
-                .fill(Color.themeSurface)
+                .fill(Color.themeSecondary)
                 .frame(width: 3)
             Text(text)
                 .font(.body)

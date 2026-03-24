@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct ThemePickerView: View {
-    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.vanGogh.rawValue
-    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.majorelle.rawValue
+    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [
@@ -52,12 +52,6 @@ struct ThemeCard: View {
                     .frame(height: 32)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color(hex: theme.palette.secondary))
-                    .frame(height: 32)
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color(hex: theme.palette.surface))
-                    .frame(height: 32)
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color(hex: theme.palette.fill))
                     .frame(height: 32)
             }
             .padding(8)

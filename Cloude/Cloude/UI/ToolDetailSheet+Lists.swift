@@ -34,7 +34,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeGray6.opacity(0.5))
+            .background(Color.themeSecondary.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
@@ -68,7 +68,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeGray6.opacity(0.5))
+            .background(Color.themeSecondary.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
@@ -112,7 +112,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeGray6.opacity(0.5))
+            .background(Color.themeSecondary.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }

@@ -63,7 +63,7 @@ struct ColorPaletteWidget: View {
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 44)
-            .background(Color.themeGray6.opacity(0.5))
+            .background(Color.themeSecondary.opacity(0.5))
         }
         .onLongPressGesture(minimumDuration: 0.2) {
             NotificationCenter.default.post(name: .showFullscreenColor, object: color.hex)

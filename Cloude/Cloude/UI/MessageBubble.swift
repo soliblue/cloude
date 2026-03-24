@@ -47,7 +47,7 @@ struct MessageBubble: View {
         } else if message.isUser {
             return Color(hex: appTheme.palette.background)
         } else {
-            return Color(hex: appTheme.palette.gray6).opacity(0.3)
+            return Color(hex: appTheme.palette.secondary).opacity(0.3)
         }
     }
 

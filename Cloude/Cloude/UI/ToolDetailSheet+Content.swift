@@ -13,7 +13,7 @@ extension ToolDetailSheet {
                 .textSelection(.enabled)
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.themeGray6.opacity(0.5))
+                .background(Color.themeSecondary.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
@@ -27,7 +27,7 @@ extension ToolDetailSheet {
 
             DiffTextView(diff: editInfo.toUnifiedDiff(), language: language)
                 .padding(8)
-                .background(Color.themeGray6.opacity(0.5))
+                .background(Color.themeSecondary.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
@@ -68,7 +68,7 @@ extension ToolDetailSheet {
             StreamingMarkdownView(text: output)
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.themeGray6.opacity(0.5))
+                .background(Color.themeSecondary.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
@@ -105,7 +105,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeGray6.opacity(0.5))
+            .background(Color.themeSecondary.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
@@ -134,7 +134,7 @@ extension ToolDetailSheet {
                         .foregroundColor(.secondary)
                 }
                 .padding(12)
-                .background(Color.themeGray6.opacity(0.5))
+                .background(Color.themeSecondary.opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)

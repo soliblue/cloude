@@ -3,12 +3,6 @@ import SwiftUI
 extension Color {
     static var themeBackground: Color { Color(hex: AppTheme.current.palette.background) }
     static var themeSecondary: Color { Color(hex: AppTheme.current.palette.secondary) }
-    static var themeSurface: Color { Color(hex: AppTheme.current.palette.surface) }
-    static var themeGray6: Color { Color(hex: AppTheme.current.palette.gray6) }
-    static var themeGroupedSecondary: Color { Color(hex: AppTheme.current.palette.groupedSecondary) }
-    static var themeTertiary: Color { Color(hex: AppTheme.current.palette.tertiary) }
-    static var themeFill: Color { Color(hex: AppTheme.current.palette.fill) }
-    static var themeSystemBackground: Color { Color(hex: AppTheme.current.palette.systemBackground) }
 
     static let pastelGreen = Color(hex: 0x7AB87A)
     static let pastelRed = Color(hex: 0xB54E5E)

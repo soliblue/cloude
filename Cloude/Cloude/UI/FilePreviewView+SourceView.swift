@@ -44,7 +44,7 @@ extension FilePreviewView {
                 }
             }
         }
-        .background(Color.themeSystemBackground)
+        .background(Color.themeBackground)
     }
 
     @ViewBuilder

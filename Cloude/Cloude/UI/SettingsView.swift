@@ -3,8 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var connection: ConnectionManager
     @ObservedObject var environmentStore: EnvironmentStore
-    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.vanGogh.rawValue
-    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .vanGogh }
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.majorelle.rawValue
+    private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
     @State private var showThemePicker = false
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("debugOverlayEnabled") private var debugOverlayEnabled = false

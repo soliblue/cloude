@@ -15,11 +15,7 @@ struct MemorySectionCard: View {
     }
 
     private var backgroundColor: Color {
-        switch depth {
-        case 0: return Color.themeSecondary
-        case 1: return Color.themeTertiary
-        default: return Color.themeFill
-        }
+        Color.themeSecondary.opacity(depth == 0 ? 1.0 : 0.7)
     }
 
     var body: some View {
@@ -93,11 +89,7 @@ struct MemoryItemCard: View {
     var depth: Int = 0
 
     private var backgroundColor: Color {
-        switch depth {
-        case 0: return Color.themeTertiary
-        case 1: return Color.themeFill
-        default: return Color.themeSurface
-        }
+        Color.themeSecondary.opacity(depth == 0 ? 0.8 : 0.6)
     }
 
     var body: some View {

@@ -79,7 +79,7 @@ struct ImageCarouselWidget: View {
             .font(.title2)
             .foregroundColor(.secondary)
             .frame(maxWidth: .infinity, minHeight: 120)
-            .background(Color.themeGray6.opacity(0.3))
+            .background(Color.themeSecondary.opacity(0.3))
     }
 }
 
@@ -104,7 +104,7 @@ struct FileImageView: View {
                     .font(.title2)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
-                    .background(Color.themeGray6.opacity(0.3))
+                    .background(Color.themeSecondary.opacity(0.3))
             }
         }
         .onAppear {

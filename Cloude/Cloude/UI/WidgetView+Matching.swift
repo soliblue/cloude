@@ -89,7 +89,7 @@ struct MatchingWidget: View {
                 .padding(10)
                 .background(
                     isMatched ? (isCorrect ? Color.green.opacity(0.1) : Color.red.opacity(0.1)) :
-                    isSelected ? Color.pink.opacity(0.15) : Color.themeGray6.opacity(0.5)
+                    isSelected ? Color.pink.opacity(0.15) : Color.themeSecondary.opacity(0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay(
@@ -121,7 +121,7 @@ struct MatchingWidget: View {
                 .padding(10)
                 .background(
                     isMatched ? (isCorrect ? Color.green.opacity(0.1) : Color.red.opacity(0.1)) :
-                    selectedLeft != nil ? Color.pink.opacity(0.08) : Color.themeGray6.opacity(0.5)
+                    selectedLeft != nil ? Color.pink.opacity(0.08) : Color.themeSecondary.opacity(0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }

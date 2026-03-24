@@ -93,7 +93,7 @@ struct ToolDetailSheet: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(Color.themeGray6.opacity(0.5))
+            .background(Color.themeSecondary.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
