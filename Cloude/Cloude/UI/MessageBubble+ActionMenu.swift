@@ -8,7 +8,6 @@ struct BubbleActionMenu: View {
     let message: ChatMessage
     let onCopy: () -> Void
     let onSelectText: () -> Void
-    let onToggleCollapse: (() -> Void)?
     let onDismiss: () -> Void
 
     var body: some View {
@@ -21,13 +20,6 @@ struct BubbleActionMenu: View {
                 divider
                 menuButton(icon: "text.cursor", label: "Select") {
                     onSelectText()
-                    onDismiss()
-                }
-            }
-            if !message.isUser && !message.text.isEmpty {
-                divider
-                menuButton(icon: message.isCollapsed ? "chevron.down" : "chevron.up", label: message.isCollapsed ? "Expand" : "Collapse") {
-                    onToggleCollapse?()
                     onDismiss()
                 }
             }
@@ -54,17 +46,6 @@ struct BubbleActionMenu: View {
         Rectangle()
             .fill(Color.primary.opacity(0.1))
             .frame(width: 0.5, height: 32)
-    }
-}
-
-struct ConditionalClip: ViewModifier {
-    let isClipped: Bool
-    func body(content: Content) -> some View {
-        if isClipped {
-            content.clipped()
-        } else {
-            content
-        }
     }
 }
 
@@ -110,66 +91,6 @@ struct CopyFeedback {
     }
 }
 
-struct BubbleInteractionModifier: ViewModifier {
-    let isLive: Bool
-    let message: ChatMessage
-    let effectiveText: String
-    let hasInteractiveWidgets: Bool
-    @Binding var showCopiedToast: Bool
-    @Binding var showTextSelection: Bool
-    @Binding var showTeamDashboard: Bool
-    @Binding var showLongPressMenu: Bool
-    @Binding var menuPressY: CGFloat
-    let onToggleCollapse: (() -> Void)?
-
-    func body(content: Content) -> some View {
-        if isLive {
-            content
-        } else {
-            content
-                .sheet(isPresented: $showTextSelection) {
-                    TextSelectionSheet(text: effectiveText)
-                }
-                .sheet(isPresented: $showTeamDashboard) {
-                    if let team = message.teamSummary {
-                        TeamDashboardSheet(
-                            teamName: team.teamName,
-                            teammates: team.members.map {
-                                TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
-                            }
-                        )
-                    }
-                }
-                .overlay {
-                    if showLongPressMenu {
-                        BubbleLongPressOverlay(
-                            message: message,
-                            copyText: effectiveText,
-                            menuPressY: menuPressY,
-                            showCopiedToast: $showCopiedToast,
-                            onSelectText: { showTextSelection = true },
-                            onToggleCollapse: onToggleCollapse,
-                            onDismiss: { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
-                        )
-                    }
-                }
-                .contentShape(Rectangle())
-                .simultaneousGesture(
-                    LongPressGesture(minimumDuration: 0.4)
-                        .sequenced(before: DragGesture(minimumDistance: 0))
-                        .onEnded { value in
-                            if hasInteractiveWidgets { return }
-                            if case .second(true, let drag) = value {
-                                menuPressY = drag?.location.y ?? 0
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showLongPressMenu = true }
-                            }
-                        }
-                )
-        }
-    }
-}
-
 struct BubbleLongPressOverlay: View {
     let message: ChatMessage
     var copyText: String
@@ -194,7 +115,6 @@ struct BubbleLongPressOverlay: View {
                     CopyFeedback.perform(copyText, showToast: $showCopiedToast)
                 },
                 onSelectText: onSelectText,
-                onToggleCollapse: onToggleCollapse,
                 onDismiss: onDismiss
             )
             .transition(.opacity.combined(with: .scale(scale: 0.8)))

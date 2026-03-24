@@ -40,7 +40,6 @@ extension ChatMessageList {
             }
         }
         .onChange(of: messages.last?.id) { _, _ in
-            guard messages.last?.isUser == true else { return }
             Task { @MainActor in
                 await Task.yield()
                 scrollPos.scrollTo(edge: .bottom)
@@ -69,8 +68,7 @@ extension ChatMessageList {
                     message: message,
                     output: output,
                     skills: connection?.skills ?? [],
-                    isCompact: isCompact,
-                    onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
+                    isCompact: isCompact
                 )
                 .id("\(message.id)-\(message.isQueued)")
             } else {
@@ -78,22 +76,10 @@ extension ChatMessageList {
                     message: message,
                     skills: connection?.skills ?? [],
                     onRefresh: message.isUser ? nil : { refreshMessage(message) },
-                    onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) },
                     isRefreshing: refreshingMessageId == message.id
-                )
-                .readingProgress(
-                    isAssistant: !message.isUser,
-                    isCollapsed: message.isCollapsed,
-                    viewportHeight: viewportHeight
                 )
                 .id("\(message.id)-\(message.isQueued)")
             }
-        }
-    }
-
-    func toggleCollapse(_ message: ChatMessage) {
-        if let conversation, let store = conversationStore {
-            store.updateMessage(message.id, in: conversation) { $0.isCollapsed.toggle() }
         }
     }
 
