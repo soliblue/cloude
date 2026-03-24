@@ -17,7 +17,7 @@ extension FilePreviewView {
                             .progressViewStyle(.linear)
                             .frame(width: 200)
                         Text("\(progress.current + 1) of \(progress.total)")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
                 } else {

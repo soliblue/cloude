@@ -54,7 +54,7 @@ extension FilePreviewView {
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
             Text(fileName)
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
             Text("\(data.count.formatted(.byteCount(style: .file)))")
                 .foregroundColor(.secondary)
             if let entry = fileEntry {

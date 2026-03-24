@@ -18,20 +18,20 @@ extension SettingsView {
                         VStack(alignment: .leading, spacing: 2) {
                             if let name = proc.conversationName {
                                 Text(name)
-                                    .font(.system(.body, weight: .medium))
+                                    .font(.body.weight(.medium))
                             } else {
                                 Text("PID \(proc.pid)")
-                                    .font(.system(.body, design: .monospaced))
+                                    .font(.body.monospaced())
                             }
                             HStack(spacing: 8) {
                                 if proc.conversationName != nil {
                                     Text("PID \(proc.pid)")
-                                        .font(.caption)
+                                        .font(.caption2)
                                         .foregroundColor(.secondary)
                                 }
                                 if let start = proc.startTime {
                                     Text(start, style: .relative)
-                                        .font(.caption)
+                                        .font(.caption2)
                                         .foregroundColor(.secondary)
                                 }
                             }

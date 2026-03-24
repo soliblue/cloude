@@ -9,7 +9,7 @@ extension ToolDetailSheet {
                 .foregroundColor(.secondary)
 
             Text(input)
-                .font(.system(.body, design: .monospaced))
+                .font(.body.monospaced())
                 .textSelection(.enabled)
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -81,7 +81,7 @@ extension ToolDetailSheet {
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(output)
-                    .font(.system(.body, design: .monospaced))
+                    .font(.body.monospaced())
                     .textSelection(.enabled)
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -127,10 +127,10 @@ extension ToolDetailSheet {
                     Image(systemName: fileIconName(for: path.lastPathComponent))
                         .foregroundColor(fileIconColor(for: path.lastPathComponent))
                     Text(path.lastPathComponent)
-                        .font(.system(.body, design: .monospaced))
+                        .font(.body.monospaced())
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 .padding(12)

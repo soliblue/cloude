@@ -104,7 +104,7 @@ struct EmptyConversationView: View {
                     Button(action: onSeeAll) {
                         HStack(spacing: 4) {
                             Text("See all")
-                                .font(.caption)
+                                .font(.caption2)
                             Image(systemName: "chevron.right")
                                 .font(.caption2.weight(.semibold))
                         }

@@ -25,7 +25,7 @@ struct PlanCard: View {
 
                     if let description = plan.description {
                         Text(description)
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                             .lineLimit(3)
                             .multilineTextAlignment(.leading)

@@ -44,7 +44,7 @@ struct SymbolPickerSheet: View {
                     ForEach(filteredCategories, id: \.0) { category, symbols in
                         VStack(alignment: .leading, spacing: 8) {
                             Text(category)
-                                .font(.headline)
+                                .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 4)
 

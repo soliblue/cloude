@@ -47,7 +47,7 @@ struct ConversationSearchSheet: View {
                         VStack(alignment: .leading, spacing: 0) {
                             if !group.directory.isEmpty {
                                 Text(group.directory.lastPathComponent)
-                                    .font(.caption)
+                                    .font(.caption2)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 12)

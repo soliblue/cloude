@@ -59,7 +59,7 @@ extension MainChatView {
                     Text("Heartbeat")
                 }
             }
-            .font(.caption)
+            .font(.caption2)
             .fontWeight(.medium)
 
             Spacer()
@@ -88,7 +88,7 @@ extension MainChatView {
                             .font(.subheadline)
                     } else {
                         Text(conversationStore.heartbeatConfig.intervalDisplayText)
-                            .font(.caption)
+                            .font(.caption2)
                             .fontWeight(.medium)
                     }
                 }

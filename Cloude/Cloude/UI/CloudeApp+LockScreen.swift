@@ -18,7 +18,7 @@ struct LockScreenView: View {
 
             VStack(spacing: 8) {
                 Text("Cloude is Locked")
-                    .font(.title2)
+                    .font(.subheadline)
                     .fontWeight(.semibold)
 
                 Text("Authenticate to access your conversations")
@@ -40,7 +40,7 @@ struct LockScreenView: View {
                         }
                         Text("Unlock with \(BiometricAuth.biometricName)")
                     }
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                 }
@@ -49,7 +49,7 @@ struct LockScreenView: View {
 
                 if showError {
                     Text("Authentication failed. Please try again.")
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundColor(.pastelRed)
                 }
             }

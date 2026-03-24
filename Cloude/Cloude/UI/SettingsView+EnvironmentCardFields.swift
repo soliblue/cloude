@@ -27,7 +27,7 @@ extension EnvironmentCard {
                     .frame(width: 24)
                 TextField("Port", text: portBinding)
                     .keyboardType(.numberPad)
-                    .font(.system(.body, design: .monospaced))
+                    .font(.body.monospaced())
                     .onChange(of: env.port) { _, _ in onUpdate(env) }
             }
             .padding(.vertical, 10)
@@ -43,7 +43,7 @@ extension EnvironmentCard {
                 Group {
                     if showToken {
                         TextField("Auth Token", text: $env.token)
-                            .font(.system(.body, design: .monospaced))
+                            .font(.body.monospaced())
                     } else {
                         SecureField("Auth Token", text: $env.token)
                     }

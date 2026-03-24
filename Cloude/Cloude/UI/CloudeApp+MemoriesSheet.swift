@@ -68,7 +68,7 @@ struct MemoriesSheet: View {
                 if fromCache && !isLoading {
                     ToolbarItem(placement: .topBarTrailing) {
                         Label("Cached", systemImage: "arrow.clockwise.icloud")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.secondary)
                     }
                 }

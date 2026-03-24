@@ -55,7 +55,7 @@ extension WindowEditForm {
                         visibleCount += 20
                     } label: {
                         Text("\(allConversations.count - visibleCount) more")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.accentColor)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)

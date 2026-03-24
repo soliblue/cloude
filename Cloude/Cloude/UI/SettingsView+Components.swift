@@ -41,7 +41,7 @@ struct ConnectionStatusCard: View {
                     .fontWeight(.semibold)
 
                 Text(statusSubtitle)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }

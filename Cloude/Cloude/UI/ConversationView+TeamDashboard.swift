@@ -28,7 +28,7 @@ extension TeamDashboardSheet {
                     Text("·")
                     Text(mate.agentType)
                 }
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
             }
 
@@ -64,7 +64,7 @@ extension TeamDashboardSheet {
                 .fill(color)
                 .frame(width: 6, height: 6)
             Text(text)
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
         }
     }
@@ -81,7 +81,7 @@ extension TeamDashboardSheet {
                 Spacer()
             }
             Text(message.text)
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
                 .lineLimit(3)
                 .padding(.leading, 8)

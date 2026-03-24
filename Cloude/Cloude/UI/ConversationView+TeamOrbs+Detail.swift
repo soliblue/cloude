@@ -63,7 +63,7 @@ struct TeammateDetailSheet: View {
                 Text("·")
                 Label(teammate.agentType, systemImage: "terminal")
             }
-            .font(.caption)
+            .font(.caption2)
             .foregroundColor(.secondary)
 
             statusBadge
@@ -76,7 +76,7 @@ struct TeammateDetailSheet: View {
                 .fill(statusColor)
                 .frame(width: 6, height: 6)
             Text(statusText)
-                .font(.caption.weight(.medium))
+                .font(.caption2.weight(.medium))
                 .foregroundColor(.secondary)
         }
     }

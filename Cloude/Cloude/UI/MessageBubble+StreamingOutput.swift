@@ -137,7 +137,7 @@ struct StreamingPlaceholder: View {
             ProgressView()
                 .scaleEffect(0.7)
             Text("Claude is responding...")
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
         }
         .padding(.horizontal, 16)

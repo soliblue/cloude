@@ -53,7 +53,7 @@ struct GitDiffView: View {
             }
             Spacer()
             Text(file.path)
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
         }

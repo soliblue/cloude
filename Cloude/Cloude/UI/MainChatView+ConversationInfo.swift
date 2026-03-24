@@ -13,14 +13,14 @@ struct ConversationInfoLabel: View {
                 .contentTransition(.symbolEffect(.replace))
             if let conv = conversation {
                 Text(conv.name)
-                    .font(.caption)
+                    .font(.caption2)
                     .fontWeight(.medium)
                     .lineLimit(1)
                     .contentTransition(.numericText())
                     .animation(.easeInOut(duration: 0.3), value: conv.name)
             } else {
                 Text(placeholderText)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
             }
             if let folder = conversation?.workingDirectory?.nilIfEmpty?.lastPathComponent {

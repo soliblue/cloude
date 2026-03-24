@@ -20,7 +20,7 @@ struct AudioPreview: View {
                 .symbolEffect(.variableColor.iterative, isActive: isPlaying)
 
             Text(fileName)
-                .font(.headline)
+                .font(.subheadline.weight(.semibold))
 
             if let player = player {
                 VStack(spacing: 12) {
@@ -33,7 +33,7 @@ struct AudioPreview: View {
                         Spacer()
                         Text(formatTime(player.duration))
                     }
-                    .font(.caption.monospacedDigit())
+                    .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: 280)
 

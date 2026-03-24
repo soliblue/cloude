@@ -25,19 +25,19 @@ extension FilePreviewView {
                             .progressViewStyle(.linear)
                             .frame(width: 160)
                         Text("\(progress.current + 1) of \(progress.total)")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
                     } else {
                         ProgressView()
                             .scaleEffect(0.8)
                         Text("Loading...")
-                            .font(.caption)
+                            .font(.caption2)
                     }
                 } else {
                     HStack {
                         Image(systemName: "arrow.down.circle")
                         Text("Load Full Quality (\(ByteCountFormatter.string(fromByteCount: fullSize, countStyle: .file)))")
-                            .font(.caption)
+                            .font(.caption2)
                     }
                 }
             }

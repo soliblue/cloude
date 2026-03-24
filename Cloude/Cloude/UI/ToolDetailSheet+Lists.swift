@@ -55,7 +55,7 @@ extension ToolDetailSheet {
                             .frame(width: 20)
 
                         Text(todo["content"] ?? "")
-                            .font(.system(.body))
+                            .font(.body)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .foregroundColor(todo["status"] == "completed" ? .secondary : .primary)
                     }
@@ -90,7 +90,7 @@ extension ToolDetailSheet {
                                 .padding(.top, 2)
 
                             Text(chained.command)
-                                .font(.system(.body, design: .monospaced))
+                                .font(.body.monospaced())
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
