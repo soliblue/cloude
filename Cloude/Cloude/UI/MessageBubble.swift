@@ -9,6 +9,7 @@ struct MessageBubble: View {
     var skills: [Skill] = []
     var liveOutput: ConversationOutput?
     var onRefresh: (() -> Void)?
+    var onToggleCollapse: (() -> Void)?
     var isRefreshing: Bool = false
     var isCompact: Bool = false
     @State private var showCopiedToast = false
@@ -61,22 +62,18 @@ struct MessageBubble: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
-        .sheet(isPresented: $showTextSelection) {
-            TextSelectionSheet(text: effectiveText)
-        }
-        .sheet(isPresented: $showTeamDashboard) {
-            if let team = message.teamSummary {
-                TeamDashboardSheet(
-                    teamName: team.teamName,
-                    teammates: team.members.map {
-                        TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
-                    }
-                )
-            }
-        }
-        .overlay { longPressOverlay }
-        .contentShape(Rectangle())
-        .simultaneousGesture(longPressGesture)
+        .modifier(BubbleInteractionModifier(
+            isLive: isLive,
+            message: message,
+            effectiveText: effectiveText,
+            hasInteractiveWidgets: hasInteractiveWidgets,
+            showCopiedToast: $showCopiedToast,
+            showTextSelection: $showTextSelection,
+            showTeamDashboard: $showTeamDashboard,
+            showLongPressMenu: $showLongPressMenu,
+            menuPressY: $menuPressY,
+            onToggleCollapse: onToggleCollapse
+        ))
     }
 
     private var messageContent: some View {
@@ -103,6 +100,30 @@ struct MessageBubble: View {
                 }
             }
             .font(.body)
+            .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
+            .modifier(ConditionalClip(isClipped: message.isCollapsed))
+            .overlay(alignment: .bottom) {
+                if message.isCollapsed {
+                    LinearGradient(colors: [backgroundColor.opacity(0), backgroundColor], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 40)
+                }
+            }
+
+            if message.isCollapsed {
+                Button {
+                    onToggleCollapse?()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.down")
+                        Text("Show more")
+                    }
+                    .font(.caption2.weight(.medium))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 2)
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 
@@ -131,31 +152,4 @@ struct MessageBubble: View {
         }
     }
 
-    @ViewBuilder
-    private var longPressOverlay: some View {
-        if showLongPressMenu {
-            BubbleLongPressOverlay(
-                message: message,
-                copyText: effectiveText,
-                menuPressY: menuPressY,
-                showCopiedToast: $showCopiedToast,
-                onSelectText: { showTextSelection = true },
-                onToggleCollapse: nil,
-                onDismiss: { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
-            )
-        }
-    }
-
-    private var longPressGesture: some Gesture {
-        LongPressGesture(minimumDuration: 0.4)
-            .sequenced(before: DragGesture(minimumDistance: 0))
-            .onEnded { value in
-                if hasInteractiveWidgets { return }
-                if case .second(true, let drag) = value {
-                    menuPressY = drag?.location.y ?? 0
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showLongPressMenu = true }
-                }
-            }
-    }
 }
