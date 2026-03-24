@@ -92,10 +92,6 @@ extension ServerMessage {
         case .whisperReady(let ready):
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
-        case .heartbeatConfig(let intervalMinutes, let unreadCount):
-            try container.encode("heartbeat_config", forKey: .type)
-            try container.encodeIfPresent(intervalMinutes, forKey: .intervalMinutes)
-            try container.encode(unreadCount, forKey: .unreadCount)
         case .memories(let sections):
             try container.encode("memories", forKey: .type)
             try container.encode(sections, forKey: .sections)

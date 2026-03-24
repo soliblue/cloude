@@ -104,10 +104,6 @@ extension ServerMessage {
         case "whisper_ready":
             let ready = try container.decode(Bool.self, forKey: .ready)
             return .whisperReady(ready: ready)
-        case "heartbeat_config":
-            let intervalMinutes = try container.decodeIfPresent(Int.self, forKey: .intervalMinutes)
-            let unreadCount = try container.decode(Int.self, forKey: .unreadCount)
-            return .heartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount)
         case "memories":
             let sections = try container.decode([MemorySection].self, forKey: .sections)
             return .memories(sections: sections)

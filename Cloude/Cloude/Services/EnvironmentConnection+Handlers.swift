@@ -59,7 +59,6 @@ extension EnvironmentConnection {
         isAuthenticated = success
         if success {
             checkForMissedResponse()
-            send(.getHeartbeatConfig)
             mgr.events.send(.authenticated)
             mgr.objectWillChange.send()
         } else {

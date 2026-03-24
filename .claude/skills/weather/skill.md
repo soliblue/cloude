@@ -22,4 +22,3 @@ bash .claude/skills/weather/weather.sh "Tokyo" full      # Detailed 3-day foreca
 - "What's the weather?"
 - "Should I bike today?"
 - "What's the weather in Cairo this week?"
-- Heartbeat: include in morning briefings

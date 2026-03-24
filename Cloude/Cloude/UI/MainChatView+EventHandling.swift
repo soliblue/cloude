@@ -35,9 +35,6 @@ extension MainChatView {
             usageStats = stats
             showUsageStats = true
 
-        case .heartbeatConfig(let intervalMinutes, let unreadCount):
-            conversationStore.handleHeartbeatConfig(intervalMinutes: intervalMinutes, unreadCount: unreadCount)
-
         case .fileSearchResults(let files, _):
             fileSearchResults = files
 
@@ -68,14 +65,6 @@ extension MainChatView {
             let output = connection.output(for: conv.id)
             if !output.isRunning {
                 conversationStore.replayQueuedMessages(conversation: conv, connection: connection)
-            }
-        }
-
-        let heartbeat = conversationStore.heartbeatConversation
-        if !heartbeat.pendingMessages.isEmpty {
-            let output = connection.output(for: Heartbeat.conversationId)
-            if !output.isRunning {
-                conversationStore.replayQueuedMessages(conversation: heartbeat, connection: connection)
             }
         }
     }

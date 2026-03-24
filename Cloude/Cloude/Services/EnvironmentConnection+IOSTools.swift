@@ -40,8 +40,6 @@ extension EnvironmentConnection {
             if let convId = conversationId, let id = UUID(uuidString: convId) {
                 mgr.events.send(.deleteConversation(conversationId: id))
             }
-        case "skip":
-            mgr.events.send(.heartbeatSkipped(conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
         case "screenshot":
             mgr.events.send(.screenshot(conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
         case "whiteboard_open", "whiteboard_add", "whiteboard_remove", "whiteboard_update", "whiteboard_clear", "whiteboard_snapshot", "whiteboard_viewport", "whiteboard_export":

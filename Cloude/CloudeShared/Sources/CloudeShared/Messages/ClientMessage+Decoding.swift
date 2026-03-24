@@ -56,15 +56,6 @@ extension ClientMessage {
         case "transcribe":
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)
-        case "set_heartbeat_interval":
-            let minutes = try container.decodeIfPresent(Int.self, forKey: .minutes)
-            self = .setHeartbeatInterval(minutes: minutes)
-        case "get_heartbeat_config":
-            self = .getHeartbeatConfig
-        case "mark_heartbeat_read":
-            self = .markHeartbeatRead
-        case "trigger_heartbeat":
-            self = .triggerHeartbeat
         case "get_memories":
             self = .getMemories
         case "get_processes":

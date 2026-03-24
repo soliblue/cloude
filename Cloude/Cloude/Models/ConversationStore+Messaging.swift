@@ -91,12 +91,11 @@ extension ConversationStore {
 
         let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
         let updatedConv = self.conversation(withId: conversation.id) ?? freshConv
-        let isHeartbeat = conversation.id == Heartbeat.conversationId
 
         connection.sendChat(
             combinedText,
-            workingDirectory: isHeartbeat ? nil : updatedConv.workingDirectory,
-            sessionId: isHeartbeat ? Heartbeat.sessionId : updatedConv.sessionId,
+            workingDirectory: updatedConv.workingDirectory,
+            sessionId: updatedConv.sessionId,
             isNewSession: false,
             conversationId: updatedConv.id,
             conversationName: updatedConv.name,

@@ -16,8 +16,6 @@ enum ConnectionEvent {
     case gitDiff(path: String, diff: String)
     case disconnect(conversationId: UUID, output: ConversationOutput)
     case transcription(String)
-    case heartbeatConfig(intervalMinutes: Int?, unreadCount: Int)
-    case heartbeatSkipped(conversationId: UUID?)
     case memories([MemorySection])
     case skills([Skill])
     case historySync(sessionId: String, messages: [HistoryMessage])

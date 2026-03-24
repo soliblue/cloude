@@ -19,7 +19,6 @@ struct MainChatView: View {
     @State var drafts: [UUID: (text: String, images: [AttachedImage], effort: EffortLevel?, model: ModelSelection?)] = [:]
     @State var gitBranches: [String: String] = [:]
     @State var pendingGitChecks: [String] = []
-    @State var showIntervalPicker = false
     @State var fileSearchResults: [String] = []
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?
@@ -31,13 +30,10 @@ struct MainChatView: View {
     @State var refreshingSessionIds: Set<String> = []
     @State var refreshTrigger = false
     @State var exportCopied = false
-    @State var heartbeatEnvironmentId: UUID?
     var onShowPlans: (() -> Void)?
     var onShowMemories: (() -> Void)?
     var onShowSettings: (() -> Void)?
     var onShowWhiteboard: (() -> Void)?
-
-    var isHeartbeatActive: Bool { currentPageIndex == 0 }
 
     var hasEnvironmentMismatch: Bool {
         if let envId = currentConversation?.environmentId {
@@ -52,22 +48,15 @@ struct MainChatView: View {
     }
 
     var currentConversation: Conversation? {
-        if isHeartbeatActive {
-            return conversationStore.heartbeatConversation
-        } else {
-            return windowManager.activeWindow?.conversation(in: conversationStore)
-        }
+        windowManager.activeWindow?.conversation(in: conversationStore)
     }
 
     var body: some View {
         VStack(spacing: 0) {
             TabView(selection: $currentPageIndex) {
-                heartbeatWindowContent()
-                    .tag(0)
-
                 ForEach(Array(windowManager.windows.enumerated()), id: \.element.id) { index, window in
                     pagedWindowContent(for: window)
-                        .tag(index + 1)
+                        .tag(index)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -76,13 +65,13 @@ struct MainChatView: View {
             .onAppear {
                 if let activeId = windowManager.activeWindowId,
                    let index = windowManager.windowIndex(for: activeId) {
-                    currentPageIndex = index + 1
+                    currentPageIndex = index
                 }
             }
             .onChange(of: windowManager.activeWindowId) { _, newId in
                 if let id = newId, let index = windowManager.windowIndex(for: id) {
-                    if currentPageIndex != index + 1 {
-                        withAnimation { currentPageIndex = index + 1 }
+                    if currentPageIndex != index {
+                        withAnimation { currentPageIndex = index }
                     }
                 }
             }
@@ -135,12 +124,6 @@ struct MainChatView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
             fetchLatestScreenshot()
         }
-        .onChange(of: currentPageIndex, handleHeartbeatPageChange)
-        .modifier(HeartbeatIntervalModifier(
-            showIntervalPicker: $showIntervalPicker,
-            conversationStore: conversationStore,
-            connection: connection
-        ))
     }
 
 }

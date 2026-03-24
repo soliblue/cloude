@@ -152,7 +152,6 @@ Claude can work on its own and reach back to you through your phone.
 
 | Feature | Description |
 |---------|-------------|
-| Heartbeat | Claude runs autonomously at a set interval - checking tasks, updating memory, doing housekeeping |
 | Scheduled tasks | Recurring (cron) or one-time tasks, each in its own conversation that builds context over runs |
 | Push notifications | Claude sends you a notification any time |
 | Text-to-speech | Claude speaks out loud on your phone |

@@ -54,21 +54,16 @@ extension MainChatView {
     }
 
     func handlePageChange(oldIndex: Int, newIndex: Int) {
-        if oldIndex > 0 {
-            let oldWindowIndex = oldIndex - 1
-            if oldWindowIndex < windowManager.windows.count {
-                let oldWindow = windowManager.windows[oldWindowIndex]
-                if let convId = oldWindow.conversationId,
-                   let conv = conversationStore.conversation(withId: convId),
-                   conv.isEmpty {
-                    conversationStore.deleteConversation(conv)
-                    windowManager.removeWindow(oldWindow.id)
-                }
+        if oldIndex < windowManager.windows.count {
+            let oldWindow = windowManager.windows[oldIndex]
+            if let convId = oldWindow.conversationId,
+               let conv = conversationStore.conversation(withId: convId),
+               conv.isEmpty {
+                conversationStore.deleteConversation(conv)
+                windowManager.removeWindow(oldWindow.id)
             }
         }
-        if newIndex > 0 {
-            windowManager.navigateToWindow(at: newIndex - 1)
-        }
+        windowManager.navigateToWindow(at: newIndex)
     }
 
     func handleActiveWindowChange(oldId: UUID?, newId: UUID?) {
@@ -86,14 +81,6 @@ extension MainChatView {
             attachedImages = []
             currentEffort = currentConversation?.defaultEffort
             currentModel = currentConversation?.defaultModel
-        }
-    }
-
-    func handleHeartbeatPageChange(oldIndex: Int, newIndex: Int) {
-        windowManager.isHeartbeatShowing = newIndex == 0
-        if oldIndex == 0 && newIndex != 0 {
-            connection.send(.markHeartbeatRead)
-            conversationStore.markHeartbeatRead()
         }
     }
 

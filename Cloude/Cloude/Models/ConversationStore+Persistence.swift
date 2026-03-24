@@ -39,24 +39,5 @@ extension ConversationStore {
                 }
             }
         }
-
-        ensureHeartbeatExists()
-
-        if let timestamp = UserDefaults.standard.object(forKey: heartbeatTriggeredKey) as? Date {
-            heartbeatConfig.lastTriggeredAt = timestamp
-        }
-    }
-
-    private func ensureHeartbeatExists() {
-        if !conversations.contains(where: { $0.id == Heartbeat.conversationId }) {
-            let heartbeat = Conversation(
-                name: "Heartbeat",
-                symbol: "heart.fill",
-                id: Heartbeat.conversationId,
-                sessionId: Heartbeat.sessionId
-            )
-            conversations.append(heartbeat)
-            saveConversation(heartbeat)
-        }
     }
 }

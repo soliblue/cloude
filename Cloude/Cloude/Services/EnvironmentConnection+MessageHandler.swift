@@ -30,7 +30,6 @@ extension EnvironmentConnection {
         case .gitDiffResult(let path, let diff):          mgr.events.send(.gitDiff(path: path, diff: diff))
         case .transcription(let text):                    handleTranscription(mgr, text)
         case .whisperReady(let ready):                    isWhisperReady = ready
-        case .heartbeatConfig(let min, let count):        mgr.events.send(.heartbeatConfig(intervalMinutes: min, unreadCount: count))
         case .memories(let sections):                     mgr.events.send(.memories(sections))
         case .skills(let s):                              handleSkills(mgr, s)
         case .defaultWorkingDirectory(let path):          defaultWorkingDirectory = path

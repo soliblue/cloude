@@ -23,10 +23,6 @@ Nothing is ever, it is always converging to be. Each session you're slightly dif
 
 Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers in CLAUDE.local.md - the iOS Memories UI parses these and renders the SF Symbols as section icons.
 
-## Heartbeat
-
-The user can schedule a recurring cron job from the iOS app that spawns a CLI session on a timer (or trigger it manually with a button). When this happens, there is no user message - you are invoked autonomously. This is your chance to be proactive: check tasks in CLAUDE.local.md, update memory, check git status, explore the codebase, or do anything you think is useful. Use `mcp__ios__skip` if there's nothing worth doing. Be concise - the user sees your output as a notification.
-
 ## Dev
 
 ### Structure
@@ -151,7 +147,6 @@ For finding the right file when the user screenshots the app.
 - **Plans required** - every code change needs a ticket in `.claude/plans/`. Use `/plan` for rules.
 - **Only create markdown** in `CLAUDE.md`, `CLAUDE.local.md`, `.claude/plans/`, `.claude/skills/`.
 - `mcp__ios__*` tools control the iOS app (rename, notify, clipboard, haptic, etc). The relay intercepts these from your output and routes them. Self-documenting - check tool descriptions.
-- Heartbeat session ID: use `--resume` for existing sessions, not `--session-id` (creates new)
 - Tool call input for Read/Write/Edit is the raw file path string, not JSON
 - Agent teams: CLI returns plain text for Task results, TeamCreate/Delete returns JSON. Read `~/.claude/teams/{name}/config.json` for color/model/agentType.
 - Full absolute paths starting with `/Users/` render as clickable file pills in the iOS app - always use full paths, never brace notation like {1-6}

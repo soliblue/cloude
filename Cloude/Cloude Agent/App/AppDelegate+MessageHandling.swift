@@ -8,7 +8,7 @@ extension AppDelegate {
         case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imagesBase64, let filesBase64, let conversationId, let conversationName, let forkSession, let effort, let model):
             Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), images=\(imagesBase64?.count ?? 0), files=\(filesBase64?.count ?? 0), isNew=\(isNewSession), fork=\(forkSession), effort=\(effort ?? "nil"), model=\(model ?? "nil"))")
             if let wd = workingDirectory, !wd.isEmpty {
-                HeartbeatService.shared.projectDirectory = wd
+                MemoryService.projectDirectory = wd
             }
             let convId = conversationId ?? UUID().uuidString
             runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, filesBase64: filesBase64, conversationId: convId, conversationName: conversationName, forkSession: forkSession, model: model, effort: effort)
@@ -53,26 +53,6 @@ extension AppDelegate {
 
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
-
-        case .setHeartbeatInterval(let minutes):
-            Log.info("setHeartbeatInterval: \(String(describing: minutes))")
-            HeartbeatService.shared.setInterval(minutes)
-            let config = HeartbeatService.shared.getConfig()
-            Log.info("Broadcasting config: interval=\(String(describing: config.intervalMinutes)), unread=\(config.unreadCount)")
-            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount))
-
-        case .getHeartbeatConfig:
-            let config = HeartbeatService.shared.getConfig()
-            server.sendMessage(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount), to: connection)
-
-        case .markHeartbeatRead:
-            HeartbeatService.shared.markRead()
-            let config = HeartbeatService.shared.getConfig()
-            server.broadcast(.heartbeatConfig(intervalMinutes: config.intervalMinutes, unreadCount: config.unreadCount))
-
-        case .triggerHeartbeat:
-            Log.info("Received triggerHeartbeat request")
-            HeartbeatService.shared.triggerNow()
 
         case .getMemories:
             Log.info("Received getMemories request")
