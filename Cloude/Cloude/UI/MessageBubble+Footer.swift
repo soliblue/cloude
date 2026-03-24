@@ -58,9 +58,11 @@ struct AssistantMessageFooter: View {
                 TeamSummaryBadge(summary: team, onTap: onShowTeamDashboard)
             }
             HStack(spacing: 8) {
+                StatLabel(icon: "clock", text: DateFormatters.messageTimestamp(message.timestamp))
                 if let durationMs = message.durationMs, let costUsd = message.costUsd {
-                    StatLabel(icon: "clock", text: DateFormatters.messageTimestamp(message.timestamp))
                     RunStatsView(durationMs: durationMs, costUsd: costUsd, model: message.model)
+                } else if let model = message.model {
+                    StatLabel(icon: ModelIdentity(model).icon, text: ModelIdentity(model).displayName)
                 }
                 Spacer()
                 Button {
