@@ -42,20 +42,15 @@ struct PlansSheet: View {
     }
 
     var availableTags: [String] {
-        Array(Set(stages.values.flatMap { $0 }.compactMap { $0.tags }.flatMap { $0 })).sorted()
+        Array(Set(currentPlans.compactMap { $0.tags }.flatMap { $0 })).sorted()
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                stagePicker
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-
                 if !availableTags.isEmpty {
                     tagFilterChips
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 12)
+                        .padding(.vertical, 10)
                 }
 
                 if isLoading {
@@ -70,7 +65,7 @@ struct PlansSheet: View {
                         .foregroundColor(.secondary.opacity(0.5))
                     Spacer()
                 } else {
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 10) {
                             ForEach(filteredAndSortedPlans) { plan in
                                 PlanCard(plan: plan, stage: selectedStage) {
@@ -83,28 +78,44 @@ struct PlansSheet: View {
                     }
                 }
             }
-            .navigationTitle("Plans")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    HStack(spacing: 12) {
+                        ForEach(Array(stagesWithCounts.enumerated()), id: \.element.0) { i, item in
+                            if i > 0 {
+                                Divider().frame(height: 20)
+                            }
+                            Button(action: { withAnimation(.easeInOut(duration: 0.15)) { selectedStage = item.0 } }) {
+                                Image(systemName: stageIcon(item.0))
+                                    .font(.system(size: 14, weight: selectedStage == item.0 ? .semibold : .regular))
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(0.6))
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
+                    HStack(spacing: 12) {
+                        if fromCache && !isLoading {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            Divider().frame(height: 20)
+                        }
+                        if isLoading && !stages.isEmpty {
+                            ProgressView()
+                                .controlSize(.small)
+                            Divider().frame(height: 20)
+                        }
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
                     }
-                }
-                if fromCache && !isLoading {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Label("Cached", systemImage: "arrow.clockwise.icloud")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                if isLoading && !stages.isEmpty {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
+                    .padding(.horizontal, 8)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -118,31 +129,5 @@ struct PlansSheet: View {
                 }
             }
         }
-    }
-
-    var stagePicker: some View {
-        HStack(spacing: 0) {
-            ForEach(stagesWithCounts, id: \.0) { stage, count in
-                Button(action: { withAnimation(.easeInOut(duration: 0.15)) { selectedStage = stage } }) {
-                    VStack(spacing: 3) {
-                        Image(systemName: stageIcon(stage))
-                            .font(.system(size: 14, weight: selectedStage == stage ? .semibold : .regular))
-                        Text("\(count)")
-                            .font(.system(size: 11))
-                            .foregroundColor(selectedStage == stage ? .accentColor.opacity(0.7) : .secondary.opacity(0.6))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(selectedStage == stage ? Color.accentColor.opacity(0.08) : Color.clear)
-                    .cornerRadius(6)
-                }
-                .buttonStyle(.plain)
-                .foregroundColor(selectedStage == stage ? .accentColor : .secondary.opacity(0.6))
-            }
-        }
-        .padding(4)
-        .background(.white.opacity(0.08))
-        .cornerRadius(9)
-        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.15), lineWidth: 0.5))
     }
 }

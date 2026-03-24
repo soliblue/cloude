@@ -1,4 +1,6 @@
-# Remove Collapsible Markdown Headers
+# Remove Collapsible Markdown Headers {chevron.up.chevron.down}
+<!-- priority: 10 -->
+<!-- tags: markdown, ui -->
 
 Removed the collapsible/expandable header sections from StreamingMarkdownView. Headers now render as plain blocks with no chevrons, no collapse state, and no tree structure.
 

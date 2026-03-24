@@ -1,4 +1,6 @@
-# Simplify: Remove Heartbeat & Relocate Search
+# Simplify: Remove Heartbeat & Relocate Search {minus.circle}
+<!-- priority: 10 -->
+<!-- tags: agent, ui, cleanup -->
 
 ## What
 1. Remove the entire heartbeat feature (iOS app, Mac agent, shared messages, Linux relay)
