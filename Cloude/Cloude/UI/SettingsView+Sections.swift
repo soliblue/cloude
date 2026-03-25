@@ -91,7 +91,7 @@ extension SettingsView {
                     .foregroundColor(.secondary)
             }
 
-            Link(destination: URL(string: "https://github.com")!) {
+            Link(destination: URL(string: "https://x.com/_xsoli")!) {
                 SettingsRow(icon: "questionmark.circle", color: .cyan) {
                     Text("Help & Support")
                     Spacer()
