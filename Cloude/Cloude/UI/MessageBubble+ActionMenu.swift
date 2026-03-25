@@ -4,59 +4,6 @@ import SwiftUI
 import UIKit
 import CloudeShared
 
-struct BubbleActionMenu: View {
-    let message: ChatMessage
-    let onCopy: () -> Void
-    let onSelectText: () -> Void
-    let onToggleCollapse: (() -> Void)?
-    let onDismiss: () -> Void
-
-    var body: some View {
-        HStack(spacing: 0) {
-            menuButton(icon: "doc.on.doc", label: "Copy") {
-                onCopy()
-                onDismiss()
-            }
-            if !message.text.isEmpty {
-                divider
-                menuButton(icon: "text.cursor", label: "Select") {
-                    onSelectText()
-                    onDismiss()
-                }
-            }
-            if !message.isUser && !message.text.isEmpty {
-                divider
-                menuButton(icon: message.isCollapsed ? "chevron.down" : "chevron.up", label: message.isCollapsed ? "Expand" : "Collapse") {
-                    onToggleCollapse?()
-                    onDismiss()
-                }
-            }
-        }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
-    }
-
-    private func menuButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                Text(label)
-                    .font(.system(size: 10, weight: .medium))
-            }
-            .foregroundColor(.primary)
-            .frame(width: 64, height: 52)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var divider: some View {
-        Rectangle()
-            .fill(Color.primary.opacity(0.1))
-            .frame(width: 0.5, height: 32)
-    }
-}
-
 struct ConditionalClip: ViewModifier {
     let isClipped: Bool
     func body(content: Content) -> some View {
@@ -118,8 +65,6 @@ struct BubbleInteractionModifier: ViewModifier {
     @Binding var showCopiedToast: Bool
     @Binding var showTextSelection: Bool
     @Binding var showTeamDashboard: Bool
-    @Binding var showLongPressMenu: Bool
-    @Binding var menuPressY: CGFloat
     let onToggleCollapse: (() -> Void)?
 
     func body(content: Content) -> some View {
@@ -140,66 +85,29 @@ struct BubbleInteractionModifier: ViewModifier {
                         )
                     }
                 }
-                .overlay {
-                    if showLongPressMenu {
-                        BubbleLongPressOverlay(
-                            message: message,
-                            copyText: effectiveText,
-                            menuPressY: menuPressY,
-                            showCopiedToast: $showCopiedToast,
-                            onSelectText: { showTextSelection = true },
-                            onToggleCollapse: onToggleCollapse,
-                            onDismiss: { withAnimation(.easeOut(duration: 0.15)) { showLongPressMenu = false } }
-                        )
+                .contextMenu {
+                    Button {
+                        CopyFeedback.perform(effectiveText, showToast: $showCopiedToast)
+                    } label: {
+                        Label("Copy", systemImage: "doc.on.doc")
+                    }
+
+                    if !message.text.isEmpty {
+                        Button {
+                            showTextSelection = true
+                        } label: {
+                            Label("Select Text", systemImage: "text.cursor")
+                        }
+                    }
+
+                    if !message.isUser && !message.text.isEmpty {
+                        Button {
+                            onToggleCollapse?()
+                        } label: {
+                            Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
+                        }
                     }
                 }
-                .contentShape(Rectangle())
-                .simultaneousGesture(
-                    LongPressGesture(minimumDuration: 0.4)
-                        .sequenced(before: DragGesture(minimumDistance: 0))
-                        .onEnded { value in
-                            if hasInteractiveWidgets { return }
-                            if case .second(true, let drag) = value {
-                                menuPressY = drag?.location.y ?? 0
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) { showLongPressMenu = true }
-                            }
-                        }
-                )
-        }
-    }
-}
-
-struct BubbleLongPressOverlay: View {
-    let message: ChatMessage
-    var copyText: String
-    let menuPressY: CGFloat
-    @Binding var showCopiedToast: Bool
-    let onSelectText: () -> Void
-    let onToggleCollapse: (() -> Void)?
-    let onDismiss: () -> Void
-
-    var body: some View {
-        GeometryReader { geo in
-            let menuY = min(max(menuPressY - 60, 0), geo.size.height - 60)
-            let origin = geo.frame(in: .global).origin
-            Color.black.opacity(0.01)
-                .frame(width: 10000, height: 10000)
-                .position(x: 5000 - origin.x, y: 5000 - origin.y)
-                .onTapGesture { onDismiss() }
-
-            BubbleActionMenu(
-                message: message,
-                onCopy: {
-                    CopyFeedback.perform(copyText, showToast: $showCopiedToast)
-                },
-                onSelectText: onSelectText,
-                onToggleCollapse: onToggleCollapse,
-                onDismiss: onDismiss
-            )
-            .transition(.opacity.combined(with: .scale(scale: 0.8)))
-            .frame(maxWidth: .infinity)
-            .offset(y: menuY)
         }
     }
 }

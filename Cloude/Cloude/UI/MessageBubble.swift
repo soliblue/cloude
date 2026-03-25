@@ -15,8 +15,6 @@ struct MessageBubble: View {
     @State private var showCopiedToast = false
     @State private var showTeamDashboard = false
     @State private var showTextSelection = false
-    @State private var showLongPressMenu = false
-    @State private var menuPressY: CGFloat = 0
     @Environment(\.appTheme) private var appTheme
 
     private var isLive: Bool { liveOutput != nil }
@@ -70,8 +68,6 @@ struct MessageBubble: View {
             showCopiedToast: $showCopiedToast,
             showTextSelection: $showTextSelection,
             showTeamDashboard: $showTeamDashboard,
-            showLongPressMenu: $showLongPressMenu,
-            menuPressY: $menuPressY,
             onToggleCollapse: onToggleCollapse
         ))
     }
