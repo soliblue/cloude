@@ -8,11 +8,9 @@ struct TextSelectionSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                PlainSelectableText(text: text)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-            }
+            PlainSelectableText(text: text)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { dismiss() } label: {
@@ -42,7 +40,7 @@ struct PlainSelectableText: UIViewRepresentable {
         let textView = UITextView()
         textView.isEditable = false
         textView.isSelectable = true
-        textView.isScrollEnabled = false
+        textView.isScrollEnabled = true
         textView.backgroundColor = .clear
         textView.font = .preferredFont(forTextStyle: .body)
         textView.textColor = .label
