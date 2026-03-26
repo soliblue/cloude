@@ -2,17 +2,32 @@
 
 import SwiftUI
 
-struct StatLabel: View {
-    let icon: String
-    let text: String
+struct MessageImageThumbnails: View {
+    let message: ChatMessage
 
     var body: some View {
-        HStack(spacing: 2) {
-            Image(systemName: icon)
-                .frame(height: 8)
-            Text(text)
+        if let thumbnails = message.imageThumbnails, thumbnails.count > 1 {
+            HStack(spacing: 4) {
+                ForEach(thumbnails.indices, id: \.self) { index in
+                    if let imageData = Data(base64Encoded: thumbnails[index]),
+                       let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 36, height: 36)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                }
+            }
+        } else if let imageBase64 = message.imageBase64,
+                  let imageData = Data(base64Encoded: imageBase64),
+                  let uiImage = UIImage(data: imageData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 36, height: 36)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
         }
-        .font(.system(size: DS.Text.footnote))
     }
 }
 
@@ -32,46 +47,5 @@ struct CompactingIndicator: View {
         }
         .foregroundColor(.cyan)
         .onAppear { pulse = true }
-    }
-}
-
-struct RunStatsView: View {
-    let durationMs: Int
-    let costUsd: Double
-    var model: String? = nil
-
-    var body: some View {
-        HStack(spacing: 8) {
-            if let modelDisplay = modelInfo {
-                StatLabel(icon: modelDisplay.icon, text: modelDisplay.name)
-            }
-            StatLabel(icon: "timer", text: formattedDuration)
-            StatLabel(icon: "dollarsign.circle", text: formattedCost)
-        }
-    }
-
-    private var modelInfo: (name: String, icon: String)? {
-        guard let model else { return nil }
-        let identity = ModelIdentity(model)
-        return (identity.displayName, identity.icon)
-    }
-
-    private var formattedDuration: String {
-        let seconds = Double(durationMs) / 1000.0
-        if seconds < 60 {
-            return String(format: "%.1fs", seconds)
-        } else {
-            let minutes = Int(seconds) / 60
-            let remainingSeconds = Int(seconds) % 60
-            return "\(minutes)m \(remainingSeconds)s"
-        }
-    }
-
-    private var formattedCost: String {
-        if costUsd < 0.01 {
-            return String(format: "$%.4f", costUsd)
-        } else {
-            return String(format: "$%.2f", costUsd)
-        }
     }
 }

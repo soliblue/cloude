@@ -3,6 +3,9 @@ import SwiftUI
 extension MainChatView {
     func windowHeader(for window: ChatWindow, conversation: Conversation?) -> some View {
         HStack(spacing: 0) {
+            #if DEBUG
+            let _ = DebugMetrics.log("WindowHeader", "render | type=\(window.type) wId=\(window.id.uuidString.prefix(6)) conv=\(conversation?.name ?? "nil") envConn=\((conversation?.environmentId).flatMap({ connection.connection(for: $0)?.isConnected }) ?? false)")
+            #endif
             ForEach(Array(WindowType.allCases.enumerated()), id: \.element) { index, type in
                 let envConnected = type == .chat || (conversation?.environmentId).flatMap({ connection.connection(for: $0)?.isConnected }) ?? false
                 if index > 0 {

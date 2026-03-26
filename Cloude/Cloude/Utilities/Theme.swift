@@ -6,7 +6,6 @@ enum DS {
     enum Text {
         static let body: CGFloat = 13
         static let caption: CGFloat = 10
-        static let footnote: CGFloat = 9
     }
 
     enum Icon {

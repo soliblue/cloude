@@ -51,6 +51,7 @@ struct HistorySuggestions: View {
                                 .font(.system(size: DS.Text.caption, weight: .medium))
                             Text(entry.text)
                                 .font(.system(size: DS.Text.caption, weight: .medium))
+                                .lineLimit(1)
                         } background: {
                             Color.secondary.opacity(0.08)
                         }

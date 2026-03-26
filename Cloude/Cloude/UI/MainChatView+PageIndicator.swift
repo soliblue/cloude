@@ -5,6 +5,9 @@ extension MainChatView {
     func pageIndicator() -> some View {
         let maxIndex = windowManager.windows.count - 1
         HStack(spacing: 0) {
+            #if DEBUG
+            let _ = DebugMetrics.log("PageIndicator", "render | windows=\(windowManager.windows.count) active=\(currentPageIndex)")
+            #endif
             ForEach(Array(windowManager.windows.indices), id: \.self) { index in
                 let window = windowManager.windows[index]
                 let isActive = currentPageIndex == index
