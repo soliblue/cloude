@@ -115,8 +115,8 @@ struct DebugOverlayView: View {
             }
 
             ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 2) {
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(alignment: .leading, spacing: 3) {
                         ForEach(displayedLogs) { entry in
                             logEntryRow(entry)
                                 .id(entry.id)
@@ -143,16 +143,20 @@ struct DebugOverlayView: View {
     }()
 
     private func logEntryRow(_ entry: DebugEntry) -> some View {
-        HStack(alignment: .top, spacing: 4) {
-            Text(Self.timeFormatter.string(from: entry.time))
-                .foregroundColor(.secondary)
-            Text(entry.source)
-                .foregroundColor(.accentColor)
+        HStack(alignment: .top, spacing: 6) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(entry.source)
+                    .foregroundColor(.accentColor)
+                Text(Self.timeFormatter.string(from: entry.time))
+                    .foregroundColor(.secondary)
+            }
+            .frame(width: 52, alignment: .leading)
+
             Text(entry.message)
                 .foregroundColor(.primary)
+                .lineLimit(3)
         }
         .font(.system(size: 8, design: .monospaced))
-        .lineLimit(3)
     }
 
     private func metricRow(_ label: String, value: String, color: Color) -> some View {

@@ -44,11 +44,12 @@ struct AudioWaveformView: View {
 }
 
 struct RecordingOverlayView: View {
-    let audioLevel: Float
+    @ObservedObject var audioRecorder: AudioRecorder
     var isTranscribing: Bool = false
     let onStop: () -> Void
 
     @State private var pulse = false
+    @State private var currentLevel: Float = 0
 
     var body: some View {
         HStack(spacing: 16) {
@@ -71,7 +72,7 @@ struct RecordingOverlayView: View {
                 Spacer()
 
                 AudioWaveformView(
-                    audioLevel: audioLevel,
+                    audioLevel: currentLevel,
                     barCount: 7,
                     color: .accentColor.opacity(0.7),
                     barWidth: 5,
@@ -94,6 +95,12 @@ struct RecordingOverlayView: View {
         .onAppear {
             withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
                 pulse = true
+            }
+        }
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(50))
+                currentLevel = audioRecorder.audioLevel
             }
         }
     }

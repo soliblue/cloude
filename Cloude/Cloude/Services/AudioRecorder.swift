@@ -12,8 +12,8 @@ extension Notification.Name {
 class AudioRecorder: ObservableObject {
     @Published var isRecording = false
     @Published var isTranscribing = false
-    @Published var audioLevel: Float = 0
     @Published var hasPendingAudio = false
+    var audioLevel: Float = 0
 
     private var audioRecorder: AVAudioRecorder?
     private var levelTimer: Timer?

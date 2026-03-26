@@ -74,7 +74,7 @@ extension GlobalInputBar {
 
                 if showRecordingOverlay || isSwipingToRecord || isTranscribing {
                     RecordingOverlayView(
-                        audioLevel: audioRecorder.audioLevel,
+                        audioRecorder: audioRecorder,
                         isTranscribing: isTranscribing,
                         onStop: stopRecording
                     )
