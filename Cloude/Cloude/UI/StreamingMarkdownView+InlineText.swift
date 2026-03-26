@@ -40,14 +40,14 @@ struct InlineTextView: View {
                 result.append(attr)
             case .code(_, let code):
                 var attr = AttributedString(code)
-                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .regular, design: .monospaced)
+                attr.font = .system(size: DS.Text.body, weight: .regular, design: .monospaced)
                 result.append(attr)
             case .filePath(_, let path):
                 let filename = path.lastPathComponent
                 let nbsp = "\u{00A0}"
                 let pillText = filename.replacingOccurrences(of: " ", with: nbsp)
                 var attr = AttributedString(pillText)
-                attr.font = .system(size: UIFont.preferredFont(forTextStyle: .body).pointSize - 1, weight: .medium, design: .monospaced)
+                attr.font = .system(size: DS.Text.body, weight: .medium, design: .monospaced)
                 attr.foregroundColor = fileIconColor(for: filename)
                 if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                    let url = URL(string: "cloude://file\(encodedPath)") {

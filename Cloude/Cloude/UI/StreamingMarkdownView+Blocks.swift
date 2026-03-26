@@ -28,20 +28,20 @@ struct CodeBlock: View {
         HStack(spacing: 8) {
             if let lang = language, !lang.isEmpty {
                 Text(lang)
-                    .font(.system(.caption2, design: .monospaced))
+                    .font(.system(size: DS.Text.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
             Spacer()
             Button { lineNumbersOverride = !lineNumbers } label: {
                 Image(systemName: lineNumbers ? "list.number" : "list.bullet")
-                    .font(.caption2)
+                    .font(.system(size: DS.Text.caption))
                     .foregroundStyle(.secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
             Divider().frame(height: 14)
             Button { wrapOverride = !wrap } label: {
                 Image(systemName: wrap ? "text.word.spacing" : "arrow.left.and.right.text.vertical")
-                    .font(.caption2)
+                    .font(.system(size: DS.Text.caption))
                     .foregroundStyle(.secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
@@ -52,7 +52,7 @@ struct CodeBlock: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
             } label: {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                    .font(.caption2)
+                    .font(.system(size: DS.Text.caption))
                     .foregroundStyle(copied ? Color.pastelGreen : .secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
@@ -69,7 +69,7 @@ struct CodeBlock: View {
                     lineNumberColumn
                 }
                 Text(SyntaxHighlighter.highlight(code, language: language))
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(size: DS.Text.caption, design: .monospaced))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
@@ -81,7 +81,7 @@ struct CodeBlock: View {
                         lineNumberColumn
                     }
                     Text(SyntaxHighlighter.highlight(code, language: language))
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.system(size: DS.Text.caption, design: .monospaced))
                         .fixedSize(horizontal: true, vertical: false)
                         .padding(12)
                 }
@@ -93,7 +93,7 @@ struct CodeBlock: View {
         VStack(alignment: .trailing, spacing: 0) {
             ForEach(Array(lines.enumerated()), id: \.offset) { index, _ in
                 Text("\(index + 1)")
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(size: DS.Text.caption, design: .monospaced))
                     .foregroundStyle(.secondary.opacity(0.5))
                     .frame(height: lineHeight)
             }
@@ -105,7 +105,7 @@ struct CodeBlock: View {
     }
 
     private var lineHeight: CGFloat {
-        UIFont.monospacedSystemFont(ofSize: UIFont.smallSystemFontSize, weight: .regular).lineHeight
+        UIFont.monospacedSystemFont(ofSize: DS.Text.caption, weight: .regular).lineHeight
     }
 }
 
@@ -118,7 +118,7 @@ struct BlockquoteView: View {
                 .fill(Color.themeSecondary)
                 .frame(width: 3)
             Text(text)
-                .font(.body)
+                .font(.system(size: DS.Text.body))
                 .italic()
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

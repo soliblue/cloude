@@ -10,12 +10,12 @@ struct SlashCommandBubble: View {
     var body: some View {
         Pill {
             Image(systemName: icon)
-                .font(.system(size: DS.Pill.iconSize, weight: .semibold))
+                .font(.system(size: DS.Text.caption, weight: .semibold))
             Text(command)
-                .font(.system(size: DS.Pill.textSize, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Text.caption, weight: .semibold, design: .monospaced))
             if let args = args {
                 Text(args)
-                    .font(.system(size: DS.Pill.textSize, design: .monospaced))
+                    .font(.system(size: DS.Text.caption, design: .monospaced))
                     .opacity(0.7)
                     .lineLimit(1)
             }

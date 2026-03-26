@@ -27,9 +27,9 @@ struct SkillPill: View {
     var body: some View {
         Pill {
             Image(systemName: command.icon)
-                .font(.system(size: DS.Pill.iconSize, weight: .semibold))
+                .font(.system(size: DS.Text.caption, weight: .semibold))
             Text("/\(command.name)")
-                .font(.system(size: DS.Pill.textSize, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Text.caption, weight: .semibold, design: .monospaced))
         } background: {
             SkillPillBackground(isSkill: command.isSkill)
         }
@@ -48,9 +48,9 @@ struct HistorySuggestions: View {
                     Button(action: { onSelect(entry.text) }) {
                         Pill {
                             Image(systemName: entry.symbol ?? "text.cursor")
-                                .font(.system(size: DS.Pill.iconSize, weight: .medium))
+                                .font(.system(size: DS.Text.caption, weight: .medium))
                             Text(entry.text)
-                                .font(.system(size: DS.Pill.textSize, weight: .medium))
+                                .font(.system(size: DS.Text.caption, weight: .medium))
                         } background: {
                             Color.secondary.opacity(0.08)
                         }
@@ -99,9 +99,9 @@ struct FilePill: View {
     var body: some View {
         Pill {
             Image(systemName: icon)
-                .font(.system(size: DS.Pill.iconSize, weight: .semibold))
+                .font(.system(size: DS.Text.caption, weight: .semibold))
             Text(fileName)
-                .font(.system(size: DS.Pill.textSize, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Text.caption, weight: .semibold, design: .monospaced))
                 .lineLimit(1)
         } background: {
             RoundedRectangle(cornerRadius: DS.Pill.cornerRadius)
