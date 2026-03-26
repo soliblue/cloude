@@ -6,7 +6,7 @@ enum ToolCallState: String, Codable {
     case complete
 }
 
-struct ToolCall: Codable {
+struct ToolCall: Codable, Equatable {
     let name: String
     let input: String?
     let toolId: String

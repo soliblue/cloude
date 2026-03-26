@@ -27,6 +27,7 @@ extension GlobalInputBar {
                     .onSubmit { if canSend { onSend() } }
                     .id("inputField")
             }
+            .font(.system(size: DS.Text.body))
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)

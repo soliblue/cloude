@@ -14,7 +14,7 @@ struct TeamSummary: Codable, Equatable {
     }
 }
 
-struct ChatMessage: Codable, Identifiable {
+struct ChatMessage: Codable, Identifiable, Equatable {
     var id: UUID
     let isUser: Bool
     var text: String
