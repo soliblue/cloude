@@ -49,7 +49,7 @@ private struct TableCell: View {
 
     var body: some View {
         Text(parseInlineMarkdown())
-            .font(.system(size: DS.Text.caption, weight: isHeader ? .bold : .regular))
+            .font(.system(size: DS.Text.s, weight: isHeader ? .bold : .regular))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
     }

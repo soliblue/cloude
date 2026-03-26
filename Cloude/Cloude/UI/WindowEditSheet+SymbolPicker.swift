@@ -74,7 +74,7 @@ struct SymbolPickerSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                            .font(.system(size: DS.Icon.s, weight: .medium))
                     }
                 }
             }

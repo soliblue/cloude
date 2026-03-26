@@ -85,7 +85,7 @@ struct ConversationSearchSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: DS.Icon.toolbar, weight: .semibold))
+                            .font(.system(size: DS.Icon.s, weight: .semibold))
                             .foregroundColor(.secondary)
                     }
                 }

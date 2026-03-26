@@ -94,7 +94,7 @@ struct MessageBubble: View {
                     SisyphusLoadingView()
                 }
             }
-            .font(.system(size: DS.Text.body))
+            .font(.system(size: DS.Text.m))
             .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
             .modifier(ConditionalClip(isClipped: message.isCollapsed))
             .overlay(alignment: .bottom) {

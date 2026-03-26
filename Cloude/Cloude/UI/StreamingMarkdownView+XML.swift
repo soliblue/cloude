@@ -12,12 +12,12 @@ struct XMLBlockView: View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 Text("xml")
-                    .font(.system(size: DS.Text.caption, design: .monospaced))
+                    .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundStyle(.secondary)
                 Spacer()
                 Button { showSource.toggle() } label: {
                     Image(systemName: showSource ? "text.word.spacing" : "chevron.left.forwardslash.chevron.right")
-                        .font(.system(size: DS.Text.caption))
+                        .font(.system(size: DS.Text.s))
                         .foregroundStyle(.secondary)
                         .contentTransition(.symbolEffect(.replace))
                 }
@@ -29,7 +29,7 @@ struct XMLBlockView: View {
 
             if showSource {
                 Text(rawXML)
-                    .font(.system(size: DS.Text.caption, design: .monospaced))
+                    .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundColor(.primary)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -64,7 +64,7 @@ private struct XMLNodeView: View {
                 if hasChildren {
                     Button { expanded.toggle() } label: {
                         Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                            .font(.system(size: DS.Text.caption, weight: .medium))
+                            .font(.system(size: DS.Text.s, weight: .medium))
                             .foregroundColor(.secondary)
                             .frame(width: 12, height: 16)
                     }
@@ -74,20 +74,20 @@ private struct XMLNodeView: View {
                 }
 
                 Text(node.tagName)
-                    .font(.system(size: DS.Text.caption, weight: .medium, design: .monospaced))
+                    .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
                     .foregroundColor(.purple)
 
                 if !node.attributes.isEmpty {
                     ForEach(Array(node.attributes.enumerated()), id: \.offset) { _, attr in
                         Text(attr.key)
-                            .font(.system(size: DS.Text.caption, design: .monospaced))
+                            .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.orange)
                         if !attr.value.isEmpty {
                             Text("=")
-                                .font(.system(size: DS.Text.caption, design: .monospaced))
+                                .font(.system(size: DS.Text.s, design: .monospaced))
                                 .foregroundColor(.secondary)
                             Text(attr.value)
-                                .font(.system(size: DS.Text.caption, design: .monospaced))
+                                .font(.system(size: DS.Text.s, design: .monospaced))
                                 .foregroundColor(.green)
                         }
                     }
@@ -95,13 +95,13 @@ private struct XMLNodeView: View {
 
                 if node.isSelfClosing {
                     Text("/")
-                        .font(.system(size: DS.Text.caption, design: .monospaced))
+                        .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
 
                 if let text = node.textContent, node.children.isEmpty {
                     Text(text)
-                        .font(.system(size: DS.Text.caption, design: .monospaced))
+                        .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -114,7 +114,7 @@ private struct XMLNodeView: View {
                         HStack(alignment: .top, spacing: 4) {
                             Spacer().frame(width: 12)
                             Text(text)
-                                .font(.system(size: DS.Text.caption, design: .monospaced))
+                                .font(.system(size: DS.Text.s, design: .monospaced))
                                 .foregroundColor(.primary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }

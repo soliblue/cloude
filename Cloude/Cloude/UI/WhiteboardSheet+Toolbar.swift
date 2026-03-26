@@ -9,14 +9,14 @@ extension WhiteboardSheet {
             HStack(spacing: 12) {
                 Button(action: { store.undo() }) {
                     Image(systemName: "arrow.uturn.backward")
-                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                        .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(store.canUndo ? .primary : .secondary.opacity(0.3))
                 }
                 .disabled(!store.canUndo)
 
                 Button(action: { store.redo() }) {
                     Image(systemName: "arrow.uturn.forward")
-                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                        .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(store.canRedo ? .primary : .secondary.opacity(0.3))
                 }
                 .disabled(!store.canRedo)
@@ -30,7 +30,7 @@ extension WhiteboardSheet {
                         onSendSnapshot?()
                     }) {
                         Image(systemName: "paperplane")
-                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                            .font(.system(size: DS.Icon.s, weight: .medium))
                             .foregroundColor(isConnected ? .primary : .secondary.opacity(0.3))
                     }
                     .disabled(!isConnected)
@@ -40,7 +40,7 @@ extension WhiteboardSheet {
 
                 Button(action: { exportAsImage() }) {
                     Image(systemName: "square.and.arrow.down")
-                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                        .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(.primary)
                 }
 
@@ -48,7 +48,7 @@ extension WhiteboardSheet {
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                        .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(.secondary)
                 }
             }

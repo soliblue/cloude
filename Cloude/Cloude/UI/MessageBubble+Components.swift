@@ -37,11 +37,11 @@ struct CompactingIndicator: View {
     var body: some View {
         Pill {
             Image(systemName: "arrow.triangle.2.circlepath")
-                .font(.system(size: DS.Text.caption, weight: .semibold))
+                .font(.system(size: DS.Text.s, weight: .semibold))
                 .rotationEffect(.degrees(pulse ? 360 : 0))
                 .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: pulse)
             Text("Compacting")
-                .font(.system(size: DS.Text.caption, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
         } background: {
             Color.cyan.opacity(0.12)
         }

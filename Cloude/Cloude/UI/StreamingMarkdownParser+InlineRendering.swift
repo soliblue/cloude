@@ -12,12 +12,12 @@ extension StreamingMarkdownParser {
                 result.append(attr)
             case .code(_, let code):
                 var attr = AttributedString(code)
-                attr.font = .system(size: DS.Text.body, weight: .regular, design: .monospaced)
+                attr.font = .system(size: DS.Text.m, weight: .regular, design: .monospaced)
                 attr.backgroundColor = .secondary.opacity(0.1)
                 result.append(attr)
             case .filePath(_, let path):
                 var attr = AttributedString(path)
-                attr.font = .system(size: DS.Text.body, weight: .medium, design: .monospaced)
+                attr.font = .system(size: DS.Text.m, weight: .medium, design: .monospaced)
                 attr.foregroundColor = .accentColor
                 if let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
                    let url = URL(string: "cloude://file\(encodedPath)") {

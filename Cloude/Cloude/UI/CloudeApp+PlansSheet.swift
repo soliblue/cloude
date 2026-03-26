@@ -88,7 +88,7 @@ struct PlansSheet: View {
                             }
                             Button(action: { withAnimation(.easeInOut(duration: 0.15)) { selectedStage = item.0 } }) {
                                 Image(systemName: stageIcon(item.0))
-                                    .font(.system(size: DS.Icon.toolbar, weight: selectedStage == item.0 ? .semibold : .regular))
+                                    .font(.system(size: DS.Icon.s, weight: selectedStage == item.0 ? .semibold : .regular))
                             }
                             .buttonStyle(.plain)
                             .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(0.6))
@@ -100,7 +100,7 @@ struct PlansSheet: View {
                     HStack(spacing: 12) {
                         if fromCache && !isLoading {
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                                .font(.system(size: DS.Icon.s, weight: .medium))
                                 .foregroundColor(.secondary)
                             Divider().frame(height: 20)
                         }
@@ -111,7 +111,7 @@ struct PlansSheet: View {
                         }
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")
-                                .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                                .font(.system(size: DS.Icon.s, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
                     }

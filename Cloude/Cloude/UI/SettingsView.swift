@@ -33,7 +33,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
-                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                            .font(.system(size: DS.Icon.s, weight: .medium))
                     }
                 }
             }

@@ -135,7 +135,7 @@ struct MessageInfoSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
-                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                            .font(.system(size: DS.Icon.s, weight: .medium))
                     }
                 }
             }
@@ -147,11 +147,11 @@ struct MessageInfoSheet: View {
     private func infoRow(_ icon: String, _ text: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.system(size: DS.Text.caption))
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary)
                 .frame(width: 20)
             Text(text)
-                .font(.system(size: DS.Text.body))
+                .font(.system(size: DS.Text.m))
         }
     }
 

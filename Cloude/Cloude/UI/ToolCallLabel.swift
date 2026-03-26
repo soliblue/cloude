@@ -6,8 +6,8 @@ import CloudeShared
 struct ToolCallLabel: View {
     let name: String
     let input: String?
-    private let iconSize: CGFloat = DS.Text.caption
-    private let textSize: CGFloat = DS.Text.caption
+    private let iconSize: CGFloat = DS.Text.s
+    private let textSize: CGFloat = DS.Text.s
 
     var body: some View {
         HStack(spacing: 4) {

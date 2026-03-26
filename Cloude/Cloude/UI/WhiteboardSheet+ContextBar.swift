@@ -28,7 +28,7 @@ extension WhiteboardSheet {
 
                 Button(action: { commitTextEdit() }) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: DS.Icon.toolbar, weight: .semibold))
+                        .font(.system(size: DS.Icon.s, weight: .semibold))
                         .foregroundColor(.accentColor)
                 }
                 .buttonStyle(.plain)
@@ -186,7 +186,7 @@ extension WhiteboardSheet {
     func contextAction(icon: String, tint: Color = .primary.opacity(0.8), disabled: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: DS.Icon.toolbar))
+                .font(.system(size: DS.Icon.s))
                 .frame(width: 34, height: 30)
                 .foregroundColor(disabled ? .secondary.opacity(0.3) : tint)
         }

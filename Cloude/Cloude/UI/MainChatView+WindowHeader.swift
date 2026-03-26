@@ -14,13 +14,13 @@ struct WindowTabBar: View {
                 let enabled = type == .chat || envConnected
                 if index > 0 {
                     Divider()
-                        .frame(height: DS.Icon.tab)
+                        .frame(height: DS.Icon.m)
                 }
                 Button(action: {
                     if enabled { onSelectType(type) }
                 }) {
                     Image(systemName: type.icon)
-                        .font(.system(size: DS.Icon.tab, weight: activeType == type ? .semibold : .regular))
+                        .font(.system(size: DS.Icon.m, weight: activeType == type ? .semibold : .regular))
                         .foregroundColor(activeType == type ? .accentColor : .secondary)
                         .opacity(enabled ? 1 : 0.3)
                         .frame(maxWidth: .infinity)
@@ -30,9 +30,7 @@ struct WindowTabBar: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 7)
-        .padding(.top, 0)
-        .padding(.bottom, 7)
+        .padding(0)
         .background(Color.themeSecondary)
     }
 }

@@ -16,7 +16,7 @@ extension MainChatView {
                 let conversation = window.conversation(in: conversationStore)
 
                 if index > 0 {
-                    Divider().frame(height: DS.Icon.window)
+                    Divider().frame(height: DS.Icon.l)
                 }
 
                 Button {
@@ -35,10 +35,10 @@ extension MainChatView {
             }
 
             if windowManager.windows.count < 5 {
-            Divider().frame(height: DS.Icon.window)
+            Divider().frame(height: DS.Icon.l)
             Button(action: addWindowWithNewChat) {
                 Image(systemName: "plus")
-                    .font(.system(size: DS.Icon.window, weight: .medium))
+                    .font(.system(size: DS.Icon.l, weight: .medium))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
                     .contentShape(Rectangle())
@@ -72,7 +72,7 @@ extension MainChatView {
         Group {
             if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
                 Image(systemName: symbol)
-                    .font(.system(size: DS.Icon.window, weight: weight))
+                    .font(.system(size: DS.Icon.l, weight: weight))
                     .foregroundStyle(color)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             } else {

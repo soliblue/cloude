@@ -38,7 +38,7 @@ struct WindowEditSheet: View {
                     HStack(spacing: 12) {
                         Button(action: onNewConversation) {
                             Image(systemName: "plus")
-                                .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                                .font(.system(size: DS.Icon.s, weight: .medium))
                         }
 
                         if let conv = conversation, conv.sessionId != nil {
@@ -51,7 +51,7 @@ struct WindowEditSheet: View {
                                 }
                             } label: {
                                 Image(systemName: "arrow.triangle.branch")
-                                    .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                                    .font(.system(size: DS.Icon.s, weight: .medium))
                             }
                         }
 
@@ -72,7 +72,7 @@ struct WindowEditSheet: View {
                                         .scaleEffect(0.7)
                                 } else {
                                     Image(systemName: "arrow.clockwise")
-                                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                                        .font(.system(size: DS.Icon.s, weight: .medium))
                                 }
                             }
                             .disabled(isRefreshing || connection.isAnyRunning)
@@ -87,7 +87,7 @@ struct WindowEditSheet: View {
                                 onDismiss()
                             } label: {
                                 Image(systemName: "trash")
-                                    .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                                    .font(.system(size: DS.Icon.s, weight: .medium))
                                     .foregroundColor(.accentColor)
                             }
                         }
@@ -97,7 +97,7 @@ struct WindowEditSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: onDismiss) {
                         Image(systemName: "xmark")
-                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                            .font(.system(size: DS.Icon.s, weight: .medium))
                     }
                 }
             }
