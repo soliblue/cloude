@@ -15,7 +15,7 @@ struct TextSelectionSheet: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: DS.Icon.toolbar, weight: .semibold))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -24,7 +24,7 @@ struct TextSelectionSheet: View {
                         CopyFeedback.perform(text, showToast: $showCopied)
                     } label: {
                         Image(systemName: showCopied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: DS.Icon.toolbar, weight: .semibold))
                             .foregroundColor(showCopied ? .pastelGreen : .secondary)
                     }
                 }

@@ -25,13 +25,13 @@ struct FolderPickerView: View {
                 selectButton
             }
             .background(Color.themeBackground)
-            .navigationTitle("Select Folder")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.themeSecondary, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                     }
                 }
             }

@@ -18,12 +18,12 @@ struct GitDiffView: View {
                 Divider()
                 diffContent
             }
-            .navigationTitle(fileName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                     }
                 }
             }

@@ -90,7 +90,7 @@ extension GlobalInputBar {
         Image(systemName: actionButtonIcon)
             .symbolEffect(.rotate, value: refreshRotateTrigger)
             .symbolEffect(.bounce, value: sendBounceTrigger)
-            .font(.system(size: 16, weight: .semibold))
+            .font(.system(size: DS.Icon.primary, weight: .semibold))
             .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? .white : .secondary.opacity(0.5))
             .frame(width: 56)
             .frame(maxHeight: .infinity)

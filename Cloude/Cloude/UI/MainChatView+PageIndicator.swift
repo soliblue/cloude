@@ -5,18 +5,22 @@ extension MainChatView {
     func pageIndicator() -> some View {
         let maxIndex = windowManager.windows.count - 1
         HStack(spacing: 0) {
-            ForEach(windowManager.windows.indices, id: \.self) { index in
+            ForEach(Array(windowManager.windows.indices), id: \.self) { index in
                 let window = windowManager.windows[index]
                 let isActive = currentPageIndex == index
                 let convId = window.conversationId
                 let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
                 let conversation = window.conversation(in: conversationStore)
 
+                if index > 0 {
+                    Divider().frame(height: DS.Icon.window)
+                }
+
                 Button {
                     withAnimation(.easeInOut(duration: 0.25)) { currentPageIndex = index }
                 } label: {
                     windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .frame(maxWidth: .infinity)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -28,11 +32,12 @@ extension MainChatView {
             }
 
             if windowManager.windows.count < 5 {
+            Divider().frame(height: DS.Icon.window)
             Button(action: addWindowWithNewChat) {
                 Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .medium))
+                    .font(.system(size: DS.Icon.window, weight: .medium))
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .frame(maxWidth: .infinity)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -64,7 +69,7 @@ extension MainChatView {
         Group {
             if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
                 Image(systemName: symbol)
-                    .font(.system(size: 22, weight: weight))
+                    .font(.system(size: DS.Icon.window, weight: weight))
                     .foregroundStyle(color)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             } else {
@@ -75,6 +80,5 @@ extension MainChatView {
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             }
         }
-        .frame(height: 28)
     }
 }

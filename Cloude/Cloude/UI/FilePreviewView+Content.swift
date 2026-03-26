@@ -93,7 +93,7 @@ extension FilePreviewView {
                 scrollingContent { JSONTreeView(value: jsonValue, label: fileName) }
             }
         case .csv:
-            ScrollView(.vertical) {
+            ScrollView(.vertical, showsIndicators: false) {
                 CSVTableView(text: text, delimiter: fileExtension == "tsv" ? "\t" : ",")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -111,7 +111,7 @@ extension FilePreviewView {
 
     @ViewBuilder
     private func scrollingContent<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        ScrollView(.vertical) {
+        ScrollView(.vertical, showsIndicators: false) {
             content()
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)

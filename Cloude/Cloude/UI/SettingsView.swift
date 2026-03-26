@@ -26,7 +26,6 @@ struct SettingsView: View {
             .contentMargins(.top, 8, for: .scrollContent)
             .scrollContentBackground(.hidden)
             .background(Color.themeBackground)
-            .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.themeSecondary, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -34,6 +33,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                     }
                 }
             }

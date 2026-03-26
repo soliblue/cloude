@@ -35,7 +35,7 @@ struct ConversationSearchSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 16) {
                     if results.isEmpty {
                         Text("No conversations found")
@@ -78,7 +78,6 @@ struct ConversationSearchSheet: View {
             .background(Color.themeBackground)
             .searchable(text: $searchText, isPresented: $isSearchFocused, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search conversations...")
             .onAppear { isSearchFocused = true }
-            .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.themeSecondary, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -86,7 +85,7 @@ struct ConversationSearchSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: DS.Icon.toolbar, weight: .semibold))
                             .foregroundColor(.secondary)
                     }
                 }

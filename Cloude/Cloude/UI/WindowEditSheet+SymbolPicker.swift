@@ -39,7 +39,7 @@ struct SymbolPickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 16) {
                     ForEach(filteredCategories, id: \.0) { category, symbols in
                         VStack(alignment: .leading, spacing: 8) {
@@ -69,12 +69,12 @@ struct SymbolPickerSheet: View {
                 .padding()
             }
             .searchable(text: $searchText, prompt: "Search symbols")
-            .navigationTitle("Choose Symbol")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                     }
                 }
             }

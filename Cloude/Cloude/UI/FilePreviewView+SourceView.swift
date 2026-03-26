@@ -7,7 +7,7 @@ extension FilePreviewView {
     @ViewBuilder
     func sourceTextView(_ text: String) -> some View {
         let lines = text.components(separatedBy: "\n")
-        ScrollView(wrapCodeLines ? [.vertical] : [.vertical, .horizontal]) {
+        ScrollView(wrapCodeLines ? [.vertical] : [.vertical, .horizontal], showsIndicators: false) {
             HStack(alignment: .top, spacing: 0) {
                 if showLineNumbers && lines.count > 1 && !wrapCodeLines {
                     VStack(alignment: .trailing, spacing: 0) {

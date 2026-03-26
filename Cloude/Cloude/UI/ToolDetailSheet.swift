@@ -14,7 +14,7 @@ struct ToolDetailSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     statusBanner
 
@@ -69,7 +69,7 @@ struct ToolDetailSheet: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: DS.Icon.toolbar, weight: .semibold))
                             .foregroundColor(.secondary)
                     }
                 }

@@ -51,7 +51,7 @@ struct UsageStatsSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     heroRow
                     activityChart
@@ -62,13 +62,12 @@ struct UsageStatsSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             }
-            .navigationTitle("Usage")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
-                            .fontWeight(.medium)
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                             .foregroundColor(.secondary)
                     }
                 }

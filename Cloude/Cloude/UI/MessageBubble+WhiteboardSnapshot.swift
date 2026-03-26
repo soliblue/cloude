@@ -59,13 +59,12 @@ struct WhiteboardSnapshotSheet: View {
                     }
                 }
             }
-            .navigationTitle("Whiteboard Snapshot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
-                            .fontWeight(.medium)
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                             .foregroundColor(.secondary)
                     }
                 }

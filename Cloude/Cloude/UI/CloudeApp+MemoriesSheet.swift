@@ -24,7 +24,7 @@ struct MemoriesSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 if isLoading {
                     VStack(spacing: 12) {
                         ProgressView()
@@ -56,13 +56,12 @@ struct MemoriesSheet: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .navigationTitle("Memories")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
-                            .fontWeight(.medium)
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                     }
                 }
                 if fromCache && !isLoading {

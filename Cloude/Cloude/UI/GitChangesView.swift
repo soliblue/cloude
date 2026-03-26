@@ -27,7 +27,6 @@ struct GitChangesView: View {
                 ContentUnavailableView("No Repository", systemImage: "folder.badge.questionmark", description: Text("Not a git repository"))
             }
         }
-        .navigationTitle("Git Changes")
         .sheet(item: $selectedFile) { file in
             GitDiffView(connection: connection, repoPath: repoPath, file: file, environmentId: environmentId)
         }

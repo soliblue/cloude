@@ -23,7 +23,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                     }
                 }) {
                     Image(systemName: "trash")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: DS.Icon.toolbar, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(width: 70)
                         .frame(maxHeight: .infinity)

@@ -9,12 +9,14 @@ extension WhiteboardSheet {
             HStack(spacing: 12) {
                 Button(action: { store.undo() }) {
                     Image(systemName: "arrow.uturn.backward")
+                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
                         .foregroundColor(store.canUndo ? .primary : .secondary.opacity(0.3))
                 }
                 .disabled(!store.canUndo)
 
                 Button(action: { store.redo() }) {
                     Image(systemName: "arrow.uturn.forward")
+                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
                         .foregroundColor(store.canRedo ? .primary : .secondary.opacity(0.3))
                 }
                 .disabled(!store.canRedo)
@@ -28,7 +30,7 @@ extension WhiteboardSheet {
                         onSendSnapshot?()
                     }) {
                         Image(systemName: "paperplane")
-                            .fontWeight(.medium)
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                             .foregroundColor(isConnected ? .primary : .secondary.opacity(0.3))
                     }
                     .disabled(!isConnected)
@@ -38,7 +40,7 @@ extension WhiteboardSheet {
 
                 Button(action: { exportAsImage() }) {
                     Image(systemName: "square.and.arrow.down")
-                        .fontWeight(.medium)
+                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
                         .foregroundColor(.primary)
                 }
 
@@ -46,7 +48,7 @@ extension WhiteboardSheet {
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
-                        .fontWeight(.medium)
+                        .font(.system(size: DS.Icon.toolbar, weight: .medium))
                         .foregroundColor(.secondary)
                 }
             }

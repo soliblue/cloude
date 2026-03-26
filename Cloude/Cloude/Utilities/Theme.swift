@@ -9,6 +9,13 @@ enum DS {
         static let footnote: CGFloat = 9
     }
 
+    enum Icon {
+        static let toolbar: CGFloat = 14
+        static let tab: CGFloat = 16
+        static let primary: CGFloat = 16
+        static let window: CGFloat = 20
+    }
+
     enum Pill {
         static let spacing: CGFloat = 4
         static let hPadding: CGFloat = 8

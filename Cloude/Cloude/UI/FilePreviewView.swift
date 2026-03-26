@@ -103,14 +103,14 @@ struct FilePreviewView: View {
                             }
                         }
                     }
-                    .font(.body)
+                    .font(.system(size: DS.Icon.toolbar, weight: .medium))
                     .padding(.horizontal, 16)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                     }
-                    .font(.body)
+                    .font(.system(size: DS.Icon.toolbar, weight: .medium))
                 }
             }
         }

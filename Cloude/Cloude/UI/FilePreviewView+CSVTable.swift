@@ -15,7 +15,7 @@ struct CSVTableView: View {
             Text("Empty file")
                 .foregroundColor(.secondary)
         } else {
-            ScrollView(.horizontal, showsIndicators: true) {
+            ScrollView(.horizontal, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     if hasHeader, let header = rows.first {
                         headerRow(header)

@@ -13,7 +13,7 @@ struct ThemePickerView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(AppTheme.allCases, id: \.self) { theme in
                         ThemeCard(theme: theme, isSelected: appTheme == theme, currentTheme: appTheme)
@@ -23,7 +23,6 @@ struct ThemePickerView: View {
                 .padding(12)
             }
             .background(Color(hex: appTheme.palette.background))
-            .navigationTitle("Theme")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color(hex: appTheme.palette.secondary), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -31,6 +30,7 @@ struct ThemePickerView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
                     }
                 }
             }
