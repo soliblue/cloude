@@ -2,6 +2,21 @@
 
 import SwiftUI
 
+enum DS {
+    enum Text {
+        static let body: CGFloat = 13
+    }
+
+    enum Pill {
+        static let iconSize: CGFloat = 10
+        static let textSize: CGFloat = 10
+        static let spacing: CGFloat = 4
+        static let hPadding: CGFloat = 8
+        static let vPadding: CGFloat = 4
+        static let cornerRadius: CGFloat = 8
+    }
+}
+
 private struct AppThemeKey: EnvironmentKey {
     static let defaultValue: AppTheme = .majorelle
 }

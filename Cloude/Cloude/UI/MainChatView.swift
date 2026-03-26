@@ -76,7 +76,7 @@ struct MainChatView: View {
                 }
             }
             .onTapGesture {
-                if !widgetEditing && windowManager.activeWindow?.type != .terminal {
+                if !widgetEditing {
                     dismissKeyboard()
                 }
             }

@@ -9,30 +9,12 @@ extension ToolDetailSheet {
         return BashCommandParser.chainedCommandsWithOperators(for: input)
     }
 
-    var displayName: String {
-        if toolCall.isScript { return "Script" }
-        if toolCall.name == "Bash", let input = toolCall.input {
-            let chained = BashCommandParser.chainedCommandsWithOperators(for: input)
-            if chained.count > 1 {
-                var parts: [String] = []
-                for (i, cmd) in chained.enumerated() {
-                    let parsed = BashCommandParser.parse(cmd.command)
-                    parts.append(parsed.command.isEmpty ? "bash" : parsed.command)
-                    if i < chained.count - 1, let op = cmd.operatorAfter {
-                        parts.append(op.rawValue)
-                    }
-                }
-                return parts.joined(separator: " ")
-            }
-            let parsed = BashCommandParser.parse(input)
-            if !parsed.command.isEmpty {
-                if let sub = parsed.subcommand {
-                    return "\(parsed.command) \(sub)"
-                }
-                return parsed.command
-            }
-        }
+    var toolTitle: String {
         if toolCall.name == "TodoWrite" { return "Tasks" }
+        if toolCall.name == "Agent" { return "Agent" }
+        if ToolCallLabel.isIOSControl(toolCall.name) { return "iOS" }
+        if ToolCallLabel.isWhiteboardTool(toolCall.name) { return "Whiteboard" }
+        if WidgetRegistry.isWidget(toolCall.name) { return "Widget" }
         return toolCall.name
     }
 

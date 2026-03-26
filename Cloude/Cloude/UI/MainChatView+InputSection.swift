@@ -6,7 +6,7 @@ extension MainChatView {
     @ViewBuilder
     func inputSection() -> some View {
         VStack(spacing: 0) {
-            if !widgetEditing && windowManager.activeWindow?.type != .terminal {
+            if !widgetEditing {
                 GlobalInputBar(
                     inputText: $inputText,
                     attachedImages: $attachedImages,

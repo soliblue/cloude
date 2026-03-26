@@ -54,7 +54,7 @@ struct ToolDetailSheet: View {
                     HStack(spacing: 5) {
                         Image(systemName: iconName)
                             .font(.system(size: 12, weight: .semibold))
-                        Text(displayName)
+                        Text(toolTitle)
                             .font(.system(size: 13, weight: .semibold, design: .monospaced))
                             .lineLimit(1)
                     }

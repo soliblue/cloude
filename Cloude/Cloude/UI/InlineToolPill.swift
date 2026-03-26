@@ -52,7 +52,7 @@ struct InlineToolPill: View {
 
     private var pillContent: some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Pill.spacing) {
                 if !chainedCommands.isEmpty {
                     chainedPillContent
                 } else {
@@ -72,8 +72,8 @@ struct InlineToolPill: View {
             }
 
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, DS.Pill.hPadding)
+        .padding(.vertical, DS.Pill.vPadding)
         .fixedSize(horizontal: false, vertical: true)
         .overlay {
             if isExecuting {
@@ -81,8 +81,8 @@ struct InlineToolPill: View {
                     .transition(.opacity)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Pill.cornerRadius))
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Pill.cornerRadius))
         .onChange(of: toolCall.state) { _, newState in
             if newState == .complete {
                 withAnimation(.easeOut(duration: 0.3)) {

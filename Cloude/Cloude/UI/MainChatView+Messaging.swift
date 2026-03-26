@@ -10,7 +10,7 @@ extension MainChatView {
         let allFilesBase64 = encodeFiles(attachedFiles)
 
         guard !text.isEmpty || allImagesBase64 != nil || allFilesBase64 != nil else { return }
-        MessageHistory.save(text)
+        MessageHistory.save(text, symbol: currentConversation?.symbol)
 
         dismissKeyboard()
         DispatchQueue.main.async {

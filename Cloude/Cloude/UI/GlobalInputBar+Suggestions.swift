@@ -53,7 +53,7 @@ extension GlobalInputBar {
         return true
     }
 
-    var historySuggestions: [String] {
+    var historySuggestions: [HistoryEntry] {
         guard !showFileSuggestions, !showCommandSuggestions else { return [] }
         return MessageHistory.suggestions(for: inputText)
     }

@@ -8,22 +8,21 @@ struct SlashCommandBubble: View {
     var isSkill: Bool = true
 
     var body: some View {
-        HStack(spacing: 4) {
+        Pill {
             Image(systemName: icon)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: DS.Pill.iconSize, weight: .semibold))
             Text(command)
-                .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Pill.textSize, weight: .semibold, design: .monospaced))
             if let args = args {
                 Text(args)
-                    .font(.system(size: 9, design: .monospaced))
+                    .font(.system(size: DS.Pill.textSize, design: .monospaced))
                     .opacity(0.7)
                     .lineLimit(1)
             }
+        } background: {
+            SkillPillBackground(isSkill: isSkill)
         }
         .foregroundStyle(isSkill ? skillGradient : builtInGradient)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(SkillPillBackground(isSkill: isSkill))
     }
 }
 

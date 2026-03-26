@@ -51,14 +51,6 @@ extension MainChatView {
                     )
                 }
 
-                if window.type == .terminal {
-                    TerminalView(
-                        connection: connection,
-                        rootPath: conversation?.workingDirectory,
-                        environmentId: conversation?.environmentId,
-                        terminalId: window.id.uuidString
-                    )
-                }
             }
         }
     }

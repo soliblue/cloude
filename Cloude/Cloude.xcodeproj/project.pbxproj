@@ -17,7 +17,6 @@
 		C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED022F2619AE007FD3E4 /* CloudeShared */; };
 		C2SHARED032F2619AE007FD3E4 /* CloudeShared in Frameworks */ = {isa = PBXBuildFile; productRef = C2SHARED042F2619AE007FD3E4 /* CloudeShared */; };
 		C2WHISPER012F2619AE007FD3E4 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2WHISPER022F2619AE007FD3E4 /* WhisperKit */; };
-		FBBE98152F6098BA00C0CA19 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = C2SWTERM022F2619AE007FD3E4 /* SwiftTerm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,7 +98,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBBE98152F6098BA00C0CA19 /* SwiftTerm in Frameworks */,
 				C2SHARED012F2619AE007FD3E4 /* CloudeShared in Frameworks */,
 				C2HIGHLIGHT012F2619AE007FD3E4 /* HighlightSwift in Frameworks */,
 			);
@@ -183,7 +181,6 @@
 			name = Cloude;
 			packageProductDependencies = (
 				C2SHARED022F2619AE007FD3E4 /* CloudeShared */,
-				C2SWTERM022F2619AE007FD3E4 /* SwiftTerm */,
 			);
 			productName = Cloude;
 			productReference = C2B3BBA02F2619AE007FD3E4 /* Cloude.app */;
@@ -274,7 +271,6 @@
 				C2HIGHLIGHT032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
 				C2MLX032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "mlx-swift" */,
 				C2MLXUTIL032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "MLXUtilsLibrary" */,
-				C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C2B3BBA12F2619AE007FD3E4 /* Products */;
@@ -475,7 +471,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 113;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -515,7 +511,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 113;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -557,7 +553,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 113;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_APP_SANDBOX = NO;
@@ -595,7 +591,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 113;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_APP_SANDBOX = NO;
@@ -630,7 +626,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 113;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CloudeLiveActivity/Info.plist;
@@ -661,7 +657,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 113;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CloudeLiveActivity/Info.plist;
@@ -759,14 +755,6 @@
 				version = 0.0.6;
 			};
 		};
-		C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 		C2WHISPER032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
@@ -807,11 +795,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C2SHARED062F2619AE007FD3E4 /* XCLocalSwiftPackageReference "CloudeShared" */;
 			productName = CloudeShared;
-		};
-		C2SWTERM022F2619AE007FD3E4 /* SwiftTerm */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C2SWTERM032F2619AE007FD3E4 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
-			productName = SwiftTerm;
 		};
 		C2WHISPER022F2619AE007FD3E4 /* WhisperKit */ = {
 			isa = XCSwiftPackageProductDependency;

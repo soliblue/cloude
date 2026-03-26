@@ -43,6 +43,5 @@ case lastAssistantMessageCostUpdate(conversationId: UUID, costUsd: Double)
     case haptic(String)
     case question(questions: [Question], conversationId: UUID?)
     case screenshot(conversationId: UUID?)
-    case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
     case whiteboard(action: String, json: [String: Any], conversationId: UUID?)
 }

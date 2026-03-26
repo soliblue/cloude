@@ -60,7 +60,7 @@ extension ToolCallLabel {
         case "Read": return "doc.text"
         case "Write": return "doc.badge.plus"
         case "Edit": return "pencil.line"
-        case "Glob": return "folder.badge.magnifyingglass"
+        case "Glob": return "folder.magnifyingglass"
         case "Grep": return "magnifyingglass"
         case "Task": return "person.2"
         case "WebFetch": return "globe"
