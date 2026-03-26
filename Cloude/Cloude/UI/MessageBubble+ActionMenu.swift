@@ -33,6 +33,9 @@ struct BubbleInteractionModifier: ViewModifier {
     @Binding var showCopiedToast: Bool
     @Binding var showTextSelection: Bool
     let onToggleCollapse: (() -> Void)?
+    var onRefresh: (() -> Void)?
+    var isRefreshing: Bool = false
+    @State private var showInfo = false
 
     func body(content: Content) -> some View {
         if isLive {
@@ -41,6 +44,9 @@ struct BubbleInteractionModifier: ViewModifier {
             content
                 .sheet(isPresented: $showTextSelection) {
                     TextSelectionSheet(text: effectiveText)
+                }
+                .sheet(isPresented: $showInfo) {
+                    MessageInfoSheet(message: message)
                 }
                 .contextMenu {
                     Button {
@@ -64,7 +70,102 @@ struct BubbleInteractionModifier: ViewModifier {
                             Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
                         }
                     }
+
+                    if let onRefresh, !message.isUser {
+                        Button {
+                            onRefresh()
+                        } label: {
+                            Label("Refresh", systemImage: "arrow.clockwise")
+                        }
+                        .disabled(isRefreshing)
+                    }
+
+                    Button {
+                        showInfo = true
+                    } label: {
+                        Label("Info", systemImage: "info.circle")
+                    }
                 }
         }
+    }
+}
+
+struct MessageInfoSheet: View {
+    let message: ChatMessage
+    @Environment(\.dismiss) private var dismiss
+
+    private var rows: [(String, String)] {
+        var result: [(String, String)] = [
+            ("clock", DateFormatters.messageTimestamp(message.timestamp))
+        ]
+        if let model = message.model {
+            let identity = ModelIdentity(model)
+            result.append((identity.icon, identity.displayName))
+        }
+        if let durationMs = message.durationMs {
+            result.append(("timer", formattedDuration(durationMs)))
+        }
+        if let costUsd = message.costUsd {
+            result.append(("dollarsign.circle", formattedCost(costUsd)))
+        }
+        result.append(("textformat.size", "\(message.text.count) chars"))
+        if !message.toolCalls.isEmpty {
+            result.append(("wrench", "\(message.toolCalls.count) tool calls"))
+        }
+        return result
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                    if index > 0 {
+                        Divider()
+                    }
+                    infoRow(row.0, row.1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                }
+                Spacer()
+            }
+            .background(Color.themeBackground)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: DS.Icon.toolbar, weight: .medium))
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationBackground(Color.themeBackground)
+    }
+
+    private func infoRow(_ icon: String, _ text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: DS.Text.caption))
+                .foregroundColor(.secondary)
+                .frame(width: 20)
+            Text(text)
+                .font(.system(size: DS.Text.body))
+        }
+    }
+
+    private func formattedDuration(_ ms: Int) -> String {
+        let seconds = Double(ms) / 1000.0
+        if seconds < 60 {
+            return String(format: "%.1fs", seconds)
+        }
+        let minutes = Int(seconds) / 60
+        let remainingSeconds = Int(seconds) % 60
+        return "\(minutes)m \(remainingSeconds)s"
+    }
+
+    private func formattedCost(_ usd: Double) -> String {
+        usd < 0.01 ? String(format: "$%.4f", usd) : String(format: "$%.2f", usd)
     }
 }

@@ -52,12 +52,8 @@ struct MessageBubble: View {
         #if DEBUG
         let _ = DebugMetrics.log("Bubble", "render | \(message.isUser ? "user" : "asst") id=\(message.id.uuidString.prefix(6))")
         #endif
-        VStack(alignment: .leading, spacing: 4) {
-            messageContent
-                .opacity(message.isQueued ? 0.6 : 1.0)
-
-            messageFooter
-        }
+        messageContent
+            .opacity(message.isQueued ? 0.6 : 1.0)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -69,7 +65,9 @@ struct MessageBubble: View {
             hasInteractiveWidgets: hasInteractiveWidgets,
             showCopiedToast: $showCopiedToast,
             showTextSelection: $showTextSelection,
-            onToggleCollapse: onToggleCollapse
+            onToggleCollapse: onToggleCollapse,
+            onRefresh: onRefresh,
+            isRefreshing: isRefreshing
         ))
     }
 
@@ -124,28 +122,5 @@ struct MessageBubble: View {
         }
     }
 
-    @ViewBuilder
-    private var messageFooter: some View {
-        if message.isUser {
-            UserMessageFooter(timestamp: message.timestamp, textCount: message.text.count)
-        } else if isLive {
-            if !(isCompact), let stats = liveOutput?.runStats {
-                HStack(spacing: 8) {
-                    StatLabel(icon: "clock", text: DateFormatters.messageTimestamp(message.timestamp))
-                    RunStatsView(durationMs: stats.durationMs, costUsd: stats.costUsd, model: stats.model)
-                    Spacer()
-                }
-                .foregroundColor(.secondary)
-            }
-        } else {
-            AssistantMessageFooter(
-                message: message,
-                copyText: effectiveText,
-                showCopiedToast: $showCopiedToast,
-                onRefresh: onRefresh,
-                isRefreshing: isRefreshing
-            )
-        }
-    }
 
 }
