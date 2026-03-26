@@ -8,8 +8,8 @@ final class ConversationOutput: ObservableObject {
     weak var parent: ConnectionManager?
 
     @Published var text: String = "" { didSet { if oldValue.isEmpty != text.isEmpty { parent?.objectWillChange.send() } } }
-    @Published var toolCalls: [ToolCall] = [] { didSet { parent?.objectWillChange.send() } }
-    @Published var runStats: (durationMs: Int, costUsd: Double, model: String?)? { didSet { parent?.objectWillChange.send() } }
+    @Published var toolCalls: [ToolCall] = []
+    @Published var runStats: (durationMs: Int, costUsd: Double, model: String?)?
     @Published var isRunning: Bool = false { didSet { if isRunning != oldValue { parent?.objectWillChange.send() } } }
     @Published var isCompacting: Bool = false { didSet { if isCompacting != oldValue { parent?.objectWillChange.send() } } }
     @Published var newSessionId: String? { didSet { if newSessionId != oldValue { parent?.objectWillChange.send() } } }

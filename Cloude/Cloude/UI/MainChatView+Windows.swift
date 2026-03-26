@@ -6,7 +6,11 @@ extension MainChatView {
         let conversation = window.conversation(in: conversationStore)
 
         VStack(spacing: 0) {
-            windowHeader(for: window, conversation: conversation)
+            WindowTabBar(
+                activeType: window.type,
+                envConnected: (conversation?.environmentId).flatMap({ connection.connection(for: $0)?.isConnected }) ?? false,
+                onSelectType: { type in windowManager.setWindowType(window.id, type: type) }
+            )
 
             ZStack {
                 ConversationView(
