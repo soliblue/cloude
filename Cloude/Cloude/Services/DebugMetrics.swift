@@ -15,19 +15,34 @@ final class DebugMetrics: ObservableObject {
 
     @Published var fps: Int = 0
     @Published var objectWillChangeRate: Int = 0
-    private(set) var logBuffer: [DebugEntry] = []
-    private let maxLogs = 200
+    private(set) var logBuffers: [String: [DebugEntry]] = [:]
+    private let maxLogsPerSource = 200
+
+    var sources: [String] { Array(logBuffers.keys).sorted() }
 
     static func log(_ source: String, _ message: String) {
         let entry = DebugEntry(time: Date(), source: source, message: message)
-        shared.logBuffer.append(entry)
-        if shared.logBuffer.count > shared.maxLogs {
-            shared.logBuffer.removeFirst(shared.logBuffer.count - shared.maxLogs)
+        var buf = shared.logBuffers[source, default: []]
+        buf.append(entry)
+        if buf.count > shared.maxLogsPerSource {
+            buf.removeFirst(buf.count - shared.maxLogsPerSource)
         }
+        shared.logBuffers[source] = buf
+    }
+
+    func allLogs() -> [DebugEntry] {
+        logBuffers.values.flatMap { $0 }.sorted { $0.time < $1.time }
+    }
+
+    func logs(for source: String?) -> [DebugEntry] {
+        if let source {
+            return logBuffers[source, default: []]
+        }
+        return allLogs()
     }
 
     func clearLogs() {
-        logBuffer.removeAll()
+        logBuffers.removeAll()
     }
 
     private var fpsLink: CADisplayLink?

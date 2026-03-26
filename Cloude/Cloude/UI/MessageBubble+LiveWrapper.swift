@@ -11,6 +11,9 @@ struct ObservedMessageBubble: View {
     var onToggleCollapse: (() -> Void)?
 
     var body: some View {
+        #if DEBUG
+        let _ = DebugMetrics.log("LiveBubble", "render | live=\(output.liveMessageId == message.id) msgId=\(message.id.uuidString.prefix(6))")
+        #endif
         MessageBubble(
             message: message,
             skills: skills,

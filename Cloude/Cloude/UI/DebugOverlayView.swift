@@ -5,6 +5,8 @@ struct DebugOverlayView: View {
     @State private var expanded = false
     @State private var showLogs = false
     @State private var displayedLogs: [DebugEntry] = []
+    @State private var selectedSource: String? = nil
+    @State private var availableSources: [String] = []
     @State private var position = CGPoint(x: 70, y: 100)
     @GestureState private var dragOffset = CGSize.zero
 
@@ -44,6 +46,10 @@ struct DebugOverlayView: View {
         .onTapGesture { expanded = true }
     }
 
+    private var totalLogCount: Int {
+        metrics.logBuffers.values.reduce(0) { $0 + $1.count }
+    }
+
     private var expandedView: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -60,11 +66,11 @@ struct DebugOverlayView: View {
             VStack(alignment: .leading, spacing: 4) {
                 metricRow("FPS", value: "\(metrics.fps)", color: fpsColor)
                 metricRow("OWC/sec", value: "\(metrics.objectWillChangeRate)", color: metrics.objectWillChangeRate > 10 ? .red : .pastelGreen)
-                metricRow("Logs", value: "\(metrics.logBuffer.count)", color: .secondary)
+                metricRow("Logs", value: "\(totalLogCount)", color: .secondary)
             }
 
             Button(action: {
-                displayedLogs = metrics.logBuffer
+                refreshLogs()
                 showLogs = true
             }) {
                 Text("View Logs")
@@ -78,15 +84,18 @@ struct DebugOverlayView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
+    private func refreshLogs() {
+        availableSources = metrics.sources
+        displayedLogs = metrics.logs(for: selectedSource)
+    }
+
     private var logView: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
+            HStack(spacing: 8) {
                 Text("Logs (\(displayedLogs.count))")
                     .font(.system(size: 12, weight: .bold, design: .monospaced))
                 Spacer()
-                Button(action: {
-                    displayedLogs = metrics.logBuffer
-                }) {
+                Button(action: refreshLogs) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.accentColor)
@@ -102,6 +111,8 @@ struct DebugOverlayView: View {
                 Button(action: {
                     metrics.clearLogs()
                     displayedLogs = []
+                    availableSources = []
+                    selectedSource = nil
                 }) {
                     Image(systemName: "trash")
                         .font(.system(size: 10, weight: .bold))
@@ -111,6 +122,21 @@ struct DebugOverlayView: View {
                     Image(systemName: "xmark")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.secondary)
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    filterChip("All", isSelected: selectedSource == nil) {
+                        selectedSource = nil
+                        refreshLogs()
+                    }
+                    ForEach(availableSources, id: \.self) { source in
+                        filterChip(source, isSelected: selectedSource == source) {
+                            selectedSource = source
+                            refreshLogs()
+                        }
+                    }
                 }
             }
 
@@ -136,9 +162,22 @@ struct DebugOverlayView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
+    private func filterChip(_ label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .font(.system(size: 9, weight: isSelected ? .bold : .medium, design: .monospaced))
+                .foregroundColor(isSelected ? .white : .secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15))
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = "HH:mm:ss.SSS"
+        f.dateFormat = "mm:ss.SSS"
         return f
     }()
 

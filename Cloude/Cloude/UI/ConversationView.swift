@@ -44,6 +44,9 @@ struct ConversationView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = DebugMetrics.log("ConvView", "render | msgs=\(messages.count)")
+        #endif
         let output = convOutput
 
         VStack(spacing: 0) {

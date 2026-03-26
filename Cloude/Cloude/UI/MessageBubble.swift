@@ -50,6 +50,9 @@ struct MessageBubble: View {
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = DebugMetrics.log("Bubble", "render | \(message.isUser ? "user" : "asst") id=\(message.id.uuidString.prefix(6))")
+        #endif
         VStack(alignment: .leading, spacing: 4) {
             messageContent
                 .opacity(message.isQueued ? 0.6 : 1.0)
