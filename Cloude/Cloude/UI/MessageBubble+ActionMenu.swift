@@ -15,38 +15,6 @@ struct ConditionalClip: ViewModifier {
     }
 }
 
-struct TeamSummaryBadge: View {
-    let summary: TeamSummary
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 4) {
-                HStack(spacing: -4) {
-                    ForEach(summary.members) { member in
-                        Circle()
-                            .fill(teammateColor(member.color).opacity(0.6))
-                            .frame(width: 14, height: 14)
-                            .overlay {
-                                Text(String(member.name.prefix(1)).uppercased())
-                                    .font(.system(size: 7, weight: .bold, design: .rounded))
-                                    .foregroundColor(.white)
-                            }
-                    }
-                }
-                Text(summary.teamName)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.secondary.opacity(0.1))
-            .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 struct CopyFeedback {
     static func perform(_ text: String, showToast: Binding<Bool>) {
         ClipboardHelper.copy(text)
@@ -64,7 +32,6 @@ struct BubbleInteractionModifier: ViewModifier {
     let hasInteractiveWidgets: Bool
     @Binding var showCopiedToast: Bool
     @Binding var showTextSelection: Bool
-    @Binding var showTeamDashboard: Bool
     let onToggleCollapse: (() -> Void)?
 
     func body(content: Content) -> some View {
@@ -74,16 +41,6 @@ struct BubbleInteractionModifier: ViewModifier {
             content
                 .sheet(isPresented: $showTextSelection) {
                     TextSelectionSheet(text: effectiveText)
-                }
-                .sheet(isPresented: $showTeamDashboard) {
-                    if let team = message.teamSummary {
-                        TeamDashboardSheet(
-                            teamName: team.teamName,
-                            teammates: team.members.map {
-                                TeammateInfo(id: $0.name, name: $0.name, agentType: $0.agentType, model: $0.model, color: $0.color, status: .shutdown)
-                            }
-                        )
-                    }
                 }
                 .contextMenu {
                     Button {

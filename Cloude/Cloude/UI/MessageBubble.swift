@@ -13,7 +13,6 @@ struct MessageBubble: View {
     var isRefreshing: Bool = false
     var isCompact: Bool = false
     @State private var showCopiedToast = false
-    @State private var showTeamDashboard = false
     @State private var showTextSelection = false
     @Environment(\.appTheme) private var appTheme
 
@@ -70,7 +69,6 @@ struct MessageBubble: View {
             hasInteractiveWidgets: hasInteractiveWidgets,
             showCopiedToast: $showCopiedToast,
             showTextSelection: $showTextSelection,
-            showTeamDashboard: $showTeamDashboard,
             onToggleCollapse: onToggleCollapse
         ))
     }
@@ -144,7 +142,6 @@ struct MessageBubble: View {
                 message: message,
                 copyText: effectiveText,
                 showCopiedToast: $showCopiedToast,
-                onShowTeamDashboard: { showTeamDashboard = true },
                 onRefresh: onRefresh,
                 isRefreshing: isRefreshing
             )

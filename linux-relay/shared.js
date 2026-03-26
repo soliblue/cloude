@@ -37,7 +37,6 @@ export function extractToolInput(name, input) {
     case 'Task': return `${input.subagent_type || 'agent'}: ${input.description || ''}`
     case 'Skill': return input.args ? `${input.skill}:${input.args}` : input.skill || null
     case 'TodoWrite': return input.todos ? JSON.stringify(input.todos) : null
-    case 'TeamCreate': case 'TeamDelete': return input.team_name
     case 'SendMessage': return `${input.type || 'message'} → ${input.target || ''}`
     default: return JSON.stringify(input)
   }

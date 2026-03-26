@@ -44,25 +44,8 @@ extension ServerMessage {
             let uuid = try container.decode(String.self, forKey: .uuid)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             return .messageUUID(uuid: uuid, conversationId: conversationId)
-        case "team_created":
-            let teamName = try container.decode(String.self, forKey: .teamName)
-            let leadAgentId = try container.decode(String.self, forKey: .leadAgentId)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            return .teamCreated(teamName: teamName, leadAgentId: leadAgentId, conversationId: conversationId)
-        case "teammate_spawned":
-            let teammate = try container.decode(TeammateInfo.self, forKey: .teammate)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            return .teammateSpawned(teammate: teammate, conversationId: conversationId)
-        case "teammate_update":
-            let teammateId = try container.decode(String.self, forKey: .teammateId)
-            let status = try container.decodeIfPresent(TeammateStatus.self, forKey: .status)
-            let lastMessage = try container.decodeIfPresent(String.self, forKey: .lastMessage)
-            let lastMessageAt = try container.decodeIfPresent(Date.self, forKey: .lastMessageAt)
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            return .teammateUpdate(teammateId: teammateId, status: status, lastMessage: lastMessage, lastMessageAt: lastMessageAt, conversationId: conversationId)
-        case "team_deleted":
-            let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            return .teamDeleted(conversationId: conversationId)
+        case "team_created", "teammate_spawned", "teammate_update", "team_deleted":
+            return nil
         case "name_suggestion":
             let name = try container.decode(String.self, forKey: .name)
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)

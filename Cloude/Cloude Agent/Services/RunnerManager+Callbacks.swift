@@ -51,26 +51,6 @@ extension RunnerManager {
             self?.onMessageUUID?(uuid, conversationId)
         }
 
-        runner.onTeamCreated = { [weak self] teamName, leadAgentId in
-            guard let self else { return }
-            self.activeTeams[conversationId] = ActiveTeam(teamName: teamName)
-            self.startInboxPolling(conversationId: conversationId, teamName: teamName)
-            self.onTeamCreated?(teamName, leadAgentId, conversationId)
-        }
-
-        runner.onTeammateSpawned = { [weak self] teammate in
-            guard let self else { return }
-            self.activeTeams[conversationId]?.teammates[teammate.id] = teammate
-            self.onTeammateSpawned?(teammate, conversationId)
-        }
-
-        runner.onTeamDeleted = { [weak self] in
-            guard let self else { return }
-            self.stopInboxPolling(conversationId: conversationId)
-            self.activeTeams.removeValue(forKey: conversationId)
-            self.onTeamDeleted?(conversationId)
-        }
-
         runner.onComplete = { [weak self] in
             guard let self else { return }
             let convRunner = self.activeRunners[conversationId]
@@ -86,9 +66,6 @@ extension RunnerManager {
 
             self.onComplete?(conversationId, sessionId)
             self.onStatusChange?(.idle, conversationId)
-
-            self.stopInboxPolling(conversationId: conversationId)
-            self.activeTeams.removeValue(forKey: conversationId)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 300) { [weak self] in
                 if let runner = self?.activeRunners[conversationId], !runner.runner.isRunning {

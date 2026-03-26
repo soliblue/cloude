@@ -48,15 +48,11 @@ struct AssistantMessageFooter: View {
     let message: ChatMessage
     var copyText: String
     @Binding var showCopiedToast: Bool
-    let onShowTeamDashboard: () -> Void
     let onRefresh: (() -> Void)?
     let isRefreshing: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            if let team = message.teamSummary {
-                TeamSummaryBadge(summary: team, onTap: onShowTeamDashboard)
-            }
             HStack(spacing: 8) {
                 StatLabel(icon: "clock", text: DateFormatters.messageTimestamp(message.timestamp))
                 if let durationMs = message.durationMs, let costUsd = message.costUsd {

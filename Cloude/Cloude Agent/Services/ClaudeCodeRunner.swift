@@ -22,10 +22,6 @@ class ClaudeCodeRunner: ObservableObject {
     var onCloudeCommand: ((String, String) -> Void)?
     var onStatus: ((AgentState) -> Void)?
     var onMessageUUID: ((String) -> Void)?
-    var onTeamCreated: ((String, String) -> Void)?
-    var onTeammateSpawned: ((TeammateInfo) -> Void)?
-    var onTeamDeleted: (() -> Void)?
-
     var pendingRunStats: (durationMs: Int, costUsd: Double, model: String?)?
     var activeModel: String?
     var accumulatedOutput = ""

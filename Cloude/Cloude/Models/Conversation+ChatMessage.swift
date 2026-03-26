@@ -1,19 +1,5 @@
 import Foundation
 
-struct TeamSummary: Codable, Equatable {
-    let teamName: String
-    let members: [Member]
-
-    struct Member: Codable, Equatable, Identifiable {
-        let name: String
-        let color: String
-        let model: String
-        let agentType: String
-
-        var id: String { name }
-    }
-}
-
 struct ChatMessage: Codable, Identifiable, Equatable {
     var id: UUID
     let isUser: Bool
@@ -27,11 +13,10 @@ struct ChatMessage: Codable, Identifiable, Equatable {
     var imageBase64: String?
     var imageThumbnails: [String]?
     var serverUUID: String?
-    var teamSummary: TeamSummary?
     var model: String?
     var isCollapsed: Bool
 
-    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil, imageThumbnails: [String]? = nil, serverUUID: String? = nil, teamSummary: TeamSummary? = nil, model: String? = nil) {
+    init(isUser: Bool, text: String, toolCalls: [ToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, isQueued: Bool = false, wasInterrupted: Bool = false, imageBase64: String? = nil, imageThumbnails: [String]? = nil, serverUUID: String? = nil, model: String? = nil) {
         self.id = UUID()
         self.isUser = isUser
         self.text = text
@@ -44,7 +29,6 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         self.imageBase64 = imageBase64
         self.imageThumbnails = imageThumbnails
         self.serverUUID = serverUUID
-        self.teamSummary = teamSummary
         self.model = model
         self.isCollapsed = false
     }
@@ -62,7 +46,6 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         self.imageBase64 = nil
         self.imageThumbnails = nil
         self.serverUUID = serverUUID
-        self.teamSummary = nil
         self.model = model
         self.isCollapsed = false
     }
@@ -81,13 +64,12 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         imageBase64 = try container.decodeIfPresent(String.self, forKey: .imageBase64)
         imageThumbnails = try container.decodeIfPresent([String].self, forKey: .imageThumbnails)
         serverUUID = try container.decodeIfPresent(String.self, forKey: .serverUUID)
-        teamSummary = try container.decodeIfPresent(TeamSummary.self, forKey: .teamSummary)
         model = try container.decodeIfPresent(String.self, forKey: .model)
         isCollapsed = try container.decodeIfPresent(Bool.self, forKey: .isCollapsed) ?? false
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID, teamSummary, model, isCollapsed
+        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID, model, isCollapsed
     }
 }
 

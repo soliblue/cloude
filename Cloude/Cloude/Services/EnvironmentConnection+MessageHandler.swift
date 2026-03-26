@@ -37,10 +37,6 @@ extension EnvironmentConnection {
         case .historySync(let sid, let msgs):             mgr.events.send(.historySync(sessionId: sid, messages: msgs))
         case .historySyncError(let sid, let err):          mgr.events.send(.historySyncError(sessionId: sid, error: err))
         case .remoteSessionList:                          break
-        case .teamCreated(let name, _, let c):            handleTeamCreated(mgr, teamName: name, conversationId: c)
-        case .teammateSpawned(let mate, let c):           handleTeammateSpawned(mgr, teammate: mate, conversationId: c)
-        case .teammateUpdate(let tid, let st, let msg, let at, let c): handleTeammateUpdate(mgr, teammateId: tid, status: st, lastMessage: msg, lastMessageAt: at, conversationId: c)
-        case .teamDeleted(let c):                         handleTeamDeleted(mgr, conversationId: c)
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(mgr, name: name, symbol: sym, conversationId: c)
         case .plans(let stages):                          mgr.events.send(.plans(stages))
         case .planDeleted(let stage, let filename):       mgr.events.send(.planDeleted(stage: stage, filename: filename))

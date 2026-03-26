@@ -105,11 +105,48 @@ extension ClaudeCodeRunner {
                         let (summary, output) = extractResultInfo(from: block)
                         events.send(.toolResult(toolId: toolUseId, summary: summary, output: output))
                         onToolResult?(toolUseId, summary, output)
-                        parseTeamResult(from: block)
                     }
                 }
             }
         }
+    }
+
+    func extractResultInfo(from block: [String: Any]) -> (summary: String?, output: String?) {
+        let fullText: String? = {
+            if let content = block["content"] as? String {
+                let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                return trimmed.isEmpty ? nil : trimmed
+            }
+            if let contentBlocks = block["content"] as? [[String: Any]] {
+                let texts = contentBlocks.compactMap { sub -> String? in
+                    guard sub["type"] as? String == "text", let text = sub["text"] as? String else { return nil }
+                    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return trimmed.isEmpty ? nil : trimmed
+                }
+                return texts.isEmpty ? nil : texts.joined(separator: "\n")
+            }
+            return nil
+        }()
+
+        guard let text = fullText else { return (nil, nil) }
+
+        let firstLine = text.components(separatedBy: .newlines).first ?? text
+        let summary: String
+        if firstLine.count > 80 {
+            summary = String(firstLine.prefix(77)) + "..."
+        } else {
+            summary = firstLine
+        }
+
+        let maxOutputLength = 5000
+        let output: String
+        if text.count > maxOutputLength {
+            output = String(text.prefix(maxOutputLength))
+        } else {
+            output = text
+        }
+
+        return (summary, output)
     }
 
     private func handleResultEvent(_ json: [String: Any]) {

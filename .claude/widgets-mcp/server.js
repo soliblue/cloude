@@ -36,19 +36,6 @@ const tools = [
     },
   },
   {
-    name: "fill_in_blank",
-    description: "Render a fill-in-the-blank exercise. Blanks appear as tappable underlined slots that reveal answers when tapped.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        text: { type: "string", description: "Text with ___ marking each blank position" },
-        blanks: { type: "array", items: { type: "string" }, description: "Answers for each blank in order" },
-        hint: { type: "string", description: "Optional hint text shown above" },
-      },
-      required: ["text", "blanks"],
-    },
-  },
-  {
     name: "interactive_function",
     description: "Render an interactive calculator with sliders for inputs and a live-computed output. Use for: cost estimators (API pricing by token count), performance calculators (throughput vs latency), capacity planning, unit conversions.",
     inputSchema: {
@@ -85,190 +72,14 @@ const tools = [
     },
   },
   {
-    name: "flashcard_deck",
-    description: "Render a deck of flashcards. User swipes through cards and taps each to flip between front and back.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: { type: "string", description: "Deck title shown at the top" },
-        cards: {
-          type: "array",
-          description: "Array of flashcards, each with front and back text",
-          items: {
-            type: "object",
-            properties: {
-              front: { type: "string", description: "Front side text (question/term)" },
-              back: { type: "string", description: "Back side text (answer/definition)" },
-            },
-            required: ["front", "back"],
-          },
-        },
-      },
-      required: ["cards"],
-    },
-  },
-  {
-    name: "quiz",
-    description: "Render a multiple-choice quiz question. User taps an option and gets instant green (correct) or red (incorrect) feedback.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        question: { type: "string", description: "The question text" },
-        options: { type: "array", items: { type: "string" }, description: "Answer options (2-6 choices)" },
-        correct: { type: "integer", description: "Index of the correct answer (0-based)" },
-        explanation: { type: "string", description: "Optional explanation shown after answering" },
-      },
-      required: ["question", "options", "correct"],
-    },
-  },
-  {
-    name: "ordering",
-    description: "Render an ordering exercise. Items are shown in random order and the user taps them in sequence to arrange them correctly.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        instruction: { type: "string", description: "Instruction text (e.g. 'Put these events in chronological order')" },
-        items: { type: "array", items: { type: "string" }, description: "Items in their CORRECT order. They will be shuffled for display." },
-      },
-      required: ["items"],
-    },
-  },
-  {
-    name: "matching",
-    description: "Render a matching exercise with two columns. User taps one item from the left column then one from the right to create a pair. Use for: mapping APIs to endpoints, protocols to conforming types, env vars to their purpose.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        instruction: { type: "string", description: "Instruction text (e.g. 'Match each country to its capital')" },
-        pairs: {
-          type: "array",
-          description: "Array of pairs to match. Each pair has a left and right value.",
-          items: {
-            type: "object",
-            properties: {
-              left: { type: "string", description: "Left column item" },
-              right: { type: "string", description: "Right column item" },
-            },
-            required: ["left", "right"],
-          },
-        },
-      },
-      required: ["pairs"],
-    },
-  },
-  {
-    name: "categorization",
-    description: "Render a categorization exercise. Items appear at the top and user taps to sort them into labeled buckets. Use for: sorting files by layer (UI/Services/Models), grouping dependencies by purpose, triaging issues by severity.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        instruction: { type: "string", description: "Instruction text (e.g. 'Sort these animals by type')" },
-        categories: {
-          type: "object",
-          description: "Object where each key is a category name and value is an array of items belonging to that category",
-          additionalProperties: {
-            type: "array",
-            items: { type: "string" },
-          },
-        },
-      },
-      required: ["categories"],
-    },
-  },
-  {
-    name: "word_scramble",
-    description: "Render a word scramble exercise. Letters of a word are shuffled and the user taps them in order to spell the correct word.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        word: { type: "string", description: "The correct word to unscramble" },
-        hint: { type: "string", description: "Optional hint or definition" },
-      },
-      required: ["word"],
-    },
-  },
-  {
-    name: "sentence_builder",
-    description: "Render a sentence building exercise. Words are shown scrambled and the user taps them in order to construct the correct sentence.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        sentence: { type: "string", description: "The correct sentence. Words will be scrambled for display." },
-        hint: { type: "string", description: "Optional hint or translation" },
-      },
-      required: ["sentence"],
-    },
-  },
-  {
-    name: "highlight_select",
-    description: "Render a text highlighting exercise. User taps words or phrases in a passage to select the correct ones.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        instruction: { type: "string", description: "What to highlight (e.g. 'Tap all the adjectives')" },
-        text: { type: "string", description: "The passage of text to highlight from" },
-        correct: { type: "array", items: { type: "string" }, description: "The words/phrases that should be selected" },
-      },
-      required: ["instruction", "text", "correct"],
-    },
-  },
-  {
-    name: "error_correction",
-    description: "Render an error correction exercise. A sentence contains errors and the user taps the incorrect words to reveal corrections.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        instruction: { type: "string", description: "Instruction text (e.g. 'Find and tap the errors in this sentence')" },
-        segments: {
-          type: "array",
-          description: "Sentence broken into segments. Each segment is either correct text or an error with its correction.",
-          items: {
-            type: "object",
-            properties: {
-              text: { type: "string", description: "The displayed text (may contain an error)" },
-              correction: { type: "string", description: "The correct version. If present, this segment is an error." },
-            },
-            required: ["text"],
-          },
-        },
-      },
-      required: ["segments"],
-    },
-  },
-  {
-    name: "type_answer",
-    description: "Render a free-text answer exercise. User types their answer and checks it against the correct answer. Harder than multiple choice — tests recall, not recognition.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        question: { type: "string", description: "The question or prompt" },
-        answer: { type: "string", description: "The correct answer to check against" },
-        hint: { type: "string", description: "Optional hint shown before answering" },
-        caseSensitive: { type: "boolean", description: "Whether the check is case-sensitive (default false)" },
-      },
-      required: ["question", "answer"],
-    },
-  },
-  {
     name: "bar_chart",
-    description: "Render a bar chart for comparing values. Use for: bundle sizes by module, LOC per file, test counts by status (pass/fail/skip), build times, dependency counts, API response time comparisons.",
+    description: "Render a bar chart for comparing values. Use for: bundle sizes by module, LOC per file, test counts by status, build times, dependency counts.",
     inputSchema: {
       type: "object",
       properties: {
         title: { type: "string", description: "Chart title" },
-        bars: {
-          type: "array",
-          description: "Array of bars, each with a label and value",
-          items: {
-            type: "object",
-            properties: {
-              label: { type: "string", description: "Bar label" },
-              value: { type: "number", description: "Bar value" },
-            },
-            required: ["label", "value"],
-          },
-        },
-        unit: { type: "string", description: "Optional unit label for the values (e.g. '%', 'kg')" },
+        bars: { type: "array", items: { type: "object", properties: { label: { type: "string" }, value: { type: "number" } }, required: ["label", "value"] } },
+        unit: { type: "string", description: "Optional unit label for the values" },
         color: { type: "string", description: "Bar color: blue, green, orange, purple, red, teal, pink (default: blue)" },
       },
       required: ["bars"],
@@ -276,198 +87,88 @@ const tools = [
   },
   {
     name: "pie_chart",
-    description: "Render a pie chart showing proportions. Use for: code composition (Swift vs ObjC), test coverage breakdown, error distribution by type, disk usage by category.",
+    description: "Render a pie chart showing proportions. Use for: code composition, test coverage breakdown, error distribution, disk usage.",
     inputSchema: {
       type: "object",
       properties: {
         title: { type: "string", description: "Chart title" },
-        slices: {
-          type: "array",
-          description: "Array of slices, each with a label and value (values are proportional, don't need to sum to 100)",
-          items: {
-            type: "object",
-            properties: {
-              label: { type: "string", description: "Slice label" },
-              value: { type: "number", description: "Slice value" },
-            },
-            required: ["label", "value"],
-          },
-        },
+        slices: { type: "array", items: { type: "object", properties: { label: { type: "string" }, value: { type: "number" } }, required: ["label", "value"] } },
       },
       required: ["slices"],
     },
   },
   {
     name: "scatter_plot",
-    description: "Render a scatter plot for showing relationships and correlations. Use for: file size vs complexity, test duration vs coverage, coupling vs cohesion analysis.",
+    description: "Render a scatter plot for showing relationships and correlations. Use for: file size vs complexity, test duration vs coverage.",
     inputSchema: {
       type: "object",
       properties: {
-        title: { type: "string", description: "Chart title" },
-        points: {
-          type: "array",
-          description: "Array of data points with x and y coordinates",
-          items: {
-            type: "object",
-            properties: {
-              x: { type: "number" },
-              y: { type: "number" },
-              label: { type: "string", description: "Optional point label" },
-            },
-            required: ["x", "y"],
-          },
-        },
-        xLabel: { type: "string", description: "X axis label" },
-        yLabel: { type: "string", description: "Y axis label" },
+        title: { type: "string" },
+        points: { type: "array", items: { type: "object", properties: { x: { type: "number" }, y: { type: "number" }, label: { type: "string" } }, required: ["x", "y"] } },
+        xLabel: { type: "string" },
+        yLabel: { type: "string" },
       },
       required: ["points"],
     },
   },
   {
     name: "line_chart",
-    description: "Render a data-driven line chart for time series and trends. Use for: build time trends, crash rates over releases, API latency over time, git commit frequency, memory/CPU usage patterns.",
+    description: "Render a data-driven line chart for time series and trends. Use for: build time trends, crash rates, API latency over time.",
     inputSchema: {
       type: "object",
       properties: {
-        title: { type: "string", description: "Chart title" },
-        lines: {
-          type: "array",
-          description: "One or more data series to plot",
-          items: {
-            type: "object",
-            properties: {
-              label: { type: "string", description: "Series name for legend" },
-              points: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    x: { type: "number", description: "X value or index" },
-                    y: { type: "number", description: "Y value" },
-                  },
-                  required: ["x", "y"],
-                },
-              },
-            },
-            required: ["label", "points"],
-          },
-        },
-        xLabel: { type: "string", description: "X axis label" },
-        yLabel: { type: "string", description: "Y axis label" },
+        title: { type: "string" },
+        lines: { type: "array", items: { type: "object", properties: { label: { type: "string" }, points: { type: "array", items: { type: "object", properties: { x: { type: "number" }, y: { type: "number" } }, required: ["x", "y"] } } }, required: ["label", "points"] } },
+        xLabel: { type: "string" },
+        yLabel: { type: "string" },
       },
       required: ["lines"],
     },
   },
   {
-    name: "step_reveal",
-    description: "Render a step-by-step reveal. Steps are hidden and revealed one at a time as the user taps 'Next'. Use for: debugging walkthroughs, explaining complex algorithms, migration checklists, deployment runbooks, onboarding sequences.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: { type: "string", description: "Title of the step sequence" },
-        steps: {
-          type: "array",
-          items: { type: "string" },
-          description: "The steps in order. Each is hidden until revealed.",
-        },
-      },
-      required: ["steps"],
-    },
-  },
-  {
     name: "timeline",
-    description: "Render a vertical timeline of events with SF Symbol icons and colored dots. Use for: git history visualization, deployment history, incident timelines, release changelogs, project milestones, request lifecycle (client → server → db → response).",
+    description: "Render a vertical timeline of events with SF Symbol icons and colored dots. Use for: git history, deployment history, incident timelines, project milestones.",
     inputSchema: {
       type: "object",
       properties: {
-        title: { type: "string", description: "Timeline title" },
-        events: {
-          type: "array",
-          description: "Array of events in chronological order",
-          items: {
-            type: "object",
-            properties: {
-              date: { type: "string", description: "Date or time label (e.g. 'Jan 2024', '9:00 AM')" },
-              title: { type: "string", description: "Event title" },
-              description: { type: "string", description: "Optional event description" },
-              icon: { type: "string", description: "SF Symbol name (default: circle.fill)" },
-              color: { type: "string", description: "Dot color: blue, green, orange, purple, red, teal, pink, indigo (default: blue)" },
-            },
-            required: ["date", "title"],
-          },
-        },
+        title: { type: "string" },
+        events: { type: "array", items: { type: "object", properties: { date: { type: "string" }, title: { type: "string" }, description: { type: "string" }, icon: { type: "string", description: "SF Symbol name (default: circle.fill)" }, color: { type: "string", description: "blue, green, orange, purple, red, teal, pink, indigo" } }, required: ["date", "title"] } },
       },
       required: ["events"],
     },
   },
   {
     name: "image_carousel",
-    description: "Render an image or swipeable image carousel from local file paths or web URLs. Use for: showing screenshots, before/after UI comparisons, design references, architecture diagrams as images.",
+    description: "Render an image or swipeable image carousel from local file paths or web URLs. Use for: screenshots, before/after comparisons, design references.",
     inputSchema: {
       type: "object",
       properties: {
-        title: { type: "string", description: "Optional title shown above the images" },
-        images: {
-          type: "array",
-          description: "Array of images to display. Each image needs either a path (local file) or url (web)",
-          items: {
-            type: "object",
-            properties: {
-              path: { type: "string", description: "Absolute file path on the Mac (e.g. '/Users/soli/Desktop/photo.png')" },
-              url: { type: "string", description: "Web URL of the image (e.g. 'https://example.com/photo.jpg')" },
-              caption: { type: "string", description: "Optional caption shown below the image" },
-            },
-          },
-        },
+        title: { type: "string" },
+        images: { type: "array", items: { type: "object", properties: { path: { type: "string", description: "Absolute file path on the Mac" }, url: { type: "string", description: "Web URL of the image" }, caption: { type: "string" } } } },
       },
       required: ["images"],
     },
   },
   {
     name: "color_palette",
-    description: "Render a color palette with labeled swatches. Use for: app theme colors, design system tokens, proposing UI color changes, showing current vs proposed palettes.",
+    description: "Render a color palette with labeled swatches. Use for: app theme colors, design system tokens, proposing UI color changes.",
     inputSchema: {
       type: "object",
       properties: {
-        title: { type: "string", description: "Palette title" },
-        colors: {
-          type: "array",
-          description: "Array of colors, each with a hex value and optional label",
-          items: {
-            type: "object",
-            properties: {
-              hex: { type: "string", description: "Hex color (e.g. '#6050DC', '#FF5733')" },
-              label: { type: "string", description: "Color name or role (e.g. 'Background', 'Majorelle Blue')" },
-            },
-            required: ["hex"],
-          },
-        },
+        title: { type: "string" },
+        colors: { type: "array", items: { type: "object", properties: { hex: { type: "string", description: "Hex color (e.g. '#6050DC')" }, label: { type: "string" } }, required: ["hex"] } },
       },
       required: ["colors"],
     },
   },
   {
     name: "tree",
-    description: "Render a collapsible tree diagram. Use for: project folder structures, module dependency trees, class/protocol hierarchies, view hierarchies, decision trees, architecture overviews. Nodes can have SF Symbol icons and are collapsible. PREFER this over markdown code blocks for any hierarchical structure.",
+    description: "Render a collapsible tree diagram. Use for: folder structures, dependency trees, class hierarchies, architecture overviews. PREFER this over markdown code blocks for any hierarchical structure.",
     inputSchema: {
       type: "object",
       properties: {
-        title: { type: "string", description: "Tree title" },
-        root: {
-          type: "object",
-          description: "Root node of the tree. Each node has a label, optional icon/color, and optional children array.",
-          properties: {
-            label: { type: "string", description: "Node label" },
-            icon: { type: "string", description: "SF Symbol name (default: folder.fill for parents, doc.fill for leaves)" },
-            color: { type: "string", description: "Icon color (default: yellow for folders, blue for files)" },
-            children: {
-              type: "array",
-              description: "Child nodes (same structure recursively)",
-              items: { type: "object" },
-            },
-          },
-          required: ["label"],
-        },
+        title: { type: "string" },
+        root: { type: "object", properties: { label: { type: "string" }, icon: { type: "string", description: "SF Symbol name" }, color: { type: "string" }, children: { type: "array", items: { type: "object" } } }, required: ["label"] },
       },
       required: ["root"],
     },

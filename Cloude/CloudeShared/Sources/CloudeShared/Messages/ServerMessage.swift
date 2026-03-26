@@ -32,10 +32,6 @@ public enum ServerMessage: Codable {
     case fileSearchResults(files: [String], query: String)
     case remoteSessionList(sessions: [RemoteSession])
     case messageUUID(uuid: String, conversationId: String?)
-    case teamCreated(teamName: String, leadAgentId: String, conversationId: String?)
-    case teammateSpawned(teammate: TeammateInfo, conversationId: String?)
-    case teammateUpdate(teammateId: String, status: TeammateStatus?, lastMessage: String?, lastMessageAt: Date?, conversationId: String?)
-    case teamDeleted(conversationId: String?)
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
     case plans(stages: [String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
@@ -43,6 +39,6 @@ public enum ServerMessage: Codable {
     case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, teamName, leadAgentId, teammate, teammateId, lastMessage, lastMessageAt, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo
     }
 }

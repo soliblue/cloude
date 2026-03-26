@@ -44,25 +44,6 @@ extension ServerMessage {
             try container.encode("message_uuid", forKey: .type)
             try container.encode(uuid, forKey: .uuid)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .teamCreated(let teamName, let leadAgentId, let conversationId):
-            try container.encode("team_created", forKey: .type)
-            try container.encode(teamName, forKey: .teamName)
-            try container.encode(leadAgentId, forKey: .leadAgentId)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .teammateSpawned(let teammate, let conversationId):
-            try container.encode("teammate_spawned", forKey: .type)
-            try container.encode(teammate, forKey: .teammate)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .teammateUpdate(let teammateId, let status, let lastMessage, let lastMessageAt, let conversationId):
-            try container.encode("teammate_update", forKey: .type)
-            try container.encode(teammateId, forKey: .teammateId)
-            try container.encodeIfPresent(status, forKey: .status)
-            try container.encodeIfPresent(lastMessage, forKey: .lastMessage)
-            try container.encodeIfPresent(lastMessageAt, forKey: .lastMessageAt)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .teamDeleted(let conversationId):
-            try container.encode("team_deleted", forKey: .type)
-            try container.encodeIfPresent(conversationId, forKey: .conversationId)
         case .nameSuggestion(let name, let symbol, let conversationId):
             try container.encode("name_suggestion", forKey: .type)
             try container.encode(name, forKey: .name)

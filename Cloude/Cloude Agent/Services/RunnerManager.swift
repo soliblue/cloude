@@ -11,12 +11,6 @@ struct ConversationRunner {
     var sessionId: String?
 }
 
-struct ActiveTeam {
-    let teamName: String
-    var teammates: [String: TeammateInfo] = [:]
-    var lastInboxState: [String: Int] = [:]
-}
-
 @MainActor
 class RunnerManager: ObservableObject {
     @Published var activeRunners: [String: ConversationRunner] = [:]
@@ -30,14 +24,6 @@ class RunnerManager: ObservableObject {
     var onStatusChange: ((AgentState, String) -> Void)?
     var onCloudeCommand: ((String, String, String) -> Void)?
     var onMessageUUID: ((String, String) -> Void)?
-    var onTeamCreated: ((String, String, String) -> Void)?
-    var onTeammateSpawned: ((TeammateInfo, String) -> Void)?
-    var onTeamDeleted: ((String) -> Void)?
-
-    var inboxTimers: [String: Timer] = [:]
-    var activeTeams: [String: ActiveTeam] = [:]
-    var _onTeammateInboxUpdate: ((String, TeammateStatus?, String?, Date?, String) -> Void)?
-
     var isAnyRunning: Bool {
         activeRunners.values.contains { $0.runner.isRunning }
     }

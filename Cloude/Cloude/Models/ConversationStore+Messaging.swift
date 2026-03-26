@@ -20,23 +20,6 @@ extension ConversationStore {
             return adjusted
         }
 
-        var teamSummary: TeamSummary?
-        if let teamName = output.teamName, !output.teammates.isEmpty {
-            teamSummary = TeamSummary(
-                teamName: teamName,
-                members: output.teammates.map {
-                    TeamSummary.Member(name: $0.name, color: $0.color, model: $0.model, agentType: $0.agentType)
-                }
-            )
-        } else if let snapshot = output.teamSnapshot {
-            teamSummary = TeamSummary(
-                teamName: snapshot.name,
-                members: snapshot.members.map {
-                    TeamSummary.Member(name: $0.name, color: $0.color, model: $0.model, agentType: $0.agentType)
-                }
-            )
-        }
-
         if let liveId = output.liveMessageId {
             if trimmedText.isEmpty && adjustedToolCalls.isEmpty {
                 removeMessage(liveId, from: freshConv)
@@ -48,7 +31,6 @@ extension ConversationStore {
                     msg.costUsd = output.runStats?.costUsd
                     msg.serverUUID = output.messageUUID
                     msg.model = output.runStats?.model
-                    msg.teamSummary = teamSummary
                 }
             }
             output.reset()
@@ -67,7 +49,6 @@ extension ConversationStore {
                     durationMs: output.runStats?.durationMs,
                     costUsd: output.runStats?.costUsd,
                     serverUUID: output.messageUUID,
-                    teamSummary: teamSummary,
                     model: output.runStats?.model
                 )
                 addMessage(message, to: conversation)
