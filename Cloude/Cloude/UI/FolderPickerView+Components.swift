@@ -50,7 +50,7 @@ struct FolderRow: View {
         Button(action: onTap) {
             HStack(spacing: 12) {
                 Image(systemName: "folder.fill")
-                    .font(.title2)
+                    .font(.system(size: DS.Icon.l))
                     .foregroundColor(.blue)
                     .frame(width: 32)
 

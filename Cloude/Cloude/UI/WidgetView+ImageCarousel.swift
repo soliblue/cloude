@@ -76,7 +76,7 @@ struct ImageCarouselWidget: View {
 
     private func placeholderView(icon: String) -> some View {
         Image(systemName: icon)
-            .font(.title2)
+            .font(.system(size: DS.Icon.l))
             .foregroundColor(.secondary)
             .frame(maxWidth: .infinity, minHeight: 120)
             .background(Color.themeSecondary.opacity(0.3))
@@ -101,7 +101,7 @@ struct FileImageView: View {
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
                 Image(systemName: "photo")
-                    .font(.title2)
+                    .font(.system(size: DS.Icon.l))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
                     .background(Color.themeSecondary.opacity(0.3))

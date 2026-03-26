@@ -46,7 +46,7 @@ struct WindowEditForm: View {
                 .buttonStyle(.plain)
 
                 TextField("Name", text: $name)
-                    .font(.title3)
+                    .font(.system(size: DS.Text.m))
                     .textFieldStyle(.plain)
                     .padding(.horizontal, 16)
                     .frame(height: 48)

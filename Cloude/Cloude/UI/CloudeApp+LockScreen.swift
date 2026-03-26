@@ -18,7 +18,7 @@ struct LockScreenView: View {
 
             VStack(spacing: 8) {
                 Text("Cloude is Locked")
-                    .font(.title2)
+                    .font(.system(size: DS.Icon.l))
                     .fontWeight(.semibold)
 
                 Text("Authenticate to access your conversations")
