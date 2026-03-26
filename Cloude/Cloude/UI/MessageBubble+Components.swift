@@ -14,7 +14,7 @@ struct MessageImageThumbnails: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 36, height: 36)
+                            .frame(width: DS.Size.button, height: DS.Size.button)
                             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
                     }
                 }
@@ -25,7 +25,7 @@ struct MessageImageThumbnails: View {
             Image(uiImage: uiImage)
                 .resizable()
                 .scaledToFill()
-                .frame(width: 36, height: 36)
+                .frame(width: DS.Size.button, height: DS.Size.button)
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
         }
     }
@@ -39,11 +39,11 @@ struct CompactingIndicator: View {
             Image(systemName: "arrow.triangle.2.circlepath")
                 .font(.system(size: DS.Text.s, weight: .semibold))
                 .rotationEffect(.degrees(pulse ? 360 : 0))
-                .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: pulse)
+                .animation(.linear(duration: DS.Duration.pulse).repeatForever(autoreverses: false), value: pulse)
             Text("Compacting")
                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
         } background: {
-            Color.cyan.opacity(0.12)
+            Color.cyan.opacity(DS.Opacity.subtle)
         }
         .foregroundColor(.cyan)
         .onAppear { pulse = true }

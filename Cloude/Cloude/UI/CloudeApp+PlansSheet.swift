@@ -56,13 +56,13 @@ struct PlansSheet: View {
                 if isLoading {
                     Spacer()
                     ProgressView()
-                        .tint(.secondary.opacity(0.5))
+                        .tint(.secondary.opacity(DS.Opacity.half))
                     Spacer()
                 } else if currentPlans.isEmpty {
                     Spacer()
                     Text("No plans in \(selectedStage)")
                         .font(.system(size: DS.Text.m))
-                        .foregroundColor(.secondary.opacity(0.5))
+                        .foregroundColor(.secondary.opacity(DS.Opacity.half))
                     Spacer()
                 } else {
                     ScrollView(showsIndicators: false) {
@@ -84,14 +84,14 @@ struct PlansSheet: View {
                     HStack(spacing: DS.Spacing.m) {
                         ForEach(Array(stagesWithCounts.enumerated()), id: \.element.0) { i, item in
                             if i > 0 {
-                                Divider().frame(height: 20)
+                                Divider().frame(height: DS.Size.divider)
                             }
-                            Button(action: { withAnimation(.easeInOut(duration: 0.15)) { selectedStage = item.0 } }) {
+                            Button(action: { withAnimation(.easeInOut(duration: DS.Duration.quick)) { selectedStage = item.0 } }) {
                                 Image(systemName: stageIcon(item.0))
                                     .font(.system(size: DS.Icon.s, weight: selectedStage == item.0 ? .semibold : .regular))
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(0.6))
+                            .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(DS.Opacity.heavy))
                         }
                     }
                     .padding(.horizontal, DS.Spacing.s)
@@ -102,12 +102,12 @@ struct PlansSheet: View {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: DS.Icon.s, weight: .medium))
                                 .foregroundColor(.secondary)
-                            Divider().frame(height: 20)
+                            Divider().frame(height: DS.Size.divider)
                         }
                         if isLoading && !stages.isEmpty {
                             ProgressView()
                                 .controlSize(.small)
-                            Divider().frame(height: 20)
+                            Divider().frame(height: DS.Size.divider)
                         }
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")

@@ -15,14 +15,14 @@ extension FilePreviewView {
                     VStack(spacing: DS.Spacing.s) {
                         ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
                             .progressViewStyle(.linear)
-                            .frame(width: 200)
+                            .frame(width: DS.Size.chart)
                         Text("\(progress.current + 1) of \(progress.total)")
                             .font(.system(size: DS.Text.s))
                             .foregroundStyle(.secondary)
                     }
                 } else {
                     ProgressView()
-                        .scaleEffect(1.2)
+                        .scaleEffect(DS.Scale.grow)
                     Text("Loading...")
                         .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)

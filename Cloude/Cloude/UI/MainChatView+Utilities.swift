@@ -107,7 +107,7 @@ extension MainChatView {
             guard let image = image, let data = image.jpegData(compressionQuality: 0.8) else { return }
             DispatchQueue.main.async {
                 guard self.attachedImages.count < 5 else { return }
-                withAnimation(.easeOut(duration: 0.15)) {
+                withAnimation(.easeOut(duration: DS.Duration.quick)) {
                     self.attachedImages.append(AttachedImage(data: data, isScreenshot: true))
                 }
             }

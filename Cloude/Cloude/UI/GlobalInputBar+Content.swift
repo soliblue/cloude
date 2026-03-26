@@ -46,7 +46,7 @@ extension GlobalInputBar {
                 ImageAttachmentStrip(
                     images: attachedImages,
                     onRemove: { id in
-                        withAnimation(.easeOut(duration: 0.15)) {
+                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
                             attachedImages.removeAll { $0.id == id }
                         }
                     }
@@ -58,7 +58,7 @@ extension GlobalInputBar {
                 FileAttachmentStrip(
                     files: attachedFiles,
                     onRemove: { id in
-                        withAnimation(.easeOut(duration: 0.15)) {
+                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
                             attachedFiles.removeAll { $0.id == id }
                         }
                     }
@@ -86,8 +86,8 @@ extension GlobalInputBar {
             }
             .padding(.bottom, DS.Spacing.m)
         }
-        .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
-        .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))
-        .animation(.easeOut(duration: 0.15), value: attachedFiles.map(\.id))
+        .animation(.easeOut(duration: DS.Duration.quick), value: filteredCommands.map(\.name))
+        .animation(.easeOut(duration: DS.Duration.quick), value: attachedImages.map(\.id))
+        .animation(.easeOut(duration: DS.Duration.quick), value: attachedFiles.map(\.id))
     }
 }

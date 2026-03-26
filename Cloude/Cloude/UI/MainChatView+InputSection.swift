@@ -43,7 +43,7 @@ extension MainChatView {
 
             if !widgetEditing {
                 pageIndicator()
-                    .frame(height: 44)
+                    .frame(height: DS.Size.tap)
                     .padding(.bottom, isKeyboardVisible ? 12 : 4)
             }
         }

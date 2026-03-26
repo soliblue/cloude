@@ -17,7 +17,7 @@ struct CodeBlock: View {
     var body: some View {
         VStack(spacing: 0) {
             toolbar
-            Divider().overlay(Color.gray.opacity(0.3))
+            Divider().overlay(Color.gray.opacity(DS.Opacity.strong))
             codeContent
         }
         .background(Color.themeSecondary)
@@ -38,14 +38,14 @@ struct CodeBlock: View {
                     .foregroundStyle(.secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
-            Divider().frame(height: 14)
+            Divider().frame(height: DS.Size.glyph)
             Button { wrapOverride = !wrap } label: {
                 Image(systemName: wrap ? "text.word.spacing" : "arrow.left.and.right.text.vertical")
                     .font(.system(size: DS.Text.s))
                     .foregroundStyle(.secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
-            Divider().frame(height: 14)
+            Divider().frame(height: DS.Size.glyph)
             Button {
                 UIPasteboard.general.string = code
                 copied = true
@@ -94,7 +94,7 @@ struct CodeBlock: View {
             ForEach(Array(lines.enumerated()), id: \.offset) { index, _ in
                 Text("\(index + 1)")
                     .font(.system(size: DS.Text.s, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(0.5))
+                    .foregroundStyle(.secondary.opacity(DS.Opacity.half))
                     .frame(height: lineHeight)
             }
         }
@@ -116,7 +116,7 @@ struct BlockquoteView: View {
         HStack(alignment: .top, spacing: 0) {
             Rectangle()
                 .fill(Color.themeSecondary)
-                .frame(width: 3)
+                .frame(width: DS.Spacing.xs)
             Text(text)
                 .font(.system(size: DS.Text.m))
                 .italic()

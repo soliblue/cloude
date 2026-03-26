@@ -23,7 +23,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
         yValue: @escaping (DataPoint) -> Int,
         formatYValue: @escaping (Int) -> String = { "\($0)" },
         detailText: @escaping (DataPoint) -> String,
-        lineColor: @escaping (DataPoint, Bool) -> Color = { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
+        lineColor: @escaping (DataPoint, Bool) -> Color = { _, selected in selected ? .accentColor : .blue.opacity(DS.Opacity.heavy) },
         height: CGFloat = 140,
         showTimeRangePicker: Bool = false,
         timeRanges: [TimeRange] = [],
@@ -52,7 +52,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                 if let point = selectedPoint {
                     Text(detailText(point))
                         .font(.system(size: DS.Text.s))
-                        .foregroundColor(.secondary.opacity(0.8))
+                        .foregroundColor(.secondary.opacity(DS.Opacity.full))
                 } else if showTimeRangePicker {
                     timeRangePicker
                 }
@@ -65,7 +65,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                 )
                 .foregroundStyle(lineColor(point, false))
                 .interpolationMethod(.catmullRom)
-                .lineStyle(StrokeStyle(lineWidth: 2))
+                .lineStyle(StrokeStyle(lineWidth: DS.Stroke.thick))
 
                 PointMark(
                     x: .value("X", idx),
@@ -80,7 +80,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                         if let idx = value.as(Int.self), idx >= 0, idx < data.count {
                             Text(xValue(data[idx]))
                                 .font(.system(size: DS.Text.s))
-                                .foregroundStyle(.secondary.opacity(0.6))
+                                .foregroundStyle(.secondary.opacity(DS.Opacity.heavy))
                         }
                     }
                 }
@@ -91,7 +91,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                         if let v = value.as(Int.self) {
                             Text(formatYValue(v))
                                 .font(.system(size: DS.Text.s))
-                                .foregroundStyle(.secondary.opacity(0.6))
+                                .foregroundStyle(.secondary.opacity(DS.Opacity.heavy))
                         }
                     }
                 }
@@ -108,7 +108,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: 0.3)) { selectedPoint = nil }
+                                    withAnimation(.easeOut(duration: DS.Duration.slow)) { selectedPoint = nil }
                                 }
                         )
                 }
@@ -116,9 +116,9 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
             .frame(height: height)
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(0.08))
+        .background(.white.opacity(DS.Opacity.faint))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
     }
 
     private var timeRangePicker: some View {
@@ -132,10 +132,10 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                 }) {
                     Text(range.label)
                         .font(.system(size: DS.Text.s, weight: selectedRange?.id == range.id ? .semibold : .regular))
-                        .foregroundColor(selectedRange?.id == range.id ? .white : .secondary.opacity(0.6))
+                        .foregroundColor(selectedRange?.id == range.id ? .white : .secondary.opacity(DS.Opacity.heavy))
                         .padding(.horizontal, DS.Spacing.s)
                         .padding(.vertical, DS.Spacing.xs)
-                        .background(selectedRange?.id == range.id ? Color.accentColor.opacity(0.3) : Color.clear)
+                        .background(selectedRange?.id == range.id ? Color.accentColor.opacity(DS.Opacity.strong) : Color.clear)
                         .cornerRadius(DS.Radius.s)
                 }
             }

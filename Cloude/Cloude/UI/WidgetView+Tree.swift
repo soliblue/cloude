@@ -24,37 +24,37 @@ struct TreeWidget: View {
             ForEach(Array(prefixSegments.enumerated()), id: \.offset) { _, showLine in
                 if showLine {
                     Rectangle()
-                        .fill(Color.secondary.opacity(0.2))
-                        .frame(width: 1)
+                        .fill(Color.secondary.opacity(DS.Opacity.medium))
+                        .frame(width: DS.Size.hairline)
                         .frame(maxHeight: .infinity)
                         .padding(.horizontal, DS.Spacing.s)
                 } else {
-                    Color.clear.frame(width: 16)
+                    Color.clear.frame(width: DS.Spacing.l)
                 }
             }
 
             if depth > 0 {
                 HStack(spacing: 0) {
                     Rectangle()
-                        .fill(Color.secondary.opacity(0.2))
-                        .frame(width: 10, height: 1)
+                        .fill(Color.secondary.opacity(DS.Opacity.medium))
+                        .frame(width: DS.Size.dot, height: 1)
                         .padding(.top, DS.Spacing.s)
                     Spacer(minLength: 3)
                 }
-                .frame(width: 13)
+                .frame(width: DS.Spacing.m)
             }
 
             Image(systemName: node.icon)
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(node.iconColor)
-                .frame(width: 14)
+                .frame(width: DS.Size.glyph)
                 .padding(.top, DS.Spacing.xs)
 
-            Spacer().frame(width: 5)
+            Spacer().frame(width: DS.Spacing.xs)
 
             if hasChildren {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.15)) {
+                    withAnimation(.easeInOut(duration: DS.Duration.quick)) {
                         if isCollapsed { collapsed.remove(node.id) } else { collapsed.insert(node.id) }
                     }
                 } label: {

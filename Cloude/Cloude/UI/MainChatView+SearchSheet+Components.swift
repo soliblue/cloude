@@ -7,7 +7,7 @@ extension ConversationSearchSheet {
             Image.safeSymbol(conv.symbol)
                 .font(.system(size: DS.Text.m))
                 .foregroundColor(.secondary)
-                .frame(width: 24)
+                .frame(width: DS.Spacing.xl)
             VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 Text(conv.name)
                     .font(.system(size: DS.Text.m))

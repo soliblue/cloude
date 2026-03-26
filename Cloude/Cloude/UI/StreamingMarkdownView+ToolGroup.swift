@@ -81,7 +81,7 @@ struct ToolGroupView: View {
                     }
                     .padding(.horizontal, DS.Spacing.l)
                 }
-                .padding(.horizontal, -16)
+                .padding(.horizontal, -DS.Spacing.l)
                 .scrollClipDisabled()
             }
         }

@@ -37,31 +37,31 @@ struct LineChartWidget: View {
                             y: .value(yLabel ?? "Y", point.y)
                         )
                         .foregroundStyle(colors[lineIdx % colors.count])
-                        .lineStyle(StrokeStyle(lineWidth: 2))
+                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.thick))
                     }
-                    .symbol(Circle().strokeBorder(lineWidth: 1.5))
+                    .symbol(Circle().strokeBorder(lineWidth: DS.Stroke.medium))
                     .symbolSize(20)
                 }
 
                 if let selectedX {
                     RuleMark(x: .value("Selected", selectedX))
-                        .foregroundStyle(Color.secondary.opacity(0.5))
-                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                        .foregroundStyle(Color.secondary.opacity(DS.Opacity.half))
+                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.regular, dash: [4, 3]))
                         .annotation(position: .top, alignment: .center) {
                             valuesAtX(selectedX)
                         }
                 }
             }
-            .frame(height: 200)
+            .frame(height: DS.Size.chart)
             .chartXAxis {
                 AxisMarks { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
@@ -73,13 +73,13 @@ struct LineChartWidget: View {
                                 .onChanged { drag in
                                     let x = drag.location.x - geo[proxy.plotFrame!].origin.x
                                     if let xVal: Double = proxy.value(atX: x) {
-                                        withAnimation(.easeOut(duration: 0.1)) {
+                                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
                                             selectedX = xVal
                                         }
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: 0.2)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
                                         selectedX = nil
                                     }
                                 }
@@ -94,7 +94,7 @@ struct LineChartWidget: View {
                         HStack(spacing: DS.Spacing.xs) {
                             Circle()
                                 .fill(colors[index % colors.count])
-                                .frame(width: 8, height: 8)
+                                .frame(width: DS.Spacing.s, height: DS.Spacing.s)
                             Text(line.label)
                                 .font(.system(size: DS.Text.s))
                                 .foregroundColor(.primary)
@@ -116,7 +116,7 @@ struct LineChartWidget: View {
                     HStack(spacing: DS.Spacing.xs) {
                         Circle()
                             .fill(colors[lineIdx % colors.count])
-                            .frame(width: 6, height: 6)
+                            .frame(width: DS.Size.pip, height: DS.Size.pip)
                         Text(closest.y.formatted())
                             .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)

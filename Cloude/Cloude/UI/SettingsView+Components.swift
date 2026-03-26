@@ -11,7 +11,7 @@ struct SettingsRow<Content: View>: View {
             Image(systemName: icon)
                 .font(.system(size: DS.Icon.m))
                 .foregroundColor(color)
-                .frame(width: 24)
+                .frame(width: DS.Spacing.xl)
             content
         }
     }
@@ -27,8 +27,8 @@ struct ConnectionStatusCard: View {
         HStack(spacing: DS.Spacing.l) {
             ZStack {
                 RoundedRectangle(cornerRadius: DS.Radius.m)
-                    .fill(statusColor.opacity(0.2))
-                    .frame(width: 44, height: 44)
+                    .fill(statusColor.opacity(DS.Opacity.medium))
+                    .frame(width: DS.Size.tap, height: DS.Size.tap)
 
                 Image(systemName: statusIcon)
                     .font(.system(size: DS.Icon.l))

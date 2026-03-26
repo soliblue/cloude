@@ -18,7 +18,7 @@ extension ToolDetailSheet {
 
                         if child.state == .executing {
                             ProgressView()
-                                .scaleEffect(0.6)
+                                .scaleEffect(DS.Scale.shrink)
                         } else {
                             Image(systemName: "checkmark")
                                 .font(.system(size: DS.Text.s, weight: .bold))
@@ -34,7 +34,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeSecondary.opacity(0.5))
+            .background(Color.themeSecondary.opacity(DS.Opacity.half))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
@@ -52,7 +52,7 @@ extension ToolDetailSheet {
                         Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
                             .font(.system(size: DS.Text.m, weight: .medium))
                             .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
-                            .frame(width: 20)
+                            .frame(width: DS.Size.divider)
 
                         Text(todo["content"] ?? "")
                             .font(.system(size: DS.Text.m))
@@ -68,7 +68,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeSecondary.opacity(0.5))
+            .background(Color.themeSecondary.opacity(DS.Opacity.half))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
@@ -86,7 +86,7 @@ extension ToolDetailSheet {
                             Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
                                 .font(.system(size: DS.Text.m, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
-                                .frame(width: 20)
+                                .frame(width: DS.Size.divider)
                                 .padding(.top, DS.Spacing.xs)
 
                             Text(chained.command)
@@ -100,8 +100,8 @@ extension ToolDetailSheet {
                         if let op = chained.operatorAfter {
                             HStack(spacing: DS.Spacing.s) {
                                 Rectangle()
-                                    .fill(Color.secondary.opacity(0.3))
-                                    .frame(width: 1, height: 16)
+                                    .fill(Color.secondary.opacity(DS.Opacity.strong))
+                                    .frame(width: DS.Size.hairline, height: 16)
                                     .padding(.leading, DS.Spacing.xl)
                                 Text(op.rawValue)
                                     .font(.system(size: DS.Text.s, design: .monospaced))
@@ -112,7 +112,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeSecondary.opacity(0.5))
+            .background(Color.themeSecondary.opacity(DS.Opacity.half))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }

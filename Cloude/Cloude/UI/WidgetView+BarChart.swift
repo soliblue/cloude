@@ -43,7 +43,7 @@ struct BarChartWidget: View {
                     }
                 }
             }
-            .frame(height: 200)
+            .frame(height: DS.Size.chart)
             .chartXAxis {
                 AxisMarks { _ in
                     AxisValueLabel()
@@ -52,7 +52,7 @@ struct BarChartWidget: View {
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
                     AxisValueLabel()
                         .font(.system(size: DS.Text.s, design: .monospaced))
                 }
@@ -65,13 +65,13 @@ struct BarChartWidget: View {
                                 .onChanged { drag in
                                     let x = drag.location.x - geo[proxy.plotFrame!].origin.x
                                     if let label: String = proxy.value(atX: x) {
-                                        withAnimation(.easeOut(duration: 0.15)) {
+                                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
                                             selectedBar = bars.firstIndex(where: { $0.label == label })
                                         }
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: 0.2)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
                                         selectedBar = nil
                                     }
                                 }

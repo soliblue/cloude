@@ -97,17 +97,17 @@ struct WhiteboardSheet: View {
     }
 
     private func drawGrid(context: GraphicsContext) {
-        let gridColor = Color.white.opacity(0.04)
+        let gridColor = Color.white.opacity(DS.Opacity.ghost)
         for i in stride(from: 0, through: 1000, by: 50) {
             var hPath = Path()
             hPath.move(to: CGPoint(x: 0, y: Double(i)))
             hPath.addLine(to: CGPoint(x: 1000, y: Double(i)))
-            context.stroke(hPath, with: .color(gridColor), lineWidth: 0.5)
+            context.stroke(hPath, with: .color(gridColor), lineWidth: DS.Stroke.thin)
 
             var vPath = Path()
             vPath.move(to: CGPoint(x: Double(i), y: 0))
             vPath.addLine(to: CGPoint(x: Double(i), y: 1000))
-            context.stroke(vPath, with: .color(gridColor), lineWidth: 0.5)
+            context.stroke(vPath, with: .color(gridColor), lineWidth: DS.Stroke.thin)
         }
     }
 }

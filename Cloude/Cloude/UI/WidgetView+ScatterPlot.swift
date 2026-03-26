@@ -50,16 +50,16 @@ struct ScatterPlotWidget: View {
                     }
                 }
             }
-            .frame(height: 200)
+            .frame(height: DS.Size.chart)
             .chartXAxis {
                 AxisMarks { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
@@ -79,12 +79,12 @@ struct ScatterPlotWidget: View {
                                         let d2 = pow($1.element.x - xVal, 2) + pow($1.element.y - yVal, 2)
                                         return d1 < d2
                                     })
-                                    withAnimation(.easeOut(duration: 0.15)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.quick)) {
                                         selectedPoint = nearest?.offset
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: 0.2)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
                                         selectedPoint = nil
                                     }
                                 }

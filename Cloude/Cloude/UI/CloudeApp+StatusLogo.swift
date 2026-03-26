@@ -9,13 +9,13 @@ struct ConnectionStatusLogo: View {
             .renderingMode(.original)
             .resizable()
             .scaledToFit()
-            .frame(width: 34, height: 34)
+            .frame(width: DS.Size.badge, height: DS.Size.badge)
             .padding(.horizontal, DS.Spacing.m)
             .opacity(isPulsing ? 0.5 : 1.0)
             .animation(
                 connection.isAnyRunning
-                    ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true)
-                    : .easeInOut(duration: 0.3),
+                    ? .easeInOut(duration: DS.Duration.pulse).repeatForever(autoreverses: true)
+                    : .easeInOut(duration: DS.Duration.slow),
                 value: isPulsing
             )
             .onChange(of: connection.isAnyRunning) { _, newValue in

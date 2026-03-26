@@ -87,13 +87,13 @@ struct MainChatView: View {
             inputSection()
         }
         .onReceive(NotificationCenter.default.publisher(for: .widgetInputActive)) { note in
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(.easeInOut(duration: DS.Duration.quick)) {
                 widgetEditing = note.object as? Bool ?? false
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             if widgetEditing {
-                withAnimation(.easeInOut(duration: 0.15)) { widgetEditing = false }
+                withAnimation(.easeInOut(duration: DS.Duration.quick)) { widgetEditing = false }
             }
         }
         .onAppear {

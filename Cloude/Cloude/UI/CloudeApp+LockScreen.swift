@@ -12,9 +12,9 @@ struct LockScreenView: View {
             Image("logo-transparent")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 100, height: 100)
+                .frame(width: DS.Size.chart / 2, height: DS.Size.chart / 2)
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
-                .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
+                .shadow(color: .black.opacity(DS.Opacity.subtle), radius: DS.Shadow.radiusL, y: DS.Shadow.offsetL)
 
             VStack(spacing: DS.Spacing.s) {
                 Text("Cloude is Locked")

@@ -6,7 +6,7 @@ extension WhiteboardSheet {
     func drawPath(_ element: WhiteboardElement, context: GraphicsContext) {
         if let points = element.points?.filter({ $0.count >= 2 }), points.count > 1 {
             let isSelected = store.selectedIds.contains(element.id)
-            let fillColor = element.fill.map { Color(hexString: $0) } ?? Color.accentColor.opacity(0.15)
+            let fillColor = element.fill.map { Color(hexString: $0) } ?? Color.accentColor.opacity(DS.Opacity.light)
             let strokeColor = isSelected ? Color.accentColor : Self.sketchStrokeColor
             var path = Path()
             path.move(to: CGPoint(x: points[0][0], y: points[0][1]))

@@ -11,7 +11,7 @@ struct GitFileRow: View {
                 Text(file.status)
                     .font(.system(size: DS.Text.s, weight: .bold, design: .monospaced))
                     .foregroundColor(.white)
-                    .frame(width: 22, height: 18)
+                    .frame(width: DS.Size.swatch, height: DS.Size.divider)
                     .background(statusColor)
                     .cornerRadius(DS.Radius.s)
 

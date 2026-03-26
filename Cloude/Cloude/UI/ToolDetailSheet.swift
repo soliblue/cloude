@@ -61,7 +61,7 @@ struct ToolDetailSheet: View {
                     .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
                     .padding(.horizontal, DS.Spacing.m)
                     .padding(.vertical, DS.Spacing.s)
-                    .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
+                    .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(DS.Opacity.subtle))
                     .clipShape(Capsule())
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -85,7 +85,7 @@ struct ToolDetailSheet: View {
         if toolCall.state == .executing {
             HStack(spacing: DS.Spacing.s) {
                 ProgressView()
-                    .scaleEffect(0.8)
+                    .scaleEffect(DS.Scale.compact)
                 Text("Executing")
                     .font(.system(size: DS.Text.m, weight: .medium))
                     .foregroundColor(.secondary)
@@ -93,7 +93,7 @@ struct ToolDetailSheet: View {
             }
             .padding(.horizontal, DS.Spacing.m)
             .padding(.vertical, DS.Spacing.m)
-            .background(Color.themeSecondary.opacity(0.5))
+            .background(Color.themeSecondary.opacity(DS.Opacity.half))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }

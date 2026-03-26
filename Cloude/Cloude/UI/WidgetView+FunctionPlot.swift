@@ -50,7 +50,7 @@ struct FunctionPlotWidget: View {
                 .foregroundColor(.primary)
 
             chart
-                .frame(height: 200)
+                .frame(height: DS.Size.chart)
 
             ForEach(paramDefs, id: \.name) { param in
                 paramSlider(param)
@@ -69,20 +69,20 @@ struct FunctionPlotWidget: View {
             ForEach(Array(points.enumerated()), id: \.offset) { _, point in
                 LineMark(x: .value("x", point.x), y: .value("y", point.y))
                     .foregroundStyle(.blue)
-                    .lineStyle(StrokeStyle(lineWidth: 2))
+                    .lineStyle(StrokeStyle(lineWidth: DS.Stroke.thick))
             }
         }
         .chartXScale(domain: xRange.0...xRange.1)
         .chartYScale(domain: yScaleDomain)
         .chartXAxis {
             AxisMarks(position: .bottom) { _ in
-                AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
+                AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
                 AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
             }
         }
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
-                AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
+                AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
                 AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
             }
         }
@@ -102,7 +102,7 @@ struct FunctionPlotWidget: View {
             Text(param.name)
                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .foregroundColor(.secondary)
-                .frame(width: 20, alignment: .trailing)
+                .frame(width: DS.Size.divider, alignment: .trailing)
 
             Slider(
                 value: Binding(
@@ -117,7 +117,7 @@ struct FunctionPlotWidget: View {
             Text(String(format: "%.2f", paramValues[param.name] ?? param.value))
                 .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundColor(.secondary)
-                .frame(width: 45, alignment: .trailing)
+                .frame(width: DS.Size.tap, alignment: .trailing)
         }
     }
 }

@@ -16,7 +16,7 @@ extension UsageStatsSheet {
             }
         }
         .font(.system(size: DS.Text.s))
-        .foregroundColor(.secondary.opacity(0.6))
+        .foregroundColor(.secondary.opacity(DS.Opacity.heavy))
         .padding(.top, DS.Spacing.xs)
     }
 
@@ -50,11 +50,11 @@ extension UsageStatsSheet {
     func modelColor(_ name: String) -> LinearGradient {
         let colors: [Color]
         switch name {
-        case "Opus 4.5": colors = [.purple, .purple.opacity(0.7)]
+        case "Opus 4.5": colors = [.purple, .purple.opacity(DS.Opacity.heavy)]
         case "Opus 4.6": colors = [.blue, .cyan]
         case "Sonnet":   colors = [.orange, .yellow]
         case "Haiku":    colors = [.green, .mint]
-        default:         colors = [.gray, .gray.opacity(0.7)]
+        default:         colors = [.gray, .gray.opacity(DS.Opacity.heavy)]
         }
         return LinearGradient(colors: colors, startPoint: .leading, endPoint: .trailing)
     }
@@ -86,7 +86,7 @@ struct StatPill: View {
                 .foregroundColor(color)
             Text(label)
                 .font(.system(size: DS.Text.s))
-                .foregroundColor(.secondary.opacity(0.6))
+                .foregroundColor(.secondary.opacity(DS.Opacity.heavy))
         }
         .frame(maxWidth: .infinity)
     }

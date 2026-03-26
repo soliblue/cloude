@@ -16,7 +16,7 @@ struct ConversationInfoLabel: View {
                     .font(.system(size: DS.Text.m, weight: .medium))
                     .lineLimit(1)
                     .contentTransition(.numericText())
-                    .animation(.easeInOut(duration: 0.3), value: conv.name)
+                    .animation(.easeInOut(duration: DS.Duration.slow), value: conv.name)
             } else {
                 Text(placeholderText)
                     .font(.system(size: DS.Text.m))

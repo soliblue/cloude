@@ -120,7 +120,7 @@ struct EnvironmentFolderPicker: View {
                 Spacer()
                 Text(dir)
                     .font(.system(size: DS.Text.s, design: .monospaced))
-                    .foregroundColor(.secondary.opacity(0.7))
+                    .foregroundColor(.secondary.opacity(DS.Opacity.heavy))
                     .lineLimit(1)
                     .truncationMode(.head)
             }

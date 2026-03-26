@@ -15,7 +15,7 @@ struct SwipeToDeleteRow<Content: View>: View {
         ZStack(alignment: .trailing) {
             if showDelete {
                 Button(action: {
-                    withAnimation(.easeOut(duration: 0.2)) {
+                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
                         offset = -400
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -25,7 +25,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                     Image(systemName: "trash")
                         .font(.system(size: DS.Icon.s, weight: .semibold))
                         .foregroundColor(.white)
-                        .frame(width: 70)
+                        .frame(width: DS.Size.field)
                         .frame(maxHeight: .infinity)
                         .background(Color.red)
                 }
@@ -37,7 +37,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                 .offset(x: offset)
                 .onTapGesture {
                     if offset < 0 {
-                        withAnimation(.easeOut(duration: 0.2)) { offset = 0 }
+                        withAnimation(.easeOut(duration: DS.Duration.normal)) { offset = 0 }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { showDelete = false }
                     } else {
                         onTap()
@@ -59,9 +59,9 @@ struct SwipeToDeleteRow<Content: View>: View {
                             if !isSwiping { return }
                             isSwiping = false
                             if value.translation.width < threshold {
-                                withAnimation(.easeOut(duration: 0.2)) { offset = threshold }
+                                withAnimation(.easeOut(duration: DS.Duration.normal)) { offset = threshold }
                             } else {
-                                withAnimation(.easeOut(duration: 0.2)) { offset = 0 }
+                                withAnimation(.easeOut(duration: DS.Duration.normal)) { offset = 0 }
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { showDelete = false }
                             }
                         }
@@ -107,7 +107,7 @@ extension WindowEditForm {
                 Image.safeSymbol(conv.symbol)
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
-                    .frame(width: 24)
+                    .frame(width: DS.Spacing.xl)
                 VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                     Text(conv.name)
                         .font(.system(size: DS.Text.m))

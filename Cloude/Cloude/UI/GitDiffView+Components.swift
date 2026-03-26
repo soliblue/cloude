@@ -80,33 +80,33 @@ struct DiffLineView: View {
                 .padding(.vertical, DS.Spacing.s)
                 .padding(.horizontal, DS.Spacing.s)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.blue.opacity(0.08))
+                .background(Color.blue.opacity(DS.Opacity.faint))
         case .added:
             HStack(spacing: DS.Spacing.s) {
                 Text("+")
-                    .foregroundStyle(Color.pastelGreen.opacity(0.6))
-                    .frame(width: 12)
+                    .foregroundStyle(Color.pastelGreen.opacity(DS.Opacity.heavy))
+                    .frame(width: DS.Spacing.m)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, DS.Spacing.xs)
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.pastelGreen.opacity(0.12))
+            .background(Color.pastelGreen.opacity(DS.Opacity.subtle))
         case .removed:
             HStack(spacing: DS.Spacing.s) {
                 Text("-")
-                    .foregroundStyle(Color.pastelRed.opacity(0.6))
-                    .frame(width: 12)
+                    .foregroundStyle(Color.pastelRed.opacity(DS.Opacity.heavy))
+                    .frame(width: DS.Spacing.m)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, DS.Spacing.xs)
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.pastelRed.opacity(0.12))
+            .background(Color.pastelRed.opacity(DS.Opacity.subtle))
         case .context:
             HStack(spacing: DS.Spacing.s) {
                 Text(" ")
-                    .frame(width: 12)
+                    .frame(width: DS.Spacing.m)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, DS.Spacing.xs)

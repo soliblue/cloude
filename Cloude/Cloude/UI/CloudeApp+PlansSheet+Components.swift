@@ -10,10 +10,10 @@ extension PlansSheet {
                         .font(.system(size: DS.Text.m, weight: .medium))
                         .padding(.horizontal, DS.Spacing.m)
                         .padding(.vertical, DS.Spacing.xs)
-                        .background(selectedTags.isEmpty ? Color.accentColor.opacity(0.1) : .white.opacity(0.06))
-                        .foregroundColor(selectedTags.isEmpty ? .accentColor : .secondary.opacity(0.7))
+                        .background(selectedTags.isEmpty ? Color.accentColor.opacity(DS.Opacity.subtle) : .white.opacity(DS.Opacity.faint))
+                        .foregroundColor(selectedTags.isEmpty ? .accentColor : .secondary.opacity(DS.Opacity.heavy))
                         .clipShape(Capsule())
-                        .overlay(Capsule().strokeBorder(selectedTags.isEmpty ? Color.accentColor.opacity(0.2) : .white.opacity(0.1), lineWidth: 0.5))
+                        .overlay(Capsule().strokeBorder(selectedTags.isEmpty ? Color.accentColor.opacity(DS.Opacity.medium) : .white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
                 }
                 .buttonStyle(.plain)
 
@@ -29,10 +29,10 @@ extension PlansSheet {
                             .font(.system(size: DS.Text.m, weight: .medium))
                             .padding(.horizontal, DS.Spacing.m)
                             .padding(.vertical, DS.Spacing.xs)
-                            .background(selectedTags.contains(tag) ? planTagColor(tag).opacity(0.12) : .white.opacity(0.06))
-                            .foregroundColor(selectedTags.contains(tag) ? planTagColor(tag) : .secondary.opacity(0.7))
+                            .background(selectedTags.contains(tag) ? planTagColor(tag).opacity(DS.Opacity.subtle) : .white.opacity(DS.Opacity.faint))
+                            .foregroundColor(selectedTags.contains(tag) ? planTagColor(tag) : .secondary.opacity(DS.Opacity.heavy))
                             .clipShape(Capsule())
-                            .overlay(Capsule().strokeBorder(selectedTags.contains(tag) ? planTagColor(tag).opacity(0.2) : .white.opacity(0.1), lineWidth: 0.5))
+                            .overlay(Capsule().strokeBorder(selectedTags.contains(tag) ? planTagColor(tag).opacity(DS.Opacity.medium) : .white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
                     }
                     .buttonStyle(.plain)
                 }

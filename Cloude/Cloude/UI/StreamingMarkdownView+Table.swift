@@ -24,12 +24,12 @@ struct MarkdownTableView: View {
                             )
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .frame(minWidth: 60)
-                            .background(rowIndex == 0 ? Color.gray.opacity(0.08) : Color.clear)
+                            .background(rowIndex == 0 ? Color.gray.opacity(DS.Opacity.faint) : Color.clear)
                             .overlay(alignment: .leading) {
                                 if colIndex > 0 {
                                     Rectangle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(width: 1)
+                                        .fill(Color.gray.opacity(DS.Opacity.medium))
+                                        .frame(width: DS.Size.hairline)
                                 }
                             }
                         }
@@ -38,7 +38,7 @@ struct MarkdownTableView: View {
             }
             .padding(.horizontal, DS.Spacing.l)
         }
-        .padding(.horizontal, -16)
+        .padding(.horizontal, -DS.Spacing.l)
         .scrollClipDisabled()
     }
 }

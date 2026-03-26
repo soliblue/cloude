@@ -18,9 +18,9 @@ extension UsageStatsSheet {
                     Button(action: { withAnimation(.quickTransition) { chartPage = i } }) {
                         Image(systemName: chartModes[i].icon)
                             .font(.system(size: DS.Text.m))
-                            .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(0.4))
-                            .frame(width: 32, height: 28)
-                            .background(chartPage == i ? chartModes[i].color.opacity(0.15) : .clear)
+                            .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(DS.Opacity.half))
+                            .frame(width: DS.Spacing.xxl, height: DS.Size.row)
+                            .background(chartPage == i ? chartModes[i].color.opacity(DS.Opacity.light) : .clear)
                             .cornerRadius(DS.Radius.s)
                     }
                 }
@@ -36,7 +36,7 @@ extension UsageStatsSheet {
                         yValue: { $0.messageCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.messageCount)) msgs" },
-                        lineColor: { _, selected in selected ? .accentColor : .blue.opacity(0.6) },
+                        lineColor: { _, selected in selected ? .accentColor : .blue.opacity(DS.Opacity.heavy) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
@@ -49,7 +49,7 @@ extension UsageStatsSheet {
                         yValue: { $0.sessionCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \($0.sessionCount) sessions" },
-                        lineColor: { _, selected in selected ? .accentColor : .purple.opacity(0.6) },
+                        lineColor: { _, selected in selected ? .accentColor : .purple.opacity(DS.Opacity.heavy) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
@@ -62,7 +62,7 @@ extension UsageStatsSheet {
                         yValue: { $0.toolCallCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.toolCallCount)) tools" },
-                        lineColor: { _, selected in selected ? .accentColor : .orange.opacity(0.6) },
+                        lineColor: { _, selected in selected ? .accentColor : .orange.opacity(DS.Opacity.heavy) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
@@ -83,7 +83,7 @@ extension UsageStatsSheet {
                     Text(model.name)
                         .font(.system(size: DS.Text.m, weight: .medium))
                         .foregroundColor(.primary)
-                        .frame(width: 64, alignment: .leading)
+                        .frame(width: DS.Size.field, alignment: .leading)
 
                     GeometryReader { geo in
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))
@@ -91,7 +91,7 @@ extension UsageStatsSheet {
                             .fill(modelColor(model.name))
                             .frame(width: max(4, geo.size.width * fraction))
                     }
-                    .frame(height: 14)
+                    .frame(height: DS.Size.glyph)
 
                     Text(formatNumber(model.tokens.outputTokens))
                         .font(.system(size: DS.Text.s, design: .monospaced))
@@ -101,9 +101,9 @@ extension UsageStatsSheet {
             }
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(0.08))
+        .background(.white.opacity(DS.Opacity.faint))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
     }
 
     var peakHoursSection: some View {
@@ -123,7 +123,7 @@ extension UsageStatsSheet {
                         .frame(height: max(2, height * 44))
                 }
             }
-            .frame(height: 48)
+            .frame(height: DS.Size.field)
 
             HStack {
                 Text("12a").frame(maxWidth: .infinity, alignment: .leading)
@@ -133,11 +133,11 @@ extension UsageStatsSheet {
                 Text("12a").frame(maxWidth: .infinity, alignment: .trailing)
             }
             .font(.system(size: DS.Text.s))
-            .foregroundColor(.secondary.opacity(0.5))
+            .foregroundColor(.secondary.opacity(DS.Opacity.half))
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(0.08))
+        .background(.white.opacity(DS.Opacity.faint))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
     }
 }

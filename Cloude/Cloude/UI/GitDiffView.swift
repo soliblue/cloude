@@ -48,7 +48,7 @@ struct GitDiffView: View {
                     .foregroundColor(.pastelGreen)
                     .padding(.horizontal, DS.Spacing.s)
                     .padding(.vertical, DS.Spacing.xs)
-                    .background(Color.pastelGreen.opacity(0.15))
+                    .background(Color.pastelGreen.opacity(DS.Opacity.light))
                     .cornerRadius(DS.Radius.s)
             }
             Spacer()

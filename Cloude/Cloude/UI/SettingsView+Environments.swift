@@ -27,7 +27,7 @@ extension SettingsView {
                 .tag(environmentStore.environments.count)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
-            .frame(height: 235)
+            .frame(height: DS.Size.chart)
         }
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: -8, leading: 0, bottom: -12, trailing: 0))

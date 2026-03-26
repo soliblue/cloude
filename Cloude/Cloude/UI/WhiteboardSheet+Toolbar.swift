@@ -10,14 +10,14 @@ extension WhiteboardSheet {
                 Button(action: { store.undo() }) {
                     Image(systemName: "arrow.uturn.backward")
                         .font(.system(size: DS.Icon.s, weight: .medium))
-                        .foregroundColor(store.canUndo ? .primary : .secondary.opacity(0.3))
+                        .foregroundColor(store.canUndo ? .primary : .secondary.opacity(DS.Opacity.strong))
                 }
                 .disabled(!store.canUndo)
 
                 Button(action: { store.redo() }) {
                     Image(systemName: "arrow.uturn.forward")
                         .font(.system(size: DS.Icon.s, weight: .medium))
-                        .foregroundColor(store.canRedo ? .primary : .secondary.opacity(0.3))
+                        .foregroundColor(store.canRedo ? .primary : .secondary.opacity(DS.Opacity.strong))
                 }
                 .disabled(!store.canRedo)
             }
@@ -31,11 +31,11 @@ extension WhiteboardSheet {
                     }) {
                         Image(systemName: "paperplane")
                             .font(.system(size: DS.Icon.s, weight: .medium))
-                            .foregroundColor(isConnected ? .primary : .secondary.opacity(0.3))
+                            .foregroundColor(isConnected ? .primary : .secondary.opacity(DS.Opacity.strong))
                     }
                     .disabled(!isConnected)
 
-                    Divider().frame(height: 20)
+                    Divider().frame(height: DS.Size.divider)
                 }
 
                 Button(action: { exportAsImage() }) {
@@ -44,7 +44,7 @@ extension WhiteboardSheet {
                         .foregroundColor(.primary)
                 }
 
-                Divider().frame(height: 20)
+                Divider().frame(height: DS.Size.divider)
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
@@ -91,7 +91,7 @@ extension WhiteboardSheet {
         .padding(.vertical, DS.Spacing.s)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
-        .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+        .shadow(color: .black.opacity(DS.Opacity.strong), radius: DS.Shadow.radius, y: DS.Shadow.offset)
     }
 
     private func toolButton(icon: String, tool: WhiteboardStore.ActiveTool) -> some View {
@@ -108,10 +108,10 @@ extension WhiteboardSheet {
         }) {
             Image(systemName: icon)
                 .font(.system(size: DS.Icon.m))
-                .frame(width: 44, height: 36)
-                .background(store.activeTool == tool ? Color.accentColor.opacity(0.2) : Color.clear)
+                .frame(width: DS.Size.tap, height: DS.Size.button)
+                .background(store.activeTool == tool ? Color.accentColor.opacity(DS.Opacity.medium) : Color.clear)
                 .cornerRadius(DS.Radius.m)
-                .foregroundColor(store.activeTool == tool ? .accentColor : .primary.opacity(0.7))
+                .foregroundColor(store.activeTool == tool ? .accentColor : .primary.opacity(DS.Opacity.heavy))
         }
         .buttonStyle(.plain)
     }
@@ -124,11 +124,11 @@ extension WhiteboardSheet {
                 Button(action: { store.activeColor = hex }) {
                     Circle()
                         .fill(Color(hexString: hex))
-                        .frame(width: 26, height: 26)
+                        .frame(width: DS.Spacing.xl, height: DS.Spacing.xl)
                         .overlay(
                             Circle()
-                                .strokeBorder(store.activeColor == hex ? Color.accentColor : Color.white.opacity(0.15), lineWidth: 2)
-                                .padding(-2)
+                                .strokeBorder(store.activeColor == hex ? Color.accentColor : Color.white.opacity(DS.Opacity.light), lineWidth: DS.Stroke.thick)
+                                .padding(-DS.Spacing.xs)
                         )
                 }
                 .buttonStyle(.plain)
@@ -138,7 +138,7 @@ extension WhiteboardSheet {
         .padding(.vertical, DS.Spacing.s)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
-        .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
+        .shadow(color: .black.opacity(DS.Opacity.medium), radius: DS.Shadow.radius, y: DS.Shadow.offset)
     }
 }
 
@@ -149,6 +149,6 @@ extension View {
             .padding(.vertical, DS.Spacing.s)
             .background(.ultraThinMaterial)
             .clipShape(Capsule())
-            .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
+            .shadow(color: .black.opacity(DS.Opacity.medium), radius: DS.Shadow.radius, y: DS.Shadow.offset)
     }
 }

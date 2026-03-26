@@ -40,11 +40,11 @@ struct MessageBubble: View {
 
     private var backgroundColor: Color {
         if message.wasInterrupted {
-            return Color.orange.opacity(0.15)
+            return Color.orange.opacity(DS.Opacity.light)
         } else if message.isUser {
             return Color(hex: appTheme.palette.background)
         } else {
-            return Color(hex: appTheme.palette.secondary).opacity(0.3)
+            return Color(hex: appTheme.palette.secondary).opacity(DS.Opacity.strong)
         }
     }
 
@@ -101,7 +101,7 @@ struct MessageBubble: View {
             .overlay(alignment: .bottom) {
                 if message.isCollapsed {
                     LinearGradient(colors: [backgroundColor.opacity(0), backgroundColor], startPoint: .top, endPoint: .bottom)
-                        .frame(height: 40)
+                        .frame(height: DS.Size.tap)
                 }
             }
 

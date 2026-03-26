@@ -41,10 +41,10 @@ struct FileAttachmentPill: View {
         .padding(.vertical, DS.Spacing.s)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.m)
-                .fill(Color.cyan.opacity(0.12))
+                .fill(Color.cyan.opacity(DS.Opacity.subtle))
                 .overlay(
                     RoundedRectangle(cornerRadius: DS.Radius.m)
-                        .stroke(Color.cyan.opacity(0.25), lineWidth: 1)
+                        .stroke(Color.cyan.opacity(DS.Opacity.medium), lineWidth: DS.Stroke.regular)
                 )
         )
     }

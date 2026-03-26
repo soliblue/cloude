@@ -23,13 +23,13 @@ extension FilePreviewView {
                     if let progress = currentProgress {
                         ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
                             .progressViewStyle(.linear)
-                            .frame(width: 160)
+                            .frame(width: DS.Size.chart * 0.8)
                         Text("\(progress.current + 1) of \(progress.total)")
                             .font(.system(size: DS.Text.s))
                             .foregroundStyle(.secondary)
                     } else {
                         ProgressView()
-                            .scaleEffect(0.8)
+                            .scaleEffect(DS.Scale.compact)
                         Text("Loading...")
                             .font(.system(size: DS.Text.s))
                     }

@@ -9,7 +9,7 @@ extension EnvironmentCard {
                 Image(systemName: "server.rack")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
-                    .frame(width: 24)
+                    .frame(width: DS.Spacing.xl)
                 TextField("Host", text: $env.host)
                     .textContentType(.URL)
                     .autocapitalization(.none)
@@ -24,7 +24,7 @@ extension EnvironmentCard {
                 Image(systemName: "number")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
-                    .frame(width: 24)
+                    .frame(width: DS.Spacing.xl)
                 TextField("Port", text: portBinding)
                     .keyboardType(.numberPad)
                     .font(.system(size: DS.Text.m, design: .monospaced))
@@ -38,7 +38,7 @@ extension EnvironmentCard {
                 Image(systemName: "key.fill")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.orange)
-                    .frame(width: 24)
+                    .frame(width: DS.Spacing.xl)
 
                 Group {
                     if showToken {

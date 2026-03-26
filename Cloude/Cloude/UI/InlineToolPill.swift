@@ -66,7 +66,7 @@ struct InlineToolPill: View {
                         .foregroundColor(.secondary)
                         .padding(.horizontal, DS.Spacing.xs)
                         .padding(.vertical, DS.Spacing.xs)
-                        .background(Color.secondary.opacity(0.15))
+                        .background(Color.secondary.opacity(DS.Opacity.light))
                         .clipShape(Capsule())
                 }
             }
@@ -85,14 +85,14 @@ struct InlineToolPill: View {
         .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.s))
         .onChange(of: toolCall.state) { _, newState in
             if newState == .complete {
-                withAnimation(.easeOut(duration: 0.3)) {
+                withAnimation(.easeOut(duration: DS.Duration.slow)) {
                     shimmerPhase = -1
                 }
             }
         }
         .onAppear {
             if isExecuting {
-                withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                withAnimation(.easeInOut(duration: DS.Duration.pulse * 4).repeatForever(autoreverses: true)) {
                     shimmerPhase = 1.5
                 }
             } else {
@@ -134,8 +134,8 @@ struct ShimmerOverlay: View {
             LinearGradient(
                 stops: [
                     .init(color: .clear, location: 0),
-                    .init(color: .white.opacity(0.25), location: 0.4),
-                    .init(color: .white.opacity(0.25), location: 0.6),
+                    .init(color: .white.opacity(DS.Opacity.medium), location: 0.4),
+                    .init(color: .white.opacity(DS.Opacity.medium), location: 0.6),
                     .init(color: .clear, location: 1)
                 ],
                 startPoint: .leading,

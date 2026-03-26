@@ -18,7 +18,7 @@ struct ToolCallLabel: View {
             if let detail = displayDetail {
                 Text(detail)
                     .font(.system(size: textSize, design: .monospaced))
-                    .opacity(0.85)
+                    .opacity(DS.Opacity.full)
             }
         }
         .foregroundColor(toolCallColor(for: name, input: input))

@@ -92,7 +92,7 @@ struct InteractiveFunctionWidget: View {
                     .font(.system(size: DS.Icon.l, weight: .bold, design: .rounded))
                     .foregroundColor(.purple)
                     .contentTransition(.numericText())
-                    .animation(.easeInOut(duration: 0.15), value: computedResult)
+                    .animation(.easeInOut(duration: DS.Duration.quick), value: computedResult)
                 if let unit = outputConfig.unit {
                     Text(unit)
                         .font(.system(size: DS.Text.m, weight: .medium))
@@ -101,7 +101,7 @@ struct InteractiveFunctionWidget: View {
             }
         }
         .padding(DS.Spacing.m)
-        .background(Color.purple.opacity(0.08))
+        .background(Color.purple.opacity(DS.Opacity.faint))
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
 }

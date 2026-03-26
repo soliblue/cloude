@@ -28,7 +28,7 @@ struct ImageCarouselWidget: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
-                .frame(height: 260)
+                .frame(height: DS.Size.chart)
             }
         }
         .sheet(item: $previewPath) { path in
@@ -79,7 +79,7 @@ struct ImageCarouselWidget: View {
             .font(.system(size: DS.Icon.l))
             .foregroundColor(.secondary)
             .frame(maxWidth: .infinity, minHeight: 120)
-            .background(Color.themeSecondary.opacity(0.3))
+            .background(Color.themeSecondary.opacity(DS.Opacity.strong))
     }
 }
 
@@ -104,7 +104,7 @@ struct FileImageView: View {
                     .font(.system(size: DS.Icon.l))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
-                    .background(Color.themeSecondary.opacity(0.3))
+                    .background(Color.themeSecondary.opacity(DS.Opacity.strong))
             }
         }
         .onAppear {

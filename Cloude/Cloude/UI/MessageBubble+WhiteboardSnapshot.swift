@@ -82,7 +82,7 @@ private struct WhiteboardElementRow: View {
             Image(systemName: elementIcon(element.type))
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.accentColor)
-                .frame(width: 20)
+                .frame(width: DS.Size.divider)
 
             VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 HStack(spacing: DS.Spacing.xs) {
@@ -128,12 +128,12 @@ private struct WhiteboardElementRow: View {
             if let fill = element.fill {
                 Circle()
                     .fill(Color(hexString: fill))
-                    .frame(width: 12, height: 12)
+                    .frame(width: DS.Spacing.m, height: DS.Spacing.m)
             }
             if let stroke = element.stroke {
                 Circle()
-                    .strokeBorder(Color(hexString: stroke), lineWidth: 2)
-                    .frame(width: 12, height: 12)
+                    .strokeBorder(Color(hexString: stroke), lineWidth: DS.Stroke.thick)
+                    .frame(width: DS.Spacing.m, height: DS.Spacing.m)
             }
         }
     }

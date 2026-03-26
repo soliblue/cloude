@@ -25,7 +25,7 @@ struct XMLBlockView: View {
             .padding(.horizontal, DS.Spacing.m)
             .padding(.vertical, DS.Spacing.s)
 
-            Divider().overlay(Color.gray.opacity(0.3))
+            Divider().overlay(Color.gray.opacity(DS.Opacity.strong))
 
             if showSource {
                 Text(rawXML)
@@ -66,11 +66,11 @@ private struct XMLNodeView: View {
                         Image(systemName: expanded ? "chevron.down" : "chevron.right")
                             .font(.system(size: DS.Text.s, weight: .medium))
                             .foregroundColor(.secondary)
-                            .frame(width: 12, height: 16)
+                            .frame(width: DS.Spacing.m, height: DS.Spacing.l)
                     }
                     .buttonStyle(.plain)
                 } else {
-                    Spacer().frame(width: 12)
+                    Spacer().frame(width: DS.Spacing.m)
                 }
 
                 Text(node.tagName)
@@ -112,7 +112,7 @@ private struct XMLNodeView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     if let text = node.textContent {
                         HStack(alignment: .top, spacing: DS.Spacing.xs) {
-                            Spacer().frame(width: 12)
+                            Spacer().frame(width: DS.Spacing.m)
                             Text(text)
                                 .font(.system(size: DS.Text.s, design: .monospaced))
                                 .foregroundColor(.primary)

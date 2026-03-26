@@ -39,11 +39,11 @@ struct ImageAttachmentPill: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 44, height: 44)
+                    .frame(width: DS.Size.tap, height: DS.Size.tap)
                     .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                     .overlay(
                         RoundedRectangle(cornerRadius: DS.Radius.m)
-                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            .stroke(Color.white.opacity(DS.Opacity.light), lineWidth: DS.Stroke.regular)
                     )
             }
 
@@ -51,7 +51,7 @@ struct ImageAttachmentPill: View {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: DS.Icon.m))
                     .foregroundStyle(.white)
-                    .background(Circle().fill(Color.black.opacity(0.5)).frame(width: 14, height: 14))
+                    .background(Circle().fill(Color.black.opacity(DS.Opacity.half)).frame(width: DS.Size.glyph, height: DS.Size.glyph))
             }
             .offset(x: 4, y: -4)
 
@@ -60,7 +60,7 @@ struct ImageAttachmentPill: View {
                     .font(.system(size: DS.Text.s, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(DS.Spacing.xs)
-                    .background(Circle().fill(Color.black.opacity(0.5)))
+                    .background(Circle().fill(Color.black.opacity(DS.Opacity.half)))
                     .offset(x: -2, y: 32)
             }
         }

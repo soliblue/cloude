@@ -20,7 +20,7 @@ struct EnvironmentCard: View {
         VStack(spacing: DS.Spacing.m) {
             headerRow
             formFields
-            Spacer().frame(height: 2)
+            Spacer().frame(height: DS.Spacing.xs)
         }
         .padding(.horizontal, DS.Spacing.xs)
     }
@@ -31,7 +31,7 @@ struct EnvironmentCard: View {
                 Image(systemName: env.symbol)
                     .font(.system(size: DS.Icon.l))
                     .foregroundColor(.accentColor)
-                    .frame(width: 36, height: 36)
+                    .frame(width: DS.Size.button, height: DS.Size.button)
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $showSymbolPicker, onDismiss: { onUpdate(env) }) {
@@ -41,7 +41,7 @@ struct EnvironmentCard: View {
             HStack(spacing: DS.Spacing.s) {
                 Circle()
                     .fill(statusColor)
-                    .frame(width: 8, height: 8)
+                    .frame(width: DS.Spacing.s, height: DS.Spacing.s)
                 Text(statusText)
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
@@ -60,7 +60,7 @@ struct EnvironmentCard: View {
                     Button("Delete", role: .destructive, action: onDelete)
                 }
 
-                Divider().frame(height: 20)
+                Divider().frame(height: DS.Size.divider)
             }
 
             Button(action: {
@@ -99,7 +99,7 @@ struct AddEnvironmentCard: View {
         }) {
             Image(systemName: "plus")
                 .font(.system(size: DS.Icon.l, weight: .light))
-                .foregroundColor(.secondary.opacity(0.5))
+                .foregroundColor(.secondary.opacity(DS.Opacity.half))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .buttonStyle(.plain)

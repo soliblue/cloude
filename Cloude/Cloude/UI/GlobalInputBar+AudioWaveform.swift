@@ -33,7 +33,7 @@ struct AudioWaveformView: View {
 
     private func updateBars(level: Float) {
         let baseHeight = CGFloat(level)
-        withAnimation(.easeOut(duration: 0.08)) {
+        withAnimation(.easeOut(duration: DS.Duration.instant)) {
             for i in 0..<barCount {
                 let variance = CGFloat.random(in: 0.5...1.5)
                 let centerBias = 1.0 - abs(CGFloat(i) - CGFloat(barCount - 1) / 2) / CGFloat(barCount) * 0.6
@@ -61,11 +61,11 @@ struct RecordingOverlayView: View {
 
                 Image(systemName: "waveform")
                     .font(.system(size: DS.Icon.l))
-                    .foregroundColor(.accentColor.opacity(0.5))
+                    .foregroundColor(.accentColor.opacity(DS.Opacity.half))
             } else {
                 Circle()
-                    .fill(Color.accentColor.opacity(0.8))
-                    .frame(width: 10, height: 10)
+                    .fill(Color.accentColor.opacity(DS.Opacity.full))
+                    .frame(width: DS.Size.dot, height: DS.Size.dot)
                     .scaleEffect(pulse ? 1.3 : 0.9)
                     .opacity(pulse ? 0.9 : 0.5)
 
@@ -74,7 +74,7 @@ struct RecordingOverlayView: View {
                 AudioWaveformView(
                     audioLevel: currentLevel,
                     barCount: 7,
-                    color: .accentColor.opacity(0.7),
+                    color: .accentColor.opacity(DS.Opacity.heavy),
                     barWidth: 5,
                     maxHeight: 28
                 )
@@ -84,7 +84,7 @@ struct RecordingOverlayView: View {
                 Button(action: onStop) {
                     Image(systemName: "stop.circle.fill")
                         .font(.system(size: DS.Icon.l))
-                        .foregroundColor(.accentColor.opacity(0.9))
+                        .foregroundColor(.accentColor.opacity(DS.Opacity.full))
                 }
             }
         }
@@ -93,7 +93,7 @@ struct RecordingOverlayView: View {
         .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.l))
         .padding(.horizontal, DS.Spacing.s)
         .onAppear {
-            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: DS.Duration.pulse).repeatForever(autoreverses: true)) {
                 pulse = true
             }
         }

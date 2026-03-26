@@ -62,8 +62,8 @@ struct ColorPaletteWidget: View {
             }
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 44)
-            .background(Color.themeSecondary.opacity(0.5))
+            .frame(height: DS.Size.tap)
+            .background(Color.themeSecondary.opacity(DS.Opacity.half))
         }
         .onLongPressGesture(minimumDuration: 0.2) {
             NotificationCenter.default.post(name: .showFullscreenColor, object: color.hex)
@@ -81,14 +81,14 @@ struct FullscreenColorOverlay: View {
                     .ignoresSafeArea()
                     .transition(.opacity)
                     .onTapGesture {
-                        withAnimation(.easeOut(duration: 0.2)) { self.hex = nil }
+                        withAnimation(.easeOut(duration: DS.Duration.normal)) { self.hex = nil }
                     }
             }
         }
-        .animation(.easeIn(duration: 0.2), value: hex)
+        .animation(.easeIn(duration: DS.Duration.normal), value: hex)
         .onReceive(NotificationCenter.default.publisher(for: .showFullscreenColor)) { notif in
             if let color = notif.object as? String {
-                withAnimation(.easeIn(duration: 0.2)) { hex = color }
+                withAnimation(.easeIn(duration: DS.Duration.normal)) { hex = color }
             }
         }
     }

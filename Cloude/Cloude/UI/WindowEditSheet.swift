@@ -43,7 +43,7 @@ struct WindowEditSheet: View {
 
                         if let conv = conversation, conv.sessionId != nil {
                             Divider()
-                                .frame(height: 20)
+                                .frame(height: DS.Size.divider)
 
                             Button {
                                 if let newConv = conversationStore.duplicateConversation(conv) {
@@ -57,7 +57,7 @@ struct WindowEditSheet: View {
 
                         if onRefresh != nil {
                             Divider()
-                                .frame(height: 20)
+                                .frame(height: DS.Size.divider)
 
                             Button {
                                 guard !isRefreshing else { return }
@@ -69,7 +69,7 @@ struct WindowEditSheet: View {
                             } label: {
                                 if isRefreshing {
                                     ProgressView()
-                                        .scaleEffect(0.7)
+                                        .scaleEffect(DS.Scale.small)
                                 } else {
                                     Image(systemName: "arrow.clockwise")
                                         .font(.system(size: DS.Icon.s, weight: .medium))
@@ -80,7 +80,7 @@ struct WindowEditSheet: View {
 
                         if windowManager.canRemoveWindow {
                             Divider()
-                                .frame(height: 20)
+                                .frame(height: DS.Size.divider)
 
                             Button {
                                 windowManager.removeWindow(window.id)

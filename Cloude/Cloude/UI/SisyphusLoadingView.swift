@@ -16,7 +16,7 @@ struct SisyphusLoadingView: View {
             Image(sequence[index])
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(height: 30)
+                .frame(height: DS.Size.row)
         }
     }
 }

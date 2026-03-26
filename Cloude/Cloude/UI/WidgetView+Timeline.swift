@@ -25,13 +25,13 @@ struct TimelineWidget: View {
                             Image(systemName: event.icon)
                                 .font(.system(size: DS.Text.s, weight: .bold))
                                 .foregroundColor(.white)
-                                .frame(width: 22, height: 22)
+                                .frame(width: DS.Size.swatch, height: DS.Size.swatch)
                                 .background(event.color, in: Circle())
 
                             if index < events.count - 1 {
                                 Rectangle()
-                                    .fill(event.color.opacity(0.3))
-                                    .frame(width: 2)
+                                    .fill(event.color.opacity(DS.Opacity.strong))
+                                    .frame(width: DS.Spacing.xs)
                                     .frame(maxHeight: .infinity)
                             }
                         }

@@ -54,7 +54,7 @@ extension WhiteboardSheet {
     func selectionOverlay(for element: WhiteboardElement) -> some View {
         let frame = store.screenFrame(for: element, canvasSize: canvasSize)
         return Rectangle()
-            .strokeBorder(Color.accentColor.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            .strokeBorder(Color.accentColor.opacity(DS.Opacity.half), style: StrokeStyle(lineWidth: DS.Stroke.regular, dash: [4, 4]))
             .frame(width: frame.width + 8, height: frame.height + 8)
             .position(x: frame.position.x + frame.width / 2, y: frame.position.y + frame.height / 2)
             .allowsHitTesting(false)
@@ -64,10 +64,10 @@ extension WhiteboardSheet {
         let frame = store.screenFrame(for: element, canvasSize: canvasSize)
         return ZStack {
             RoundedRectangle(cornerRadius: DS.Radius.m)
-                .fill(Color.accentColor.opacity(0.15))
+                .fill(Color.accentColor.opacity(DS.Opacity.light))
                 .frame(width: frame.width + 16, height: frame.height + 16)
             RoundedRectangle(cornerRadius: DS.Radius.m)
-                .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
+                .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: DS.Stroke.thick, dash: [6, 4]))
                 .frame(width: frame.width + 16, height: frame.height + 16)
             Text("From")
                 .font(.system(size: DS.Text.s, weight: .semibold))

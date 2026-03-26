@@ -53,7 +53,7 @@ struct HistorySuggestions: View {
                                 .font(.system(size: DS.Text.s, weight: .medium))
                                 .lineLimit(1)
                         } background: {
-                            Color.secondary.opacity(0.08)
+                            Color.secondary.opacity(DS.Opacity.faint)
                         }
                         .foregroundColor(.secondary)
                     }
@@ -106,12 +106,12 @@ struct FilePill: View {
                 .lineLimit(1)
         } background: {
             RoundedRectangle(cornerRadius: DS.Radius.s)
-                .fill(Color.orange.opacity(0.12))
+                .fill(Color.orange.opacity(DS.Opacity.subtle))
                 .overlay(
                     RoundedRectangle(cornerRadius: DS.Radius.s)
                         .stroke(
                             LinearGradient(
-                                colors: [Color.orange.opacity(0.3), Color.yellow.opacity(0.2)],
+                                colors: [Color.orange.opacity(DS.Opacity.strong), Color.yellow.opacity(DS.Opacity.medium)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -124,7 +124,7 @@ struct FilePill: View {
 
     private var fileGradient: LinearGradient {
         LinearGradient(
-            colors: [.orange, .yellow.opacity(0.8)],
+            colors: [.orange, .yellow.opacity(DS.Opacity.full)],
             startPoint: .leading,
             endPoint: .trailing
         )
