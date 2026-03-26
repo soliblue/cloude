@@ -52,6 +52,9 @@ struct MainChatView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = DebugMetrics.log("MainChat", "render")
+        #endif
         VStack(spacing: 0) {
             TabView(selection: $currentPageIndex) {
                 ForEach(Array(windowManager.windows.enumerated()), id: \.element.id) { index, window in
