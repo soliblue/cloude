@@ -43,9 +43,9 @@ extension WhiteboardSheet {
         let join: CGLineJoin = round ? .round : .miter
         switch style {
         case "dashed":
-            return StrokeStyle(lineWidth: width, lineCap: cap, lineJoin: join, dash: [8, 4])
+            return StrokeStyle(lineWidth: width, lineCap: cap, lineJoin: join, dash: [DS.Spacing.s, DS.Spacing.xs])
         case "dotted":
-            return StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: join, dash: [2, 4])
+            return StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: join, dash: [DS.Spacing.xs, DS.Spacing.xs])
         default:
             return StrokeStyle(lineWidth: width, lineCap: cap, lineJoin: join)
         }
@@ -54,8 +54,8 @@ extension WhiteboardSheet {
     func selectionOverlay(for element: WhiteboardElement) -> some View {
         let frame = store.screenFrame(for: element, canvasSize: canvasSize)
         return Rectangle()
-            .strokeBorder(Color.accentColor.opacity(DS.Opacity.half), style: StrokeStyle(lineWidth: DS.Stroke.regular, dash: [4, 4]))
-            .frame(width: frame.width + 8, height: frame.height + 8)
+            .strokeBorder(Color.accentColor.opacity(DS.Opacity.half), style: StrokeStyle(lineWidth: DS.Stroke.regular, dash: [DS.Spacing.xs, DS.Spacing.xs]))
+            .frame(width: frame.width + DS.Spacing.s, height: frame.height + DS.Spacing.s)
             .position(x: frame.position.x + frame.width / 2, y: frame.position.y + frame.height / 2)
             .allowsHitTesting(false)
     }
@@ -65,14 +65,14 @@ extension WhiteboardSheet {
         return ZStack {
             RoundedRectangle(cornerRadius: DS.Radius.m)
                 .fill(Color.accentColor.opacity(DS.Opacity.light))
-                .frame(width: frame.width + 16, height: frame.height + 16)
+                .frame(width: frame.width + DS.Spacing.l, height: frame.height + DS.Spacing.l)
             RoundedRectangle(cornerRadius: DS.Radius.m)
-                .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: DS.Stroke.thick, dash: [6, 4]))
-                .frame(width: frame.width + 16, height: frame.height + 16)
+                .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: DS.Stroke.thick, dash: [DS.Size.pip, DS.Spacing.xs]))
+                .frame(width: frame.width + DS.Spacing.l, height: frame.height + DS.Spacing.l)
             Text("From")
                 .font(.system(size: DS.Text.s, weight: .semibold))
                 .foregroundColor(.accentColor)
-                .offset(y: -(frame.height / 2 + 18))
+                .offset(y: -(frame.height / 2 + DS.Size.divider))
         }
         .position(x: frame.position.x + frame.width / 2, y: frame.position.y + frame.height / 2)
         .allowsHitTesting(false)

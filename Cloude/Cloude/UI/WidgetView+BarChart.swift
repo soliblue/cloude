@@ -28,7 +28,7 @@ struct BarChartWidget: View {
                         x: .value("Label", bar.label),
                         y: .value("Value", bar.value)
                     )
-                    .foregroundStyle(selectedBar == index ? barColor : barColor.opacity(selectedBar == nil ? 1 : 0.3))
+                    .foregroundStyle(selectedBar == index ? barColor : barColor.opacity(selectedBar == nil ? 1 : DS.Opacity.strong))
                     .cornerRadius(DS.Radius.s)
                     .annotation(position: .top) {
                         if selectedBar == index {

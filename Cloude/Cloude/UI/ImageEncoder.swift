@@ -5,7 +5,7 @@ struct ImageEncoder {
         guard !attachedImages.isEmpty else { return nil }
         return attachedImages.compactMap { attached in
             guard let image = UIImage(data: attached.data),
-                  let thumbnail = image.preparingThumbnail(of: CGSize(width: 200, height: 200)),
+                  let thumbnail = image.preparingThumbnail(of: CGSize(width: DS.Size.chart, height: DS.Size.chart)),
                   let thumbData = thumbnail.jpegData(compressionQuality: 0.7) else { return nil }
             return thumbData.base64EncodedString()
         }

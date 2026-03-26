@@ -53,7 +53,7 @@ struct MessageBubble: View {
         let _ = DebugMetrics.log("Bubble", "render | \(message.isUser ? "user" : "asst") id=\(message.id.uuidString.prefix(6))")
         #endif
         messageContent
-            .opacity(message.isQueued ? 0.6 : 1.0)
+            .opacity(message.isQueued ? DS.Opacity.heavy : 1.0)
         .padding(.horizontal, DS.Spacing.l)
         .padding(.vertical, DS.Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)

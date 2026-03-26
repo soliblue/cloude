@@ -40,13 +40,13 @@ struct LineChartWidget: View {
                         .lineStyle(StrokeStyle(lineWidth: DS.Stroke.thick))
                     }
                     .symbol(Circle().strokeBorder(lineWidth: DS.Stroke.medium))
-                    .symbolSize(20)
+                    .symbolSize(DS.Size.divider)
                 }
 
                 if let selectedX {
                     RuleMark(x: .value("Selected", selectedX))
                         .foregroundStyle(Color.secondary.opacity(DS.Opacity.half))
-                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.regular, dash: [4, 3]))
+                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.regular, dash: [DS.Spacing.xs, DS.Spacing.xs]))
                         .annotation(position: .top, alignment: .center) {
                             valuesAtX(selectedX)
                         }

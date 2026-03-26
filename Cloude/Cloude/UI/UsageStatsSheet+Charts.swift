@@ -89,14 +89,14 @@ extension UsageStatsSheet {
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))
                         RoundedRectangle(cornerRadius: DS.Radius.s)
                             .fill(modelColor(model.name))
-                            .frame(width: max(4, geo.size.width * fraction))
+                            .frame(width: max(DS.Spacing.xs, geo.size.width * fraction))
                     }
                     .frame(height: DS.Size.glyph)
 
                     Text(formatNumber(model.tokens.outputTokens))
                         .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.secondary)
-                        .frame(minWidth: 36, alignment: .trailing)
+                        .frame(minWidth: DS.Size.button, alignment: .trailing)
                 }
             }
         }
@@ -120,7 +120,7 @@ extension UsageStatsSheet {
                     let height = CGFloat(count) / CGFloat(max(maxCount, 1))
                     RoundedRectangle(cornerRadius: DS.Radius.s)
                         .fill(peakColor(hour))
-                        .frame(height: max(2, height * 44))
+                        .frame(height: max(DS.Spacing.xs, height * DS.Size.tap))
                 }
             }
             .frame(height: DS.Size.field)

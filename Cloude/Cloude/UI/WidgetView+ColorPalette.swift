@@ -46,7 +46,7 @@ struct ColorPaletteWidget: View {
     private func colorSwatch(_ color: (hex: String, label: String?)) -> some View {
         HStack(spacing: 0) {
             Color(hexString: color.hex)
-                .frame(width: useGrid ? 40 : nil, height: 44)
+                .frame(width: useGrid ? DS.Size.tap : nil, height: 44)
                 .frame(maxWidth: useGrid ? nil : .infinity)
 
             VStack(alignment: .leading, spacing: DS.Spacing.xs) {

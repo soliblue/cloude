@@ -53,7 +53,7 @@ struct ImageAttachmentPill: View {
                     .foregroundStyle(.white)
                     .background(Circle().fill(Color.black.opacity(DS.Opacity.half)).frame(width: DS.Size.glyph, height: DS.Size.glyph))
             }
-            .offset(x: 4, y: -4)
+            .offset(x: DS.Spacing.xs, y: -DS.Spacing.xs)
 
             if isScreenshot {
                 Image(systemName: "camera.viewfinder")
@@ -61,7 +61,7 @@ struct ImageAttachmentPill: View {
                     .foregroundStyle(.white)
                     .padding(DS.Spacing.xs)
                     .background(Circle().fill(Color.black.opacity(DS.Opacity.half)))
-                    .offset(x: -2, y: 32)
+                    .offset(x: -DS.Spacing.xs, y: DS.Spacing.xxl)
             }
         }
     }

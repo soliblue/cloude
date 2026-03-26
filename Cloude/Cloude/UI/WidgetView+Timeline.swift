@@ -48,7 +48,7 @@ struct TimelineWidget: View {
                                     .foregroundColor(.secondary)
                             }
                         }
-                        .padding(.bottom, index < events.count - 1 ? 16 : 0)
+                        .padding(.bottom, index < events.count - 1 ? DS.Spacing.l : 0)
                     }
                 }
             }

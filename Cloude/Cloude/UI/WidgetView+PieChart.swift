@@ -68,7 +68,7 @@ struct PieChartWidget: View {
                     let isActive = selectedSlice == nil || selectedSlice == index
                     HStack(spacing: DS.Spacing.xs) {
                         Circle()
-                            .fill(colors[index % colors.count].opacity(isActive ? 1 : 0.3))
+                            .fill(colors[index % colors.count].opacity(isActive ? 1 : DS.Opacity.strong))
                             .frame(width: DS.Spacing.s, height: DS.Spacing.s)
                         Text(slice.label)
                             .font(.system(size: DS.Text.s))

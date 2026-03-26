@@ -102,7 +102,7 @@ extension MainChatView {
         imageOptions.deliveryMode = .highQualityFormat
         imageOptions.resizeMode = .exact
 
-        let targetSize = CGSize(width: 600, height: 600)
+        let targetSize = CGSize(width: DS.Size.chart * 3, height: DS.Size.chart * 3)
         PHImageManager.default().requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFit, options: imageOptions) { image, _ in
             guard let image = image, let data = image.jpegData(compressionQuality: 0.8) else { return }
             DispatchQueue.main.async {

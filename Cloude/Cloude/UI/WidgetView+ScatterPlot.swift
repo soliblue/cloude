@@ -28,7 +28,7 @@ struct ScatterPlotWidget: View {
                         x: .value(xLabel ?? "X", point.x),
                         y: .value(yLabel ?? "Y", point.y)
                     )
-                    .foregroundStyle(.teal.opacity(selectedPoint == nil || selectedPoint == index ? 1 : 0.2))
+                    .foregroundStyle(.teal.opacity(selectedPoint == nil || selectedPoint == index ? 1 : DS.Opacity.medium))
                     .symbolSize(selectedPoint == index ? 80 : 40)
                     .annotation(position: .top) {
                         if selectedPoint == index {

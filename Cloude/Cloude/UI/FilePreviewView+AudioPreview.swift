@@ -26,7 +26,7 @@ struct AudioPreview: View {
                 VStack(spacing: DS.Spacing.m) {
                     ProgressView(value: progress)
                         .progressViewStyle(.linear)
-                        .frame(maxWidth: 280)
+                        .frame(maxWidth: DS.Size.chart * 1.4)
 
                     HStack(spacing: DS.Spacing.xs) {
                         Text(formatTime(player.currentTime))
@@ -37,7 +37,7 @@ struct AudioPreview: View {
                     }
                     .font(.system(size: DS.Text.s).monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: 280)
+                    .frame(maxWidth: DS.Size.chart * 1.4)
 
                     Button {
                         togglePlayback()

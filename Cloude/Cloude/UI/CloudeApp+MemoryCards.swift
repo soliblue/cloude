@@ -11,11 +11,11 @@ struct MemorySectionCard: View {
     }
 
     private var depthIndent: CGFloat {
-        CGFloat(depth) * 12
+        CGFloat(depth) * DS.Spacing.m
     }
 
     private var backgroundColor: Color {
-        Color.themeSecondary.opacity(depth == 0 ? 1.0 : 0.7)
+        Color.themeSecondary.opacity(depth == 0 ? 1.0 : DS.Opacity.heavy)
     }
 
     var body: some View {
@@ -29,33 +29,33 @@ struct MemorySectionCard: View {
                     }
                 }
             } label: {
-                HStack(spacing: depth == 0 ? 12 : 8) {
+                HStack(spacing: depth == 0 ? DS.Spacing.m : DS.Spacing.s) {
                     Image(systemName: "chevron.right")
-                        .font(depth == 0 ? .footnote : .caption2)
+                        .font(.system(size: depth == 0 ? DS.Text.s : DS.Text.s))
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
 
                     if let icon = section.icon {
                         Image(systemName: icon)
-                            .font(depth == 0 ? .body : .subheadline)
+                            .font(.system(size: depth == 0 ? DS.Text.m : DS.Text.s))
                             .foregroundColor(.accentColor)
                     }
 
                     Text(section.title)
-                        .font(depth == 0 ? .headline : .subheadline)
+                        .font(.system(size: depth == 0 ? DS.Text.m : DS.Text.s))
                         .fontWeight(depth == 0 ? .semibold : .medium)
                         .foregroundColor(.primary)
 
                     Spacer()
 
                     Text("\(section.childCount)")
-                        .font(depth == 0 ? .subheadline : .caption)
+                        .font(.system(size: depth == 0 ? DS.Text.m : DS.Text.s))
                         .foregroundColor(.secondary)
                 }
-                .padding(.leading, 16 + depthIndent)
+                .padding(.leading, DS.Spacing.l + depthIndent)
                 .padding(.trailing, DS.Spacing.l)
-                .padding(.vertical, depth == 0 ? 14 : 10)
+                .padding(.vertical, depth == 0 ? DS.Size.glyph : DS.Size.dot)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -79,7 +79,7 @@ struct MemorySectionCard: View {
             }
         }
         .background(backgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: depth == 0 ? 9 : 6))
+        .clipShape(RoundedRectangle(cornerRadius: depth == 0 ? DS.Radius.m : DS.Radius.s))
     }
 }
 
@@ -89,7 +89,7 @@ struct MemoryItemCard: View {
     var depth: Int = 0
 
     private var backgroundColor: Color {
-        Color.themeSecondary.opacity(depth == 0 ? 0.8 : 0.6)
+        Color.themeSecondary.opacity(depth == 0 ? DS.Opacity.full : DS.Opacity.heavy)
     }
 
     var body: some View {

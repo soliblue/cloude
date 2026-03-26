@@ -9,7 +9,7 @@ struct AudioWaveformView: View {
 
     @State private var barHeights: [CGFloat]
 
-    init(audioLevel: Float, barCount: Int = 7, color: Color = .white, barWidth: CGFloat = 4, maxHeight: CGFloat = 32) {
+    init(audioLevel: Float, barCount: Int = 7, color: Color = .white, barWidth: CGFloat = DS.Spacing.xs, maxHeight: CGFloat = DS.Spacing.xxl) {
         self.audioLevel = audioLevel
         self.barCount = barCount
         self.color = color
@@ -66,8 +66,8 @@ struct RecordingOverlayView: View {
                 Circle()
                     .fill(Color.accentColor.opacity(DS.Opacity.full))
                     .frame(width: DS.Size.dot, height: DS.Size.dot)
-                    .scaleEffect(pulse ? 1.3 : 0.9)
-                    .opacity(pulse ? 0.9 : 0.5)
+                    .scaleEffect(pulse ? DS.Scale.grow : DS.Scale.compact)
+                    .opacity(pulse ? DS.Opacity.full : DS.Opacity.half)
 
                 Spacer()
 
@@ -75,8 +75,8 @@ struct RecordingOverlayView: View {
                     audioLevel: currentLevel,
                     barCount: 7,
                     color: .accentColor.opacity(DS.Opacity.heavy),
-                    barWidth: 5,
-                    maxHeight: 28
+                    barWidth: DS.Spacing.xs,
+                    maxHeight: DS.Size.row
                 )
 
                 Spacer()

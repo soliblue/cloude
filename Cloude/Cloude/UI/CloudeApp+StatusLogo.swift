@@ -11,7 +11,7 @@ struct ConnectionStatusLogo: View {
             .scaledToFit()
             .frame(width: DS.Size.badge, height: DS.Size.badge)
             .padding(.horizontal, DS.Spacing.m)
-            .opacity(isPulsing ? 0.5 : 1.0)
+            .opacity(isPulsing ? DS.Opacity.half : 1.0)
             .animation(
                 connection.isAnyRunning
                     ? .easeInOut(duration: DS.Duration.pulse).repeatForever(autoreverses: true)

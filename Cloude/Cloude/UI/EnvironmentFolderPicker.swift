@@ -90,7 +90,7 @@ struct EnvironmentFolderPicker: View {
                 .padding(.vertical, DS.Spacing.m)
             }
             .buttonStyle(.plain)
-            .opacity(isEnvConnected ? 1 : 0.4)
+            .opacity(isEnvConnected ? 1 : DS.Opacity.half)
         }
         .background(Color.themeSecondary)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
