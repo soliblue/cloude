@@ -29,11 +29,11 @@ struct WidgetHeader<Buttons: View>: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: DS.Text.s, weight: .semibold))
                 .foregroundColor(color)
             if let title {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: DS.Text.m, weight: .medium))
                     .foregroundColor(.secondary)
             }
             Spacer()
@@ -93,7 +93,7 @@ struct WidgetResultBadge: View {
             Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.system(size: DS.Text.s))
             Text(isCorrect ? correctText : wrongText)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: DS.Text.s, weight: .medium))
         }
         .foregroundColor(.secondary)
         .frame(maxWidth: .infinity)
@@ -109,7 +109,7 @@ struct WidgetProgressBadge: View {
             Image(systemName: icon)
                 .font(.system(size: DS.Text.s))
             Text(text)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: DS.Text.s, weight: .medium))
         }
         .foregroundColor(.secondary)
         .frame(maxWidth: .infinity)

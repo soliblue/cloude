@@ -86,7 +86,7 @@ extension WindowEditForm {
                         visibleCount += 20
                     } label: {
                         Text("\(allConversations.count - visibleCount) more")
-                            .font(.caption)
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.accentColor)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
@@ -105,12 +105,12 @@ extension WindowEditForm {
         }) {
             HStack(spacing: 10) {
                 Image.safeSymbol(conv.symbol)
-                    .font(.system(size: 17))
+                    .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(conv.name)
-                        .font(.subheadline)
+                        .font(.system(size: DS.Text.m))
                         .lineLimit(1)
                     HStack(spacing: 6) {
                         if let dir = conv.workingDirectory, !dir.isEmpty {
@@ -120,7 +120,7 @@ extension WindowEditForm {
                         Text("\(conv.messages.count) msgs")
                             .foregroundColor(.secondary)
                     }
-                    .font(.caption2)
+                    .font(.system(size: DS.Text.s))
                 }
                 Spacer()
                 if let envId = conv.environmentId,
@@ -130,7 +130,7 @@ extension WindowEditForm {
                         .foregroundColor(.secondary)
                 }
                 Text(relativeTime(conv.lastMessageAt))
-                    .font(.caption2)
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 12)

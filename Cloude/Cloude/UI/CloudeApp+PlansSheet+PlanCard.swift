@@ -13,11 +13,11 @@ struct PlanCard: View {
                     HStack(spacing: 6) {
                         if let icon = plan.icon {
                             Image(systemName: icon)
-                                .font(.system(size: 14))
+                                .font(.system(size: DS.Text.m))
                                 .foregroundColor(.accentColor)
                         }
                         Text(plan.title)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.system(size: DS.Text.m, weight: .semibold))
                             .foregroundColor(.primary)
                             .lineLimit(1)
                         Spacer()
@@ -25,7 +25,7 @@ struct PlanCard: View {
 
                     if let description = plan.description {
                         Text(description)
-                            .font(.caption)
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                             .lineLimit(3)
                             .multilineTextAlignment(.leading)

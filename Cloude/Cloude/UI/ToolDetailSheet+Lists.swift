@@ -5,7 +5,7 @@ extension ToolDetailSheet {
     var childrenSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Tools (\(children.count))", systemImage: "square.stack")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             VStack(spacing: 0) {
@@ -43,19 +43,19 @@ extension ToolDetailSheet {
         VStack(alignment: .leading, spacing: 8) {
             let completed = todos.filter { $0["status"] == "completed" }.count
             Label("\(completed)/\(todos.count) tasks", systemImage: "checklist")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             VStack(spacing: 0) {
                 ForEach(Array(todos.enumerated()), id: \.offset) { index, todo in
                     HStack(spacing: 10) {
                         Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
-                            .font(.system(size: 14, weight: .medium))
+                            .font(.system(size: DS.Text.m, weight: .medium))
                             .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
                             .frame(width: 20)
 
                         Text(todo["content"] ?? "")
-                            .font(.system(.body))
+                            .font(.system(size: DS.Text.m))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .foregroundColor(todo["status"] == "completed" ? .secondary : .primary)
                     }
@@ -76,7 +76,7 @@ extension ToolDetailSheet {
     var chainSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Chained Commands", systemImage: "link")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             VStack(spacing: 0) {
@@ -84,13 +84,13 @@ extension ToolDetailSheet {
                     VStack(spacing: 0) {
                         HStack(alignment: .top, spacing: 10) {
                             Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.system(size: DS.Text.m, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
                                 .frame(width: 20)
                                 .padding(.top, 2)
 
                             Text(chained.command)
-                                .font(.system(.body, design: .monospaced))
+                                .font(.system(size: DS.Text.m, design: .monospaced))
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -104,7 +104,7 @@ extension ToolDetailSheet {
                                     .frame(width: 1, height: 16)
                                     .padding(.leading, 21)
                                 Text(op.rawValue)
-                                    .font(.system(.caption2, design: .monospaced))
+                                    .font(.system(size: DS.Text.s, design: .monospaced))
                                     .foregroundColor(.secondary)
                                 Spacer()
                             }

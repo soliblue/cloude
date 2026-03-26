@@ -51,7 +51,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                 Spacer()
                 if let point = selectedPoint {
                     Text(detailText(point))
-                        .font(.system(size: 11))
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary.opacity(0.8))
                 } else if showTimeRangePicker {
                     timeRangePicker
@@ -79,7 +79,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                     AxisValueLabel {
                         if let idx = value.as(Int.self), idx >= 0, idx < data.count {
                             Text(xValue(data[idx]))
-                                .font(.system(size: 9))
+                                .font(.system(size: DS.Text.s))
                                 .foregroundStyle(.secondary.opacity(0.6))
                         }
                     }
@@ -90,7 +90,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                     AxisValueLabel {
                         if let v = value.as(Int.self) {
                             Text(formatYValue(v))
-                                .font(.system(size: 9))
+                                .font(.system(size: DS.Text.s))
                                 .foregroundStyle(.secondary.opacity(0.6))
                         }
                     }
@@ -131,7 +131,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                     }
                 }) {
                     Text(range.label)
-                        .font(.system(size: 11, weight: selectedRange?.id == range.id ? .semibold : .regular))
+                        .font(.system(size: DS.Text.s, weight: selectedRange?.id == range.id ? .semibold : .regular))
                         .foregroundColor(selectedRange?.id == range.id ? .white : .secondary.opacity(0.6))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)

@@ -15,10 +15,10 @@ extension FileBrowserView {
                     Button(action: { navigateTo(component.path) }) {
                         HStack(spacing: 2) {
                             Text(component.name)
-                                .font(.caption2)
+                                .font(.system(size: DS.Text.s))
                             if component.path != currentPath {
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 8))
+                                    .font(.system(size: DS.Text.s))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -56,13 +56,13 @@ struct FileRow: View {
         Button(action: onTap) {
             HStack(spacing: 12) {
                 Image(systemName: entry.isDirectory ? "folder.fill" : fileIconName(for: entry.name))
-                    .font(.body)
+                    .font(.system(size: DS.Text.m))
                     .foregroundColor(entry.isDirectory ? .blue : fileIconColor(for: entry.name))
                     .frame(width: 28)
 
                 HStack {
                     Text(entry.name)
-                        .font(.system(size: 14))
+                        .font(.system(size: DS.Text.m))
                         .lineLimit(1)
 
                     Spacer()
@@ -70,10 +70,12 @@ struct FileRow: View {
                     HStack(spacing: 8) {
                         if !entry.isDirectory {
                             Text(entry.formattedSize)
+                                .font(.system(size: DS.Text.s))
                         }
                         Text(entry.modified, style: .date)
+                            .font(.system(size: DS.Text.s))
                     }
-                    .font(.system(size: 11))
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
                 }
             }

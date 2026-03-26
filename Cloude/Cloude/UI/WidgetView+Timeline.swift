@@ -38,13 +38,13 @@ struct TimelineWidget: View {
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(event.date)
-                                .font(.system(size: 11, weight: .medium))
+                                .font(.system(size: DS.Text.s, weight: .medium))
                                 .foregroundColor(.secondary)
                             Text(event.title)
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: DS.Text.m, weight: .semibold))
                             if let desc = event.description {
                                 Text(desc)
-                                    .font(.system(size: 12))
+                                    .font(.system(size: DS.Text.m))
                                     .foregroundColor(.secondary)
                             }
                         }

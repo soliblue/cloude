@@ -83,6 +83,7 @@ struct MessageBubble: View {
                 } else if message.isUser {
                     if !message.text.isEmpty {
                         Text(message.text)
+                        .font(.system(size: DS.Text.m))
                     }
                 } else if isLive && (liveOutput?.isCompacting ?? false) {
                     CompactingIndicator()
@@ -111,8 +112,9 @@ struct MessageBubble: View {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.down")
                         Text("Show more")
+                            .font(.system(size: DS.Text.s))
                     }
-                    .font(.caption2.weight(.medium))
+                    .font(.system(size: DS.Text.s, weight: .medium))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top, 2)

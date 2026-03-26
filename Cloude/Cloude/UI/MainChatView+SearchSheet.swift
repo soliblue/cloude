@@ -39,6 +39,7 @@ struct ConversationSearchSheet: View {
                 LazyVStack(spacing: 16) {
                     if results.isEmpty {
                         Text("No conversations found")
+                            .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
                             .padding(.top, 40)
                     }
@@ -47,7 +48,7 @@ struct ConversationSearchSheet: View {
                         VStack(alignment: .leading, spacing: 0) {
                             if !group.directory.isEmpty {
                                 Text(group.directory.lastPathComponent)
-                                    .font(.caption)
+                                    .font(.system(size: DS.Text.s))
                                     .fontWeight(.semibold)
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal, 12)

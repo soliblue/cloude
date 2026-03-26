@@ -37,7 +37,7 @@ struct DebugOverlayView: View {
                 .fill(fpsColor)
                 .frame(width: 6, height: 6)
             Text("\(metrics.fps)fps")
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
@@ -54,7 +54,7 @@ struct DebugOverlayView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("Debug")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .font(.system(size: DS.Text.m, weight: .bold, design: .monospaced))
                 Spacer()
                 Button(action: { expanded = false }) {
                     Image(systemName: "xmark")
@@ -93,7 +93,7 @@ struct DebugOverlayView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 Text("Logs (\(displayedLogs.count))")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .font(.system(size: DS.Text.m, weight: .bold, design: .monospaced))
                 Spacer()
                 Button(action: refreshLogs) {
                     Image(systemName: "arrow.clockwise")
@@ -165,7 +165,7 @@ struct DebugOverlayView: View {
     private func filterChip(_ label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.system(size: 9, weight: isSelected ? .bold : .medium, design: .monospaced))
+                .font(.system(size: DS.Text.s, weight: isSelected ? .bold : .medium, design: .monospaced))
                 .foregroundColor(isSelected ? .white : .secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
@@ -195,7 +195,7 @@ struct DebugOverlayView: View {
                 .foregroundColor(.primary)
                 .lineLimit(3)
         }
-        .font(.system(size: 8, design: .monospaced))
+        .font(.system(size: DS.Text.s, design: .monospaced))
     }
 
     private func metricRow(_ label: String, value: String, color: Color) -> some View {
@@ -205,7 +205,7 @@ struct DebugOverlayView: View {
                 .foregroundColor(.secondary)
             Spacer()
             Text(value)
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .foregroundColor(color)
         }
     }

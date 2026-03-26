@@ -9,7 +9,7 @@ struct SettingsRow<Content: View>: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 20))
+                .font(.system(size: DS.Icon.m))
                 .foregroundColor(color)
                 .frame(width: 24)
             content
@@ -31,17 +31,17 @@ struct ConnectionStatusCard: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: statusIcon)
-                    .font(.system(size: 25))
+                    .font(.system(size: DS.Icon.l))
                     .foregroundColor(statusColor)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(statusTitle)
-                    .font(.subheadline)
+                    .font(.system(size: DS.Text.m))
                     .fontWeight(.semibold)
 
                 Text(statusSubtitle)
-                    .font(.caption)
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }
@@ -50,12 +50,12 @@ struct ConnectionStatusCard: View {
 
             if connection.isConnected || connection.isAuthenticated {
                 Button("Disconnect", action: onDisconnect)
-                    .font(.subheadline)
+                    .font(.system(size: DS.Text.m))
                     .buttonStyle(.bordered)
                     .tint(.accentColor)
             } else {
                 Button("Connect", action: onConnect)
-                    .font(.subheadline)
+                    .font(.system(size: DS.Text.m))
                     .buttonStyle(.borderedProminent)
                     .disabled(!canConnect)
             }

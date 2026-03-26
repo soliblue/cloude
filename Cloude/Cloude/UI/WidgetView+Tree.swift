@@ -60,16 +60,16 @@ struct TreeWidget: View {
                 } label: {
                     HStack(spacing: 4) {
                         Text(node.label)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: DS.Text.m, weight: .medium))
                         Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 7, weight: .bold))
+                            .font(.system(size: DS.Text.m, weight: .bold))
                             .foregroundColor(.secondary)
                     }
                 }
                 .buttonStyle(.plain)
             } else {
                 Text(node.label)
-                    .font(.system(size: 12))
+                    .font(.system(size: DS.Text.m))
             }
 
             Spacer()

@@ -51,11 +51,12 @@ extension FilePreviewView {
     func binaryPlaceholder(_ data: Data) -> some View {
         VStack(spacing: 16) {
             Image(systemName: fileEntry?.icon ?? "doc")
-                .font(.system(size: 60))
+                .font(.system(size: DS.Icon.l))
                 .foregroundColor(.secondary)
             Text(fileName)
-                .font(.headline)
+                .font(.system(size: DS.Text.m, weight: .semibold))
             Text("\(data.count.formatted(.byteCount(style: .file)))")
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary)
             if let entry = fileEntry {
                 ShareLink(item: data, preview: SharePreview(entry.name)) {

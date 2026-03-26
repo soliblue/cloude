@@ -53,7 +53,7 @@ struct ToolDetailSheet: View {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 5) {
                         Image(systemName: iconName)
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: DS.Text.m, weight: .semibold))
                         Text(toolTitle)
                             .font(.system(size: DS.Text.m, weight: .semibold, design: .monospaced))
                             .lineLimit(1)
@@ -87,7 +87,7 @@ struct ToolDetailSheet: View {
                 ProgressView()
                     .scaleEffect(0.8)
                 Text("Executing")
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(size: DS.Text.m, weight: .medium))
                     .foregroundColor(.secondary)
                 Spacer()
             }

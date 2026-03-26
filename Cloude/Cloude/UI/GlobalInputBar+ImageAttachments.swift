@@ -49,7 +49,7 @@ struct ImageAttachmentPill: View {
 
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 16))
+                    .font(.system(size: DS.Icon.m))
                     .foregroundStyle(.white)
                     .background(Circle().fill(Color.black.opacity(0.5)).frame(width: 14, height: 14))
             }

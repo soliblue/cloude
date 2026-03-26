@@ -7,7 +7,7 @@ extension EnvironmentCard {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Image(systemName: "server.rack")
-                    .font(.system(size: 20))
+                    .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
                     .frame(width: 24)
                 TextField("Host", text: $env.host)
@@ -22,12 +22,12 @@ extension EnvironmentCard {
 
             HStack(spacing: 12) {
                 Image(systemName: "number")
-                    .font(.system(size: 20))
+                    .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
                     .frame(width: 24)
                 TextField("Port", text: portBinding)
                     .keyboardType(.numberPad)
-                    .font(.system(.body, design: .monospaced))
+                    .font(.system(size: DS.Text.m, design: .monospaced))
                     .onChange(of: env.port) { _, _ in onUpdate(env) }
             }
             .padding(.vertical, 10)
@@ -36,14 +36,14 @@ extension EnvironmentCard {
 
             HStack(spacing: 12) {
                 Image(systemName: "key.fill")
-                    .font(.system(size: 20))
+                    .font(.system(size: DS.Icon.m))
                     .foregroundColor(.orange)
                     .frame(width: 24)
 
                 Group {
                     if showToken {
                         TextField("Auth Token", text: $env.token)
-                            .font(.system(.body, design: .monospaced))
+                            .font(.system(size: DS.Text.m, design: .monospaced))
                     } else {
                         SecureField("Auth Token", text: $env.token)
                     }

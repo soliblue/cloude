@@ -17,13 +17,14 @@ extension FilePreviewView {
                             .progressViewStyle(.linear)
                             .frame(width: 200)
                         Text("\(progress.current + 1) of \(progress.total)")
-                            .font(.caption)
+                            .font(.system(size: DS.Text.s))
                             .foregroundStyle(.secondary)
                     }
                 } else {
                     ProgressView()
                         .scaleEffect(1.2)
                     Text("Loading...")
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                 }
             }

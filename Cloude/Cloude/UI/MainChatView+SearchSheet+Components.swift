@@ -5,12 +5,12 @@ extension ConversationSearchSheet {
     func conversationRow(_ conv: Conversation) -> some View {
         HStack(spacing: 10) {
             Image.safeSymbol(conv.symbol)
-                .font(.system(size: 17))
+                .font(.system(size: DS.Text.m))
                 .foregroundColor(.secondary)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(conv.name)
-                    .font(.subheadline)
+                    .font(.system(size: DS.Text.m))
                     .lineLimit(1)
                 HStack(spacing: 6) {
                     if let dir = conv.workingDirectory, !dir.isEmpty {
@@ -24,10 +24,10 @@ extension ConversationSearchSheet {
                             .foregroundColor(.secondary)
                     }
                 }
-                .font(.caption2)
+                .font(.system(size: DS.Text.s))
                 if !searchText.isEmpty, let match = firstMessageMatch(conv) {
                     Text(match)
-                        .font(.caption2)
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                         .padding(.top, 2)
@@ -35,7 +35,7 @@ extension ConversationSearchSheet {
             }
             Spacer()
             Text(relativeTime(conv.lastMessageAt))
-                .font(.caption2)
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary)
         }
         .padding(.horizontal, 12)

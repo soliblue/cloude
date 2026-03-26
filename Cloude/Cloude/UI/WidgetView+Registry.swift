@@ -51,7 +51,7 @@ enum WidgetRegistry {
             case "tree": TreeWidget(data: data)
             case "color_palette": ColorPaletteWidget(data: data)
             case "image_carousel": ImageCarouselWidget(data: data)
-            default: Text("Unknown widget: \(type)").font(.caption).foregroundColor(.secondary)
+            default: Text("Unknown widget: \(type)").font(.system(size: DS.Text.s)).foregroundColor(.secondary)
             }
         }
     }

@@ -70,6 +70,7 @@ struct FolderPickerView: View {
             HStack {
                 Image(systemName: "checkmark.circle.fill")
                 Text("Select \"\(currentFolderName)\"")
+                    .font(.system(size: DS.Text.m))
             }
             .frame(maxWidth: .infinity)
             .padding()

@@ -15,12 +15,12 @@ struct AudioPreview: View {
     var body: some View {
         VStack(spacing: 24) {
             Image(systemName: "waveform")
-                .font(.system(size: 60))
+                .font(.system(size: DS.Icon.l))
                 .foregroundStyle(.tint)
                 .symbolEffect(.variableColor.iterative, isActive: isPlaying)
 
             Text(fileName)
-                .font(.headline)
+                .font(.system(size: DS.Text.m, weight: .semibold))
 
             if let player = player {
                 VStack(spacing: 12) {
@@ -30,10 +30,12 @@ struct AudioPreview: View {
 
                     HStack(spacing: 4) {
                         Text(formatTime(player.currentTime))
+                            .font(.system(size: DS.Text.s))
                         Spacer()
                         Text(formatTime(player.duration))
+                            .font(.system(size: DS.Text.s))
                     }
-                    .font(.caption.monospacedDigit())
+                    .font(.system(size: DS.Text.s).monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: 280)
 
@@ -41,7 +43,7 @@ struct AudioPreview: View {
                         togglePlayback()
                     } label: {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 56))
+                            .font(.system(size: DS.Icon.l))
                     }
                 }
             }

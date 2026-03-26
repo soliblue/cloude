@@ -14,33 +14,33 @@ struct FileViewerBreadcrumb: View {
                 HStack(spacing: 2) {
                     if let symbol = environmentSymbol {
                         Image(systemName: symbol)
-                            .font(.caption2)
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 8))
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                     }
                     ForEach(components) { component in
                         if component.path.isEmpty {
                             Text(component.name)
-                                .font(.caption2)
+                                .font(.system(size: DS.Text.s))
                                 .foregroundColor(.secondary)
                         } else {
                             Button(action: { onNavigate(component.path) }) {
                                 Text(component.name)
-                                    .font(.caption2)
+                                    .font(.system(size: DS.Text.s))
                                     .foregroundColor(.accentColor)
                             }
                             .buttonStyle(.plain)
                             .id(component.path)
                         }
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 8))
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                     }
 
                     Text(fileName)
-                        .font(.caption2.bold())
+                        .font(.system(size: DS.Text.s, weight: .bold))
                         .foregroundColor(.primary)
                         .id("current-file")
                 }

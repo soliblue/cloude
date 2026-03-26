@@ -17,7 +17,7 @@ extension UsageStatsSheet {
                 ForEach(0..<chartModes.count, id: \.self) { i in
                     Button(action: { withAnimation(.quickTransition) { chartPage = i } }) {
                         Image(systemName: chartModes[i].icon)
-                            .font(.system(size: 12))
+                            .font(.system(size: DS.Text.m))
                             .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(0.4))
                             .frame(width: 32, height: 28)
                             .background(chartPage == i ? chartModes[i].color.opacity(0.15) : .clear)
@@ -81,7 +81,7 @@ extension UsageStatsSheet {
             ForEach(sortedModels, id: \.name) { model in
                 HStack(spacing: 8) {
                     Text(model.name)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: DS.Text.m, weight: .medium))
                         .foregroundColor(.primary)
                         .frame(width: 64, alignment: .leading)
 
@@ -94,7 +94,7 @@ extension UsageStatsSheet {
                     .frame(height: 14)
 
                     Text(formatNumber(model.tokens.outputTokens))
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.secondary)
                         .frame(minWidth: 36, alignment: .trailing)
                 }
@@ -132,7 +132,7 @@ extension UsageStatsSheet {
                 Text("6p").frame(maxWidth: .infinity)
                 Text("12a").frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .font(.system(size: 9))
+            .font(.system(size: DS.Text.s))
             .foregroundColor(.secondary.opacity(0.5))
         }
         .padding(14)

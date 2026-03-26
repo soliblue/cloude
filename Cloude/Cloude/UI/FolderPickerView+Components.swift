@@ -9,10 +9,10 @@ extension FolderPickerView {
                     Button(action: { navigateTo(component.path) }) {
                         HStack(spacing: 2) {
                             Text(component.name)
-                                .font(.caption)
+                                .font(.system(size: DS.Text.s))
                             if component.path != currentPath {
                                 Image(systemName: "chevron.right")
-                                    .font(.caption2)
+                                    .font(.system(size: DS.Text.s))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -55,13 +55,13 @@ struct FolderRow: View {
                     .frame(width: 32)
 
                 Text(entry.name)
-                    .font(.body)
+                    .font(.system(size: DS.Text.m))
                     .lineLimit(1)
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
             }
             .contentShape(Rectangle())

@@ -77,13 +77,13 @@ struct FunctionPlotWidget: View {
         .chartXAxis {
             AxisMarks(position: .bottom) { _ in
                 AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
             }
         }
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
                 AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
             }
         }
     }
@@ -100,7 +100,7 @@ struct FunctionPlotWidget: View {
     private func paramSlider(_ param: (name: String, value: Double, min: Double, max: Double, step: Double)) -> some View {
         HStack(spacing: 8) {
             Text(param.name)
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .foregroundColor(.secondary)
                 .frame(width: 20, alignment: .trailing)
 

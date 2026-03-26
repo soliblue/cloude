@@ -62,7 +62,7 @@ struct InlineToolPill: View {
 
                 if !children.isEmpty {
                     Text("\(children.count)")
-                        .font(.system(size: 8, weight: .bold, design: .rounded))
+                        .font(.system(size: DS.Text.s, weight: .bold, design: .rounded))
                         .foregroundColor(.secondary)
                         .padding(.horizontal, 3)
                         .padding(.vertical, 1)
@@ -107,18 +107,18 @@ struct InlineToolPill: View {
                 if index > 0 {
                     let prevOp = chainedCommands[index - 1].operatorAfter
                     Text(prevOp == .pipe ? "|" : "›")
-                        .font(.system(size: 9, weight: .light))
+                        .font(.system(size: DS.Text.s, weight: .light))
                         .foregroundColor(.secondary)
                 }
                 let parsed = BashCommandParser.parse(chained.command)
                 Text(parsed.command.isEmpty ? "cmd" : parsed.command)
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                     .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
                     .lineLimit(1)
             }
             if chainedCommands.count > 3 {
                 Text("+\(chainedCommands.count - 3)")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: DS.Text.s, weight: .semibold))
                     .foregroundColor(.secondary)
             }
         }

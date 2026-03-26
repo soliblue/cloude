@@ -55,8 +55,10 @@ struct SettingsView: View {
             Button(action: { showThemePicker = true }) {
                 SettingsRow(icon: "paintpalette.fill", color: .purple) {
                     Text("Theme")
+                        .font(.system(size: DS.Text.m))
                     Spacer()
                     Text(appTheme.rawValue)
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                     Image(systemName: "chevron.right")
                         .font(.system(size: DS.Text.m))

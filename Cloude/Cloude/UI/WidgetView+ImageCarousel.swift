@@ -68,7 +68,7 @@ struct ImageCarouselWidget: View {
 
             if let caption = image.caption {
                 Text(caption)
-                    .font(.system(size: 11))
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
             }
         }

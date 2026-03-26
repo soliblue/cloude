@@ -29,7 +29,7 @@ struct MemoriesSheet: View {
                     VStack(spacing: 12) {
                         ProgressView()
                         Text("Loading memories...")
-                            .font(.subheadline)
+                            .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity)
@@ -67,7 +67,7 @@ struct MemoriesSheet: View {
                 if fromCache && !isLoading {
                     ToolbarItem(placement: .topBarTrailing) {
                         Label("Cached", systemImage: "arrow.clockwise.icloud")
-                            .font(.caption)
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                     }
                 }

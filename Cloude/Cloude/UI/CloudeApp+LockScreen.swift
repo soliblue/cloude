@@ -22,7 +22,7 @@ struct LockScreenView: View {
                     .fontWeight(.semibold)
 
                 Text("Authenticate to access your conversations")
-                    .font(.subheadline)
+                    .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -39,8 +39,9 @@ struct LockScreenView: View {
                             Image(systemName: BiometricAuth.biometricIcon)
                         }
                         Text("Unlock with \(BiometricAuth.biometricName)")
+                            .font(.system(size: DS.Text.m))
                     }
-                    .font(.headline)
+                    .font(.system(size: DS.Text.m, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                 }
@@ -49,7 +50,7 @@ struct LockScreenView: View {
 
                 if showError {
                     Text("Authentication failed. Please try again.")
-                        .font(.caption)
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.pastelRed)
                 }
             }

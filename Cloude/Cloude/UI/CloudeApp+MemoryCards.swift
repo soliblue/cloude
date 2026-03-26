@@ -97,12 +97,12 @@ struct MemoryItemCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 if let date = item.timestamp {
                     Text(formatDate(date))
-                        .font(.caption2)
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                 }
 
                 Text(LocalizedStringKey(item.content))
-                    .font(.subheadline)
+                    .font(.system(size: DS.Text.m))
                     .foregroundColor(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }

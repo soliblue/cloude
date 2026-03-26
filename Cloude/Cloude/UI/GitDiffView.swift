@@ -40,7 +40,7 @@ struct GitDiffView: View {
     private var fileHeader: some View {
         HStack {
             Label(file.statusDescription, systemImage: statusIcon)
-                .font(.subheadline)
+                .font(.system(size: DS.Text.m))
                 .foregroundColor(statusColor)
             if file.staged {
                 Text("Staged")
@@ -53,7 +53,7 @@ struct GitDiffView: View {
             }
             Spacer()
             Text(file.path)
-                .font(.caption)
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary)
                 .lineLimit(1)
         }

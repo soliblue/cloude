@@ -52,7 +52,7 @@ struct ColorPaletteWidget: View {
             VStack(alignment: .leading, spacing: 1) {
                 if let label = color.label {
                     Text(label)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: DS.Text.s, weight: .medium))
                         .foregroundColor(.primary)
                         .lineLimit(1)
                 }

@@ -33,7 +33,7 @@ struct BarChartWidget: View {
                     .annotation(position: .top) {
                         if selectedBar == index {
                             Text(formatValue(bar.value))
-                                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
@@ -54,7 +54,7 @@ struct BarChartWidget: View {
                 AxisMarks(position: .leading) { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
                     AxisValueLabel()
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
             .chartOverlay { proxy in

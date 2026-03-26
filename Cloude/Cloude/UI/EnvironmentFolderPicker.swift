@@ -45,6 +45,7 @@ struct EnvironmentFolderPicker: View {
                     }) {
                         Label {
                             Text(env.host)
+                                .font(.system(size: DS.Text.s))
                         } icon: {
                             Image(systemName: env.symbol)
                         }
@@ -53,10 +54,10 @@ struct EnvironmentFolderPicker: View {
             } label: {
                 HStack(spacing: 8) {
                     Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                        .font(.system(size: 14))
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.accentColor)
                     Text(selectedEnv?.host ?? "Select environment")
-                        .font(.caption.monospaced())
+                        .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.secondary)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
@@ -73,10 +74,10 @@ struct EnvironmentFolderPicker: View {
             Button(action: { if isEnvConnected { showFolderPicker = true } }) {
                 HStack(spacing: 8) {
                     Image(systemName: "folder.fill")
-                        .font(.system(size: 14))
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.accentColor)
                     Text(folderDisplayName)
-                        .font(.caption)
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -110,15 +111,15 @@ struct EnvironmentFolderPicker: View {
     private var readOnlyContent: some View {
         HStack(spacing: 8) {
             Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                .font(.system(size: 14))
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(.accentColor)
             Text(selectedEnv?.host ?? "")
-                .font(.caption.monospaced())
+                .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundColor(.secondary)
             if let dir = conversation.workingDirectory, !dir.isEmpty {
                 Spacer()
                 Text(dir)
-                    .font(.caption2.monospaced())
+                    .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundColor(.secondary.opacity(0.7))
                     .lineLimit(1)
                     .truncationMode(.head)

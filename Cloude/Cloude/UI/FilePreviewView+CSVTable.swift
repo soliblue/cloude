@@ -13,6 +13,7 @@ struct CSVTableView: View {
     var body: some View {
         if rows.isEmpty {
             Text("Empty file")
+                .font(.system(size: DS.Text.m))
                 .foregroundColor(.secondary)
         } else {
             ScrollView(.horizontal, showsIndicators: false) {

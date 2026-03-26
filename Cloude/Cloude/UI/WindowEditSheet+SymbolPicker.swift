@@ -44,7 +44,7 @@ struct SymbolPickerSheet: View {
                     ForEach(filteredCategories, id: \.0) { category, symbols in
                         VStack(alignment: .leading, spacing: 8) {
                             Text(category)
-                                .font(.headline)
+                                .font(.system(size: DS.Text.m, weight: .semibold))
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 4)
 
@@ -55,7 +55,7 @@ struct SymbolPickerSheet: View {
                                         dismiss()
                                     }) {
                                         Image(systemName: symbol)
-                                            .font(.system(size: 22))
+                                            .font(.system(size: DS.Icon.l))
                                             .frame(width: 44, height: 44)
                                             .background(selectedSymbol == symbol ? Color.accentColor.opacity(0.2) : Color.clear)
                                             .cornerRadius(6)

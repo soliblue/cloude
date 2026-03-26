@@ -55,12 +55,12 @@ struct InteractiveFunctionWidget: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(input.name)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                     .foregroundColor(.secondary)
                 Spacer()
                 HStack(spacing: 2) {
                     Text(String(format: "%.1f", inputValues[input.name] ?? input.value))
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                        .font(.system(size: DS.Text.m, weight: .medium, design: .monospaced))
                     if let unit = input.unit {
                         Text(unit)
                             .font(.system(size: DS.Text.s))
@@ -89,7 +89,7 @@ struct InteractiveFunctionWidget: View {
             Spacer()
             HStack(spacing: 4) {
                 Text(String(format: outputConfig.format, computedResult))
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: DS.Icon.l, weight: .bold, design: .rounded))
                     .foregroundColor(.purple)
                     .contentTransition(.numericText())
                     .animation(.easeInOut(duration: 0.15), value: computedResult)

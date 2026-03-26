@@ -5,11 +5,11 @@ extension ToolDetailSheet {
     func inputSection(_ input: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Input", systemImage: "arrow.right.circle")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             Text(input)
-                .font(.system(.body, design: .monospaced))
+                .font(.system(size: DS.Text.m, design: .monospaced))
                 .textSelection(.enabled)
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -22,7 +22,7 @@ extension ToolDetailSheet {
         let language = toolCall.filePath.flatMap { SyntaxHighlighter.languageForPath($0) }
         return VStack(alignment: .leading, spacing: 8) {
             Label("Changes", systemImage: "arrow.left.arrow.right")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             DiffTextView(diff: editInfo.toUnifiedDiff(), language: language)
@@ -35,7 +35,7 @@ extension ToolDetailSheet {
     func readOutputSection(_ output: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Content", systemImage: "doc.text")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             CodeBlock(
@@ -62,7 +62,7 @@ extension ToolDetailSheet {
     func markdownOutputSection(_ output: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Output", systemImage: "arrow.left.circle")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             StreamingMarkdownView(text: output)
@@ -76,12 +76,12 @@ extension ToolDetailSheet {
     func outputSection(_ output: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Output", systemImage: "arrow.left.circle")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(output)
-                    .font(.system(.body, design: .monospaced))
+                    .font(.system(size: DS.Text.m, design: .monospaced))
                     .textSelection(.enabled)
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -95,7 +95,7 @@ extension ToolDetailSheet {
                     } label: {
                         HStack(spacing: 4) {
                             Text(outputExpanded ? "Show less" : "Show all \(outputLines?.count ?? 0) lines")
-                                .font(.subheadline.weight(.medium))
+                                .font(.system(size: DS.Text.m, weight: .medium))
                             Image(systemName: outputExpanded ? "chevron.up" : "chevron.down")
                                 .font(.system(size: DS.Text.s, weight: .semibold))
                         }
@@ -113,7 +113,7 @@ extension ToolDetailSheet {
     func fileSection(_ path: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("File", systemImage: "doc")
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             Button {
@@ -127,10 +127,10 @@ extension ToolDetailSheet {
                     Image(systemName: fileIconName(for: path.lastPathComponent))
                         .foregroundColor(fileIconColor(for: path.lastPathComponent))
                     Text(path.lastPathComponent)
-                        .font(.system(.body, design: .monospaced))
+                        .font(.system(size: DS.Text.m, design: .monospaced))
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.caption)
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                 }
                 .padding(12)

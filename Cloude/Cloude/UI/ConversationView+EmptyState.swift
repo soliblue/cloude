@@ -104,10 +104,10 @@ struct EmptyConversationView: View {
         Button(action: { onSeeAll?() }) {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 14))
+                    .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
                 Text("Search conversations...")
-                    .font(.subheadline)
+                    .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
                 Spacer()
             }
@@ -131,13 +131,13 @@ struct EmptyConversationView: View {
                             .foregroundColor(.secondary)
                             .frame(width: 20)
                         Text(conv.name)
-                            .font(.subheadline)
+                            .font(.system(size: DS.Text.m))
                             .foregroundColor(.primary)
                             .lineLimit(1)
                         Spacer()
                         if let symbol = envSymbol(for: conv) {
                             Image.safeSymbol(symbol)
-                                .font(.system(size: 11))
+                                .font(.system(size: DS.Text.s))
                                 .foregroundColor(.secondary)
                         }
                     }

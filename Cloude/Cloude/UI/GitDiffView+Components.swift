@@ -25,7 +25,7 @@ struct DiffTextView: View {
                 DiffLineView(line: line, language: language)
             }
         }
-        .font(.system(size: 12, design: .monospaced))
+        .font(.system(size: DS.Text.m, design: .monospaced))
     }
 
     private var parsedLines: [DiffLine] {
@@ -75,7 +75,7 @@ struct DiffLineView: View {
         switch line.type {
         case .hunk:
             Text(line.text)
-                .font(.system(size: 11, design: .monospaced))
+                .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 6)
                 .padding(.horizontal, 8)

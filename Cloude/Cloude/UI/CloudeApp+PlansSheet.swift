@@ -61,7 +61,7 @@ struct PlansSheet: View {
                 } else if currentPlans.isEmpty {
                     Spacer()
                     Text("No plans in \(selectedStage)")
-                        .font(.subheadline)
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary.opacity(0.5))
                     Spacer()
                 } else {

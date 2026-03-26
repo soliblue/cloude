@@ -25,13 +25,13 @@ struct FileAttachmentPill: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: fileIconName(for: file.name))
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
             Text(file.name)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: DS.Text.s, weight: .medium))
                 .lineLimit(1)
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 14))
+                    .font(.system(size: DS.Text.m))
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
@@ -57,25 +57,25 @@ struct PendingAudioBanner: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "waveform.circle.fill")
-                .font(.system(size: 20))
+                .font(.system(size: DS.Icon.m))
                 .foregroundColor(.orange)
 
             Text("Unsent voice note")
-                .font(.subheadline)
+                .font(.system(size: DS.Text.m))
                 .foregroundColor(.secondary)
 
             Spacer()
 
             Button(action: onDiscard) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 22))
+                    .font(.system(size: DS.Icon.l))
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
 
             Button(action: onResend) {
                 Text("Resend")
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(size: DS.Text.m, weight: .medium))
             }
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)

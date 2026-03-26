@@ -56,13 +56,13 @@ struct LineChartWidget: View {
             .chartXAxis {
                 AxisMarks { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                    AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                    AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(0.2))
-                    AxisValueLabel().font(.system(size: 9, design: .monospaced))
+                    AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
             .chartOverlay { proxy in
@@ -96,7 +96,7 @@ struct LineChartWidget: View {
                                 .fill(colors[index % colors.count])
                                 .frame(width: 8, height: 8)
                             Text(line.label)
-                                .font(.system(size: 11))
+                                .font(.system(size: DS.Text.s))
                                 .foregroundColor(.primary)
                         }
                     }

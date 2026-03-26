@@ -57,7 +57,7 @@ struct ThemeCard: View {
             .padding(8)
 
             Text(theme.rawValue)
-                .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                .font(.system(size: DS.Text.m, weight: isSelected ? .semibold : .regular))
                 .foregroundColor(isSelected ? .primary : .secondary)
                 .padding(.bottom, 8)
         }

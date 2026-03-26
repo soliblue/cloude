@@ -18,13 +18,13 @@ struct WhiteboardSnapshotPill: View {
         if let state = snapshot {
             HStack(spacing: 4) {
                 Image(systemName: "rectangle.on.rectangle.angled")
-                    .font(.system(size: 9))
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.accentColor)
                 Text("snapshot")
-                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                     .foregroundColor(.accentColor)
                 Text("\(state.elements.count) elements")
-                    .font(.system(size: 9, weight: .medium))
+                    .font(.system(size: DS.Text.s, weight: .medium))
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 8)
@@ -37,6 +37,7 @@ struct WhiteboardSnapshotPill: View {
             }
         } else {
             Text(text)
+            .font(.system(size: DS.Text.m))
         }
     }
 }
@@ -79,14 +80,14 @@ private struct WhiteboardElementRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: elementIcon(element.type))
-                .font(.system(size: 11))
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(.accentColor)
                 .frame(width: 20)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
                     Text(element.type.rawValue)
-                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                        .font(.system(size: DS.Text.m, weight: .semibold, design: .monospaced))
                     Text(element.id)
                         .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.secondary)

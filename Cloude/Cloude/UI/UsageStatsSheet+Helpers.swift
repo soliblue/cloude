@@ -15,7 +15,7 @@ extension UsageStatsSheet {
                 Label(formatHour(h), systemImage: "clock")
             }
         }
-        .font(.system(size: 11))
+        .font(.system(size: DS.Text.s))
         .foregroundColor(.secondary.opacity(0.6))
         .padding(.top, 2)
     }
@@ -82,7 +82,7 @@ struct StatPill: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.system(size: DS.Icon.l, weight: .bold, design: .rounded))
                 .foregroundColor(color)
             Text(label)
                 .font(.system(size: DS.Text.s))

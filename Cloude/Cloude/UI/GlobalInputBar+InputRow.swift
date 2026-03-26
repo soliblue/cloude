@@ -15,6 +15,7 @@ extension GlobalInputBar {
             ZStack(alignment: .leading) {
                 if inputText.isEmpty {
                     Text(placeholder)
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                         .id(placeholderIndex)
                         .transition(.opacity)

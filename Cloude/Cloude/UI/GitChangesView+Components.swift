@@ -17,7 +17,7 @@ struct GitFileRow: View {
 
                 HStack(spacing: 0) {
                     Text(filePath)
-                        .font(.system(size: 12))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                     Text(fileName)
@@ -38,7 +38,7 @@ struct GitFileRow: View {
                                 .foregroundColor(.pastelRed)
                         }
                     }
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
                 }
             }
             .contentShape(Rectangle())
