@@ -70,7 +70,7 @@ extension WhiteboardSheet {
                 .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
                 .frame(width: frame.width + 16, height: frame.height + 16)
             Text("From")
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: DS.Text.s, weight: .semibold))
                 .foregroundColor(.accentColor)
                 .offset(y: -(frame.height / 2 + 18))
         }

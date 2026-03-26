@@ -88,35 +88,35 @@ private struct WhiteboardElementRow: View {
                     Text(element.type.rawValue)
                         .font(.system(size: 12, weight: .semibold, design: .monospaced))
                     Text(element.id)
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
 
                 HStack(spacing: 8) {
                     if element.type != .arrow {
                         Text(String(format: "(%.0f, %.0f)", element.x, element.y))
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
                     if element.type == .rect || element.type == .ellipse {
                         Text(String(format: "%.0f×%.0f", element.w, element.h))
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
                     if let label = element.label, !label.isEmpty {
                         Text("\"\(label)\"")
-                            .font(.system(size: 10))
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
                     if let from = element.from, let to = element.to {
                         Text("\(from) → \(to)")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
                     if let points = element.points {
                         Text("\(points.count) pts")
-                            .font(.system(size: 10))
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                     }
                 }

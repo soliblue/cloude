@@ -9,7 +9,7 @@ struct GitFileRow: View {
         Button(action: onTap) {
             HStack(spacing: 8) {
                 Text(file.status)
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .font(.system(size: DS.Text.s, weight: .bold, design: .monospaced))
                     .foregroundColor(.white)
                     .frame(width: 22, height: 18)
                     .background(statusColor)
@@ -21,7 +21,7 @@ struct GitFileRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                     Text(fileName)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: DS.Text.m, weight: .medium))
                         .lineLimit(1)
                 }
 

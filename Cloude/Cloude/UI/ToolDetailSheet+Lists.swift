@@ -21,7 +21,7 @@ extension ToolDetailSheet {
                                 .scaleEffect(0.6)
                         } else {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.system(size: DS.Text.s, weight: .bold))
                                 .foregroundColor(.secondary)
                         }
                     }

@@ -127,7 +127,7 @@ struct EmptyConversationView: View {
                 Button(action: { onSelectConversation?(conv) }) {
                     HStack(spacing: 10) {
                         Image.safeSymbol(conv.symbol ?? "bubble.left")
-                            .font(.system(size: 13))
+                            .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
                             .frame(width: 20)
                         Text(conv.name)

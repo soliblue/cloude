@@ -35,11 +35,11 @@ struct ScatterPlotWidget: View {
                             VStack(spacing: 1) {
                                 if let label = point.label {
                                     Text(label)
-                                        .font(.system(size: 10, weight: .semibold))
+                                        .font(.system(size: DS.Text.s, weight: .semibold))
                                         .foregroundColor(.primary)
                                 }
                                 Text("(\(point.x.formatted()), \(point.y.formatted()))")
-                                    .font(.system(size: 10, design: .monospaced))
+                                    .font(.system(size: DS.Text.s, design: .monospaced))
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, 6)
@@ -97,13 +97,13 @@ struct ScatterPlotWidget: View {
                 HStack {
                     if let xLabel {
                         Text("X: \(xLabel)")
-                            .font(.system(size: 10))
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                     }
                     Spacer()
                     if let yLabel {
                         Text("Y: \(yLabel)")
-                            .font(.system(size: 10))
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                     }
                 }

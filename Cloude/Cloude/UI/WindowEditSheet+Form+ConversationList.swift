@@ -126,7 +126,7 @@ extension WindowEditForm {
                 if let envId = conv.environmentId,
                    let env = environmentStore.environments.first(where: { $0.id == envId }) {
                     Image.safeSymbol(env.symbol)
-                        .font(.system(size: 13))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                 }
                 Text(relativeTime(conv.lastMessageAt))

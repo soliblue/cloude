@@ -60,7 +60,7 @@ struct EnvironmentFolderPicker: View {
                         .foregroundColor(.secondary)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 10))
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, 14)
@@ -82,7 +82,7 @@ struct EnvironmentFolderPicker: View {
                         .truncationMode(.middle)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 10))
+                        .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, 14)

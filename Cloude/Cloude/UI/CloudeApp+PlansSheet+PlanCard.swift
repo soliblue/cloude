@@ -36,7 +36,7 @@ struct PlanCard: View {
                             HStack(spacing: 6) {
                                 ForEach(tags, id: \.self) { tag in
                                     Text(tag)
-                                        .font(.system(size: 10, weight: .medium))
+                                        .font(.system(size: DS.Text.s, weight: .medium))
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
                                         .background(planTagColor(tag).opacity(0.1))
@@ -51,7 +51,7 @@ struct PlanCard: View {
 
                 if stage == "done", let build = plan.build {
                     Text("\(build)")
-                        .font(.system(size: 10, weight: .medium).monospacedDigit())
+                        .font(.system(size: DS.Text.s, weight: .medium).monospacedDigit())
                         .padding(.horizontal, 8)
                         .padding(.vertical, 5)
                         .background(.white.opacity(0.06))

@@ -52,7 +52,7 @@ struct PieChartWidget: View {
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(colors[idx % colors.count])
                         Text(total > 0 ? String(format: "%.1f%%", slices[idx].value / total * 100) : "")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
                     .transition(.scale.combined(with: .opacity))
@@ -74,7 +74,7 @@ struct PieChartWidget: View {
                             .font(.system(size: 11))
                             .foregroundColor(isActive ? .primary : .secondary)
                         Text(total > 0 ? String(format: "%.0f%%", slice.value / total * 100) : "")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
                     .onTapGesture {

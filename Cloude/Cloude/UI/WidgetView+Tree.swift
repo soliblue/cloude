@@ -45,7 +45,7 @@ struct TreeWidget: View {
             }
 
             Image(systemName: node.icon)
-                .font(.system(size: 10))
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(node.iconColor)
                 .frame(width: 14)
                 .padding(.top, 1.5)

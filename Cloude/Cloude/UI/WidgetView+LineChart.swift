@@ -109,7 +109,7 @@ struct LineChartWidget: View {
     private func valuesAtX(_ x: Double) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(x.formatted())
-                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .foregroundColor(.primary)
             ForEach(Array(lines.enumerated()), id: \.offset) { lineIdx, line in
                 if let closest = line.points.min(by: { abs($0.x - x) < abs($1.x - x) }) {
@@ -118,7 +118,7 @@ struct LineChartWidget: View {
                             .fill(colors[lineIdx % colors.count])
                             .frame(width: 6, height: 6)
                         Text(closest.y.formatted())
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
                 }

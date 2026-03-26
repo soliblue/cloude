@@ -85,7 +85,7 @@ struct StatPill: View {
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundColor(color)
             Text(label)
-                .font(.system(size: 10))
+                .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary.opacity(0.6))
         }
         .frame(maxWidth: .infinity)

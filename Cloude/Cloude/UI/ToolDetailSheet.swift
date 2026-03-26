@@ -55,7 +55,7 @@ struct ToolDetailSheet: View {
                         Image(systemName: iconName)
                             .font(.system(size: 12, weight: .semibold))
                         Text(toolTitle)
-                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .font(.system(size: DS.Text.m, weight: .semibold, design: .monospaced))
                             .lineLimit(1)
                     }
                     .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))

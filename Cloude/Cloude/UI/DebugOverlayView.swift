@@ -58,7 +58,7 @@ struct DebugOverlayView: View {
                 Spacer()
                 Button(action: { expanded = false }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: DS.Text.s, weight: .bold))
                         .foregroundColor(.secondary)
                 }
             }
@@ -74,7 +74,7 @@ struct DebugOverlayView: View {
                 showLogs = true
             }) {
                 Text("View Logs")
-                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                     .foregroundColor(.accentColor)
             }
         }
@@ -97,7 +97,7 @@ struct DebugOverlayView: View {
                 Spacer()
                 Button(action: refreshLogs) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: DS.Text.s, weight: .bold))
                         .foregroundColor(.accentColor)
                 }
                 Button(action: {
@@ -105,7 +105,7 @@ struct DebugOverlayView: View {
                     UIPasteboard.general.string = text
                 }) {
                     Image(systemName: "doc.on.doc")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: DS.Text.s, weight: .bold))
                         .foregroundColor(.accentColor)
                 }
                 Button(action: {
@@ -115,12 +115,12 @@ struct DebugOverlayView: View {
                     selectedSource = nil
                 }) {
                     Image(systemName: "trash")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: DS.Text.s, weight: .bold))
                         .foregroundColor(.secondary)
                 }
                 Button(action: { showLogs = false }) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: DS.Text.s, weight: .bold))
                         .foregroundColor(.secondary)
                 }
             }
@@ -201,7 +201,7 @@ struct DebugOverlayView: View {
     private func metricRow(_ label: String, value: String, color: Color) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 10, design: .monospaced))
+                .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundColor(.secondary)
             Spacer()
             Text(value)

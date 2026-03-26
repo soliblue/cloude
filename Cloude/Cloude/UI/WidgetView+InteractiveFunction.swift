@@ -63,7 +63,7 @@ struct InteractiveFunctionWidget: View {
                         .font(.system(size: 12, weight: .medium, design: .monospaced))
                     if let unit = input.unit {
                         Text(unit)
-                            .font(.system(size: 10))
+                            .font(.system(size: DS.Text.s))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -84,7 +84,7 @@ struct InteractiveFunctionWidget: View {
     private var resultView: some View {
         HStack {
             Text(outputConfig.label)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: DS.Text.m, weight: .medium))
                 .foregroundColor(.secondary)
             Spacer()
             HStack(spacing: 4) {
@@ -95,7 +95,7 @@ struct InteractiveFunctionWidget: View {
                     .animation(.easeInOut(duration: 0.15), value: computedResult)
                 if let unit = outputConfig.unit {
                     Text(unit)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: DS.Text.m, weight: .medium))
                         .foregroundColor(.secondary)
                 }
             }

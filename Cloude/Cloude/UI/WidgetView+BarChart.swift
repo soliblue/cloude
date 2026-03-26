@@ -47,7 +47,7 @@ struct BarChartWidget: View {
             .chartXAxis {
                 AxisMarks { _ in
                     AxisValueLabel()
-                        .font(.system(size: 10))
+                        .font(.system(size: DS.Text.s))
                 }
             }
             .chartYAxis {
@@ -82,7 +82,7 @@ struct BarChartWidget: View {
 
             if let unit {
                 Text("Values in \(unit)")
-                    .font(.system(size: 10))
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
             }

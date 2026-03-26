@@ -59,7 +59,7 @@ struct SettingsView: View {
                     Text(appTheme.rawValue)
                         .foregroundColor(.secondary)
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                 }
             }

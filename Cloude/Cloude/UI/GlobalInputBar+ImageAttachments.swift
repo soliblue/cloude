@@ -57,7 +57,7 @@ struct ImageAttachmentPill: View {
 
             if isScreenshot {
                 Image(systemName: "camera.viewfinder")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: DS.Text.s, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(3)
                     .background(Circle().fill(Color.black.opacity(0.5)))

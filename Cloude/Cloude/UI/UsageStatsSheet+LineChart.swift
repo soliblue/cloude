@@ -46,7 +46,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: DS.Text.m, weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
                 if let point = selectedPoint {

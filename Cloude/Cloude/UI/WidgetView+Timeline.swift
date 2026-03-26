@@ -23,7 +23,7 @@ struct TimelineWidget: View {
                     HStack(alignment: .top, spacing: 12) {
                         VStack(spacing: 0) {
                             Image(systemName: event.icon)
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.system(size: DS.Text.s, weight: .bold))
                                 .foregroundColor(.white)
                                 .frame(width: 22, height: 22)
                                 .background(event.color, in: Circle())

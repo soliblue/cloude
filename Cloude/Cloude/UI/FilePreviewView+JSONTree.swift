@@ -81,7 +81,7 @@ private struct JSONNodeView: View {
         Button(action: { expanded.toggle() }) {
             HStack(spacing: 4) {
                 Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 10))
+                    .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
                     .frame(width: 14)
                 if let key = key, depth > 0 {
@@ -96,7 +96,7 @@ private struct JSONNodeView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .font(.system(size: 10, design: .monospaced))
+            .font(.system(size: DS.Text.s, design: .monospaced))
         }
         .buttonStyle(.plain)
         .padding(.vertical, 3)
@@ -110,7 +110,7 @@ private struct JSONNodeView: View {
             HStack(spacing: 4) {
                 Spacer().frame(width: 14)
                 Text(closeBrace)
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundColor(.secondary)
             }
             .padding(.vertical, 1)
@@ -127,7 +127,7 @@ private struct JSONNodeView: View {
             }
             content()
         }
-        .font(.system(size: 10, design: .monospaced))
+        .font(.system(size: DS.Text.s, design: .monospaced))
         .padding(.vertical, 3)
     }
 

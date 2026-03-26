@@ -75,7 +75,7 @@ extension UsageStatsSheet {
     var modelsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Models")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             ForEach(sortedModels, id: \.name) { model in
@@ -109,7 +109,7 @@ extension UsageStatsSheet {
     var peakHoursSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Peak Hours")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             let maxCount = stats.hourCounts.values.max() ?? 1

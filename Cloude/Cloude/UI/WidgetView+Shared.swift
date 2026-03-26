@@ -69,7 +69,7 @@ struct WidgetButton: View {
             withAnimation(.quickTransition) { action() }
         } label: {
             Image(systemName: icon)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: DS.Text.m, weight: .medium))
                 .foregroundColor(enabled ? color : .secondary.opacity(0.3))
         }
         .buttonStyle(.plain)
@@ -91,7 +91,7 @@ struct WidgetResultBadge: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 10))
+                .font(.system(size: DS.Text.s))
             Text(isCorrect ? correctText : wrongText)
                 .font(.system(size: 11, weight: .medium))
         }
@@ -107,7 +107,7 @@ struct WidgetProgressBadge: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 10))
+                .font(.system(size: DS.Text.s))
             Text(text)
                 .font(.system(size: 11, weight: .medium))
         }

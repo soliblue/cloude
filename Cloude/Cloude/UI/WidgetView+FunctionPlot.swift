@@ -46,7 +46,7 @@ struct FunctionPlotWidget: View {
             WidgetHeader(icon: "chart.xyaxis.line", title: "Function Plot", color: .blue)
 
             Text("f(x) = \(expression)")
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .font(.system(size: DS.Text.m, weight: .medium, design: .monospaced))
                 .foregroundColor(.primary)
 
             chart
@@ -115,7 +115,7 @@ struct FunctionPlotWidget: View {
             .tint(.blue)
 
             Text(String(format: "%.2f", paramValues[param.name] ?? param.value))
-                .font(.system(size: 10, design: .monospaced))
+                .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundColor(.secondary)
                 .frame(width: 45, alignment: .trailing)
         }

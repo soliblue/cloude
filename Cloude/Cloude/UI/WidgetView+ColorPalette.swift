@@ -57,7 +57,7 @@ struct ColorPaletteWidget: View {
                         .lineLimit(1)
                 }
                 Text(color.hex.uppercased())
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundColor(.secondary)
             }
             .padding(.horizontal, 8)
