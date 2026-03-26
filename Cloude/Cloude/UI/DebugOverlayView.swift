@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct DebugOverlayView: View {
-    @ObservedObject var metrics: DebugMetrics
+    @StateObject private var metrics = DebugMetrics.shared
     @State private var expanded = false
+    @State private var showLogs = false
+    @State private var displayedLogs: [DebugEntry] = []
     @State private var position = CGPoint(x: 70, y: 100)
     @GestureState private var dragOffset = CGSize.zero
 
@@ -14,7 +16,7 @@ struct DebugOverlayView: View {
 
     var body: some View {
         Group {
-            if expanded { expandedView } else { minimizedView }
+            if showLogs { logView } else if expanded { expandedView } else { minimizedView }
         }
         .position(x: position.x + dragOffset.width, y: position.y + dragOffset.height)
         .gesture(
@@ -58,12 +60,99 @@ struct DebugOverlayView: View {
             VStack(alignment: .leading, spacing: 4) {
                 metricRow("FPS", value: "\(metrics.fps)", color: fpsColor)
                 metricRow("OWC/sec", value: "\(metrics.objectWillChangeRate)", color: metrics.objectWillChangeRate > 10 ? .red : .pastelGreen)
+                metricRow("Logs", value: "\(metrics.logBuffer.count)", color: .secondary)
+            }
+
+            Button(action: {
+                displayedLogs = metrics.logBuffer
+                showLogs = true
+            }) {
+                Text("View Logs")
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.accentColor)
             }
         }
         .padding(10)
         .frame(width: 160)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var logView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Logs (\(displayedLogs.count))")
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                Spacer()
+                Button(action: {
+                    displayedLogs = metrics.logBuffer
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.accentColor)
+                }
+                Button(action: {
+                    let text = displayedLogs.map { "\(Self.timeFormatter.string(from: $0.time)) [\($0.source)] \($0.message)" }.joined(separator: "\n")
+                    UIPasteboard.general.string = text
+                }) {
+                    Image(systemName: "doc.on.doc")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.accentColor)
+                }
+                Button(action: {
+                    metrics.clearLogs()
+                    displayedLogs = []
+                }) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.secondary)
+                }
+                Button(action: { showLogs = false }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 2) {
+                        ForEach(displayedLogs) { entry in
+                            logEntryRow(entry)
+                                .id(entry.id)
+                        }
+                    }
+                }
+                .onChange(of: displayedLogs.count) { _, _ in
+                    if let last = displayedLogs.last {
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
+                }
+            }
+        }
+        .padding(10)
+        .frame(width: 320, height: 400)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm:ss.SSS"
+        return f
+    }()
+
+    private func logEntryRow(_ entry: DebugEntry) -> some View {
+        HStack(alignment: .top, spacing: 4) {
+            Text(Self.timeFormatter.string(from: entry.time))
+                .foregroundColor(.secondary)
+            Text(entry.source)
+                .foregroundColor(.accentColor)
+            Text(entry.message)
+                .foregroundColor(.primary)
+        }
+        .font(.system(size: 8, design: .monospaced))
+        .lineLimit(3)
     }
 
     private func metricRow(_ label: String, value: String, color: Color) -> some View {

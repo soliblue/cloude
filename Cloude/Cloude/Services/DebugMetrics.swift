@@ -2,12 +2,33 @@ import Foundation
 import QuartzCore
 import Combine
 
+struct DebugEntry: Identifiable {
+    let id = UUID()
+    let time: Date
+    let source: String
+    let message: String
+}
+
 @MainActor
 final class DebugMetrics: ObservableObject {
     static let shared = DebugMetrics()
 
     @Published var fps: Int = 0
     @Published var objectWillChangeRate: Int = 0
+    private(set) var logBuffer: [DebugEntry] = []
+    private let maxLogs = 200
+
+    static func log(_ source: String, _ message: String) {
+        let entry = DebugEntry(time: Date(), source: source, message: message)
+        shared.logBuffer.append(entry)
+        if shared.logBuffer.count > shared.maxLogs {
+            shared.logBuffer.removeFirst(shared.logBuffer.count - shared.maxLogs)
+        }
+    }
+
+    func clearLogs() {
+        logBuffer.removeAll()
+    }
 
     private var fpsLink: CADisplayLink?
     private var lastFrameTime: CFTimeInterval = 0

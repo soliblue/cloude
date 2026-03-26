@@ -39,7 +39,7 @@ struct GlobalInputBar: View {
     @State var showFilePicker = false
     @FocusState var isInputFocused: Bool
     @StateObject var audioRecorder = AudioRecorder()
-    @State var placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
+    @State var placeholderIndex = 0
 
     @State var swipeOffset: CGFloat = 0
     @State var horizontalSwipeOffset: CGFloat = 0
@@ -75,6 +75,10 @@ struct GlobalInputBar: View {
     ]
 
     var body: some View {
+        #if DEBUG
+        let _ = Self._printChanges()
+        let _ = DebugMetrics.log("InputBar", "render | focused=\(isInputFocused) running=\(isRunning) recording=\(showRecordingOverlay) swiping=\(isSwipingToRecord) transcribing=\(isTranscribing) showInput=\(showInputBar) cmds=\(showCommandSuggestions) files=\(showFileSuggestions)")
+        #endif
         contentStack
             .gesture(inputBarDragGesture)
             .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
@@ -106,9 +110,6 @@ struct GlobalInputBar: View {
             .onChange(of: inputText) { old, new in
                 idleTime = Date()
                 showStopButton = false
-                if !old.isEmpty && new.isEmpty {
-                    placeholderIndex = Int.random(in: 0..<Self.placeholders.count)
-                }
                 if let query = atMentionQuery {
                     fileSearchDebounce?.cancel()
                     fileSearchDebounce = Task {
@@ -119,13 +120,6 @@ struct GlobalInputBar: View {
                     }
                 }
             }
-            .onReceive(Timer.publish(every: Constants.placeholderRotationInterval, on: .main, in: .common).autoconnect()) { _ in
-                if inputText.isEmpty {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        placeholderIndex = (placeholderIndex + 1) % Self.placeholders.count
-                    }
-                }
-            }
             .onChange(of: isInputFocused) { _, focused in
                 if focused {
                     showStopButton = false
@@ -133,18 +127,19 @@ struct GlobalInputBar: View {
                     idleTime = Date()
                 }
             }
-            .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-                if isRunning && !isInputFocused && Date().timeIntervalSince(idleTime) >= Constants.stopButtonDelay {
-                    withAnimation(.quickTransition) {
-                        showStopButton = true
-                    }
-                }
-            }
-            .onChange(of: isRunning) { _, running in
-                if !running {
+            .task(id: isRunning) {
+                guard isRunning else {
                     showStopButton = false
-                } else {
-                    idleTime = Date()
+                    return
+                }
+                idleTime = Date()
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(1))
+                    if !Task.isCancelled && isRunning && !isInputFocused && Date().timeIntervalSince(idleTime) >= Constants.stopButtonDelay {
+                        withAnimation(.quickTransition) {
+                            showStopButton = true
+                        }
+                    }
                 }
             }
             .onReceive(AudioRecorder.pendingAudioCleared) { _ in

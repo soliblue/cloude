@@ -33,7 +33,7 @@ struct CloudeApp: App {
     var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
     @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("debugOverlayEnabled") var debugOverlayEnabled = false
-    @ObservedObject var debugMetrics = DebugMetrics.shared
+    let debugMetrics = DebugMetrics.shared
     @Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
@@ -48,7 +48,7 @@ struct CloudeApp: App {
             .overlay { FullscreenColorOverlay() }
             .overlay {
                 if debugOverlayEnabled {
-                    DebugOverlayView(metrics: debugMetrics)
+                    DebugOverlayView()
                 }
             }
             .environmentObject(connection)
