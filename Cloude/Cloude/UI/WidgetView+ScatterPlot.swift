@@ -42,9 +42,9 @@ struct ScatterPlotWidget: View {
                                     .font(.system(size: DS.Text.s, design: .monospaced))
                                     .foregroundColor(.secondary)
                             }
-                            .padding(.horizontal, 6)
+                            .padding(.horizontal, DS.Spacing.s)
                             .padding(.vertical, 3)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.s))
                             .transition(.scale.combined(with: .opacity))
                         }
                     }

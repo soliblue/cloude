@@ -50,7 +50,7 @@ struct PlansSheet: View {
             VStack(spacing: 0) {
                 if !availableTags.isEmpty {
                     tagFilterChips
-                        .padding(.vertical, 10)
+                        .padding(.vertical, DS.Spacing.m)
                 }
 
                 if isLoading {
@@ -66,22 +66,22 @@ struct PlansSheet: View {
                     Spacer()
                 } else {
                     ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 10) {
+                        LazyVStack(spacing: DS.Spacing.m) {
                             ForEach(filteredAndSortedPlans) { plan in
                                 PlanCard(plan: plan, stage: selectedStage) {
                                     onOpenFile?(plan.path)
                                 }
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 16)
+                        .padding(.horizontal, DS.Spacing.l)
+                        .padding(.bottom, DS.Spacing.l)
                     }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: DS.Spacing.m) {
                         ForEach(Array(stagesWithCounts.enumerated()), id: \.element.0) { i, item in
                             if i > 0 {
                                 Divider().frame(height: 20)
@@ -94,10 +94,10 @@ struct PlansSheet: View {
                             .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(0.6))
                         }
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, DS.Spacing.s)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: DS.Spacing.m) {
                         if fromCache && !isLoading {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: DS.Icon.s, weight: .medium))
@@ -115,7 +115,7 @@ struct PlansSheet: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, DS.Spacing.s)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)

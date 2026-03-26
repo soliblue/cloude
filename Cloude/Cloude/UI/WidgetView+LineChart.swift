@@ -89,9 +89,9 @@ struct LineChartWidget: View {
             .sensoryFeedback(.selection, trigger: selectedX != nil)
 
             if lines.count > 1 {
-                FlowLayout(spacing: 12) {
+                FlowLayout(spacing: DS.Spacing.m) {
                     ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
-                        HStack(spacing: 4) {
+                        HStack(spacing: DS.Spacing.xs) {
                             Circle()
                                 .fill(colors[index % colors.count])
                                 .frame(width: 8, height: 8)
@@ -113,7 +113,7 @@ struct LineChartWidget: View {
                 .foregroundColor(.primary)
             ForEach(Array(lines.enumerated()), id: \.offset) { lineIdx, line in
                 if let closest = line.points.min(by: { abs($0.x - x) < abs($1.x - x) }) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: DS.Spacing.xs) {
                         Circle()
                             .fill(colors[lineIdx % colors.count])
                             .frame(width: 6, height: 6)
@@ -124,8 +124,8 @@ struct LineChartWidget: View {
                 }
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
+        .padding(.horizontal, DS.Spacing.s)
+        .padding(.vertical, DS.Spacing.xs)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.s))
     }
 }

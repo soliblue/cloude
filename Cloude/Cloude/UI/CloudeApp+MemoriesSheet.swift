@@ -26,7 +26,7 @@ struct MemoriesSheet: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 if isLoading {
-                    VStack(spacing: 12) {
+                    VStack(spacing: DS.Spacing.m) {
                         ProgressView()
                         Text("Loading memories...")
                             .font(.system(size: DS.Text.m))
@@ -42,7 +42,7 @@ struct MemoriesSheet: View {
                     )
                     .padding(.top, 40)
                 } else {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: DS.Spacing.m) {
                         ForEach(parsedSections) { section in
                             MemorySectionCard(
                                 section: section,
@@ -51,8 +51,8 @@ struct MemoriesSheet: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, DS.Spacing.l)
+                    .padding(.vertical, DS.Spacing.m)
                 }
             }
             .scrollContentBackground(.hidden)

@@ -7,13 +7,13 @@ struct FileAttachmentStrip: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.s) {
                 ForEach(files) { file in
                     FileAttachmentPill(file: file, onRemove: { onRemove(file.id) })
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.s)
         }
     }
 }
@@ -23,7 +23,7 @@ struct FileAttachmentPill: View {
     let onRemove: () -> Void
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: DS.Spacing.s) {
             Image(systemName: fileIconName(for: file.name))
                 .font(.system(size: DS.Text.m, weight: .semibold))
             Text(file.name)
@@ -37,13 +37,13 @@ struct FileAttachmentPill: View {
             .buttonStyle(.plain)
         }
         .foregroundStyle(.cyan)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, DS.Spacing.m)
+        .padding(.vertical, DS.Spacing.s)
         .background(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: DS.Radius.m)
                 .fill(Color.cyan.opacity(0.12))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: DS.Radius.m)
                         .stroke(Color.cyan.opacity(0.25), lineWidth: 1)
                 )
         )
@@ -55,7 +55,7 @@ struct PendingAudioBanner: View {
     let onDiscard: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DS.Spacing.m) {
             Image(systemName: "waveform.circle.fill")
                 .font(.system(size: DS.Icon.m))
                 .foregroundColor(.orange)
@@ -81,8 +81,8 @@ struct PendingAudioBanner: View {
             .buttonBorderShape(.capsule)
             .controlSize(.small)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.s)
         .background(.ultraThinMaterial)
     }
 }

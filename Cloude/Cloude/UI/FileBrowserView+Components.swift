@@ -10,7 +10,7 @@ struct PathComponent: Identifiable {
 extension FileBrowserView {
     var pathBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 ForEach(pathComponents, id: \.path) { component in
                     Button(action: { navigateTo(component.path) }) {
                         HStack(spacing: 2) {
@@ -28,7 +28,7 @@ extension FileBrowserView {
                 }
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
+            .padding(.vertical, DS.Spacing.s)
         }
         .background(Color.themeSecondary)
     }
@@ -54,7 +54,7 @@ struct FileRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 Image(systemName: entry.isDirectory ? "folder.fill" : fileIconName(for: entry.name))
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(entry.isDirectory ? .blue : fileIconColor(for: entry.name))
@@ -67,7 +67,7 @@ struct FileRow: View {
 
                     Spacer()
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: DS.Spacing.s) {
                         if !entry.isDirectory {
                             Text(entry.formattedSize)
                                 .font(.system(size: DS.Text.s))

@@ -36,7 +36,7 @@ struct MarkdownTableView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, DS.Spacing.l)
         }
         .padding(.horizontal, -16)
         .scrollClipDisabled()
@@ -50,8 +50,8 @@ private struct TableCell: View {
     var body: some View {
         Text(parseInlineMarkdown())
             .font(.system(size: DS.Text.s, weight: isHeader ? .bold : .regular))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.horizontal, DS.Spacing.m)
+            .padding(.vertical, DS.Spacing.s)
     }
 
     private func parseInlineMarkdown() -> AttributedString {

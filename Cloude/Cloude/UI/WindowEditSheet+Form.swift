@@ -34,24 +34,24 @@ struct WindowEditForm: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 12) {
+        VStack(spacing: DS.Spacing.l) {
+            HStack(spacing: DS.Spacing.m) {
                 Button(action: { showSymbolPicker = true }) {
                     Image.safeSymbol(symbol.nilIfEmpty, fallback: "circle.dashed")
                         .font(.system(size: DS.Icon.l))
                         .frame(width: 48, height: 48)
                         .background(Color.themeSecondary)
-                        .clipShape(RoundedRectangle(cornerRadius: 9))
+                        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                 }
                 .buttonStyle(.plain)
 
                 TextField("Name", text: $name)
                     .font(.system(size: DS.Text.m))
                     .textFieldStyle(.plain)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, DS.Spacing.l)
                     .frame(height: 48)
                     .background(Color.themeSecondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 9))
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                     .onChange(of: name) { _, newValue in
                         if let conv = conversation, !newValue.isEmpty {
                             conversationStore.renameConversation(conv, to: newValue)

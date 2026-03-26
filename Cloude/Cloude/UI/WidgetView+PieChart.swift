@@ -37,7 +37,7 @@ struct PieChartWidget: View {
                         angularInset: 1.5
                     )
                     .foregroundStyle(colors[index % colors.count].opacity(opacity))
-                    .cornerRadius(4)
+                    .cornerRadius(DS.Radius.s)
                 }
             }
             .chartAngleSelection(value: $selectedAngleValue)
@@ -63,10 +63,10 @@ struct PieChartWidget: View {
                 withAnimation(.easeOut(duration: 0.15)) { updateSelectedSlice() }
             }
 
-            FlowLayout(spacing: 8) {
+            FlowLayout(spacing: DS.Spacing.s) {
                 ForEach(Array(slices.enumerated()), id: \.offset) { index, slice in
                     let isActive = selectedSlice == nil || selectedSlice == index
-                    HStack(spacing: 4) {
+                    HStack(spacing: DS.Spacing.xs) {
                         Circle()
                             .fill(colors[index % colors.count].opacity(isActive ? 1 : 0.3))
                             .frame(width: 8, height: 8)

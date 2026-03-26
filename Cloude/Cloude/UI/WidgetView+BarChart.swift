@@ -29,13 +29,13 @@ struct BarChartWidget: View {
                         y: .value("Value", bar.value)
                     )
                     .foregroundStyle(selectedBar == index ? barColor : barColor.opacity(selectedBar == nil ? 1 : 0.3))
-                    .cornerRadius(4)
+                    .cornerRadius(DS.Radius.s)
                     .annotation(position: .top) {
                         if selectedBar == index {
                             Text(formatValue(bar.value))
                                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                                 .foregroundColor(.primary)
-                                .padding(.horizontal, 6)
+                                .padding(.horizontal, DS.Spacing.s)
                                 .padding(.vertical, 3)
                                 .background(.ultraThinMaterial, in: Capsule())
                                 .transition(.scale.combined(with: .opacity))

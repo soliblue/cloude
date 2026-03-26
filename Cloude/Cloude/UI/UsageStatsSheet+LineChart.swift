@@ -43,7 +43,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             HStack {
                 Text(title)
                     .font(.system(size: DS.Text.m, weight: .semibold))
@@ -115,14 +115,14 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
             }
             .frame(height: height)
         }
-        .padding(14)
+        .padding(DS.Spacing.l)
         .background(.white.opacity(0.08))
-        .cornerRadius(9)
-        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(DS.Radius.m)
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     private var timeRangePicker: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DS.Spacing.xs) {
             ForEach(timeRanges, id: \.id) { range in
                 Button(action: {
                     withAnimation {
@@ -133,10 +133,10 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
                     Text(range.label)
                         .font(.system(size: DS.Text.s, weight: selectedRange?.id == range.id ? .semibold : .regular))
                         .foregroundColor(selectedRange?.id == range.id ? .white : .secondary.opacity(0.6))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, DS.Spacing.s)
+                        .padding(.vertical, DS.Spacing.xs)
                         .background(selectedRange?.id == range.id ? Color.accentColor.opacity(0.3) : Color.clear)
-                        .cornerRadius(4)
+                        .cornerRadius(DS.Radius.s)
                 }
             }
         }

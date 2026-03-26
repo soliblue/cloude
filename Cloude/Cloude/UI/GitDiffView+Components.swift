@@ -77,40 +77,40 @@ struct DiffLineView: View {
             Text(line.text)
                 .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundStyle(.secondary)
-                .padding(.vertical, 6)
-                .padding(.horizontal, 8)
+                .padding(.vertical, DS.Spacing.s)
+                .padding(.horizontal, DS.Spacing.s)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.blue.opacity(0.08))
         case .added:
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 Text("+")
                     .foregroundStyle(Color.pastelGreen.opacity(0.6))
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.pastelGreen.opacity(0.12))
         case .removed:
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 Text("-")
                     .foregroundStyle(Color.pastelRed.opacity(0.6))
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.pastelRed.opacity(0.12))
         case .context:
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 Text(" ")
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, 1)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }

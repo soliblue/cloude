@@ -27,7 +27,7 @@ struct TreeWidget: View {
                         .fill(Color.secondary.opacity(0.2))
                         .frame(width: 1)
                         .frame(maxHeight: .infinity)
-                        .padding(.horizontal, 7)
+                        .padding(.horizontal, DS.Spacing.s)
                 } else {
                     Color.clear.frame(width: 16)
                 }
@@ -38,7 +38,7 @@ struct TreeWidget: View {
                     Rectangle()
                         .fill(Color.secondary.opacity(0.2))
                         .frame(width: 10, height: 1)
-                        .padding(.top, 8)
+                        .padding(.top, DS.Spacing.s)
                     Spacer(minLength: 3)
                 }
                 .frame(width: 13)
@@ -58,7 +58,7 @@ struct TreeWidget: View {
                         if isCollapsed { collapsed.remove(node.id) } else { collapsed.insert(node.id) }
                     }
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: DS.Spacing.xs) {
                         Text(node.label)
                             .font(.system(size: DS.Text.m, weight: .medium))
                         Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")

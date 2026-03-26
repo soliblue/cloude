@@ -30,12 +30,12 @@ struct WindowEditSheet: View {
                     onSelectConversation: onSelectConversation
                 )
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, DS.Spacing.l)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: DS.Spacing.m) {
                         Button(action: onNewConversation) {
                             Image(systemName: "plus")
                                 .font(.system(size: DS.Icon.s, weight: .medium))
@@ -92,7 +92,7 @@ struct WindowEditSheet: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, DS.Spacing.s)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: onDismiss) {

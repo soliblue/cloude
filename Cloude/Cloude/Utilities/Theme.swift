@@ -14,11 +14,17 @@ enum DS {
         static let l: CGFloat = 19
     }
 
-    enum Pill {
-        static let spacing: CGFloat = 4
-        static let hPadding: CGFloat = 8
-        static let vPadding: CGFloat = 4
-        static let cornerRadius: CGFloat = 8
+    enum Spacing {
+        static let xs: CGFloat = 4
+        static let s: CGFloat = 8
+        static let m: CGFloat = 12
+        static let l: CGFloat = 16
+    }
+
+    enum Radius {
+        static let s: CGFloat = 6
+        static let m: CGFloat = 9
+        static let l: CGFloat = 12
     }
 }
 

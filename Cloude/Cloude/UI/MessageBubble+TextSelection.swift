@@ -9,8 +9,8 @@ struct TextSelectionSheet: View {
     var body: some View {
         NavigationStack {
             PlainSelectableText(text: text)
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
+                .padding(.horizontal, DS.Spacing.l)
+                .padding(.top, DS.Spacing.s)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { dismiss() } label: {

@@ -10,9 +10,9 @@ extension FilePreviewView {
     @ViewBuilder
     var content: some View {
         if isLoading {
-            VStack(spacing: 16) {
+            VStack(spacing: DS.Spacing.l) {
                 if let progress = currentProgress {
-                    VStack(spacing: 8) {
+                    VStack(spacing: DS.Spacing.s) {
                         ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
                             .progressViewStyle(.linear)
                             .frame(width: 200)

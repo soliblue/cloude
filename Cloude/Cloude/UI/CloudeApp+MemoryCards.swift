@@ -54,14 +54,14 @@ struct MemorySectionCard: View {
                         .foregroundColor(.secondary)
                 }
                 .padding(.leading, 16 + depthIndent)
-                .padding(.trailing, 16)
+                .padding(.trailing, DS.Spacing.l)
                 .padding(.vertical, depth == 0 ? 14 : 10)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             if isExpanded {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: DS.Spacing.s) {
                     ForEach(section.subsections) { subsection in
                         MemorySectionCard(
                             section: subsection,
@@ -74,8 +74,8 @@ struct MemorySectionCard: View {
                         MemoryItemCard(item: item, depth: depth)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.bottom, 12)
+                .padding(.horizontal, DS.Spacing.m)
+                .padding(.bottom, DS.Spacing.m)
             }
         }
         .background(backgroundColor)
@@ -93,8 +93,8 @@ struct MemoryItemCard: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .top, spacing: DS.Spacing.m) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 if let date = item.timestamp {
                     Text(formatDate(date))
                         .font(.system(size: DS.Text.s))
@@ -109,10 +109,10 @@ struct MemoryItemCard: View {
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, DS.Spacing.m)
+        .padding(.vertical, DS.Spacing.m)
         .background(backgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
     }
 
     private func formatDate(_ date: Date) -> String {

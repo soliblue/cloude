@@ -63,10 +63,10 @@ extension WhiteboardSheet {
     func arrowSourceOverlay(for element: WhiteboardElement) -> some View {
         let frame = store.screenFrame(for: element, canvasSize: canvasSize)
         return ZStack {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: DS.Radius.m)
                 .fill(Color.accentColor.opacity(0.15))
                 .frame(width: frame.width + 16, height: frame.height + 16)
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: DS.Radius.m)
                 .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
                 .frame(width: frame.width + 16, height: frame.height + 16)
             Text("From")

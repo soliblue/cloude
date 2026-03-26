@@ -10,13 +10,13 @@ struct Pill<Content: View, Background: View>: View {
     }
 
     var body: some View {
-        HStack(spacing: DS.Pill.spacing) {
+        HStack(spacing: DS.Spacing.xs) {
             content
         }
-        .padding(.horizontal, DS.Pill.hPadding)
-        .padding(.vertical, DS.Pill.vPadding)
+        .padding(.horizontal, DS.Spacing.s)
+        .padding(.vertical, DS.Spacing.xs)
         .background(background)
-        .clipShape(RoundedRectangle(cornerRadius: DS.Pill.cornerRadius))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
     }
 }
 
@@ -36,11 +36,11 @@ struct SkillPillBackground: View {
     let isSkill: Bool
 
     var body: some View {
-        RoundedRectangle(cornerRadius: DS.Pill.cornerRadius)
+        RoundedRectangle(cornerRadius: DS.Radius.s)
             .fill(isSkill ? Color.purple.opacity(0.12) : Color.cyan.opacity(0.12))
             .overlay(
                 isSkill ?
-                RoundedRectangle(cornerRadius: DS.Pill.cornerRadius)
+                RoundedRectangle(cornerRadius: DS.Radius.s)
                     .stroke(
                         LinearGradient(
                             colors: [Color.purple.opacity(0.3), Color.pink.opacity(0.2)],

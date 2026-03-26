@@ -9,8 +9,8 @@ struct PlanCard: View {
     var body: some View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+                    HStack(spacing: DS.Spacing.s) {
                         if let icon = plan.icon {
                             Image(systemName: icon)
                                 .font(.system(size: DS.Text.m))
@@ -33,37 +33,37 @@ struct PlanCard: View {
 
                     if let tags = plan.tags, !tags.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 6) {
+                            HStack(spacing: DS.Spacing.s) {
                                 ForEach(tags, id: \.self) { tag in
                                     Text(tag)
                                         .font(.system(size: DS.Text.s, weight: .medium))
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
+                                        .padding(.horizontal, DS.Spacing.s)
+                                        .padding(.vertical, DS.Spacing.xs)
                                         .background(planTagColor(tag).opacity(0.1))
                                         .foregroundColor(planTagColor(tag).opacity(0.8))
                                         .clipShape(Capsule())
                                 }
                             }
                         }
-                        .padding(.top, 4)
+                        .padding(.top, DS.Spacing.xs)
                     }
                 }
 
                 if stage == "done", let build = plan.build {
                     Text("\(build)")
                         .font(.system(size: DS.Text.s, weight: .medium).monospacedDigit())
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, DS.Spacing.s)
+                        .padding(.vertical, DS.Spacing.xs)
                         .background(.white.opacity(0.06))
                         .foregroundColor(.secondary.opacity(0.6))
                         .clipShape(Capsule())
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
+            .padding(DS.Spacing.l)
             .background(.white.opacity(0.08))
-            .cornerRadius(9)
-            .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+            .cornerRadius(DS.Radius.m)
+            .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
     }

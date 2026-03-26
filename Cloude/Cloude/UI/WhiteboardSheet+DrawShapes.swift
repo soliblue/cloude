@@ -13,8 +13,8 @@ extension WhiteboardSheet {
         let sketchPath: Path
         switch element.type {
         case .rect:
-            cleanPath = RoundedRectangle(cornerRadius: 6).path(in: rect)
-            sketchPath = sketchyRoundedRect(in: rect, cornerRadius: 6)
+            cleanPath = RoundedRectangle(cornerRadius: DS.Radius.s).path(in: rect)
+            sketchPath = sketchyRoundedRect(in: rect, cornerRadius: DS.Radius.s)
         case .ellipse:
             cleanPath = Ellipse().path(in: rect)
             sketchPath = sketchyEllipse(in: rect)

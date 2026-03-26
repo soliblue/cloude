@@ -7,7 +7,7 @@ struct MessageImageThumbnails: View {
 
     var body: some View {
         if let thumbnails = message.imageThumbnails, thumbnails.count > 1 {
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 ForEach(thumbnails.indices, id: \.self) { index in
                     if let imageData = Data(base64Encoded: thumbnails[index]),
                        let uiImage = UIImage(data: imageData) {
@@ -15,7 +15,7 @@ struct MessageImageThumbnails: View {
                             .resizable()
                             .scaledToFill()
                             .frame(width: 36, height: 36)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
                     }
                 }
             }
@@ -26,7 +26,7 @@ struct MessageImageThumbnails: View {
                 .resizable()
                 .scaledToFill()
                 .frame(width: 36, height: 36)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
         }
     }
 }

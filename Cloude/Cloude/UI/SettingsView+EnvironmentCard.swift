@@ -17,16 +17,16 @@ struct EnvironmentCard: View {
     @State private var showSymbolPicker = false
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: DS.Spacing.m) {
             headerRow
             formFields
             Spacer().frame(height: 2)
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, DS.Spacing.xs)
     }
 
     private var headerRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DS.Spacing.m) {
             Button(action: { showSymbolPicker = true }) {
                 Image(systemName: env.symbol)
                     .font(.system(size: DS.Icon.l))
@@ -38,7 +38,7 @@ struct EnvironmentCard: View {
                 SymbolPickerSheet(selectedSymbol: $env.symbol)
             }
 
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 Circle()
                     .fill(statusColor)
                     .frame(width: 8, height: 8)

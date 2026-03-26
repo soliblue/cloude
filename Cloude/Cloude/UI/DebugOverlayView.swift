@@ -32,15 +32,15 @@ struct DebugOverlayView: View {
     }
 
     private var minimizedView: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: DS.Spacing.s) {
             Circle()
                 .fill(fpsColor)
                 .frame(width: 6, height: 6)
             Text("\(metrics.fps)fps")
                 .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, DS.Spacing.s)
+        .padding(.vertical, DS.Spacing.xs)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
         .onTapGesture { expanded = true }
@@ -51,7 +51,7 @@ struct DebugOverlayView: View {
     }
 
     private var expandedView: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             HStack {
                 Text("Debug")
                     .font(.system(size: DS.Text.m, weight: .bold, design: .monospaced))
@@ -63,7 +63,7 @@ struct DebugOverlayView: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 metricRow("FPS", value: "\(metrics.fps)", color: fpsColor)
                 metricRow("OWC/sec", value: "\(metrics.objectWillChangeRate)", color: metrics.objectWillChangeRate > 10 ? .red : .pastelGreen)
                 metricRow("Logs", value: "\(totalLogCount)", color: .secondary)
@@ -78,10 +78,10 @@ struct DebugOverlayView: View {
                     .foregroundColor(.accentColor)
             }
         }
-        .padding(10)
+        .padding(DS.Spacing.m)
         .frame(width: 160)
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
 
     private func refreshLogs() {
@@ -90,8 +90,8 @@ struct DebugOverlayView: View {
     }
 
     private var logView: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
+            HStack(spacing: DS.Spacing.s) {
                 Text("Logs (\(displayedLogs.count))")
                     .font(.system(size: DS.Text.m, weight: .bold, design: .monospaced))
                 Spacer()
@@ -126,7 +126,7 @@ struct DebugOverlayView: View {
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 4) {
+                HStack(spacing: DS.Spacing.xs) {
                     filterChip("All", isSelected: selectedSource == nil) {
                         selectedSource = nil
                         refreshLogs()
@@ -156,10 +156,10 @@ struct DebugOverlayView: View {
                 }
             }
         }
-        .padding(10)
+        .padding(DS.Spacing.m)
         .frame(width: 320, height: 400)
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
 
     private func filterChip(_ label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
@@ -167,7 +167,7 @@ struct DebugOverlayView: View {
             Text(label)
                 .font(.system(size: DS.Text.s, weight: isSelected ? .bold : .medium, design: .monospaced))
                 .foregroundColor(isSelected ? .white : .secondary)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, DS.Spacing.s)
                 .padding(.vertical, 3)
                 .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15))
                 .clipShape(Capsule())
@@ -182,7 +182,7 @@ struct DebugOverlayView: View {
     }()
 
     private func logEntryRow(_ entry: DebugEntry) -> some View {
-        HStack(alignment: .top, spacing: 6) {
+        HStack(alignment: .top, spacing: DS.Spacing.s) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(entry.source)
                     .foregroundColor(.accentColor)

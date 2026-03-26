@@ -54,8 +54,8 @@ struct MessageBubble: View {
         #endif
         messageContent
             .opacity(message.isQueued ? 0.6 : 1.0)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
         .modifier(BubbleInteractionModifier(
@@ -72,7 +72,7 @@ struct MessageBubble: View {
     }
 
     private var messageContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             MessageImageThumbnails(message: message)
 
             Group {
@@ -109,7 +109,7 @@ struct MessageBubble: View {
                 Button {
                     onToggleCollapse?()
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: DS.Spacing.xs) {
                         Image(systemName: "chevron.down")
                         Text("Show more")
                             .font(.system(size: DS.Text.s))

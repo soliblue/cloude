@@ -21,11 +21,11 @@ struct CodeBlock: View {
             codeContent
         }
         .background(Color.themeSecondary)
-        .cornerRadius(6)
+        .cornerRadius(DS.Radius.s)
     }
 
     private var toolbar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.s) {
             if let lang = language, !lang.isEmpty {
                 Text(lang)
                     .font(.system(size: DS.Text.s, design: .monospaced))
@@ -57,8 +57,8 @@ struct CodeBlock: View {
                     .contentTransition(.symbolEffect(.replace))
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, DS.Spacing.m)
+        .padding(.vertical, DS.Spacing.s)
     }
 
     @ViewBuilder
@@ -72,7 +72,7 @@ struct CodeBlock: View {
                     .font(.system(size: DS.Text.s, design: .monospaced))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
+                    .padding(DS.Spacing.m)
             }
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -83,7 +83,7 @@ struct CodeBlock: View {
                     Text(SyntaxHighlighter.highlight(code, language: language))
                         .font(.system(size: DS.Text.s, design: .monospaced))
                         .fixedSize(horizontal: true, vertical: false)
-                        .padding(12)
+                        .padding(DS.Spacing.m)
                 }
             }
         }
@@ -98,9 +98,9 @@ struct CodeBlock: View {
                     .frame(height: lineHeight)
             }
         }
-        .padding(.leading, 12)
-        .padding(.vertical, 12)
-        .padding(.trailing, 4)
+        .padding(.leading, DS.Spacing.m)
+        .padding(.vertical, DS.Spacing.m)
+        .padding(.trailing, DS.Spacing.xs)
         .background(Color.themeSecondary)
     }
 
@@ -123,8 +123,8 @@ struct BlockquoteView: View {
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.leading, 12)
-                .padding(.vertical, 4)
+                .padding(.leading, DS.Spacing.m)
+                .padding(.vertical, DS.Spacing.xs)
         }
     }
 }
@@ -132,6 +132,6 @@ struct BlockquoteView: View {
 struct HorizontalRuleView: View {
     var body: some View {
         Divider()
-            .padding(.vertical, 8)
+            .padding(.vertical, DS.Spacing.s)
     }
 }

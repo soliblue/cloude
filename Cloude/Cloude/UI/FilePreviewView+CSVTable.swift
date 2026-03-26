@@ -42,8 +42,8 @@ struct CSVTableView: View {
                     .font(.system(size: DS.Text.s, weight: .semibold, design: .default))
                     .lineLimit(1)
                     .frame(width: columnWidth(i), alignment: .leading)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, DS.Spacing.s)
+                    .padding(.vertical, DS.Spacing.s)
             }
         }
         .background(Color.themeSecondary)
@@ -58,8 +58,8 @@ struct CSVTableView: View {
                     .lineLimit(2)
                     .textSelection(.enabled)
                     .frame(width: columnWidth(i), alignment: .leading)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, DS.Spacing.s)
+                    .padding(.vertical, DS.Spacing.xs)
             }
         }
         .background(isEven ? Color.clear : Color.themeSecondary.opacity(0.5))

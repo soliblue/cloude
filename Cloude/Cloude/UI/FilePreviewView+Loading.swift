@@ -18,7 +18,7 @@ extension FilePreviewView {
         Button {
             loadFullQuality()
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: DS.Spacing.s) {
                 if isLoadingFullQuality {
                     if let progress = currentProgress {
                         ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
@@ -41,13 +41,13 @@ extension FilePreviewView {
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.m)
             .background(.ultraThinMaterial)
             .cornerRadius(15)
         }
         .disabled(isLoadingFullQuality)
-        .padding(.bottom, 16)
+        .padding(.bottom, DS.Spacing.l)
     }
 
     func loadFullQuality() {

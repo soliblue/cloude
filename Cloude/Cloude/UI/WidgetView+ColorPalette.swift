@@ -32,14 +32,14 @@ struct ColorPaletteWidget: View {
                     }
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         } else {
             VStack(spacing: 1) {
                 ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
                     colorSwatch(color)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
 
@@ -60,7 +60,7 @@ struct ColorPaletteWidget: View {
                     .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundColor(.secondary)
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 44)
             .background(Color.themeSecondary.opacity(0.5))

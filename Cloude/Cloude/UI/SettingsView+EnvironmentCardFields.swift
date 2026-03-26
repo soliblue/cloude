@@ -5,7 +5,7 @@ import SwiftUI
 extension EnvironmentCard {
     var formFields: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "server.rack")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
@@ -16,11 +16,11 @@ extension EnvironmentCard {
                     .keyboardType(.URL)
                     .onChange(of: env.host) { _, _ in onUpdate(env) }
             }
-            .padding(.vertical, 10)
+            .padding(.vertical, DS.Spacing.m)
 
             Divider().padding(.leading, 36)
 
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "number")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
@@ -30,11 +30,11 @@ extension EnvironmentCard {
                     .font(.system(size: DS.Text.m, design: .monospaced))
                     .onChange(of: env.port) { _, _ in onUpdate(env) }
             }
-            .padding(.vertical, 10)
+            .padding(.vertical, DS.Spacing.m)
 
             Divider().padding(.leading, 36)
 
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "key.fill")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.orange)
@@ -57,11 +57,11 @@ extension EnvironmentCard {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.vertical, 10)
+            .padding(.vertical, DS.Spacing.m)
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, DS.Spacing.m)
         .background(Color.themeSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
 
     var portBinding: Binding<String> {

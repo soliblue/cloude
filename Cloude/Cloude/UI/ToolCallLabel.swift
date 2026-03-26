@@ -10,7 +10,7 @@ struct ToolCallLabel: View {
     private let textSize: CGFloat = DS.Text.s
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DS.Spacing.xs) {
             Image(systemName: iconName)
                 .font(.system(size: iconSize, weight: .semibold))
             Text(displayName)

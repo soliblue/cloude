@@ -4,7 +4,7 @@ import CloudeShared
 extension FolderPickerView {
     var pathBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 ForEach(pathComponents, id: \.path) { component in
                     Button(action: { navigateTo(component.path) }) {
                         HStack(spacing: 2) {
@@ -22,7 +22,7 @@ extension FolderPickerView {
                 }
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
+            .padding(.vertical, DS.Spacing.s)
         }
         .background(Color.themeSecondary)
     }
@@ -48,7 +48,7 @@ struct FolderRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "folder.fill")
                     .font(.system(size: DS.Icon.l))
                     .foregroundColor(.blue)

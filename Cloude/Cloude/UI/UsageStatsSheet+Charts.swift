@@ -12,8 +12,8 @@ extension UsageStatsSheet {
     }
 
     var activityChart: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 6) {
+        VStack(spacing: DS.Spacing.m) {
+            HStack(spacing: DS.Spacing.s) {
                 ForEach(0..<chartModes.count, id: \.self) { i in
                     Button(action: { withAnimation(.quickTransition) { chartPage = i } }) {
                         Image(systemName: chartModes[i].icon)
@@ -21,7 +21,7 @@ extension UsageStatsSheet {
                             .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(0.4))
                             .frame(width: 32, height: 28)
                             .background(chartPage == i ? chartModes[i].color.opacity(0.15) : .clear)
-                            .cornerRadius(6)
+                            .cornerRadius(DS.Radius.s)
                     }
                 }
             }
@@ -73,13 +73,13 @@ extension UsageStatsSheet {
     }
 
     var modelsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: DS.Spacing.m) {
             Text("Models")
                 .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             ForEach(sortedModels, id: \.name) { model in
-                HStack(spacing: 8) {
+                HStack(spacing: DS.Spacing.s) {
                     Text(model.name)
                         .font(.system(size: DS.Text.m, weight: .medium))
                         .foregroundColor(.primary)
@@ -100,14 +100,14 @@ extension UsageStatsSheet {
                 }
             }
         }
-        .padding(14)
+        .padding(DS.Spacing.l)
         .background(.white.opacity(0.08))
-        .cornerRadius(9)
-        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(DS.Radius.m)
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
     var peakHoursSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             Text("Peak Hours")
                 .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
@@ -135,9 +135,9 @@ extension UsageStatsSheet {
             .font(.system(size: DS.Text.s))
             .foregroundColor(.secondary.opacity(0.5))
         }
-        .padding(14)
+        .padding(DS.Spacing.l)
         .background(.white.opacity(0.08))
-        .cornerRadius(9)
-        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(DS.Radius.m)
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 }

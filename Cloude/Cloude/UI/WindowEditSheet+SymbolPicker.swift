@@ -40,15 +40,15 @@ struct SymbolPickerSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: 16) {
+                LazyVStack(alignment: .leading, spacing: DS.Spacing.l) {
                     ForEach(filteredCategories, id: \.0) { category, symbols in
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: DS.Spacing.s) {
                             Text(category)
                                 .font(.system(size: DS.Text.m, weight: .semibold))
                                 .foregroundColor(.secondary)
-                                .padding(.horizontal, 4)
+                                .padding(.horizontal, DS.Spacing.xs)
 
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 6), spacing: 12) {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: DS.Spacing.xs), count: 6), spacing: DS.Spacing.m) {
                                 ForEach(symbols, id: \.self) { symbol in
                                     Button(action: {
                                         selectedSymbol = symbol
@@ -58,7 +58,7 @@ struct SymbolPickerSheet: View {
                                             .font(.system(size: DS.Icon.l))
                                             .frame(width: 44, height: 44)
                                             .background(selectedSymbol == symbol ? Color.accentColor.opacity(0.2) : Color.clear)
-                                            .cornerRadius(6)
+                                            .cornerRadius(DS.Radius.s)
                                     }
                                     .buttonStyle(.plain)
                                 }

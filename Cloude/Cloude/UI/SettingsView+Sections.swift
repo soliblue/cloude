@@ -24,7 +24,7 @@ extension SettingsView {
                                 Text("PID \(proc.pid)")
                                     .font(.system(size: DS.Text.m, design: .monospaced))
                             }
-                            HStack(spacing: 8) {
+                            HStack(spacing: DS.Spacing.s) {
                                 if proc.conversationName != nil {
                                     Text("PID \(proc.pid)")
                                         .font(.system(size: DS.Text.s))
@@ -63,11 +63,11 @@ extension SettingsView {
         } header: {
             HStack {
                 Text("Claude Processes")
-                    .font(.system(size: DS.Text.s))
+                    .font(.system(size: DS.Text.m))
                 Spacer()
                 Button(action: { connection.getProcesses() }) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: DS.Text.s))
+                        .font(.system(size: DS.Text.m))
                 }
                 .buttonStyle(.plain)
             }

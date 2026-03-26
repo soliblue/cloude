@@ -124,8 +124,8 @@ struct MessageInfoSheet: View {
                     }
                     infoRow(row.0, row.1)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, DS.Spacing.l)
+                        .padding(.vertical, DS.Spacing.m)
                 }
                 Spacer()
             }
@@ -145,7 +145,7 @@ struct MessageInfoSheet: View {
     }
 
     private func infoRow(_ icon: String, _ text: String) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.s) {
             Image(systemName: icon)
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary)

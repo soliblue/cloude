@@ -52,15 +52,15 @@ struct UsageStatsSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
+                VStack(spacing: DS.Spacing.l) {
                     heroRow
                     activityChart
                     modelsSection
                     peakHoursSection
                     footerSection
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, DS.Spacing.l)
+                .padding(.vertical, DS.Spacing.m)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -81,18 +81,18 @@ struct UsageStatsSheet: View {
     private var heroRow: some View {
         HStack(spacing: 0) {
             StatPill(value: formatNumber(stats.totalMessages), label: "msgs", color: .blue)
-            Divider().frame(height: 28).padding(.horizontal, 4)
+            Divider().frame(height: 28).padding(.horizontal, DS.Spacing.xs)
             StatPill(value: formatNumber(stats.totalSessions), label: "sessions", color: .purple)
-            Divider().frame(height: 28).padding(.horizontal, 4)
+            Divider().frame(height: 28).padding(.horizontal, DS.Spacing.xs)
             StatPill(value: formatNumber(totalToolCalls), label: "tools", color: .orange)
-            Divider().frame(height: 28).padding(.horizontal, 4)
+            Divider().frame(height: 28).padding(.horizontal, DS.Spacing.xs)
             StatPill(value: "\(daysActive)", label: "days", color: .green)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 14)
+        .padding(.vertical, DS.Spacing.m)
+        .padding(.horizontal, DS.Spacing.l)
         .background(.white.opacity(0.08))
-        .cornerRadius(9)
-        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+        .cornerRadius(DS.Radius.m)
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
     }
 
 }

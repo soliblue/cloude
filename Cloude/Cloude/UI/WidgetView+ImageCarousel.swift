@@ -38,7 +38,7 @@ struct ImageCarouselWidget: View {
 
     @ViewBuilder
     private func imageSlide(_ image: (path: String?, url: String?, caption: String?)) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: DS.Spacing.xs) {
             Group {
                 if let path = image.path {
                     FileImageView(path: path)
@@ -57,7 +57,7 @@ struct ImageCarouselWidget: View {
                 }
             }
             .frame(maxHeight: 300)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
             .onTapGesture {
                 if let path = image.path {
                     previewPath = path

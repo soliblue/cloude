@@ -6,21 +6,21 @@ struct ThemePickerView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let columns = [
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8)
+        GridItem(.flexible(), spacing: DS.Spacing.s),
+        GridItem(.flexible(), spacing: DS.Spacing.s),
+        GridItem(.flexible(), spacing: DS.Spacing.s)
     ]
 
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                LazyVGrid(columns: columns, spacing: 12) {
+                LazyVGrid(columns: columns, spacing: DS.Spacing.m) {
                     ForEach(AppTheme.allCases, id: \.self) { theme in
                         ThemeCard(theme: theme, isSelected: appTheme == theme, currentTheme: appTheme)
                             .onTapGesture { appThemeRaw = theme.rawValue }
                     }
                 }
-                .padding(12)
+                .padding(DS.Spacing.m)
             }
             .background(Color(hex: appTheme.palette.background))
             .navigationBarTitleDisplayMode(.inline)
@@ -47,24 +47,24 @@ struct ThemeCard: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 3) {
-                RoundedRectangle(cornerRadius: 3)
+                RoundedRectangle(cornerRadius: DS.Radius.s)
                     .fill(Color(hex: theme.palette.background))
                     .frame(height: 32)
-                RoundedRectangle(cornerRadius: 3)
+                RoundedRectangle(cornerRadius: DS.Radius.s)
                     .fill(Color(hex: theme.palette.secondary))
                     .frame(height: 32)
             }
-            .padding(8)
+            .padding(DS.Spacing.s)
 
             Text(theme.rawValue)
                 .font(.system(size: DS.Text.m, weight: isSelected ? .semibold : .regular))
                 .foregroundColor(isSelected ? .primary : .secondary)
-                .padding(.bottom, 8)
+                .padding(.bottom, DS.Spacing.s)
         }
         .background(Color(hex: currentTheme.palette.secondary))
-        .cornerRadius(9)
+        .cornerRadius(DS.Radius.m)
         .overlay(
-            RoundedRectangle(cornerRadius: 9)
+            RoundedRectangle(cornerRadius: DS.Radius.m)
                 .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
         )
     }

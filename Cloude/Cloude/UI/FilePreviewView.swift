@@ -77,13 +77,13 @@ struct FilePreviewView: View {
                 if browsingFolder != nil {
                     Button(action: { browsingFolder = nil }) {
                         Image(systemName: "doc.text")
-                            .padding(12)
+                            .padding(DS.Spacing.m)
                     }
                 }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: DS.Spacing.m) {
                         if contentType.isTextBased, let _ = fileData {
                             Button(action: { toggleDiff() }) {
                                 Image(systemName: showDiff ? "doc.text" : "chevron.left.forwardslash.chevron.right")
@@ -104,7 +104,7 @@ struct FilePreviewView: View {
                         }
                     }
                     .font(.system(size: DS.Icon.s, weight: .medium))
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, DS.Spacing.l)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { dismiss() }) {

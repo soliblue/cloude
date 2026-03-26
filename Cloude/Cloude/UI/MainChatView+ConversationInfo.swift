@@ -7,7 +7,7 @@ struct ConversationInfoLabel: View {
     var placeholderText: String = "Select conversation..."
 
     var body: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: DS.Spacing.xs) {
             Image.safeSymbol(conversation?.symbol)
                 .font(.system(size: DS.Text.m))
                 .contentTransition(.symbolEffect(.replace))
@@ -45,12 +45,12 @@ struct WindowHeaderView: View {
 
     var body: some View {
         Button(action: { onSelectConversation?() }) {
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 ConversationInfoLabel(conversation: conversation)
                 Spacer()
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DS.Spacing.m)
+            .padding(.vertical, DS.Spacing.s)
             .background(Color.themeSecondary)
         }
         .buttonStyle(.plain)

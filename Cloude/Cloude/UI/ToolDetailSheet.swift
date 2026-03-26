@@ -51,7 +51,7 @@ struct ToolDetailSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    HStack(spacing: 5) {
+                    HStack(spacing: DS.Spacing.xs) {
                         Image(systemName: iconName)
                             .font(.system(size: DS.Text.m, weight: .semibold))
                         Text(toolTitle)
@@ -59,8 +59,8 @@ struct ToolDetailSheet: View {
                             .lineLimit(1)
                     }
                     .foregroundColor(toolCallColor(for: toolCall.name, input: toolCall.input))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, DS.Spacing.m)
+                    .padding(.vertical, DS.Spacing.s)
                     .background(toolCallColor(for: toolCall.name, input: toolCall.input).opacity(0.12))
                     .clipShape(Capsule())
                 }
@@ -83,7 +83,7 @@ struct ToolDetailSheet: View {
     @ViewBuilder
     var statusBanner: some View {
         if toolCall.state == .executing {
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.s) {
                 ProgressView()
                     .scaleEffect(0.8)
                 Text("Executing")
@@ -91,10 +91,10 @@ struct ToolDetailSheet: View {
                     .foregroundColor(.secondary)
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, DS.Spacing.m)
+            .padding(.vertical, DS.Spacing.m)
             .background(Color.themeSecondary.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
 }

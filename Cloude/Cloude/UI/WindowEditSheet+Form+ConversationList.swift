@@ -89,12 +89,12 @@ extension WindowEditForm {
                             .font(.system(size: DS.Text.s))
                             .foregroundColor(.accentColor)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                            .padding(.vertical, DS.Spacing.m)
                     }
                 }
             }
             .background(Color.themeSecondary)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
 
@@ -103,7 +103,7 @@ extension WindowEditForm {
         SwipeToDeleteRow(onTap: { onSelectConversation(conv) }, onDelete: {
             conversationStore.deleteConversation(conv)
         }) {
-            HStack(spacing: 10) {
+            HStack(spacing: DS.Spacing.m) {
                 Image.safeSymbol(conv.symbol)
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
@@ -112,7 +112,7 @@ extension WindowEditForm {
                     Text(conv.name)
                         .font(.system(size: DS.Text.m))
                         .lineLimit(1)
-                    HStack(spacing: 6) {
+                    HStack(spacing: DS.Spacing.s) {
                         if let dir = conv.workingDirectory, !dir.isEmpty {
                             Text(dir.lastPathComponent)
                                 .foregroundColor(.accentColor)
@@ -133,8 +133,8 @@ extension WindowEditForm {
                     .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, DS.Spacing.m)
+            .padding(.vertical, DS.Spacing.m)
         }
 
         if !isLast {

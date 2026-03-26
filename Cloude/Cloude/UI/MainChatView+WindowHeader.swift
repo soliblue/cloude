@@ -24,7 +24,7 @@ struct WindowTabBar: View {
                         .foregroundColor(activeType == type ? .accentColor : .secondary)
                         .opacity(enabled ? 1 : 0.3)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, DS.Spacing.s)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

@@ -16,7 +16,7 @@ struct WhiteboardSnapshotPill: View {
 
     var body: some View {
         if let state = snapshot {
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: "rectangle.on.rectangle.angled")
                     .font(.system(size: DS.Text.s))
                     .foregroundColor(.accentColor)
@@ -27,10 +27,10 @@ struct WhiteboardSnapshotPill: View {
                     .font(.system(size: DS.Text.s, weight: .medium))
                     .foregroundColor(.secondary)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, DS.Spacing.s)
+            .padding(.vertical, DS.Spacing.xs)
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
+            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.m))
             .highPriorityGesture(TapGesture().onEnded { showDetail = true })
             .sheet(isPresented: $showDetail) {
                 WhiteboardSnapshotSheet(state: state)
@@ -78,14 +78,14 @@ private struct WhiteboardElementRow: View {
     let element: WhiteboardElement
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.s) {
             Image(systemName: elementIcon(element.type))
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.accentColor)
                 .frame(width: 20)
 
             VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
+                HStack(spacing: DS.Spacing.xs) {
                     Text(element.type.rawValue)
                         .font(.system(size: DS.Text.m, weight: .semibold, design: .monospaced))
                     Text(element.id)
@@ -93,7 +93,7 @@ private struct WhiteboardElementRow: View {
                         .foregroundColor(.secondary)
                 }
 
-                HStack(spacing: 8) {
+                HStack(spacing: DS.Spacing.s) {
                     if element.type != .arrow {
                         Text(String(format: "(%.0f, %.0f)", element.x, element.y))
                             .font(.system(size: DS.Text.s, design: .monospaced))

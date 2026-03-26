@@ -52,7 +52,7 @@ struct InteractiveFunctionWidget: View {
     }
 
     private func inputSlider(_ input: (name: String, value: Double, unit: String?, min: Double, max: Double, step: Double)) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
             HStack {
                 Text(input.name)
                     .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
@@ -87,7 +87,7 @@ struct InteractiveFunctionWidget: View {
                 .font(.system(size: DS.Text.m, weight: .medium))
                 .foregroundColor(.secondary)
             Spacer()
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 Text(String(format: outputConfig.format, computedResult))
                     .font(.system(size: DS.Icon.l, weight: .bold, design: .rounded))
                     .foregroundColor(.purple)
@@ -100,8 +100,8 @@ struct InteractiveFunctionWidget: View {
                 }
             }
         }
-        .padding(12)
+        .padding(DS.Spacing.m)
         .background(Color.purple.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
 }

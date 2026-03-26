@@ -52,7 +52,7 @@ struct InlineToolPill: View {
 
     private var pillContent: some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: DS.Pill.spacing) {
+            HStack(spacing: DS.Spacing.xs) {
                 if !chainedCommands.isEmpty {
                     chainedPillContent
                 } else {
@@ -72,8 +72,8 @@ struct InlineToolPill: View {
             }
 
         }
-        .padding(.horizontal, DS.Pill.hPadding)
-        .padding(.vertical, DS.Pill.vPadding)
+        .padding(.horizontal, DS.Spacing.s)
+        .padding(.vertical, DS.Spacing.xs)
         .fixedSize(horizontal: false, vertical: true)
         .overlay {
             if isExecuting {
@@ -81,8 +81,8 @@ struct InlineToolPill: View {
                     .transition(.opacity)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: DS.Pill.cornerRadius))
-        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Pill.cornerRadius))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.s))
         .onChange(of: toolCall.state) { _, newState in
             if newState == .complete {
                 withAnimation(.easeOut(duration: 0.3)) {
@@ -102,7 +102,7 @@ struct InlineToolPill: View {
     }
 
     private var chainedPillContent: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: DS.Spacing.s) {
             ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, chained in
                 if index > 0 {
                     let prevOp = chainedCommands[index - 1].operatorAfter

@@ -7,7 +7,7 @@ struct SlashCommandSuggestions: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 ForEach(commands, id: \.name) { command in
                     Button(action: { onSelect(command) }) {
                         SkillPill(command: command)
@@ -15,8 +15,8 @@ struct SlashCommandSuggestions: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.s)
         }
     }
 }
@@ -43,7 +43,7 @@ struct HistorySuggestions: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 ForEach(suggestions, id: \.text) { entry in
                     Button(action: { onSelect(entry.text) }) {
                         Pill {
@@ -60,8 +60,8 @@ struct HistorySuggestions: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.s)
         }
     }
 }
@@ -72,7 +72,7 @@ struct FileSuggestionsList: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.s) {
                 ForEach(files, id: \.self) { file in
                     Button(action: { onSelect(file) }) {
                         FilePill(path: file)
@@ -80,8 +80,8 @@ struct FileSuggestionsList: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.s)
         }
     }
 }
@@ -105,10 +105,10 @@ struct FilePill: View {
                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .lineLimit(1)
         } background: {
-            RoundedRectangle(cornerRadius: DS.Pill.cornerRadius)
+            RoundedRectangle(cornerRadius: DS.Radius.s)
                 .fill(Color.orange.opacity(0.12))
                 .overlay(
-                    RoundedRectangle(cornerRadius: DS.Pill.cornerRadius)
+                    RoundedRectangle(cornerRadius: DS.Radius.s)
                         .stroke(
                             LinearGradient(
                                 colors: [Color.orange.opacity(0.3), Color.yellow.opacity(0.2)],

@@ -18,9 +18,9 @@ extension FilePreviewView {
                                 .frame(height: 13.5)
                         }
                     }
-                    .padding(.leading, 12)
-                    .padding(.trailing, 8)
-                    .padding(.top, 16)
+                    .padding(.leading, DS.Spacing.m)
+                    .padding(.trailing, DS.Spacing.s)
+                    .padding(.top, DS.Spacing.l)
 
                     Divider()
                 }
@@ -49,7 +49,7 @@ extension FilePreviewView {
 
     @ViewBuilder
     func binaryPlaceholder(_ data: Data) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: DS.Spacing.l) {
             Image(systemName: fileEntry?.icon ?? "doc")
                 .font(.system(size: DS.Icon.l))
                 .foregroundColor(.secondary)

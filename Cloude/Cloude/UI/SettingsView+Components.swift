@@ -7,7 +7,7 @@ struct SettingsRow<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DS.Spacing.m) {
             Image(systemName: icon)
                 .font(.system(size: DS.Icon.m))
                 .foregroundColor(color)
@@ -26,7 +26,7 @@ struct ConnectionStatusCard: View {
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: DS.Radius.m)
                     .fill(statusColor.opacity(0.2))
                     .frame(width: 44, height: 44)
 

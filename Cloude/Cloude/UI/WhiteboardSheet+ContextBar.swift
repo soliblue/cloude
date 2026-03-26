@@ -13,13 +13,13 @@ extension WhiteboardSheet {
     @ViewBuilder
     var contextBar: some View {
         if editingTextId != nil {
-            HStack(spacing: 10) {
+            HStack(spacing: DS.Spacing.m) {
                 TextField("Label", text: $editingTextValue)
                     .textFieldStyle(.plain)
                     .font(.system(size: DS.Text.m, weight: .medium))
                     .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, DS.Spacing.m)
+                    .padding(.vertical, DS.Spacing.s)
                     .background(Color.white.opacity(0.08))
                     .clipShape(Capsule())
                     .focused($isTextFieldFocused)
@@ -35,20 +35,20 @@ extension WhiteboardSheet {
             }
             .contextPill
         } else {
-            VStack(spacing: 6) {
+            VStack(spacing: DS.Spacing.s) {
                 contextColorRow
                 contextActionRow
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.m)
             .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
             .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
         }
     }
 
     var contextColorRow: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.s) {
             ForEach(Self.paletteColors, id: \.self) { hex in
                 let currentColor = selectedElement?.fill ?? selectedElement?.stroke
                 Button(action: {
@@ -77,7 +77,7 @@ extension WhiteboardSheet {
     }
 
     var contextActionRow: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DS.Spacing.xs) {
             if store.activeTool == .multiSelect {
                 multiSelectActionRow
             } else {

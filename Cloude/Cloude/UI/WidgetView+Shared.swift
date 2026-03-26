@@ -13,10 +13,10 @@ struct WidgetContainer<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) { content() }
-            .padding(14)
+        VStack(alignment: .leading, spacing: DS.Spacing.m) { content() }
+            .padding(DS.Spacing.l)
             .background(Color.themeSecondary.opacity(0.3))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
     }
 }
 
@@ -27,7 +27,7 @@ struct WidgetHeader<Buttons: View>: View {
     @ViewBuilder let buttons: () -> Buttons
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: DS.Spacing.s) {
             Image(systemName: icon)
                 .font(.system(size: DS.Text.s, weight: .semibold))
                 .foregroundColor(color)
@@ -37,7 +37,7 @@ struct WidgetHeader<Buttons: View>: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            HStack(spacing: 12) { buttons() }
+            HStack(spacing: DS.Spacing.m) { buttons() }
         }
     }
 
@@ -89,7 +89,7 @@ struct WidgetResultBadge: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DS.Spacing.xs) {
             Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.system(size: DS.Text.s))
             Text(isCorrect ? correctText : wrongText)
@@ -105,7 +105,7 @@ struct WidgetProgressBadge: View {
     let text: String
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DS.Spacing.xs) {
             Image(systemName: icon)
                 .font(.system(size: DS.Text.s))
             Text(text)

@@ -6,7 +6,7 @@ extension WhiteboardSheet {
     @ToolbarContentBuilder
     var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 Button(action: { store.undo() }) {
                     Image(systemName: "arrow.uturn.backward")
                         .font(.system(size: DS.Icon.s, weight: .medium))
@@ -24,7 +24,7 @@ extension WhiteboardSheet {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            HStack(spacing: 12) {
+            HStack(spacing: DS.Spacing.m) {
                 if onSendSnapshot != nil {
                     Button(action: {
                         onSendSnapshot?()
@@ -52,13 +52,13 @@ extension WhiteboardSheet {
                         .foregroundColor(.secondary)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, DS.Spacing.l)
         }
     }
 
     @ViewBuilder
     var floatingToolbar: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: DS.Spacing.s) {
             if store.activeTool == .multiSelect || (!store.selectedIds.isEmpty && store.activeTool == .hand) {
                 contextBar
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -87,8 +87,8 @@ extension WhiteboardSheet {
             toolButton(icon: "pencil.tip", tool: .pencil)
             toolButton(icon: "arrow.right", tool: .arrow)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.horizontal, DS.Spacing.s)
+        .padding(.vertical, DS.Spacing.s)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
         .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
@@ -110,7 +110,7 @@ extension WhiteboardSheet {
                 .font(.system(size: DS.Icon.m))
                 .frame(width: 44, height: 36)
                 .background(store.activeTool == tool ? Color.accentColor.opacity(0.2) : Color.clear)
-                .cornerRadius(8)
+                .cornerRadius(DS.Radius.m)
                 .foregroundColor(store.activeTool == tool ? .accentColor : .primary.opacity(0.7))
         }
         .buttonStyle(.plain)
@@ -119,7 +119,7 @@ extension WhiteboardSheet {
     static let paletteColors = ["#FFFFFF", "#FF6B6B", "#4ECDC4", "#FFE66D", "#A78BFA", "#FF8C42"]
 
     private var colorBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: DS.Spacing.m) {
             ForEach(Self.paletteColors, id: \.self) { hex in
                 Button(action: { store.activeColor = hex }) {
                     Circle()
@@ -134,8 +134,8 @@ extension WhiteboardSheet {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.s)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
         .shadow(color: .black.opacity(0.2), radius: 6, y: 3)
@@ -145,8 +145,8 @@ extension WhiteboardSheet {
 extension View {
     var contextPill: some View {
         self
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.s)
             .background(.ultraThinMaterial)
             .clipShape(Capsule())
             .shadow(color: .black.opacity(0.2), radius: 6, y: 3)

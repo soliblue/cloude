@@ -41,7 +41,7 @@ struct GitChangesView: View {
     }
 
     private func statusHeader(_ status: GitStatusInfo) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.s) {
             Image(systemName: "arrow.triangle.branch")
                 .font(.system(size: DS.Text.m))
                 .foregroundColor(.secondary)
@@ -60,7 +60,7 @@ struct GitChangesView: View {
             let totalAdd = status.files.compactMap(\.additions).reduce(0, +)
             let totalDel = status.files.compactMap(\.deletions).reduce(0, +)
             if totalAdd > 0 || totalDel > 0 {
-                HStack(spacing: 4) {
+                HStack(spacing: DS.Spacing.xs) {
                     if totalAdd > 0 {
                         Text("+\(totalAdd)")
                             .foregroundColor(.pastelGreen)
@@ -88,8 +88,8 @@ struct GitChangesView: View {
         }
         .font(.system(size: DS.Text.s))
         .foregroundColor(.secondary)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.m)
         .background(Color.themeSecondary)
     }
 

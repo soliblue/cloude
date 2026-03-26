@@ -3,14 +3,14 @@ import CloudeShared
 
 extension ToolDetailSheet {
     var childrenSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             Label("Tools (\(children.count))", systemImage: "square.stack")
                 .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
 
             VStack(spacing: 0) {
                 ForEach(Array(children.enumerated()), id: \.element.toolId) { index, child in
-                    HStack(spacing: 10) {
+                    HStack(spacing: DS.Spacing.m) {
                         ToolCallLabel(name: child.name, input: child.input)
                             .lineLimit(1)
 
@@ -25,22 +25,22 @@ extension ToolDetailSheet {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
+                    .padding(.vertical, DS.Spacing.s)
+                    .padding(.horizontal, DS.Spacing.m)
 
                     if index < children.count - 1 {
                         Divider()
-                            .padding(.leading, 12)
+                            .padding(.leading, DS.Spacing.m)
                     }
                 }
             }
             .background(Color.themeSecondary.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
 
     func todoSection(_ todos: [[String: String]]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             let completed = todos.filter { $0["status"] == "completed" }.count
             Label("\(completed)/\(todos.count) tasks", systemImage: "checklist")
                 .font(.system(size: DS.Text.m, weight: .semibold))
@@ -48,7 +48,7 @@ extension ToolDetailSheet {
 
             VStack(spacing: 0) {
                 ForEach(Array(todos.enumerated()), id: \.offset) { index, todo in
-                    HStack(spacing: 10) {
+                    HStack(spacing: DS.Spacing.m) {
                         Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
                             .font(.system(size: DS.Text.m, weight: .medium))
                             .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
@@ -59,8 +59,8 @@ extension ToolDetailSheet {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .foregroundColor(todo["status"] == "completed" ? .secondary : .primary)
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
+                    .padding(.vertical, DS.Spacing.s)
+                    .padding(.horizontal, DS.Spacing.m)
 
                     if index < todos.count - 1 {
                         Divider()
@@ -69,12 +69,12 @@ extension ToolDetailSheet {
                 }
             }
             .background(Color.themeSecondary.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
 
     var chainSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             Label("Chained Commands", systemImage: "link")
                 .font(.system(size: DS.Text.m, weight: .semibold))
                 .foregroundColor(.secondary)
@@ -82,7 +82,7 @@ extension ToolDetailSheet {
             VStack(spacing: 0) {
                 ForEach(Array(chainedCommands.enumerated()), id: \.offset) { index, chained in
                     VStack(spacing: 0) {
-                        HStack(alignment: .top, spacing: 10) {
+                        HStack(alignment: .top, spacing: DS.Spacing.m) {
                             Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
                                 .font(.system(size: DS.Text.m, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
@@ -94,11 +94,11 @@ extension ToolDetailSheet {
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 12)
+                        .padding(.vertical, DS.Spacing.m)
+                        .padding(.horizontal, DS.Spacing.m)
 
                         if let op = chained.operatorAfter {
-                            HStack(spacing: 8) {
+                            HStack(spacing: DS.Spacing.s) {
                                 Rectangle()
                                     .fill(Color.secondary.opacity(0.3))
                                     .frame(width: 1, height: 16)
@@ -113,7 +113,7 @@ extension ToolDetailSheet {
                 }
             }
             .background(Color.themeSecondary.opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
 }

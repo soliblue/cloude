@@ -7,13 +7,13 @@ struct GitFileRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.s) {
                 Text(file.status)
                     .font(.system(size: DS.Text.s, weight: .bold, design: .monospaced))
                     .foregroundColor(.white)
                     .frame(width: 22, height: 18)
                     .background(statusColor)
-                    .cornerRadius(3)
+                    .cornerRadius(DS.Radius.s)
 
                 HStack(spacing: 0) {
                     Text(filePath)
@@ -28,7 +28,7 @@ struct GitFileRow: View {
                 Spacer()
 
                 if let additions = file.additions, let deletions = file.deletions {
-                    HStack(spacing: 4) {
+                    HStack(spacing: DS.Spacing.xs) {
                         if additions > 0 {
                             Text("+\(additions)")
                                 .foregroundColor(.pastelGreen)

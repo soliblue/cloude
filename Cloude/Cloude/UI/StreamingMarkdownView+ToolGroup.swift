@@ -67,19 +67,19 @@ struct ToolGroupView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             ForEach(widgets, id: \.parent.toolId) { item in
                 WidgetRegistry.view(for: item.parent.name, input: item.parent.input)
             }
 
             if !nonWidgets.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: DS.Spacing.s) {
                         ForEach(nonWidgets, id: \.parent.toolId) { item in
                             InlineToolPill(toolCall: item.parent, children: item.children)
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, DS.Spacing.l)
                 }
                 .padding(.horizontal, -16)
                 .scrollClipDisabled()

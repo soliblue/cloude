@@ -19,7 +19,7 @@ struct AudioWaveformView: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DS.Spacing.xs) {
             ForEach(0..<barCount, id: \.self) { index in
                 RoundedRectangle(cornerRadius: barWidth / 2)
                     .fill(color)
@@ -52,7 +52,7 @@ struct RecordingOverlayView: View {
     @State private var currentLevel: Float = 0
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: DS.Spacing.l) {
             if isTranscribing {
                 ProgressView()
                     .tint(.accentColor)
@@ -88,10 +88,10 @@ struct RecordingOverlayView: View {
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 15))
-        .padding(.horizontal, 8)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.m)
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.l))
+        .padding(.horizontal, DS.Spacing.s)
         .onAppear {
             withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
                 pulse = true

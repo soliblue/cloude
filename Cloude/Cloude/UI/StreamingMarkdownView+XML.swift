@@ -10,7 +10,7 @@ struct XMLBlockView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.s) {
                 Text("xml")
                     .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundStyle(.secondary)
@@ -22,8 +22,8 @@ struct XMLBlockView: View {
                         .contentTransition(.symbolEffect(.replace))
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DS.Spacing.m)
+            .padding(.vertical, DS.Spacing.s)
 
             Divider().overlay(Color.gray.opacity(0.3))
 
@@ -33,19 +33,19 @@ struct XMLBlockView: View {
                     .foregroundColor(.primary)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
+                    .padding(DS.Spacing.m)
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(nodes) { node in
                         XMLNodeView(node: node, depth: 0)
                     }
                 }
-                .padding(12)
+                .padding(DS.Spacing.m)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .background(Color.themeSecondary)
-        .cornerRadius(6)
+        .cornerRadius(DS.Radius.s)
     }
 }
 
@@ -60,7 +60,7 @@ private struct XMLNodeView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .top, spacing: 4) {
+            HStack(alignment: .top, spacing: DS.Spacing.xs) {
                 if hasChildren {
                     Button { expanded.toggle() } label: {
                         Image(systemName: expanded ? "chevron.down" : "chevron.right")
@@ -111,7 +111,7 @@ private struct XMLNodeView: View {
             if expanded && hasChildren {
                 VStack(alignment: .leading, spacing: 0) {
                     if let text = node.textContent {
-                        HStack(alignment: .top, spacing: 4) {
+                        HStack(alignment: .top, spacing: DS.Spacing.xs) {
                             Spacer().frame(width: 12)
                             Text(text)
                                 .font(.system(size: DS.Text.s, design: .monospaced))
@@ -125,7 +125,7 @@ private struct XMLNodeView: View {
                         XMLNodeView(node: child, depth: depth + 1)
                     }
                 }
-                .padding(.leading, 16)
+                .padding(.leading, DS.Spacing.l)
             }
         }
     }

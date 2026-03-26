@@ -16,7 +16,7 @@ struct StreamingMarkdownView: View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(allBlocks.enumerated()), id: \.offset) { _, block in
                 StreamingBlockView(block: block)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, DS.Spacing.s)
             }
         }
         .onAppear { updateIncremental() }

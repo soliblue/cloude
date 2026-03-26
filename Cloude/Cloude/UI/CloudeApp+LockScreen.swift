@@ -13,10 +13,10 @@ struct LockScreenView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
                 .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
 
-            VStack(spacing: 8) {
+            VStack(spacing: DS.Spacing.s) {
                 Text("Cloude is Locked")
                     .font(.system(size: DS.Icon.l))
                     .fontWeight(.semibold)
@@ -29,9 +29,9 @@ struct LockScreenView: View {
 
             Spacer()
 
-            VStack(spacing: 16) {
+            VStack(spacing: DS.Spacing.l) {
                 Button(action: authenticate) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: DS.Spacing.m) {
                         if isAuthenticating {
                             ProgressView()
                                 .tint(.white)
@@ -43,7 +43,7 @@ struct LockScreenView: View {
                     }
                     .font(.system(size: DS.Text.m, weight: .semibold))
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .padding(.vertical, DS.Spacing.l)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(isAuthenticating)

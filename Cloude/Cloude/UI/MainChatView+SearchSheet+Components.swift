@@ -3,7 +3,7 @@ import CloudeShared
 
 extension ConversationSearchSheet {
     func conversationRow(_ conv: Conversation) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: DS.Spacing.m) {
             Image.safeSymbol(conv.symbol)
                 .font(.system(size: DS.Text.m))
                 .foregroundColor(.secondary)
@@ -12,7 +12,7 @@ extension ConversationSearchSheet {
                 Text(conv.name)
                     .font(.system(size: DS.Text.m))
                     .lineLimit(1)
-                HStack(spacing: 6) {
+                HStack(spacing: DS.Spacing.s) {
                     if let dir = conv.workingDirectory, !dir.isEmpty {
                         Text(dir.lastPathComponent)
                             .foregroundColor(.accentColor)
@@ -38,8 +38,8 @@ extension ConversationSearchSheet {
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, DS.Spacing.m)
+        .padding(.vertical, DS.Spacing.m)
     }
 
     func firstMessageMatch(_ conv: Conversation) -> String? {

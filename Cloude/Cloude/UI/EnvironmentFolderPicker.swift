@@ -52,7 +52,7 @@ struct EnvironmentFolderPicker: View {
                     }
                 }
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: DS.Spacing.s) {
                     Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
                         .font(.system(size: DS.Text.s))
                         .foregroundColor(.accentColor)
@@ -64,15 +64,15 @@ struct EnvironmentFolderPicker: View {
                         .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .padding(.horizontal, DS.Spacing.l)
+                .padding(.vertical, DS.Spacing.m)
             }
 
             Divider()
-                .padding(.horizontal, 14)
+                .padding(.horizontal, DS.Spacing.l)
 
             Button(action: { if isEnvConnected { showFolderPicker = true } }) {
-                HStack(spacing: 8) {
+                HStack(spacing: DS.Spacing.s) {
                     Image(systemName: "folder.fill")
                         .font(.system(size: DS.Text.s))
                         .foregroundColor(.accentColor)
@@ -86,14 +86,14 @@ struct EnvironmentFolderPicker: View {
                         .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                .padding(.horizontal, DS.Spacing.l)
+                .padding(.vertical, DS.Spacing.m)
             }
             .buttonStyle(.plain)
             .opacity(isEnvConnected ? 1 : 0.4)
         }
         .background(Color.themeSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(
                 connection: connection,
@@ -109,7 +109,7 @@ struct EnvironmentFolderPicker: View {
     }
 
     private var readOnlyContent: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.s) {
             Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.accentColor)
@@ -126,9 +126,9 @@ struct EnvironmentFolderPicker: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, DS.Spacing.l)
+        .padding(.vertical, DS.Spacing.m)
         .background(Color.themeSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
     }
 }

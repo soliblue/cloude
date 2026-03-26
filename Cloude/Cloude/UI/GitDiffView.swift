@@ -46,10 +46,10 @@ struct GitDiffView: View {
                 Text("Staged")
                     .font(.system(size: DS.Text.s, weight: .medium))
                     .foregroundColor(.pastelGreen)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, DS.Spacing.s)
                     .padding(.vertical, 2)
                     .background(Color.pastelGreen.opacity(0.15))
-                    .cornerRadius(4)
+                    .cornerRadius(DS.Radius.s)
             }
             Spacer()
             Text(file.path)

@@ -20,7 +20,7 @@ struct TimelineWidget: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(events.enumerated()), id: \.offset) { index, event in
-                    HStack(alignment: .top, spacing: 12) {
+                    HStack(alignment: .top, spacing: DS.Spacing.m) {
                         VStack(spacing: 0) {
                             Image(systemName: event.icon)
                                 .font(.system(size: DS.Text.s, weight: .bold))

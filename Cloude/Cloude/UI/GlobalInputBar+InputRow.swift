@@ -29,8 +29,8 @@ extension GlobalInputBar {
                     .id("inputField")
             }
             .font(.system(size: DS.Text.m))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.m)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.themeSecondary.opacity(0.8))
             .offset(x: -horizontalSwipeOffset * 0.3)

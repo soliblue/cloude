@@ -79,7 +79,7 @@ private struct JSONNodeView: View {
         @ViewBuilder children: () -> Content
     ) -> some View {
         Button(action: { expanded.toggle() }) {
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: expanded ? "chevron.down" : "chevron.right")
                     .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
@@ -105,9 +105,9 @@ private struct JSONNodeView: View {
             VStack(alignment: .leading, spacing: 0) {
                 children()
             }
-            .padding(.leading, 16)
+            .padding(.leading, DS.Spacing.l)
 
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 Spacer().frame(width: 14)
                 Text(closeBrace)
                     .font(.system(size: DS.Text.s, design: .monospaced))
@@ -119,7 +119,7 @@ private struct JSONNodeView: View {
 
     @ViewBuilder
     private func leafRow<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: DS.Spacing.xs) {
             Spacer().frame(width: 14)
             if let key = key, depth > 0 {
                 Text("\(key):")

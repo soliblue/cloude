@@ -9,7 +9,7 @@ struct ReadingProgressView: View {
     }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: DS.Spacing.s) {
             ForEach(0..<dotCount, id: \.self) { index in
                 Circle()
                     .fill(index <= activeDot ? Color.primary.opacity(0.5) : Color.primary.opacity(0.12))
@@ -33,7 +33,7 @@ struct MessageProgressTracker: ViewModifier {
             .overlay(alignment: .trailing) {
                 if showIndicator && isAssistantMessage && !isCollapsed {
                     ReadingProgressView(progress: progress)
-                        .padding(.trailing, 4)
+                        .padding(.trailing, DS.Spacing.xs)
                         .transition(.opacity)
                 }
             }

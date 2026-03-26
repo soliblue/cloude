@@ -98,7 +98,7 @@ struct FunctionPlotWidget: View {
     }
 
     private func paramSlider(_ param: (name: String, value: Double, min: Double, max: Double, step: Double)) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.s) {
             Text(param.name)
                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .foregroundColor(.secondary)

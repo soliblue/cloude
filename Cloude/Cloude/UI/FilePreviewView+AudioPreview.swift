@@ -23,12 +23,12 @@ struct AudioPreview: View {
                 .font(.system(size: DS.Text.m, weight: .semibold))
 
             if let player = player {
-                VStack(spacing: 12) {
+                VStack(spacing: DS.Spacing.m) {
                     ProgressView(value: progress)
                         .progressViewStyle(.linear)
                         .frame(maxWidth: 280)
 
-                    HStack(spacing: 4) {
+                    HStack(spacing: DS.Spacing.xs) {
                         Text(formatTime(player.currentTime))
                             .font(.system(size: DS.Text.s))
                         Spacer()

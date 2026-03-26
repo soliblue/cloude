@@ -13,7 +13,7 @@ struct ImageAttachmentStrip: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.s) {
                 ForEach(images) { image in
                     ImageAttachmentPill(
                         imageData: image.data,
@@ -22,8 +22,8 @@ struct ImageAttachmentStrip: View {
                     )
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.s)
         }
     }
 }
@@ -40,9 +40,9 @@ struct ImageAttachmentPill: View {
                     .resizable()
                     .scaledToFill()
                     .frame(width: 44, height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: DS.Radius.m)
                             .stroke(Color.white.opacity(0.15), lineWidth: 1)
                     )
             }

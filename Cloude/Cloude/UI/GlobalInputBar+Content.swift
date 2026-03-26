@@ -84,7 +84,7 @@ extension GlobalInputBar {
                     .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
                 }
             }
-            .padding(.bottom, 12)
+            .padding(.bottom, DS.Spacing.m)
         }
         .animation(.easeOut(duration: 0.15), value: filteredCommands.map(\.name))
         .animation(.easeOut(duration: 0.15), value: attachedImages.map(\.id))

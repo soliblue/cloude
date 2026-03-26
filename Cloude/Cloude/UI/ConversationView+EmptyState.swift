@@ -60,7 +60,7 @@ struct EmptyConversationView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: DS.Spacing.l) {
             Spacer()
 
             if Self.animatedCharacters.contains(character) {
@@ -83,7 +83,7 @@ struct EmptyConversationView: View {
                     conversation: conv
                 )
                 .padding(.horizontal, 48)
-                .padding(.top, 8)
+                .padding(.top, DS.Spacing.s)
             }
 
             if onSeeAll != nil {
@@ -102,7 +102,7 @@ struct EmptyConversationView: View {
 
     private var searchButton: some View {
         Button(action: { onSeeAll?() }) {
-            HStack(spacing: 8) {
+            HStack(spacing: DS.Spacing.s) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
@@ -111,21 +111,21 @@ struct EmptyConversationView: View {
                     .foregroundColor(.secondary)
                 Spacer()
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.horizontal, DS.Spacing.l)
+            .padding(.vertical, DS.Spacing.m)
             .background(Color.secondary.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 48)
-        .padding(.top, 8)
+        .padding(.top, DS.Spacing.s)
     }
 
     private var recentConversationsList: some View {
         VStack(spacing: 0) {
             ForEach(recentConversations) { conv in
                 Button(action: { onSelectConversation?(conv) }) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: DS.Spacing.m) {
                         Image.safeSymbol(conv.symbol ?? "bubble.left")
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
@@ -141,13 +141,13 @@ struct EmptyConversationView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, DS.Spacing.l)
+                    .padding(.vertical, DS.Spacing.m)
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 32)
-        .padding(.top, 8)
+        .padding(.top, DS.Spacing.s)
     }
 }

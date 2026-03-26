@@ -4,12 +4,12 @@ import CloudeShared
 extension PlansSheet {
     var tagFilterChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
+            HStack(spacing: DS.Spacing.s) {
                 Button(action: { selectedTags.removeAll() }) {
                     Text("All")
                         .font(.system(size: DS.Text.m, weight: .medium))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, DS.Spacing.m)
+                        .padding(.vertical, DS.Spacing.xs)
                         .background(selectedTags.isEmpty ? Color.accentColor.opacity(0.1) : .white.opacity(0.06))
                         .foregroundColor(selectedTags.isEmpty ? .accentColor : .secondary.opacity(0.7))
                         .clipShape(Capsule())
@@ -27,8 +27,8 @@ extension PlansSheet {
                     }) {
                         Text(tag)
                             .font(.system(size: DS.Text.m, weight: .medium))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
+                            .padding(.horizontal, DS.Spacing.m)
+                            .padding(.vertical, DS.Spacing.xs)
                             .background(selectedTags.contains(tag) ? planTagColor(tag).opacity(0.12) : .white.opacity(0.06))
                             .foregroundColor(selectedTags.contains(tag) ? planTagColor(tag) : .secondary.opacity(0.7))
                             .clipShape(Capsule())
@@ -37,7 +37,7 @@ extension PlansSheet {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, DS.Spacing.l)
         }
     }
 }

@@ -45,7 +45,7 @@ struct FileViewerBreadcrumb: View {
                         .id("current-file")
                 }
                 .padding(.horizontal)
-                .padding(.vertical, 8)
+                .padding(.vertical, DS.Spacing.s)
             }
             .onAppear {
                 proxy.scrollTo("current-file", anchor: .trailing)

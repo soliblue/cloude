@@ -3,7 +3,7 @@ import CloudeShared
 
 extension UsageStatsSheet {
     var footerSection: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: DS.Spacing.l) {
             if let since = memberSinceFormatted {
                 Label(since, systemImage: "person.crop.circle")
             }
