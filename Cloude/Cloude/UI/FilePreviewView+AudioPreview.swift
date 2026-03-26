@@ -13,7 +13,7 @@ struct AudioPreview: View {
     @State private var timer: Timer?
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: DS.Spacing.xl) {
             Image(systemName: "waveform")
                 .font(.system(size: DS.Icon.l))
                 .foregroundStyle(.tint)

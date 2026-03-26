@@ -32,7 +32,7 @@ struct ScatterPlotWidget: View {
                     .symbolSize(selectedPoint == index ? 80 : 40)
                     .annotation(position: .top) {
                         if selectedPoint == index {
-                            VStack(spacing: 1) {
+                            VStack(spacing: DS.Spacing.xs) {
                                 if let label = point.label {
                                     Text(label)
                                         .font(.system(size: DS.Text.s, weight: .semibold))
@@ -43,7 +43,7 @@ struct ScatterPlotWidget: View {
                                     .foregroundColor(.secondary)
                             }
                             .padding(.horizontal, DS.Spacing.s)
-                            .padding(.vertical, 3)
+                            .padding(.vertical, DS.Spacing.xs)
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: DS.Radius.s))
                             .transition(.scale.combined(with: .opacity))
                         }

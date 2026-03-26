@@ -24,7 +24,7 @@ struct ConnectionStatusCard: View {
     let canConnect: Bool
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: DS.Spacing.l) {
             ZStack {
                 RoundedRectangle(cornerRadius: DS.Radius.m)
                     .fill(statusColor.opacity(0.2))
@@ -35,7 +35,7 @@ struct ConnectionStatusCard: View {
                     .foregroundColor(statusColor)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 Text(statusTitle)
                     .font(.system(size: DS.Text.m))
                     .fontWeight(.semibold)

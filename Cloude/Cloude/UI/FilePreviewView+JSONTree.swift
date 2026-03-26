@@ -99,7 +99,7 @@ private struct JSONNodeView: View {
             .font(.system(size: DS.Text.s, design: .monospaced))
         }
         .buttonStyle(.plain)
-        .padding(.vertical, 3)
+        .padding(.vertical, DS.Spacing.xs)
 
         if expanded {
             VStack(alignment: .leading, spacing: 0) {
@@ -113,7 +113,7 @@ private struct JSONNodeView: View {
                     .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundColor(.secondary)
             }
-            .padding(.vertical, 1)
+            .padding(.vertical, DS.Spacing.xs)
         }
     }
 
@@ -128,7 +128,7 @@ private struct JSONNodeView: View {
             content()
         }
         .font(.system(size: DS.Text.s, design: .monospaced))
-        .padding(.vertical, 3)
+        .padding(.vertical, DS.Spacing.xs)
     }
 
     private enum JSONCategory {

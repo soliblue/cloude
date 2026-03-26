@@ -84,7 +84,7 @@ private struct WhiteboardElementRow: View {
                 .foregroundColor(.accentColor)
                 .frame(width: 20)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 HStack(spacing: DS.Spacing.xs) {
                     Text(element.type.rawValue)
                         .font(.system(size: DS.Text.m, weight: .semibold, design: .monospaced))

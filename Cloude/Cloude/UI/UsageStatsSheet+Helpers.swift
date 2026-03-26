@@ -17,7 +17,7 @@ extension UsageStatsSheet {
         }
         .font(.system(size: DS.Text.s))
         .foregroundColor(.secondary.opacity(0.6))
-        .padding(.top, 2)
+        .padding(.top, DS.Spacing.xs)
     }
 
     func formatNumber(_ n: Int) -> String {
@@ -80,7 +80,7 @@ struct StatPill: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: DS.Spacing.xs) {
             Text(value)
                 .font(.system(size: DS.Icon.l, weight: .bold, design: .rounded))
                 .foregroundColor(color)

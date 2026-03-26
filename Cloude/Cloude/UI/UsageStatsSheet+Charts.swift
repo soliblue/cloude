@@ -87,7 +87,7 @@ extension UsageStatsSheet {
 
                     GeometryReader { geo in
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))
-                        RoundedRectangle(cornerRadius: 2)
+                        RoundedRectangle(cornerRadius: DS.Radius.s)
                             .fill(modelColor(model.name))
                             .frame(width: max(4, geo.size.width * fraction))
                     }
@@ -114,11 +114,11 @@ extension UsageStatsSheet {
 
             let maxCount = stats.hourCounts.values.max() ?? 1
 
-            HStack(alignment: .bottom, spacing: 2) {
+            HStack(alignment: .bottom, spacing: DS.Spacing.xs) {
                 ForEach(0..<24, id: \.self) { hour in
                     let count = stats.hourCounts["\(hour)"] ?? 0
                     let height = CGFloat(count) / CGFloat(max(maxCount, 1))
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: DS.Radius.s)
                         .fill(peakColor(hour))
                         .frame(height: max(2, height * 44))
                 }

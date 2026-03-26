@@ -107,7 +107,7 @@ struct LineChartWidget: View {
 
     @ViewBuilder
     private func valuesAtX(_ x: Double) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
             Text(x.formatted())
                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .foregroundColor(.primary)

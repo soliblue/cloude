@@ -6,7 +6,7 @@ struct LockScreenView: View {
     @State private var showError = false
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: DS.Spacing.xxl) {
             Spacer()
 
             Image("logo-transparent")
@@ -54,8 +54,8 @@ struct LockScreenView: View {
                         .foregroundColor(.pastelRed)
                 }
             }
-            .padding(.horizontal, 32)
-            .padding(.bottom, 48)
+            .padding(.horizontal, DS.Spacing.xxl)
+            .padding(.bottom, DS.Spacing.xxl)
         }
         .background(Color.themeBackground)
         .onAppear {

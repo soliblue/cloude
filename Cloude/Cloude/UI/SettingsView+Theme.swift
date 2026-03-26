@@ -46,7 +46,7 @@ struct ThemeCard: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 3) {
+            HStack(spacing: DS.Spacing.xs) {
                 RoundedRectangle(cornerRadius: DS.Radius.s)
                     .fill(Color(hex: theme.palette.background))
                     .frame(height: 32)

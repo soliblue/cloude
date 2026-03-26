@@ -11,7 +11,7 @@ struct FileViewerBreadcrumb: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 2) {
+                HStack(spacing: DS.Spacing.xs) {
                     if let symbol = environmentSymbol {
                         Image(systemName: symbol)
                             .font(.system(size: DS.Text.s))

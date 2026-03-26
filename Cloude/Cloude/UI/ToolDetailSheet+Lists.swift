@@ -64,7 +64,7 @@ extension ToolDetailSheet {
 
                     if index < todos.count - 1 {
                         Divider()
-                            .padding(.leading, 42)
+                            .padding(.leading, DS.Spacing.xxl)
                     }
                 }
             }
@@ -87,7 +87,7 @@ extension ToolDetailSheet {
                                 .font(.system(size: DS.Text.m, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
                                 .frame(width: 20)
-                                .padding(.top, 2)
+                                .padding(.top, DS.Spacing.xs)
 
                             Text(chained.command)
                                 .font(.system(size: DS.Text.m, design: .monospaced))
@@ -102,7 +102,7 @@ extension ToolDetailSheet {
                                 Rectangle()
                                     .fill(Color.secondary.opacity(0.3))
                                     .frame(width: 1, height: 16)
-                                    .padding(.leading, 21)
+                                    .padding(.leading, DS.Spacing.xl)
                                 Text(op.rawValue)
                                     .font(.system(size: DS.Text.s, design: .monospaced))
                                     .foregroundColor(.secondary)

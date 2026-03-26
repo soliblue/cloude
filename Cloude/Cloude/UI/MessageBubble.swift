@@ -117,7 +117,7 @@ struct MessageBubble: View {
                     .font(.system(size: DS.Text.s, weight: .medium))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, 2)
+                    .padding(.top, DS.Spacing.xs)
                 }
                 .buttonStyle(.plain)
             }

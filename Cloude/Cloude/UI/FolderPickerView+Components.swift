@@ -7,7 +7,7 @@ extension FolderPickerView {
             HStack(spacing: DS.Spacing.xs) {
                 ForEach(pathComponents, id: \.path) { component in
                     Button(action: { navigateTo(component.path) }) {
-                        HStack(spacing: 2) {
+                        HStack(spacing: DS.Spacing.xs) {
                             Text(component.name)
                                 .font(.system(size: DS.Text.s))
                             if component.path != currentPath {

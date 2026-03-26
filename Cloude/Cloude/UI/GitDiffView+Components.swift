@@ -88,7 +88,7 @@ struct DiffLineView: View {
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
-            .padding(.vertical, 1)
+            .padding(.vertical, DS.Spacing.xs)
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.pastelGreen.opacity(0.12))
@@ -99,7 +99,7 @@ struct DiffLineView: View {
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
-            .padding(.vertical, 1)
+            .padding(.vertical, DS.Spacing.xs)
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.pastelRed.opacity(0.12))
@@ -109,7 +109,7 @@ struct DiffLineView: View {
                     .frame(width: 12)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
-            .padding(.vertical, 1)
+            .padding(.vertical, DS.Spacing.xs)
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
         }

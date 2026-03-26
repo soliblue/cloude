@@ -51,7 +51,7 @@ struct InlineToolPill: View {
     }
 
     private var pillContent: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
             HStack(spacing: DS.Spacing.xs) {
                 if !chainedCommands.isEmpty {
                     chainedPillContent
@@ -64,8 +64,8 @@ struct InlineToolPill: View {
                     Text("\(children.count)")
                         .font(.system(size: DS.Text.s, weight: .bold, design: .rounded))
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 3)
-                        .padding(.vertical, 1)
+                        .padding(.horizontal, DS.Spacing.xs)
+                        .padding(.vertical, DS.Spacing.xs)
                         .background(Color.secondary.opacity(0.15))
                         .clipShape(Capsule())
                 }

@@ -29,7 +29,7 @@ struct WindowEditSheet: View {
                     environmentStore: environmentStore,
                     onSelectConversation: onSelectConversation
                 )
-                .padding(.horizontal, 20)
+                .padding(.horizontal, DS.Spacing.xl)
                 .padding(.top, DS.Spacing.l)
             }
             .navigationBarTitleDisplayMode(.inline)

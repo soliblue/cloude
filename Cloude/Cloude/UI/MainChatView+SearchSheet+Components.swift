@@ -8,7 +8,7 @@ extension ConversationSearchSheet {
                 .font(.system(size: DS.Text.m))
                 .foregroundColor(.secondary)
                 .frame(width: 24)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 Text(conv.name)
                     .font(.system(size: DS.Text.m))
                     .lineLimit(1)
@@ -30,7 +30,7 @@ extension ConversationSearchSheet {
                         .font(.system(size: DS.Text.s))
                         .foregroundColor(.secondary)
                         .lineLimit(2)
-                        .padding(.top, 2)
+                        .padding(.top, DS.Spacing.xs)
                 }
             }
             Spacer()

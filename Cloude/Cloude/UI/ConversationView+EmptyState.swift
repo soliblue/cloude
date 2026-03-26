@@ -82,7 +82,7 @@ struct EmptyConversationView: View {
                     conversationStore: convStore,
                     conversation: conv
                 )
-                .padding(.horizontal, 48)
+                .padding(.horizontal, DS.Spacing.xxl)
                 .padding(.top, DS.Spacing.s)
             }
 
@@ -117,7 +117,7 @@ struct EmptyConversationView: View {
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 48)
+        .padding(.horizontal, DS.Spacing.xxl)
         .padding(.top, DS.Spacing.s)
     }
 
@@ -147,7 +147,7 @@ struct EmptyConversationView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, DS.Spacing.xxl)
         .padding(.top, DS.Spacing.s)
     }
 }

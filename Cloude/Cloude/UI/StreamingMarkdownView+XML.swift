@@ -106,7 +106,7 @@ private struct XMLNodeView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            .padding(.vertical, 3)
+            .padding(.vertical, DS.Spacing.xs)
 
             if expanded && hasChildren {
                 VStack(alignment: .leading, spacing: 0) {
@@ -118,7 +118,7 @@ private struct XMLNodeView: View {
                                 .foregroundColor(.primary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
-                        .padding(.vertical, 3)
+                        .padding(.vertical, DS.Spacing.xs)
                     }
 
                     ForEach(node.children) { child in

@@ -52,7 +52,7 @@ struct WhiteboardSheet: View {
                     VStack {
                         Spacer()
                         floatingToolbar
-                            .padding(.bottom, 20)
+                            .padding(.bottom, DS.Spacing.xl)
                     }
                 }
             }
@@ -69,7 +69,7 @@ struct WhiteboardSheet: View {
                         .background(.ultraThinMaterial)
                         .clipShape(Capsule())
                         .transition(.move(edge: .top).combined(with: .opacity))
-                        .padding(.top, 60)
+                        .padding(.top, DS.Spacing.xxl)
                 }
             }
             .animation(.quickTransition, value: showExportSuccess)

@@ -41,7 +41,7 @@ struct ConversationSearchSheet: View {
                         Text("No conversations found")
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
-                            .padding(.top, 40)
+                            .padding(.top, DS.Spacing.xxl)
                     }
 
                     ForEach(grouped, id: \.directory) { group in
@@ -64,7 +64,7 @@ struct ConversationSearchSheet: View {
 
                                     if conv.id != group.conversations.last?.id {
                                         Divider()
-                                            .padding(.leading, 46)
+                                            .padding(.leading, DS.Spacing.xxl)
                                     }
                                 }
                             }

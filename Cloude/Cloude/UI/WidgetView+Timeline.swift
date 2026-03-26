@@ -36,7 +36,7 @@ struct TimelineWidget: View {
                             }
                         }
 
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                             Text(event.date)
                                 .font(.system(size: DS.Text.s, weight: .medium))
                                 .foregroundColor(.secondary)

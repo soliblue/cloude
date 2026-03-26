@@ -142,7 +142,7 @@ struct DebugOverlayView: View {
 
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
-                    LazyVStack(alignment: .leading, spacing: 3) {
+                    LazyVStack(alignment: .leading, spacing: DS.Spacing.xs) {
                         ForEach(displayedLogs) { entry in
                             logEntryRow(entry)
                                 .id(entry.id)
@@ -168,7 +168,7 @@ struct DebugOverlayView: View {
                 .font(.system(size: DS.Text.s, weight: isSelected ? .bold : .medium, design: .monospaced))
                 .foregroundColor(isSelected ? .white : .secondary)
                 .padding(.horizontal, DS.Spacing.s)
-                .padding(.vertical, 3)
+                .padding(.vertical, DS.Spacing.xs)
                 .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15))
                 .clipShape(Capsule())
         }

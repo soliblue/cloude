@@ -108,7 +108,7 @@ extension WindowEditForm {
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
                     .frame(width: 24)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                     Text(conv.name)
                         .font(.system(size: DS.Text.m))
                         .lineLimit(1)
@@ -139,7 +139,7 @@ extension WindowEditForm {
 
         if !isLast {
             Divider()
-                .padding(.leading, 46)
+                .padding(.leading, DS.Spacing.xxl)
         }
     }
 

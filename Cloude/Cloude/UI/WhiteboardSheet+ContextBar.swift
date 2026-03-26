@@ -195,7 +195,7 @@ extension WhiteboardSheet {
     }
 
     var fontSizeButtons: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: DS.Spacing.xs) {
             contextAction(icon: "textformat.size.smaller") {
                 if let id = store.selectedElementId {
                     let current = selectedElement?.fontSize ?? 14

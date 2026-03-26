@@ -44,7 +44,7 @@ struct PieChartWidget: View {
             .frame(height: 200)
             .overlay {
                 if let idx = selectedSlice {
-                    VStack(spacing: 2) {
+                    VStack(spacing: DS.Spacing.xs) {
                         Text(slices[idx].label)
                             .font(.system(size: DS.Text.m, weight: .semibold))
                             .foregroundColor(.primary)

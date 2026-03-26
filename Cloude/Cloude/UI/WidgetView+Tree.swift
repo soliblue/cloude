@@ -48,7 +48,7 @@ struct TreeWidget: View {
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(node.iconColor)
                 .frame(width: 14)
-                .padding(.top, 1.5)
+                .padding(.top, DS.Spacing.xs)
 
             Spacer().frame(width: 5)
 

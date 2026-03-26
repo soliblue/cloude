@@ -59,7 +59,7 @@ struct ImageAttachmentPill: View {
                 Image(systemName: "camera.viewfinder")
                     .font(.system(size: DS.Text.s, weight: .bold))
                     .foregroundStyle(.white)
-                    .padding(3)
+                    .padding(DS.Spacing.xs)
                     .background(Circle().fill(Color.black.opacity(0.5)))
                     .offset(x: -2, y: 32)
             }

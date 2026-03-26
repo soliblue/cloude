@@ -33,14 +33,14 @@ struct MemoriesSheet: View {
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 60)
+                    .padding(.vertical, DS.Spacing.xxl)
                 } else if parsedSections.isEmpty {
                     ContentUnavailableView(
                         "No Memories",
                         systemImage: "brain",
                         description: Text("Claude's memories will appear here once loaded")
                     )
-                    .padding(.top, 40)
+                    .padding(.top, DS.Spacing.xxl)
                 } else {
                     LazyVStack(spacing: DS.Spacing.m) {
                         ForEach(parsedSections) { section in

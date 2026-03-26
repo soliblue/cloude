@@ -58,7 +58,7 @@ struct InteractiveFunctionWidget: View {
                     .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                     .foregroundColor(.secondary)
                 Spacer()
-                HStack(spacing: 2) {
+                HStack(spacing: DS.Spacing.xs) {
                     Text(String(format: "%.1f", inputValues[input.name] ?? input.value))
                         .font(.system(size: DS.Text.m, weight: .medium, design: .monospaced))
                     if let unit = input.unit {

@@ -18,7 +18,7 @@ extension EnvironmentCard {
             }
             .padding(.vertical, DS.Spacing.m)
 
-            Divider().padding(.leading, 36)
+            Divider().padding(.leading, DS.Spacing.xxl)
 
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "number")
@@ -32,7 +32,7 @@ extension EnvironmentCard {
             }
             .padding(.vertical, DS.Spacing.m)
 
-            Divider().padding(.leading, 36)
+            Divider().padding(.leading, DS.Spacing.xxl)
 
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "key.fill")

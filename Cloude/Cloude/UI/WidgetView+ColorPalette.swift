@@ -23,9 +23,9 @@ struct ColorPaletteWidget: View {
             let rows = stride(from: 0, to: colors.count, by: 2).map { i in
                 Array(colors[i..<min(i + 2, colors.count)])
             }
-            VStack(spacing: 1) {
+            VStack(spacing: DS.Spacing.xs) {
                 ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                    HStack(spacing: 1) {
+                    HStack(spacing: DS.Spacing.xs) {
                         ForEach(Array(row.enumerated()), id: \.offset) { _, color in
                             colorSwatch(color)
                         }
@@ -34,7 +34,7 @@ struct ColorPaletteWidget: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         } else {
-            VStack(spacing: 1) {
+            VStack(spacing: DS.Spacing.xs) {
                 ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
                     colorSwatch(color)
                 }
@@ -49,7 +49,7 @@ struct ColorPaletteWidget: View {
                 .frame(width: useGrid ? 40 : nil, height: 44)
                 .frame(maxWidth: useGrid ? nil : .infinity)
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 if let label = color.label {
                     Text(label)
                         .font(.system(size: DS.Text.s, weight: .medium))

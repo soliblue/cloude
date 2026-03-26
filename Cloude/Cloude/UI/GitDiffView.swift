@@ -47,7 +47,7 @@ struct GitDiffView: View {
                     .font(.system(size: DS.Text.s, weight: .medium))
                     .foregroundColor(.pastelGreen)
                     .padding(.horizontal, DS.Spacing.s)
-                    .padding(.vertical, 2)
+                    .padding(.vertical, DS.Spacing.xs)
                     .background(Color.pastelGreen.opacity(0.15))
                     .cornerRadius(DS.Radius.s)
             }

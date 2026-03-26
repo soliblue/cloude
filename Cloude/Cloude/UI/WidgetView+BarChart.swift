@@ -36,7 +36,7 @@ struct BarChartWidget: View {
                                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, DS.Spacing.s)
-                                .padding(.vertical, 3)
+                                .padding(.vertical, DS.Spacing.xs)
                                 .background(.ultraThinMaterial, in: Capsule())
                                 .transition(.scale.combined(with: .opacity))
                         }

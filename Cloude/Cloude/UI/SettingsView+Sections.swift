@@ -16,7 +16,7 @@ extension SettingsView {
             } else {
                 ForEach(connection.processes) { proc in
                     HStack {
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                             if let name = proc.conversationName {
                                 Text(name)
                                     .font(.system(size: DS.Text.m, weight: .medium))

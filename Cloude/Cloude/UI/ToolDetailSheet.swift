@@ -15,7 +15,7 @@ struct ToolDetailSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xl) {
                     statusBanner
 
                     if let todos = todoItems {
