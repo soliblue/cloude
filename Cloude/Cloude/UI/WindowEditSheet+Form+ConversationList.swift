@@ -25,7 +25,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                     Image(systemName: "trash")
                         .font(.system(size: DS.Icon.s, weight: .semibold))
                         .foregroundColor(.white)
-                        .frame(width: DS.Size.xl)
+                        .frame(width: DS.Size.l)
                         .frame(maxHeight: .infinity)
                         .background(Color.red)
                 }

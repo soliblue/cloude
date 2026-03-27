@@ -39,7 +39,7 @@ struct ImageAttachmentPill: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: DS.Size.xl, height: DS.Size.xl)
+                    .frame(width: DS.Size.l, height: DS.Size.l)
                     .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                     .overlay(
                         RoundedRectangle(cornerRadius: DS.Radius.m)

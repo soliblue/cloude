@@ -28,7 +28,7 @@ struct ConnectionStatusCard: View {
             ZStack {
                 RoundedRectangle(cornerRadius: DS.Radius.m)
                     .fill(statusColor.opacity(DS.Opacity.m))
-                    .frame(width: DS.Size.xl, height: DS.Size.xl)
+                    .frame(width: DS.Size.l, height: DS.Size.l)
 
                 Image(systemName: statusIcon)
                     .font(.system(size: DS.Icon.l))

@@ -83,7 +83,7 @@ extension UsageStatsSheet {
                     Text(model.name)
                         .font(.system(size: DS.Text.m, weight: .medium))
                         .foregroundColor(.primary)
-                        .frame(width: DS.Size.xl, alignment: .leading)
+                        .frame(width: DS.Size.l, alignment: .leading)
 
                     GeometryReader { geo in
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))
@@ -120,10 +120,10 @@ extension UsageStatsSheet {
                     let height = CGFloat(count) / CGFloat(max(maxCount, 1))
                     RoundedRectangle(cornerRadius: DS.Radius.s)
                         .fill(peakColor(hour))
-                        .frame(height: max(DS.Spacing.xs, height * DS.Size.xl))
+                        .frame(height: max(DS.Spacing.xs, height * DS.Size.l))
                 }
             }
-            .frame(height: DS.Size.xl)
+            .frame(height: DS.Size.l)
 
             HStack {
                 Text("12a").frame(maxWidth: .infinity, alignment: .leading)

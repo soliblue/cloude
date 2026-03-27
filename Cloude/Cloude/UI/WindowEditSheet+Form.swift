@@ -39,7 +39,7 @@ struct WindowEditForm: View {
                 Button(action: { showSymbolPicker = true }) {
                     Image.safeSymbol(symbol.nilIfEmpty, fallback: "circle.dashed")
                         .font(.system(size: DS.Icon.l))
-                        .frame(width: DS.Size.xl, height: DS.Size.xl)
+                        .frame(width: DS.Size.l, height: DS.Size.l)
                         .background(Color.themeSecondary)
                         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                 }
@@ -49,7 +49,7 @@ struct WindowEditForm: View {
                     .font(.system(size: DS.Text.m))
                     .textFieldStyle(.plain)
                     .padding(.horizontal, DS.Spacing.l)
-                    .frame(height: DS.Size.xl)
+                    .frame(height: DS.Size.l)
                     .background(Color.themeSecondary)
                     .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                     .onChange(of: name) { _, newValue in

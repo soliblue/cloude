@@ -51,11 +51,11 @@ extension MainChatView {
 
             if !widgetEditing {
                 pageIndicator()
-                    .frame(height: DS.Size.xl)
+                    .frame(height: DS.Size.l)
                     .padding(.bottom, isKeyboardVisible ? DS.Spacing.m : DS.Spacing.xs)
             }
         }
-        .contentShape(.interaction, ExpandedTopRect(expansion: DS.Size.xl))
+        .contentShape(.interaction, ExpandedTopRect(expansion: DS.Size.l))
         .onTapGesture { }
         .background(Color.themeBackground)
     }

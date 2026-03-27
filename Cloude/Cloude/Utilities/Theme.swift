@@ -31,8 +31,7 @@ enum DS {
 
     enum Size {
         static let m: CGFloat = 28
-        static let l: CGFloat = 36
-        static let xl: CGFloat = 44
+        static let l: CGFloat = 44
         static let xxl: CGFloat = 200
     }
 

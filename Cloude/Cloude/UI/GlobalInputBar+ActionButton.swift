@@ -92,7 +92,7 @@ extension GlobalInputBar {
             .symbolEffect(.bounce, value: sendBounceTrigger)
             .font(.system(size: DS.Icon.m, weight: .semibold))
             .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? .white : .secondary.opacity(DS.Opacity.m))
-            .frame(width: DS.Size.xl)
+            .frame(width: DS.Size.l)
             .frame(maxHeight: .infinity)
             .background(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? Color.accentColor : Color.themeSecondary.opacity(DS.Opacity.m))
             .contentShape(Rectangle())

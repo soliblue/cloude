@@ -46,7 +46,7 @@ struct ColorPaletteWidget: View {
     private func colorSwatch(_ color: (hex: String, label: String?)) -> some View {
         HStack(spacing: 0) {
             Color(hexString: color.hex)
-                .frame(width: useGrid ? DS.Size.xl : nil, height: DS.Size.xl)
+                .frame(width: useGrid ? DS.Size.l : nil, height: DS.Size.l)
                 .frame(maxWidth: useGrid ? nil : .infinity)
 
             VStack(alignment: .leading, spacing: DS.Spacing.xs) {
@@ -62,7 +62,7 @@ struct ColorPaletteWidget: View {
             }
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: DS.Size.xl)
+            .frame(height: DS.Size.l)
             .background(Color.themeSecondary.opacity(DS.Opacity.m))
         }
         .onLongPressGesture(minimumDuration: DS.Duration.s) {

@@ -117,7 +117,7 @@ struct FunctionPlotWidget: View {
             Text(String(format: "%.2f", paramValues[param.name] ?? param.value))
                 .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundColor(.secondary)
-                .frame(width: DS.Size.xl, alignment: .trailing)
+                .frame(width: DS.Size.l, alignment: .trailing)
         }
     }
 }

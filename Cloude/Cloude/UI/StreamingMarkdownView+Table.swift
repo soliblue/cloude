@@ -23,7 +23,7 @@ struct MarkdownTableView: View {
                                 isHeader: rowIndex == 0
                             )
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .frame(minWidth: DS.Size.xl)
+                            .frame(minWidth: DS.Size.l)
                             .background(rowIndex == 0 ? Color.gray.opacity(DS.Opacity.s) : Color.clear)
                         }
                     }

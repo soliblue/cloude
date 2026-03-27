@@ -189,7 +189,7 @@ struct DebugOverlayView: View {
                 Text(Self.timeFormatter.string(from: entry.time))
                     .foregroundColor(.secondary)
             }
-            .frame(width: DS.Size.xl, alignment: .leading)
+            .frame(width: DS.Size.l, alignment: .leading)
 
             Text(entry.message)
                 .foregroundColor(.primary)
