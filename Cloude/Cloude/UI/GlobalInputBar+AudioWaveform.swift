@@ -26,6 +26,7 @@ struct AudioWaveformView: View {
                     .frame(width: barWidth, height: barHeights[index] * maxHeight)
             }
         }
+        .frame(height: maxHeight)
         .onChange(of: audioLevel) { _, newLevel in
             updateBars(level: newLevel)
         }
@@ -82,7 +83,7 @@ struct RecordingOverlayView: View {
                 Spacer()
 
                 Button(action: onStop) {
-                    Image(systemName: "stop.circle.fill")
+                    Image(systemName: "stop.fill")
                         .font(.system(size: DS.Icon.l))
                         .foregroundColor(.accentColor.opacity(DS.Opacity.full))
                 }

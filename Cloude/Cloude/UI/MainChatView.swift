@@ -85,6 +85,7 @@ struct MainChatView: View {
             }
 
             inputSection()
+                .zIndex(1)
         }
         .onReceive(NotificationCenter.default.publisher(for: .widgetInputActive)) { note in
             withAnimation(.easeInOut(duration: DS.Duration.quick)) {

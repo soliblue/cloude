@@ -145,8 +145,8 @@ struct ToolCallLabel: View {
 
     static let agentCodenames = [
         "Claudius", "Solai", "Layl", "Archie", "Zein",
-        "Ahmed", "Gaudi", "Zima", "Hundertwasser", "Bauder",
-        "Alan", "Ali", "Kai", "Luna"
+        "Gaudi", "Zima", "Hundertwasser", "Bauder",
+        "Alan", "Luna", "Turing", "Cantor", "Andy"
     ]
 
     var agentIconName: String {
