@@ -2,6 +2,14 @@
 
 import SwiftUI
 
+private struct ExpandedTopRect: Shape {
+    var expansion: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        Path(CGRect(x: rect.minX, y: rect.minY - expansion, width: rect.width, height: rect.height + expansion))
+    }
+}
+
 extension MainChatView {
     @ViewBuilder
     func inputSection() -> some View {
@@ -47,7 +55,7 @@ extension MainChatView {
                     .padding(.bottom, isKeyboardVisible ? DS.Spacing.m : DS.Spacing.xs)
             }
         }
-        .contentShape(Rectangle())
+        .contentShape(.interaction, ExpandedTopRect(expansion: DS.Size.tap))
         .onTapGesture { }
         .background(Color.themeBackground)
     }
