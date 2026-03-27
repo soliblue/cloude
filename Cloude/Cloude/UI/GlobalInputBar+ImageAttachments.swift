@@ -43,7 +43,7 @@ struct ImageAttachmentPill: View {
                     .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                     .overlay(
                         RoundedRectangle(cornerRadius: DS.Radius.m)
-                            .stroke(Color.white.opacity(DS.Opacity.light), lineWidth: DS.Stroke.regular)
+                            .stroke(Color.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.m)
                     )
             }
 
@@ -59,7 +59,7 @@ struct ImageAttachmentPill: View {
                     .font(.system(size: DS.Text.s, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(DS.Spacing.xs)
-                    .background(Circle().fill(Color.black.opacity(DS.Opacity.half)))
+                    .background(Circle().fill(Color.black.opacity(DS.Opacity.m)))
                     .offset(x: -DS.Spacing.xs, y: DS.Spacing.xxl)
             }
         }

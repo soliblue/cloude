@@ -28,7 +28,7 @@ struct BarChartWidget: View {
                         x: .value("Label", bar.label),
                         y: .value("Value", bar.value)
                     )
-                    .foregroundStyle(selectedBar == index ? barColor : barColor.opacity(selectedBar == nil ? 1 : DS.Opacity.strong))
+                    .foregroundStyle(selectedBar == index ? barColor : barColor.opacity(selectedBar == nil ? 1 : DS.Opacity.m))
                     .cornerRadius(DS.Radius.s)
                     .annotation(position: .top) {
                         if selectedBar == index {
@@ -52,7 +52,7 @@ struct BarChartWidget: View {
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
                     AxisValueLabel()
                         .font(.system(size: DS.Text.s, design: .monospaced))
                 }
@@ -65,13 +65,13 @@ struct BarChartWidget: View {
                                 .onChanged { drag in
                                     let x = drag.location.x - geo[proxy.plotFrame!].origin.x
                                     if let label: String = proxy.value(atX: x) {
-                                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                                        withAnimation(.easeOut(duration: DS.Duration.s)) {
                                             selectedBar = bars.firstIndex(where: { $0.label == label })
                                         }
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.s)) {
                                         selectedBar = nil
                                     }
                                 }

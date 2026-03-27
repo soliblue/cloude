@@ -32,7 +32,7 @@ extension GlobalInputBar {
             .padding(.horizontal, DS.Spacing.l)
             .padding(.vertical, DS.Spacing.m)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.themeSecondary.opacity(DS.Opacity.full))
+            .background(Color.themeSecondary.opacity(DS.Opacity.l))
             .offset(x: -horizontalSwipeOffset * 0.3)
             .opacity(1 - Double(min(horizontalSwipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.5)
 

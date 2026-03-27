@@ -49,7 +49,7 @@ struct ChatMessageList: View {
                 VStack {
                     Spacer()
                     ProgressView()
-                        .scaleEffect(DS.Scale.grow)
+                        .scaleEffect(DS.Scale.l)
                         .tint(.secondary)
                     Spacer()
                 }

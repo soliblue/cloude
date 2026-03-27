@@ -16,7 +16,7 @@ struct SlashCommandBubble: View {
             if let args = args {
                 Text(args)
                     .font(.system(size: DS.Text.s, design: .monospaced))
-                    .opacity(DS.Opacity.heavy)
+                    .opacity(DS.Opacity.l)
                     .lineLimit(1)
             }
         } background: {

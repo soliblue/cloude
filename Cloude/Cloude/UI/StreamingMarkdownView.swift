@@ -14,7 +14,7 @@ struct StreamingMarkdownView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(allBlocks.enumerated()), id: \.offset) { _, block in
+            ForEach(Array(allBlocks.enumerated()), id: \.element.id) { _, block in
                 StreamingBlockView(block: block)
                     .padding(.bottom, DS.Spacing.s)
             }

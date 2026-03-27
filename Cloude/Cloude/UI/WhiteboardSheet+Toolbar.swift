@@ -10,14 +10,14 @@ extension WhiteboardSheet {
                 Button(action: { store.undo() }) {
                     Image(systemName: "arrow.uturn.backward")
                         .font(.system(size: DS.Icon.s, weight: .medium))
-                        .foregroundColor(store.canUndo ? .primary : .secondary.opacity(DS.Opacity.strong))
+                        .foregroundColor(store.canUndo ? .primary : .secondary.opacity(DS.Opacity.m))
                 }
                 .disabled(!store.canUndo)
 
                 Button(action: { store.redo() }) {
                     Image(systemName: "arrow.uturn.forward")
                         .font(.system(size: DS.Icon.s, weight: .medium))
-                        .foregroundColor(store.canRedo ? .primary : .secondary.opacity(DS.Opacity.strong))
+                        .foregroundColor(store.canRedo ? .primary : .secondary.opacity(DS.Opacity.m))
                 }
                 .disabled(!store.canRedo)
             }
@@ -31,7 +31,7 @@ extension WhiteboardSheet {
                     }) {
                         Image(systemName: "paperplane")
                             .font(.system(size: DS.Icon.s, weight: .medium))
-                            .foregroundColor(isConnected ? .primary : .secondary.opacity(DS.Opacity.strong))
+                            .foregroundColor(isConnected ? .primary : .secondary.opacity(DS.Opacity.m))
                     }
                     .disabled(!isConnected)
 
@@ -91,7 +91,6 @@ extension WhiteboardSheet {
         .padding(.vertical, DS.Spacing.s)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
-        .shadow(color: .black.opacity(DS.Opacity.strong), radius: DS.Shadow.radius, y: DS.Shadow.offset)
     }
 
     private func toolButton(icon: String, tool: WhiteboardStore.ActiveTool) -> some View {
@@ -109,9 +108,9 @@ extension WhiteboardSheet {
             Image(systemName: icon)
                 .font(.system(size: DS.Icon.m))
                 .frame(width: DS.Size.xl, height: DS.Size.l)
-                .background(store.activeTool == tool ? Color.accentColor.opacity(DS.Opacity.medium) : Color.clear)
+                .background(store.activeTool == tool ? Color.accentColor.opacity(DS.Opacity.m) : Color.clear)
                 .cornerRadius(DS.Radius.m)
-                .foregroundColor(store.activeTool == tool ? .accentColor : .primary.opacity(DS.Opacity.heavy))
+                .foregroundColor(store.activeTool == tool ? .accentColor : .primary.opacity(DS.Opacity.l))
         }
         .buttonStyle(.plain)
     }
@@ -127,7 +126,7 @@ extension WhiteboardSheet {
                         .frame(width: DS.Spacing.xl, height: DS.Spacing.xl)
                         .overlay(
                             Circle()
-                                .strokeBorder(store.activeColor == hex ? Color.accentColor : Color.white.opacity(DS.Opacity.light), lineWidth: DS.Stroke.thick)
+                                .strokeBorder(store.activeColor == hex ? Color.accentColor : Color.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.l)
                                 .padding(-DS.Spacing.xs)
                         )
                 }
@@ -138,7 +137,6 @@ extension WhiteboardSheet {
         .padding(.vertical, DS.Spacing.s)
         .background(.ultraThinMaterial)
         .clipShape(Capsule())
-        .shadow(color: .black.opacity(DS.Opacity.medium), radius: DS.Shadow.radius, y: DS.Shadow.offset)
     }
 }
 
@@ -149,6 +147,5 @@ extension View {
             .padding(.vertical, DS.Spacing.s)
             .background(.ultraThinMaterial)
             .clipShape(Capsule())
-            .shadow(color: .black.opacity(DS.Opacity.medium), radius: DS.Shadow.radius, y: DS.Shadow.offset)
-    }
+        }
 }

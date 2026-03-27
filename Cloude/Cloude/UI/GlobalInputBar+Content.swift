@@ -15,7 +15,7 @@ extension GlobalInputBar {
                 ImageAttachmentStrip(
                     images: attachedImages,
                     onRemove: { id in
-                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                        withAnimation(.easeOut(duration: DS.Duration.s)) {
                             attachedImages.removeAll { $0.id == id }
                         }
                     }
@@ -27,7 +27,7 @@ extension GlobalInputBar {
                 FileAttachmentStrip(
                     files: attachedFiles,
                     onRemove: { id in
-                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                        withAnimation(.easeOut(duration: DS.Duration.s)) {
                             attachedFiles.removeAll { $0.id == id }
                         }
                     }
@@ -55,12 +55,12 @@ extension GlobalInputBar {
             }
             .padding(.bottom, DS.Spacing.m)
         }
-        .animation(.easeOut(duration: DS.Duration.quick), value: attachedImages.map(\.id))
-        .animation(.easeOut(duration: DS.Duration.quick), value: attachedFiles.map(\.id))
+        .animation(.easeOut(duration: DS.Duration.s), value: attachedImages.map(\.id))
+        .animation(.easeOut(duration: DS.Duration.s), value: attachedFiles.map(\.id))
         .overlay(alignment: .top) {
             suggestionsOverlay
                 .alignmentGuide(.top) { d in d[.bottom] }
-                .animation(.easeOut(duration: DS.Duration.quick), value: filteredCommands.map(\.name))
+                .animation(.easeOut(duration: DS.Duration.s), value: filteredCommands.map(\.name))
         }
     }
 
@@ -108,7 +108,7 @@ extension GlobalInputBar {
         content()
             .background(
                 Color.themeBackground
-                    .shadow(color: .black.opacity(DS.Opacity.faint), radius: DS.Radius.s, y: -2)
+                    .shadow(color: .black.opacity(DS.Opacity.s), radius: DS.Radius.s, y: -2)
             )
     }
 }

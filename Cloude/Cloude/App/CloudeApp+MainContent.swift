@@ -66,7 +66,7 @@ extension CloudeApp {
                     let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
                     if connection.connection(for: envId)?.isAuthenticated == true {
                         showPlans = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Duration.slow) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Duration.m) {
                             filePreviewEnvironmentId = envId
                             filePathToPreview = path
                         }

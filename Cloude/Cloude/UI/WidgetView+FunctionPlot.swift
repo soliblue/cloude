@@ -69,20 +69,20 @@ struct FunctionPlotWidget: View {
             ForEach(Array(points.enumerated()), id: \.offset) { _, point in
                 LineMark(x: .value("x", point.x), y: .value("y", point.y))
                     .foregroundStyle(.blue)
-                    .lineStyle(StrokeStyle(lineWidth: DS.Stroke.thick))
+                    .lineStyle(StrokeStyle(lineWidth: DS.Stroke.l))
             }
         }
         .chartXScale(domain: xRange.0...xRange.1)
         .chartYScale(domain: yScaleDomain)
         .chartXAxis {
             AxisMarks(position: .bottom) { _ in
-                AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
+                AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
                 AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
             }
         }
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
-                AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
+                AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
                 AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
             }
         }

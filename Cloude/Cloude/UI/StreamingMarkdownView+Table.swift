@@ -24,7 +24,7 @@ struct MarkdownTableView: View {
                             )
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .frame(minWidth: DS.Size.xl)
-                            .background(rowIndex == 0 ? Color.gray.opacity(DS.Opacity.faint) : Color.clear)
+                            .background(rowIndex == 0 ? Color.gray.opacity(DS.Opacity.s) : Color.clear)
                         }
                     }
                 }

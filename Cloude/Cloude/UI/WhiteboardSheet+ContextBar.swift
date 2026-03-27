@@ -20,7 +20,7 @@ extension WhiteboardSheet {
                     .foregroundColor(.white)
                     .padding(.horizontal, DS.Spacing.m)
                     .padding(.vertical, DS.Spacing.s)
-                    .background(Color.white.opacity(DS.Opacity.faint))
+                    .background(Color.white.opacity(DS.Opacity.s))
                     .clipShape(Capsule())
                     .focused($isTextFieldFocused)
                     .onSubmit { commitTextEdit() }
@@ -43,7 +43,6 @@ extension WhiteboardSheet {
             .padding(.vertical, DS.Spacing.m)
             .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
-            .shadow(color: .black.opacity(DS.Opacity.medium), radius: DS.Shadow.radius, y: DS.Shadow.offset)
         }
     }
 
@@ -67,7 +66,7 @@ extension WhiteboardSheet {
                         .frame(width: DS.Size.m, height: DS.Size.m)
                         .overlay(
                             Circle()
-                                .strokeBorder(currentColor == hex ? Color.accentColor : Color.white.opacity(DS.Opacity.light), lineWidth: DS.Stroke.thick)
+                                .strokeBorder(currentColor == hex ? Color.accentColor : Color.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.l)
                                 .padding(-DS.Spacing.xs)
                         )
                 }
@@ -96,7 +95,7 @@ extension WhiteboardSheet {
         }
 
         if selectedElement?.type == .rect || selectedElement?.type == .ellipse || selectedElement?.type == .triangle {
-            Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.strong)
+            Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
             let nextIcon: String = {
                 switch selectedElement?.type {
                 case .rect: return "circle"
@@ -111,11 +110,11 @@ extension WhiteboardSheet {
         }
 
         if selectedElement?.type == .text {
-            Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.strong)
+            Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
             fontSizeButtons
         }
 
-        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.strong)
+        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
         contextAction(icon: "pencil") {
             if let id = store.selectedElementId {
@@ -128,9 +127,9 @@ extension WhiteboardSheet {
             if let id = store.selectedElementId { store.duplicate(id: id) }
         }
 
-        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.strong)
+        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
-        contextAction(icon: "trash", tint: .red.opacity(DS.Opacity.full)) {
+        contextAction(icon: "trash", tint: .red.opacity(DS.Opacity.l)) {
             if let id = store.selectedElementId {
                 store.removeElement(id: id)
             }
@@ -144,7 +143,7 @@ extension WhiteboardSheet {
             .foregroundColor(.accentColor)
             .frame(width: DS.Size.m)
 
-        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.strong)
+        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
         contextAction(icon: "square.3.layers.3d.down.backward") {
             store.moveBackwardMany(ids: store.selectedIds)
@@ -153,7 +152,7 @@ extension WhiteboardSheet {
             store.moveForwardMany(ids: store.selectedIds)
         }
 
-        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.strong)
+        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
         contextAction(icon: "square.2.layers.3d", disabled: store.selectedIds.count < 2) {
             store.groupSelected()
@@ -165,9 +164,9 @@ extension WhiteboardSheet {
             }
         }
 
-        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.strong)
+        Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
-        contextAction(icon: "trash", tint: .red.opacity(DS.Opacity.full), disabled: store.selectedIds.isEmpty) {
+        contextAction(icon: "trash", tint: .red.opacity(DS.Opacity.l), disabled: store.selectedIds.isEmpty) {
             store.removeElements(ids: Array(store.selectedIds))
             store.clearSelection()
         }
@@ -183,12 +182,12 @@ extension WhiteboardSheet {
         return false
     }
 
-    func contextAction(icon: String, tint: Color = .primary.opacity(DS.Opacity.full), disabled: Bool = false, action: @escaping () -> Void) -> some View {
+    func contextAction(icon: String, tint: Color = .primary.opacity(DS.Opacity.l), disabled: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: DS.Icon.s))
                 .frame(width: DS.Size.l, height: DS.Size.m)
-                .foregroundColor(disabled ? .secondary.opacity(DS.Opacity.strong) : tint)
+                .foregroundColor(disabled ? .secondary.opacity(DS.Opacity.m) : tint)
         }
         .buttonStyle(.plain)
         .disabled(disabled)

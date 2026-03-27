@@ -20,7 +20,7 @@ extension MainChatView {
                 }
 
                 Button {
-                    withAnimation(.easeInOut(duration: DS.Duration.smooth)) { currentPageIndex = index }
+                    withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex = index }
                 } label: {
                     windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
                         .frame(maxWidth: .infinity)
@@ -55,9 +55,9 @@ extension MainChatView {
                     let vertical = abs(value.translation.height)
                     if horizontal > vertical {
                         if value.translation.width > 0 && currentPageIndex < maxIndex {
-                            withAnimation(.easeInOut(duration: DS.Duration.smooth)) { currentPageIndex += 1 }
+                            withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex += 1 }
                         } else if value.translation.width < 0 && currentPageIndex > 0 {
-                            withAnimation(.easeInOut(duration: DS.Duration.smooth)) { currentPageIndex -= 1 }
+                            withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex -= 1 }
                         }
                     }
                 }

@@ -15,7 +15,7 @@ extension CloudeApp {
                             .fontWeight(.medium)
                             .lineLimit(1)
                             .contentTransition(.numericText())
-                            .animation(.easeInOut(duration: DS.Duration.slow), value: conv.name)
+                            .animation(.easeInOut(duration: DS.Duration.m), value: conv.name)
                     } else {
                         Text("Select chat...")
                             .font(.caption)

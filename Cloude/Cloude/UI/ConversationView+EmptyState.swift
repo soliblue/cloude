@@ -113,7 +113,7 @@ struct EmptyConversationView: View {
             }
             .padding(.horizontal, DS.Spacing.l)
             .padding(.vertical, DS.Spacing.m)
-            .background(Color.secondary.opacity(DS.Opacity.subtle))
+            .background(Color.secondary.opacity(DS.Opacity.s))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
         .buttonStyle(.plain)

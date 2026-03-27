@@ -132,7 +132,7 @@ private struct WhiteboardElementRow: View {
             }
             if let stroke = element.stroke {
                 Circle()
-                    .strokeBorder(Color(hexString: stroke), lineWidth: DS.Stroke.thick)
+                    .strokeBorder(Color(hexString: stroke), lineWidth: DS.Stroke.l)
                     .frame(width: DS.Spacing.m, height: DS.Spacing.m)
             }
         }

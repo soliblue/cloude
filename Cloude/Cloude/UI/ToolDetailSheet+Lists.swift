@@ -18,7 +18,7 @@ extension ToolDetailSheet {
 
                         if child.state == .executing {
                             ProgressView()
-                                .scaleEffect(DS.Scale.shrink)
+                                .scaleEffect(DS.Scale.s)
                         } else {
                             Image(systemName: "checkmark")
                                 .font(.system(size: DS.Text.s, weight: .bold))
@@ -34,7 +34,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeSecondary.opacity(DS.Opacity.half))
+            .background(Color.themeSecondary.opacity(DS.Opacity.m))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
@@ -68,7 +68,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeSecondary.opacity(DS.Opacity.half))
+            .background(Color.themeSecondary.opacity(DS.Opacity.m))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }
@@ -99,7 +99,7 @@ extension ToolDetailSheet {
                     }
                 }
             }
-            .background(Color.themeSecondary.opacity(DS.Opacity.half))
+            .background(Color.themeSecondary.opacity(DS.Opacity.m))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
     }

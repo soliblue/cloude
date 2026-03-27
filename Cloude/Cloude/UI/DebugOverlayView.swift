@@ -169,7 +169,7 @@ struct DebugOverlayView: View {
                 .foregroundColor(isSelected ? .white : .secondary)
                 .padding(.horizontal, DS.Spacing.s)
                 .padding(.vertical, DS.Spacing.xs)
-                .background(isSelected ? Color.accentColor : Color.secondary.opacity(DS.Opacity.light))
+                .background(isSelected ? Color.accentColor : Color.secondary.opacity(DS.Opacity.s))
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)

@@ -79,7 +79,7 @@ struct ImageCarouselWidget: View {
             .font(.system(size: DS.Icon.l))
             .foregroundColor(.secondary)
             .frame(maxWidth: .infinity, minHeight: DS.Size.xxl * 0.6)
-            .background(Color.themeSecondary.opacity(DS.Opacity.strong))
+            .background(Color.themeSecondary.opacity(DS.Opacity.m))
     }
 }
 
@@ -104,7 +104,7 @@ struct FileImageView: View {
                     .font(.system(size: DS.Icon.l))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, minHeight: DS.Size.xxl * 0.6)
-                    .background(Color.themeSecondary.opacity(DS.Opacity.strong))
+                    .background(Color.themeSecondary.opacity(DS.Opacity.m))
             }
         }
         .onAppear {

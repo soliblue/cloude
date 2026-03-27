@@ -24,14 +24,14 @@ extension GlobalInputBar {
                 if verticalDrag >= Constants.swipeThreshold && canRecord && isSwipingToRecord {
                     startRecording()
                 } else if horizontalDrag >= Constants.swipeThreshold && !inputText.isEmpty {
-                    withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                    withAnimation(.easeOut(duration: DS.Duration.s)) {
                         inputText = ""
                         attachedImages = []
                         attachedFiles = []
                     }
                 }
 
-                withAnimation(.easeOut(duration: DS.Duration.normal)) {
+                withAnimation(.easeOut(duration: DS.Duration.s)) {
                     swipeOffset = 0
                     horizontalSwipeOffset = 0
                     isSwipingToRecord = false

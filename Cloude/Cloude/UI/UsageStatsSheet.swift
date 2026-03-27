@@ -90,9 +90,9 @@ struct UsageStatsSheet: View {
         }
         .padding(.vertical, DS.Spacing.m)
         .padding(.horizontal, DS.Spacing.l)
-        .background(.white.opacity(DS.Opacity.faint))
+        .background(.white.opacity(DS.Opacity.s))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
     }
 
 }

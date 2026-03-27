@@ -80,29 +80,29 @@ struct DiffLineView: View {
                 .padding(.vertical, DS.Spacing.s)
                 .padding(.horizontal, DS.Spacing.s)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.blue.opacity(DS.Opacity.faint))
+                .background(Color.blue.opacity(DS.Opacity.s))
         case .added:
             HStack(spacing: DS.Spacing.s) {
                 Text("+")
-                    .foregroundStyle(Color.pastelGreen.opacity(DS.Opacity.heavy))
+                    .foregroundStyle(Color.pastelGreen.opacity(DS.Opacity.l))
                     .frame(width: DS.Spacing.m)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, DS.Spacing.xs)
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.pastelGreen.opacity(DS.Opacity.subtle))
+            .background(Color.pastelGreen.opacity(DS.Opacity.s))
         case .removed:
             HStack(spacing: DS.Spacing.s) {
                 Text("-")
-                    .foregroundStyle(Color.pastelRed.opacity(DS.Opacity.heavy))
+                    .foregroundStyle(Color.pastelRed.opacity(DS.Opacity.l))
                     .frame(width: DS.Spacing.m)
                 Text(SyntaxHighlighter.highlight(line.text, language: language))
             }
             .padding(.vertical, DS.Spacing.xs)
             .padding(.horizontal, DS.Spacing.s)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.pastelRed.opacity(DS.Opacity.subtle))
+            .background(Color.pastelRed.opacity(DS.Opacity.s))
         case .context:
             HStack(spacing: DS.Spacing.s) {
                 Text(" ")

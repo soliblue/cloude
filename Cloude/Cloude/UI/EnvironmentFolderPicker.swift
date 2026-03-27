@@ -90,7 +90,7 @@ struct EnvironmentFolderPicker: View {
                 .padding(.vertical, DS.Spacing.m)
             }
             .buttonStyle(.plain)
-            .opacity(isEnvConnected ? 1 : DS.Opacity.half)
+            .opacity(isEnvConnected ? 1 : DS.Opacity.m)
         }
         .background(Color.themeSecondary)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
@@ -120,7 +120,7 @@ struct EnvironmentFolderPicker: View {
                 Spacer()
                 Text(dir)
                     .font(.system(size: DS.Text.s, design: .monospaced))
-                    .foregroundColor(.secondary.opacity(DS.Opacity.heavy))
+                    .foregroundColor(.secondary.opacity(DS.Opacity.l))
                     .lineLimit(1)
                     .truncationMode(.head)
             }

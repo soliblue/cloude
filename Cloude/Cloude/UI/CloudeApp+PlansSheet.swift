@@ -56,13 +56,13 @@ struct PlansSheet: View {
                 if isLoading {
                     Spacer()
                     ProgressView()
-                        .tint(.secondary.opacity(DS.Opacity.half))
+                        .tint(.secondary.opacity(DS.Opacity.m))
                     Spacer()
                 } else if currentPlans.isEmpty {
                     Spacer()
                     Text("No plans in \(selectedStage)")
                         .font(.system(size: DS.Text.m))
-                        .foregroundColor(.secondary.opacity(DS.Opacity.half))
+                        .foregroundColor(.secondary.opacity(DS.Opacity.m))
                     Spacer()
                 } else {
                     ScrollView(showsIndicators: false) {
@@ -86,12 +86,12 @@ struct PlansSheet: View {
                             if i > 0 {
                                 Divider().frame(height: DS.Icon.m)
                             }
-                            Button(action: { withAnimation(.easeInOut(duration: DS.Duration.quick)) { selectedStage = item.0 } }) {
+                            Button(action: { withAnimation(.easeInOut(duration: DS.Duration.s)) { selectedStage = item.0 } }) {
                                 Image(systemName: stageIcon(item.0))
                                     .font(.system(size: DS.Icon.s, weight: selectedStage == item.0 ? .semibold : .regular))
                             }
                             .buttonStyle(.plain)
-                            .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(DS.Opacity.heavy))
+                            .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(DS.Opacity.l))
                         }
                     }
                     .padding(.horizontal, DS.Spacing.s)

@@ -18,9 +18,9 @@ extension UsageStatsSheet {
                     Button(action: { withAnimation(.quickTransition) { chartPage = i } }) {
                         Image(systemName: chartModes[i].icon)
                             .font(.system(size: DS.Text.m))
-                            .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(DS.Opacity.half))
+                            .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(DS.Opacity.m))
                             .frame(width: DS.Spacing.xxl, height: DS.Size.m)
-                            .background(chartPage == i ? chartModes[i].color.opacity(DS.Opacity.light) : .clear)
+                            .background(chartPage == i ? chartModes[i].color.opacity(DS.Opacity.s) : .clear)
                             .cornerRadius(DS.Radius.s)
                     }
                 }
@@ -36,7 +36,7 @@ extension UsageStatsSheet {
                         yValue: { $0.messageCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.messageCount)) msgs" },
-                        lineColor: { _, selected in selected ? .accentColor : .blue.opacity(DS.Opacity.heavy) },
+                        lineColor: { _, selected in selected ? .accentColor : .blue.opacity(DS.Opacity.l) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
@@ -49,7 +49,7 @@ extension UsageStatsSheet {
                         yValue: { $0.sessionCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \($0.sessionCount) sessions" },
-                        lineColor: { _, selected in selected ? .accentColor : .purple.opacity(DS.Opacity.heavy) },
+                        lineColor: { _, selected in selected ? .accentColor : .purple.opacity(DS.Opacity.l) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
@@ -62,7 +62,7 @@ extension UsageStatsSheet {
                         yValue: { $0.toolCallCount },
                         formatYValue: formatNumber,
                         detailText: { "\(chartDateLabel($0.date)) — \(formatNumber($0.toolCallCount)) tools" },
-                        lineColor: { _, selected in selected ? .accentColor : .orange.opacity(DS.Opacity.heavy) },
+                        lineColor: { _, selected in selected ? .accentColor : .orange.opacity(DS.Opacity.l) },
                         showTimeRangePicker: true,
                         timeRanges: timeRanges,
                         selectedRange: $selectedTimeRange
@@ -101,9 +101,9 @@ extension UsageStatsSheet {
             }
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(DS.Opacity.faint))
+        .background(.white.opacity(DS.Opacity.s))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
     }
 
     var peakHoursSection: some View {
@@ -133,11 +133,11 @@ extension UsageStatsSheet {
                 Text("12a").frame(maxWidth: .infinity, alignment: .trailing)
             }
             .font(.system(size: DS.Text.s))
-            .foregroundColor(.secondary.opacity(DS.Opacity.half))
+            .foregroundColor(.secondary.opacity(DS.Opacity.m))
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(DS.Opacity.faint))
+        .background(.white.opacity(DS.Opacity.s))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
+        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
     }
 }

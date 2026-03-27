@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension Animation {
-    static let quickTransition = Animation.easeInOut(duration: DS.Duration.normal)
+    static let quickTransition = Animation.easeInOut(duration: DS.Duration.s)
 }
 
 extension Notification.Name {
@@ -15,7 +15,7 @@ struct WidgetContainer<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.m) { content() }
             .padding(DS.Spacing.l)
-            .background(Color.themeSecondary.opacity(DS.Opacity.strong))
+            .background(Color.themeSecondary.opacity(DS.Opacity.m))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
     }
 }
@@ -70,7 +70,7 @@ struct WidgetButton: View {
         } label: {
             Image(systemName: icon)
                 .font(.system(size: DS.Text.m, weight: .medium))
-                .foregroundColor(enabled ? color : .secondary.opacity(DS.Opacity.strong))
+                .foregroundColor(enabled ? color : .secondary.opacity(DS.Opacity.m))
         }
         .buttonStyle(.plain)
         .disabled(!enabled)

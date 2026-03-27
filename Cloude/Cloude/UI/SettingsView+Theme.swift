@@ -65,7 +65,7 @@ struct ThemeCard: View {
         .cornerRadius(DS.Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.m)
-                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: DS.Stroke.thick)
+                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: DS.Stroke.l)
         )
     }
 }

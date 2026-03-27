@@ -60,7 +60,7 @@ struct PieChartWidget: View {
             }
             .sensoryFeedback(.selection, trigger: selectedSlice)
             .onChange(of: selectedAngleValue) { _, _ in
-                withAnimation(.easeOut(duration: DS.Duration.quick)) { updateSelectedSlice() }
+                withAnimation(.easeOut(duration: DS.Duration.s)) { updateSelectedSlice() }
             }
 
             FlowLayout(spacing: DS.Spacing.s) {
@@ -68,7 +68,7 @@ struct PieChartWidget: View {
                     let isActive = selectedSlice == nil || selectedSlice == index
                     HStack(spacing: DS.Spacing.xs) {
                         Circle()
-                            .fill(colors[index % colors.count].opacity(isActive ? 1 : DS.Opacity.strong))
+                            .fill(colors[index % colors.count].opacity(isActive ? 1 : DS.Opacity.m))
                             .frame(width: DS.Spacing.s, height: DS.Spacing.s)
                         Text(slice.label)
                             .font(.system(size: DS.Text.s))
@@ -78,7 +78,7 @@ struct PieChartWidget: View {
                             .foregroundColor(.secondary)
                     }
                     .onTapGesture {
-                        withAnimation(.easeOut(duration: DS.Duration.normal)) {
+                        withAnimation(.easeOut(duration: DS.Duration.s)) {
                             selectedSlice = selectedSlice == index ? nil : index
                         }
                     }

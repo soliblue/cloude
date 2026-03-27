@@ -22,7 +22,7 @@ struct WindowTabBar: View {
                     Image(systemName: type.icon)
                         .font(.system(size: DS.Icon.m, weight: activeType == type ? .semibold : .regular))
                         .foregroundColor(activeType == type ? .accentColor : .secondary)
-                        .opacity(enabled ? 1 : DS.Opacity.strong)
+                        .opacity(enabled ? 1 : DS.Opacity.m)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, DS.Spacing.s)
                         .contentShape(Rectangle())

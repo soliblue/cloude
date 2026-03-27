@@ -99,7 +99,7 @@ struct AddEnvironmentCard: View {
         }) {
             Image(systemName: "plus")
                 .font(.system(size: DS.Icon.l, weight: .light))
-                .foregroundColor(.secondary.opacity(DS.Opacity.half))
+                .foregroundColor(.secondary.opacity(DS.Opacity.m))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .buttonStyle(.plain)

@@ -22,7 +22,7 @@ extension FilePreviewView {
                     }
                 } else {
                     ProgressView()
-                        .scaleEffect(DS.Scale.grow)
+                        .scaleEffect(DS.Scale.l)
                     Text("Loading...")
                         .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)

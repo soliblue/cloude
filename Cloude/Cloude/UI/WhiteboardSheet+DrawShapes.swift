@@ -3,11 +3,11 @@
 import SwiftUI
 
 extension WhiteboardSheet {
-    static let sketchStrokeColor = Color.white.opacity(DS.Opacity.heavy)
+    static let sketchStrokeColor = Color.white.opacity(DS.Opacity.l)
 
     func drawShape(_ element: WhiteboardElement, context: GraphicsContext) {
         let isSelected = store.selectedIds.contains(element.id)
-        let fillColor = element.fill.map { Color(hexString: $0) } ?? Color.accentColor.opacity(DS.Opacity.light)
+        let fillColor = element.fill.map { Color(hexString: $0) } ?? Color.accentColor.opacity(DS.Opacity.s)
         let rect = CGRect(x: element.x, y: element.y, width: element.w, height: element.h)
         let cleanPath: Path
         let sketchPath: Path

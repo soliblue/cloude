@@ -62,7 +62,7 @@ struct CSVTableView: View {
                     .padding(.vertical, DS.Spacing.xs)
             }
         }
-        .background(isEven ? Color.clear : Color.themeSecondary.opacity(DS.Opacity.half))
+        .background(isEven ? Color.clear : Color.themeSecondary.opacity(DS.Opacity.m))
     }
 
     private func columnWidth(_ index: Int) -> CGFloat {

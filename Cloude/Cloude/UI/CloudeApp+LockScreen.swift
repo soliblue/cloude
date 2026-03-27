@@ -14,7 +14,6 @@ struct LockScreenView: View {
                 .scaledToFit()
                 .frame(width: DS.Size.xxl / 2, height: DS.Size.xxl / 2)
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
-                .shadow(color: .black.opacity(DS.Opacity.subtle), radius: DS.Shadow.radiusL, y: DS.Shadow.offsetL)
 
             VStack(spacing: DS.Spacing.s) {
                 Text("Cloude is Locked")

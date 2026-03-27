@@ -42,11 +42,11 @@ struct MessageBubble: View {
 
     private var backgroundColor: Color {
         if message.wasInterrupted {
-            return Color.orange.opacity(DS.Opacity.light)
+            return Color.orange.opacity(DS.Opacity.s)
         } else if message.isUser {
             return Color(hex: appTheme.palette.background)
         } else {
-            return Color(hex: appTheme.palette.secondary).opacity(DS.Opacity.strong)
+            return Color(hex: appTheme.palette.secondary).opacity(DS.Opacity.m)
         }
     }
 
@@ -55,7 +55,7 @@ struct MessageBubble: View {
         let _ = DebugMetrics.log("Bubble", "render | \(message.isUser ? "user" : "asst") id=\(message.id.uuidString.prefix(6))")
         #endif
         messageContent
-            .opacity(message.isQueued ? DS.Opacity.heavy : 1.0)
+            .opacity(message.isQueued ? DS.Opacity.l : 1.0)
         .padding(.horizontal, DS.Spacing.l)
         .padding(.vertical, DS.Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)

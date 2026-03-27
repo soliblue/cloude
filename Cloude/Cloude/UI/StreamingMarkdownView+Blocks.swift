@@ -17,7 +17,7 @@ struct CodeBlock: View {
     var body: some View {
         VStack(spacing: 0) {
             toolbar
-            Divider().overlay(Color.gray.opacity(DS.Opacity.strong))
+            Divider().overlay(Color.gray.opacity(DS.Opacity.m))
             codeContent
         }
         .background(Color.themeSecondary)
@@ -94,7 +94,7 @@ struct CodeBlock: View {
             ForEach(Array(lines.enumerated()), id: \.offset) { index, _ in
                 Text("\(index + 1)")
                     .font(.system(size: DS.Text.s, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(DS.Opacity.half))
+                    .foregroundStyle(.secondary.opacity(DS.Opacity.m))
                     .frame(height: lineHeight)
             }
         }

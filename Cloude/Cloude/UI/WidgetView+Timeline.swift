@@ -30,7 +30,7 @@ struct TimelineWidget: View {
 
                             if index < events.count - 1 {
                                 Rectangle()
-                                    .fill(event.color.opacity(DS.Opacity.strong))
+                                    .fill(event.color.opacity(DS.Opacity.m))
                                     .frame(width: DS.Spacing.xs)
                                     .frame(maxHeight: .infinity)
                             }

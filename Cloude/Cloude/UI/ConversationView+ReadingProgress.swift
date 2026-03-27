@@ -12,9 +12,9 @@ struct ReadingProgressView: View {
         VStack(spacing: DS.Spacing.s) {
             ForEach(0..<dotCount, id: \.self) { index in
                 Circle()
-                    .fill(index <= activeDot ? Color.primary.opacity(DS.Opacity.half) : Color.primary.opacity(DS.Opacity.subtle))
+                    .fill(index <= activeDot ? Color.primary.opacity(DS.Opacity.m) : Color.primary.opacity(DS.Opacity.s))
                     .frame(width: DS.Spacing.xs, height: DS.Spacing.xs)
-                    .animation(.easeOut(duration: DS.Duration.quick), value: activeDot)
+                    .animation(.easeOut(duration: DS.Duration.s), value: activeDot)
             }
         }
     }
@@ -54,7 +54,7 @@ struct MessageProgressTracker: ViewModifier {
             .onPreferenceChange(MessageVisibilityKey.self) { visibility in
                 let tall = visibility.messageHeight > viewportHeight * 1.3
                 if tall != showIndicator {
-                    withAnimation(.easeOut(duration: DS.Duration.normal)) { showIndicator = tall }
+                    withAnimation(.easeOut(duration: DS.Duration.s)) { showIndicator = tall }
                 }
 
                 if tall {

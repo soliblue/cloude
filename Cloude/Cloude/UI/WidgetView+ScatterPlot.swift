@@ -28,7 +28,7 @@ struct ScatterPlotWidget: View {
                         x: .value(xLabel ?? "X", point.x),
                         y: .value(yLabel ?? "Y", point.y)
                     )
-                    .foregroundStyle(.teal.opacity(selectedPoint == nil || selectedPoint == index ? 1 : DS.Opacity.medium))
+                    .foregroundStyle(.teal.opacity(selectedPoint == nil || selectedPoint == index ? 1 : DS.Opacity.m))
                     .symbolSize(selectedPoint == index ? 80 : 40)
                     .annotation(position: .top) {
                         if selectedPoint == index {
@@ -53,13 +53,13 @@ struct ScatterPlotWidget: View {
             .frame(height: DS.Size.xxl)
             .chartXAxis {
                 AxisMarks { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
@@ -79,12 +79,12 @@ struct ScatterPlotWidget: View {
                                         let d2 = pow($1.element.x - xVal, 2) + pow($1.element.y - yVal, 2)
                                         return d1 < d2
                                     })
-                                    withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.s)) {
                                         selectedPoint = nearest?.offset
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.s)) {
                                         selectedPoint = nil
                                     }
                                 }

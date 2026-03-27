@@ -21,7 +21,7 @@ struct Pill<Content: View, Background: View>: View {
 }
 
 let skillGradient = LinearGradient(
-    colors: [.purple, .pink.opacity(DS.Opacity.full)],
+    colors: [.purple, .pink.opacity(DS.Opacity.l)],
     startPoint: .leading,
     endPoint: .trailing
 )
@@ -37,13 +37,13 @@ struct SkillPillBackground: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: DS.Radius.s)
-            .fill(isSkill ? Color.purple.opacity(DS.Opacity.subtle) : Color.cyan.opacity(DS.Opacity.subtle))
+            .fill(isSkill ? Color.purple.opacity(DS.Opacity.s) : Color.cyan.opacity(DS.Opacity.s))
             .overlay(
                 isSkill ?
                 RoundedRectangle(cornerRadius: DS.Radius.s)
                     .stroke(
                         LinearGradient(
-                            colors: [Color.purple.opacity(DS.Opacity.strong), Color.pink.opacity(DS.Opacity.medium)],
+                            colors: [Color.purple.opacity(DS.Opacity.m), Color.pink.opacity(DS.Opacity.m)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),

@@ -39,8 +39,8 @@ struct PlanCard: View {
                                         .font(.system(size: DS.Text.s, weight: .medium))
                                         .padding(.horizontal, DS.Spacing.s)
                                         .padding(.vertical, DS.Spacing.xs)
-                                        .background(planTagColor(tag).opacity(DS.Opacity.subtle))
-                                        .foregroundColor(planTagColor(tag).opacity(DS.Opacity.full))
+                                        .background(planTagColor(tag).opacity(DS.Opacity.s))
+                                        .foregroundColor(planTagColor(tag).opacity(DS.Opacity.l))
                                         .clipShape(Capsule())
                                 }
                             }
@@ -54,16 +54,16 @@ struct PlanCard: View {
                         .font(.system(size: DS.Text.s, weight: .medium).monospacedDigit())
                         .padding(.horizontal, DS.Spacing.s)
                         .padding(.vertical, DS.Spacing.xs)
-                        .background(.white.opacity(DS.Opacity.faint))
-                        .foregroundColor(.secondary.opacity(DS.Opacity.heavy))
+                        .background(.white.opacity(DS.Opacity.s))
+                        .foregroundColor(.secondary.opacity(DS.Opacity.l))
                         .clipShape(Capsule())
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(DS.Spacing.l)
-            .background(.white.opacity(DS.Opacity.faint))
+            .background(.white.opacity(DS.Opacity.s))
             .cornerRadius(DS.Radius.m)
-            .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.subtle), lineWidth: DS.Stroke.thin))
+            .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
         }
         .buttonStyle(.plain)
     }

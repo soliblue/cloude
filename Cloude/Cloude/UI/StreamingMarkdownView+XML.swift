@@ -25,7 +25,7 @@ struct XMLBlockView: View {
             .padding(.horizontal, DS.Spacing.m)
             .padding(.vertical, DS.Spacing.s)
 
-            Divider().overlay(Color.gray.opacity(DS.Opacity.strong))
+            Divider().overlay(Color.gray.opacity(DS.Opacity.m))
 
             if showSource {
                 Text(rawXML)

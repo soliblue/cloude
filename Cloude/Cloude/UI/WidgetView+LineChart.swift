@@ -37,16 +37,16 @@ struct LineChartWidget: View {
                             y: .value(yLabel ?? "Y", point.y)
                         )
                         .foregroundStyle(colors[lineIdx % colors.count])
-                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.thick))
+                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.l))
                     }
-                    .symbol(Circle().strokeBorder(lineWidth: DS.Stroke.medium))
+                    .symbol(Circle().strokeBorder(lineWidth: DS.Stroke.l))
                     .symbolSize(DS.Icon.l)
                 }
 
                 if let selectedX {
                     RuleMark(x: .value("Selected", selectedX))
-                        .foregroundStyle(Color.secondary.opacity(DS.Opacity.half))
-                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.regular, dash: [DS.Spacing.xs, DS.Spacing.xs]))
+                        .foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
+                        .lineStyle(StrokeStyle(lineWidth: DS.Stroke.m, dash: [DS.Spacing.xs, DS.Spacing.xs]))
                         .annotation(position: .top, alignment: .center) {
                             valuesAtX(selectedX)
                         }
@@ -55,13 +55,13 @@ struct LineChartWidget: View {
             .frame(height: DS.Size.xxl)
             .chartXAxis {
                 AxisMarks { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { _ in
-                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
+                    AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.m))
                     AxisValueLabel().font(.system(size: DS.Text.s, design: .monospaced))
                 }
             }
@@ -73,13 +73,13 @@ struct LineChartWidget: View {
                                 .onChanged { drag in
                                     let x = drag.location.x - geo[proxy.plotFrame!].origin.x
                                     if let xVal: Double = proxy.value(atX: x) {
-                                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                                        withAnimation(.easeOut(duration: DS.Duration.s)) {
                                             selectedX = xVal
                                         }
                                     }
                                 }
                                 .onEnded { _ in
-                                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
+                                    withAnimation(.easeOut(duration: DS.Duration.s)) {
                                         selectedX = nil
                                     }
                                 }

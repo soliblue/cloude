@@ -87,7 +87,7 @@ struct GlobalInputBar: View {
                 Task {
                     if let data = try? await newItem.loadTransferable(type: Data.self) {
                         guard attachedImages.count < Constants.maxImageAttachments else { return }
-                        withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                        withAnimation(.easeOut(duration: DS.Duration.s)) {
                             attachedImages.append(AttachedImage(data: data, isScreenshot: false))
                         }
                     }
@@ -100,7 +100,7 @@ struct GlobalInputBar: View {
                         guard url.startAccessingSecurityScopedResource() else { continue }
                         defer { url.stopAccessingSecurityScopedResource() }
                         if let data = try? Data(contentsOf: url) {
-                            withAnimation(.easeOut(duration: DS.Duration.quick)) {
+                            withAnimation(.easeOut(duration: DS.Duration.s)) {
                                 attachedFiles.append(AttachedFile(name: url.lastPathComponent, data: data))
                             }
                         }

@@ -13,7 +13,7 @@ extension StreamingMarkdownParser {
             case .code(_, let code):
                 var attr = AttributedString(code)
                 attr.font = .system(size: DS.Text.m, weight: .regular, design: .monospaced)
-                attr.backgroundColor = .secondary.opacity(DS.Opacity.subtle)
+                attr.backgroundColor = .secondary.opacity(DS.Opacity.s)
                 result.append(attr)
             case .filePath(_, let path):
                 var attr = AttributedString(path)

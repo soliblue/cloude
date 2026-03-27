@@ -34,7 +34,7 @@ struct AudioWaveformView: View {
 
     private func updateBars(level: Float) {
         let baseHeight = CGFloat(level)
-        withAnimation(.easeOut(duration: DS.Duration.instant)) {
+        withAnimation(.easeOut(duration: DS.Duration.s)) {
             for i in 0..<barCount {
                 let variance = CGFloat.random(in: 0.5...1.5)
                 let centerBias = 1.0 - abs(CGFloat(i) - CGFloat(barCount - 1) / 2) / CGFloat(barCount) * 0.6
@@ -62,20 +62,20 @@ struct RecordingOverlayView: View {
 
                 Image(systemName: "waveform")
                     .font(.system(size: DS.Icon.l))
-                    .foregroundColor(.accentColor.opacity(DS.Opacity.half))
+                    .foregroundColor(.accentColor.opacity(DS.Opacity.m))
             } else {
                 Circle()
-                    .fill(Color.accentColor.opacity(DS.Opacity.full))
+                    .fill(Color.accentColor.opacity(DS.Opacity.l))
                     .frame(width: DS.Icon.s, height: DS.Icon.s)
-                    .scaleEffect(pulse ? DS.Scale.grow : DS.Scale.compact)
-                    .opacity(pulse ? DS.Opacity.full : DS.Opacity.half)
+                    .scaleEffect(pulse ? DS.Scale.l : DS.Scale.m)
+                    .opacity(pulse ? DS.Opacity.l : DS.Opacity.m)
 
                 Spacer()
 
                 AudioWaveformView(
                     audioLevel: currentLevel,
                     barCount: 7,
-                    color: .accentColor.opacity(DS.Opacity.heavy),
+                    color: .accentColor.opacity(DS.Opacity.l),
                     barWidth: DS.Spacing.xs,
                     maxHeight: DS.Size.m
                 )
@@ -85,7 +85,7 @@ struct RecordingOverlayView: View {
                 Button(action: onStop) {
                     Image(systemName: "stop.fill")
                         .font(.system(size: DS.Icon.l))
-                        .foregroundColor(.accentColor.opacity(DS.Opacity.full))
+                        .foregroundColor(.accentColor.opacity(DS.Opacity.l))
                 }
             }
         }
@@ -94,7 +94,7 @@ struct RecordingOverlayView: View {
         .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.l))
         .padding(.horizontal, DS.Spacing.s)
         .onAppear {
-            withAnimation(.easeInOut(duration: DS.Duration.pulse).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: DS.Duration.l).repeatForever(autoreverses: true)) {
                 pulse = true
             }
         }

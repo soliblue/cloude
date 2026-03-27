@@ -29,7 +29,7 @@ extension FilePreviewView {
                             .foregroundStyle(.secondary)
                     } else {
                         ProgressView()
-                            .scaleEffect(DS.Scale.compact)
+                            .scaleEffect(DS.Scale.m)
                         Text("Loading...")
                             .font(.system(size: DS.Text.s))
                     }

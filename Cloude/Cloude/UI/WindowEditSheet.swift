@@ -69,7 +69,7 @@ struct WindowEditSheet: View {
                             } label: {
                                 if isRefreshing {
                                     ProgressView()
-                                        .scaleEffect(DS.Scale.small)
+                                        .scaleEffect(DS.Scale.s)
                                 } else {
                                     Image(systemName: "arrow.clockwise")
                                         .font(.system(size: DS.Icon.s, weight: .medium))

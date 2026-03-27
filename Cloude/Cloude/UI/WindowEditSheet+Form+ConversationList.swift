@@ -15,7 +15,7 @@ struct SwipeToDeleteRow<Content: View>: View {
         ZStack(alignment: .trailing) {
             if showDelete {
                 Button(action: {
-                    withAnimation(.easeOut(duration: DS.Duration.normal)) {
+                    withAnimation(.easeOut(duration: DS.Duration.s)) {
                         offset = -400
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -37,7 +37,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                 .offset(x: offset)
                 .onTapGesture {
                     if offset < 0 {
-                        withAnimation(.easeOut(duration: DS.Duration.normal)) { offset = 0 }
+                        withAnimation(.easeOut(duration: DS.Duration.s)) { offset = 0 }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { showDelete = false }
                     } else {
                         onTap()
@@ -59,9 +59,9 @@ struct SwipeToDeleteRow<Content: View>: View {
                             if !isSwiping { return }
                             isSwiping = false
                             if value.translation.width < threshold {
-                                withAnimation(.easeOut(duration: DS.Duration.normal)) { offset = threshold }
+                                withAnimation(.easeOut(duration: DS.Duration.s)) { offset = threshold }
                             } else {
-                                withAnimation(.easeOut(duration: DS.Duration.normal)) { offset = 0 }
+                                withAnimation(.easeOut(duration: DS.Duration.s)) { offset = 0 }
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { showDelete = false }
                             }
                         }

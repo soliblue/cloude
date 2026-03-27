@@ -6,10 +6,10 @@ struct StreamingPulseModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .opacity(isPulsing ? DS.Opacity.half : 1.0)
-            .animation(isPulsing ? .easeInOut(duration: DS.Duration.pulse).repeatForever(autoreverses: true) : .linear(duration: DS.Duration.quick), value: isPulsing)
+            .opacity(isPulsing ? DS.Opacity.m : 1.0)
+            .animation(isPulsing ? .easeInOut(duration: DS.Duration.l).repeatForever(autoreverses: true) : .linear(duration: DS.Duration.s), value: isPulsing)
             .onChange(of: isStreaming) { _, streaming in
-                withAnimation(streaming ? nil : .linear(duration: DS.Duration.quick)) {
+                withAnimation(streaming ? nil : .linear(duration: DS.Duration.s)) {
                     isPulsing = streaming
                 }
             }

@@ -35,7 +35,7 @@ struct TreeWidget: View {
 
             if hasChildren {
                 Button {
-                    withAnimation(.easeInOut(duration: DS.Duration.quick)) {
+                    withAnimation(.easeInOut(duration: DS.Duration.s)) {
                         if isCollapsed { collapsed.remove(node.id) } else { collapsed.insert(node.id) }
                     }
                 } label: {
