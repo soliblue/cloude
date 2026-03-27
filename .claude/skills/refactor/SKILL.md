@@ -34,6 +34,7 @@ find ./Cloude -type f -name "*.swift" -exec wc -l {} \; | sort -rn | head -20
 - **Overly complex functions** - functions doing too many things
 - **Missing abstractions** - repeated patterns that should be formalized
 - **Large files** - files over 500 lines that might benefit from splitting
+- **Hardcoded values** - magic numbers, color literals, inline spacing/opacity/duration/font values that should use design system tokens (`DS.*`, `AppTheme`, `Theme.swift`)
 
 ### 3. Do NOT Suggest
 
