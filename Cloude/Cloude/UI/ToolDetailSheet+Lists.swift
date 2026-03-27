@@ -82,12 +82,11 @@ extension ToolDetailSheet {
             VStack(spacing: 0) {
                 ForEach(Array(chainedCommands.enumerated()), id: \.offset) { index, chained in
                     VStack(spacing: 0) {
-                        HStack(alignment: .top, spacing: DS.Spacing.m) {
+                        HStack(alignment: .center, spacing: DS.Spacing.m) {
                             Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
                                 .font(.system(size: DS.Text.m, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
                                 .frame(width: DS.Icon.l)
-                                .padding(.top, DS.Spacing.xs)
 
                             Text(chained.command)
                                 .font(.system(size: DS.Text.m, design: .monospaced))
@@ -97,18 +96,6 @@ extension ToolDetailSheet {
                         .padding(.vertical, DS.Spacing.m)
                         .padding(.horizontal, DS.Spacing.m)
 
-                        if let op = chained.operatorAfter {
-                            HStack(spacing: DS.Spacing.s) {
-                                Rectangle()
-                                    .fill(Color.secondary.opacity(DS.Opacity.strong))
-                                    .frame(width: DS.Size.hairline, height: 16)
-                                    .padding(.leading, DS.Spacing.xl)
-                                Text(op.rawValue)
-                                    .font(.system(size: DS.Text.s, design: .monospaced))
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                            }
-                        }
                     }
                 }
             }

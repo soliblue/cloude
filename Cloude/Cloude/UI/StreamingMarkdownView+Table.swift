@@ -25,13 +25,6 @@ struct MarkdownTableView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .frame(minWidth: DS.Size.xl)
                             .background(rowIndex == 0 ? Color.gray.opacity(DS.Opacity.faint) : Color.clear)
-                            .overlay(alignment: .leading) {
-                                if colIndex > 0 {
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(DS.Opacity.medium))
-                                        .frame(width: DS.Size.hairline)
-                                }
-                            }
                         }
                     }
                 }

@@ -30,7 +30,6 @@ enum DS {
     }
 
     enum Size {
-        static let hairline: CGFloat = 1
         static let xxs: CGFloat = 6
         static let s: CGFloat = 14
         static let m: CGFloat = 28
