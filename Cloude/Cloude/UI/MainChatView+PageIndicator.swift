@@ -69,19 +69,10 @@ extension MainChatView {
         let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
-        Group {
-            if let symbol = conversation?.symbol, symbol.isValidSFSymbol {
-                Image(systemName: symbol)
-                    .font(.system(size: DS.Icon.l, weight: weight))
-                    .foregroundStyle(color)
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-            } else {
-                let size: CGFloat = isActive || isStreaming ? DS.Spacing.l : DS.Size.xs
-                Circle()
-                    .fill(color.opacity(isActive || isStreaming ? 1.0 : DS.Opacity.strong))
-                    .frame(width: size, height: size)
-                    .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-            }
-        }
+        let symbol = (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
+        Image(systemName: symbol)
+            .font(.system(size: DS.Icon.l, weight: weight))
+            .foregroundStyle(color)
+            .modifier(StreamingPulseModifier(isStreaming: isStreaming))
     }
 }

@@ -66,7 +66,7 @@ struct RecordingOverlayView: View {
             } else {
                 Circle()
                     .fill(Color.accentColor.opacity(DS.Opacity.full))
-                    .frame(width: DS.Size.xs, height: DS.Size.xs)
+                    .frame(width: DS.Icon.s, height: DS.Icon.s)
                     .scaleEffect(pulse ? DS.Scale.grow : DS.Scale.compact)
                     .opacity(pulse ? DS.Opacity.full : DS.Opacity.half)
 

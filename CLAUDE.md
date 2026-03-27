@@ -80,8 +80,10 @@ if let subject = args.subject {
 - SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
 - **Toolbar layout**: All toolbar icons use `DS.Icon.m` for consistent sizing across the app. Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: DS.Spacing.m)` with `.padding(.horizontal, DS.Spacing.l)`, use `Divider().frame(height: DS.Size.divider)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
 - Use markdown for text-heavy content. Use `mcp__widgets__*` for interactive/visual content (charts, trees, timelines, flashcards, drag-to-order).
+- **Text tokens will become dynamic** - DS.Text is separate from DS.Size because text will scale with iOS Dynamic Type settings. Size stays fixed while text scales. This is also why inline icons use DS.Text (they scale with text) while standalone icons use DS.Icon (fixed).
 - **No hardcoded values** - colors, spacing, fonts, opacities, durations, and other visual constants must use design system tokens (`DS.*`, `AppTheme`, `Theme.swift`). Never inline magic numbers or color literals in views.
 - **Icon sizing** - `DS.Icon` is for standalone icons/buttons only. When an SF Symbol appears inline next to text, use the same `DS.Text` size as the adjacent text so they match visually.
+- **No explicit spacers for gaps** - use `HStack(spacing:)` / `VStack(spacing:)` instead of `Spacer().frame(width/height:)` for fixed gaps between elements.
 
 ### Notes
 - **`.claude/` folder requires permission** - Anthropic added a permission gate on Edit/Write/sed for files inside `.claude/`. Since we run headless (no way to accept permission prompts), use workarounds: `cp` to `/tmp`, modify there, `cp` back. Or use `cat` with heredoc redirect. Never use the Edit tool on `.claude/` files.

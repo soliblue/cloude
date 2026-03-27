@@ -55,7 +55,7 @@ struct MemorySectionCard: View {
                 }
                 .padding(.leading, DS.Spacing.l + depthIndent)
                 .padding(.trailing, DS.Spacing.l)
-                .padding(.vertical, depth == 0 ? DS.Size.s : DS.Size.xs)
+                .padding(.vertical, depth == 0 ? DS.Spacing.l : DS.Spacing.s)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

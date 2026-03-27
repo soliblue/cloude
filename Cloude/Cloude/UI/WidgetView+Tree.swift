@@ -20,37 +20,18 @@ struct TreeWidget: View {
         let isCollapsed = collapsed.contains(node.id)
         let hasChildren = !node.children.isEmpty
 
-        HStack(alignment: .top, spacing: 0) {
-            ForEach(Array(prefixSegments.enumerated()), id: \.offset) { _, showLine in
-                if showLine {
-                    Rectangle()
-                        .fill(Color.secondary.opacity(DS.Opacity.medium))
-                        .frame(width: DS.Size.hairline)
-                        .frame(maxHeight: .infinity)
-                        .padding(.horizontal, DS.Spacing.s)
-                } else {
-                    Color.clear.frame(width: DS.Spacing.l)
-                }
+        HStack(alignment: .center, spacing: DS.Spacing.xs) {
+            ForEach(Array(prefixSegments.enumerated()), id: \.offset) { _, _ in
+                Color.clear.frame(width: DS.Spacing.l)
             }
 
             if depth > 0 {
-                HStack(spacing: 0) {
-                    Rectangle()
-                        .fill(Color.secondary.opacity(DS.Opacity.medium))
-                        .frame(width: DS.Size.xs, height: 1)
-                        .padding(.top, DS.Spacing.s)
-                    Spacer(minLength: 3)
-                }
-                .frame(width: DS.Spacing.m)
+                Color.clear.frame(width: DS.Spacing.m)
             }
 
             Image(systemName: node.icon)
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(node.iconColor)
-                .frame(width: DS.Size.s)
-                .padding(.top, DS.Spacing.xs)
-
-            Spacer().frame(width: DS.Spacing.xs)
 
             if hasChildren {
                 Button {
