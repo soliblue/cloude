@@ -8,6 +8,8 @@ struct MessageBubble: View {
     let message: ChatMessage
     var skills: [Skill] = []
     var liveOutput: ConversationOutput?
+    var liveText: String?
+    var liveToolCalls: [ToolCall]?
     var onRefresh: (() -> Void)?
     var onToggleCollapse: (() -> Void)?
     var isRefreshing: Bool = false
@@ -17,8 +19,8 @@ struct MessageBubble: View {
     @Environment(\.appTheme) private var appTheme
 
     private var isLive: Bool { liveOutput != nil }
-    private var effectiveText: String { liveOutput?.text ?? message.text }
-    private var effectiveToolCalls: [ToolCall] { liveOutput?.toolCalls ?? message.toolCalls }
+    private var effectiveText: String { liveText ?? message.text }
+    private var effectiveToolCalls: [ToolCall] { liveToolCalls ?? message.toolCalls }
 
     private var hasInteractiveWidgets: Bool {
         effectiveToolCalls.contains { WidgetRegistry.isWidget($0.name) }
