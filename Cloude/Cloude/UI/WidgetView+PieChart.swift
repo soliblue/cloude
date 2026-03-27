@@ -69,7 +69,7 @@ struct PieChartWidget: View {
                     HStack(spacing: DS.Spacing.xs) {
                         Circle()
                             .fill(colors[index % colors.count].opacity(isActive ? 1 : DS.Opacity.m))
-                            .frame(width: DS.Spacing.s, height: DS.Spacing.s)
+                            .frame(width: DS.Size.s, height: DS.Size.s)
                         Text(slice.label)
                             .font(.system(size: DS.Text.s))
                             .foregroundColor(isActive ? .primary : .secondary)

@@ -19,7 +19,7 @@ extension UsageStatsSheet {
                         Image(systemName: chartModes[i].icon)
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(DS.Opacity.m))
-                            .frame(width: DS.Spacing.xxl, height: DS.Size.m)
+                            .frame(width: DS.Size.m, height: DS.Size.m)
                             .background(chartPage == i ? chartModes[i].color.opacity(DS.Opacity.s) : .clear)
                             .cornerRadius(DS.Radius.s)
                     }

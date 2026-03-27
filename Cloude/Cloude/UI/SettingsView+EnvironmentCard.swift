@@ -20,8 +20,8 @@ struct EnvironmentCard: View {
         VStack(spacing: DS.Spacing.m) {
             headerRow
             formFields
-            Spacer().frame(height: DS.Spacing.xs)
         }
+        .padding(.bottom, DS.Spacing.xs)
         .padding(.horizontal, DS.Spacing.xs)
     }
 
@@ -41,7 +41,7 @@ struct EnvironmentCard: View {
             HStack(spacing: DS.Spacing.s) {
                 Circle()
                     .fill(statusColor)
-                    .frame(width: DS.Spacing.s, height: DS.Spacing.s)
+                    .frame(width: DS.Size.s, height: DS.Size.s)
                 Text(statusText)
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)

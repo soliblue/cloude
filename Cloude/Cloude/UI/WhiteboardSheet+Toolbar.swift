@@ -123,7 +123,7 @@ extension WhiteboardSheet {
                 Button(action: { store.activeColor = hex }) {
                     Circle()
                         .fill(Color(hexString: hex))
-                        .frame(width: DS.Spacing.xl, height: DS.Spacing.xl)
+                        .frame(width: DS.Size.m, height: DS.Size.m)
                         .overlay(
                             Circle()
                                 .strokeBorder(store.activeColor == hex ? Color.accentColor : Color.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.l)

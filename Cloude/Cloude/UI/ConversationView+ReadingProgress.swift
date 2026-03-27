@@ -13,7 +13,7 @@ struct ReadingProgressView: View {
             ForEach(0..<dotCount, id: \.self) { index in
                 Circle()
                     .fill(index <= activeDot ? Color.primary.opacity(DS.Opacity.m) : Color.primary.opacity(DS.Opacity.s))
-                    .frame(width: DS.Spacing.xs, height: DS.Spacing.xs)
+                    .frame(width: DS.Size.s, height: DS.Size.s)
                     .animation(.easeOut(duration: DS.Duration.s), value: activeDot)
             }
         }

@@ -49,10 +49,10 @@ struct ThemeCard: View {
             HStack(spacing: DS.Spacing.xs) {
                 RoundedRectangle(cornerRadius: DS.Radius.s)
                     .fill(Color(hex: theme.palette.background))
-                    .frame(height: DS.Spacing.xxl)
+                    .frame(height: DS.Size.m)
                 RoundedRectangle(cornerRadius: DS.Radius.s)
                     .fill(Color(hex: theme.palette.secondary))
-                    .frame(height: DS.Spacing.xxl)
+                    .frame(height: DS.Size.m)
             }
             .padding(DS.Spacing.s)
 

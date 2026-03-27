@@ -64,10 +64,6 @@ struct InlineToolPill: View {
                     Text("\(children.count)")
                         .font(.system(size: DS.Text.s, weight: .bold, design: .rounded))
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, DS.Spacing.xs)
-                        .padding(.vertical, DS.Spacing.xs)
-                        .background(Color.secondary.opacity(DS.Opacity.s))
-                        .clipShape(Capsule())
                 }
             }
 

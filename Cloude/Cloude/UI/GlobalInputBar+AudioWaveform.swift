@@ -9,7 +9,7 @@ struct AudioWaveformView: View {
 
     @State private var barHeights: [CGFloat]
 
-    init(audioLevel: Float, barCount: Int = 7, color: Color = .white, barWidth: CGFloat = DS.Spacing.xs, maxHeight: CGFloat = DS.Spacing.xxl) {
+    init(audioLevel: Float, barCount: Int = 7, color: Color = .white, barWidth: CGFloat = DS.Spacing.xs, maxHeight: CGFloat = DS.Size.m) {
         self.audioLevel = audioLevel
         self.barCount = barCount
         self.color = color

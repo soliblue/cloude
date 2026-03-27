@@ -94,7 +94,7 @@ struct LineChartWidget: View {
                         HStack(spacing: DS.Spacing.xs) {
                             Circle()
                                 .fill(colors[index % colors.count])
-                                .frame(width: DS.Spacing.s, height: DS.Spacing.s)
+                                .frame(width: DS.Size.s, height: DS.Size.s)
                             Text(line.label)
                                 .font(.system(size: DS.Text.s))
                                 .foregroundColor(.primary)
