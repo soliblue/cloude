@@ -56,8 +56,11 @@ struct FileBrowserView: View {
                             selectedFile = entry
                         }
                     }
+                    .listRowBackground(Color.themeBackground)
                 }
                 .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .background(Color.themeBackground)
             }
         }
     }

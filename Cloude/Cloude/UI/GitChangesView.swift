@@ -21,7 +21,6 @@ struct GitChangesView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let status = gitStatus {
                 statusHeader(status)
-                Divider()
                 filesList(status.files)
             } else {
                 ContentUnavailableView("No Repository", systemImage: "folder.badge.questionmark", description: Text("Not a git repository"))
@@ -101,6 +100,7 @@ struct GitChangesView: View {
                 Section {
                     ForEach(staged) { file in
                         GitFileRow(file: file) { selectedFile = file }
+                            .listRowBackground(Color.themeBackground)
                     }
                 } header: {
                     Text("Staged")
@@ -112,6 +112,7 @@ struct GitChangesView: View {
                 Section {
                     ForEach(unstaged) { file in
                         GitFileRow(file: file) { selectedFile = file }
+                            .listRowBackground(Color.themeBackground)
                     }
                 } header: {
                     Text("Changes")
@@ -121,6 +122,9 @@ struct GitChangesView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.themeBackground)
+        .contentMargins(.top, 0, for: .scrollContent)
     }
 
     private func loadStatus() {
