@@ -11,37 +11,6 @@ extension GlobalInputBar {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
 
-            if showFileSuggestions {
-                FileSuggestionsList(
-                    files: fileSearchResults,
-                    onSelect: selectFile
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else if showCommandSuggestions {
-                SlashCommandSuggestions(
-                    commands: filteredCommands,
-                    onSelect: { command in
-                        inputText = "/\(command.resolvesTo ?? command.name)"
-                        if !command.hasParameters {
-                            isInputFocused = false
-                            onSend()
-                        } else {
-                            inputText += " "
-                            isInputFocused = true
-                        }
-                    }
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else if !historySuggestions.isEmpty {
-                HistorySuggestions(
-                    suggestions: historySuggestions,
-                    onSelect: { text in
-                        inputText = text
-                    }
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-
             if !attachedImages.isEmpty {
                 ImageAttachmentStrip(
                     images: attachedImages,
@@ -86,8 +55,60 @@ extension GlobalInputBar {
             }
             .padding(.bottom, DS.Spacing.m)
         }
-        .animation(.easeOut(duration: DS.Duration.quick), value: filteredCommands.map(\.name))
         .animation(.easeOut(duration: DS.Duration.quick), value: attachedImages.map(\.id))
         .animation(.easeOut(duration: DS.Duration.quick), value: attachedFiles.map(\.id))
+        .overlay(alignment: .top) {
+            suggestionsOverlay
+                .alignmentGuide(.top) { d in d[.bottom] }
+                .animation(.easeOut(duration: DS.Duration.quick), value: filteredCommands.map(\.name))
+        }
+    }
+
+    @ViewBuilder
+    private var suggestionsOverlay: some View {
+        if showFileSuggestions {
+            suggestionBackdrop {
+                FileSuggestionsList(
+                    files: fileSearchResults,
+                    onSelect: selectFile
+                )
+            }
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        } else if showCommandSuggestions {
+            suggestionBackdrop {
+                SlashCommandSuggestions(
+                    commands: filteredCommands,
+                    onSelect: { command in
+                        inputText = "/\(command.resolvesTo ?? command.name)"
+                        if !command.hasParameters {
+                            isInputFocused = false
+                            onSend()
+                        } else {
+                            inputText += " "
+                            isInputFocused = true
+                        }
+                    }
+                )
+            }
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        } else if !historySuggestions.isEmpty {
+            suggestionBackdrop {
+                HistorySuggestions(
+                    suggestions: historySuggestions,
+                    onSelect: { text in
+                        inputText = text
+                    }
+                )
+            }
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
+    private func suggestionBackdrop<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .background(
+                Color.themeBackground
+                    .shadow(color: .black.opacity(DS.Opacity.faint), radius: DS.Radius.s, y: -2)
+            )
     }
 }
