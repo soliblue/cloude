@@ -8,7 +8,7 @@ struct ConnectionStatus: View {
         Button(action: { connection.reconnectAll() }) {
             Circle()
                 .fill(statusColor)
-                .frame(width: 10, height: 10)
+                .frame(width: DS.Size.dot, height: DS.Size.dot)
         }
         .buttonStyle(.plain)
     }

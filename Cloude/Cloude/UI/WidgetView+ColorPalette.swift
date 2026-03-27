@@ -46,7 +46,7 @@ struct ColorPaletteWidget: View {
     private func colorSwatch(_ color: (hex: String, label: String?)) -> some View {
         HStack(spacing: 0) {
             Color(hexString: color.hex)
-                .frame(width: useGrid ? DS.Size.tap : nil, height: 44)
+                .frame(width: useGrid ? DS.Size.tap : nil, height: DS.Size.tap)
                 .frame(maxWidth: useGrid ? nil : .infinity)
 
             VStack(alignment: .leading, spacing: DS.Spacing.xs) {
@@ -65,7 +65,7 @@ struct ColorPaletteWidget: View {
             .frame(height: DS.Size.tap)
             .background(Color.themeSecondary.opacity(DS.Opacity.half))
         }
-        .onLongPressGesture(minimumDuration: 0.2) {
+        .onLongPressGesture(minimumDuration: DS.Duration.normal) {
             NotificationCenter.default.post(name: .showFullscreenColor, object: color.hex)
         }
     }

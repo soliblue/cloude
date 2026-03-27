@@ -39,7 +39,7 @@ extension CloudeApp {
                             }
                         }) {
                             Image(systemName: "xmark")
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.system(size: DS.Icon.m, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
                         .buttonStyle(.borderless)
@@ -66,7 +66,7 @@ extension CloudeApp {
                     let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
                     if connection.connection(for: envId)?.isAuthenticated == true {
                         showPlans = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Duration.slow) {
                             filePreviewEnvironmentId = envId
                             filePathToPreview = path
                         }
