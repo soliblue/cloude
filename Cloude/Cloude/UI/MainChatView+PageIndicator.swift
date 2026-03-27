@@ -22,7 +22,7 @@ extension MainChatView {
                 Button {
                     withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex = index }
                 } label: {
-                    windowIndicatorIcon(conversation: conversation, isActive: isActive, isStreaming: isStreaming)
+                    windowIndicatorIcon(window: window, conversation: conversation, isActive: isActive, isStreaming: isStreaming)
                         .frame(maxWidth: .infinity)
                         .contentShape(Rectangle())
                 }
@@ -34,7 +34,7 @@ extension MainChatView {
                 )
             }
 
-            if windowManager.windows.count < 5 {
+            if windowManager.windows.count < 3 {
             Divider().frame(height: DS.Icon.l)
             Button(action: addWindowWithNewChat) {
                 Image(systemName: "plus")
@@ -65,14 +65,32 @@ extension MainChatView {
     }
 
     @ViewBuilder
-    func windowIndicatorIcon(conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
+    func windowIndicatorIcon(window: ChatWindow, conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
         let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
-        let symbol = (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
-        Image(systemName: symbol)
-            .font(.system(size: DS.Icon.l, weight: weight))
-            .foregroundStyle(color)
-            .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+        let symbol: String = {
+            if window.type != .chat { return window.type.icon }
+            return (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
+        }()
+
+        VStack(spacing: DS.Spacing.xs) {
+            Image(systemName: symbol)
+                .font(.system(size: DS.Icon.l, weight: weight))
+                .foregroundStyle(color)
+                .frame(height: DS.Icon.l)
+                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+            Text({
+                if window.type == .gitChanges, let path = conversation?.workingDirectory, let stats = gitStats[path] {
+                    return "+\(stats.additions) -\(stats.deletions)"
+                }
+                if window.type != .chat { return window.type.label }
+                let name = conversation?.name ?? "New Chat"
+                return name.count > 9 ? String(name.prefix(9)) + ".." : name
+            }())
+                .font(.system(size: DS.Text.s, weight: weight))
+                .foregroundStyle(color)
+                .lineLimit(1)
+        }
     }
 }

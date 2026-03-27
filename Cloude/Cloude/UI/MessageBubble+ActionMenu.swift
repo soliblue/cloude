@@ -38,55 +38,51 @@ struct BubbleInteractionModifier: ViewModifier {
     @State private var showInfo = false
 
     func body(content: Content) -> some View {
-        if isLive {
-            content
-        } else {
-            content
-                .sheet(isPresented: $showTextSelection) {
-                    TextSelectionSheet(text: effectiveText)
+        content
+            .sheet(isPresented: $showTextSelection) {
+                TextSelectionSheet(text: effectiveText)
+            }
+            .sheet(isPresented: $showInfo) {
+                MessageInfoSheet(message: message)
+            }
+            .contextMenu(isLive ? nil : ContextMenu {
+                Button {
+                    CopyFeedback.perform(effectiveText, showToast: $showCopiedToast)
+                } label: {
+                    Label("Copy", systemImage: "doc.on.doc")
                 }
-                .sheet(isPresented: $showInfo) {
-                    MessageInfoSheet(message: message)
-                }
-                .contextMenu {
+
+                if !message.text.isEmpty {
                     Button {
-                        CopyFeedback.perform(effectiveText, showToast: $showCopiedToast)
+                        showTextSelection = true
                     } label: {
-                        Label("Copy", systemImage: "doc.on.doc")
-                    }
-
-                    if !message.text.isEmpty {
-                        Button {
-                            showTextSelection = true
-                        } label: {
-                            Label("Select Text", systemImage: "text.cursor")
-                        }
-                    }
-
-                    if !message.isUser && !message.text.isEmpty {
-                        Button {
-                            onToggleCollapse?()
-                        } label: {
-                            Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
-                        }
-                    }
-
-                    if let onRefresh, !message.isUser {
-                        Button {
-                            onRefresh()
-                        } label: {
-                            Label("Refresh", systemImage: "arrow.clockwise")
-                        }
-                        .disabled(isRefreshing)
-                    }
-
-                    Button {
-                        showInfo = true
-                    } label: {
-                        Label("Info", systemImage: "info.circle")
+                        Label("Select Text", systemImage: "text.cursor")
                     }
                 }
-        }
+
+                if !message.isUser && !message.text.isEmpty {
+                    Button {
+                        onToggleCollapse?()
+                    } label: {
+                        Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
+                    }
+                }
+
+                if let onRefresh, !message.isUser {
+                    Button {
+                        onRefresh()
+                    } label: {
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                    }
+                    .disabled(isRefreshing)
+                }
+
+                Button {
+                    showInfo = true
+                } label: {
+                    Label("Info", systemImage: "info.circle")
+                }
+            })
     }
 }
 

@@ -25,6 +25,7 @@ class ClaudeCodeRunner: ObservableObject {
     var pendingRunStats: (durationMs: Int, costUsd: Double, model: String?)?
     var activeModel: String?
     var accumulatedOutput = ""
+    var deltaTextCount = 0
     var lineBuffer = ""
 
     var claudePath: String {

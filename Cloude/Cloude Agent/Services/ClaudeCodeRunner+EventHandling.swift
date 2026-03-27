@@ -65,13 +65,11 @@ extension ClaudeCodeRunner {
             if let uuid = json["uuid"] as? String {
                 onMessageUUID?(uuid)
             }
+            var fullMessageText = ""
             for block in content {
                 if block["type"] as? String == "text",
                    let blockText = block["text"] as? String {
-                    if !accumulatedOutput.contains(blockText) {
-                        accumulatedOutput += blockText
-                        onOutput?(blockText)
-                    }
+                    fullMessageText += blockText
                 }
                 if block["type"] as? String == "tool_use",
                    let toolName = block["name"] as? String,
@@ -83,6 +81,12 @@ extension ClaudeCodeRunner {
                     events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolId))
                     onToolCall?(toolName, input, toolId, parentToolId, textPosition, editInfo)
                 }
+            }
+            if !fullMessageText.isEmpty && fullMessageText.count > deltaTextCount {
+                let missing = String(fullMessageText.dropFirst(deltaTextCount))
+                accumulatedOutput += missing
+                onOutput?(missing)
+                deltaTextCount = fullMessageText.count
             }
         }
     }

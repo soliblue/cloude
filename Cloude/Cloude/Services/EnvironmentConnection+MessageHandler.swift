@@ -18,7 +18,7 @@ extension EnvironmentConnection {
         case .toolResult(let id, let sum, let out, let c):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c)
         case .runStats(let ms, let cost, let m, let c):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c)
         case .missedResponse(let sid, let t, _, let tc):  handleMissedResponse(mgr, sessionId: sid, text: t, storedToolCalls: tc)
-        case .noMissedResponse(let sid):                  handleNoMissedResponse(sessionId: sid)
+        case .noMissedResponse(let sid):                  handleNoMissedResponse(mgr, sessionId: sid)
         case .sessionId(let id, let c):                   handleSessionId(mgr, id, conversationId: c)
         case .messageUUID(let uuid, let c):               handleMessageUUID(mgr, uuid, conversationId: c)
         case .directoryListing(let path, let entries):    mgr.events.send(.directoryListing(path: path, entries: entries, environmentId: environmentId))
@@ -52,9 +52,8 @@ extension EnvironmentConnection {
            let output = mgr.conversationOutputs[convId] {
             output.flushBuffer()
             output.completeExecutingTools()
-            if !output.text.isEmpty {
-                mgr.events.send(.disconnect(conversationId: convId, output: output))
-            }
+            mgr.events.send(.disconnect(conversationId: convId, output: output))
+            output.reset()
             output.isRunning = false
         }
         isConnected = false

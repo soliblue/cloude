@@ -8,17 +8,26 @@ extension CloudeApp {
         switch event {
         case .missedResponse(_, let text, _, let storedToolCalls, let interruptedConvId, let interruptedMsgId):
             let toolCalls = storedToolCalls.map { ToolCall(from: $0) }
+            let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
             if let convId = interruptedConvId,
-               let msgId = interruptedMsgId,
                let conv = conversationStore.findConversation(withId: convId) {
-                conversationStore.updateMessage(msgId, in: conv) { msg in
-                    msg.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    msg.toolCalls = toolCalls
-                    msg.wasInterrupted = false
+                if let msgId = interruptedMsgId,
+                   conv.messages.contains(where: { $0.id == msgId }) {
+                    conversationStore.updateMessage(msgId, in: conv) { msg in
+                        msg.text = trimmedText
+                        msg.toolCalls = toolCalls
+                        msg.wasInterrupted = false
+                    }
+                } else if !trimmedText.isEmpty,
+                          !conv.messages.contains(where: { !$0.isUser && $0.text == trimmedText }) {
+                    let message = ChatMessage(isUser: false, text: trimmedText, toolCalls: toolCalls)
+                    conversationStore.addMessage(message, to: conv)
                 }
                 conversationStore.objectWillChange.send()
-            } else if let conversation = windowManager.activeWindow?.conversation(in: conversationStore) {
-                let message = ChatMessage(isUser: false, text: text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
+            } else if let conversation = windowManager.activeWindow?.conversation(in: conversationStore),
+                      !trimmedText.isEmpty,
+                      !conversation.messages.contains(where: { !$0.isUser && $0.text == trimmedText }) {
+                let message = ChatMessage(isUser: false, text: trimmedText, toolCalls: toolCalls)
                 conversationStore.addMessage(message, to: conversation)
             }
 
@@ -29,34 +38,35 @@ extension CloudeApp {
             }
 
         case .disconnect(let convId, let output):
+            let trimmedText = output.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let hasContent = !trimmedText.isEmpty || !output.toolCalls.isEmpty
+            var interruptedMessageId: UUID?
+
             if let liveId = output.liveMessageId, let conv = conversationStore.findConversation(withId: convId) {
-                if !output.text.isEmpty || !output.toolCalls.isEmpty {
+                if hasContent {
                     conversationStore.updateMessage(liveId, in: conv) { msg in
-                        msg.text = output.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                        msg.text = trimmedText
                         msg.toolCalls = output.toolCalls
                         msg.wasInterrupted = true
                     }
-                    if let sessionId = output.newSessionId,
-                       let envConn = connection.connectionForConversation(convId) {
-                        envConn.interruptedSession = (convId, sessionId, liveId)
-                    }
+                    interruptedMessageId = liveId
                 } else {
                     conversationStore.removeMessage(liveId, from: conv)
                 }
-                output.reset()
-            } else if !output.text.isEmpty, let conv = conversationStore.findConversation(withId: convId) {
+            } else if hasContent, let conv = conversationStore.findConversation(withId: convId) {
                 let message = ChatMessage(
                     isUser: false,
-                    text: output.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                    text: trimmedText,
                     toolCalls: output.toolCalls,
                     wasInterrupted: true
                 )
                 conversationStore.addMessage(message, to: conv)
-                if let sessionId = output.newSessionId,
-                   let envConn = connection.connectionForConversation(convId) {
-                    envConn.interruptedSession = (convId, sessionId, message.id)
-                }
-                output.reset()
+                interruptedMessageId = message.id
+            }
+
+            if let sessionId = output.newSessionId,
+               let envConn = connection.connectionForConversation(convId) {
+                envConn.interruptedSession = (convId, sessionId, interruptedMessageId ?? UUID())
             }
 
         case .memories(let sections):

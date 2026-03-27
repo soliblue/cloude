@@ -24,6 +24,7 @@ extension ClaudeCodeRunner {
         errorPipe = nil
         isRunning = false
         accumulatedOutput = ""
+        deltaTextCount = 0
         lineBuffer = ""
 
         if let stats = pendingRunStats {
@@ -45,6 +46,7 @@ extension ClaudeCodeRunner {
         isRunning = false
         activeModel = nil
         accumulatedOutput = ""
+        deltaTextCount = 0
         lineBuffer = ""
         pendingRunStats = nil
 
@@ -78,6 +80,7 @@ extension ClaudeCodeRunner {
                let delta = cb.json["delta"] as? [String: Any],
                let deltaText = delta["text"] as? String {
                 accumulatedOutput += deltaText
+                deltaTextCount += deltaText.count
                 events.send(.output(deltaText))
                 onOutput?(deltaText)
             }

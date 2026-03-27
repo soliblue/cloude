@@ -39,10 +39,12 @@ extension MainChatView {
             fileSearchResults = files
 
         case .gitStatus(let path, let status, _):
-            // MainChatView only uses this to annotate known working directories with their branch.
             if gitBranches[path] == nil, !status.branch.isEmpty {
                 gitBranches[path] = status.branch
             }
+            let adds = status.files.compactMap(\.additions).reduce(0, +)
+            let dels = status.files.compactMap(\.deletions).reduce(0, +)
+            gitStats[path] = (adds, dels)
             if let idx = pendingGitChecks.firstIndex(of: path) {
                 pendingGitChecks.remove(at: idx)
             }

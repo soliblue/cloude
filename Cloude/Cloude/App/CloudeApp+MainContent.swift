@@ -122,11 +122,9 @@ extension CloudeApp {
             } else if newPhase == .active {
                 connection.endBackgroundStreaming()
                 if wasBackgrounded {
-                    connection.clearAllRunningStates()
-                }
-                connection.reconnectAll()
-                if wasBackgrounded, let sessionId = lastActiveSessionId {
-                    connection.requestMissedResponse(sessionId: sessionId)
+                    connection.handleForegroundTransition()
+                } else {
+                    connection.reconnectAll()
                 }
                 wasBackgrounded = false
             }

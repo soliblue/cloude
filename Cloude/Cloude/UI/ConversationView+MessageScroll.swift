@@ -39,12 +39,6 @@ extension ChatMessageList {
                 isInitialLoad = false
             }
         }
-        .onChange(of: messages.last?.id) { _, _ in
-            Task { @MainActor in
-                await Task.yield()
-                scrollPos.scrollTo(edge: .bottom)
-            }
-        }
         .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
             if case .historySync = event { refreshingMessageId = nil }
             if case .historySyncError = event { refreshingMessageId = nil }

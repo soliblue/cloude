@@ -24,11 +24,14 @@ extension EnvironmentConnection {
         if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
             ensureLiveMessage(mgr, convId: convId)
             let out = mgr.output(for: convId)
+            out.completeTopLevelExecutingTools()
             out.appendText(text)
             ensureRunning(out, convId: convId)
         } else if let convId = runningConversationId {
             ensureLiveMessage(mgr, convId: convId)
-            mgr.output(for: convId).appendText(text)
+            let out = mgr.output(for: convId)
+            out.completeTopLevelExecutingTools()
+            out.appendText(text)
         }
     }
 
@@ -84,6 +87,9 @@ extension EnvironmentConnection {
         ensureLiveMessage(mgr, convId: convId)
         let out = mgr.output(for: convId)
         ensureRunning(out, convId: convId)
+        if parentToolId == nil {
+            out.completeTopLevelExecutingTools()
+        }
         let currentTextLength = out.fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
         out.toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
@@ -113,23 +119,25 @@ extension EnvironmentConnection {
     func handleMissedResponse(_ mgr: ConnectionManager, sessionId: String, text: String, storedToolCalls: [StoredToolCall]) {
         var interruptedConvId: UUID?
         var interruptedMsgId: UUID?
-        let toolCalls = storedToolCalls.map { ToolCall(from: $0) }
         if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
             interruptedConvId = interrupted.conversationId
             interruptedMsgId = interrupted.messageId
-            let missedOutput = mgr.output(for: interrupted.conversationId)
-            missedOutput.fullText = text
-            missedOutput.text = text
-            missedOutput.toolCalls = toolCalls
-            missedOutput.isRunning = false
             interruptedSession = nil
         }
         mgr.events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: storedToolCalls, interruptedConversationId: interruptedConvId, interruptedMessageId: interruptedMsgId))
+        if let convId = interruptedConvId {
+            let output = mgr.output(for: convId)
+            output.reset()
+            output.isRunning = false
+        }
     }
 
-    func handleNoMissedResponse(sessionId: String) {
+    func handleNoMissedResponse(_ mgr: ConnectionManager, sessionId: String) {
         if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
             interruptedSession = nil
+            let output = mgr.output(for: interrupted.conversationId)
+            output.reset()
+            output.isRunning = false
         }
     }
 

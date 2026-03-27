@@ -109,15 +109,14 @@ class ConnectionManager: ObservableObject {
         conversationEnvironments[conversationId] = environmentId
     }
 
-    func clearAllRunningStates() {
-        for output in conversationOutputs.values {
-            output.completeExecutingTools()
-            output.isRunning = false
-            output.isCompacting = false
-        }
+    func handleForegroundTransition() {
         for conn in connections.values {
-            conn.agentState = .idle
-            conn.runningConversationId = nil
+            if conn.runningConversationId != nil {
+                conn.handleDisconnect()
+            }
+            if conn.hasCredentials {
+                conn.reconnect()
+            }
         }
     }
 
