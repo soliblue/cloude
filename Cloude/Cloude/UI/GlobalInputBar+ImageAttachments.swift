@@ -51,7 +51,6 @@ struct ImageAttachmentPill: View {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: DS.Icon.m))
                     .foregroundStyle(.white)
-                    .background(Circle().fill(Color.black.opacity(DS.Opacity.half)).frame(width: DS.Size.s, height: DS.Size.s))
             }
             .offset(x: DS.Spacing.xs, y: -DS.Spacing.xs)
 

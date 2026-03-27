@@ -67,7 +67,7 @@ extension WhiteboardSheet {
                 .fill(Color.accentColor.opacity(DS.Opacity.light))
                 .frame(width: frame.width + DS.Spacing.l, height: frame.height + DS.Spacing.l)
             RoundedRectangle(cornerRadius: DS.Radius.m)
-                .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: DS.Stroke.thick, dash: [DS.Size.xxs, DS.Spacing.xs]))
+                .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: DS.Stroke.thick, dash: [6, 4]))
                 .frame(width: frame.width + DS.Spacing.l, height: frame.height + DS.Spacing.l)
             Text("From")
                 .font(.system(size: DS.Text.s, weight: .semibold))

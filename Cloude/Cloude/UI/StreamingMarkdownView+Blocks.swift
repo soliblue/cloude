@@ -38,14 +38,14 @@ struct CodeBlock: View {
                     .foregroundStyle(.secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
-            Divider().frame(height: DS.Size.s)
+            Divider().frame(height: DS.Text.s)
             Button { wrapOverride = !wrap } label: {
                 Image(systemName: wrap ? "text.word.spacing" : "arrow.left.and.right.text.vertical")
                     .font(.system(size: DS.Text.s))
                     .foregroundStyle(.secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
-            Divider().frame(height: DS.Size.s)
+            Divider().frame(height: DS.Text.s)
             Button {
                 UIPasteboard.general.string = code
                 copied = true

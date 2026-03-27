@@ -15,7 +15,7 @@ extension FilePreviewView {
                             Text("\(num)")
                                 .font(.system(size: DS.Text.s, design: .monospaced))
                                 .foregroundStyle(.tertiary)
-                                .frame(height: DS.Size.s)
+                                .frame(height: DS.Text.s)
                         }
                     }
                     .padding(.leading, DS.Spacing.m)

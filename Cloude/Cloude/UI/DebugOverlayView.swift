@@ -35,7 +35,7 @@ struct DebugOverlayView: View {
         HStack(spacing: DS.Spacing.s) {
             Circle()
                 .fill(fpsColor)
-                .frame(width: DS.Size.xxs, height: DS.Size.xxs)
+                .frame(width: DS.Text.s, height: DS.Text.s)
             Text("\(metrics.fps)fps")
                 .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
         }

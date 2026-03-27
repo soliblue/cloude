@@ -91,7 +91,7 @@ extension UsageStatsSheet {
                             .fill(modelColor(model.name))
                             .frame(width: max(DS.Spacing.xs, geo.size.width * fraction))
                     }
-                    .frame(height: DS.Size.s)
+                    .frame(height: DS.Text.s)
 
                     Text(formatNumber(model.tokens.outputTokens))
                         .font(.system(size: DS.Text.s, design: .monospaced))
