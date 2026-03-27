@@ -50,7 +50,7 @@ struct FunctionPlotWidget: View {
                 .foregroundColor(.primary)
 
             chart
-                .frame(height: DS.Size.chart)
+                .frame(height: DS.Size.xxl)
 
             ForEach(paramDefs, id: \.name) { param in
                 paramSlider(param)
@@ -102,7 +102,7 @@ struct FunctionPlotWidget: View {
             Text(param.name)
                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
                 .foregroundColor(.secondary)
-                .frame(width: DS.Size.divider, alignment: .trailing)
+                .frame(width: DS.Icon.l, alignment: .trailing)
 
             Slider(
                 value: Binding(
@@ -117,7 +117,7 @@ struct FunctionPlotWidget: View {
             Text(String(format: "%.2f", paramValues[param.name] ?? param.value))
                 .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundColor(.secondary)
-                .frame(width: DS.Size.tap, alignment: .trailing)
+                .frame(width: DS.Size.xl, alignment: .trailing)
         }
     }
 }

@@ -28,7 +28,7 @@ struct ImageCarouselWidget: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .automatic))
-                .frame(height: DS.Size.chart)
+                .frame(height: DS.Size.xxl)
             }
         }
         .sheet(item: $previewPath) { path in
@@ -51,12 +51,12 @@ struct ImageCarouselWidget: View {
                         case .failure:
                             placeholderView(icon: "exclamationmark.triangle")
                         default:
-                            ProgressView().frame(maxWidth: .infinity, minHeight: DS.Size.chart * 0.6)
+                            ProgressView().frame(maxWidth: .infinity, minHeight: DS.Size.xxl * 0.6)
                         }
                     }
                 }
             }
-            .frame(maxHeight: DS.Size.chart * 1.5)
+            .frame(maxHeight: DS.Size.xxl * 1.5)
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
             .onTapGesture {
                 if let path = image.path {
@@ -78,7 +78,7 @@ struct ImageCarouselWidget: View {
         Image(systemName: icon)
             .font(.system(size: DS.Icon.l))
             .foregroundColor(.secondary)
-            .frame(maxWidth: .infinity, minHeight: DS.Size.chart * 0.6)
+            .frame(maxWidth: .infinity, minHeight: DS.Size.xxl * 0.6)
             .background(Color.themeSecondary.opacity(DS.Opacity.strong))
     }
 }
@@ -98,12 +98,12 @@ struct FileImageView: View {
                     .aspectRatio(contentMode: .fit)
             } else if isLoading {
                 ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: DS.Size.chart * 0.6)
+                    .frame(maxWidth: .infinity, minHeight: DS.Size.xxl * 0.6)
             } else {
                 Image(systemName: "photo")
                     .font(.system(size: DS.Icon.l))
                     .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: DS.Size.chart * 0.6)
+                    .frame(maxWidth: .infinity, minHeight: DS.Size.xxl * 0.6)
                     .background(Color.themeSecondary.opacity(DS.Opacity.strong))
             }
         }

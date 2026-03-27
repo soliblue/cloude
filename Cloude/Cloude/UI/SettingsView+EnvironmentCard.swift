@@ -31,7 +31,7 @@ struct EnvironmentCard: View {
                 Image(systemName: env.symbol)
                     .font(.system(size: DS.Icon.l))
                     .foregroundColor(.accentColor)
-                    .frame(width: DS.Size.button, height: DS.Size.button)
+                    .frame(width: DS.Size.l, height: DS.Size.l)
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $showSymbolPicker, onDismiss: { onUpdate(env) }) {
@@ -60,7 +60,7 @@ struct EnvironmentCard: View {
                     Button("Delete", role: .destructive, action: onDelete)
                 }
 
-                Divider().frame(height: DS.Size.divider)
+                Divider().frame(height: DS.Icon.m)
             }
 
             Button(action: {

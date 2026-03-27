@@ -83,7 +83,7 @@ private struct JSONNodeView: View {
                 Image(systemName: expanded ? "chevron.down" : "chevron.right")
                     .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
-                    .frame(width: DS.Size.glyph)
+                    .frame(width: DS.Size.s)
                 if let key = key, depth > 0 {
                     Text("\(key):")
                         .foregroundColor(.primary)
@@ -108,7 +108,7 @@ private struct JSONNodeView: View {
             .padding(.leading, DS.Spacing.l)
 
             HStack(spacing: DS.Spacing.xs) {
-                Spacer().frame(width: DS.Size.glyph)
+                Spacer().frame(width: DS.Size.s)
                 Text(closeBrace)
                     .font(.system(size: DS.Text.s, design: .monospaced))
                     .foregroundColor(.secondary)
@@ -120,7 +120,7 @@ private struct JSONNodeView: View {
     @ViewBuilder
     private func leafRow<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         HStack(spacing: DS.Spacing.xs) {
-            Spacer().frame(width: DS.Size.glyph)
+            Spacer().frame(width: DS.Size.s)
             if let key = key, depth > 0 {
                 Text("\(key):")
                     .foregroundColor(.primary)

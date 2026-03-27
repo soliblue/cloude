@@ -14,7 +14,7 @@ struct MessageImageThumbnails: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: DS.Size.button, height: DS.Size.button)
+                            .frame(width: DS.Size.l, height: DS.Size.l)
                             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
                     }
                 }
@@ -25,7 +25,7 @@ struct MessageImageThumbnails: View {
             Image(uiImage: uiImage)
                 .resizable()
                 .scaledToFill()
-                .frame(width: DS.Size.button, height: DS.Size.button)
+                .frame(width: DS.Size.l, height: DS.Size.l)
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.s))
         }
     }

@@ -76,7 +76,7 @@ extension MainChatView {
                     .foregroundStyle(color)
                     .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             } else {
-                let size: CGFloat = isActive || isStreaming ? DS.Spacing.l : DS.Size.dot
+                let size: CGFloat = isActive || isStreaming ? DS.Spacing.l : DS.Size.xs
                 Circle()
                     .fill(color.opacity(isActive || isStreaming ? 1.0 : DS.Opacity.strong))
                     .frame(width: size, height: size)

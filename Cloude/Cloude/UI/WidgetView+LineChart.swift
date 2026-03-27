@@ -40,7 +40,7 @@ struct LineChartWidget: View {
                         .lineStyle(StrokeStyle(lineWidth: DS.Stroke.thick))
                     }
                     .symbol(Circle().strokeBorder(lineWidth: DS.Stroke.medium))
-                    .symbolSize(DS.Size.divider)
+                    .symbolSize(DS.Icon.l)
                 }
 
                 if let selectedX {
@@ -52,7 +52,7 @@ struct LineChartWidget: View {
                         }
                 }
             }
-            .frame(height: DS.Size.chart)
+            .frame(height: DS.Size.xxl)
             .chartXAxis {
                 AxisMarks { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))
@@ -116,7 +116,7 @@ struct LineChartWidget: View {
                     HStack(spacing: DS.Spacing.xs) {
                         Circle()
                             .fill(colors[lineIdx % colors.count])
-                            .frame(width: DS.Size.pip, height: DS.Size.pip)
+                            .frame(width: DS.Size.xxs, height: DS.Size.xxs)
                         Text(closest.y.formatted())
                             .font(.system(size: DS.Text.s, design: .monospaced))
                             .foregroundColor(.secondary)

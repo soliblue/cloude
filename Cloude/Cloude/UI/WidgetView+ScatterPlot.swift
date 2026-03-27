@@ -50,7 +50,7 @@ struct ScatterPlotWidget: View {
                     }
                 }
             }
-            .frame(height: DS.Size.chart)
+            .frame(height: DS.Size.xxl)
             .chartXAxis {
                 AxisMarks { _ in
                     AxisGridLine().foregroundStyle(Color.secondary.opacity(DS.Opacity.medium))

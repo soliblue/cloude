@@ -35,7 +35,7 @@ struct DebugOverlayView: View {
         HStack(spacing: DS.Spacing.s) {
             Circle()
                 .fill(fpsColor)
-                .frame(width: DS.Size.pip, height: DS.Size.pip)
+                .frame(width: DS.Size.xxs, height: DS.Size.xxs)
             Text("\(metrics.fps)fps")
                 .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
         }
@@ -79,7 +79,7 @@ struct DebugOverlayView: View {
             }
         }
         .padding(DS.Spacing.m)
-        .frame(width: DS.Size.chart * 0.8)
+        .frame(width: DS.Size.xxl * 0.8)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
@@ -157,7 +157,7 @@ struct DebugOverlayView: View {
             }
         }
         .padding(DS.Spacing.m)
-        .frame(width: DS.Size.chart * 1.6, height: DS.Size.chart * 2)
+        .frame(width: DS.Size.xxl * 1.6, height: DS.Size.xxl * 2)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
@@ -189,7 +189,7 @@ struct DebugOverlayView: View {
                 Text(Self.timeFormatter.string(from: entry.time))
                     .foregroundColor(.secondary)
             }
-            .frame(width: DS.Size.field, alignment: .leading)
+            .frame(width: DS.Size.xl, alignment: .leading)
 
             Text(entry.message)
                 .foregroundColor(.primary)

@@ -12,7 +12,7 @@ struct LockScreenView: View {
             Image("logo-transparent")
                 .resizable()
                 .scaledToFit()
-                .frame(width: DS.Size.chart / 2, height: DS.Size.chart / 2)
+                .frame(width: DS.Size.xxl / 2, height: DS.Size.xxl / 2)
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
                 .shadow(color: .black.opacity(DS.Opacity.subtle), radius: DS.Shadow.radiusL, y: DS.Shadow.offsetL)
 

@@ -35,7 +35,7 @@ extension WhiteboardSheet {
                     }
                     .disabled(!isConnected)
 
-                    Divider().frame(height: DS.Size.divider)
+                    Divider().frame(height: DS.Icon.m)
                 }
 
                 Button(action: { exportAsImage() }) {
@@ -44,7 +44,7 @@ extension WhiteboardSheet {
                         .foregroundColor(.primary)
                 }
 
-                Divider().frame(height: DS.Size.divider)
+                Divider().frame(height: DS.Icon.m)
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
@@ -108,7 +108,7 @@ extension WhiteboardSheet {
         }) {
             Image(systemName: icon)
                 .font(.system(size: DS.Icon.m))
-                .frame(width: DS.Size.tap, height: DS.Size.button)
+                .frame(width: DS.Size.xl, height: DS.Size.l)
                 .background(store.activeTool == tool ? Color.accentColor.opacity(DS.Opacity.medium) : Color.clear)
                 .cornerRadius(DS.Radius.m)
                 .foregroundColor(store.activeTool == tool ? .accentColor : .primary.opacity(DS.Opacity.heavy))

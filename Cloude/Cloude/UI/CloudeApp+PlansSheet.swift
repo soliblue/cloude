@@ -84,7 +84,7 @@ struct PlansSheet: View {
                     HStack(spacing: DS.Spacing.m) {
                         ForEach(Array(stagesWithCounts.enumerated()), id: \.element.0) { i, item in
                             if i > 0 {
-                                Divider().frame(height: DS.Size.divider)
+                                Divider().frame(height: DS.Icon.m)
                             }
                             Button(action: { withAnimation(.easeInOut(duration: DS.Duration.quick)) { selectedStage = item.0 } }) {
                                 Image(systemName: stageIcon(item.0))
@@ -102,12 +102,12 @@ struct PlansSheet: View {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: DS.Icon.s, weight: .medium))
                                 .foregroundColor(.secondary)
-                            Divider().frame(height: DS.Size.divider)
+                            Divider().frame(height: DS.Icon.m)
                         }
                         if isLoading && !stages.isEmpty {
                             ProgressView()
                                 .controlSize(.small)
-                            Divider().frame(height: DS.Size.divider)
+                            Divider().frame(height: DS.Icon.m)
                         }
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")

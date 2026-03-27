@@ -17,7 +17,7 @@ extension WhiteboardSheet {
     @MainActor
     static func renderToImage(store: WhiteboardStore) -> UIImage? {
         let sheet = WhiteboardSheet(store: store)
-        let size = CGSize(width: DS.Size.chart * 5, height: DS.Size.chart * 5)
+        let size = CGSize(width: DS.Size.xxl * 5, height: DS.Size.xxl * 5)
         let canvas = Canvas { context, canvasSize in
             context.fill(Path(CGRect(origin: .zero, size: canvasSize)), with: .color(Color.themeBackground))
 

@@ -37,7 +37,7 @@ struct TreeWidget: View {
                 HStack(spacing: 0) {
                     Rectangle()
                         .fill(Color.secondary.opacity(DS.Opacity.medium))
-                        .frame(width: DS.Size.dot, height: 1)
+                        .frame(width: DS.Size.xs, height: 1)
                         .padding(.top, DS.Spacing.s)
                     Spacer(minLength: 3)
                 }
@@ -47,7 +47,7 @@ struct TreeWidget: View {
             Image(systemName: node.icon)
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(node.iconColor)
-                .frame(width: DS.Size.glyph)
+                .frame(width: DS.Size.s)
                 .padding(.top, DS.Spacing.xs)
 
             Spacer().frame(width: DS.Spacing.xs)

@@ -52,7 +52,7 @@ extension ToolDetailSheet {
                         Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
                             .font(.system(size: DS.Text.m, weight: .medium))
                             .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
-                            .frame(width: DS.Size.divider)
+                            .frame(width: DS.Icon.l)
 
                         Text(todo["content"] ?? "")
                             .font(.system(size: DS.Text.m))
@@ -86,7 +86,7 @@ extension ToolDetailSheet {
                             Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
                                 .font(.system(size: DS.Text.m, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
-                                .frame(width: DS.Size.divider)
+                                .frame(width: DS.Icon.l)
                                 .padding(.top, DS.Spacing.xs)
 
                             Text(chained.command)

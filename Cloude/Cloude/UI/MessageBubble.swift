@@ -103,7 +103,7 @@ struct MessageBubble: View {
             .overlay(alignment: .bottom) {
                 if message.isCollapsed {
                     LinearGradient(colors: [backgroundColor.opacity(0), backgroundColor], startPoint: .top, endPoint: .bottom)
-                        .frame(height: DS.Size.tap)
+                        .frame(height: DS.Size.xl)
                 }
             }
 

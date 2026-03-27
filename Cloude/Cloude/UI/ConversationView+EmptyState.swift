@@ -65,12 +65,12 @@ struct EmptyConversationView: View {
 
             if Self.animatedCharacters.contains(character) {
                 AnimatedGIFView(name: "\(character)-anim", playOnce: true)
-                    .frame(width: DS.Size.chart / 2, height: DS.Size.chart / 2)
+                    .frame(width: DS.Size.xxl / 2, height: DS.Size.xxl / 2)
             } else {
                 Image(character)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: DS.Size.chart / 2, height: DS.Size.chart / 2)
+                    .frame(width: DS.Size.xxl / 2, height: DS.Size.xxl / 2)
             }
 
             if let envStore = environmentStore, let conn = connection,
@@ -129,7 +129,7 @@ struct EmptyConversationView: View {
                         Image.safeSymbol(conv.symbol ?? "bubble.left")
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
-                            .frame(width: DS.Size.divider)
+                            .frame(width: DS.Icon.l)
                         Text(conv.name)
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.primary)

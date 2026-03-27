@@ -31,17 +31,13 @@ enum DS {
 
     enum Size {
         static let hairline: CGFloat = 1
-        static let pip: CGFloat = 6
-        static let dot: CGFloat = 10
-        static let glyph: CGFloat = 14
-        static let divider: CGFloat = 20
-        static let swatch: CGFloat = 22
-        static let row: CGFloat = 28
-        static let badge: CGFloat = 34
-        static let button: CGFloat = 36
-        static let tap: CGFloat = 44
-        static let field: CGFloat = 48
-        static let chart: CGFloat = 200
+        static let xxs: CGFloat = 6
+        static let xs: CGFloat = 10
+        static let s: CGFloat = 14
+        static let m: CGFloat = 28
+        static let l: CGFloat = 36
+        static let xl: CGFloat = 44
+        static let xxl: CGFloat = 200
     }
 
     enum Scale {

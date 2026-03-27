@@ -82,7 +82,7 @@ private struct WhiteboardElementRow: View {
             Image(systemName: elementIcon(element.type))
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.accentColor)
-                .frame(width: DS.Size.divider)
+                .frame(width: DS.Icon.l)
 
             VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 HStack(spacing: DS.Spacing.xs) {

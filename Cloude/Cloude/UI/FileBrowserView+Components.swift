@@ -58,7 +58,7 @@ struct FileRow: View {
                 Image(systemName: entry.isDirectory ? "folder.fill" : fileIconName(for: entry.name))
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(entry.isDirectory ? .blue : fileIconColor(for: entry.name))
-                    .frame(width: DS.Size.row)
+                    .frame(width: DS.Size.m)
 
                 HStack {
                     Text(entry.name)

@@ -56,7 +56,7 @@ struct SymbolPickerSheet: View {
                                     }) {
                                         Image(systemName: symbol)
                                             .font(.system(size: DS.Icon.l))
-                                            .frame(width: DS.Size.tap, height: DS.Size.tap)
+                                            .frame(width: DS.Size.xl, height: DS.Size.xl)
                                             .background(selectedSymbol == symbol ? Color.accentColor.opacity(DS.Opacity.medium) : Color.clear)
                                             .cornerRadius(DS.Radius.s)
                                     }

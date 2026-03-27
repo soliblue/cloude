@@ -66,7 +66,7 @@ struct RecordingOverlayView: View {
             } else {
                 Circle()
                     .fill(Color.accentColor.opacity(DS.Opacity.full))
-                    .frame(width: DS.Size.dot, height: DS.Size.dot)
+                    .frame(width: DS.Size.xs, height: DS.Size.xs)
                     .scaleEffect(pulse ? DS.Scale.grow : DS.Scale.compact)
                     .opacity(pulse ? DS.Opacity.full : DS.Opacity.half)
 
@@ -77,7 +77,7 @@ struct RecordingOverlayView: View {
                     barCount: 7,
                     color: .accentColor.opacity(DS.Opacity.heavy),
                     barWidth: DS.Spacing.xs,
-                    maxHeight: DS.Size.row
+                    maxHeight: DS.Size.m
                 )
 
                 Spacer()

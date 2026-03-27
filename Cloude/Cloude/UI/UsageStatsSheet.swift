@@ -81,11 +81,11 @@ struct UsageStatsSheet: View {
     private var heroRow: some View {
         HStack(spacing: 0) {
             StatPill(value: formatNumber(stats.totalMessages), label: "msgs", color: .blue)
-            Divider().frame(height: DS.Size.row).padding(.horizontal, DS.Spacing.xs)
+            Divider().frame(height: DS.Size.m).padding(.horizontal, DS.Spacing.xs)
             StatPill(value: formatNumber(stats.totalSessions), label: "sessions", color: .purple)
-            Divider().frame(height: DS.Size.row).padding(.horizontal, DS.Spacing.xs)
+            Divider().frame(height: DS.Size.m).padding(.horizontal, DS.Spacing.xs)
             StatPill(value: formatNumber(totalToolCalls), label: "tools", color: .orange)
-            Divider().frame(height: DS.Size.row).padding(.horizontal, DS.Spacing.xs)
+            Divider().frame(height: DS.Size.m).padding(.horizontal, DS.Spacing.xs)
             StatPill(value: "\(daysActive)", label: "days", color: .green)
         }
         .padding(.vertical, DS.Spacing.m)

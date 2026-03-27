@@ -23,7 +23,7 @@ struct MarkdownTableView: View {
                                 isHeader: rowIndex == 0
                             )
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .frame(minWidth: DS.Size.field)
+                            .frame(minWidth: DS.Size.xl)
                             .background(rowIndex == 0 ? Color.gray.opacity(DS.Opacity.faint) : Color.clear)
                             .overlay(alignment: .leading) {
                                 if colIndex > 0 {

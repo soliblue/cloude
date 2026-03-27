@@ -19,7 +19,7 @@ extension UsageStatsSheet {
                         Image(systemName: chartModes[i].icon)
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(chartPage == i ? chartModes[i].color : .secondary.opacity(DS.Opacity.half))
-                            .frame(width: DS.Spacing.xxl, height: DS.Size.row)
+                            .frame(width: DS.Spacing.xxl, height: DS.Size.m)
                             .background(chartPage == i ? chartModes[i].color.opacity(DS.Opacity.light) : .clear)
                             .cornerRadius(DS.Radius.s)
                     }
@@ -83,7 +83,7 @@ extension UsageStatsSheet {
                     Text(model.name)
                         .font(.system(size: DS.Text.m, weight: .medium))
                         .foregroundColor(.primary)
-                        .frame(width: DS.Size.field, alignment: .leading)
+                        .frame(width: DS.Size.xl, alignment: .leading)
 
                     GeometryReader { geo in
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))
@@ -91,12 +91,12 @@ extension UsageStatsSheet {
                             .fill(modelColor(model.name))
                             .frame(width: max(DS.Spacing.xs, geo.size.width * fraction))
                     }
-                    .frame(height: DS.Size.glyph)
+                    .frame(height: DS.Size.s)
 
                     Text(formatNumber(model.tokens.outputTokens))
                         .font(.system(size: DS.Text.s, design: .monospaced))
                         .foregroundColor(.secondary)
-                        .frame(minWidth: DS.Size.button, alignment: .trailing)
+                        .frame(minWidth: DS.Size.l, alignment: .trailing)
                 }
             }
         }
@@ -120,10 +120,10 @@ extension UsageStatsSheet {
                     let height = CGFloat(count) / CGFloat(max(maxCount, 1))
                     RoundedRectangle(cornerRadius: DS.Radius.s)
                         .fill(peakColor(hour))
-                        .frame(height: max(DS.Spacing.xs, height * DS.Size.tap))
+                        .frame(height: max(DS.Spacing.xs, height * DS.Size.xl))
                 }
             }
-            .frame(height: DS.Size.field)
+            .frame(height: DS.Size.xl)
 
             HStack {
                 Text("12a").frame(maxWidth: .infinity, alignment: .leading)

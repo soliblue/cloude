@@ -43,7 +43,7 @@ struct WindowEditSheet: View {
 
                         if let conv = conversation, conv.sessionId != nil {
                             Divider()
-                                .frame(height: DS.Size.divider)
+                                .frame(height: DS.Icon.m)
 
                             Button {
                                 if let newConv = conversationStore.duplicateConversation(conv) {
@@ -57,7 +57,7 @@ struct WindowEditSheet: View {
 
                         if onRefresh != nil {
                             Divider()
-                                .frame(height: DS.Size.divider)
+                                .frame(height: DS.Icon.m)
 
                             Button {
                                 guard !isRefreshing else { return }
@@ -80,7 +80,7 @@ struct WindowEditSheet: View {
 
                         if windowManager.canRemoveWindow {
                             Divider()
-                                .frame(height: DS.Size.divider)
+                                .frame(height: DS.Icon.m)
 
                             Button {
                                 windowManager.removeWindow(window.id)

@@ -25,7 +25,7 @@ struct TimelineWidget: View {
                             Image(systemName: event.icon)
                                 .font(.system(size: DS.Text.s, weight: .bold))
                                 .foregroundColor(.white)
-                                .frame(width: DS.Size.swatch, height: DS.Size.swatch)
+                                .frame(width: DS.Size.m, height: DS.Size.m)
                                 .background(event.color, in: Circle())
 
                             if index < events.count - 1 {

@@ -41,7 +41,7 @@ struct PieChartWidget: View {
                 }
             }
             .chartAngleSelection(value: $selectedAngleValue)
-            .frame(height: DS.Size.chart)
+            .frame(height: DS.Size.xxl)
             .overlay {
                 if let idx = selectedSlice {
                     VStack(spacing: DS.Spacing.xs) {

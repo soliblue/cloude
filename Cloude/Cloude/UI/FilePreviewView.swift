@@ -90,14 +90,14 @@ struct FilePreviewView: View {
                                     .foregroundStyle(showDiff ? .accent : .primary)
                             }
                             Divider()
-                                .frame(height: DS.Size.divider)
+                                .frame(height: DS.Icon.m)
                             Button(action: { wrapCodeLines.toggle() }) {
                                 Image(systemName: wrapCodeLines ? "text.word.spacing" : "arrow.left.and.right.text.vertical")
                             }
                         }
                         if contentType.hasRenderedView && fileData != nil {
                             Divider()
-                                .frame(height: DS.Size.divider)
+                                .frame(height: DS.Icon.m)
                             Button(action: { showSource.toggle() }) {
                                 Image(systemName: showSource ? "doc.richtext" : "curlybraces")
                             }
