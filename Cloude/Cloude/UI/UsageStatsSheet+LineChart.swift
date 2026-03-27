@@ -116,9 +116,7 @@ struct InteractiveLineChart<DataPoint: Identifiable>: View {
             .frame(height: height)
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(DS.Opacity.s))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
     }
 
     private var timeRangePicker: some View {

@@ -101,9 +101,7 @@ extension UsageStatsSheet {
             }
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(DS.Opacity.s))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
     }
 
     var peakHoursSection: some View {
@@ -136,8 +134,6 @@ extension UsageStatsSheet {
             .foregroundColor(.secondary.opacity(DS.Opacity.m))
         }
         .padding(DS.Spacing.l)
-        .background(.white.opacity(DS.Opacity.s))
         .cornerRadius(DS.Radius.m)
-        .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
     }
 }
