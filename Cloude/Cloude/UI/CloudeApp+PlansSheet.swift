@@ -5,6 +5,7 @@ struct PlansSheet: View {
     let stages: [String: [PlanItem]]
     var isLoading: Bool = false
     var fromCache: Bool = false
+    var initialStage: String? = nil
     var onOpenFile: ((String) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var selectedStage = "active"
@@ -126,7 +127,9 @@ struct PlansSheet: View {
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.themeBackground)
         .onAppear {
-            if stages[selectedStage]?.isEmpty ?? true {
+            if let initial = initialStage, stageOrder.contains(initial) {
+                selectedStage = initial
+            } else if stages[selectedStage]?.isEmpty ?? true {
                 if let first = stageOrder.first(where: { !(stages[$0]?.isEmpty ?? true) }) {
                     selectedStage = first
                 }

@@ -70,6 +70,7 @@ extension CloudeApp {
                 stages: planStages,
                 isLoading: isLoadingPlans,
                 fromCache: plansFromCache,
+                initialStage: initialPlanStage,
                 onOpenFile: { path in
                     let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
                     if connection.connection(for: envId)?.isAuthenticated == true {

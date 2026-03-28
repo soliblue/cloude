@@ -39,9 +39,9 @@ struct PlanCard: View {
                                         .font(.system(size: DS.Text.s, weight: .medium))
                                         .padding(.horizontal, DS.Spacing.s)
                                         .padding(.vertical, DS.Spacing.xs)
-                                        .background(planTagColor(tag).opacity(DS.Opacity.s))
                                         .foregroundColor(planTagColor(tag).opacity(DS.Opacity.l))
                                         .clipShape(Capsule())
+                                        .glassEffect(.regular.interactive(), in: Capsule())
                                 }
                             }
                         }
@@ -61,9 +61,6 @@ struct PlanCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(DS.Spacing.l)
-            .background(.white.opacity(DS.Opacity.s))
-            .cornerRadius(DS.Radius.m)
-            .overlay(RoundedRectangle(cornerRadius: DS.Radius.m).strokeBorder(.white.opacity(DS.Opacity.s), lineWidth: DS.Stroke.s))
         }
         .buttonStyle(.plain)
     }

@@ -22,6 +22,7 @@ struct CloudeApp: App {
     @State var showPlans = false
     @State var showWhiteboard = false
     @State var planStages: [String: [PlanItem]] = [:]
+    @State var initialPlanStage: String? = nil
     @State var isLoadingPlans = false
     @State var plansFromCache = false
     @State var wasBackgrounded = false

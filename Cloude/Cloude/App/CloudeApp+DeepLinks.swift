@@ -105,6 +105,7 @@ extension CloudeApp {
             openMemories()
         case "plans":
             dismissTransientUI()
+            initialPlanStage = url.queryValue(named: "stage")
             openPlans()
         case "whiteboard":
             dismissTransientUI()
