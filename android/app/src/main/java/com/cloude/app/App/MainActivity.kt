@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Difference
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ import com.cloude.app.Services.ChatViewModel
 import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.UI.chat.ChatScreen
 import com.cloude.app.UI.chat.ConversationListSheet
+import com.cloude.app.UI.deploy.DeploySheet
 import com.cloude.app.UI.files.FileBrowserScreen
 import com.cloude.app.UI.git.GitScreen
 import com.cloude.app.UI.settings.SettingsScreen
@@ -80,6 +82,7 @@ class MainActivity : ComponentActivity() {
             var showFiles by remember { mutableStateOf(false) }
             var showGit by remember { mutableStateOf(false) }
             var showConversations by remember { mutableStateOf(false) }
+            var showDeploy by remember { mutableStateOf(false) }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
             val conversation by chatViewModel.conversation.collectAsState()
 
@@ -130,6 +133,13 @@ class MainActivity : ComponentActivity() {
                             },
                             actions = {
                                 if (!showSettings && !showFiles && !showGit) {
+                                    IconButton(onClick = { showDeploy = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.RocketLaunch,
+                                            contentDescription = "Deploy",
+                                            tint = Accent
+                                        )
+                                    }
                                     IconButton(onClick = { showGit = true }) {
                                         Icon(
                                             imageVector = Icons.Default.Difference,
@@ -193,6 +203,19 @@ class MainActivity : ComponentActivity() {
                         else -> ChatScreen(
                             viewModel = chatViewModel,
                             modifier = Modifier.padding(innerPadding)
+                        )
+                    }
+
+                    if (showDeploy) {
+                        val defaultDir = connectionManager.connection(
+                            environmentStore.activeEnvironmentId.value ?: ""
+                        )?.defaultWorkingDirectory?.collectAsState()?.value ?: "/"
+                        val envId = environmentStore.activeEnvironmentId.value ?: ""
+                        DeploySheet(
+                            connectionManager = connectionManager,
+                            environmentId = envId,
+                            workingDirectory = defaultDir,
+                            onDismiss = { showDeploy = false }
                         )
                     }
 
