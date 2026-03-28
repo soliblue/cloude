@@ -75,6 +75,7 @@ struct WhiteboardSheet: View {
             .animation(.quickTransition, value: showExportSuccess)
         }
         .background(Color.themeBackground)
+        .agenticID("whiteboard_view")
     }
 
     private var whiteboardCanvas: some View {

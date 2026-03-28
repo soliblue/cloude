@@ -5,6 +5,7 @@ extension MainChatView {
     func handleConnectionEvent(_ event: ConnectionEvent) {
         switch event {
         case .historySync(let sessionId, _), .historySyncError(let sessionId, _):
+            AppLogger.endInterval("conversation.refresh", key: conversationStore.findConversation(withSessionId: sessionId)?.id.uuidString, details: "sessionId=\(sessionId)")
             refreshingSessionIds.remove(sessionId)
 
         case .authenticated:
@@ -31,6 +32,7 @@ extension MainChatView {
 
         case .usageStats(let stats):
             guard awaitingUsageStats else { break }
+            AppLogger.endInterval("usage.open", details: "dataPoints=\(stats.dailyActivity.count)")
             awaitingUsageStats = false
             usageStats = stats
             showUsageStats = true
@@ -71,4 +73,3 @@ extension MainChatView {
         }
     }
 }
-

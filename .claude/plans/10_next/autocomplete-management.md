@@ -1,5 +1,5 @@
 # Smart Autocomplete {text.badge.star}
-<!-- priority: 7 -->
+<!-- priority: 9 -->
 <!-- tags: input, agent, relay, ui -->
 
 > AI-powered suggestions that improve over time, stored server-side per environment.

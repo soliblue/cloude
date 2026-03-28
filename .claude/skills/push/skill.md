@@ -1,71 +1,38 @@
 ---
 name: push
-description: Commit and push to git (no deploy). Use when asked to "push", "commit", or "push to git".
+description: Commit and push to git without deploying.
 user-invocable: true
-icon: arrow.up.circle.fill
-aliases: [commit, git]
+metadata:
+  icon: arrow.up.circle.fill
+  aliases: [commit, git]
 ---
 
-# Push Skill
+# Push
 
-Commit and push changes to git without deploying.
+Commit and push changes without deploying.
 
-## Security Check
+## Before Pushing
 
-**This is a PUBLIC repo. Before committing, review for:**
-- API keys, tokens, secrets, passwords
-- `.env` files or their contents
-- Personal information, private URLs
-- Keychain data, auth tokens
+Check for:
+- secrets
+- `.env` contents
+- private URLs
+- tokens or credentials
+- personal information that should not be public
 
-If unsure, ASK before committing.
+If unsure, stop and ask.
 
-## Steps
+## Workflow
 
-1. **Check testing gate**
-   ```bash
-   ls plans/30_testing/ 2>/dev/null | grep -c .md
-   ```
-   - If **5+ items** in `plans/30_testing/`, warn: "Testing queue is full (X items). Consider running /test before adding more."
-   - Don't block the push, just warn.
+1. Check testing queue size in `plans/30_testing/` and warn if it is crowded.
+2. Review changes with `git status`, `git diff --stat`, and recent commits.
+3. Stage changes.
+4. Commit with a conventional prefix.
+5. Push.
+6. If there is no matching plan, create one in `plans/30_testing/`.
 
-2. **Review changes**
-   ```bash
-   git status
-   git diff --stat
-   git log --oneline -3
-   ```
+## Rules
 
-3. **Stage all changes**
-   ```bash
-   git add .
-   ```
-
-4. **Commit** with conventional prefix (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`):
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   feat: Short description
-
-   - Details if needed
-
-   Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
-   EOF
-   )"
-   ```
-
-5. **Push**
-   ```bash
-   git push
-   ```
-
-6. **Plan ticket check**
-   After pushing, check if there's a matching plan in `plans/` for the work just committed:
-   - If no matching plan exists, create a small plan file directly in `plans/30_testing/` describing what was just pushed
-   - Every code change needs a plan ticket — this ensures nothing gets lost
-
-## Important
-
-- When invoked as a skill, push without asking for confirmation
-- If sensitive data is detected, STOP and warn — don't push
-- Include all agents' work, not just your own
-- Use `git add .` to stage everything
+- Do not push sensitive data.
+- Include all relevant work, not just your own edits.
+- Every code change should map to a plan.

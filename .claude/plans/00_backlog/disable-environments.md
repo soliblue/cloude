@@ -1,8 +1,8 @@
 # Disable Environments {power}
 <!-- priority: 5 -->
-<!-- tags: settings, connection -->
+<!-- tags: settings -->
 
-> No way to temporarily disable an environment without deleting it.
+> Allow environments to be disabled temporarily instead of only deleted.
 
 ## Problem
 No way to temporarily disable an environment without deleting it. Users may want to keep the config but not auto-connect.

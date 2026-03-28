@@ -51,6 +51,7 @@ extension FilePreviewView {
     }
 
     func loadFullQuality() {
+        AppLogger.beginInterval("file.fullQuality", key: path)
         isLoadingFullQuality = true
         loadProgress = nil
         connection.getFileFullQuality(path: path, environmentId: environmentId)
@@ -58,6 +59,7 @@ extension FilePreviewView {
 
     func loadFile() {
         if let cached = connection.fileCache.get(path) {
+            AppLogger.performanceInfo("file cache hit path=\(path)")
             fileData = cached
             if contentType.highlightLanguage != nil, let text = String(data: cached, encoding: .utf8) {
                 highlightCode(text)
@@ -67,6 +69,7 @@ extension FilePreviewView {
             return
         }
 
+        AppLogger.beginInterval("file.load", key: path)
         isLoading = true
         loadProgress = nil
         connection.getFile(path: path, environmentId: environmentId)
@@ -87,6 +90,8 @@ extension FilePreviewView {
                     isLoadingFullQuality = false
                     isTruncated = truncated
                     isThumbnail = false
+                    AppLogger.endInterval("file.load", key: filePath, details: "kind=content truncated=\(truncated)")
+                    AppLogger.endInterval("file.fullQuality", key: filePath, details: "kind=content truncated=\(truncated)")
                     if let decoded = Data(base64Encoded: data) {
                         fileData = decoded
                         if contentType.highlightLanguage != nil, let text = String(data: decoded, encoding: .utf8) {
@@ -103,6 +108,7 @@ extension FilePreviewView {
                     isLoading = false
                     isThumbnail = true
                     fullSize = size
+                    AppLogger.endInterval("file.load", key: filePath, details: "kind=thumbnail bytes=\(size)")
                     if let decoded = Data(base64Encoded: data) {
                         fileData = decoded
                     } else {
@@ -112,9 +118,12 @@ extension FilePreviewView {
                     guard p == filePath else { return }
                     directoryEntries = entries
                     isLoading = false
+                    AppLogger.endInterval("file.load", key: filePath, details: "kind=directory entries=\(entries.count)")
                 case .fileError(let message):
                     errorMessage = message
                     isLoading = false
+                    AppLogger.cancelInterval("file.load", key: filePath, reason: message)
+                    AppLogger.cancelInterval("file.fullQuality", key: filePath, reason: message)
                 default:
                     break
                 }

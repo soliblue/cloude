@@ -30,7 +30,6 @@ struct FilePreviewView: View {
     @State var browsingFolder: String?
     @State var showSource = false
     @AppStorage("wrapCodeLines") var wrapCodeLines = true
-    @AppStorage("showCodeLineNumbers") var showLineNumbers = true
     @State var chunkProgress: (current: Int, total: Int)?
 
     init(file: FileEntry, connection: ConnectionManager, environmentId: UUID? = nil, onBrowseFolder: ((String) -> Void)? = nil) {
@@ -79,6 +78,7 @@ struct FilePreviewView: View {
                         Image(systemName: "doc.text")
                             .padding(DS.Spacing.m)
                     }
+                    .agenticID("file_preview_back_to_file_button")
                 }
             }
             .toolbar {
@@ -89,11 +89,13 @@ struct FilePreviewView: View {
                                 Image(systemName: showDiff ? "doc.text" : "chevron.left.forwardslash.chevron.right")
                                     .foregroundStyle(showDiff ? .accent : .primary)
                             }
+                            .agenticID("file_preview_toggle_diff_button")
                             Divider()
                                 .frame(height: DS.Icon.m)
                             Button(action: { wrapCodeLines.toggle() }) {
                                 Image(systemName: wrapCodeLines ? "text.word.spacing" : "arrow.left.and.right.text.vertical")
                             }
+                            .agenticID("file_preview_wrap_lines_button")
                         }
                         if contentType.hasRenderedView && fileData != nil {
                             Divider()
@@ -101,6 +103,7 @@ struct FilePreviewView: View {
                             Button(action: { showSource.toggle() }) {
                                 Image(systemName: showSource ? "doc.richtext" : "curlybraces")
                             }
+                            .agenticID("file_preview_toggle_source_button")
                         }
                     }
                     .font(.system(size: DS.Icon.s, weight: .medium))
@@ -110,10 +113,12 @@ struct FilePreviewView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                     }
+                    .agenticID("file_preview_close_button")
                     .font(.system(size: DS.Icon.s, weight: .medium))
                 }
             }
         }
+        .agenticID("file_preview_view")
         .onAppear { loadFile() }
         .onReceive(connection.events) { event in
             if case let .gitDiff(_, text) = event, isDiffLoading {

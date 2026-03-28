@@ -11,7 +11,6 @@ struct MessageBubble: View {
     var liveText: String?
     var liveToolCalls: [ToolCall]?
     var onRefresh: (() -> Void)?
-    var onToggleCollapse: (() -> Void)?
     var isRefreshing: Bool = false
     var isCompact: Bool = false
     @State private var showCopiedToast = false
@@ -92,7 +91,6 @@ struct MessageBubble: View {
             hasInteractiveWidgets: hasInteractiveWidgets,
             showCopiedToast: $showCopiedToast,
             showTextSelection: $showTextSelection,
-            onToggleCollapse: onToggleCollapse,
             onRefresh: onRefresh,
             isRefreshing: isRefreshing
         ))
@@ -123,31 +121,6 @@ struct MessageBubble: View {
                 }
             }
             .font(.system(size: DS.Text.m))
-            .frame(maxHeight: message.isCollapsed ? 120 : nil, alignment: .top)
-            .modifier(ConditionalClip(isClipped: message.isCollapsed))
-            .overlay(alignment: .bottom) {
-                if message.isCollapsed {
-                    LinearGradient(colors: [backgroundColor.opacity(0), backgroundColor], startPoint: .top, endPoint: .bottom)
-                        .frame(height: DS.Size.l)
-                }
-            }
-
-            if message.isCollapsed {
-                Button {
-                    onToggleCollapse?()
-                } label: {
-                    HStack(spacing: DS.Spacing.xs) {
-                        Image(systemName: "chevron.down")
-                        Text("Show more")
-                            .font(.system(size: DS.Text.s))
-                    }
-                    .font(.system(size: DS.Text.s, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, DS.Spacing.xs)
-                }
-                .buttonStyle(.plain)
-            }
         }
     }
 

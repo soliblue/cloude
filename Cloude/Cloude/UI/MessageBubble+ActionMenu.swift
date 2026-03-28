@@ -4,17 +4,6 @@ import SwiftUI
 import UIKit
 import CloudeShared
 
-struct ConditionalClip: ViewModifier {
-    let isClipped: Bool
-    func body(content: Content) -> some View {
-        if isClipped {
-            content.clipped()
-        } else {
-            content
-        }
-    }
-}
-
 struct CopyFeedback {
     static func perform(_ text: String, showToast: Binding<Bool>) {
         ClipboardHelper.copy(text)
@@ -32,7 +21,6 @@ struct BubbleInteractionModifier: ViewModifier {
     let hasInteractiveWidgets: Bool
     @Binding var showCopiedToast: Bool
     @Binding var showTextSelection: Bool
-    let onToggleCollapse: (() -> Void)?
     var onRefresh: (() -> Void)?
     var isRefreshing: Bool = false
     @State private var showInfo = false
@@ -57,14 +45,6 @@ struct BubbleInteractionModifier: ViewModifier {
                         showTextSelection = true
                     } label: {
                         Label("Select Text", systemImage: "text.cursor")
-                    }
-                }
-
-                if !message.isUser && !message.text.isEmpty {
-                    Button {
-                        onToggleCollapse?()
-                    } label: {
-                        Label(message.isCollapsed ? "Expand" : "Collapse", systemImage: message.isCollapsed ? "chevron.down" : "chevron.up")
                     }
                 }
 

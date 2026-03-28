@@ -60,6 +60,7 @@ struct ConversationSearchSheet: View {
                                     Button { onSelect(conv) } label: {
                                         conversationRow(conv)
                                     }
+                                    .agenticID("conversation_search_result_\(conv.id.uuidString)")
                                     .buttonStyle(.plain)
 
                                     if conv.id != group.conversations.last?.id {
@@ -89,8 +90,10 @@ struct ConversationSearchSheet: View {
                             .font(.system(size: DS.Icon.s, weight: .semibold))
                             .foregroundColor(.secondary)
                     }
+                    .agenticID("conversation_search_close_button")
                 }
             }
         }
+        .agenticID("conversation_search_sheet")
     }
 }

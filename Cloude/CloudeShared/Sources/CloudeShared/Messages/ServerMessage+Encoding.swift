@@ -97,7 +97,7 @@ extension ServerMessage {
             try container.encode(sections, forKey: .sections)
         case .processList, .defaultWorkingDirectory, .skills, .historySync, .historySyncError,
              .fileChunk, .fileThumbnail, .fileSearchResults, .remoteSessionList, .messageUUID,
-             .nameSuggestion, .plans, .planDeleted, .usageStats, .terminalOutput:
+             .nameSuggestion, .plans, .planDeleted, .usageStats, .terminalOutput, .pong:
             try encodeExtendedCases(&container)
         }
     }

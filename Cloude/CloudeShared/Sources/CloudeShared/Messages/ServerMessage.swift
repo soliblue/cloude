@@ -37,8 +37,9 @@ public enum ServerMessage: Codable {
     case planDeleted(stage: String, filename: String)
     case usageStats(stats: UsageStats)
     case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
+    case pong(sentAt: Double, serverAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo, sentAt, serverAt
     }
 }

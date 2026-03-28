@@ -81,7 +81,6 @@ extension ConversationStore {
                     if merged[i].costUsd == nil { merged[i].costUsd = existing.costUsd }
                     if merged[i].imageBase64 == nil { merged[i].imageBase64 = existing.imageBase64 }
                     if merged[i].imageThumbnails == nil { merged[i].imageThumbnails = existing.imageThumbnails }
-                    merged[i].isCollapsed = existing.isCollapsed
                 }
             }
             $0.messages = merged

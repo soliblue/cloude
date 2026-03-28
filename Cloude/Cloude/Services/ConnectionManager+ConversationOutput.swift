@@ -98,6 +98,21 @@ final class ConversationOutput: ObservableObject {
         }
     }
 
+    func resetAfterLiveMessageHandoff() {
+        #if DEBUG
+        DebugMetrics.log(
+            "Stream",
+            "handoff start liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
+            "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
+            "isRunning=\(isRunning)"
+        )
+        #endif
+        liveMessageId = nil
+        DispatchQueue.main.async { [weak self] in
+            self?.clearTransientState()
+        }
+    }
+
     func reset() {
         #if DEBUG
         DebugMetrics.log(
@@ -108,6 +123,18 @@ final class ConversationOutput: ObservableObject {
         )
         #endif
         liveMessageId = nil
+        clearTransientState()
+        #if DEBUG
+        DebugMetrics.log(
+            "Stream",
+            "reset end liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
+            "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
+            "isRunning=\(isRunning)"
+        )
+        #endif
+    }
+
+    private func clearTransientState() {
         stopDraining()
         fullText = ""
         displayIndex = nil
@@ -118,14 +145,6 @@ final class ConversationOutput: ObservableObject {
         messageUUID = nil
         isCompacting = false
         skipped = false
-        #if DEBUG
-        DebugMetrics.log(
-            "Stream",
-            "reset end liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
-            "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
-            "isRunning=\(isRunning)"
-        )
-        #endif
     }
 }
 

@@ -1,8 +1,8 @@
 # Secondary Accent Color {paintpalette}
 <!-- priority: 5 -->
-<!-- tags: ui, settings -->
+<!-- tags: ui -->
 
-> Orange accent is overloaded for both active/selected and connected/status states; introduce a secondary color to distinguish them.
+> Introduce a second accent color so status and selection states are easier to distinguish.
 
 ## Problem
 Orange accent color is overloaded - used for active tabs, connected environments, power button, buttons. No visual distinction between "selected/active" and "on/connected."

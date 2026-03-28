@@ -12,6 +12,9 @@ struct DebugEntry: Identifiable {
 @MainActor
 final class DebugMetrics: ObservableObject {
     static let shared = DebugMetrics()
+    nonisolated static let logFileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("debug-metrics.log")
+    nonisolated private static let fileQueue = DispatchQueue(label: "soli.Cloude.DebugMetrics", qos: .utility)
 
     @Published var fps: Int = 0
     @Published var objectWillChangeRate: Int = 0
@@ -21,6 +24,7 @@ final class DebugMetrics: ObservableObject {
     var sources: [String] { Array(logBuffers.keys).sorted() }
 
     static func log(_ source: String, _ message: String) {
+        guard UserDefaults.standard.bool(forKey: "debugOverlayEnabled") else { return }
         let entry = DebugEntry(time: Date(), source: source, message: message)
         var buf = shared.logBuffers[source, default: []]
         buf.append(entry)
@@ -28,6 +32,8 @@ final class DebugMetrics: ObservableObject {
             buf.removeFirst(buf.count - shared.maxLogsPerSource)
         }
         shared.logBuffers[source] = buf
+        NSLog("[\(source)] \(message)")
+        shared.persist(entry)
     }
 
     func allLogs() -> [DebugEntry] {
@@ -43,6 +49,7 @@ final class DebugMetrics: ObservableObject {
 
     func clearLogs() {
         logBuffers.removeAll()
+        try? Data().write(to: Self.logFileURL)
     }
 
     private var fpsLink: CADisplayLink?
@@ -55,6 +62,20 @@ final class DebugMetrics: ObservableObject {
     private var owcCancellable: AnyCancellable?
 
     private var isRunning = false
+
+    init() {
+        let line = "\n=== Debug Session \(Self.fileTimeFormatter.string(from: Date())) ===\n"
+        if let data = line.data(using: .utf8) {
+            if !FileManager.default.fileExists(atPath: Self.logFileURL.path) {
+                FileManager.default.createFile(atPath: Self.logFileURL.path, contents: nil)
+            }
+            if let handle = try? FileHandle(forWritingTo: Self.logFileURL) {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                try? handle.close()
+            }
+        }
+    }
 
     func start(observing publisher: ObservableObjectPublisher? = nil) {
         if isRunning { return }
@@ -72,6 +93,9 @@ final class DebugMetrics: ObservableObject {
         sampleTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.objectWillChangeRate = self?.owcCount ?? 0
+                if let self {
+                    AppLogger.performanceInfo("debug sample fps=\(self.fps) owcPerSec=\(self.owcCount)")
+                }
                 self?.owcCount = 0
             }
         }
@@ -105,6 +129,33 @@ final class DebugMetrics: ObservableObject {
             fpsAccumulator = 0
         }
     }
+
+    private func persist(_ entry: DebugEntry) {
+        let line = "\(Self.lineTimeFormatter.string(from: entry.time)) [\(entry.source)] \(entry.message)\n"
+        guard let data = line.data(using: .utf8) else { return }
+        Self.fileQueue.async {
+            if !FileManager.default.fileExists(atPath: Self.logFileURL.path) {
+                FileManager.default.createFile(atPath: Self.logFileURL.path, contents: nil)
+            }
+            if let handle = try? FileHandle(forWritingTo: Self.logFileURL) {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                try? handle.close()
+            }
+        }
+    }
+
+    private static let lineTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+        return formatter
+    }()
+
+    private static let fileTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter
+    }()
 }
 
 private class FPSTarget {

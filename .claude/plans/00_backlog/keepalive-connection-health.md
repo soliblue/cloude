@@ -1,7 +1,7 @@
 # Connection Health UI {waveform.path.ecg.rectangle}
-<!-- priority: 7 -->
-<!-- tags: agent, ui -->
+<!-- priority: 5 -->
+<!-- tags: agent, settings -->
 
-> Track RTT and connection health metrics (last ping, retries) and surface in iOS Settings. Ping/pong keepalive already works — this adds the monitoring and display layer.
+> Surface connection health metrics such as RTT, retries, and last ping in the app.
 
 **Files:** `WebSocketServer.swift`, `ConnectionManager.swift`, `SettingsView.swift`

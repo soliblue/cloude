@@ -35,6 +35,7 @@ extension MainChatView {
                         windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
+                .id("\(window.id.uuidString)-\(refreshTrigger)")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .opacity(window.type == .chat ? 1 : 0)
                 .allowsHitTesting(window.type == .chat)
@@ -42,7 +43,7 @@ extension MainChatView {
                 if window.type == .files {
                     FileBrowserView(
                         connection: connection,
-                        rootPath: conversation?.workingDirectory,
+                        rootPath: window.fileBrowserRootPath ?? fileBrowserRootOverrides[window.id] ?? conversation?.workingDirectory,
                         environmentId: conversation?.environmentId
                     )
                 }
@@ -50,7 +51,7 @@ extension MainChatView {
                 if window.type == .gitChanges {
                     GitChangesView(
                         connection: connection,
-                        rootPath: conversation?.workingDirectory,
+                        rootPath: window.gitRepoRootPath ?? gitRepoRootOverrides[window.id] ?? conversation?.workingDirectory,
                         environmentId: conversation?.environmentId
                     )
                 }

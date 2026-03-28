@@ -13,6 +13,7 @@ enum ConnectionEvent {
     // Chat/session
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], interruptedConversationId: UUID?, interruptedMessageId: UUID?)
     case gitStatus(path: String, status: GitStatusInfo, environmentId: UUID?)
+    case gitStatusError(path: String, message: String, environmentId: UUID?)
     case gitDiff(path: String, diff: String)
     case disconnect(conversationId: UUID, output: ConversationOutput)
     case transcription(String)

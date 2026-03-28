@@ -70,12 +70,14 @@ extension CloudeApp {
             }
 
         case .memories(let sections):
+            AppLogger.endInterval("memories.open", details: "sections=\(sections.count)")
             memorySections = sections
             memoriesFromCache = false
             isLoadingMemories = false
             OfflineCacheService.saveMemories(sections)
 
         case .plans(let stages):
+            AppLogger.endInterval("plans.open", details: "stages=\(stages.count)")
             planStages = stages
             plansFromCache = false
             isLoadingPlans = false

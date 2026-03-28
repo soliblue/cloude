@@ -1,8 +1,8 @@
 # Skills Marketplace {storefront}
-<!-- priority: 6 -->
+<!-- priority: 9 -->
 <!-- tags: skills -->
 
-> Public GitHub-hosted marketplace for Claude Code skills, installable with one command.
+> Publish portable skills in a public marketplace that can be installed outside the Cloude repo.
 
 ## Goal
 Host a public Claude Code plugin marketplace on GitHub so anyone can install Cloude skills with one command.

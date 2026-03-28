@@ -22,8 +22,10 @@ extension ConversationStore {
 
         if let liveId = output.liveMessageId {
             if trimmedText.isEmpty && adjustedToolCalls.isEmpty {
+                AppLogger.connectionInfo("finalize live message remove convId=\(freshConv.id.uuidString) liveId=\(liveId.uuidString)")
                 removeMessage(liveId, from: freshConv)
             } else {
+                AppLogger.connectionInfo("finalize live message update convId=\(freshConv.id.uuidString) liveId=\(liveId.uuidString) chars=\(trimmedText.count) tools=\(adjustedToolCalls.count)")
                 updateMessage(liveId, in: freshConv) { msg in
                     msg.text = trimmedText
                     msg.toolCalls = adjustedToolCalls
@@ -33,7 +35,7 @@ extension ConversationStore {
                     msg.model = output.runStats?.model
                 }
             }
-            output.reset()
+            output.resetAfterLiveMessageHandoff()
         } else if !trimmedText.isEmpty {
             let isDuplicate: Bool
             if let uuid = output.messageUUID {
@@ -42,6 +44,7 @@ extension ConversationStore {
                 isDuplicate = freshConv.messages.contains { !$0.isUser && $0.text == trimmedText && abs($0.timestamp.timeIntervalSinceNow) < 5 }
             }
             if !isDuplicate {
+                AppLogger.connectionInfo("finalize assistant message add convId=\(conversation.id.uuidString) chars=\(trimmedText.count) tools=\(adjustedToolCalls.count)")
                 let message = ChatMessage(
                     isUser: false,
                     text: trimmedText,
@@ -64,6 +67,7 @@ extension ConversationStore {
 
         let pending = popPendingMessages(from: freshConv)
         guard !pending.isEmpty else { return }
+        AppLogger.connectionInfo("replay queued messages convId=\(freshConv.id.uuidString) count=\(pending.count)")
 
         for var msg in pending {
             msg.isQueued = false

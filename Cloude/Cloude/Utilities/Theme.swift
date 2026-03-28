@@ -4,13 +4,13 @@ import SwiftUI
 
 enum DS {
     enum Text {
-        static let m: CGFloat = 13
-        static let s: CGFloat = 10
+        static let m: CGFloat = 13.5
+        static let s: CGFloat = 10.5
     }
 
     enum Icon {
         static let s: CGFloat = 14
-        static let m: CGFloat = 16
+        static let m: CGFloat = 17
         static let l: CGFloat = 19
     }
 

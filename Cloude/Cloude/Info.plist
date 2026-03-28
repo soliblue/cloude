@@ -17,9 +17,7 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Cloude uses Face ID to protect your conversations</string>
-	<key>NSMicrophoneUsageDescription</key>
+<key>NSMicrophoneUsageDescription</key>
 	<string>Cloude uses the microphone for voice-to-text input</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Cloude needs photo access to attach screenshots to your conversations</string>

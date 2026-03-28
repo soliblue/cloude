@@ -18,8 +18,10 @@ struct InlineToolPill: View {
     private var isIOSControl: Bool { ToolCallLabel.isIOSControl(toolCall.name) }
     private var isWhiteboardTool: Bool { ToolCallLabel.isWhiteboardTool(toolCall.name) }
 
+    private var isInertTool: Bool { toolCall.name == "ToolSearch" }
+
     var body: some View {
-        if isIOSControl {
+        if isIOSControl || isInertTool {
             pillContent
         } else if isWhiteboardTool {
             pillContent

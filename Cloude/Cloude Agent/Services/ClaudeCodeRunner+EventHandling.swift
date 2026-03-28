@@ -71,6 +71,14 @@ extension ClaudeCodeRunner {
                    let blockText = block["text"] as? String {
                     fullMessageText += blockText
                 }
+            }
+            if !fullMessageText.isEmpty && fullMessageText.count > deltaTextCount {
+                let missing = String(fullMessageText.dropFirst(deltaTextCount))
+                accumulatedOutput += missing
+                onOutput?(missing)
+                deltaTextCount = fullMessageText.count
+            }
+            for block in content {
                 if block["type"] as? String == "tool_use",
                    let toolName = block["name"] as? String,
                    let toolId = block["id"] as? String {
@@ -81,12 +89,6 @@ extension ClaudeCodeRunner {
                     events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolId))
                     onToolCall?(toolName, input, toolId, parentToolId, textPosition, editInfo)
                 }
-            }
-            if !fullMessageText.isEmpty && fullMessageText.count > deltaTextCount {
-                let missing = String(fullMessageText.dropFirst(deltaTextCount))
-                accumulatedOutput += missing
-                onOutput?(missing)
-                deltaTextCount = fullMessageText.count
             }
         }
     }

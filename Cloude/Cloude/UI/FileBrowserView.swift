@@ -9,12 +9,21 @@ struct FileBrowserView: View {
     @State var entries: [FileEntry] = []
     @State var selectedFile: FileEntry?
     @State var isLoading = false
+    @State var pendingLoadPath: String?
 
     init(connection: ConnectionManager, rootPath: String? = nil, environmentId: UUID? = nil) {
         self.connection = connection
         self.rootPath = rootPath
         self.environmentId = environmentId
         _currentPath = State(initialValue: rootPath ?? "~")
+    }
+
+    private var defaultWorkingDirectory: String? {
+        connection.connection(for: environmentId)?.defaultWorkingDirectory?.nilIfEmpty
+    }
+
+    private var resolvedRootPath: String? {
+        rootPath?.nilIfEmpty ?? defaultWorkingDirectory
     }
 
     var body: some View {
@@ -31,11 +40,25 @@ struct FileBrowserView: View {
         .onAppear {
             loadDirectory()
         }
+        .onChange(of: rootPath) { _, newValue in
+            let nextPath = newValue ?? defaultWorkingDirectory ?? "~"
+            guard nextPath != currentPath else { return }
+            currentPath = nextPath
+            loadDirectory()
+        }
+        .onChange(of: defaultWorkingDirectory) { _, newValue in
+            guard rootPath == nil, let newValue, !newValue.isEmpty else { return }
+            guard currentPath == "~" || pendingLoadPath == "~" else { return }
+            currentPath = newValue
+            loadDirectory()
+        }
         .onReceive(connection.events) { event in
             if case let .directoryListing(path, newEntries, envId) = event, envId == environmentId {
                 currentPath = path
                 entries = newEntries
                 isLoading = false
+                AppLogger.endInterval("files.directory", key: pendingLoadPath ?? path, details: "entries=\(newEntries.count)")
+                pendingLoadPath = nil
             }
         }
     }
@@ -71,6 +94,17 @@ struct FileBrowserView: View {
     }
 
     private func loadDirectory() {
+        if currentPath == "~", let resolvedRootPath {
+            currentPath = resolvedRootPath
+        }
+        guard currentPath != "~" else {
+            pendingLoadPath = nil
+            isLoading = connection.connection(for: environmentId)?.isAuthenticated != true
+            entries = []
+            return
+        }
+        pendingLoadPath = currentPath
+        AppLogger.beginInterval("files.directory", key: currentPath)
         isLoading = true
         entries = []
         connection.listDirectory(path: currentPath, environmentId: environmentId)

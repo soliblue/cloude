@@ -1,8 +1,8 @@
 # Move Plans Directory Outside .claude/ {folder.badge.gearshape}
-<!-- priority: 5 -->
-<!-- tags: plans, agent -->
+<!-- priority: 3 -->
+<!-- tags: agent -->
 
-> Move plans out of .claude/ so Write/Edit tools work without approval prompts.
+> Move plans out of `.claude` so plan files are easier for tools to edit directly.
 
 `.claude/` is treated as sensitive by Claude Code -- Write/Edit tools always require approval there, even with explicit permission rules. Moving plans to a normal directory fixes this permanently.
 

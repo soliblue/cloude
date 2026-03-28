@@ -27,10 +27,12 @@ struct WindowTabBar: View {
                         .padding(.vertical, DS.Spacing.s)
                         .contentShape(Rectangle())
                 }
+                .agenticID("window_tab_\(type.rawValue)")
                 .buttonStyle(.plain)
             }
         }
         .padding(0)
         .background(Color.themeSecondary)
+        .agenticID("window_tab_bar")
     }
 }

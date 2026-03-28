@@ -10,6 +10,7 @@ struct GitDiffView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var diff: String?
     @State private var isLoading = false
+    @State private var pendingDiffKey: String?
 
     var body: some View {
         NavigationStack {
@@ -25,14 +26,18 @@ struct GitDiffView: View {
                         Image(systemName: "xmark")
                             .font(.system(size: DS.Icon.s, weight: .medium))
                     }
+                    .agenticID("git_diff_close_button")
                 }
             }
             .onAppear { loadDiff() }
         }
+        .agenticID("git_diff_view")
         .onReceive(connection.events) { event in
             if case let .gitDiff(_, diffText) = event {
                 diff = diffText
                 isLoading = false
+                AppLogger.endInterval("git.diff", key: pendingDiffKey ?? file.path, details: "chars=\(diffText.count)")
+                pendingDiffKey = nil
             }
         }
     }
@@ -99,6 +104,8 @@ struct GitDiffView: View {
     }
 
     private func loadDiff() {
+        pendingDiffKey = "\(repoPath)|\(file.path)|\(file.staged)"
+        AppLogger.beginInterval("git.diff", key: pendingDiffKey)
         isLoading = true
         diff = nil
         connection.gitDiff(path: repoPath, file: file.path, staged: file.staged, environmentId: environmentId)

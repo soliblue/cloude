@@ -27,6 +27,7 @@ extension GlobalInputBar {
                     .foregroundColor(isSlashCommand ? .cyan : .primary)
                     .onSubmit { if canSend { onSend() } }
                     .id("inputField")
+                    .agenticID("chat_input_field")
             }
             .font(.system(size: DS.Text.m))
             .padding(.horizontal, DS.Spacing.l)
@@ -37,8 +38,10 @@ extension GlobalInputBar {
             .opacity(1 - Double(min(horizontalSwipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.5)
 
             actionButton
+                .agenticID("chat_primary_action")
         }
         .fixedSize(horizontal: false, vertical: true)
+        .agenticID("chat_input_row")
     }
 
     func selectFile(_ file: String) {

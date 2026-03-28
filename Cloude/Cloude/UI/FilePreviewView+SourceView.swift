@@ -6,25 +6,8 @@ import CloudeShared
 extension FilePreviewView {
     @ViewBuilder
     func sourceTextView(_ text: String) -> some View {
-        let lines = text.components(separatedBy: "\n")
         ScrollView(wrapCodeLines ? [.vertical] : [.vertical, .horizontal], showsIndicators: false) {
             HStack(alignment: .top, spacing: 0) {
-                if showLineNumbers && lines.count > 1 && !wrapCodeLines {
-                    VStack(alignment: .trailing, spacing: 0) {
-                        ForEach(1...lines.count, id: \.self) { num in
-                            Text("\(num)")
-                                .font(.system(size: DS.Text.s, design: .monospaced))
-                                .foregroundStyle(.tertiary)
-                                .frame(height: DS.Text.s)
-                        }
-                    }
-                    .padding(.leading, DS.Spacing.m)
-                    .padding(.trailing, DS.Spacing.s)
-                    .padding(.top, DS.Spacing.l)
-
-                    Divider()
-                }
-
                 if let highlighted = highlightedCode {
                     Text(highlighted)
                         .font(.system(size: DS.Text.s, design: .monospaced))

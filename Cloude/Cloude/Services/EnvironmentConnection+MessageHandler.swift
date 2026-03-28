@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import CloudeShared
+import OSLog
 
 extension EnvironmentConnection {
     func handleMessage(_ text: String) {
@@ -11,9 +12,22 @@ extension EnvironmentConnection {
         switch message {
         case .output(let text, let conversationId):       handleOutput(mgr, text: text, conversationId: conversationId)
         case .status(let state, let conversationId):      handleStatus(mgr, state: state, conversationId: conversationId)
-        case .authRequired:                               authenticate()
-        case .authResult(let success, let msg):           handleAuthResult(mgr, success: success, errorMessage: msg)
-        case .error(let msg):                             handleError(mgr, msg)
+        case .authRequired:
+            AppLogger.connectionInfo("auth required envId=\(environmentId.uuidString)")
+            authenticate()
+        case .authResult(let success, let msg):
+            AppLogger.connectionInfo("auth result envId=\(environmentId.uuidString) success=\(success) message=\(msg ?? "")")
+            AppLogger.endInterval("environment.auth", key: environmentId.uuidString, details: "success=\(success)")
+            handleAuthResult(mgr, success: success, errorMessage: msg)
+        case .error(let msg):
+            AppLogger.connectionError("server error envId=\(environmentId.uuidString) message=\(msg)")
+            if let path = gitStatusInFlightPath {
+                gitStatusTimeoutTask?.cancel()
+                gitStatusInFlightPath = nil
+                mgr.events.send(.gitStatusError(path: path, message: msg, environmentId: environmentId))
+                sendNextGitStatusIfNeeded()
+            }
+            handleError(mgr, msg)
         case .toolCall(let n, let i, let t, let p, let c, let pos, let ei): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos, editInfo: ei)
         case .toolResult(let id, let sum, let out, let c):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c)
         case .runStats(let ms, let cost, let m, let c):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c)
@@ -42,12 +56,14 @@ extension EnvironmentConnection {
         case .planDeleted(let stage, let filename):       mgr.events.send(.planDeleted(stage: stage, filename: filename))
         case .usageStats(let stats):                        mgr.events.send(.usageStats(stats))
         case .terminalOutput:                                break
+        case .pong(let sentAt, _):                        latencyMs = (Date().timeIntervalSince1970 - sentAt) * 1000
         case .fileChange, .image, .gitCommitResult:       break
         }
     }
 
     func handleDisconnect() {
         guard let mgr = manager else { return }
+        AppLogger.connectionInfo("handleDisconnect envId=\(environmentId.uuidString)")
         if let convId = runningConversationId,
            let output = mgr.conversationOutputs[convId] {
             output.flushBuffer()
@@ -73,7 +89,7 @@ extension EnvironmentConnection {
     }
 
     func sendNextGitStatusIfNeeded() {
-        guard gitStatusInFlightPath == nil, !gitStatusQueue.isEmpty else { return }
+        guard isAuthenticated, gitStatusInFlightPath == nil, !gitStatusQueue.isEmpty else { return }
         let next = gitStatusQueue.removeFirst()
         gitStatusInFlightPath = next
         send(.gitStatus(path: next))

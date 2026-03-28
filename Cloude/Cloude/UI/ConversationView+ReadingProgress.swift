@@ -22,7 +22,6 @@ struct ReadingProgressView: View {
 
 struct MessageProgressTracker: ViewModifier {
     let isAssistantMessage: Bool
-    let isCollapsed: Bool
     let viewportHeight: CGFloat
 
     @State private var progress: CGFloat = 0
@@ -31,7 +30,7 @@ struct MessageProgressTracker: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .trailing) {
-                if showIndicator && isAssistantMessage && !isCollapsed {
+                if showIndicator && isAssistantMessage {
                     ReadingProgressView(progress: progress)
                         .padding(.trailing, DS.Spacing.xs)
                         .transition(.opacity)
@@ -81,7 +80,7 @@ private struct MessageVisibilityKey: PreferenceKey {
 }
 
 extension View {
-    func readingProgress(isAssistant: Bool, isCollapsed: Bool, viewportHeight: CGFloat) -> some View {
-        modifier(MessageProgressTracker(isAssistantMessage: isAssistant, isCollapsed: isCollapsed, viewportHeight: viewportHeight))
+    func readingProgress(isAssistant: Bool, viewportHeight: CGFloat) -> some View {
+        modifier(MessageProgressTracker(isAssistantMessage: isAssistant, viewportHeight: viewportHeight))
     }
 }

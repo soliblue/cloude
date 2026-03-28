@@ -12,9 +12,8 @@ extension ChatMessageList {
                 }
                 Spacer(minLength: 0)
             }
-            .frame(minHeight: scrollViewportHeight)
+            .frame(minHeight: scrollViewportHeight, alignment: .top)
         }
-        .defaultScrollAnchor(.bottom)
         .scrollPosition($scrollPos)
         .coordinateSpace(name: "chatScroll")
         .scrollContentBackground(.hidden)
@@ -57,36 +56,33 @@ extension ChatMessageList {
 
     func messageListSection(viewportHeight: CGFloat) -> some View {
         ForEach(messages) { message in
-            if let output = conversationOutput, output.liveMessageId == message.id {
+            if let output = conversationOutput {
                 ObservedMessageBubble(
                     message: message,
                     output: output,
                     skills: connection?.skills ?? [],
-                    isCompact: isCompact,
-                    onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
+                    onRefresh: message.isUser ? nil : { refreshMessage(message) },
+                    isRefreshing: refreshingMessageId == message.id,
+                    isCompact: isCompact
                 )
-                .id("\(message.id)-live")
+                .readingProgress(
+                    isAssistant: !message.isUser,
+                    viewportHeight: viewportHeight
+                )
+                .id(message.id)
             } else {
                 MessageBubble(
                     message: message,
                     skills: connection?.skills ?? [],
                     onRefresh: message.isUser ? nil : { refreshMessage(message) },
-                    onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) },
                     isRefreshing: refreshingMessageId == message.id
                 )
                 .readingProgress(
                     isAssistant: !message.isUser,
-                    isCollapsed: message.isCollapsed,
                     viewportHeight: viewportHeight
                 )
-                .id("\(message.id)-\(message.isQueued)")
+                .id(message.id)
             }
-        }
-    }
-
-    func toggleCollapse(_ message: ChatMessage) {
-        if let conversation, let store = conversationStore {
-            store.updateMessage(message.id, in: conversation) { $0.isCollapsed.toggle() }
         }
     }
 

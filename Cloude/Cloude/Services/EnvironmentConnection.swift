@@ -17,6 +17,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     @Published var defaultWorkingDirectory: String?
     @Published var skills: [Skill] = []
     @Published var chunkProgress: ChunkProgress?
+    @Published var latencyMs: Double?
 
     struct ChunkProgress: Equatable {
         let path: String

@@ -71,13 +71,3 @@ struct ParsedMemorySection: Identifiable {
         self.isExpanded = false
     }
 }
-
-struct MemoryDocument {
-    let source: MemorySource
-    var sections: [ParsedMemorySection]
-
-    init(source: MemorySource, sections: [ParsedMemorySection]) {
-        self.source = source
-        self.sections = sections
-    }
-}

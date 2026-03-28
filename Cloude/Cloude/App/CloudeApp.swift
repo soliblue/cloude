@@ -26,25 +26,20 @@ struct CloudeApp: App {
     @State var plansFromCache = false
     @State var wasBackgrounded = false
     @State var lastActiveSessionId: String? = nil
-    @State var isUnlocked = false
     @State var filePathToPreview: String? = nil
     @State var filePreviewEnvironmentId: UUID? = nil
+    @State var fileBrowserRootOverrides: [UUID: String] = [:]
+    @State var gitRepoRootOverrides: [UUID: String] = [:]
+    @State var gitDiffRequest: GitDiffRequest?
     @AppStorage("appTheme") var appThemeRaw: String = AppTheme.majorelle.rawValue
     var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
-    @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("debugOverlayEnabled") var debugOverlayEnabled = false
     let debugMetrics = DebugMetrics.shared
     @Environment(\.scenePhase) var scenePhase
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if requireBiometricAuth && !isUnlocked {
-                    LockScreenView(onUnlock: { isUnlocked = true })
-                } else {
-                    mainContent
-                }
-            }
+            mainContent
             .overlay { FullscreenColorOverlay() }
             .overlay {
                 if debugOverlayEnabled {

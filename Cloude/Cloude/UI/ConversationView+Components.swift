@@ -31,12 +31,16 @@ struct ChatMessageList: View {
         conversationOutput?.text.isEmpty ?? true
     }
 
+    private var isStreaming: Bool {
+        conversationOutput?.isRunning ?? false
+    }
+
     private var showLoadingIndicator: Bool {
-        isInitialLoad && messages.isEmpty && conversationId != nil && isOutputEmpty
+        isInitialLoad && messages.isEmpty && conversationId != nil && isOutputEmpty && !isStreaming
     }
 
     private var showEmptyState: Bool {
-        !isInitialLoad && messages.isEmpty && queuedMessages.isEmpty && isOutputEmpty && conversationId != nil
+        !isInitialLoad && messages.isEmpty && queuedMessages.isEmpty && isOutputEmpty && conversationId != nil && !isStreaming
     }
 
     private var hasRequiredDependencies: Bool {

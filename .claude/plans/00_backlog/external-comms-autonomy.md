@@ -1,8 +1,8 @@
 # External Communication Channels {envelope.arrow.triangle.branch}
-<!-- priority: 7 -->
-<!-- tags: agent, security, relay -->
+<!-- priority: 9 -->
+<!-- tags: agent -->
 
-> Cloude currently only communicates through the iOS app. No way to receive or send emails, SMS, or messages autonomously. Give Cloude external channels with sender allowlist and action restrictions.
+> Give Cloude limited external communication channels with explicit guardrails and sender restrictions.
 
 ## Desired Outcome
 Give Cloude external channels (email, SMS, messaging) with sender allowlist, action restrictions (no bash/file access from external sources), and a confirmation queue for sensitive actions. Heartbeat can check inbound and respond to trusted senders.

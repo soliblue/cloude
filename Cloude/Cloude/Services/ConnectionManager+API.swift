@@ -11,15 +11,12 @@ extension ConnectionManager {
     func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imagesBase64: [String]? = nil, filesBase64: [AttachedFilePayload]? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false, effort: String? = nil, model: String? = nil, environmentId: UUID? = nil) {
         guard let conn = connectionForSend(environmentId: environmentId, conversationId: conversationId) else { return }
         if let convId = conversationId {
+            AppLogger.beginInterval("chat.firstToken", key: convId.uuidString, details: "chars=\(message.count)")
+            AppLogger.beginInterval("chat.complete", key: convId.uuidString, details: "chars=\(message.count)")
             conn.runningConversationId = convId
             registerConversation(convId, environmentId: conn.environmentId)
             output(for: convId).reset()
             output(for: convId).isRunning = true
-            LiveActivityManager.shared.startActivity(
-                conversationId: convId,
-                conversationName: conversationName ?? "Chat",
-                conversationSymbol: conversationSymbol
-            )
         }
         let effectiveWorkingDir = workingDirectory ?? conn.defaultWorkingDirectory
         conn.send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, filesBase64: filesBase64, conversationId: conversationId?.uuidString, conversationName: conversationName, forkSession: forkSession, effort: effort, model: model))
@@ -79,5 +76,9 @@ extension ConnectionManager {
 
     func send(_ message: ClientMessage, environmentId: UUID? = nil) {
         connectionForSend(environmentId: environmentId)?.send(message)
+    }
+
+    func sendPing(environmentId: UUID? = nil) {
+        connectionForSend(environmentId: environmentId)?.send(.ping(sentAt: Date().timeIntervalSince1970))
     }
 }

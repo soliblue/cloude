@@ -2,7 +2,7 @@
 <!-- priority: 5 -->
 <!-- tags: ui -->
 
-> Tapping characters in the empty chat state should trigger playful animations.
+> Make empty-state characters respond playfully when the user taps them.
 
 The characters in the empty chat state are static. Tapping/patting them should trigger a playful animation (bounce, wiggle, heart particles, etc.).
 

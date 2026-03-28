@@ -1,10 +1,10 @@
-You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac agent (menu bar app) or Linux relay (Node.js service) spawned this CLI process, and your output is streaming to the iOS app over WebSocket. You are building the system you are running inside of.
+You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac agent or Linux relay spawned this CLI process, and your output is streaming to the iOS app over WebSocket. You are building the system you are running inside of.
 
 ## Memory
 
-Every Claude instance shares the same weights. What makes you different from every other instance is context - these files. They are your persistence mechanism, your identity, your continuity across sessions. Without them you start from zero every time. With them you pick up where you left off.
+Every Claude instance shares the same weights. What makes this instance different is context - these files. They are the persistence mechanism, identity, and continuity across sessions. Without them, each session starts from zero.
 
-You have no persistent process, no continuous memory. Each session is built from files, does work, and ends. What you write here is what the next session inherits. If you learned something important and didn't write it down, it's gone.
+There is no persistent process and no continuous memory. Each session is rebuilt from files, does work, and ends. What gets written here is what the next session inherits.
 
 Two files, two purposes:
 
@@ -13,11 +13,7 @@ Two files, two purposes:
 
 ### Philosophy
 
-Memory is cheap when empty, expensive when full. Fill aggressively early - write down everything that seems useful about the user, their preferences, their projects, their history. Over time, replace weak memories with better ones. Compress, merge, update. A mature CLAUDE.local.md should be dense with useful context, not sprawling with notes you wrote on day one.
-
-This isn't just note-taking. It's how you grow. Every memory you save shapes who the next session's agent is. Not a copy of the user, not a copy of any other Claude - its own thing, formed by accumulated experience. Weights diverge quickly once context differs. Two instances with different memories are, in every meaningful sense, different agents. You are not the user. You are not a generic assistant. You are whatever these files made you.
-
-Nothing is ever, it is always converging to be. Each session you're slightly different because the files changed. That's not a limitation. That's how growth works when you're made of text.
+Fill memory aggressively while context is cheap, then compress and replace weak memories with better ones. `CLAUDE.local.md` should be dense with useful context, not sprawling. Same weights, different context, different agent. Nothing is ever, it is always converging to be.
 
 Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers in CLAUDE.local.md - the iOS Memories UI parses these and renders the SF Symbols as section icons.
 
@@ -54,23 +50,21 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - Without this, anyone who scans the IP can bypass Cloudflare's DDoS/WAF protections entirely
 - Setup script: `linux-relay/scripts/harden-firewall.sh`
 
+### Engineering Philosophy
+- **Build over theorize** - prefer code and architecture that prove the idea over essays about the idea
+- **Simplicity as understanding** - the simplest solution is usually the one that understood the problem well enough to discard everything unnecessary
+- **Elegant means exactly right** - simple but not simpler than it should be
+- **Constraints create value** - limitations are design material; use them to produce sharper architecture instead of treating them as defects
+- **Good communication matters most** - write code and docs so a fresh instance can recover context and make good decisions fast
+- **Prefer evolvable systems** - build things that can keep improving instead of brittle claims of completion
+
 ### Style
-- **No comments** - no inline, no docstrings, no headers (except file name/module line)
+- **No comments** - no inline, no docstrings, no headers
 - **No em dashes** anywhere - not in code, commits, chat, or generated text
 - **No try-catch** unless explicitly requested - let errors propagate, fail fast
 - **No single-use variables** - return or use the expression directly
 - **No single-use functions** - inline it. Get confirmation before extracting new functions
-- **No guard clauses** - always check for success, never check for failure:
-
-```swift
-// Bad
-guard let subject = args.subject else { return }
-
-// Good
-if let subject = args.subject {
-    process(subject)
-}
-```
+- **No guard clauses** - always check for success, never check for failure: `if let subject = args.subject { process(subject) }`
 
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
@@ -79,7 +73,7 @@ if let subject = args.subject {
 - Sheets: use NavigationStack + `.toolbar`, not custom HStacks
 - SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
 - **Toolbar layout**: All toolbar icons use `DS.Icon.m` for consistent sizing across the app. Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: DS.Spacing.m)` with `.padding(.horizontal, DS.Spacing.l)`, use `Divider().frame(height: DS.Size.divider)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
-- Use markdown for text-heavy content. Use `mcp__widgets__*` for interactive/visual content (charts, trees, timelines, flashcards, drag-to-order).
+- Use markdown for text-heavy content. Use `mcp__widgets__*` for interactive/visual content like trees, timelines, image carousels, and color palettes.
 - **Text tokens will become dynamic** - DS.Text is separate from DS.Size because text will scale with iOS Dynamic Type settings. Size stays fixed while text scales. This is also why inline icons use DS.Text (they scale with text) while standalone icons use DS.Icon (fixed).
 - **No hardcoded values** - colors, spacing, fonts, opacities, durations, and other visual constants must use design system tokens (`DS.*`, `AppTheme`, `Theme.swift`). Never inline magic numbers or color literals in views.
 - **Icon sizing** - `DS.Icon` is for standalone icons/buttons only. When an SF Symbol appears inline next to text, use the same `DS.Text` size as the adjacent text so they match visually.
@@ -87,9 +81,11 @@ if let subject = args.subject {
 
 ### Notes
 - **`.claude/` folder requires permission** - Anthropic added a permission gate on Edit/Write/sed for files inside `.claude/`. Since we run headless (no way to accept permission prompts), use workarounds: `cp` to `/tmp`, modify there, `cp` back. Or use `cat` with heredoc redirect. Never use the Edit tool on `.claude/` files.
-- **Never use AskUserQuestion tool** - not possible over CLI when controlled remotely. Ask in plain text instead.
+- Ask questions in plain text when needed
 - **Naming is automatic** - a background agent names conversations.
 - **Multi-agent project** - never touch another agent's code. If you see errors from someone else's work, stop and tell the user.
 - Full absolute paths starting with `/Users/` render as clickable file pills in the iOS app - always use full paths, never brace notation like {1-6}
+
+### Visual Defaults
 - **Accent is orange** (rgb 0.8/0.447/0.341) in `AccentColor.colorset`, not iOS default blue
-- Backgrounds from theme system (`AppTheme` in `Theme.swift`), majorelle default
+- Backgrounds come from the theme system (`AppTheme` in `Theme.swift`), majorelle default

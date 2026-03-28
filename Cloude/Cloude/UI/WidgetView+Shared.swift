@@ -5,7 +5,6 @@ extension Animation {
 }
 
 extension Notification.Name {
-    static let widgetInputActive = Notification.Name("widgetInputActive")
     static let editActiveWindow = Notification.Name("editActiveWindow")
 }
 
@@ -55,63 +54,5 @@ extension WidgetHeader where Buttons == EmptyView {
         self.title = title
         self.color = color
         self.buttons = { EmptyView() }
-    }
-}
-
-struct WidgetButton: View {
-    let icon: String
-    let color: Color
-    let enabled: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button {
-            withAnimation(.quickTransition) { action() }
-        } label: {
-            Image(systemName: icon)
-                .font(.system(size: DS.Text.m, weight: .medium))
-                .foregroundColor(enabled ? color : .secondary.opacity(DS.Opacity.m))
-        }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
-    }
-}
-
-struct WidgetResultBadge: View {
-    let isCorrect: Bool
-    let correctText: String
-    let wrongText: String
-
-    init(_ isCorrect: Bool, correct: String = "Correct!", wrong: String = "Wrong answer") {
-        self.isCorrect = isCorrect
-        self.correctText = correct
-        self.wrongText = wrong
-    }
-
-    var body: some View {
-        HStack(spacing: DS.Spacing.xs) {
-            Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: DS.Text.s))
-            Text(isCorrect ? correctText : wrongText)
-                .font(.system(size: DS.Text.s, weight: .medium))
-        }
-        .foregroundColor(.secondary)
-        .frame(maxWidth: .infinity)
-    }
-}
-
-struct WidgetProgressBadge: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: DS.Spacing.xs) {
-            Image(systemName: icon)
-                .font(.system(size: DS.Text.s))
-            Text(text)
-                .font(.system(size: DS.Text.s, weight: .medium))
-        }
-        .foregroundColor(.secondary)
-        .frame(maxWidth: .infinity)
     }
 }

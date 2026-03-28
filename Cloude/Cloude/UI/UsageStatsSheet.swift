@@ -70,10 +70,12 @@ struct UsageStatsSheet: View {
                             .font(.system(size: DS.Icon.s, weight: .medium))
                             .foregroundColor(.secondary)
                     }
+                    .agenticID("usage_close_button")
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
         }
+        .agenticID("usage_sheet")
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.themeBackground)
     }

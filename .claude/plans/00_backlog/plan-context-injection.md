@@ -1,8 +1,8 @@
 # Plan Context Injection {doc.text.magnifyingglass}
-<!-- priority: 3 -->
-<!-- tags: ui, plans, chat -->
+<!-- priority: 2 -->
+<!-- tags: ui, memory -->
 
-> Search results include plan tickets — tapping a plan injects its content into the chat context.
+> Let users inject plan tickets directly into chat context from search results.
 
 ## Problem
 

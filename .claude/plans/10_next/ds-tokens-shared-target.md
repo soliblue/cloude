@@ -1,5 +1,5 @@
 # Move DS Tokens to CloudeShared {square.3.layers.3d}
-<!-- priority: 10 -->
+<!-- priority: 7 -->
 <!-- tags: refactor, agent, ui -->
 
 > DS enum lives in iOS target only — move to CloudeShared so Mac agent and LiveActivity can use tokens too.

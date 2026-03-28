@@ -2,12 +2,10 @@
 name: image
 description: Generate images using Gemini, and animate them with Veo. Use for illustrations, mockups, photos, diagrams, art, visual references, and character animations.
 user-invocable: true
-icon: paintbrush.pointed.fill
-aliases: [paint, draw, img, generate image, animate]
-parameters:
-  - name: description
-    placeholder: Describe the image or animation...
-    required: true
+metadata:
+  icon: paintbrush.pointed.fill
+  aliases: [paint, draw, img, generate image, animate]
+argument-hint: "<description>"
 ---
 
 # Image Generation Skill

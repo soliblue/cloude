@@ -82,4 +82,20 @@ class EnvironmentStore: ObservableObject {
         activeEnvironmentId = envId
         UserDefaults.standard.set(envId.uuidString, forKey: "activeEnvironmentId")
     }
+
+    func upsertEnvironment(host: String, port: UInt16, token: String, symbol: String = "desktopcomputer") -> ServerEnvironment {
+        if let index = environments.firstIndex(where: { $0.host == host && $0.port == port }) {
+            environments[index].token = token
+            environments[index].symbol = symbol
+            save()
+            setActive(environments[index].id)
+            return environments[index]
+        }
+
+        let environment = ServerEnvironment(host: host, port: port, token: token, symbol: symbol)
+        environments.append(environment)
+        save()
+        setActive(environment.id)
+        return environment
+    }
 }

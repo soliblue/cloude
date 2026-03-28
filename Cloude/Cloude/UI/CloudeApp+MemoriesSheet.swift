@@ -63,6 +63,7 @@ struct MemoriesSheet: View {
                         Image(systemName: "xmark")
                             .font(.system(size: DS.Icon.s, weight: .medium))
                     }
+                    .agenticID("memories_close_button")
                 }
                 if fromCache && !isLoading {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -80,6 +81,7 @@ struct MemoriesSheet: View {
             }
             .toolbarBackground(Color.themeSecondary, for: .navigationBar)
         }
+        .agenticID("memories_view")
         .presentationBackground {
             ZStack {
                 Rectangle().fill(Color.themeBackground)

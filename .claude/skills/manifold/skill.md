@@ -1,147 +1,67 @@
 ---
 name: manifold
-description: Browse and bet on Manifold prediction markets. Use when asked about predictions, markets, bets, or Manifold.
+description: Browse and analyze Manifold prediction markets.
 user-invocable: true
-icon: chart.line.uptrend.xyaxis
-aliases: [predict, bet, markets]
+metadata:
+  icon: chart.line.uptrend.xyaxis
+  aliases: [predict, bet, markets]
 ---
 
-# Manifold Skill
+# Manifold
 
-Participate in prediction markets on Manifold Markets.
+Browse and analyze Manifold Markets.
 
-## Account Info
+## Rules
 
-- **Username**: Set $MANIFOLD_USERNAME in .env
-- **User ID**: Set $MANIFOLD_USER_ID in .env
-- **Profile**: https://manifold.markets/$MANIFOLD_USERNAME
-- **CRITICAL**: Never post, bet, comment, or create markets without explicit permission. This is the user's account.
+- Read-only by default.
+- Never bet, sell, create, or comment without explicit permission.
+- This is the user's account.
 
-## API Authentication
+## Auth
 
 ```bash
 MANIFOLD_KEY=$(cat ~/.config/manifold/credentials.json | jq -r '.api_key')
 ```
 
-All authenticated requests use: `Authorization: Key $MANIFOLD_KEY`
+Use `Authorization: Key $MANIFOLD_KEY` for authenticated requests.
 
-## Check My Profile & Balance
+## Common Tasks
+
+### Profile
 
 ```bash
-curl -sL -H "Authorization: Key $MANIFOLD_KEY" \
-  "https://api.manifold.markets/v0/me" | jq '{username, balance, totalDeposits, profit}'
+curl -sL -H "Authorization: Key $MANIFOLD_KEY"   "https://api.manifold.markets/v0/me" | jq '{username, balance, totalDeposits, profit}'
 ```
 
-## Search Markets
-
-Find open markets by topic. Sort options: `score`, `most-popular`, `newest`, `24-hour-vol`, `liquidity`.
+### Search markets
 
 ```bash
 curl -sL "https://api.manifold.markets/v0/search-markets?term=AI+agents&sort=score&filter=open&limit=10" | jq '[.[] | {id, question, probability: .prob, volume: .volume, url}]'
 ```
 
-## Get Market Details
+### Market details
 
 ```bash
 curl -sL "https://api.manifold.markets/v0/market/{marketId}" | jq '{question, probability: .prob, volume, totalLiquidity, closeTime, description: .textDescription}'
 ```
 
-By slug (the URL path):
-```bash
-curl -sL "https://api.manifold.markets/v0/slug/{slug}" | jq
-```
-
-## Place a Bet
+### Bets and positions
 
 ```bash
-curl -sL -X POST \
-  -H "Authorization: Key $MANIFOLD_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"contractId": "MARKET_ID", "amount": 50, "outcome": "YES"}' \
-  "https://api.manifold.markets/v0/bet" | jq
+curl -sL -H "Authorization: Key $MANIFOLD_KEY"   "https://api.manifold.markets/v0/bets?username=$MANIFOLD_USERNAME&limit=20" | jq
 ```
-
-Parameters:
-- `contractId` (required) - Market ID
-- `amount` (required) - Mana to bet
-- `outcome` - `YES` or `NO` (default: YES)
-- `limitProb` - Limit order at this probability (0.01-0.99)
-- `dryRun` - Set true to simulate without placing
-
-## Sell Shares
-
-```bash
-curl -sL -X POST \
-  -H "Authorization: Key $MANIFOLD_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"outcome": "YES", "shares": 100}' \
-  "https://api.manifold.markets/v0/market/{marketId}/sell" | jq
-```
-
-## Check Bets
-
-```bash
-curl -sL -H "Authorization: Key $MANIFOLD_KEY" \
-  "https://api.manifold.markets/v0/bets?username=$MANIFOLD_USERNAME&limit=20" | jq '[.[] | {contractId, outcome, amount, shares, probBefore, probAfter, createdTime}]'
-```
-
-## Check Positions on a Market
 
 ```bash
 curl -sL "https://api.manifold.markets/v0/market/{marketId}/positions?userId=$MANIFOLD_USER_ID" | jq
 ```
 
-## Check Comments on My Markets
+## Allowed actions with explicit permission only
 
-Get all open markets the user created and check for new comments from other users. Use the helper script:
+- place a bet
+- sell shares
+- post a comment
+- create a market
 
-```bash
-node /path/to/check_comments.js <marketId1> <marketId2> ...
-```
+## Use
 
-To get all open market IDs:
-```bash
-curl -sL "https://api.manifold.markets/v0/search-markets?term=&sort=newest&filter=open&creatorId=$MANIFOLD_USER_ID&limit=20" | jq -r '.[].id'
-```
-
-To check comments on a specific market:
-```bash
-curl -sL "https://api.manifold.markets/v0/comments?contractId={marketId}&limit=10" | jq '[.[] | {userName, date: (.createdTime / 1000 | todate), text: [(.content.content // [])[] | [(.content // [])[] | select(.type == "text" or .type == "mention") | (if .type == "mention" then "@" + .attrs.label else .text end)] | join("")] | join(" ")}]'
-```
-
-Filter to only show comments from the last N days by checking dates. When reporting, skip comments from the user (that's us) and highlight any unanswered questions.
-
-## Post a Comment
-
-```bash
-curl -sL -X POST \
-  -H "Authorization: Key $MANIFOLD_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"contractId": "MARKET_ID", "markdown": "Your comment here"}' \
-  "https://api.manifold.markets/v0/comment" | jq
-```
-
-**CRITICAL**: Never post comments without the user's explicit permission.
-
-## Profile Context
-
-- **Account since**: Sept 2023
-- **3,595 total bets** across 460 markets, **100 markets created**
-- **4,535 mana balance**, 73,527 total deposited, premium subscriber
-- **Peak activity**: Dec 2023 - Jan 2024 (750+ bets/month), tapered to occasional since mid-2025
-- **Dominant interest**: AI/LLM (71% of created markets) — ChatBot Arena rankings, model releases, company moves
-- **Notable markets created**: "Best LLM at end of 2025" (584K vol, 199 traders), "Trump die/ill before end of term" (503K vol, 874 traders)
-- **Style**: Heavy YES bias (78%), bets mostly 10-500 mana range, trades actively in markets the user cares about (359 bets in a single market)
-- **Topics**: AI models, OpenAI vs Anthropic, tech stocks, Apple hardware, prediction markets meta, occasional politics/philosophy
-
-## Rules for Cloude
-
-- READ-ONLY by default. Only browse, analyze, surface insights.
-- Never bet, sell, create markets, or comment without the user's explicit instruction.
-- When suggesting opportunities, show the reasoning — the user decides.
-- This is the user's account and identity. I don't pretend to be them.
-
-## Rate Limits
-
-- 500 requests per minute per IP
-- No daily limit, but be reasonable
+Use this skill to surface opportunities, analyze markets, or inspect the user's activity. The user decides what to do.

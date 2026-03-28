@@ -65,6 +65,10 @@ extension ServerMessage {
             try container.encodeIfPresent(exitCode, forKey: .exitCode)
             try container.encode(isError, forKey: .isError)
             try container.encodeIfPresent(terminalId, forKey: .terminalId)
+        case .pong(let sentAt, let serverAt):
+            try container.encode("pong", forKey: .type)
+            try container.encode(sentAt, forKey: .sentAt)
+            try container.encode(serverAt, forKey: .serverAt)
         default:
             break
         }

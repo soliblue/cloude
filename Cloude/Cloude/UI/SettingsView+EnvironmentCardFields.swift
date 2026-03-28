@@ -11,6 +11,8 @@ extension EnvironmentCard {
                     .foregroundColor(.blue)
                     .frame(width: DS.Spacing.xl)
                 TextField("Host", text: $env.host)
+                    .font(.system(size: DS.Text.m))
+                    .textFieldStyle(.plain)
                     .textContentType(.URL)
                     .autocapitalization(.none)
                     .keyboardType(.URL)
@@ -28,6 +30,7 @@ extension EnvironmentCard {
                 TextField("Port", text: portBinding)
                     .keyboardType(.numberPad)
                     .font(.system(size: DS.Text.m, design: .monospaced))
+                    .textFieldStyle(.plain)
                     .onChange(of: env.port) { _, _ in onUpdate(env) }
             }
             .padding(.vertical, DS.Spacing.m)
@@ -44,15 +47,20 @@ extension EnvironmentCard {
                     if showToken {
                         TextField("Auth Token", text: $env.token)
                             .font(.system(size: DS.Text.m, design: .monospaced))
+                            .textFieldStyle(.plain)
                     } else {
                         SecureField("Auth Token", text: $env.token)
+                            .font(.system(size: DS.Text.m, design: .monospaced))
+                            .textFieldStyle(.plain)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .autocapitalization(.none)
                 .onChange(of: env.token) { _, _ in onUpdate(env) }
 
                 Button(action: { showToken.toggle() }) {
                     Image(systemName: showToken ? "eye.slash.fill" : "eye.fill")
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)

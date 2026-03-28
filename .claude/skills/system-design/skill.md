@@ -2,8 +2,9 @@
 name: system-design
 description: Architecture reference — core concepts, technologies, patterns, and real-world case studies. Use when designing systems, evaluating tradeoffs, or choosing technologies.
 user-invocable: true
-icon: server.rack
-aliases: [architecture, sysdesign, infra]
+metadata:
+  icon: server.rack
+  aliases: [architecture, sysdesign, infra]
 ---
 
 # System Design Reference

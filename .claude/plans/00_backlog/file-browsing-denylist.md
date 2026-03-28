@@ -1,7 +1,7 @@
 # File Browsing Denylist {folder.badge.minus}
-<!-- priority: 7 -->
+<!-- priority: 5 -->
 <!-- tags: files -->
 
-> Add path denylist for file browsing to skip `.git`, `node_modules`, `.build`, and other noisy directories. File chunking and thumbnail caching are already done.
+> Hide noisy directories from file browsing by applying a path denylist.
 
 **Files:** `FileManager.swift`

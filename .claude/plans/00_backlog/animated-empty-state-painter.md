@@ -1,8 +1,8 @@
 # Animated Empty State - Painter {paintbrush.fill}
 <!-- priority: 5 -->
-<!-- tags: ui, streaming -->
+<!-- tags: ui -->
 
-> Animate the painter pixel Claude for the empty chat state using the Veo video generation pipeline.
+> Animate the painter empty-state character so the chat start screen feels more alive.
 
 Animate the painter pixel Claude for the empty chat state, same as we did for boxer.
 

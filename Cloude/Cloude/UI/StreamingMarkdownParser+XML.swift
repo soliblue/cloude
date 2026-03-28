@@ -14,6 +14,7 @@ extension StreamingMarkdownParser {
         guard looksLikeXMLBlock(trimmed) else { return nil }
 
         let startLine = i
+        let savedIndex = i
         var xmlLines: [String] = []
 
         if trimmed.hasSuffix("/>") || isSelfClosingOneLine(trimmed) {
@@ -37,7 +38,10 @@ extension StreamingMarkdownParser {
 
         let raw = xmlLines.joined(separator: "\n")
         let nodes = XMLNode.parse(raw)
-        guard !nodes.isEmpty else { return nil }
+        if nodes.isEmpty {
+            i = savedIndex
+            return nil
+        }
         return .xml(id: "xml-L\(startLine)", nodes: nodes)
     }
 

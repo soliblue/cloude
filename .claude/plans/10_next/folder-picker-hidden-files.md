@@ -1,5 +1,5 @@
 # Folder Picker: Filter Hidden Files {eye.slash}
-<!-- priority: 10 -->
+<!-- priority: 6 -->
 <!-- tags: ui, windows -->
 
 > Filter dotfiles from the folder picker and add a show/hide toggle.

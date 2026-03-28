@@ -7,8 +7,9 @@ struct ObservedMessageBubble: View {
     let message: ChatMessage
     @ObservedObject var output: ConversationOutput
     var skills: [Skill] = []
+    var onRefresh: (() -> Void)?
+    var isRefreshing: Bool = false
     var isCompact: Bool = false
-    var onToggleCollapse: (() -> Void)?
 
     private var isLive: Bool { output.liveMessageId == message.id }
 
@@ -22,7 +23,8 @@ struct ObservedMessageBubble: View {
             liveOutput: isLive ? output : nil,
             liveText: isLive ? output.text : nil,
             liveToolCalls: isLive ? output.toolCalls : nil,
-            onToggleCollapse: onToggleCollapse,
+            onRefresh: onRefresh,
+            isRefreshing: isRefreshing,
             isCompact: isCompact
         )
     }

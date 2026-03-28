@@ -6,10 +6,8 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.majorelle.rawValue
     private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
     @State private var showThemePicker = false
-    @AppStorage("requireBiometricAuth") var requireBiometricAuth = false
     @AppStorage("debugOverlayEnabled") private var debugOverlayEnabled = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
-    @AppStorage("showCodeLineNumbers") private var showCodeLineNumbers = true
     @State var selectedEnvironmentPage: Int = 0
 
     @Environment(\.dismiss) private var dismiss
@@ -35,9 +33,11 @@ struct SettingsView: View {
                         Image(systemName: "xmark")
                             .font(.system(size: DS.Icon.s, weight: .medium))
                     }
+                    .agenticID("settings_close_button")
                 }
             }
         }
+        .agenticID("settings_view")
         .preferredColorScheme(appTheme.colorScheme)
         .onAppear {
             if let activeId = environmentStore.activeEnvironmentId,
@@ -65,6 +65,7 @@ struct SettingsView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            .agenticID("settings_theme_button")
             .foregroundColor(.primary)
             .sheet(isPresented: $showThemePicker) {
                 ThemePickerView()
@@ -72,16 +73,15 @@ struct SettingsView: View {
 
             SettingsRow(icon: "text.word.spacing", color: .cyan) {
                 Toggle("Wrap Code Lines", isOn: $wrapCodeLines)
+                    .font(.system(size: DS.Text.m))
+                    .controlSize(.regular)
             }
 
-            SettingsRow(icon: "list.number", color: .cyan) {
-                Toggle("Code Line Numbers", isOn: $showCodeLineNumbers)
-            }
-
-            securityRow
 
             SettingsRow(icon: "ant.fill", color: .orange) {
                 Toggle("Debug Overlay", isOn: $debugOverlayEnabled)
+                    .font(.system(size: DS.Text.m))
+                    .controlSize(.regular)
             }
         }
         .listRowBackground(Color.themeSecondary)

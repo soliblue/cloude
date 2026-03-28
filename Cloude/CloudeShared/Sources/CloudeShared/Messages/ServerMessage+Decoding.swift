@@ -107,6 +107,10 @@ extension ServerMessage {
         case "memories":
             let sections = try container.decode([MemorySection].self, forKey: .sections)
             return .memories(sections: sections)
+        case "pong":
+            let sentAt = try container.decode(Double.self, forKey: .sentAt)
+            let serverAt = try container.decode(Double.self, forKey: .serverAt)
+            return .pong(sentAt: sentAt, serverAt: serverAt)
         default:
             return nil
         }

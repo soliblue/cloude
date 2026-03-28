@@ -26,6 +26,7 @@ extension MainChatView {
                         .frame(maxWidth: .infinity)
                         .contentShape(Rectangle())
                 }
+                .agenticID("window_picker_\(index)")
                 .buttonStyle(.plain)
                 .simultaneousGesture(
                     LongPressGesture().onEnded { _ in
@@ -43,10 +44,14 @@ extension MainChatView {
                     .frame(maxWidth: .infinity)
                     .contentShape(Rectangle())
             }
+            .agenticID("window_add_button")
             .buttonStyle(.plain)
             }
         }
         .frame(maxWidth: .infinity)
+        .padding(.vertical, DS.Spacing.s)
+        .background(Color.themeBackground)
+        .agenticID("window_picker")
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 30)
@@ -69,9 +74,10 @@ extension MainChatView {
         let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
-        let symbol: String = {
-            if window.type != .chat { return window.type.icon }
-            return (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
+        let symbol = (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
+        let title = {
+            let name = conversation?.name ?? "New Chat"
+            return name.count > 9 ? String(name.prefix(9)) + ".." : name
         }()
 
         VStack(spacing: DS.Spacing.xs) {
@@ -80,14 +86,7 @@ extension MainChatView {
                 .foregroundStyle(color)
                 .frame(height: DS.Icon.l)
                 .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-            Text({
-                if window.type == .gitChanges, let path = conversation?.workingDirectory, let stats = gitStats[path] {
-                    return "+\(stats.additions) -\(stats.deletions)"
-                }
-                if window.type != .chat { return window.type.label }
-                let name = conversation?.name ?? "New Chat"
-                return name.count > 9 ? String(name.prefix(9)) + ".." : name
-            }())
+            Text(title)
                 .font(.system(size: DS.Text.s, weight: weight))
                 .foregroundStyle(color)
                 .lineLimit(1)

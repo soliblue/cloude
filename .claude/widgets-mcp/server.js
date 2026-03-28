@@ -9,83 +9,6 @@ const server = new Server(
 
 const tools = [
   {
-    name: "function_plot",
-    description: "Render an interactive 2D function plot with parameter sliders. User drags sliders to change parameters and see the curve update in real-time. Use for: algorithm complexity visualization (O(n) vs O(n log n)), easing curves, signal processing, math explanations.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        expression: { type: "string", description: "Math expression using x as variable and optional named parameters (e.g. 'a * sin(b * x + c)')" },
-        params: {
-          type: "object",
-          description: "Named parameters with slider ranges. Each key is a parameter name, value is {value, min, max, step?}",
-          additionalProperties: {
-            type: "object",
-            properties: {
-              value: { type: "number" },
-              min: { type: "number" },
-              max: { type: "number" },
-              step: { type: "number" },
-            },
-            required: ["value", "min", "max"],
-          },
-        },
-        xRange: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2, description: "X axis range [min, max]" },
-        yRange: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2, description: "Y axis range [min, max]" },
-      },
-      required: ["expression"],
-    },
-  },
-  {
-    name: "interactive_function",
-    description: "Render an interactive calculator with sliders for inputs and a live-computed output. Use for: cost estimators (API pricing by token count), performance calculators (throughput vs latency), capacity planning, unit conversions.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: { type: "string", description: "Calculator title" },
-        inputs: {
-          type: "object",
-          description: "Named input parameters with slider ranges. Each key is an input name, value is {value, unit?, min, max, step?}",
-          additionalProperties: {
-            type: "object",
-            properties: {
-              value: { type: "number" },
-              unit: { type: "string" },
-              min: { type: "number" },
-              max: { type: "number" },
-              step: { type: "number" },
-            },
-            required: ["value", "min", "max"],
-          },
-        },
-        formula: { type: "string", description: "Math expression using input names as variables" },
-        output: {
-          type: "object",
-          properties: {
-            label: { type: "string" },
-            unit: { type: "string" },
-            format: { type: "string", description: "Printf format string (e.g. '%.1f')" },
-          },
-          required: ["label"],
-        },
-      },
-      required: ["name", "inputs", "formula", "output"],
-    },
-  },
-  {
-    name: "bar_chart",
-    description: "Render a bar chart for comparing values. Use for: bundle sizes by module, LOC per file, test counts by status, build times, dependency counts.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: { type: "string", description: "Chart title" },
-        bars: { type: "array", items: { type: "object", properties: { label: { type: "string" }, value: { type: "number" } }, required: ["label", "value"] } },
-        unit: { type: "string", description: "Optional unit label for the values" },
-        color: { type: "string", description: "Bar color: blue, green, orange, purple, red, teal, pink (default: blue)" },
-      },
-      required: ["bars"],
-    },
-  },
-  {
     name: "pie_chart",
     description: "Render a pie chart showing proportions. Use for: code composition, test coverage breakdown, error distribution, disk usage.",
     inputSchema: {
@@ -95,34 +18,6 @@ const tools = [
         slices: { type: "array", items: { type: "object", properties: { label: { type: "string" }, value: { type: "number" } }, required: ["label", "value"] } },
       },
       required: ["slices"],
-    },
-  },
-  {
-    name: "scatter_plot",
-    description: "Render a scatter plot for showing relationships and correlations. Use for: file size vs complexity, test duration vs coverage.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: { type: "string" },
-        points: { type: "array", items: { type: "object", properties: { x: { type: "number" }, y: { type: "number" }, label: { type: "string" } }, required: ["x", "y"] } },
-        xLabel: { type: "string" },
-        yLabel: { type: "string" },
-      },
-      required: ["points"],
-    },
-  },
-  {
-    name: "line_chart",
-    description: "Render a data-driven line chart for time series and trends. Use for: build time trends, crash rates, API latency over time.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: { type: "string" },
-        lines: { type: "array", items: { type: "object", properties: { label: { type: "string" }, points: { type: "array", items: { type: "object", properties: { x: { type: "number" }, y: { type: "number" } }, required: ["x", "y"] } } }, required: ["label", "points"] } },
-        xLabel: { type: "string" },
-        yLabel: { type: "string" },
-      },
-      required: ["lines"],
     },
   },
   {

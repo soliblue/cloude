@@ -115,6 +115,10 @@ export function handleMessage(msg, ws, ctx) {
       handleTerminalInput(msg.text, msg.terminalId, ws)
       break
 
+    case 'ping':
+      sendTo(ws, { type: 'pong', sentAt: msg.sentAt, serverAt: Date.now() / 1000 })
+      break
+
     default:
       log(`Unknown message type: ${msg.type}`)
   }

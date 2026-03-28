@@ -1,8 +1,8 @@
 # Video Skill CLI Timeout / Crash {video.badge.exclamationmark}
 <!-- priority: 5 -->
-<!-- tags: skills, agent, relay -->
+<!-- tags: skills -->
 
-> CLI times out or crashes during long-running Sora video generation, losing track of the process.
+> Fix long-running video generation flows that currently time out or lose process state.
 
 ## Problem
 When running the video generation skill (`create.py`), the Claude Code CLI times out or crashes before the script finishes. Sora video generation takes 1-5 minutes per batch, and the CLI connection drops during that wait. The videos still generate server-side, but the agent loses track of the process and can't report results back.

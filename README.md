@@ -79,7 +79,7 @@ if let subject = args.subject {
 - Sheets: use NavigationStack + `.toolbar`, not custom HStacks
 - SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
 - **Toolbar layout**: Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: 12)` with `.padding(.horizontal, 16)`, use `Divider().frame(height: 20)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
-- Use markdown for text-heavy content. Use `mcp__widgets__*` for interactive/visual content (charts, trees, timelines, flashcards, drag-to-order).
+- Use markdown for text-heavy content. Use `mcp__widgets__*` for interactive/visual content like trees, timelines, image carousels, and color palettes.
 
 ### Notes
 - **Never use AskUserQuestion tool** - not possible over CLI when controlled remotely. Ask in plain text instead.

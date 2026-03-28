@@ -60,12 +60,15 @@ extension GlobalInputBar {
         Button(action: { showPhotoPicker = true }) {
             Label("Photo", systemImage: "photo")
         }
+        .agenticID("chat_add_photo_button")
         Button(action: { showFilePicker = true }) {
             Label("File", systemImage: "doc")
         }
+        .agenticID("chat_add_file_button")
         Button(action: startRecording) {
             Label("Record", systemImage: "mic.fill")
         }
+        .agenticID("chat_record_button")
         .disabled(!canRecord)
         Divider()
         Picker(selection: Binding(get: { currentEffort }, set: { setEffort($0) })) {
@@ -76,6 +79,7 @@ extension GlobalInputBar {
         } label: {
             Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
         }
+        .agenticID("chat_effort_picker")
         Picker(selection: Binding(get: { currentModel }, set: { setModel($0) })) {
             Text("Auto").tag(ModelSelection?.none)
             ForEach(ModelSelection.allCases, id: \.self) { model in
@@ -84,6 +88,7 @@ extension GlobalInputBar {
         } label: {
             Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
         }
+        .agenticID("chat_model_picker")
     }
 
     var actionButtonLabel: some View {

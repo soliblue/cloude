@@ -10,12 +10,7 @@ enum WidgetRegistry {
     }
 
     private static let meta: [String: WidgetMeta] = [
-        "function_plot": .init(displayName: "Function Plot", icon: "chart.xyaxis.line", color: .blue),
-        "interactive_function": .init(displayName: "Interactive Function", icon: "slider.horizontal.3", color: .purple),
-        "bar_chart": .init(displayName: "Bar Chart", icon: "chart.bar", color: .blue),
         "pie_chart": .init(displayName: "Pie Chart", icon: "chart.pie", color: .orange),
-        "scatter_plot": .init(displayName: "Scatter Plot", icon: "chart.dots.scatter", color: .teal),
-        "line_chart": .init(displayName: "Line Chart", icon: "chart.line.uptrend.xyaxis", color: .blue),
         "timeline": .init(displayName: "Timeline", icon: "calendar.day.timeline.left", color: .blue),
         "tree": .init(displayName: "Tree", icon: "filemenu.and.selection", color: .yellow),
         "color_palette": .init(displayName: "Color Palette", icon: "paintpalette", color: .purple),
@@ -41,12 +36,7 @@ enum WidgetRegistry {
     static func view(for toolName: String, input: String?) -> some View {
         if let type = widgetType(toolName), let data = parseInput(input) {
             switch type {
-            case "function_plot": FunctionPlotWidget(data: data)
-            case "interactive_function": InteractiveFunctionWidget(data: data)
-            case "bar_chart": BarChartWidget(data: data)
             case "pie_chart": PieChartWidget(data: data)
-            case "scatter_plot": ScatterPlotWidget(data: data)
-            case "line_chart": LineChartWidget(data: data)
             case "timeline": TimelineWidget(data: data)
             case "tree": TreeWidget(data: data)
             case "color_palette": ColorPaletteWidget(data: data)

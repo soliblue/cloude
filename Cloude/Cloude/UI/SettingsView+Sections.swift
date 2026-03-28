@@ -78,14 +78,6 @@ extension SettingsView {
         .listRowBackground(Color.themeSecondary)
     }
 
-    @ViewBuilder var securityRow: some View {
-        if BiometricAuth.isAvailable {
-            SettingsRow(icon: BiometricAuth.biometricIcon, color: .pastelGreen) {
-                Toggle("Require \(BiometricAuth.biometricName)", isOn: $requireBiometricAuth)
-                    .font(.system(size: DS.Text.m))
-            }
-        }
-    }
 
     var aboutSection: some View {
         Section {

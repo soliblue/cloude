@@ -95,6 +95,9 @@ extension ClientMessage {
             try container.encode("terminal_input", forKey: .type)
             try container.encode(text, forKey: .text)
             try container.encodeIfPresent(terminalId, forKey: .terminalId)
+        case .ping(let sentAt):
+            try container.encode("ping", forKey: .type)
+            try container.encode(sentAt, forKey: .sentAt)
         }
     }
 }

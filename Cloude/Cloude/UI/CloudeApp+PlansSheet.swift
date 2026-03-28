@@ -90,6 +90,7 @@ struct PlansSheet: View {
                                 Image(systemName: stageIcon(item.0))
                                     .font(.system(size: DS.Icon.s, weight: selectedStage == item.0 ? .semibold : .regular))
                             }
+                            .agenticID("plans_stage_\(item.0)")
                             .buttonStyle(.plain)
                             .foregroundColor(selectedStage == item.0 ? .accentColor : .secondary.opacity(DS.Opacity.l))
                         }
@@ -114,12 +115,14 @@ struct PlansSheet: View {
                                 .font(.system(size: DS.Icon.s, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
+                        .agenticID("plans_close_button")
                     }
                     .padding(.horizontal, DS.Spacing.s)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
         }
+        .agenticID("plans_view")
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.themeBackground)
         .onAppear {

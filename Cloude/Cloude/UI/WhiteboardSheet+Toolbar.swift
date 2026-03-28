@@ -12,6 +12,7 @@ extension WhiteboardSheet {
                         .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(store.canUndo ? .primary : .secondary.opacity(DS.Opacity.m))
                 }
+                .agenticID("whiteboard_undo_button")
                 .disabled(!store.canUndo)
 
                 Button(action: { store.redo() }) {
@@ -19,6 +20,7 @@ extension WhiteboardSheet {
                         .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(store.canRedo ? .primary : .secondary.opacity(DS.Opacity.m))
                 }
+                .agenticID("whiteboard_redo_button")
                 .disabled(!store.canRedo)
             }
         }
@@ -33,6 +35,7 @@ extension WhiteboardSheet {
                             .font(.system(size: DS.Icon.s, weight: .medium))
                             .foregroundColor(isConnected ? .primary : .secondary.opacity(DS.Opacity.m))
                     }
+                    .agenticID("whiteboard_send_snapshot_button")
                     .disabled(!isConnected)
 
                     Divider().frame(height: DS.Icon.m)
@@ -43,6 +46,7 @@ extension WhiteboardSheet {
                         .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(.primary)
                 }
+                .agenticID("whiteboard_export_button")
 
                 Divider().frame(height: DS.Icon.m)
 
@@ -51,6 +55,7 @@ extension WhiteboardSheet {
                         .font(.system(size: DS.Icon.s, weight: .medium))
                         .foregroundColor(.secondary)
                 }
+                .agenticID("whiteboard_close_button")
             }
             .padding(.horizontal, DS.Spacing.l)
         }
@@ -112,7 +117,21 @@ extension WhiteboardSheet {
                 .cornerRadius(DS.Radius.m)
                 .foregroundColor(store.activeTool == tool ? .accentColor : .primary.opacity(DS.Opacity.l))
         }
+        .agenticID("whiteboard_tool_\(toolID(tool))")
         .buttonStyle(.plain)
+    }
+
+    private func toolID(_ tool: WhiteboardStore.ActiveTool) -> String {
+        switch tool {
+        case .hand: "hand"
+        case .multiSelect: "multi_select"
+        case .rect: "rect"
+        case .ellipse: "ellipse"
+        case .triangle: "triangle"
+        case .text: "text"
+        case .pencil: "pencil"
+        case .arrow: "arrow"
+        }
     }
 
     static let paletteColors = ["#FFFFFF", "#FF6B6B", "#4ECDC4", "#FFE66D", "#A78BFA", "#FF8C42"]

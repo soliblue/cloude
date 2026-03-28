@@ -26,11 +26,21 @@ struct ChatWindow: Identifiable, Codable {
     let id: UUID
     var type: WindowType
     var conversationId: UUID?
+    var fileBrowserRootPath: String?
+    var gitRepoRootPath: String?
 
-    init(id: UUID = UUID(), type: WindowType = .chat, conversationId: UUID? = nil) {
+    init(
+        id: UUID = UUID(),
+        type: WindowType = .chat,
+        conversationId: UUID? = nil,
+        fileBrowserRootPath: String? = nil,
+        gitRepoRootPath: String? = nil
+    ) {
         self.id = id
         self.type = type
         self.conversationId = conversationId
+        self.fileBrowserRootPath = fileBrowserRootPath
+        self.gitRepoRootPath = gitRepoRootPath
     }
 
     init(from decoder: Decoder) throws {
@@ -38,10 +48,12 @@ struct ChatWindow: Identifiable, Codable {
         id = try container.decode(UUID.self, forKey: .id)
         type = try container.decode(WindowType.self, forKey: .type)
         conversationId = try container.decodeIfPresent(UUID.self, forKey: .conversationId)
+        fileBrowserRootPath = try container.decodeIfPresent(String.self, forKey: .fileBrowserRootPath)
+        gitRepoRootPath = try container.decodeIfPresent(String.self, forKey: .gitRepoRootPath)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, type, conversationId
+        case id, type, conversationId, fileBrowserRootPath, gitRepoRootPath
     }
 
     func conversation(in store: ConversationStore) -> Conversation? {

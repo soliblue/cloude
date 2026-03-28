@@ -31,11 +31,11 @@ struct ToolCallLabel: View {
     var isScript: Bool { toolCallProxy.isScript }
 
     static func isIOSControl(_ name: String) -> Bool {
-        name.hasPrefix("mcp__ios__") && !name.hasPrefix("mcp__ios__whiteboard")
+        name.hasPrefix("mcp__ios__")
     }
 
     static func isWhiteboardTool(_ name: String) -> Bool {
-        name.hasPrefix("mcp__ios__whiteboard")
+        name.hasPrefix("mcp__whiteboard__")
     }
 
     private static let iosDisplayNames: [String: String] = [
@@ -45,10 +45,10 @@ struct ToolCallLabel: View {
     ]
 
     private static let whiteboardDisplayNames: [String: String] = [
-        "whiteboard_open": "Open", "whiteboard_add": "Add",
-        "whiteboard_remove": "Remove", "whiteboard_update": "Update",
-        "whiteboard_clear": "Clear", "whiteboard_snapshot": "Snapshot",
-        "whiteboard_viewport": "Viewport", "whiteboard_export": "Export"
+        "open": "Open", "add": "Add",
+        "remove": "Remove", "update": "Update",
+        "clear": "Clear", "snapshot": "Snapshot",
+        "viewport": "Viewport", "export": "Export"
     ]
 
     static let iosIcons: [String: String] = [
@@ -64,8 +64,8 @@ struct ToolCallLabel: View {
     private var displayName: String {
         if let action = iosAction { return ToolCallLabel.iosDisplayNames[action] ?? action.capitalized }
         if ToolCallLabel.isWhiteboardTool(name) {
-            let action = String(name.dropFirst("mcp__ios__".count))
-            return ToolCallLabel.whiteboardDisplayNames[action] ?? action.replacingOccurrences(of: "whiteboard_", with: "").capitalized
+            let action = String(name.dropFirst("mcp__whiteboard__".count))
+            return ToolCallLabel.whiteboardDisplayNames[action] ?? action.capitalized
         }
         if WidgetRegistry.isWidget(name) { return WidgetRegistry.displayName(name) }
         if name == "TodoWrite" { return "Tasks" }

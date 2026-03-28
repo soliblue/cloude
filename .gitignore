@@ -65,6 +65,7 @@ tools/sora/image_flow_capture.json
 .claude/skills/slides/*.pptx
 .claude/skills/slides/*.png
 .claude/skills/slides/__pycache__/
+.claude/skills/slides/
 .claude/skills/video/__pycache__/
 .claude/skills/video/output/
 .claude/skills/video/browser-data/

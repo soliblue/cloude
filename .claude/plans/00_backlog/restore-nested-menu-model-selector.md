@@ -1,8 +1,8 @@
 # Restore Nested Menu for Model/Effort Selector {filemenu.and.selection}
 <!-- priority: 5 -->
-<!-- tags: ui, input -->
+<!-- tags: ui -->
 
-> Nested Menu sub-menus for model/effort selection stopped responding to taps after an iOS update; currently using Picker as a workaround.
+> Restore the old nested model and effort selector once taps work reliably again.
 
 The model and effort selectors in the send button menu used to be nested `Menu` components (sub-menus) which looked more native. They stopped responding to taps, likely an iOS system-level regression with nested Menu inside Menu with `primaryAction`. Currently using `Picker` as a workaround which works but looks less polished.
 

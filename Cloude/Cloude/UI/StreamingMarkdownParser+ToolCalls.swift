@@ -17,6 +17,7 @@ extension StreamingMarkdownParser {
 
         var result: [StreamingBlock] = []
         var currentPosition = 0
+        var segmentIndex = 0
         var pendingTools: [ToolCall] = []
 
         for tool in topLevelTools {
@@ -32,7 +33,9 @@ extension StreamingMarkdownParser {
                 let endIdx = text.index(text.startIndex, offsetBy: toolPosition)
                 let segment = String(text[startIdx..<endIdx])
                 if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    result.append(contentsOf: parse(segment))
+                    let prefix = "s\(segmentIndex)-"
+                    result.append(contentsOf: parse(segment).map { $0.prefixed(prefix) })
+                    segmentIndex += 1
                 }
                 currentPosition = toolPosition
             }
@@ -48,7 +51,8 @@ extension StreamingMarkdownParser {
             let startIdx = text.index(text.startIndex, offsetBy: currentPosition)
             let remaining = String(text[startIdx...])
             if !remaining.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                result.append(contentsOf: parse(remaining))
+                let prefix = "s\(segmentIndex)-"
+                result.append(contentsOf: parse(remaining).map { $0.prefixed(prefix) })
             }
         }
 

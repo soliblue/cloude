@@ -76,7 +76,6 @@ struct GlobalInputBar: View {
 
     var body: some View {
         #if DEBUG
-        let _ = Self._printChanges()
         let _ = DebugMetrics.log("InputBar", "render | focused=\(isInputFocused) running=\(isRunning) recording=\(showRecordingOverlay) swiping=\(isSwipingToRecord) transcribing=\(isTranscribing) showInput=\(showInputBar) cmds=\(showCommandSuggestions) files=\(showFileSuggestions)")
         #endif
         contentStack

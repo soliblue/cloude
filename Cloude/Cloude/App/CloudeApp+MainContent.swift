@@ -10,6 +10,8 @@ extension CloudeApp {
                 conversationStore: conversationStore,
                 windowManager: windowManager,
                 environmentStore: environmentStore,
+                fileBrowserRootOverrides: fileBrowserRootOverrides,
+                gitRepoRootOverrides: gitRepoRootOverrides,
                 onShowPlans: { openPlans() },
                 onShowMemories: { openMemories() },
                 onShowSettings: { showSettings = true },
@@ -18,6 +20,7 @@ extension CloudeApp {
                     showWhiteboard = true
                 }
             )
+            .agenticID("main_chat_view")
             .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(Color.themeSecondary, for: .navigationBar)
                 .toolbarBackground(.visible, for: .navigationBar)
@@ -26,10 +29,12 @@ extension CloudeApp {
                         Button(action: { showSettings = true }) {
                             ConnectionStatusLogo(connection: connection)
                         }
+                        .agenticID("toolbar_settings_button")
                         .buttonStyle(.borderless)
                     }
                     ToolbarItem(placement: .principal) {
                         navTitlePill
+                            .agenticID("toolbar_title")
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
@@ -42,6 +47,7 @@ extension CloudeApp {
                                 .font(.system(size: DS.Icon.m, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
+                        .agenticID("toolbar_close_window_button")
                         .buttonStyle(.borderless)
                     }
                 }
@@ -53,9 +59,11 @@ extension CloudeApp {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(connection: connection, environmentStore: environmentStore)
+                .agenticID("settings_sheet")
         }
         .sheet(isPresented: $showMemories) {
             MemoriesSheet(sections: memorySections, isLoading: isLoadingMemories, fromCache: memoriesFromCache)
+                .agenticID("memories_sheet")
         }
         .sheet(isPresented: $showPlans) {
             PlansSheet(
@@ -73,6 +81,7 @@ extension CloudeApp {
                     }
                 }
             )
+            .agenticID("plans_sheet")
         }
         .fullScreenCover(isPresented: $showWhiteboard) {
             WhiteboardSheet(
@@ -85,26 +94,23 @@ extension CloudeApp {
                     return connection.connection(for: envId)?.isAuthenticated ?? false
                 }()
             )
+            .agenticID("whiteboard_sheet")
         }
-        .sheet(item: $filePathToPreview) { path in
+        .sheet(item: $filePathToPreview, onDismiss: {
+            NotificationCenter.default.post(name: .refreshActiveChatView, object: nil)
+        }) { path in
             FilePreviewView(path: path, connection: connection, environmentId: filePreviewEnvironmentId)
+                .agenticID("file_preview_sheet")
         }
-        .onOpenURL { url in
-            guard url.scheme == "cloude" else { return }
-            switch url.host {
-            case "file":
-                let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-                if connection.connection(for: envId)?.isAuthenticated == true {
-                    filePreviewEnvironmentId = envId
-                    filePathToPreview = url.path.removingPercentEncoding ?? url.path
-                }
-            case "memory":
-                openMemories()
-            default:
-                break
-            }
+        .sheet(item: $gitDiffRequest, onDismiss: {
+            NotificationCenter.default.post(name: .refreshActiveChatView, object: nil)
+        }) { request in
+            GitDiffView(connection: connection, repoPath: request.repoPath, file: request.file, environmentId: request.environmentId)
+                .agenticID("git_diff_sheet")
         }
+        .onOpenURL(perform: handleDeepLink)
         .onAppear {
+            AppLogger.bootstrapInfo("mainContent onAppear")
             loadAndConnect()
             if debugOverlayEnabled { debugMetrics.start(observing: connection.objectWillChange) }
         }
@@ -115,9 +121,7 @@ extension CloudeApp {
             if newPhase == .background {
                 wasBackgrounded = true
                 lastActiveSessionId = windowManager.activeWindow?.conversation(in: conversationStore)?.sessionId
-                if requireBiometricAuth {
-                    isUnlocked = false
-                }
+
                 connection.beginBackgroundStreamingIfNeeded()
             } else if newPhase == .active {
                 connection.endBackgroundStreaming()

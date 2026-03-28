@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import UIKit
 import CloudeShared
+import OSLog
 
 @MainActor
 class ConnectionManager: ObservableObject {
@@ -51,6 +52,10 @@ class ConnectionManager: ObservableObject {
         connections.values.compactMap(\.defaultWorkingDirectory).first
     }
 
+    var latencyMs: Double? {
+        connections.values.compactMap(\.latencyMs).min()
+    }
+
     var chunkProgress: EnvironmentConnection.ChunkProgress? {
         connections.values.compactMap(\.chunkProgress).first
     }
@@ -82,6 +87,7 @@ class ConnectionManager: ObservableObject {
     }
 
     func connectEnvironment(_ envId: UUID, host: String, port: UInt16, token: String, symbol: String = "laptopcomputer") {
+        AppLogger.connectionInfo("connectEnvironment envId=\(envId.uuidString) host=\(host):\(port)")
         let conn = connections[envId] ?? EnvironmentConnection(environmentId: envId)
         conn.manager = self
         conn.symbol = symbol

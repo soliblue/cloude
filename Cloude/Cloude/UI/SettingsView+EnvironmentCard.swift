@@ -23,6 +23,7 @@ struct EnvironmentCard: View {
         }
         .padding(.bottom, DS.Spacing.xs)
         .padding(.horizontal, DS.Spacing.xs)
+        .agenticID("environment_card_\(env.id.uuidString)")
     }
 
     private var headerRow: some View {
@@ -33,6 +34,7 @@ struct EnvironmentCard: View {
                     .foregroundColor(.accentColor)
                     .frame(width: DS.Size.l, height: DS.Size.l)
             }
+            .agenticID("environment_symbol_button_\(env.id.uuidString)")
             .buttonStyle(.plain)
             .sheet(isPresented: $showSymbolPicker, onDismiss: { onUpdate(env) }) {
                 SymbolPickerSheet(selectedSymbol: $env.symbol)
@@ -55,6 +57,7 @@ struct EnvironmentCard: View {
                         .font(.system(size: DS.Icon.s))
                         .foregroundColor(.accentColor)
                 }
+                .agenticID("environment_delete_button_\(env.id.uuidString)")
                 .buttonStyle(.plain)
                 .confirmationDialog("Delete \(env.host)?", isPresented: $showDeleteConfirm) {
                     Button("Delete", role: .destructive, action: onDelete)
@@ -72,6 +75,7 @@ struct EnvironmentCard: View {
                     .foregroundStyle(isConnected || isConnecting ? Color.accentColor : .secondary)
                     .modifier(StreamingPulseModifier(isStreaming: isConnecting))
             }
+            .agenticID("environment_power_button_\(env.id.uuidString)")
             .buttonStyle(.plain)
             .disabled(env.host.isEmpty || env.token.isEmpty)
         }
@@ -102,6 +106,7 @@ struct AddEnvironmentCard: View {
                 .foregroundColor(.secondary.opacity(DS.Opacity.m))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .agenticID("environment_add_button")
         .buttonStyle(.plain)
     }
 }

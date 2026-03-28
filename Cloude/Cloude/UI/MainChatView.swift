@@ -10,6 +10,8 @@ struct MainChatView: View {
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var environmentStore: EnvironmentStore
+    var fileBrowserRootOverrides: [UUID: String] = [:]
+    var gitRepoRootOverrides: [UUID: String] = [:]
     @State var editingWindow: ChatWindow?
     @State var currentPageIndex: Int = 0
     @State var isKeyboardVisible = false
@@ -25,7 +27,6 @@ struct MainChatView: View {
     @State var currentModel: ModelSelection?
     @State var showConversationSearch = false
     @State var showUsageStats = false
-    @State var widgetEditing = false
     @State var usageStats: UsageStats?
     @State var awaitingUsageStats = false
     @State var refreshingSessionIds: Set<String> = []
@@ -80,23 +81,11 @@ struct MainChatView: View {
                 }
             }
             .onTapGesture {
-                if !widgetEditing {
-                    dismissKeyboard()
-                }
+                dismissKeyboard()
             }
 
             inputSection()
                 .zIndex(1)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .widgetInputActive)) { note in
-            withAnimation(.easeInOut(duration: DS.Duration.s)) {
-                widgetEditing = note.object as? Bool ?? false
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            if widgetEditing {
-                withAnimation(.easeInOut(duration: DS.Duration.s)) { widgetEditing = false }
-            }
         }
         .onAppear {
             initializeFirstWindow()
@@ -114,6 +103,16 @@ struct MainChatView: View {
             if let window = windowManager.activeWindow {
                 editingWindow = window
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openConversationSearch)) { _ in
+            showConversationSearch = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .requestUsageStats)) { _ in
+            awaitingUsageStats = true
+            connection.getUsageStats(environmentId: currentConversation?.environmentId ?? environmentStore.activeEnvironmentId)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .refreshActiveChatView)) { _ in
+            refreshTrigger.toggle()
         }
         .onReceive(connection.events, perform: handleConnectionEvent)
         .onChange(of: connection.isAuthenticated) { _, authed in

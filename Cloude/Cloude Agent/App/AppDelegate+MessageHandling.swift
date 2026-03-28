@@ -129,6 +129,9 @@ extension AppDelegate {
 
         case .terminalInput(let text, let terminalId):
             handleTerminalInput(text, terminalId: terminalId, connection: connection)
+
+        case .ping(let sentAt):
+            server.sendMessage(.pong(sentAt: sentAt, serverAt: Date().timeIntervalSince1970), to: connection)
         }
     }
 }

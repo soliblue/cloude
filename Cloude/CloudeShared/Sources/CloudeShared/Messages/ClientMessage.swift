@@ -35,8 +35,9 @@ public enum ClientMessage: Codable {
     case getUsageStats
     case terminalExec(command: String, workingDirectory: String, terminalId: String?)
     case terminalInput(text: String, terminalId: String?)
+    case ping(sentAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged, sentAt
     }
 }

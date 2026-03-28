@@ -1,8 +1,8 @@
 # Tool Streaming Data {waveform.path}
-<!-- priority: 3 -->
-<!-- tags: agent, tools, streaming -->
+<!-- priority: 2 -->
+<!-- tags: streaming, agent -->
 
-> Capture richer tool data from the CLI stream that we're currently ignoring. The CLI emits `stream_event` deltas with incremental tool input as it's generated, and structured `tool_use_result` fields with typed metadata — we flatten everything into plain strings.
+> Capture richer structured tool-stream data instead of flattening everything into plain strings.
 
 ## What We're Missing
 
