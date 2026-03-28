@@ -90,7 +90,9 @@ fun DeploySheet(
                         isInstalling = true
                         outputLines.add("")
                         outputLines.add("Installing on device...")
-                        val installCmd = "adb install -r $workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk 2>&1"
+                        val installCmd = "adb install -r $workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk 2>&1 && " +
+                            "adb shell am force-stop com.cloude.app && " +
+                            "adb shell am start -n com.cloude.app/com.cloude.app.App.MainActivity 2>&1"
                         connectionManager.send(
                             ClientMessage.TerminalExec(installCmd, workingDirectory, deployId),
                             environmentId
