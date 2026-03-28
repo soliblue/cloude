@@ -98,6 +98,16 @@ class ChatViewModel(
         _conversation.value = _conversation.value.copy(environmentId = envId)
     }
 
+    fun setEffort(effort: String?) {
+        _conversation.value = _conversation.value.copy(defaultEffort = effort)
+        persistConversation()
+    }
+
+    fun setModel(model: String?) {
+        _conversation.value = _conversation.value.copy(defaultModel = model)
+        persistConversation()
+    }
+
     private fun handleMessage(message: ServerMessage) {
         when (message) {
             is ServerMessage.Output -> output.appendText(message.text)

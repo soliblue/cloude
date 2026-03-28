@@ -123,8 +123,12 @@ fun ChatScreen(viewModel: ChatViewModel, modifier: Modifier = Modifier) {
 
         InputBar(
             isRunning = isRunning,
+            currentEffort = conversation.defaultEffort,
+            currentModel = conversation.defaultModel,
             onSend = { viewModel.sendMessage(it) },
             onAbort = { viewModel.abort() },
+            onEffortChange = { viewModel.setEffort(it) },
+            onModelChange = { viewModel.setModel(it) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s)
