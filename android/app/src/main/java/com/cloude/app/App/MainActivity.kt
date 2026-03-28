@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Difference
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -38,6 +39,7 @@ import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.UI.chat.ChatScreen
 import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.files.FileBrowserScreen
+import com.cloude.app.UI.git.GitScreen
 import com.cloude.app.UI.settings.SettingsScreen
 import com.cloude.app.UI.theme.CloudeTheme
 import com.cloude.app.Utilities.Accent
@@ -76,6 +78,7 @@ class MainActivity : ComponentActivity() {
             val appTheme by remember { mutableStateOf(AppTheme.Majorelle) }
             var showSettings by remember { mutableStateOf(false) }
             var showFiles by remember { mutableStateOf(false) }
+            var showGit by remember { mutableStateOf(false) }
             var showConversations by remember { mutableStateOf(false) }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
             val conversation by chatViewModel.conversation.collectAsState()
@@ -90,6 +93,7 @@ class MainActivity : ComponentActivity() {
                                     text = when {
                                         showSettings -> "Settings"
                                         showFiles -> "Files"
+                                        showGit -> "Git"
                                         else -> conversation.name
                                     },
                                     style = MaterialTheme.typography.titleMedium,
@@ -97,8 +101,8 @@ class MainActivity : ComponentActivity() {
                                 )
                             },
                             navigationIcon = {
-                                if (showSettings || showFiles) {
-                                    IconButton(onClick = { showSettings = false; showFiles = false }) {
+                                if (showSettings || showFiles || showGit) {
+                                    IconButton(onClick = { showSettings = false; showFiles = false; showGit = false }) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                             contentDescription = "Back",
@@ -125,7 +129,14 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                if (!showSettings && !showFiles) {
+                                if (!showSettings && !showFiles && !showGit) {
+                                    IconButton(onClick = { showGit = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Difference,
+                                            contentDescription = "Git",
+                                            tint = Accent
+                                        )
+                                    }
                                     IconButton(onClick = { showFiles = true }) {
                                         Icon(
                                             imageVector = Icons.Default.Folder,
@@ -164,6 +175,18 @@ class MainActivity : ComponentActivity() {
                                 connectionManager = connectionManager,
                                 environmentId = envId,
                                 initialPath = defaultDir,
+                                modifier = Modifier.padding(innerPadding)
+                            )
+                        }
+                        showGit -> {
+                            val defaultDir = connectionManager.connection(
+                                environmentStore.activeEnvironmentId.value ?: ""
+                            )?.defaultWorkingDirectory?.collectAsState()?.value ?: "/"
+                            val envId = environmentStore.activeEnvironmentId.value ?: ""
+                            GitScreen(
+                                connectionManager = connectionManager,
+                                environmentId = envId,
+                                workingDirectory = defaultDir,
                                 modifier = Modifier.padding(innerPadding)
                             )
                         }

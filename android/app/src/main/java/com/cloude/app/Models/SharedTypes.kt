@@ -44,8 +44,10 @@ data class GitStatusInfo(
 @Serializable
 data class GitFileStatus(
     val path: String,
-    val staged: String? = null,
-    val unstaged: String? = null
+    val status: String? = null,
+    val staged: Boolean = false,
+    val additions: Int = 0,
+    val deletions: Int = 0
 )
 
 @Serializable
