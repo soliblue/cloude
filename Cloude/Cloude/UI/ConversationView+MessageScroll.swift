@@ -65,7 +65,7 @@ extension ChatMessageList {
                     isCompact: isCompact,
                     onToggleCollapse: message.isUser ? nil : { toggleCollapse(message) }
                 )
-                .id("\(message.id)-\(message.isQueued)")
+                .id("\(message.id)-live")
             } else {
                 MessageBubble(
                     message: message,

@@ -25,7 +25,7 @@ struct StreamingMarkdownView: View {
     }
 
     private var allBlocks: [StreamingBlock] {
-        frozenBlocks + tailBlocks
+        frozenBlocks + tailBlocks.map { $0.prefixed("tail-") }
     }
 
     private func updateIncremental() {

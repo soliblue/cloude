@@ -19,8 +19,18 @@ struct MessageBubble: View {
     @Environment(\.appTheme) private var appTheme
 
     private var isLive: Bool { liveOutput != nil }
-    private var effectiveText: String { liveText ?? message.text }
-    private var effectiveToolCalls: [ToolCall] { liveToolCalls ?? message.toolCalls }
+    private var effectiveText: String {
+        if let liveText, !liveText.isEmpty {
+            return liveText
+        }
+        return message.text
+    }
+    private var effectiveToolCalls: [ToolCall] {
+        if let liveToolCalls, !liveToolCalls.isEmpty {
+            return liveToolCalls
+        }
+        return message.toolCalls
+    }
 
     private var hasInteractiveWidgets: Bool {
         effectiveToolCalls.contains { WidgetRegistry.isWidget($0.name) }
@@ -52,10 +62,25 @@ struct MessageBubble: View {
 
     var body: some View {
         #if DEBUG
-        let _ = DebugMetrics.log("Bubble", "render | \(message.isUser ? "user" : "asst") id=\(message.id.uuidString.prefix(6))")
+        let _ = DebugMetrics.log(
+            "Bubble",
+            "render | \(message.isUser ? "user" : "asst") id=\(message.id.uuidString.prefix(6)) " +
+            "isLive=\(isLive) msg=\(message.text.count)ch live=\((liveText ?? "").count)ch " +
+            "effective=\(effectiveText.count)ch"
+        )
         #endif
         messageContent
             .opacity(message.isQueued ? DS.Opacity.l : 1.0)
+        .onChange(of: isLive) { old, new in
+            #if DEBUG
+            DebugMetrics.log(
+                "Bubble",
+                "isLive \(old)->\(new) id=\(message.id.uuidString.prefix(6)) " +
+                "msg=\(message.text.count)ch live=\((liveText ?? "").count)ch " +
+                "effective=\(effectiveText.count)ch"
+            )
+            #endif
+        }
         .padding(.horizontal, DS.Spacing.l)
         .padding(.vertical, DS.Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)

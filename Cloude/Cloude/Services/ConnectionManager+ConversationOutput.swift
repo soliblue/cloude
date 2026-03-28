@@ -16,7 +16,7 @@ final class ConversationOutput: ObservableObject {
     @Published var skipped: Bool = false { didSet { if skipped != oldValue { parent?.objectWillChange.send() } } }
     var lastSavedMessageId: UUID?
     var messageUUID: String?
-    var liveMessageId: UUID?
+    @Published var liveMessageId: UUID?
 
     var previousCumulativeCost: Double = 0
     var fullText: String = ""
@@ -99,6 +99,15 @@ final class ConversationOutput: ObservableObject {
     }
 
     func reset() {
+        #if DEBUG
+        DebugMetrics.log(
+            "Stream",
+            "reset start liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
+            "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
+            "isRunning=\(isRunning)"
+        )
+        #endif
+        liveMessageId = nil
         stopDraining()
         fullText = ""
         displayIndex = nil
@@ -109,7 +118,14 @@ final class ConversationOutput: ObservableObject {
         messageUUID = nil
         isCompacting = false
         skipped = false
-        liveMessageId = nil
+        #if DEBUG
+        DebugMetrics.log(
+            "Stream",
+            "reset end liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
+            "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
+            "isRunning=\(isRunning)"
+        )
+        #endif
     }
 }
 
@@ -150,4 +166,3 @@ struct AggregateFileCache {
         return nil
     }
 }
-
