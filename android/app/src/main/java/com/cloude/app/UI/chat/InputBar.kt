@@ -9,6 +9,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -26,10 +29,13 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +68,7 @@ fun InputBar(
 ) {
     var text by remember { mutableStateOf("") }
     var attachedImages by remember { mutableStateOf<List<Pair<Bitmap, String>>>(emptyList()) }
+    var expandedImage by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
 
     val imagePicker = rememberLauncherForActivityResult(
@@ -120,8 +127,8 @@ fun InputBar(
 
         if (attachedImages.isNotEmpty()) {
             Row(
-                modifier = Modifier.padding(bottom = DS.Spacing.xs),
-                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+                modifier = Modifier.padding(bottom = DS.Spacing.s),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
             ) {
                 attachedImages.forEachIndexed { index, (bitmap, _) ->
                     Box {
@@ -129,8 +136,10 @@ fun InputBar(
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = "Attached image",
                             modifier = Modifier
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(DS.Radius.s)),
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(DS.Radius.m))
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(DS.Radius.m))
+                                .clickable { expandedImage = bitmap },
                             contentScale = ContentScale.Crop
                         )
                         Icon(
@@ -138,7 +147,7 @@ fun InputBar(
                             contentDescription = "Remove",
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier
-                                .size(DS.Icon.s)
+                                .size(DS.Icon.m)
                                 .align(Alignment.TopEnd)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.error)
@@ -220,6 +229,32 @@ fun InputBar(
                 }
             }
         }
+    }
+
+    expandedImage?.let { bitmap ->
+        ImagePreviewSheet(bitmap = bitmap, onDismiss = { expandedImage = null })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ImagePreviewSheet(bitmap: Bitmap, onDismiss: () -> Unit) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = "Image preview",
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 500.dp)
+                .padding(DS.Spacing.m)
+                .clip(RoundedCornerShape(DS.Radius.m)),
+            contentScale = ContentScale.Fit
+        )
     }
 }
 
