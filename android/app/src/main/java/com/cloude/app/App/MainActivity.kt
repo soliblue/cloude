@@ -1,9 +1,15 @@
 package com.cloude.app.App
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,7 +40,9 @@ import androidx.compose.ui.draw.clip
 import com.cloude.app.Models.ConversationStore
 import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Services.ChatViewModel
+import com.cloude.app.Services.CloudeNotificationManager
 import com.cloude.app.Services.ConnectionManager
+import com.cloude.app.Services.WebSocketForegroundService
 import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.chat.MainScreen
@@ -50,7 +58,7 @@ import com.cloude.app.Utilities.PastelRed
 class MainActivity : ComponentActivity() {
     private lateinit var environmentStore: EnvironmentStore
     private lateinit var conversationStore: ConversationStore
-    private val connectionManager = ConnectionManager()
+    private lateinit var connectionManager: ConnectionManager
     private lateinit var chatViewModel: ChatViewModel
     private lateinit var windowManager: WindowManager
 
@@ -59,15 +67,26 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        connectionManager = ConnectionManager(applicationContext)
         environmentStore = EnvironmentStore(applicationContext)
         conversationStore = ConversationStore(applicationContext)
         chatViewModel = ChatViewModel(connectionManager, environmentStore, conversationStore)
         chatViewModel.init()
         windowManager = WindowManager(applicationContext)
 
+        CloudeNotificationManager.createChannels(applicationContext)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0)
+        }
+
         environmentStore.environments.value.forEach { env ->
             connectionManager.connectEnvironment(env)
         }
+
+        startForegroundService(Intent(this, WebSocketForegroundService::class.java))
 
         environmentStore.activeEnvironmentId.value?.let { chatViewModel.setEnvironmentId(it) }
 

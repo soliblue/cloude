@@ -17,8 +17,10 @@ import java.util.concurrent.TimeUnit
 
 class EnvironmentConnection(
     val environmentId: String,
+    private val appContext: android.content.Context? = null,
     private val onMessage: (ServerMessage) -> Unit
 ) {
+    private var wasRunning = false
     private var webSocket: WebSocket? = null
     private var savedHost = ""
     private var savedPort = 0
@@ -95,7 +97,14 @@ class EnvironmentConnection(
                         _isAuthenticated.value = message.success
                         if (!message.success) _lastError.value = message.message ?: "Auth failed"
                     }
-                    is ServerMessage.Status -> _agentState.value = message.state
+                    is ServerMessage.Status -> {
+                        val prev = wasRunning
+                        _agentState.value = message.state
+                        wasRunning = message.state != AgentState.idle
+                        if (prev && !wasRunning && appContext != null) {
+                            CloudeNotificationManager.notifyAgentComplete(appContext, "Agent finished")
+                        }
+                    }
                     is ServerMessage.DefaultWorkingDirectory -> _defaultWorkingDirectory.value = message.path
                     is ServerMessage.Skills -> _skills.value = message.skills
                     else -> {}

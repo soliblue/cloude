@@ -1,12 +1,13 @@
 package com.cloude.app.UI.deploy
 
-import android.util.Log
+import android.content.Context
+import android.content.Intent
+import android.util.Base64
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,10 +37,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import com.cloude.app.Models.ClientMessage
 import com.cloude.app.Models.ServerMessage
 import com.cloude.app.Services.ConnectionManager
@@ -47,6 +48,7 @@ import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelGreen
 import com.cloude.app.Utilities.PastelRed
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,21 +58,19 @@ fun DeploySheet(
     workingDirectory: String,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val outputLines = remember { mutableStateListOf<String>() }
-    var isBuilding by remember { mutableStateOf(true) }
-    var isInstalling by remember { mutableStateOf(false) }
-    var isDone by remember { mutableStateOf(false) }
-    var isError by remember { mutableStateOf(false) }
+    var phase by remember { mutableStateOf("building") }
     val listState = rememberLazyListState()
-
     val deployId = remember { "deploy-${System.currentTimeMillis()}" }
+    val apkPath = "$workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk"
 
     LaunchedEffect(Unit) {
         outputLines.add("Building APK...")
         val buildCmd = "export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" && " +
             "cd $workingDirectory/android && " +
-            "./gradlew assembleDebug 2>&1"
+            "./gradlew assembleDebug --daemon 2>&1"
         connectionManager.send(
             ClientMessage.TerminalExec(buildCmd, workingDirectory, deployId),
             environmentId
@@ -79,37 +79,46 @@ fun DeploySheet(
 
     LaunchedEffect(Unit) {
         connectionManager.events.collect { msg ->
-            if (msg is ServerMessage.TerminalOutput && msg.terminalId == deployId) {
-                msg.output.lines().filter { it.isNotBlank() }.forEach { line ->
-                    outputLines.add(line)
-                }
-
-                if (msg.exitCode != null) {
-                    if (msg.exitCode == 0 && isBuilding) {
-                        isBuilding = false
-                        isInstalling = true
-                        outputLines.add("")
-                        outputLines.add("Installing on device...")
-                        val installCmd = "adb install -r $workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk 2>&1 && " +
-                            "adb shell am force-stop com.cloude.app && " +
-                            "adb shell am start -n com.cloude.app/com.cloude.app.App.MainActivity 2>&1"
-                        connectionManager.send(
-                            ClientMessage.TerminalExec(installCmd, workingDirectory, deployId),
-                            environmentId
-                        )
-                    } else if (msg.exitCode == 0 && isInstalling) {
-                        isInstalling = false
-                        isDone = true
-                        outputLines.add("")
-                        outputLines.add("Deployed successfully!")
-                    } else {
-                        isBuilding = false
-                        isInstalling = false
-                        isError = true
-                        outputLines.add("")
-                        outputLines.add("Failed with exit code ${msg.exitCode}")
+            when {
+                msg is ServerMessage.TerminalOutput && msg.terminalId == deployId -> {
+                    msg.output.lines().filter { it.isNotBlank() }.forEach { outputLines.add(it) }
+                    if (msg.exitCode != null) {
+                        if (msg.exitCode == 0 && phase == "building") {
+                            phase = "transferring"
+                            outputLines.add("")
+                            outputLines.add("Transferring APK...")
+                            connectionManager.send(
+                                ClientMessage.GetFileFullQuality(apkPath),
+                                environmentId
+                            )
+                        } else if (msg.exitCode != 0) {
+                            phase = "error"
+                            outputLines.add("Build failed with exit code ${msg.exitCode}")
+                        }
                     }
                 }
+                msg is ServerMessage.FileContent && phase == "transferring" -> {
+                    outputLines.add("APK received (${msg.size / 1024}KB)")
+                    outputLines.add("Installing...")
+                    phase = "installing"
+                    val success = saveAndInstall(context, msg.data)
+                    if (success) {
+                        phase = "done"
+                        outputLines.add("")
+                        outputLines.add("Install dialog opened!")
+                    } else {
+                        phase = "error"
+                        outputLines.add("Failed to save APK")
+                    }
+                }
+                msg is ServerMessage.FileChunk && phase == "transferring" -> {
+                    outputLines.removeAll { it.startsWith("Receiving chunk") }
+                    outputLines.add("Receiving chunk ${msg.chunkIndex + 1}/${msg.totalChunks}")
+                    if (msg.chunkIndex == msg.totalChunks - 1) {
+                        outputLines.add("All chunks received, assembling...")
+                    }
+                }
+                else -> {}
             }
         }
     }
@@ -128,16 +137,17 @@ fun DeploySheet(
                 modifier = Modifier.padding(horizontal = DS.Spacing.l, vertical = DS.Spacing.s),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                when {
-                    isDone -> Icon(Icons.Default.CheckCircle, null, tint = PastelGreen, modifier = Modifier.size(DS.Icon.l))
-                    isError -> Icon(Icons.Default.Error, null, tint = PastelRed, modifier = Modifier.size(DS.Icon.l))
+                when (phase) {
+                    "done" -> Icon(Icons.Default.CheckCircle, null, tint = PastelGreen, modifier = Modifier.size(DS.Icon.l))
+                    "error" -> Icon(Icons.Default.Error, null, tint = PastelRed, modifier = Modifier.size(DS.Icon.l))
                     else -> CircularProgressIndicator(color = Accent, modifier = Modifier.size(DS.Icon.l), strokeWidth = DS.Stroke.m)
                 }
                 Text(
-                    text = when {
-                        isDone -> "Deployed"
-                        isError -> "Deploy Failed"
-                        isInstalling -> "Installing..."
+                    text = when (phase) {
+                        "done" -> "Ready to Install"
+                        "error" -> "Deploy Failed"
+                        "transferring" -> "Transferring APK..."
+                        "installing" -> "Installing..."
                         else -> "Building..."
                     },
                     style = MaterialTheme.typography.titleMedium,
@@ -166,8 +176,10 @@ fun DeploySheet(
                         ),
                         color = when {
                             line.contains("SUCCESS") -> PastelGreen
-                            line.contains("FAILED") || line.contains("Error") -> PastelRed
-                            line.startsWith("Installing") || line.startsWith("Building") || line.startsWith("Deployed") -> Accent
+                            line.contains("FAILED") || line.contains("Error") || line.contains("failed") -> PastelRed
+                            line.startsWith("Installing") || line.startsWith("Building") ||
+                                line.startsWith("Transferring") || line.startsWith("APK received") ||
+                                line.startsWith("Install dialog") -> Accent
                             else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         },
                         modifier = Modifier
@@ -178,4 +190,24 @@ fun DeploySheet(
             }
         }
     }
+}
+
+private fun saveAndInstall(context: Context, base64Data: String): Boolean {
+    val bytes = try {
+        Base64.decode(base64Data, Base64.DEFAULT)
+    } catch (e: Exception) {
+        return false
+    }
+
+    val apkFile = File(context.cacheDir, "cloude-update.apk")
+    apkFile.writeBytes(bytes)
+
+    val uri = FileProvider.getUriForFile(context, "com.cloude.app.fileprovider", apkFile)
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "application/vnd.android.package-archive")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
+    return true
 }

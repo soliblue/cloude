@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class ConnectionManager {
+class ConnectionManager(private val appContext: android.content.Context? = null) {
     private val connections = mutableMapOf<String, EnvironmentConnection>()
 
     private val _isConnected = MutableStateFlow(false)
@@ -32,7 +32,7 @@ class ConnectionManager {
             existing.disconnect()
         }
 
-        val conn = EnvironmentConnection(env.id) { message ->
+        val conn = EnvironmentConnection(env.id, appContext) { message ->
             _events.tryEmit(message)
             updateAggregateState()
         }
