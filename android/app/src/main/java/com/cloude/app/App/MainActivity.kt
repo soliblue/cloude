@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +35,7 @@ import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Services.ChatViewModel
 import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.UI.chat.ChatScreen
+import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.settings.SettingsScreen
 import com.cloude.app.UI.theme.CloudeTheme
 import com.cloude.app.Utilities.Accent
@@ -71,7 +73,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val appTheme by remember { mutableStateOf(AppTheme.Majorelle) }
             var showSettings by remember { mutableStateOf(false) }
+            var showConversations by remember { mutableStateOf(false) }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
+            val conversation by chatViewModel.conversation.collectAsState()
 
             CloudeTheme(appTheme = appTheme) {
                 Scaffold(
@@ -80,7 +84,10 @@ class MainActivity : ComponentActivity() {
                         CenterAlignedTopAppBar(
                             title = {
                                 Text(
-                                    text = if (showSettings) "Settings" else "Cloude",
+                                    text = when {
+                                        showSettings -> "Settings"
+                                        else -> conversation.name
+                                    },
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -113,6 +120,17 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             },
+                            actions = {
+                                if (!showSettings) {
+                                    IconButton(onClick = { showConversations = true }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.List,
+                                            contentDescription = "Conversations",
+                                            tint = Accent
+                                        )
+                                    }
+                                }
+                            },
                             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
@@ -130,6 +148,17 @@ class MainActivity : ComponentActivity() {
                         ChatScreen(
                             viewModel = chatViewModel,
                             modifier = Modifier.padding(innerPadding)
+                        )
+                    }
+
+                    if (showConversations) {
+                        ConversationListSheet(
+                            conversationStore = conversationStore,
+                            activeConversationId = conversation.id,
+                            onSelect = { chatViewModel.loadConversation(it.id) },
+                            onNew = { chatViewModel.newConversation() },
+                            onDelete = { conversationStore.delete(it.id) },
+                            onDismiss = { showConversations = false }
                         )
                     }
                 }
