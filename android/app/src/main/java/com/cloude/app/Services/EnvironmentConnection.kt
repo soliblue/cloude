@@ -47,6 +47,9 @@ class EnvironmentConnection(
     private val _defaultWorkingDirectory = MutableStateFlow<String?>(null)
     val defaultWorkingDirectory: StateFlow<String?> = _defaultWorkingDirectory
 
+    private val _skills = MutableStateFlow<List<com.cloude.app.Models.Skill>>(emptyList())
+    val skills: StateFlow<List<com.cloude.app.Models.Skill>> = _skills
+
     fun connect(host: String, port: Int, token: String) {
         savedHost = host
         savedPort = port
@@ -94,6 +97,7 @@ class EnvironmentConnection(
                     }
                     is ServerMessage.Status -> _agentState.value = message.state
                     is ServerMessage.DefaultWorkingDirectory -> _defaultWorkingDirectory.value = message.path
+                    is ServerMessage.Skills -> _skills.value = message.skills
                     else -> {}
                 }
 

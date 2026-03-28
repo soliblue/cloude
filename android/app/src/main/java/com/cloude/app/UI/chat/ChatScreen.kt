@@ -49,16 +49,20 @@ fun ChatScreen(
     environmentId: String,
     modifier: Modifier = Modifier
 ) {
+    val skills by connectionManager.connection(environmentId)?.skills?.collectAsState()
+        ?: remember { mutableStateOf(emptyList()) }
     val conversation by viewModel.conversation.collectAsState()
     val streamingText by viewModel.output.text.collectAsState()
     val streamingTools by viewModel.output.toolCalls.collectAsState()
     val isRunning by viewModel.output.isRunning.collectAsState()
     val isCompacting by viewModel.output.isCompacting.collectAsState()
-    val listState = rememberLazyListState()
+    val messageCount = conversation.messages.size
+    val hasStreaming = streamingText.isNotEmpty() || streamingTools.isNotEmpty()
+    val itemCount = 1 + messageCount + (if (hasStreaming) 1 else 0) + 1
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = maxOf(0, itemCount - 1))
 
-    LaunchedEffect(conversation.messages.size, streamingText) {
-        val total = conversation.messages.size + (if (streamingText.isNotEmpty() || streamingTools.isNotEmpty()) 1 else 0)
-        if (total > 0) listState.animateScrollToItem(total - 1)
+    LaunchedEffect(messageCount, streamingText) {
+        if (itemCount > 2) listState.animateScrollToItem(itemCount - 1)
     }
 
     Column(
@@ -194,6 +198,7 @@ fun ChatScreen(
             isRunning = isRunning,
             currentEffort = conversation.defaultEffort,
             currentModel = conversation.defaultModel,
+            skills = skills,
             onSend = { text, images -> viewModel.sendMessage(text, images) },
             onAbort = { viewModel.abort() },
             onEffortChange = { viewModel.setEffort(it) },

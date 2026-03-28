@@ -13,8 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Difference
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -37,11 +35,10 @@ import com.cloude.app.Models.ConversationStore
 import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Services.ChatViewModel
 import com.cloude.app.Services.ConnectionManager
-import com.cloude.app.UI.chat.ChatScreen
+import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.chat.ConversationListSheet
+import com.cloude.app.UI.chat.MainScreen
 import com.cloude.app.UI.deploy.DeploySheet
-import com.cloude.app.UI.files.FileBrowserScreen
-import com.cloude.app.UI.git.GitScreen
 import com.cloude.app.UI.settings.SettingsScreen
 import com.cloude.app.UI.theme.CloudeTheme
 import com.cloude.app.Utilities.Accent
@@ -55,6 +52,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var conversationStore: ConversationStore
     private val connectionManager = ConnectionManager()
     private lateinit var chatViewModel: ChatViewModel
+    private lateinit var windowManager: WindowManager
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +63,7 @@ class MainActivity : ComponentActivity() {
         conversationStore = ConversationStore(applicationContext)
         chatViewModel = ChatViewModel(connectionManager, environmentStore, conversationStore)
         chatViewModel.init()
+        windowManager = WindowManager(applicationContext)
 
         environmentStore.environments.value.forEach { env ->
             connectionManager.connectEnvironment(env)
@@ -86,8 +85,6 @@ class MainActivity : ComponentActivity() {
                 )
             }
             var showSettings by remember { mutableStateOf(false) }
-            var showFiles by remember { mutableStateOf(false) }
-            var showGit by remember { mutableStateOf(false) }
             var showConversations by remember { mutableStateOf(false) }
             var showDeploy by remember { mutableStateOf(false) }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
@@ -100,19 +97,14 @@ class MainActivity : ComponentActivity() {
                         CenterAlignedTopAppBar(
                             title = {
                                 Text(
-                                    text = when {
-                                        showSettings -> "Settings"
-                                        showFiles -> "Files"
-                                        showGit -> "Git"
-                                        else -> conversation.name
-                                    },
+                                    text = if (showSettings) "Settings" else conversation.name,
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
                             navigationIcon = {
-                                if (showSettings || showFiles || showGit) {
-                                    IconButton(onClick = { showSettings = false; showFiles = false; showGit = false }) {
+                                if (showSettings) {
+                                    IconButton(onClick = { showSettings = false }) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                             contentDescription = "Back",
@@ -139,25 +131,11 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                if (!showSettings && !showFiles && !showGit) {
+                                if (!showSettings) {
                                     IconButton(onClick = { showDeploy = true }) {
                                         Icon(
                                             imageVector = Icons.Default.RocketLaunch,
                                             contentDescription = "Deploy",
-                                            tint = Accent
-                                        )
-                                    }
-                                    IconButton(onClick = { showGit = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Difference,
-                                            contentDescription = "Git",
-                                            tint = Accent
-                                        )
-                                    }
-                                    IconButton(onClick = { showFiles = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Folder,
-                                            contentDescription = "Files",
                                             tint = Accent
                                         )
                                     }
@@ -177,6 +155,10 @@ class MainActivity : ComponentActivity() {
                     },
                     containerColor = MaterialTheme.colorScheme.background
                 ) { innerPadding ->
+                    val envId = environmentStore.activeEnvironmentId.value ?: ""
+                    val defaultDir = connectionManager.connection(envId)
+                        ?.defaultWorkingDirectory?.collectAsState()?.value ?: "/"
+
                     when {
                         showSettings -> SettingsScreen(
                             environmentStore = environmentStore,
@@ -188,43 +170,17 @@ class MainActivity : ComponentActivity() {
                             },
                             modifier = Modifier.padding(innerPadding)
                         )
-                        showFiles -> {
-                            val defaultDir = connectionManager.connection(
-                                environmentStore.activeEnvironmentId.value ?: ""
-                            )?.defaultWorkingDirectory?.collectAsState()?.value ?: "/"
-                            val envId = environmentStore.activeEnvironmentId.value ?: ""
-                            FileBrowserScreen(
-                                connectionManager = connectionManager,
-                                environmentId = envId,
-                                initialPath = defaultDir,
-                                modifier = Modifier.padding(innerPadding)
-                            )
-                        }
-                        showGit -> {
-                            val defaultDir = connectionManager.connection(
-                                environmentStore.activeEnvironmentId.value ?: ""
-                            )?.defaultWorkingDirectory?.collectAsState()?.value ?: "/"
-                            val envId = environmentStore.activeEnvironmentId.value ?: ""
-                            GitScreen(
-                                connectionManager = connectionManager,
-                                environmentId = envId,
-                                workingDirectory = defaultDir,
-                                modifier = Modifier.padding(innerPadding)
-                            )
-                        }
-                        else -> ChatScreen(
+                        else -> MainScreen(
+                            windowManager = windowManager,
                             viewModel = chatViewModel,
                             connectionManager = connectionManager,
-                            environmentId = environmentStore.activeEnvironmentId.value ?: "",
+                            environmentId = envId,
+                            workingDirectory = defaultDir,
                             modifier = Modifier.padding(innerPadding)
                         )
                     }
 
                     if (showDeploy) {
-                        val defaultDir = connectionManager.connection(
-                            environmentStore.activeEnvironmentId.value ?: ""
-                        )?.defaultWorkingDirectory?.collectAsState()?.value ?: "/"
-                        val envId = environmentStore.activeEnvironmentId.value ?: ""
                         DeploySheet(
                             connectionManager = connectionManager,
                             environmentId = envId,

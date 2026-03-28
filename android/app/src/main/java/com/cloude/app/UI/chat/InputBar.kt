@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -50,6 +51,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import com.cloude.app.Models.Skill
+import com.cloude.app.Models.SlashCommand
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelRed
@@ -60,6 +65,7 @@ fun InputBar(
     isRunning: Boolean,
     currentEffort: String?,
     currentModel: String?,
+    skills: List<Skill> = emptyList(),
     onSend: (String, List<String>?) -> Unit,
     onAbort: () -> Unit,
     onEffortChange: (String?) -> Unit,
@@ -94,7 +100,43 @@ fun InputBar(
         }
     }
 
+    val slashQuery = remember(text) {
+        if (text.startsWith("/")) text.drop(1).takeWhile { it != ' ' && it != '\n' }
+        else null
+    }
+    val suggestions = remember(slashQuery, skills) {
+        if (slashQuery != null) SlashCommand.filtered(slashQuery, skills) else emptyList()
+    }
+
     Column(modifier = modifier) {
+        if (suggestions.isNotEmpty() && !isRunning) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = DS.Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+            ) {
+                suggestions.take(10).forEach { command ->
+                    SlashCommandPill(
+                        command = command,
+                        onSelect = {
+                            val resolved = command.resolvesTo ?: command.name
+                            text = "/$resolved"
+                            if (!command.hasParameters) {
+                                val images = attachedImages.map { it.second }.takeIf { it.isNotEmpty() }
+                                onSend(text, images)
+                                text = ""
+                                attachedImages = emptyList()
+                            } else {
+                                text = "/$resolved "
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
         Row(
             modifier = Modifier.padding(bottom = DS.Spacing.xs),
             horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
@@ -291,4 +333,36 @@ private fun bitmapToBase64(bitmap: Bitmap): String {
     val stream = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
     return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+}
+
+@Composable
+private fun SlashCommandPill(command: SlashCommand, onSelect: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(DS.Radius.m))
+            .background(
+                if (command.isSkill) Accent.copy(alpha = DS.Opacity.s)
+                else MaterialTheme.colorScheme.surfaceVariant
+            )
+            .clickable(onClick = onSelect)
+            .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+    ) {
+        Text(
+            text = "/${command.name}",
+            style = MaterialTheme.typography.labelSmall,
+            color = if (command.isSkill) Accent else MaterialTheme.colorScheme.onSurface
+        )
+        if (command.description.isNotEmpty()) {
+            Text(
+                text = command.description,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.widthIn(max = 150.dp)
+            )
+        }
+    }
 }
