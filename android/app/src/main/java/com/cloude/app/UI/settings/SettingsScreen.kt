@@ -37,18 +37,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Models.ServerEnvironment
 import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.Utilities.Accent
+import com.cloude.app.Utilities.AppTheme
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelGreen
 import com.cloude.app.Utilities.PastelRed
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsScreen(
     environmentStore: EnvironmentStore,
     connectionManager: ConnectionManager,
+    currentTheme: AppTheme,
+    onThemeChange: (AppTheme) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val environments by environmentStore.environments.collectAsState()
@@ -63,6 +70,47 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState())
             .padding(DS.Spacing.l)
     ) {
+        Text(
+            text = "Theme",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(DS.Spacing.s))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
+        ) {
+            AppTheme.entries.forEach { theme ->
+                val isSelected = theme == currentTheme
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .clickable { onThemeChange(theme) }
+                        .padding(DS.Spacing.xs)
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color(theme.palette.background))
+                            .then(
+                                if (isSelected) Modifier.border(2.dp, Accent, CircleShape)
+                                else Modifier.border(1.dp, Color.Gray.copy(alpha = 0.3f), CircleShape)
+                            )
+                    )
+                    Text(
+                        text = theme.displayName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isSelected) Accent
+                               else MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(DS.Spacing.xl))
+
         Text(
             text = "Environments",
             style = MaterialTheme.typography.titleMedium,

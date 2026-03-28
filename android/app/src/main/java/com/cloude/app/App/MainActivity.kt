@@ -76,8 +76,15 @@ class MainActivity : ComponentActivity() {
             chatViewModel.loadConversation(it.id)
         }
 
+        val prefs = getSharedPreferences("cloude", MODE_PRIVATE)
         setContent {
-            val appTheme by remember { mutableStateOf(AppTheme.Majorelle) }
+            var appTheme by remember {
+                mutableStateOf(
+                    prefs.getString("theme", null)?.let { name ->
+                        AppTheme.entries.firstOrNull { it.name == name }
+                    } ?: AppTheme.Majorelle
+                )
+            }
             var showSettings by remember { mutableStateOf(false) }
             var showFiles by remember { mutableStateOf(false) }
             var showGit by remember { mutableStateOf(false) }
@@ -174,6 +181,11 @@ class MainActivity : ComponentActivity() {
                         showSettings -> SettingsScreen(
                             environmentStore = environmentStore,
                             connectionManager = connectionManager,
+                            currentTheme = appTheme,
+                            onThemeChange = {
+                                appTheme = it
+                                prefs.edit().putString("theme", it.name).apply()
+                            },
                             modifier = Modifier.padding(innerPadding)
                         )
                         showFiles -> {
