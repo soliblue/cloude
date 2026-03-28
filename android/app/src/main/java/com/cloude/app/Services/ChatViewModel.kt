@@ -109,6 +109,11 @@ class ChatViewModel(
         persistConversation()
     }
 
+    fun setWorkingDirectory(path: String) {
+        _conversation.value = _conversation.value.copy(workingDirectory = path)
+        persistConversation()
+    }
+
     private fun handleMessage(message: ServerMessage) {
         when (message) {
             is ServerMessage.Output -> output.appendText(message.text)

@@ -214,6 +214,8 @@ class MainActivity : ComponentActivity() {
                         }
                         else -> ChatScreen(
                             viewModel = chatViewModel,
+                            connectionManager = connectionManager,
+                            environmentId = environmentStore.activeEnvironmentId.value ?: "",
                             modifier = Modifier.padding(innerPadding)
                         )
                     }
