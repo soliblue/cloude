@@ -48,7 +48,8 @@ data class ChatMessage(
     var wasInterrupted: Boolean = false,
     var serverUUID: String? = null,
     var model: String? = null,
-    var isCollapsed: Boolean = false
+    var isCollapsed: Boolean = false,
+    var imageCount: Int = 0
 )
 
 @Serializable

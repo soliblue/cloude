@@ -1,17 +1,30 @@
 package com.cloude.app.UI.chat
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Base64
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,23 +39,53 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelRed
+import java.io.ByteArrayOutputStream
 
 @Composable
 fun InputBar(
     isRunning: Boolean,
     currentEffort: String?,
     currentModel: String?,
-    onSend: (String) -> Unit,
+    onSend: (String, List<String>?) -> Unit,
     onAbort: () -> Unit,
     onEffortChange: (String?) -> Unit,
     onModelChange: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var text by remember { mutableStateOf("") }
+    var attachedImages by remember { mutableStateOf<List<Pair<Bitmap, String>>>(emptyList()) }
+    val context = LocalContext.current
+
+    val imagePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
+    ) { uris: List<Uri> ->
+        val newImages = uris.mapNotNull { uri ->
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                val bitmap = BitmapFactory.decodeStream(stream) ?: return@use null
+                val scaled = scaleBitmap(bitmap, 1920)
+                val base64 = bitmapToBase64(scaled)
+                scaled to base64
+            }
+        }
+        attachedImages = attachedImages + newImages
+    }
+
+    fun doSend() {
+        if (text.isNotBlank() || attachedImages.isNotEmpty()) {
+            val images = attachedImages.map { it.second }.takeIf { it.isNotEmpty() }
+            onSend(text, images)
+            text = ""
+            attachedImages = emptyList()
+        }
+    }
 
     Column(modifier = modifier) {
         Row(
@@ -75,6 +118,39 @@ fun InputBar(
             )
         }
 
+        if (attachedImages.isNotEmpty()) {
+            Row(
+                modifier = Modifier.padding(bottom = DS.Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+            ) {
+                attachedImages.forEachIndexed { index, (bitmap, _) ->
+                    Box {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Attached image",
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(DS.Radius.s)),
+                            contentScale = ContentScale.Crop
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Remove",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .size(DS.Icon.s)
+                                .align(Alignment.TopEnd)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.error)
+                                .clickable {
+                                    attachedImages = attachedImages.toMutableList().apply { removeAt(index) }
+                                }
+                        )
+                    }
+                }
+            }
+        }
+
         Row(
             modifier = Modifier
                 .background(
@@ -84,6 +160,18 @@ fun InputBar(
                 .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            IconButton(
+                onClick = { imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                modifier = Modifier.size(DS.Size.m)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Image,
+                    contentDescription = "Attach image",
+                    tint = Accent,
+                    modifier = Modifier.size(DS.Icon.m)
+                )
+            }
+
             BasicTextField(
                 value = text,
                 onValueChange = { text = it },
@@ -96,10 +184,7 @@ fun InputBar(
                 cursorBrush = SolidColor(Accent),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
-                    if (text.isNotBlank() && !isRunning) {
-                        onSend(text)
-                        text = ""
-                    }
+                    if (!isRunning) doSend()
                 }),
                 decorationBox = { innerTextField ->
                     if (text.isEmpty()) {
@@ -123,18 +208,13 @@ fun InputBar(
                 }
             } else {
                 IconButton(
-                    onClick = {
-                        if (text.isNotBlank()) {
-                            onSend(text)
-                            text = ""
-                        }
-                    },
-                    enabled = text.isNotBlank()
+                    onClick = { doSend() },
+                    enabled = text.isNotBlank() || attachedImages.isNotEmpty()
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send",
-                        tint = if (text.isNotBlank()) Accent
+                        tint = if (text.isNotBlank() || attachedImages.isNotEmpty()) Accent
                                else MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s)
                     )
                 }
@@ -159,4 +239,21 @@ private fun PickerChip(label: String, isDefault: Boolean, onClick: () -> Unit) {
             .clickable(onClick = onClick)
             .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs)
     )
+}
+
+private fun scaleBitmap(bitmap: Bitmap, maxDimension: Int): Bitmap {
+    val ratio = minOf(maxDimension.toFloat() / bitmap.width, maxDimension.toFloat() / bitmap.height)
+    if (ratio >= 1f) return bitmap
+    return Bitmap.createScaledBitmap(
+        bitmap,
+        (bitmap.width * ratio).toInt(),
+        (bitmap.height * ratio).toInt(),
+        true
+    )
+}
+
+private fun bitmapToBase64(bitmap: Bitmap): String {
+    val stream = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+    return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
 }

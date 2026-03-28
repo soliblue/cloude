@@ -51,13 +51,13 @@ class ChatViewModel(
         )
     }
 
-    fun sendMessage(text: String) {
+    fun sendMessage(text: String, imagesBase64: List<String>? = null) {
         val envId = activeEnvId
-        Log.d("Cloude", "sendMessage: envId=$envId sessionId=${_conversation.value.sessionId} isRunning=${output.isRunning.value}")
+        Log.d("Cloude", "sendMessage: envId=$envId sessionId=${_conversation.value.sessionId} isRunning=${output.isRunning.value} images=${imagesBase64?.size ?: 0}")
         if (envId == null) return
         val conv = _conversation.value
 
-        val userMessage = ChatMessage(isUser = true, text = text)
+        val userMessage = ChatMessage(isUser = true, text = text, imageCount = imagesBase64?.size ?: 0)
         val newMessages = conv.messages.toMutableList().apply { add(userMessage) }
         _conversation.value = conv.copy(
             messages = newMessages,
@@ -79,6 +79,7 @@ class ChatViewModel(
                 isNewSession = conv.sessionId == null,
                 conversationId = conv.id,
                 conversationName = conv.name,
+                imagesBase64 = imagesBase64,
                 effort = conv.defaultEffort,
                 model = conv.defaultModel
             ),
