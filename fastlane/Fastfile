@@ -4,8 +4,8 @@ KEYCHAIN_NAME = "cloude-build.keychain"
 KEYCHAIN_PASSWORD = "cloude-build-temp"
 
 def setup_signing
-  cert_path = File.expand_path("../certs/distribution.p12", __dir__)
-  cert_password = ENV["DISTRIBUTION_CERTIFICATE_PASSWORD"] || ENV["CERT_PASSWORD"]
+  cert_path = ENV["SIGNING_CERT_PATH"] || File.expand_path("../certs/distribution.p12", __dir__)
+  cert_password = ENV["SIGNING_CERT_PASSWORD"] || ENV["DISTRIBUTION_CERTIFICATE_PASSWORD"] || ENV["CERT_PASSWORD"]
 
   unless File.exist?(cert_path)
     UI.user_error!("Certificate not found at #{cert_path}")
