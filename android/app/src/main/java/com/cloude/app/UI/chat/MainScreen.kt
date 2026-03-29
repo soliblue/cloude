@@ -100,4 +100,12 @@ fun MainScreen(
             }
         }
     }
+
+    val usageStats by viewModel.usageStats.collectAsState()
+    if (usageStats != null) {
+        UsageStatsSheet(
+            stats = usageStats!!,
+            onDismiss = { viewModel.dismissUsageStats() }
+        )
+    }
 }

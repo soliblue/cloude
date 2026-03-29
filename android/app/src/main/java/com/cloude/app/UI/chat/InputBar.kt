@@ -36,7 +36,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
@@ -68,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import com.cloude.app.Models.AttachedFilePayload
 import com.cloude.app.Models.Skill
 import com.cloude.app.Models.SlashCommand
 import com.cloude.app.Services.AudioRecorder
@@ -85,7 +88,7 @@ fun InputBar(
     currentEffort: String?,
     currentModel: String?,
     skills: List<Skill> = emptyList(),
-    onSend: (String, List<String>?) -> Unit,
+    onSend: (String, List<String>?, List<AttachedFilePayload>?) -> Unit,
     onAbort: () -> Unit,
     onTranscribe: (String) -> Unit = {},
     onTranscriptionConsumed: () -> Unit = {},
@@ -95,6 +98,7 @@ fun InputBar(
 ) {
     var text by remember { mutableStateOf("") }
     var attachedImages by remember { mutableStateOf<List<Pair<Bitmap, String>>>(emptyList()) }
+    var attachedFiles by remember { mutableStateOf<List<AttachedFilePayload>>(emptyList()) }
     var expandedImage by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
 
@@ -144,12 +148,30 @@ fun InputBar(
         attachedImages = attachedImages + newImages
     }
 
+    val filePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris: List<Uri> ->
+        val newFiles = uris.mapNotNull { uri ->
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                val bytes = stream.readBytes()
+                val name = uri.lastPathSegment?.substringAfterLast('/') ?: "file"
+                AttachedFilePayload(
+                    name = name,
+                    data = Base64.encodeToString(bytes, Base64.NO_WRAP)
+                )
+            }
+        }
+        attachedFiles = attachedFiles + newFiles
+    }
+
     fun doSend() {
-        if (text.isNotBlank() || attachedImages.isNotEmpty()) {
+        if (text.isNotBlank() || attachedImages.isNotEmpty() || attachedFiles.isNotEmpty()) {
             val images = attachedImages.map { it.second }.takeIf { it.isNotEmpty() }
-            onSend(text, images)
+            val files = attachedFiles.takeIf { it.isNotEmpty() }
+            onSend(text, images, files)
             text = ""
             attachedImages = emptyList()
+            attachedFiles = emptyList()
         }
     }
 
@@ -178,9 +200,11 @@ fun InputBar(
                             text = "/$resolved"
                             if (!command.hasParameters) {
                                 val images = attachedImages.map { it.second }.takeIf { it.isNotEmpty() }
-                                onSend(text, images)
+                                val files = attachedFiles.takeIf { it.isNotEmpty() }
+                                onSend(text, images, files)
                                 text = ""
                                 attachedImages = emptyList()
+                                attachedFiles = emptyList()
                             } else {
                                 text = "/$resolved "
                             }
@@ -255,6 +279,25 @@ fun InputBar(
             }
         }
 
+        if (attachedFiles.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = DS.Spacing.s),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
+            ) {
+                attachedFiles.forEachIndexed { index, file ->
+                    FileAttachmentPill(
+                        name = file.name,
+                        onRemove = {
+                            attachedFiles = attachedFiles.toMutableList().apply { removeAt(index) }
+                        }
+                    )
+                }
+            }
+        }
+
         Row(
             modifier = Modifier
                 .background(
@@ -272,6 +315,20 @@ fun InputBar(
                 Icon(
                     imageVector = Icons.Default.Image,
                     contentDescription = "Attach image",
+                    tint = if (isRecording) MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s)
+                           else Accent,
+                    modifier = Modifier.size(DS.Icon.m)
+                )
+            }
+
+            IconButton(
+                onClick = { filePicker.launch(arrayOf("*/*")) },
+                modifier = Modifier.size(DS.Size.m),
+                enabled = !isRecording
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AttachFile,
+                    contentDescription = "Attach file",
                     tint = if (isRecording) MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s)
                            else Accent,
                     modifier = Modifier.size(DS.Icon.m)
@@ -348,7 +405,7 @@ fun InputBar(
                         tint = PastelRed
                     )
                 }
-            } else if (text.isEmpty() && attachedImages.isEmpty() && whisperReady && !isTranscribing) {
+            } else if (text.isEmpty() && attachedImages.isEmpty() && attachedFiles.isEmpty() && whisperReady && !isTranscribing) {
                 IconButton(onClick = { startRecordingWithPermission() }) {
                     Icon(
                         imageVector = Icons.Default.Mic,
@@ -359,12 +416,12 @@ fun InputBar(
             } else {
                 IconButton(
                     onClick = { doSend() },
-                    enabled = text.isNotBlank() || attachedImages.isNotEmpty()
+                    enabled = text.isNotBlank() || attachedImages.isNotEmpty() || attachedFiles.isNotEmpty()
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Send",
-                        tint = if (text.isNotBlank() || attachedImages.isNotEmpty()) Accent
+                        tint = if (text.isNotBlank() || attachedImages.isNotEmpty() || attachedFiles.isNotEmpty()) Accent
                                else MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s)
                     )
                 }
@@ -480,6 +537,43 @@ private fun bitmapToBase64(bitmap: Bitmap): String {
     val stream = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
     return Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+}
+
+@Composable
+private fun FileAttachmentPill(name: String, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(DS.Radius.m))
+            .background(Accent.copy(alpha = 0.1f))
+            .border(1.dp, Accent.copy(alpha = 0.3f), RoundedCornerShape(DS.Radius.m))
+            .padding(start = DS.Spacing.s, end = DS.Spacing.xs, top = DS.Spacing.xs, bottom = DS.Spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Description,
+            contentDescription = null,
+            tint = Accent,
+            modifier = Modifier.size(DS.Icon.s)
+        )
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelSmall,
+            color = Accent,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            modifier = Modifier.widthIn(max = 120.dp)
+        )
+        Icon(
+            imageVector = Icons.Default.Close,
+            contentDescription = "Remove",
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+            modifier = Modifier
+                .size(DS.Icon.s)
+                .clip(CircleShape)
+                .clickable(onClick = onRemove)
+        )
+    }
 }
 
 @Composable

@@ -1,0 +1,21 @@
+# Android Conversation Search {magnifyingglass}
+<!-- priority: 11 -->
+<!-- tags: android, search -->
+<!-- status: done -->
+
+> Search across conversations by name, working directory, and message text.
+
+## Implementation
+
+- `ConversationListSheet.kt` - SearchBar composable with magnifying glass icon, BasicTextField, clear button
+- Filters conversations by name, working directory, and message text (case-insensitive)
+- `matchSnippet()` extracts 80-char preview with 30 chars before + 50 chars after match, with ellipsis
+- ConversationRow shows optional match snippet in muted text below conversation name
+- Empty state shows "No conversations found" when search has no results
+
+### Not yet matching iOS
+- iOS groups results by working directory with section headers
+- iOS searches tool call content too
+
+**Files (iOS reference):** MainChatView+SearchSheet.swift (+Components)
+**Files (Android):** ConversationListSheet.kt

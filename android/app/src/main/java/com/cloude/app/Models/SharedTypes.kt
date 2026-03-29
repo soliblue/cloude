@@ -113,16 +113,33 @@ data class PlanItem(
 data class UsageStats(
     val totalSessions: Int = 0,
     val totalMessages: Int = 0,
-    val dailyActivity: Map<String, Int> = emptyMap(),
+    val firstSessionDate: String? = null,
+    val dailyActivity: List<DailyActivity> = emptyList(),
     val modelUsage: Map<String, ModelTokenUsage> = emptyMap(),
     val hourCounts: Map<String, Int> = emptyMap(),
-    val longestSession: Int? = null
+    val longestSession: LongestSession? = null
+)
+
+@Serializable
+data class DailyActivity(
+    val date: String,
+    val messageCount: Int = 0,
+    val sessionCount: Int = 0,
+    val toolCallCount: Int = 0
 )
 
 @Serializable
 data class ModelTokenUsage(
     val inputTokens: Long = 0,
-    val outputTokens: Long = 0
+    val outputTokens: Long = 0,
+    val cacheReadInputTokens: Long = 0,
+    val cacheCreationInputTokens: Long = 0
+)
+
+@Serializable
+data class LongestSession(
+    val messageCount: Int = 0,
+    val duration: Int = 0
 )
 
 @Serializable

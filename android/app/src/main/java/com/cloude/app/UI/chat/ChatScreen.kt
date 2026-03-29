@@ -157,7 +157,10 @@ fun ChatScreen(
                 item { Spacer(modifier = Modifier.height(DS.Spacing.s)) }
 
                 items(conversation.messages, key = { it.id }) { message ->
-                    MessageBubble(message = message)
+                    MessageBubble(
+                        message = message,
+                        onToggleCollapse = if (!message.isUser) {{ viewModel.toggleCollapse(message.id) }} else null
+                    )
                 }
 
                 if (streamingText.isNotEmpty() || streamingTools.isNotEmpty()) {
@@ -206,7 +209,13 @@ fun ChatScreen(
             currentEffort = conversation.defaultEffort,
             currentModel = conversation.defaultModel,
             skills = skills,
-            onSend = { text, images -> viewModel.sendMessage(text, images) },
+            onSend = { text, images, files ->
+                if (text.trim().equals("/usage", ignoreCase = true)) {
+                    viewModel.requestUsageStats()
+                } else {
+                    viewModel.sendMessage(text, images, files)
+                }
+            },
             onAbort = { viewModel.abort() },
             onTranscribe = { viewModel.transcribe(it) },
             onTranscriptionConsumed = { viewModel.consumeTranscription() },

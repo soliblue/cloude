@@ -1,24 +1,31 @@
 package com.cloude.app.UI.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -33,6 +40,8 @@ import com.cloude.app.Utilities.DS
 fun MarkdownText(
     text: String,
     color: Color = MaterialTheme.colorScheme.onSurface,
+    onLongPress: (() -> Unit)? = null,
+    interactionSource: MutableInteractionSource? = null,
     modifier: Modifier = Modifier
 ) {
     val blocks = parseBlocks(text)
@@ -137,12 +146,33 @@ fun MarkdownText(
                             color = color
                         )
                         val annotated = parseInline(block.text, color, inlineCodeBackground, linkColor)
-                        ClickableText(
+                        val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+                        Text(
                             text = annotated,
                             style = MaterialTheme.typography.bodyMedium,
-                            onClick = { offset ->
-                                annotated.getStringAnnotations("URL", offset, offset)
-                                    .firstOrNull()?.let { uriHandler.openUri(it.item) }
+                            onTextLayout = { layoutResult.value = it },
+                            modifier = Modifier.pointerInput(onLongPress, interactionSource) {
+                                detectTapGestures(
+                                    onPress = { offset ->
+                                        val press = interactionSource?.let {
+                                            PressInteraction.Press(Offset(offset.x, offset.y)).also { p -> it.emit(p) }
+                                        }
+                                        val released = tryAwaitRelease()
+                                        press?.let { p ->
+                                            interactionSource?.emit(
+                                                if (released) PressInteraction.Release(p) else PressInteraction.Cancel(p)
+                                            )
+                                        }
+                                    },
+                                    onTap = { pos ->
+                                        layoutResult.value?.let { layout ->
+                                            val offset = layout.getOffsetForPosition(pos)
+                                            annotated.getStringAnnotations("URL", offset, offset)
+                                                .firstOrNull()?.let { uriHandler.openUri(it.item) }
+                                        }
+                                    },
+                                    onLongPress = { onLongPress?.invoke() }
+                                )
                             }
                         )
                     }
@@ -157,14 +187,36 @@ fun MarkdownText(
 
                 is Block.Paragraph -> {
                     val annotated = parseInline(block.text, color, inlineCodeBackground, linkColor)
-                    ClickableText(
+                    val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+                    Text(
                         text = annotated,
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 2.dp),
-                        onClick = { offset ->
-                            annotated.getStringAnnotations("URL", offset, offset)
-                                .firstOrNull()?.let { uriHandler.openUri(it.item) }
-                        }
+                        onTextLayout = { layoutResult.value = it },
+                        modifier = Modifier
+                            .padding(vertical = 2.dp)
+                            .pointerInput(onLongPress, interactionSource) {
+                                detectTapGestures(
+                                    onPress = { offset ->
+                                        val press = interactionSource?.let {
+                                            PressInteraction.Press(Offset(offset.x, offset.y)).also { p -> it.emit(p) }
+                                        }
+                                        val released = tryAwaitRelease()
+                                        press?.let { p ->
+                                            interactionSource?.emit(
+                                                if (released) PressInteraction.Release(p) else PressInteraction.Cancel(p)
+                                            )
+                                        }
+                                    },
+                                    onTap = { pos ->
+                                        layoutResult.value?.let { layout ->
+                                            val offset = layout.getOffsetForPosition(pos)
+                                            annotated.getStringAnnotations("URL", offset, offset)
+                                                .firstOrNull()?.let { uriHandler.openUri(it.item) }
+                                        }
+                                    },
+                                    onLongPress = { onLongPress?.invoke() }
+                                )
+                            }
                     )
                 }
             }

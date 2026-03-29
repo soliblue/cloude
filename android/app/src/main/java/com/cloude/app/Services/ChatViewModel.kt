@@ -2,6 +2,7 @@ package com.cloude.app.Services
 
 import android.util.Log
 import com.cloude.app.Models.AgentState
+import com.cloude.app.Models.AttachedFilePayload
 import com.cloude.app.Models.ChatMessage
 import com.cloude.app.Models.ClientMessage
 import com.cloude.app.Models.Conversation
@@ -10,6 +11,7 @@ import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Models.ServerMessage
 import com.cloude.app.Models.ToolCall
 import com.cloude.app.Models.ToolCallState
+import com.cloude.app.Models.UsageStats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,6 +37,11 @@ class ChatViewModel(
     private val _pendingTranscription = MutableStateFlow<String?>(null)
     val pendingTranscription: StateFlow<String?> = _pendingTranscription
 
+    private val _usageStats = MutableStateFlow<UsageStats?>(null)
+    val usageStats: StateFlow<UsageStats?> = _usageStats
+
+    private var awaitingUsageStats = false
+
     private val activeEnvId: String?
         get() = _conversation.value.environmentId ?: environmentStore.activeEnvironmentId.value
 
@@ -57,13 +64,13 @@ class ChatViewModel(
         )
     }
 
-    fun sendMessage(text: String, imagesBase64: List<String>? = null) {
+    fun sendMessage(text: String, imagesBase64: List<String>? = null, filesBase64: List<AttachedFilePayload>? = null) {
         val envId = activeEnvId
-        Log.d("Cloude", "sendMessage: envId=$envId sessionId=${_conversation.value.sessionId} isRunning=${output.isRunning.value} images=${imagesBase64?.size ?: 0}")
+        Log.d("Cloude", "sendMessage: envId=$envId sessionId=${_conversation.value.sessionId} isRunning=${output.isRunning.value} images=${imagesBase64?.size ?: 0} files=${filesBase64?.size ?: 0}")
         if (envId == null) return
         val conv = _conversation.value
 
-        val userMessage = ChatMessage(isUser = true, text = text, imageCount = imagesBase64?.size ?: 0)
+        val userMessage = ChatMessage(isUser = true, text = text, imageCount = imagesBase64?.size ?: 0, fileCount = filesBase64?.size ?: 0)
         val newMessages = conv.messages.toMutableList().apply { add(userMessage) }
         _conversation.value = conv.copy(
             messages = newMessages,
@@ -86,6 +93,7 @@ class ChatViewModel(
                 conversationId = conv.id,
                 conversationName = conv.name,
                 imagesBase64 = imagesBase64,
+                filesBase64 = filesBase64,
                 effort = conv.defaultEffort,
                 model = conv.defaultModel
             ),
@@ -128,6 +136,24 @@ class ChatViewModel(
     fun setWorkingDirectory(path: String) {
         _conversation.value = _conversation.value.copy(workingDirectory = path)
         persistConversation()
+    }
+
+    fun requestUsageStats() {
+        val envId = activeEnvId ?: return
+        awaitingUsageStats = true
+        connectionManager.send(ClientMessage.GetUsageStats, envId)
+    }
+
+    fun dismissUsageStats() {
+        _usageStats.value = null
+    }
+
+    fun toggleCollapse(messageId: String) {
+        val conv = _conversation.value
+        val updated = conv.messages.map {
+            if (it.id == messageId) it.copy(isCollapsed = !it.isCollapsed) else it
+        }
+        _conversation.value = conv.copy(messages = updated.toMutableList())
     }
 
     private fun handleMessage(message: ServerMessage) {
@@ -184,6 +210,13 @@ class ChatViewModel(
             is ServerMessage.Transcription -> {
                 _pendingTranscription.value = message.text
                 _isTranscribing.value = false
+            }
+
+            is ServerMessage.UsageStatsMsg -> {
+                if (awaitingUsageStats) {
+                    awaitingUsageStats = false
+                    _usageStats.value = message.stats
+                }
             }
 
             is ServerMessage.Error -> {
