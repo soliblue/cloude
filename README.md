@@ -25,6 +25,33 @@ Cloude/
 linux-relay/                   # Node.js relay
 ```
 
+## TestFlight Deploys
+
+GitHub Actions is already wired to deploy the iOS app to TestFlight.
+
+Triggers:
+
+- Run `Deploy to TestFlight` manually from the Actions tab with `Run workflow`
+- Push a tag that matches `v*`, such as `v1.0.0`
+
+Required GitHub repository secrets:
+
+- `CERT_P12_BASE64`
+- `CERT_PASSWORD`
+- `APP_STORE_CONNECT_API_KEY_ID`
+- `APP_STORE_CONNECT_API_ISSUER_ID`
+- `APP_STORE_CONNECT_API_KEY_CONTENT`
+
+`CERT_P12_BASE64` should be the base64-encoded contents of `certs/distribution.p12`.
+
+Example:
+
+```sh
+base64 -i certs/distribution.p12 | pbcopy
+```
+
+The workflow definition lives at `.github/workflows/testflight.yml`, and the Fastlane lane it runs is `fastlane ios beta_local`.
+
 ## Security Notes
 
 If you run the relay on a VPS, lock down the raw IP and expose it only through the tunnel. The helper script at `linux-relay/scripts/harden-firewall.sh` sets up the intended firewall posture.

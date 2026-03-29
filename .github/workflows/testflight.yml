@@ -6,6 +6,10 @@ on:
     tags:
       - 'v*'
 
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: macos-15
