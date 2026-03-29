@@ -35,7 +35,20 @@ extension WhiteboardSheet {
             let size = element.fontSize ?? 12
             let maxWidth = rect.width - (element.type == .triangle ? rect.width * 0.3 : 12)
             let labelY = element.type == .triangle ? rect.midY + rect.height * 0.08 : rect.midY
-            drawWrappedText(label, in: ctx, fontSize: size, color: .white, maxWidth: maxWidth, center: CGPoint(x: rect.midX, y: labelY))
+            let labelColor: Color = {
+                if let fill = element.fill {
+                    let hex = fill.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+                    var value: UInt64 = 0
+                    if Scanner(string: hex).scanHexInt64(&value), hex.count == 6 {
+                        let red = Double((value >> 16) & 0xff) / 255
+                        let green = Double((value >> 8) & 0xff) / 255
+                        let blue = Double(value & 0xff) / 255
+                        return (0.299 * red + 0.587 * green + 0.114 * blue) > 0.6 ? .black : .white
+                    }
+                }
+                return .white
+            }()
+            drawWrappedText(label, in: ctx, fontSize: size, color: labelColor, maxWidth: maxWidth, center: CGPoint(x: rect.midX, y: labelY))
         }
     }
 

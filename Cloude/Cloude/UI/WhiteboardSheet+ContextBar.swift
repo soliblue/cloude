@@ -39,10 +39,6 @@ extension WhiteboardSheet {
                 contextColorRow
                 contextActionRow
             }
-            .padding(.horizontal, DS.Spacing.l)
-            .padding(.vertical, DS.Spacing.m)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
         }
     }
 
