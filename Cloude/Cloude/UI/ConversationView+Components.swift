@@ -3,6 +3,7 @@ import Combine
 import CloudeShared
 
 struct ChatMessageList: View {
+    @AppStorage("fontSizeStep") var fontSizeStep = 0
     let messages: [ChatMessage]
     var queuedMessages: [ChatMessage] = []
     let agentState: AgentState

@@ -22,9 +22,9 @@ struct ThemePickerView: View {
                 }
                 .padding(DS.Spacing.m)
             }
-            .background(Color(hex: appTheme.palette.background))
+            .background(Color.themeBackground(appTheme))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color(hex: appTheme.palette.secondary), for: .navigationBar)
+            .toolbarBackground(Color.themeSecondary(appTheme), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -48,10 +48,10 @@ struct ThemeCard: View {
         VStack(spacing: 0) {
             HStack(spacing: DS.Spacing.xs) {
                 RoundedRectangle(cornerRadius: DS.Radius.s)
-                    .fill(Color(hex: theme.palette.background))
+                    .fill(Color.themeBackground(theme))
                     .frame(height: DS.Size.m)
                 RoundedRectangle(cornerRadius: DS.Radius.s)
-                    .fill(Color(hex: theme.palette.secondary))
+                    .fill(Color.themeSecondary(theme))
                     .frame(height: DS.Size.m)
             }
             .padding(DS.Spacing.s)
@@ -61,7 +61,7 @@ struct ThemeCard: View {
                 .foregroundColor(isSelected ? .primary : .secondary)
                 .padding(.bottom, DS.Spacing.s)
         }
-        .background(Color(hex: currentTheme.palette.secondary))
+        .background(Color.themeSecondary(currentTheme))
         .cornerRadius(DS.Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.m)

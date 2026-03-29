@@ -17,15 +17,14 @@ extension CloudeApp {
                     }
                     if let conv = conversation {
                         Text(conv.name)
-                            .font(.caption)
-                            .fontWeight(.semibold)
+                            .font(.system(size: DS.Text.m, weight: .semibold))
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                             .contentTransition(.numericText())
                             .animation(.easeInOut(duration: DS.Duration.m), value: conv.name)
                     } else {
                         Text("Select chat...")
-                            .font(.caption)
+                            .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
                     }
                 }

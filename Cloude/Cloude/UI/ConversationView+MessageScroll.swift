@@ -69,7 +69,7 @@ extension ChatMessageList {
                     isAssistant: !message.isUser,
                     viewportHeight: viewportHeight
                 )
-                .id(message.id)
+                .id("\(message.id.uuidString)-\(fontSizeStep)")
             } else {
                 MessageBubble(
                     message: message,
@@ -81,7 +81,7 @@ extension ChatMessageList {
                     isAssistant: !message.isUser,
                     viewportHeight: viewportHeight
                 )
-                .id(message.id)
+                .id("\(message.id.uuidString)-\(fontSizeStep)")
             }
         }
     }
@@ -98,7 +98,7 @@ extension ChatMessageList {
             QueuedBubble(message: message, skills: connection?.skills ?? []) {
                 onDeleteQueued?(message.id)
             }
-            .id("\(message.id)-queued")
+            .id("\(message.id.uuidString)-queued-\(fontSizeStep)")
         }
     }
 }

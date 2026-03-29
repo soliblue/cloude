@@ -3,15 +3,27 @@
   "configurations": [
     {
       "name": "iOS Simulator",
-      "type": "node-terminal",
+      "type": "pwa-node",
       "request": "launch",
-      "command": "${workspaceFolder}/.vscode/run-ios.sh simulator"
+      "runtimeExecutable": "/bin/zsh",
+      "args": [
+        "${workspaceFolder}/.vscode/run-ios.sh",
+        "simulator"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole"
     },
     {
       "name": "Connected iPhone",
-      "type": "node-terminal",
+      "type": "pwa-node",
       "request": "launch",
-      "command": "${workspaceFolder}/.vscode/run-ios.sh device"
+      "runtimeExecutable": "/bin/zsh",
+      "args": [
+        "${workspaceFolder}/.vscode/run-ios.sh",
+        "device"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole"
     }
   ]
 }

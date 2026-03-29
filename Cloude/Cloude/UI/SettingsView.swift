@@ -22,7 +22,7 @@ struct SettingsView: View {
                 preferencesSection
                 aboutSection
             }
-            .contentMargins(.top, 8, for: .scrollContent)
+            .contentMargins(.top, DS.Spacing.s, for: .scrollContent)
             .scrollContentBackground(.hidden)
             .background(Color.themeBackground)
             .navigationBarTitleDisplayMode(.inline)
@@ -80,21 +80,21 @@ struct SettingsView: View {
                     HStack(spacing: DS.Spacing.m) {
                         Button(action: { updateFontSize(fontSizeStep - 1) }) {
                             Image(systemName: "minus")
-                                .font(.system(size: 14, weight: .medium))
-                                .frame(width: 19, height: 19)
+                                .font(.system(size: DS.Text.m, weight: .medium))
+                                .frame(width: DS.Icon.l, height: DS.Icon.l)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.borderless)
                         .disabled(fontSizeStep <= 0)
 
                         Text("\(fontSizeStep)")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .frame(width: 17)
+                            .font(.system(size: DS.Text.m, weight: .medium, design: .rounded))
+                            .frame(width: DS.Icon.m)
 
                         Button(action: { updateFontSize(fontSizeStep + 1) }) {
                             Image(systemName: "plus")
-                                .font(.system(size: 14, weight: .medium))
-                                .frame(width: 19, height: 19)
+                                .font(.system(size: DS.Text.m, weight: .medium))
+                                .frame(width: DS.Icon.l, height: DS.Icon.l)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.borderless)
