@@ -69,8 +69,6 @@ private struct XMLNodeView: View {
                             .frame(width: DS.Spacing.m, height: DS.Spacing.l)
                     }
                     .buttonStyle(.plain)
-                } else {
-                    Spacer().frame(width: DS.Spacing.m)
                 }
 
                 Text(node.tagName)
@@ -106,18 +104,19 @@ private struct XMLNodeView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
+            .padding(.leading, hasChildren ? 0 : DS.Spacing.l)
             .padding(.vertical, DS.Spacing.xs)
 
             if expanded && hasChildren {
                 VStack(alignment: .leading, spacing: 0) {
                     if let text = node.textContent {
                         HStack(alignment: .top, spacing: DS.Spacing.xs) {
-                            Spacer().frame(width: DS.Spacing.m)
                             Text(text)
                                 .font(.system(size: DS.Text.s, design: .monospaced))
                                 .foregroundColor(.primary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        .padding(.leading, DS.Spacing.l)
                         .padding(.vertical, DS.Spacing.xs)
                     }
 

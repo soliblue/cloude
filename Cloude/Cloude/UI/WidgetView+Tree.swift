@@ -21,14 +21,6 @@ struct TreeWidget: View {
         let hasChildren = !node.children.isEmpty
 
         HStack(alignment: .center, spacing: DS.Spacing.xs) {
-            ForEach(Array(prefixSegments.enumerated()), id: \.offset) { _, _ in
-                Color.clear.frame(width: DS.Spacing.l)
-            }
-
-            if depth > 0 {
-                Color.clear.frame(width: DS.Spacing.m)
-            }
-
             Image(systemName: node.icon)
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(node.iconColor)
@@ -55,6 +47,7 @@ struct TreeWidget: View {
 
             Spacer()
         }
+        .padding(.leading, CGFloat(prefixSegments.count) * DS.Spacing.l + (depth > 0 ? DS.Spacing.m : 0))
 
         if hasChildren && !isCollapsed {
             let childSegments = prefixSegments + [!isLast && depth > 0]
