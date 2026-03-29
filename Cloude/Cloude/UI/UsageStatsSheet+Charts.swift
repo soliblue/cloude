@@ -83,7 +83,6 @@ extension UsageStatsSheet {
                     Text(model.name)
                         .font(.system(size: DS.Text.m, weight: .medium))
                         .foregroundColor(.primary)
-                        .frame(width: DS.Size.l, alignment: .leading)
 
                     GeometryReader { geo in
                         let fraction = CGFloat(model.tokens.outputTokens) / CGFloat(max(maxOutputTokens, 1))

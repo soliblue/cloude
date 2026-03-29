@@ -89,7 +89,6 @@ struct SettingsView: View {
 
                         Text("\(fontSizeStep)")
                             .font(.system(size: DS.Text.m, weight: .medium, design: .rounded))
-                            .frame(width: DS.Icon.m)
 
                         Button(action: { updateFontSize(fontSizeStep + 1) }) {
                             Image(systemName: "plus")

@@ -125,7 +125,6 @@ struct MessageInfoSheet: View {
             Image(systemName: icon)
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary)
-                .frame(width: DS.Icon.l)
             Text(text)
                 .font(.system(size: DS.Text.m))
         }
