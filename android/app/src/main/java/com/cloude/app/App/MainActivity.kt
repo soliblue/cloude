@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -47,6 +48,7 @@ import com.cloude.app.Services.WebSocketForegroundService
 import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.chat.MainScreen
+import com.cloude.app.UI.chat.PlansSheet
 import com.cloude.app.UI.chat.RenameDialog
 import com.cloude.app.UI.deploy.DeploySheet
 import com.cloude.app.UI.settings.SettingsScreen
@@ -162,6 +164,15 @@ class MainActivity : ComponentActivity() {
                                             tint = Accent
                                         )
                                     }
+                                    IconButton(onClick = {
+                                        chatViewModel.requestPlans()
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.ListAlt,
+                                            contentDescription = "Plans",
+                                            tint = Accent
+                                        )
+                                    }
                                     IconButton(onClick = { showConversations = true }) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.List,
@@ -228,6 +239,15 @@ class MainActivity : ComponentActivity() {
                             currentName = conversation.name,
                             onConfirm = { chatViewModel.renameConversation(it) },
                             onDismiss = { showRename = false }
+                        )
+                    }
+
+                    val plans by chatViewModel.plans.collectAsState()
+                    if (plans != null) {
+                        PlansSheet(
+                            stages = plans!!,
+                            onDelete = { stage, filename -> chatViewModel.deletePlan(stage, filename) },
+                            onDismiss = { chatViewModel.dismissPlans() }
                         )
                     }
                 }

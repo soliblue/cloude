@@ -211,10 +211,10 @@ fun ChatScreen(
             currentModel = conversation.defaultModel,
             skills = skills,
             onSend = { text, images, files ->
-                if (text.trim().equals("/usage", ignoreCase = true)) {
-                    viewModel.requestUsageStats()
-                } else {
-                    viewModel.sendMessage(text, images, files)
+                when {
+                    text.trim().equals("/usage", ignoreCase = true) -> viewModel.requestUsageStats()
+                    text.trim().equals("/plans", ignoreCase = true) -> viewModel.requestPlans()
+                    else -> viewModel.sendMessage(text, images, files)
                 }
             },
             onAbort = { viewModel.abort() },

@@ -40,6 +40,9 @@ class ChatViewModel(
     private val _usageStats = MutableStateFlow<UsageStats?>(null)
     val usageStats: StateFlow<UsageStats?> = _usageStats
 
+    private val _plans = MutableStateFlow<Map<String, List<com.cloude.app.Models.PlanItem>>?>(null)
+    val plans: StateFlow<Map<String, List<com.cloude.app.Models.PlanItem>>?> = _plans
+
     private var awaitingUsageStats = false
 
     private val activeEnvId: String?
@@ -163,6 +166,27 @@ class ChatViewModel(
         _usageStats.value = null
     }
 
+    fun requestPlans() {
+        val envId = activeEnvId ?: return
+        val workingDir = _conversation.value.workingDirectory
+            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value ?: return
+        connectionManager.send(ClientMessage.GetPlans(workingDir), envId)
+    }
+
+    fun deletePlan(stage: String, filename: String) {
+        val envId = activeEnvId ?: return
+        val workingDir = _conversation.value.workingDirectory
+            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value ?: return
+        connectionManager.send(ClientMessage.DeletePlan(stage, filename, workingDir), envId)
+        val current = _plans.value?.toMutableMap() ?: return
+        current[stage] = current[stage]?.filter { it.filename != filename } ?: emptyList()
+        _plans.value = current
+    }
+
+    fun dismissPlans() {
+        _plans.value = null
+    }
+
     fun renameConversation(name: String) {
         _conversation.value = _conversation.value.copy(name = name, userRenamed = true)
         persistConversation()
@@ -257,6 +281,16 @@ class ChatViewModel(
                     awaitingUsageStats = false
                     _usageStats.value = message.stats
                 }
+            }
+
+            is ServerMessage.Plans -> {
+                _plans.value = message.stages
+            }
+
+            is ServerMessage.PlanDeleted -> {
+                val current = _plans.value?.toMutableMap() ?: return
+                current[message.stage] = current[message.stage]?.filter { it.filename != message.filename } ?: emptyList()
+                _plans.value = current
             }
 
             is ServerMessage.NameSuggestion -> {
