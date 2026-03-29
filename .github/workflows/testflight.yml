@@ -28,13 +28,27 @@ jobs:
 
       - name: Decode certificate
         env:
+          DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.DISTRIBUTION_CERTIFICATE_BASE64 }}
           CERT_P12_BASE64: ${{ secrets.CERT_P12_BASE64 }}
         run: |
           mkdir -p certs
-          echo "$CERT_P12_BASE64" | base64 --decode > certs/distribution.p12
+          CERT_CONTENT="${DISTRIBUTION_CERTIFICATE_BASE64:-$CERT_P12_BASE64}"
+          echo "$CERT_CONTENT" | base64 --decode > certs/distribution.p12
+
+      - name: Install provisioning profile
+        env:
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/cloude.mobileprovision
+          PROFILE_UUID="$(security cms -D -i /tmp/cloude.mobileprovision | /usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin)"
+          PROFILE_NAME="$(security cms -D -i /tmp/cloude.mobileprovision | /usr/libexec/PlistBuddy -c 'Print Name' /dev/stdin)"
+          cp /tmp/cloude.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
 
       - name: Build and upload to TestFlight
         env:
+          DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSWORD }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}

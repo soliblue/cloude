@@ -36,19 +36,22 @@ Triggers:
 
 Required GitHub repository secrets:
 
-- `CERT_P12_BASE64`
-- `CERT_PASSWORD`
 - `APP_STORE_CONNECT_API_KEY_ID`
 - `APP_STORE_CONNECT_API_ISSUER_ID`
 - `APP_STORE_CONNECT_API_KEY_CONTENT`
+- `DISTRIBUTION_CERTIFICATE_BASE64`
+- `DISTRIBUTION_CERTIFICATE_PASSWORD`
+- `PROVISIONING_PROFILE_BASE64`
 
-`CERT_P12_BASE64` should be the base64-encoded contents of `certs/distribution.p12`.
+`DISTRIBUTION_CERTIFICATE_BASE64` should be the base64-encoded contents of `certs/distribution.p12`.
 
 Example:
 
 ```sh
 base64 -i certs/distribution.p12 | pbcopy
 ```
+
+`PROVISIONING_PROFILE_BASE64` should be the base64-encoded contents of the App Store provisioning profile for `soli.Cloude`.
 
 The workflow definition lives at `.github/workflows/testflight.yml`, and the Fastlane lane it runs is `fastlane ios beta_local`.
 
