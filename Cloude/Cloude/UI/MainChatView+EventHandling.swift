@@ -58,6 +58,10 @@ extension MainChatView {
             conversationStore.updateMessage(lastAssistantMsg.id, in: conversation) { msg in
                 msg.costUsd = costUsd
             }
+            conversationStore.mutate(convId) { conv in
+                let computed = conv.messages.compactMap(\.costUsd).reduce(0, +)
+                conv.savedTotalCost = max(computed, conv.savedTotalCost ?? 0)
+            }
 
         default:
             break

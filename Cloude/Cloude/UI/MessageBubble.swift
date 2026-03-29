@@ -15,6 +15,7 @@ struct MessageBubble: View {
     var isCompact: Bool = false
     @State private var showCopiedToast = false
     @State private var showTextSelection = false
+    @State private var selectedToolDetail: ToolDetailItem?
     @Environment(\.appTheme) private var appTheme
 
     private var isLive: Bool { liveOutput != nil }
@@ -96,6 +97,22 @@ struct MessageBubble: View {
         ))
     }
 
+    private var statusBarItems: [(icon: String, text: String)] {
+        var items: [(String, String)] = []
+        if let model = message.model {
+            let identity = ModelIdentity(model)
+            items.append((identity.icon, identity.displayName))
+        }
+        if let cost = message.costUsd {
+            items.append(("dollarsign.circle", cost < 0.01 ? String(format: "$%.4f", cost) : String(format: "$%.2f", cost)))
+        }
+        if let ms = message.durationMs {
+            let s = Double(ms) / 1000.0
+            items.append(("timer", s < 60 ? String(format: "%.1fs", s) : "\(Int(s)/60)m \(Int(s)%60)s"))
+        }
+        return items
+    }
+
     private var messageContent: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.s) {
             MessageImageThumbnails(message: message)
@@ -113,7 +130,9 @@ struct MessageBubble: View {
                 } else if isLive && (liveOutput?.isCompacting ?? false) {
                     CompactingIndicator()
                 } else if hasToolCalls {
-                    StreamingMarkdownView(text: effectiveText, toolCalls: effectiveToolCalls, isComplete: !isLive)
+                    StreamingMarkdownView(text: effectiveText, toolCalls: effectiveToolCalls, isComplete: !isLive) { tool, children in
+                        selectedToolDetail = ToolDetailItem(toolCall: tool, children: children)
+                    }
                 } else if !effectiveText.isEmpty {
                     StreamingMarkdownView(text: effectiveText, isComplete: !isLive)
                 } else if isLive {
@@ -121,6 +140,26 @@ struct MessageBubble: View {
                 }
             }
             .font(.system(size: DS.Text.m))
+
+            if !isLive && !message.isUser && !statusBarItems.isEmpty {
+                HStack(spacing: DS.Spacing.xs) {
+                    ForEach(Array(statusBarItems.enumerated()), id: \.offset) { i, item in
+                        if i > 0 {
+                            Text("·")
+                                .foregroundColor(.secondary.opacity(DS.Opacity.m))
+                        }
+                        HStack(spacing: DS.Spacing.xs) {
+                            Image(systemName: item.icon)
+                            Text(item.text)
+                        }
+                    }
+                }
+                .font(.system(size: DS.Text.s))
+                .foregroundColor(.secondary.opacity(DS.Opacity.l))
+            }
+        }
+        .sheet(item: $selectedToolDetail) { item in
+            ToolDetailSheet(toolCall: item.toolCall, children: item.children)
         }
     }
 

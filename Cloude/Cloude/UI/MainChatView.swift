@@ -89,9 +89,13 @@ struct MainChatView: View {
         }
         .onAppear {
             initializeFirstWindow()
-            checkGitForAllDirectories()
             currentEffort = currentConversation?.defaultEffort
             currentModel = currentConversation?.defaultModel
+        }
+        .task(id: connection.isAuthenticated) {
+            guard connection.isAuthenticated else { return }
+            try? await Task.sleep(for: .seconds(4))
+            checkGitForAllDirectories()
         }
         .onChange(of: windowManager.activeWindowId, handleActiveWindowChange)
         .onChange(of: currentModel, handleModelChange)

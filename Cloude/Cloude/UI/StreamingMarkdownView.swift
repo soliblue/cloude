@@ -6,22 +6,27 @@ struct StreamingMarkdownView: View {
     let text: String
     var toolCalls: [ToolCall] = []
     var isComplete: Bool = true
+    var onSelectTool: ((ToolCall, [ToolCall]) -> Void)?
     @State private var frozenBlocks: [StreamingBlock] = []
     @State private var frozenUpTo: String = ""
     @State private var tailBlocks: [StreamingBlock] = []
     @State private var lastText: String = ""
-    @State private var lastToolCount: Int = 0
+    @State private var lastToolRevision: String = ""
+
+    private var toolRevision: String {
+        toolCalls.map { "\($0.toolId):\($0.state.rawValue)" }.joined(separator: ",")
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(allBlocks.enumerated()), id: \.element.id) { _, block in
-                StreamingBlockView(block: block)
+                StreamingBlockView(block: block, onSelectTool: onSelectTool)
                     .padding(.bottom, DS.Spacing.s)
             }
         }
         .onAppear { updateIncremental() }
         .onChange(of: text) { _, _ in updateIncremental() }
-        .onChange(of: toolCalls.count) { _, _ in updateIncremental() }
+        .onChange(of: toolRevision) { _, _ in updateIncremental() }
     }
 
     private var allBlocks: [StreamingBlock] {
@@ -29,9 +34,10 @@ struct StreamingMarkdownView: View {
     }
 
     private func updateIncremental() {
-        if text == lastText && toolCalls.count == lastToolCount { return }
+        let rev = toolRevision
+        if text == lastText && rev == lastToolRevision { return }
         lastText = text
-        lastToolCount = toolCalls.count
+        lastToolRevision = rev
 
         if !toolCalls.isEmpty {
             frozenBlocks = []

@@ -17,7 +17,9 @@ Use this skill to rebuild the local stack, open Cloude in Simulator, and debug t
 - Prefer logs over screenshots.
 - Prefer deterministic launch state over manual tapping.
 - Prefer deep links over ad hoc navigation.
-- Use screenshots only for visual confirmation.
+- Before message-based tests, switch the active conversation model to `haiku` unless the test is specifically about model behavior.
+- Use normal simulator screenshots only.
+- Never use the in-app `cloude://screenshot` action while testing because it sends a new message inside the conversation.
 
 ## Verified State
 
@@ -38,7 +40,7 @@ Use this skill to rebuild the local stack, open Cloude in Simulator, and debug t
 .claude/skills/agentic-testing/start-local-simulator.sh
 ```
 
-This rebuilds and relaunches the Mac agent, builds the iOS app for Simulator, installs it, writes the saved local environment, and launches the app.
+This rebuilds and relaunches the Mac agent, resolves the target simulator by name, boots it if needed, builds the iOS app for Simulator, installs it, writes the saved local environment, and launches the app.
 
 Important:
 
@@ -75,6 +77,8 @@ Use `open-repo-conversation.sh` before core tests so the active conversation is 
 
 ### 4. Send a message
 
+Before using this step, switch the active conversation model to `haiku` unless the test specifically targets model behavior.
+
 ```bash
 .claude/skills/agentic-testing/send-simulator-message.sh "hello from codex"
 ```
@@ -87,6 +91,8 @@ Use `open-repo-conversation.sh` before core tests so the active conversation is 
 
 This writes a PNG under `/tmp/cloude-simulator-shots/` and prints the path.
 
+Do not use `cloude://screenshot` for testing screenshots. That path creates a new message inside the app and mutates the conversation under test.
+
 ## Verified Routes
 
 - Chat: `cloude://send?text=...`, `cloude://conversation/new`, `cloude://conversation/duplicate`, `cloude://conversation/refresh`
@@ -94,7 +100,7 @@ This writes a PNG under `/tmp/cloude-simulator-shots/` and prints the path.
 - Windows: `cloude://window?index=...`, `cloude://window/new?type=chat|files|gitChanges`, `cloude://window/edit`, `cloude://window/close`
 - Tabs/surfaces: `cloude://tab?type=chat|files|gitChanges`, `cloude://settings`, `cloude://memory`, `cloude://memories`, `cloude://plans`, `cloude://whiteboard`, `cloude://usage`, `cloude://search`
 - Files/git: `cloude://file/...`, `cloude://files?path=...`, `cloude://git?path=...`, `cloude://git/diff?path=...&file=...&staged=true|false`
-- Runtime: `cloude://run/stop`, `cloude://screenshot`
+- Runtime: `cloude://run/stop`
 - Environment: `cloude://environment/select?id=...`, `cloude://environment/connect?id=...`, `cloude://environment/disconnect?id=...`
 
 ## Perf Signals
@@ -128,9 +134,10 @@ This writes a PNG under `/tmp/cloude-simulator-shots/` and prints the path.
 1. Launch the stack.
 2. Start log streaming.
 3. Open a fresh conversation rooted at the current working directory.
-4. Trigger the flow under test with deep links or scripted send.
-5. Read app logs first.
-6. Take screenshots only when the UI itself matters.
+4. Switch the active conversation model to `haiku` unless the test specifically targets model behavior.
+5. Trigger the flow under test with deep links or scripted send.
+6. Read app logs first.
+7. Take screenshots only when the UI itself matters.
 
 ## Core Verification
 
@@ -257,10 +264,3 @@ Do not replace these checks with lower-value flows like adding a new environment
 - abort behavior
 - basic file/git surfaces
 - perf sanity
-
-## Notes
-
-- If `simctl openurl` hits sandbox restrictions, rerun outside the sandbox.
-- Prefer the app-owned log file over system logs for performance and app behavior.
-- If `simctl get_app_container` resolves to a stale path right after reinstall, rerun it once.
-- If the user wants to ship a build, use `deploy` instead.

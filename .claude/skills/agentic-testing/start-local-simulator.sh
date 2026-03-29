@@ -7,9 +7,25 @@ PORT="${CLOUDE_SIM_PORT:-8765}"
 BUNDLE_ID="${CLOUDE_BUNDLE_ID:-soli.Cloude}"
 DERIVED_DATA_PATH="${CLOUDE_SIM_DERIVED_DATA:-/tmp/cloude-sim-build}"
 TOKEN="$(security find-generic-password -s com.cloude.agent -a authToken -w)"
+DEVICE_LINE="$(xcrun simctl list devices available | grep " ($DEVICE_NAME)" -m 1 || true)"
 
 if [[ -z "$TOKEN" ]]; then
     echo "Missing Cloude agent token in Keychain"
+    exit 1
+fi
+
+if [[ -z "$DEVICE_LINE" ]]; then
+    DEVICE_LINE="$(xcrun simctl list devices available | grep "$DEVICE_NAME" -m 1 || true)"
+fi
+
+if [[ -z "$DEVICE_LINE" ]]; then
+    echo "No available simulator named '$DEVICE_NAME'"
+    exit 1
+fi
+
+DEVICE_ID="$(echo "$DEVICE_LINE" | grep -oE '[0-9A-F-]{36}' | head -1)"
+if [[ -z "$DEVICE_ID" ]]; then
+    echo "Could not resolve simulator UDID for '$DEVICE_NAME'"
     exit 1
 fi
 
@@ -17,22 +33,19 @@ echo "Building and launching Mac agent..."
 source .env
 fastlane mac build_agent
 
-BOOTED_DEVICE_LINE="$(xcrun simctl list devices booted | grep "$DEVICE_NAME" | head -1 || true)"
-if [[ -z "$BOOTED_DEVICE_LINE" ]]; then
-    echo "No booted simulator named '$DEVICE_NAME'"
-    exit 1
-fi
-
-DEVICE_ID="$(echo "$BOOTED_DEVICE_LINE" | grep -oE '[0-9A-F-]{36}' | head -1)"
-if [[ -z "$DEVICE_ID" ]]; then
-    echo "Could not resolve booted simulator UDID"
-    exit 1
+if xcrun simctl list devices booted | grep -q "$DEVICE_ID"; then
+    echo "Using already booted simulator $DEVICE_NAME ($DEVICE_ID)"
+else
+    echo "Booting simulator $DEVICE_NAME ($DEVICE_ID)..."
+    open -a Simulator --args -CurrentDeviceUDID "$DEVICE_ID" >/dev/null 2>&1 || true
+    xcrun simctl boot "$DEVICE_ID" >/dev/null 2>&1 || true
+    xcrun simctl bootstatus "$DEVICE_ID" -b
 fi
 
 echo "Building iOS app for $DEVICE_NAME..."
 xcodebuild -project Cloude/Cloude.xcodeproj \
     -scheme Cloude \
-    -destination "platform=iOS Simulator,name=$DEVICE_NAME" \
+    -destination "platform=iOS Simulator,id=$DEVICE_ID" \
     -derivedDataPath "$DERIVED_DATA_PATH" \
     build
 
@@ -44,6 +57,8 @@ fi
 
 echo "Installing app into simulator $DEVICE_ID..."
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
+
+sleep 1
 
 echo "Writing local environment into simulator container..."
 CLOUDE_SIM_HOST="$HOST" \

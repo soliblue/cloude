@@ -56,7 +56,7 @@ extension CloudeApp {
     func openPlans() {
         AppLogger.beginInterval("plans.open")
         let activeEnvConn = connection.connection(for: environmentStore.activeEnvironmentId)
-        let wd = windowManager.activeWindow?.conversation(in: conversationStore)?.workingDirectory ?? activeEnvConn?.defaultWorkingDirectory
+        let wd = windowManager.activeWindow?.conversation(in: conversationStore)?.workingDirectory ?? activeEnvConn?.defaultWorkingDirectory ?? connection.defaultWorkingDirectory
         if let cached = OfflineCacheService.loadPlans() {
             planStages = cached.stages
             plansFromCache = true

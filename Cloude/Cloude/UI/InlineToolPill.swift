@@ -7,7 +7,7 @@ extension Notification.Name {
 struct InlineToolPill: View {
     let toolCall: ToolCall
     var children: [ToolCall] = []
-    @State private var showDetail = false
+    var onTap: (() -> Void)?
     @State private var shimmerPhase: CGFloat = -1
 
     private var chainedCommands: [ChainedCommand] {
@@ -24,27 +24,19 @@ struct InlineToolPill: View {
         if isIOSControl || isInertTool {
             pillContent
         } else if isWhiteboardTool {
-            pillContent
-                .highPriorityGesture(
-                    TapGesture()
-                        .onEnded {
-                            NotificationCenter.default.post(name: .openWhiteboard, object: nil)
-                        }
-                )
+            Button {
+                NotificationCenter.default.post(name: .openWhiteboard, object: nil)
+            } label: {
+                pillContent
+            }
+            .buttonStyle(.plain)
         } else {
-            pillContent
-            .highPriorityGesture(
-                TapGesture()
-                    .onEnded {
-                        showDetail = true
-                    }
-            )
-            .onLongPressGesture {
-                showDetail = true
+            Button {
+                onTap?()
+            } label: {
+                pillContent
             }
-            .sheet(isPresented: $showDetail) {
-                ToolDetailSheet(toolCall: toolCall, children: children)
-            }
+            .buttonStyle(.plain)
         }
     }
 

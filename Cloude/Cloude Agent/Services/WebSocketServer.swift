@@ -19,6 +19,7 @@ class WebSocketServer: ObservableObject {
 
     var onMessage: ((ClientMessage, NWConnection) -> Void)?
     var onDisconnect: ((NWConnection) -> Void)?
+    var onAuthenticate: ((NWConnection) -> Void)?
 
     init(port: UInt16 = 8765, authToken: String) {
         self.port = port

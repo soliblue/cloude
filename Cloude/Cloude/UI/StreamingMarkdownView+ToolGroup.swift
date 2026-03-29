@@ -4,6 +4,7 @@ import SwiftUI
 
 struct StreamingBlockView: View {
     let block: StreamingBlock
+    var onSelectTool: ((ToolCall, [ToolCall]) -> Void)?
 
     var body: some View {
         switch block {
@@ -34,7 +35,7 @@ struct StreamingBlockView: View {
             }
 
         case .toolGroup(_, let tools):
-            ToolGroupView(tools: tools)
+            ToolGroupView(tools: tools, onSelectTool: onSelectTool)
 
         case .xml(_, let nodes):
             XMLBlockView(nodes: nodes)
@@ -44,6 +45,7 @@ struct StreamingBlockView: View {
 
 struct ToolGroupView: View {
     let tools: [ToolCall]
+    var onSelectTool: ((ToolCall, [ToolCall]) -> Void)?
 
     private var toolHierarchy: [(parent: ToolCall, children: [ToolCall])] {
         var childrenByParent: [String: [ToolCall]] = [:]
@@ -76,7 +78,9 @@ struct ToolGroupView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: DS.Spacing.s) {
                         ForEach(nonWidgets, id: \.parent.toolId) { item in
-                            InlineToolPill(toolCall: item.parent, children: item.children)
+                            InlineToolPill(toolCall: item.parent, children: item.children) {
+                                onSelectTool?(item.parent, item.children)
+                            }
                         }
                     }
                     .padding(.horizontal, DS.Spacing.l)
@@ -86,4 +90,10 @@ struct ToolGroupView: View {
             }
         }
     }
+}
+
+struct ToolDetailItem: Identifiable {
+    let toolCall: ToolCall
+    let children: [ToolCall]
+    var id: String { toolCall.toolId }
 }

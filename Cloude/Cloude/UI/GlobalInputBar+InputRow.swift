@@ -25,7 +25,6 @@ extension GlobalInputBar {
                     .lineLimit(1...4)
                     .focused($isInputFocused)
                     .foregroundColor(isSlashCommand ? .cyan : .primary)
-                    .onSubmit { if canSend { onSend() } }
                     .id("inputField")
                     .agenticID("chat_input_field")
             }

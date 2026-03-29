@@ -31,12 +31,14 @@ extension ConversationStore {
             UserDefaults.standard.removeObject(forKey: legacySaveKey)
         } else {
             let dir = Self.conversationsDirectory
-            if let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
-                conversations = files.compactMap { url in
+            Task.detached(priority: .userInitiated) { [weak self] in
+                guard let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { return }
+                let loaded = files.compactMap { url -> Conversation? in
                     guard url.pathExtension == "json",
                           let data = try? Data(contentsOf: url) else { return nil }
                     return try? JSONDecoder().decode(Conversation.self, from: data)
                 }
+                await MainActor.run { self?.conversations = loaded }
             }
         }
     }

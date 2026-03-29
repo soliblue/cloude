@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "iOS Simulator",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "${workspaceFolder}/.vscode/run-ios.sh simulator"
+    },
+    {
+      "name": "Connected iPhone",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "${workspaceFolder}/.vscode/run-ios.sh device"
+    }
+  ]
+}

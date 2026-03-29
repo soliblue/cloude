@@ -46,7 +46,9 @@ extension EnvironmentConnection {
         case .whisperReady(let ready):                    isWhisperReady = ready
         case .memories(let sections):                     mgr.events.send(.memories(sections))
         case .skills(let s):                              handleSkills(mgr, s)
-        case .defaultWorkingDirectory(let path):          defaultWorkingDirectory = path
+        case .defaultWorkingDirectory(let path):
+            defaultWorkingDirectory = path
+            mgr.events.send(.defaultWorkingDirectory(path: path, environmentId: environmentId))
         case .processList(let procs):                     processes = procs
         case .historySync(let sid, let msgs):             mgr.events.send(.historySync(sessionId: sid, messages: msgs))
         case .historySyncError(let sid, let err):          mgr.events.send(.historySyncError(sessionId: sid, error: err))

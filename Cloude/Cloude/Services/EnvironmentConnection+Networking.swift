@@ -39,7 +39,7 @@ extension EnvironmentConnection {
     }
 
     func reconnectIfNeeded() {
-        guard hasCredentials, !isAuthenticated else { return }
+        guard hasCredentials, !isAuthenticated, !isConnected else { return }
         reconnect()
     }
 

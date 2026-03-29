@@ -54,10 +54,14 @@ extension EnvironmentConnection {
                 mgr.events.send(.lastAssistantMessageCostUpdate(conversationId: convId, costUsd: turnCost))
             }
         }
+        let wasRunning = out.isRunning
         out.isRunning = (state == .running || state == .compacting)
         out.isCompacting = (state == .compacting)
         if state == .running || state == .compacting {
             ensureLiveMessage(mgr, convId: convId)
+            if !wasRunning {
+                mgr.events.send(.reconnectRunning(conversationId: convId))
+            }
         }
         if state == .idle {
             runningConversationId = nil
@@ -112,10 +116,15 @@ extension EnvironmentConnection {
         guard let convId = targetConversationId(from: conversationId) else { return }
         AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) summaryChars=\(summary?.count ?? 0) outputChars=\(output?.count ?? 0)")
         let out = mgr.output(for: convId)
-        if let idx = out.toolCalls.firstIndex(where: { $0.toolId == toolId }) {
-            out.toolCalls[idx].state = .complete
-            out.toolCalls[idx].resultSummary = summary
-            out.toolCalls[idx].resultOutput = output
+        out.toolCalls = out.toolCalls.map { tool in
+            if tool.toolId == toolId {
+                var updated = tool
+                updated.state = .complete
+                updated.resultSummary = summary
+                updated.resultOutput = output
+                return updated
+            }
+            return tool
         }
     }
 

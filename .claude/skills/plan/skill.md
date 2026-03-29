@@ -42,6 +42,25 @@ Optional for testing/done:
 <!-- build: N -->
 ```
 
+## Testing Handoff
+
+Before moving a ticket to `30_testing`, it must contain a `## Verify` section describing:
+
+1. **Desired outcome** on a high level (what should be true after the change).
+2. **A simple test** another agent can execute to confirm the outcome.
+
+Keep it as short as possible but not shorter. The `agentic-testing` skill picks up tickets in `30_testing` and uses this section to run QA autonomously.
+
+Example:
+
+```markdown
+## Verify
+
+Outcome: tapping the plans tab deep-links to the plans sheet with all stages visible.
+
+Test: open `cloude://plans`, capture a screenshot, confirm all five stage headers render.
+```
+
 ## Rules
 
 - Backlog items stay short and scannable.

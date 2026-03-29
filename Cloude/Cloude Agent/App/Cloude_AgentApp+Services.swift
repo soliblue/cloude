@@ -16,6 +16,13 @@ extension AppDelegate {
             self?.cleanupTerminal(for: connection)
         }
 
+        server.onAuthenticate = { [weak self] connection in
+            guard let self else { return }
+            for (convId, convRunner) in self.runnerManager.activeRunners where convRunner.runner.isRunning {
+                self.server.sendMessage(.status(state: .running, conversationId: convId), to: connection)
+            }
+        }
+
         runnerManager.onOutput = { [weak self] text, conversationId in
             self?.server.broadcast(.output(text: text, conversationId: conversationId))
         }

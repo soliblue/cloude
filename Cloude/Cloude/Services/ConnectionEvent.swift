@@ -28,8 +28,10 @@ enum ConnectionEvent {
 
     // Streaming lifecycle
     case streamingStarted(conversationId: UUID)
+    case reconnectRunning(conversationId: UUID)
 
     // UI / orchestration
+    case defaultWorkingDirectory(path: String, environmentId: UUID)
     case authenticated
     case usageStats(UsageStats)
     case renameConversation(conversationId: UUID, name: String)

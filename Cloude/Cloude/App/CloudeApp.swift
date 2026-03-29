@@ -35,6 +35,7 @@ struct CloudeApp: App {
     @AppStorage("appTheme") var appThemeRaw: String = AppTheme.majorelle.rawValue
     var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
     @AppStorage("debugOverlayEnabled") var debugOverlayEnabled = false
+    @AppStorage("fontSizeStep") var fontSizeStep: Int = 0
     let debugMetrics = DebugMetrics.shared
     @Environment(\.scenePhase) var scenePhase
 

@@ -2,27 +2,25 @@ import SwiftUI
 
 struct ConnectionStatusLogo: View {
     @ObservedObject var connection: ConnectionManager
-    @State private var isPulsing = false
+    @State private var isRotating = false
 
     var body: some View {
-        Image("logo-transparent")
-            .renderingMode(.original)
-            .resizable()
-            .scaledToFit()
+        Image(systemName: "gearshape")
+            .font(.system(size: DS.Icon.m))
+            .foregroundColor(.secondary)
             .frame(width: DS.Size.m, height: DS.Size.m)
-            .padding(.horizontal, DS.Spacing.m)
-            .opacity(isPulsing ? DS.Opacity.m : 1.0)
+            .rotationEffect(.degrees(isRotating ? 360 : 0))
             .animation(
                 connection.isAnyRunning
-                    ? .easeInOut(duration: DS.Duration.l).repeatForever(autoreverses: true)
-                    : .easeInOut(duration: DS.Duration.m),
-                value: isPulsing
+                    ? .linear(duration: 5.0).repeatForever(autoreverses: false)
+                    : .easeOut(duration: DS.Duration.m),
+                value: isRotating
             )
             .onChange(of: connection.isAnyRunning) { _, newValue in
-                isPulsing = newValue
+                isRotating = newValue
             }
             .onAppear {
-                if connection.isAnyRunning { isPulsing = true }
+                if connection.isAnyRunning { isRotating = true }
             }
     }
 }

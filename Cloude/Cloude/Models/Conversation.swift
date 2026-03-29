@@ -15,13 +15,14 @@ struct Conversation: Codable, Identifiable {
     var defaultEffort: EffortLevel?
     var defaultModel: ModelSelection?
     var environmentId: UUID?
+    var savedTotalCost: Double?
 
     var isEmpty: Bool {
         messages.isEmpty && pendingMessages.isEmpty && sessionId == nil
     }
 
     var totalCost: Double {
-        messages.compactMap(\.costUsd).reduce(0, +)
+        max(messages.compactMap(\.costUsd).reduce(0, +), savedTotalCost ?? 0)
     }
 
     static let randomNames = [
@@ -74,9 +75,10 @@ struct Conversation: Codable, Identifiable {
         defaultEffort = try container.decodeIfPresent(EffortLevel.self, forKey: .defaultEffort)
         defaultModel = try container.decodeIfPresent(ModelSelection.self, forKey: .defaultModel)
         environmentId = try container.decodeIfPresent(UUID.self, forKey: .environmentId)
+        savedTotalCost = try container.decodeIfPresent(Double.self, forKey: .savedTotalCost)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel, environmentId
+        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel, environmentId, savedTotalCost
     }
 }

@@ -4,14 +4,15 @@ import SwiftUI
 
 enum DS {
     enum Text {
-        static let m: CGFloat = 13.5
-        static let s: CGFloat = 10.5
+        static var step: CGFloat = CGFloat(UserDefaults.standard.integer(forKey: "fontSizeStep"))
+        static var m: CGFloat { 13.5 + step }
+        static var s: CGFloat { 10.5 + step }
     }
 
     enum Icon {
-        static let s: CGFloat = 14
-        static let m: CGFloat = 17
-        static let l: CGFloat = 19
+        static var s: CGFloat { 14 + Text.step }
+        static var m: CGFloat { 17 + Text.step }
+        static var l: CGFloat { 19 + Text.step }
     }
 
     enum Spacing {

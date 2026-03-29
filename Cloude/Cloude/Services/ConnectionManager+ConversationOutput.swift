@@ -87,14 +87,24 @@ final class ConversationOutput: ObservableObject {
     }
 
     func completeExecutingTools() {
-        for i in toolCalls.indices where toolCalls[i].state == .executing {
-            toolCalls[i].state = .complete
+        toolCalls = toolCalls.map { tool in
+            if tool.state == .executing {
+                var updated = tool
+                updated.state = .complete
+                return updated
+            }
+            return tool
         }
     }
 
     func completeTopLevelExecutingTools() {
-        for i in toolCalls.indices where toolCalls[i].state == .executing && toolCalls[i].parentToolId == nil {
-            toolCalls[i].state = .complete
+        toolCalls = toolCalls.map { tool in
+            if tool.state == .executing && tool.parentToolId == nil {
+                var updated = tool
+                updated.state = .complete
+                return updated
+            }
+            return tool
         }
     }
 

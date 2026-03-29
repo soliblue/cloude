@@ -50,7 +50,7 @@ struct EmptyConversationView: View {
         return store.listableConversations
             .filter { !$0.isEmpty && !openIds.contains($0.id) }
             .sorted { $0.lastMessageAt > $1.lastMessageAt }
-            .prefix(5)
+            .prefix(3)
             .map { $0 }
     }
 
@@ -65,12 +65,12 @@ struct EmptyConversationView: View {
 
             if Self.animatedCharacters.contains(character) {
                 AnimatedGIFView(name: "\(character)-anim", playOnce: true)
-                    .frame(width: DS.Size.xxl / 2, height: DS.Size.xxl / 2)
+                    .frame(width: DS.Size.xxl * 3 / 8, height: DS.Size.xxl * 3 / 8)
             } else {
                 Image(character)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: DS.Size.xxl / 2, height: DS.Size.xxl / 2)
+                    .frame(width: DS.Size.xxl * 3 / 8, height: DS.Size.xxl * 3 / 8)
             }
 
             if let envStore = environmentStore, let conn = connection,
@@ -86,11 +86,7 @@ struct EmptyConversationView: View {
                 .padding(.top, DS.Spacing.s)
             }
 
-            if onSeeAll != nil {
-                searchButton
-            }
-
-            if !recentConversations.isEmpty, onSelectConversation != nil {
+            if onSeeAll != nil || (!recentConversations.isEmpty && onSelectConversation != nil) {
                 recentConversationsList
             }
 
@@ -100,29 +96,26 @@ struct EmptyConversationView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var searchButton: some View {
-        Button(action: { onSeeAll?() }) {
-            HStack(spacing: DS.Spacing.s) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: DS.Text.m))
-                    .foregroundColor(.secondary)
-                Text("Search conversations...")
-                    .font(.system(size: DS.Text.m))
-                    .foregroundColor(.secondary)
-                Spacer()
-            }
-            .padding(.horizontal, DS.Spacing.l)
-            .padding(.vertical, DS.Spacing.m)
-            .background(Color.secondary.opacity(DS.Opacity.s))
-            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, DS.Spacing.xxl)
-        .padding(.top, DS.Spacing.s)
-    }
-
     private var recentConversationsList: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: DS.Spacing.s) {
+            if onSeeAll != nil {
+                Button(action: { onSeeAll?() }) {
+                    HStack(spacing: DS.Spacing.m) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: DS.Text.m))
+                            .foregroundColor(.secondary)
+                            .frame(width: DS.Icon.l)
+                        Text("Search conversations...")
+                            .font(.system(size: DS.Text.m))
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal, DS.Spacing.l)
+                    .padding(.vertical, DS.Spacing.m)
+                    .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.m))
+                }
+                .buttonStyle(.plain)
+            }
             ForEach(recentConversations) { conv in
                 Button(action: { onSelectConversation?(conv) }) {
                     HStack(spacing: DS.Spacing.m) {
@@ -148,6 +141,5 @@ struct EmptyConversationView: View {
             }
         }
         .padding(.horizontal, DS.Spacing.xxl)
-        .padding(.top, DS.Spacing.s)
     }
 }

@@ -83,6 +83,12 @@ extension CloudeApp {
             isLoadingPlans = false
             OfflineCacheService.savePlans(stages)
 
+        case .defaultWorkingDirectory(let path, let environmentId):
+            if showPlans && planStages.isEmpty && !isLoadingPlans {
+                isLoadingPlans = true
+                connection.getPlans(workingDirectory: path, environmentId: environmentId)
+            }
+
         case .planDeleted(let stage, let filename):
             planStages[stage]?.removeAll { $0.filename == filename }
 
@@ -143,6 +149,13 @@ extension CloudeApp {
             if let conv = conversationStore.findConversation(withId: convId) {
                 let targetId = windowManager.activeWindowId ?? windowManager.windows.first?.id
                 if let targetId { windowManager.linkToCurrentConversation(targetId, conversation: conv) }
+            }
+
+        case .reconnectRunning(let convId):
+            if let conv = conversationStore.findConversation(withId: convId),
+               let sessionId = conv.sessionId,
+               let workingDir = conv.workingDirectory, !workingDir.isEmpty {
+                connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir, environmentId: conv.environmentId)
             }
 
         case .question:

@@ -49,7 +49,7 @@ extension MainChatView {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, DS.Spacing.s)
+        .padding(.vertical, 0)
         .background(Color.themeBackground)
         .agenticID("window_picker")
         .contentShape(Rectangle())
@@ -71,7 +71,7 @@ extension MainChatView {
 
     @ViewBuilder
     func windowIndicatorIcon(window: ChatWindow, conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
-        let weight: Font.Weight = isActive || isStreaming ? .semibold : .regular
+        let iconWeight: Font.Weight = .semibold
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
         let symbol = (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
@@ -82,12 +82,12 @@ extension MainChatView {
 
         VStack(spacing: DS.Spacing.xs) {
             Image(systemName: symbol)
-                .font(.system(size: DS.Icon.l, weight: weight))
+                .font(.system(size: DS.Icon.l, weight: iconWeight))
                 .foregroundStyle(color)
                 .frame(height: DS.Icon.l)
                 .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             Text(title)
-                .font(.system(size: DS.Text.s, weight: weight))
+                .font(.system(size: DS.Text.s, weight: .semibold))
                 .foregroundStyle(color)
                 .lineLimit(1)
         }

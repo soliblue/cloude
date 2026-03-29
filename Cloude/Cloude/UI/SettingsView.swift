@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var showThemePicker = false
     @AppStorage("debugOverlayEnabled") private var debugOverlayEnabled = false
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
+    @AppStorage("fontSizeStep") private var fontSizeStep = 0
     @State var selectedEnvironmentPage: Int = 0
 
     @Environment(\.dismiss) private var dismiss
@@ -71,12 +72,43 @@ struct SettingsView: View {
                 ThemePickerView()
             }
 
+            SettingsRow(icon: "textformat.size", color: .mint) {
+                HStack {
+                    Text("Font Size")
+                        .font(.system(size: DS.Text.m))
+                    Spacer()
+                    HStack(spacing: DS.Spacing.m) {
+                        Button(action: { updateFontSize(fontSizeStep - 1) }) {
+                            Image(systemName: "minus")
+                                .font(.system(size: 14, weight: .medium))
+                                .frame(width: 19, height: 19)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(fontSizeStep <= 0)
+
+                        Text("\(fontSizeStep)")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .frame(width: 17)
+
+                        Button(action: { updateFontSize(fontSizeStep + 1) }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 14, weight: .medium))
+                                .frame(width: 19, height: 19)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(fontSizeStep >= 3)
+                    }
+                    .foregroundColor(.accentColor)
+                }
+            }
+
             SettingsRow(icon: "text.word.spacing", color: .cyan) {
                 Toggle("Wrap Code Lines", isOn: $wrapCodeLines)
                     .font(.system(size: DS.Text.m))
                     .controlSize(.regular)
             }
-
 
             SettingsRow(icon: "ant.fill", color: .orange) {
                 Toggle("Debug Overlay", isOn: $debugOverlayEnabled)
@@ -87,6 +119,10 @@ struct SettingsView: View {
         .listRowBackground(Color.themeSecondary)
     }
 
+    private func updateFontSize(_ newStep: Int) {
+        fontSizeStep = newStep
+        DS.Text.step = CGFloat(newStep)
+    }
 }
 
 #Preview {

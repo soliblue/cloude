@@ -1,6 +1,6 @@
 ---
 name: consult
-description: Get a second opinion from another AI: Codex or another Claude model. Read-only.
+description: "Get a second opinion from another AI: Codex or another Claude model. Read-only."
 user-invocable: true
 metadata:
   icon: person.2.wave.2

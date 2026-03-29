@@ -45,7 +45,7 @@ struct EnvironmentFolderPicker: View {
                     }) {
                         Label {
                             Text(env.host)
-                                .font(.system(size: DS.Text.s))
+                                .font(.system(size: DS.Text.m))
                         } icon: {
                             Image(systemName: env.symbol)
                         }
@@ -54,14 +54,14 @@ struct EnvironmentFolderPicker: View {
             } label: {
                 HStack(spacing: DS.Spacing.s) {
                     Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                        .font(.system(size: DS.Text.s))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.accentColor)
                     Text(selectedEnv?.host ?? "Select environment")
-                        .font(.system(size: DS.Text.s, design: .monospaced))
+                        .font(.system(size: DS.Text.m, design: .monospaced))
                         .foregroundColor(.secondary)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: DS.Text.s))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, DS.Spacing.l)
@@ -74,16 +74,16 @@ struct EnvironmentFolderPicker: View {
             Button(action: { if isEnvConnected { showFolderPicker = true } }) {
                 HStack(spacing: DS.Spacing.s) {
                     Image(systemName: "folder.fill")
-                        .font(.system(size: DS.Text.s))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.accentColor)
                     Text(folderDisplayName)
-                        .font(.system(size: DS.Text.s))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: DS.Text.s))
+                        .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                 }
                 .padding(.horizontal, DS.Spacing.l)
@@ -111,15 +111,15 @@ struct EnvironmentFolderPicker: View {
     private var readOnlyContent: some View {
         HStack(spacing: DS.Spacing.s) {
             Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                .font(.system(size: DS.Text.s))
+                .font(.system(size: DS.Text.m))
                 .foregroundColor(.accentColor)
             Text(selectedEnv?.host ?? "")
-                .font(.system(size: DS.Text.s, design: .monospaced))
+                .font(.system(size: DS.Text.m, design: .monospaced))
                 .foregroundColor(.secondary)
             if let dir = conversation.workingDirectory, !dir.isEmpty {
                 Spacer()
                 Text(dir)
-                    .font(.system(size: DS.Text.s, design: .monospaced))
+                    .font(.system(size: DS.Text.m, design: .monospaced))
                     .foregroundColor(.secondary.opacity(DS.Opacity.l))
                     .lineLimit(1)
                     .truncationMode(.head)

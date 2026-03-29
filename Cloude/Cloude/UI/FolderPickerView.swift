@@ -10,9 +10,13 @@ struct FolderPickerView: View {
     @State var currentPath: String = "~"
     @State private var entries: [FileEntry] = []
     @State private var isLoading = false
+    @State var showHidden = false
 
     private var folders: [FileEntry] {
-        entries.filter { $0.isDirectory }
+        let dirs = entries.filter { $0.isDirectory }
+        let visible = dirs.filter { !$0.name.hasPrefix(".") }
+        let hidden = dirs.filter { $0.name.hasPrefix(".") }
+        return showHidden ? visible + hidden : visible
     }
 
     var body: some View {

@@ -58,6 +58,14 @@ extension ConversationStore {
             }
             output.reset()
         }
+
+        if let cost = output.runStats?.costUsd, cost > 0 {
+            let convId = conversation.id
+            mutate(convId) { conv in
+                let computed = conv.messages.compactMap(\.costUsd).reduce(0, +)
+                conv.savedTotalCost = max(computed, conv.savedTotalCost ?? 0)
+            }
+        }
     }
 
     func replayQueuedMessages(conversation: Conversation, connection: ConnectionManager) {

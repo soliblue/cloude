@@ -86,6 +86,7 @@ extension WebSocketServer {
                 if !skills.isEmpty {
                     sendMessage(.skills(skills), to: connection)
                 }
+                onAuthenticate?(connection)
             } else {
                 sendMessage(.authResult(success: false, message: "Invalid token"), to: connection)
             }

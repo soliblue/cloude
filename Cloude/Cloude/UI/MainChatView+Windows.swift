@@ -9,6 +9,11 @@ extension MainChatView {
             WindowTabBar(
                 activeType: window.type,
                 envConnected: (conversation?.environmentId).flatMap({ connection.connection(for: $0)?.isConnected }) ?? false,
+                connection: connection,
+                repoPath: window.gitRepoRootPath ?? gitRepoRootOverrides[window.id] ?? conversation?.workingDirectory,
+                environmentId: conversation?.environmentId,
+                folderName: conversation?.workingDirectory.flatMap { $0.isEmpty ? nil : URL(fileURLWithPath: $0).lastPathComponent },
+                totalCost: conversation?.totalCost ?? 0,
                 onSelectType: { type in windowManager.setWindowType(window.id, type: type) }
             )
 
