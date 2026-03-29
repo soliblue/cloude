@@ -65,6 +65,8 @@ fun DeploySheet(
     val listState = rememberLazyListState()
     val deployId = remember { "deploy-${System.currentTimeMillis()}" }
     val apkPath = "$workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk"
+    val chunks = remember { mutableMapOf<Int, String>() }
+    var totalChunks by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         outputLines.add("Building APK...")
@@ -112,10 +114,23 @@ fun DeploySheet(
                     }
                 }
                 msg is ServerMessage.FileChunk && phase == "transferring" -> {
+                    chunks[msg.chunkIndex] = msg.data
+                    totalChunks = msg.totalChunks
                     outputLines.removeAll { it.startsWith("Receiving chunk") }
-                    outputLines.add("Receiving chunk ${msg.chunkIndex + 1}/${msg.totalChunks}")
-                    if (msg.chunkIndex == msg.totalChunks - 1) {
-                        outputLines.add("All chunks received, assembling...")
+                    outputLines.add("Receiving chunk ${chunks.size}/$totalChunks")
+                    if (chunks.size == totalChunks) {
+                        outputLines.add("All chunks received, installing...")
+                        phase = "installing"
+                        val fullData = (0 until totalChunks).joinToString("") { chunks[it] ?: "" }
+                        val success = saveAndInstall(context, fullData)
+                        if (success) {
+                            phase = "done"
+                            outputLines.add("")
+                            outputLines.add("Install dialog opened!")
+                        } else {
+                            phase = "error"
+                            outputLines.add("Failed to save APK")
+                        }
                     }
                 }
                 else -> {}
