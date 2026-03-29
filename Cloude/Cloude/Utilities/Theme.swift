@@ -1,5 +1,3 @@
-// Theme.swift
-
 import SwiftUI
 
 enum DS {

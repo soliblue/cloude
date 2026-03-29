@@ -9,54 +9,48 @@ extension EnvironmentCard {
                 Image(systemName: "server.rack")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
-                    .frame(width: DS.Spacing.xl)
-                TextField("Host", text: $env.host)
+                TextField("Host", text: hostBinding)
                     .font(.system(size: DS.Text.m))
                     .textFieldStyle(.plain)
                     .textContentType(.URL)
                     .autocapitalization(.none)
                     .keyboardType(.URL)
-                    .onChange(of: env.host) { _, _ in onUpdate(env) }
             }
             .padding(.vertical, DS.Spacing.m)
 
-            Divider().padding(.leading, DS.Spacing.xxl)
+            Divider().padding(.leading, DS.Spacing.l)
 
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "number")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.blue)
-                    .frame(width: DS.Spacing.xl)
-                TextField("Port", text: portBinding)
+                TextField("Port", text: portTextBinding)
                     .keyboardType(.numberPad)
                     .font(.system(size: DS.Text.m, design: .monospaced))
                     .textFieldStyle(.plain)
-                    .onChange(of: env.port) { _, _ in onUpdate(env) }
             }
             .padding(.vertical, DS.Spacing.m)
 
-            Divider().padding(.leading, DS.Spacing.xxl)
+            Divider().padding(.leading, DS.Spacing.l)
 
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "key.fill")
                     .font(.system(size: DS.Icon.m))
                     .foregroundColor(.orange)
-                    .frame(width: DS.Spacing.xl)
 
                 Group {
                     if showToken {
-                        TextField("Auth Token", text: $env.token)
+                        TextField("Auth Token", text: tokenBinding)
                             .font(.system(size: DS.Text.m, design: .monospaced))
                             .textFieldStyle(.plain)
                     } else {
-                        SecureField("Auth Token", text: $env.token)
+                        SecureField("Auth Token", text: tokenBinding)
                             .font(.system(size: DS.Text.m, design: .monospaced))
                             .textFieldStyle(.plain)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .autocapitalization(.none)
-                .onChange(of: env.token) { _, _ in onUpdate(env) }
 
                 Button(action: { showToken.toggle() }) {
                     Image(systemName: showToken ? "eye.slash.fill" : "eye.fill")
@@ -72,10 +66,33 @@ extension EnvironmentCard {
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
     }
 
-    var portBinding: Binding<String> {
+    var hostBinding: Binding<String> {
+        Binding(
+            get: { env.host },
+            set: {
+                env.host = $0
+                onUpdate(env)
+            }
+        )
+    }
+
+    var portTextBinding: Binding<String> {
         Binding(
             get: { String(env.port) },
-            set: { env.port = UInt16($0) ?? 8765 }
+            set: {
+                env.port = UInt16($0) ?? 8765
+                onUpdate(env)
+            }
+        )
+    }
+
+    var tokenBinding: Binding<String> {
+        Binding(
+            get: { env.token },
+            set: {
+                env.token = $0
+                onUpdate(env)
+            }
         )
     }
 }

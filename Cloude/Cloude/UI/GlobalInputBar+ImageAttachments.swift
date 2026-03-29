@@ -60,7 +60,7 @@ struct ImageAttachmentPill: View {
                     .foregroundStyle(.white)
                     .padding(DS.Spacing.xs)
                     .background(Circle().fill(Color.black.opacity(DS.Opacity.m)))
-                    .offset(x: -DS.Spacing.xs, y: DS.Spacing.xxl)
+                    .offset(x: -DS.Spacing.xs, y: DS.Spacing.l)
             }
         }
     }

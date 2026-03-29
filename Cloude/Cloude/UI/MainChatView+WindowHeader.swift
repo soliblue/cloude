@@ -61,16 +61,16 @@ struct WindowTabBar: View {
         if type == .chat && totalCost > 0 {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: type.icon)
-                    .font(.system(size: DS.Text.m, weight: .semibold))
+                    .font(.system(size: DS.Text.m))
                 Text("$\(String(format: "%.2f", totalCost))")
-                    .font(.system(size: DS.Text.m, weight: .semibold))
+                    .font(.system(size: DS.Text.m))
             }
             .foregroundColor(isActive ? .accentColor : .secondary)
             .opacity(enabled ? 1 : DS.Opacity.m)
         } else if type == .gitChanges && (gitAdditions > 0 || gitDeletions > 0) {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: type.icon)
-                    .font(.system(size: DS.Text.m, weight: .semibold))
+                    .font(.system(size: DS.Text.m))
                     .foregroundColor(isActive ? .accentColor : .secondary)
                 if gitAdditions > 0 {
                     Text("+\(gitAdditions)")
@@ -81,14 +81,14 @@ struct WindowTabBar: View {
                         .foregroundColor(isActive ? .accentColor : .pastelRed)
                 }
             }
-            .font(.system(size: DS.Text.m, weight: .semibold))
+            .font(.system(size: DS.Text.m))
             .opacity(enabled ? 1 : DS.Opacity.m)
         } else if type == .files, let folderName {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: type.icon)
-                    .font(.system(size: DS.Text.m, weight: .semibold))
+                    .font(.system(size: DS.Text.m))
                 Text(folderName)
-                    .font(.system(size: DS.Text.m, weight: .semibold))
+                    .font(.system(size: DS.Text.m))
                     .lineLimit(1)
             }
             .foregroundColor(isActive ? .accentColor : .secondary)

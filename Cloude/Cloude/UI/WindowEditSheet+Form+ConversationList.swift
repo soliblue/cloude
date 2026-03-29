@@ -33,7 +33,6 @@ struct SwipeToDeleteRow<Content: View>: View {
             }
 
             content()
-                .background(Color.themeSecondary)
                 .offset(x: offset)
                 .onTapGesture {
                     if offset < 0 {
@@ -107,7 +106,6 @@ extension WindowEditForm {
                 Image.safeSymbol(conv.symbol)
                     .font(.system(size: DS.Text.m))
                     .foregroundColor(.secondary)
-                    .frame(width: DS.Spacing.xl)
                 VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                     Text(conv.name)
                         .font(.system(size: DS.Text.m))
@@ -139,7 +137,7 @@ extension WindowEditForm {
 
         if !isLast {
             Divider()
-                .padding(.leading, DS.Spacing.xxl)
+                .padding(.leading, DS.Spacing.l)
         }
     }
 

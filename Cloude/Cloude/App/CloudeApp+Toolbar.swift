@@ -17,7 +17,7 @@ extension CloudeApp {
                     }
                     if let conv = conversation {
                         Text(conv.name)
-                            .font(.system(size: DS.Text.m, weight: .semibold))
+                            .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                             .contentTransition(.numericText())

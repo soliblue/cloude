@@ -11,7 +11,6 @@ struct SettingsRow<Content: View>: View {
             Image(systemName: icon)
                 .font(.system(size: DS.Icon.m))
                 .foregroundColor(color)
-                .frame(width: DS.Spacing.xl)
             content
         }
     }

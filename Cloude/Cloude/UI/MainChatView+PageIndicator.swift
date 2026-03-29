@@ -87,7 +87,7 @@ extension MainChatView {
                 .frame(height: DS.Icon.l)
                 .modifier(StreamingPulseModifier(isStreaming: isStreaming))
             Text(title)
-                .font(.system(size: DS.Text.s, weight: .semibold))
+                .font(.system(size: DS.Text.s))
                 .foregroundStyle(color)
                 .lineLimit(1)
         }

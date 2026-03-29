@@ -82,7 +82,7 @@ struct EmptyConversationView: View {
                     conversationStore: convStore,
                     conversation: conv
                 )
-                .padding(.horizontal, DS.Spacing.xxl)
+                .padding(.horizontal, DS.Spacing.l)
                 .padding(.top, DS.Spacing.s)
             }
 
@@ -104,7 +104,6 @@ struct EmptyConversationView: View {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
-                            .frame(width: DS.Icon.l)
                         Text("Search conversations...")
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
@@ -122,7 +121,6 @@ struct EmptyConversationView: View {
                         Image.safeSymbol(conv.symbol ?? "bubble.left")
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
-                            .frame(width: DS.Icon.l)
                         Text(conv.name)
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.primary)
@@ -140,6 +138,6 @@ struct EmptyConversationView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, DS.Spacing.xxl)
+        .padding(.horizontal, DS.Spacing.l)
     }
 }

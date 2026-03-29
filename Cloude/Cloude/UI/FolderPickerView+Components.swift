@@ -62,7 +62,6 @@ struct FolderRow: View {
                 Image(systemName: "folder.fill")
                     .font(.system(size: DS.Icon.l))
                     .foregroundColor(.blue)
-                    .frame(width: DS.Spacing.xxl)
 
                 Text(entry.name)
                     .font(.system(size: DS.Text.m))

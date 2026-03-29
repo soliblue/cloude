@@ -7,8 +7,6 @@ struct ConversationSearchSheet: View {
     let onSelect: (Conversation) -> Void
 
     @State var searchText = ""
-    @State private var isSearchFocused = false
-    @Environment(\.dismiss) private var dismiss
 
     private var results: [Conversation] {
         let all = conversationStore.listableConversations
@@ -41,7 +39,7 @@ struct ConversationSearchSheet: View {
                         Text("No conversations found")
                             .font(.system(size: DS.Text.m))
                             .foregroundColor(.secondary)
-                            .padding(.top, DS.Spacing.xxl)
+                            .padding(.top, DS.Spacing.l)
                     }
 
                     ForEach(grouped, id: \.directory) { group in
@@ -65,7 +63,7 @@ struct ConversationSearchSheet: View {
 
                                     if conv.id != group.conversations.last?.id {
                                         Divider()
-                                            .padding(.leading, DS.Spacing.xxl)
+                                            .padding(.leading, DS.Spacing.l)
                                     }
                                 }
                             }
@@ -78,21 +76,10 @@ struct ConversationSearchSheet: View {
                 .padding(.top, DS.Spacing.s)
             }
             .background(Color.themeBackground)
-            .searchable(text: $searchText, isPresented: $isSearchFocused, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search conversations...")
-            .onAppear { isSearchFocused = true }
+            .searchable(text: $searchText, placement: .toolbar, prompt: "Search conversations...")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.themeSecondary, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: DS.Icon.s, weight: .semibold))
-                            .foregroundColor(.secondary)
-                    }
-                    .agenticID("conversation_search_close_button")
-                }
-            }
         }
         .agenticID("conversation_search_sheet")
     }

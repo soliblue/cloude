@@ -52,7 +52,6 @@ extension ToolDetailSheet {
                         Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
                             .font(.system(size: DS.Text.m, weight: .medium))
                             .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
-                            .frame(width: DS.Icon.l)
 
                         Text(todo["content"] ?? "")
                             .font(.system(size: DS.Text.m))
@@ -64,7 +63,7 @@ extension ToolDetailSheet {
 
                     if index < todos.count - 1 {
                         Divider()
-                            .padding(.leading, DS.Spacing.xxl)
+                            .padding(.leading, DS.Spacing.l)
                     }
                 }
             }
@@ -86,7 +85,6 @@ extension ToolDetailSheet {
                             Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
                                 .font(.system(size: DS.Text.m, weight: .medium))
                                 .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
-                                .frame(width: DS.Icon.l)
 
                             Text(chained.command)
                                 .font(.system(size: DS.Text.m, design: .monospaced))
