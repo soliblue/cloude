@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ForkRight
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.DropdownMenu
@@ -59,6 +60,7 @@ private val COLLAPSED_MAX_HEIGHT = 120.dp
 fun MessageBubble(
     message: ChatMessage,
     onToggleCollapse: (() -> Unit)? = null,
+    onFork: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -213,6 +215,16 @@ fun MessageBubble(
                             },
                             onClick = {
                                 onToggleCollapse.invoke()
+                                showMenu = false
+                            }
+                        )
+                    }
+                    if (onFork != null) {
+                        DropdownMenuItem(
+                            text = { Text("Fork from here") },
+                            leadingIcon = { Icon(Icons.Default.ForkRight, contentDescription = null) },
+                            onClick = {
+                                onFork.invoke()
                                 showMenu = false
                             }
                         )

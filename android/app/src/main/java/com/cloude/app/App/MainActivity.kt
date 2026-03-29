@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -46,6 +47,7 @@ import com.cloude.app.Services.WebSocketForegroundService
 import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.chat.MainScreen
+import com.cloude.app.UI.chat.RenameDialog
 import com.cloude.app.UI.deploy.DeploySheet
 import com.cloude.app.UI.settings.SettingsScreen
 import com.cloude.app.UI.theme.CloudeTheme
@@ -106,6 +108,7 @@ class MainActivity : ComponentActivity() {
             var showSettings by remember { mutableStateOf(false) }
             var showConversations by remember { mutableStateOf(false) }
             var showDeploy by remember { mutableStateOf(false) }
+            var showRename by remember { mutableStateOf(false) }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
             val conversation by chatViewModel.conversation.collectAsState()
 
@@ -118,7 +121,8 @@ class MainActivity : ComponentActivity() {
                                 Text(
                                     text = if (showSettings) "Settings" else conversation.name,
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = if (!showSettings) Modifier.clickable { showRename = true } else Modifier
                                 )
                             },
                             navigationIcon = {
@@ -216,6 +220,14 @@ class MainActivity : ComponentActivity() {
                             onNew = { chatViewModel.newConversation() },
                             onDelete = { conversationStore.delete(it.id) },
                             onDismiss = { showConversations = false }
+                        )
+                    }
+
+                    if (showRename) {
+                        RenameDialog(
+                            currentName = conversation.name,
+                            onConfirm = { chatViewModel.renameConversation(it) },
+                            onDismiss = { showRename = false }
                         )
                     }
                 }

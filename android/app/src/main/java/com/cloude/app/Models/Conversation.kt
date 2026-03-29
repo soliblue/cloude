@@ -16,7 +16,9 @@ data class Conversation(
     var pendingMessages: MutableList<ChatMessage> = mutableListOf(),
     var defaultEffort: String? = null,
     var defaultModel: String? = null,
-    var environmentId: String? = null
+    var environmentId: String? = null,
+    var userRenamed: Boolean = false,
+    var pendingFork: Boolean = false
 ) {
     val isEmpty: Boolean
         get() = messages.isEmpty() && pendingMessages.isEmpty() && sessionId == null

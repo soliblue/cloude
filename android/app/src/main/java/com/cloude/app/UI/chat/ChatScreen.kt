@@ -159,7 +159,8 @@ fun ChatScreen(
                 items(conversation.messages, key = { it.id }) { message ->
                     MessageBubble(
                         message = message,
-                        onToggleCollapse = if (!message.isUser) {{ viewModel.toggleCollapse(message.id) }} else null
+                        onToggleCollapse = if (!message.isUser) {{ viewModel.toggleCollapse(message.id) }} else null,
+                        onFork = if (conversation.sessionId != null) {{ viewModel.forkConversation(message.id) }} else null
                     )
                 }
 

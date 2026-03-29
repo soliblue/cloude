@@ -83,22 +83,37 @@ class ChatViewModel(
 
         val workingDir = conv.workingDirectory
             ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value
+        val isNewSession = conv.sessionId == null
+        val isFork = conv.pendingFork
 
         connectionManager.send(
             ClientMessage.Chat(
                 message = text,
                 workingDirectory = workingDir,
                 sessionId = conv.sessionId,
-                isNewSession = conv.sessionId == null,
+                isNewSession = isNewSession,
                 conversationId = conv.id,
                 conversationName = conv.name,
                 imagesBase64 = imagesBase64,
                 filesBase64 = filesBase64,
                 effort = conv.defaultEffort,
-                model = conv.defaultModel
+                model = conv.defaultModel,
+                forkSession = isFork
             ),
             envId
         )
+
+        if (isNewSession) {
+            connectionManager.send(
+                ClientMessage.SuggestName(text = text, context = emptyList(), conversationId = conv.id),
+                envId
+            )
+        }
+
+        if (isFork) {
+            _conversation.value = _conversation.value.copy(pendingFork = false)
+            persistConversation()
+        }
     }
 
     fun transcribe(audioBase64: String) {
@@ -146,6 +161,31 @@ class ChatViewModel(
 
     fun dismissUsageStats() {
         _usageStats.value = null
+    }
+
+    fun renameConversation(name: String) {
+        _conversation.value = _conversation.value.copy(name = name, userRenamed = true)
+        persistConversation()
+    }
+
+    fun forkConversation(upToMessageId: String) {
+        val conv = _conversation.value
+        if (conv.sessionId == null) return
+        val idx = conv.messages.indexOfFirst { it.id == upToMessageId }
+        if (idx < 0) return
+        val forkedMessages = conv.messages.subList(0, idx + 1).map { it.copy() }.toMutableList()
+        val forked = Conversation(
+            name = conv.name,
+            symbol = conv.symbol,
+            sessionId = conv.sessionId,
+            workingDirectory = conv.workingDirectory,
+            environmentId = conv.environmentId,
+            messages = forkedMessages,
+            pendingFork = true,
+            lastMessageAt = System.currentTimeMillis()
+        )
+        conversationStore.save(forked)
+        _conversation.value = forked
     }
 
     fun toggleCollapse(messageId: String) {
@@ -219,6 +259,44 @@ class ChatViewModel(
                 }
             }
 
+            is ServerMessage.NameSuggestion -> {
+                val conv = _conversation.value
+                if (message.conversationId == conv.id && !conv.userRenamed) {
+                    _conversation.value = conv.copy(
+                        name = message.name,
+                        symbol = message.symbol
+                    )
+                    persistConversation()
+                }
+            }
+
+            is ServerMessage.HistorySync -> {
+                val conv = _conversation.value
+                if (message.sessionId == conv.sessionId) {
+                    val historyMessages = message.messages.map { hm ->
+                        ChatMessage(
+                            isUser = hm.role == "user",
+                            text = hm.text,
+                            timestamp = ((hm.timestamp ?: 0.0) * 1000).toLong(),
+                            toolCalls = hm.toolCalls.map { tc ->
+                                ToolCall(
+                                    name = tc.name,
+                                    input = tc.input,
+                                    toolId = tc.toolId,
+                                    resultSummary = tc.summary,
+                                    resultOutput = tc.output
+                                )
+                            }.toMutableList()
+                        )
+                    }
+                    _conversation.value = conv.copy(
+                        messages = historyMessages.toMutableList(),
+                        lastMessageAt = System.currentTimeMillis()
+                    )
+                    persistConversation()
+                }
+            }
+
             is ServerMessage.Error -> {
                 output.appendText("\n**Error:** ${message.message}")
                 finalizeAssistantMessage()
@@ -257,6 +335,23 @@ class ChatViewModel(
 
         Log.d("Cloude", "finalizeAssistantMessage: done, isRunning will be false")
         persistConversation()
+
+        val updatedConv = _conversation.value
+        val assistantCount = updatedConv.messages.count { !it.isUser }
+        if ((assistantCount == 2 || (assistantCount > 0 && assistantCount % 5 == 0)) && !updatedConv.userRenamed) {
+            val envId = activeEnvId
+            if (envId != null) {
+                val contextMessages = updatedConv.messages.takeLast(10).map {
+                    (if (it.isUser) "User: " else "Assistant: ") + it.text.take(300)
+                }
+                val lastUserMsg = updatedConv.messages.lastOrNull { it.isUser }?.text ?: ""
+                connectionManager.send(
+                    ClientMessage.SuggestName(text = lastUserMsg, context = contextMessages, conversationId = updatedConv.id),
+                    envId
+                )
+            }
+        }
+
         output.reset()
     }
 
