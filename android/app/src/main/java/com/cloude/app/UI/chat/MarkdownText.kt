@@ -6,14 +6,18 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -132,10 +136,15 @@ fun MarkdownText(
                 }
 
                 is Block.ListItem -> {
-                    val bullet = if (block.ordered) "${block.index}." else "\u2022"
+                    val bullet = when {
+                        block.checked != null -> if (block.checked) "\u2611" else "\u2610"
+                        block.ordered -> "${block.index}."
+                        else -> "\u2022"
+                    }
+                    val indentDp = (DS.Spacing.m + DS.Spacing.l * block.indent)
                     Row(
                         modifier = Modifier.padding(
-                            start = DS.Spacing.m,
+                            start = indentDp,
                             top = 2.dp,
                             bottom = 2.dp
                         )
@@ -143,7 +152,7 @@ fun MarkdownText(
                         Text(
                             text = "$bullet ",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = color
+                            color = if (block.checked == true) color.copy(alpha = DS.Opacity.m) else color
                         )
                         val annotated = parseInline(block.text, color, inlineCodeBackground, linkColor)
                         val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -175,6 +184,51 @@ fun MarkdownText(
                                 )
                             }
                         )
+                    }
+                }
+
+                is Block.Table -> {
+                    val dividerColor = color.copy(alpha = 0.2f)
+                    val headerBg = Color.Gray.copy(alpha = DS.Opacity.s)
+                    val colCount = block.rows.maxOfOrNull { it.size } ?: 0
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = DS.Spacing.xs)
+                            .clip(RoundedCornerShape(DS.Radius.s))
+                            .background(color.copy(alpha = 0.03f))
+                    ) {
+                        block.rows.forEachIndexed { rowIndex, row ->
+                            if (rowIndex > 0) {
+                                HorizontalDivider(color = dividerColor, thickness = 0.5.dp)
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(IntrinsicSize.Min)
+                                    .then(if (rowIndex == 0) Modifier.background(headerBg) else Modifier)
+                            ) {
+                                (0 until colCount).forEach { colIndex ->
+                                    if (colIndex > 0) {
+                                        VerticalDivider(
+                                            modifier = Modifier.fillMaxHeight(),
+                                            color = dividerColor,
+                                            thickness = 0.5.dp
+                                        )
+                                    }
+                                    val cell = row.getOrElse(colIndex) { "" }
+                                    Text(
+                                        text = parseInline(cell.trim(), color, inlineCodeBackground, linkColor),
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontWeight = if (rowIndex == 0) FontWeight.Bold else FontWeight.Normal
+                                        ),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = DS.Spacing.s, vertical = DS.Spacing.s)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -229,9 +283,16 @@ private sealed class Block {
     data class CodeBlock(val code: String, val language: String) : Block()
     data class Heading(val text: String, val level: Int) : Block()
     data class Quote(val text: String) : Block()
-    data class ListItem(val text: String, val ordered: Boolean, val index: Int) : Block()
+    data class ListItem(val text: String, val ordered: Boolean, val index: Int, val indent: Int = 0, val checked: Boolean? = null) : Block()
+    data class Table(val rows: List<List<String>>) : Block()
     data object HorizontalRule : Block()
 }
+
+private val UNORDERED_RE = Regex("^(\\s*)([-*+]) (.*)")
+private val ORDERED_RE = Regex("^(\\s*)(\\d+)\\. (.*)")
+private val TASK_RE = Regex("^(\\s*)[-*+] \\[([ xX])] (.*)")
+private val TABLE_RE = Regex("^\\|.*\\|\\s*$")
+private val TABLE_SEP_RE = Regex("^\\|[\\s:|-]+\\|\\s*$")
 
 private fun parseBlocks(text: String): List<Block> {
     val blocks = mutableListOf<Block>()
@@ -255,6 +316,22 @@ private fun parseBlocks(text: String): List<Block> {
             continue
         }
 
+        if (TABLE_RE.matches(line.trim())) {
+            val tableRows = mutableListOf<List<String>>()
+            while (i < lines.size && TABLE_RE.matches(lines[i].trim())) {
+                val tableLine = lines[i].trim()
+                if (!TABLE_SEP_RE.matches(tableLine)) {
+                    val cells = tableLine.removePrefix("|").removeSuffix("|").split("|")
+                    tableRows.add(cells.map { it.trim() })
+                }
+                i++
+            }
+            if (tableRows.isNotEmpty()) {
+                blocks.add(Block.Table(tableRows))
+            }
+            continue
+        }
+
         if (trimmed.startsWith("#")) {
             val level = trimmed.takeWhile { it == '#' }.length
             if (level in 1..6 && trimmed.getOrNull(level) == ' ') {
@@ -275,19 +352,28 @@ private fun parseBlocks(text: String): List<Block> {
             continue
         }
 
-        if (trimmed.matches(Regex("^[-*+] .+"))) {
-            blocks.add(Block.ListItem(trimmed.substring(2), ordered = false, index = 0))
+        TASK_RE.matchEntire(line)?.let { m ->
+            val indent = m.groupValues[1].length / 2
+            val checked = m.groupValues[2] != " "
+            blocks.add(Block.ListItem(m.groupValues[3], ordered = false, index = 0, indent = indent, checked = checked))
             i++
-            continue
-        }
+            return@let
+        }?.also { continue }
 
-        if (trimmed.matches(Regex("^\\d+\\. .+"))) {
-            val dotIdx = trimmed.indexOf(". ")
-            val num = trimmed.substring(0, dotIdx).toIntOrNull() ?: 1
-            blocks.add(Block.ListItem(trimmed.substring(dotIdx + 2), ordered = true, index = num))
+        UNORDERED_RE.matchEntire(line)?.let { m ->
+            val indent = m.groupValues[1].length / 2
+            blocks.add(Block.ListItem(m.groupValues[3], ordered = false, index = 0, indent = indent))
             i++
-            continue
-        }
+            return@let
+        }?.also { continue }
+
+        ORDERED_RE.matchEntire(line)?.let { m ->
+            val indent = m.groupValues[1].length / 2
+            val num = m.groupValues[2].toIntOrNull() ?: 1
+            blocks.add(Block.ListItem(m.groupValues[3], ordered = true, index = num, indent = indent))
+            i++
+            return@let
+        }?.also { continue }
 
         if (trimmed.matches(Regex("^[-*_]{3,}$"))) {
             blocks.add(Block.HorizontalRule)
@@ -307,8 +393,10 @@ private fun parseBlocks(text: String): List<Block> {
             val nextTrimmed = next.trimStart()
             if (nextTrimmed.isEmpty() || nextTrimmed.startsWith("```") ||
                 nextTrimmed.startsWith("#") || nextTrimmed.startsWith("> ") ||
-                nextTrimmed.matches(Regex("^[-*+] .+")) ||
-                nextTrimmed.matches(Regex("^\\d+\\. .+")) ||
+                TABLE_RE.matches(next.trim()) ||
+                TASK_RE.matches(next) ||
+                UNORDERED_RE.matches(next) ||
+                ORDERED_RE.matches(next) ||
                 nextTrimmed.matches(Regex("^[-*_]{3,}$"))) break
             paraLines.add(next)
             i++
