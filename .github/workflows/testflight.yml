@@ -41,8 +41,9 @@ jobs:
         run: |
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/cloude.mobileprovision
-          PROFILE_UUID="$(security cms -D -i /tmp/cloude.mobileprovision | /usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin)"
-          PROFILE_NAME="$(security cms -D -i /tmp/cloude.mobileprovision | /usr/libexec/PlistBuddy -c 'Print Name' /dev/stdin)"
+          security cms -D -i /tmp/cloude.mobileprovision > /tmp/cloude.mobileprovision.plist
+          PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print UUID' /tmp/cloude.mobileprovision.plist)"
+          PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print Name' /tmp/cloude.mobileprovision.plist)"
           cp /tmp/cloude.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
           echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
 
