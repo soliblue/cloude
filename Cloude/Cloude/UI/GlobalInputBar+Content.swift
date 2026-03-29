@@ -1,6 +1,27 @@
 import SwiftUI
 
 extension GlobalInputBar {
+    var inputBarOpacity: Double {
+        if !showInputBar || isTranscribing {
+            return 0
+        }
+        return clampedSwipeProgress.map { 1.0 - $0 * 0.7 } ?? 1
+    }
+
+    var recordingOverlayOpacity: Double {
+        if showRecordingOverlay || isTranscribing {
+            return 1
+        }
+        return clampedSwipeProgress ?? 0
+    }
+
+    var recordingOverlayOffset: CGFloat {
+        if showRecordingOverlay || isTranscribing {
+            return 0
+        }
+        return max(0, Constants.swipeThreshold - sanitizedSwipeOffset)
+    }
+
     var contentStack: some View {
         VStack(spacing: 0) {
             if audioRecorder.hasPendingAudio && !audioRecorder.isRecording && !isTranscribing {
@@ -37,7 +58,7 @@ extension GlobalInputBar {
 
             ZStack(alignment: .bottom) {
                 inputRow
-                    .opacity((showInputBar && !isTranscribing) ? 1.0 - Double(min(swipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold) * 0.7 : 0)
+                    .opacity(inputBarOpacity)
                     .animation(.easeOut(duration: Constants.transitionDuration), value: showInputBar)
                     .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
 
@@ -47,8 +68,8 @@ extension GlobalInputBar {
                         isTranscribing: isTranscribing,
                         onStop: stopRecording
                     )
-                    .offset(y: (showRecordingOverlay || isTranscribing) ? 0 : max(0, Constants.swipeThreshold - swipeOffset))
-                    .opacity((showRecordingOverlay || isTranscribing) ? 1 : Double(min(swipeOffset, Constants.swipeThreshold)) / Double(Constants.swipeThreshold))
+                    .offset(y: recordingOverlayOffset)
+                    .opacity(recordingOverlayOpacity)
                     .animation(.easeOut(duration: Constants.transitionDuration), value: showRecordingOverlay)
                     .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
                 }
@@ -110,5 +131,16 @@ extension GlobalInputBar {
                 Color.themeBackground
                     .shadow(color: .black.opacity(DS.Opacity.s), radius: DS.Radius.s, y: -2)
             )
+    }
+
+    private var sanitizedSwipeOffset: CGFloat {
+        swipeOffset.isFinite ? max(0, swipeOffset) : 0
+    }
+
+    private var clampedSwipeProgress: Double? {
+        if Constants.swipeThreshold > 0 {
+            return min(max(Double(sanitizedSwipeOffset / Constants.swipeThreshold), 0), 1)
+        }
+        return nil
     }
 }
