@@ -71,19 +71,36 @@ extension GlobalInputBar {
         .agenticID("chat_record_button")
         .disabled(!canRecord)
         Divider()
-        Picker(selection: Binding(get: { currentEffort }, set: { setEffort($0) })) {
-            Text(conversationDefaultEffort?.displayName ?? "Default").tag(EffortLevel?.none)
+        Menu {
+            Button(action: { setEffort(nil) }) {
+                Label(
+                    conversationDefaultEffort?.displayName ?? "Default",
+                    systemImage: currentEffort == nil ? "checkmark" : ""
+                )
+            }
             ForEach(EffortLevel.allCases, id: \.self) { level in
-                Text(level.displayName).tag(EffortLevel?.some(level))
+                Button(action: { setEffort(level) }) {
+                    Label(
+                        level.displayName,
+                        systemImage: currentEffort == level ? "checkmark" : ""
+                    )
+                }
             }
         } label: {
             Label("Effort: \(currentEffort?.displayName ?? "Default")", systemImage: "brain.head.profile")
         }
         .agenticID("chat_effort_picker")
-        Picker(selection: Binding(get: { currentModel }, set: { setModel($0) })) {
-            Text("Auto").tag(ModelSelection?.none)
+        Menu {
+            Button(action: { setModel(nil) }) {
+                Label("Auto", systemImage: currentModel == nil ? "checkmark" : "")
+            }
             ForEach(ModelSelection.allCases, id: \.self) { model in
-                Text(model.displayName).tag(ModelSelection?.some(model))
+                Button(action: { setModel(model) }) {
+                    Label(
+                        model.displayName,
+                        systemImage: currentModel == model ? "checkmark" : ""
+                    )
+                }
             }
         } label: {
             Label("Model: \(currentModel?.displayName ?? "Auto")", systemImage: "cpu")
