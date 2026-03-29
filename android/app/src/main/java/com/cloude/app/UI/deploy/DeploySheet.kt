@@ -121,8 +121,7 @@ fun DeploySheet(
                     if (chunks.size == totalChunks) {
                         outputLines.add("All chunks received, installing...")
                         phase = "installing"
-                        val fullData = (0 until totalChunks).joinToString("") { chunks[it] ?: "" }
-                        val success = saveAndInstall(context, fullData)
+                        val success = saveChunksAndInstall(context, chunks, totalChunks)
                         if (success) {
                             phase = "done"
                             outputLines.add("")
@@ -213,10 +212,32 @@ private fun saveAndInstall(context: Context, base64Data: String): Boolean {
     } catch (e: Exception) {
         return false
     }
+    return writeAndInstall(context, bytes)
+}
 
+private fun saveChunksAndInstall(context: Context, chunks: Map<Int, String>, totalChunks: Int): Boolean {
+    val apkFile = File(context.cacheDir, "cloude-update.apk")
+    try {
+        apkFile.outputStream().use { out ->
+            for (i in 0 until totalChunks) {
+                val chunkData = chunks[i] ?: return false
+                val bytes = Base64.decode(chunkData, Base64.DEFAULT)
+                out.write(bytes)
+            }
+        }
+    } catch (e: Exception) {
+        return false
+    }
+    return installApk(context, apkFile)
+}
+
+private fun writeAndInstall(context: Context, bytes: ByteArray): Boolean {
     val apkFile = File(context.cacheDir, "cloude-update.apk")
     apkFile.writeBytes(bytes)
+    return installApk(context, apkFile)
+}
 
+private fun installApk(context: Context, apkFile: File): Boolean {
     val uri = FileProvider.getUriForFile(context, "com.cloude.app.fileprovider", apkFile)
     val intent = Intent(Intent.ACTION_VIEW).apply {
         setDataAndType(uri, "application/vnd.android.package-archive")
