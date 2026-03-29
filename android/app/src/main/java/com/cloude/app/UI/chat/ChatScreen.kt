@@ -51,6 +51,10 @@ fun ChatScreen(
 ) {
     val skills by connectionManager.connection(environmentId)?.skills?.collectAsState()
         ?: remember { mutableStateOf(emptyList()) }
+    val whisperReady by connectionManager.connection(environmentId)?.whisperReady?.collectAsState()
+        ?: remember { mutableStateOf(false) }
+    val isTranscribing by viewModel.isTranscribing.collectAsState()
+    val pendingTranscription by viewModel.pendingTranscription.collectAsState()
     val conversation by viewModel.conversation.collectAsState()
     val streamingText by viewModel.output.text.collectAsState()
     val streamingTools by viewModel.output.toolCalls.collectAsState()
@@ -196,11 +200,16 @@ fun ChatScreen(
 
         InputBar(
             isRunning = isRunning,
+            isTranscribing = isTranscribing,
+            whisperReady = whisperReady,
+            pendingTranscription = pendingTranscription,
             currentEffort = conversation.defaultEffort,
             currentModel = conversation.defaultModel,
             skills = skills,
             onSend = { text, images -> viewModel.sendMessage(text, images) },
             onAbort = { viewModel.abort() },
+            onTranscribe = { viewModel.transcribe(it) },
+            onTranscriptionConsumed = { viewModel.consumeTranscription() },
             onEffortChange = { viewModel.setEffort(it) },
             onModelChange = { viewModel.setModel(it) },
             modifier = Modifier

@@ -52,6 +52,9 @@ class EnvironmentConnection(
     private val _skills = MutableStateFlow<List<com.cloude.app.Models.Skill>>(emptyList())
     val skills: StateFlow<List<com.cloude.app.Models.Skill>> = _skills
 
+    private val _whisperReady = MutableStateFlow(false)
+    val whisperReady: StateFlow<Boolean> = _whisperReady
+
     fun connect(host: String, port: Int, token: String) {
         savedHost = host
         savedPort = port
@@ -107,6 +110,7 @@ class EnvironmentConnection(
                     }
                     is ServerMessage.DefaultWorkingDirectory -> _defaultWorkingDirectory.value = message.path
                     is ServerMessage.Skills -> _skills.value = message.skills
+                    is ServerMessage.WhisperReady -> _whisperReady.value = message.ready
                     else -> {}
                 }
 

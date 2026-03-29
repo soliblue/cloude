@@ -1,5 +1,7 @@
 package com.cloude.app.UI.chat
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -7,6 +9,11 @@ import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,10 +22,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +38,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +49,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,10 +65,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import com.cloude.app.Models.Skill
 import com.cloude.app.Models.SlashCommand
+import com.cloude.app.Services.AudioRecorder
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelRed
@@ -63,11 +79,16 @@ import java.io.ByteArrayOutputStream
 @Composable
 fun InputBar(
     isRunning: Boolean,
+    isTranscribing: Boolean = false,
+    whisperReady: Boolean = false,
+    pendingTranscription: String? = null,
     currentEffort: String?,
     currentModel: String?,
     skills: List<Skill> = emptyList(),
     onSend: (String, List<String>?) -> Unit,
     onAbort: () -> Unit,
+    onTranscribe: (String) -> Unit = {},
+    onTranscriptionConsumed: () -> Unit = {},
     onEffortChange: (String?) -> Unit,
     onModelChange: (String?) -> Unit,
     modifier: Modifier = Modifier
@@ -76,6 +97,38 @@ fun InputBar(
     var attachedImages by remember { mutableStateOf<List<Pair<Bitmap, String>>>(emptyList()) }
     var expandedImage by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
+
+    val recorder = remember { AudioRecorder() }
+    val isRecording by recorder.isRecording.collectAsState()
+    val audioLevel by recorder.audioLevel.collectAsState()
+
+    DisposableEffect(Unit) { onDispose { recorder.release() } }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) recorder.startRecording()
+    }
+
+    fun startRecordingWithPermission() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            recorder.startRecording()
+        } else {
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    fun stopRecordingAndTranscribe() {
+        val base64 = recorder.stopRecording() ?: return
+        onTranscribe(base64)
+    }
+
+    LaunchedEffect(pendingTranscription) {
+        if (pendingTranscription != null) {
+            text = if (text.isEmpty()) pendingTranscription else "$text $pendingTranscription"
+            onTranscriptionConsumed()
+        }
+    }
 
     val imagePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
@@ -213,41 +266,71 @@ fun InputBar(
         ) {
             IconButton(
                 onClick = { imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-                modifier = Modifier.size(DS.Size.m)
+                modifier = Modifier.size(DS.Size.m),
+                enabled = !isRecording
             ) {
                 Icon(
                     imageVector = Icons.Default.Image,
                     contentDescription = "Attach image",
-                    tint = Accent,
+                    tint = if (isRecording) MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s)
+                           else Accent,
                     modifier = Modifier.size(DS.Icon.m)
                 )
             }
 
-            BasicTextField(
-                value = text,
-                onValueChange = { text = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = DS.Spacing.xs),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                cursorBrush = SolidColor(Accent),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = {
-                    if (!isRunning) doSend()
-                }),
-                decorationBox = { innerTextField ->
-                    if (text.isEmpty()) {
-                        Text(
-                            text = "Message...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
-                        )
-                    }
-                    innerTextField()
+            if (isRecording) {
+                RecordingIndicator(
+                    audioLevel = audioLevel,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = DS.Spacing.xs)
+                )
+            } else if (isTranscribing) {
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = DS.Spacing.xs),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(DS.Icon.s),
+                        strokeWidth = 2.dp,
+                        color = Accent
+                    )
+                    Text(
+                        text = "Transcribing...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                    )
                 }
-            )
+            } else {
+                BasicTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = DS.Spacing.xs),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    cursorBrush = SolidColor(Accent),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = {
+                        if (!isRunning) doSend()
+                    }),
+                    decorationBox = { innerTextField ->
+                        if (text.isEmpty()) {
+                            Text(
+                                text = "Message...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
 
             if (isRunning) {
                 IconButton(onClick = onAbort) {
@@ -255,6 +338,22 @@ fun InputBar(
                         imageVector = Icons.Default.Stop,
                         contentDescription = "Stop",
                         tint = PastelRed
+                    )
+                }
+            } else if (isRecording) {
+                IconButton(onClick = { stopRecordingAndTranscribe() }) {
+                    Icon(
+                        imageVector = Icons.Default.Stop,
+                        contentDescription = "Stop recording",
+                        tint = PastelRed
+                    )
+                }
+            } else if (text.isEmpty() && attachedImages.isEmpty() && whisperReady && !isTranscribing) {
+                IconButton(onClick = { startRecordingWithPermission() }) {
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = "Record voice",
+                        tint = Accent
                     )
                 }
             } else {
@@ -275,6 +374,54 @@ fun InputBar(
 
     expandedImage?.let { bitmap ->
         ImagePreviewSheet(bitmap = bitmap, onDismiss = { expandedImage = null })
+    }
+}
+
+@Composable
+private fun RecordingIndicator(audioLevel: Float, modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "recording")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse"
+    )
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(DS.Spacing.m)
+                .clip(CircleShape)
+                .background(PastelRed.copy(alpha = pulseAlpha))
+        )
+        Text(
+            text = "Recording...",
+            style = MaterialTheme.typography.bodyMedium,
+            color = PastelRed
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(5) { i ->
+                val threshold = i * 0.2f
+                val barHeight = if (audioLevel > threshold) 8.dp + (12.dp * audioLevel) else 4.dp
+                Box(
+                    modifier = Modifier
+                        .width(3.dp)
+                        .height(barHeight)
+                        .clip(RoundedCornerShape(1.5.dp))
+                        .background(PastelRed.copy(alpha = 0.7f))
+                )
+            }
+        }
     }
 }
 

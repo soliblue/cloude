@@ -29,6 +29,12 @@ class ChatViewModel(
 
     val output = ConversationOutput()
 
+    private val _isTranscribing = MutableStateFlow(false)
+    val isTranscribing: StateFlow<Boolean> = _isTranscribing
+
+    private val _pendingTranscription = MutableStateFlow<String?>(null)
+    val pendingTranscription: StateFlow<String?> = _pendingTranscription
+
     private val activeEnvId: String?
         get() = _conversation.value.environmentId ?: environmentStore.activeEnvironmentId.value
 
@@ -85,6 +91,16 @@ class ChatViewModel(
             ),
             envId
         )
+    }
+
+    fun transcribe(audioBase64: String) {
+        val envId = activeEnvId ?: return
+        _isTranscribing.value = true
+        connectionManager.send(ClientMessage.Transcribe(audioBase64), envId)
+    }
+
+    fun consumeTranscription() {
+        _pendingTranscription.value = null
     }
 
     fun abort() {
@@ -163,6 +179,11 @@ class ChatViewModel(
 
             is ServerMessage.MessageUUID -> {
                 output.messageUUID = message.uuid
+            }
+
+            is ServerMessage.Transcription -> {
+                _pendingTranscription.value = message.text
+                _isTranscribing.value = false
             }
 
             is ServerMessage.Error -> {

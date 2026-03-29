@@ -16,9 +16,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,12 +31,22 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import com.cloude.app.Models.Conversation
 import com.cloude.app.Models.ConversationStore
 import com.cloude.app.Utilities.Accent
@@ -51,6 +64,25 @@ fun ConversationListSheet(
 ) {
     val conversations by conversationStore.conversations.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filtered = remember(conversations, searchQuery) {
+        if (searchQuery.isBlank()) {
+            conversations.map { it to null as String? }
+        } else {
+            val q = searchQuery.lowercase()
+            conversations.mapNotNull { conv ->
+                when {
+                    conv.name.lowercase().contains(q) -> conv to null
+                    conv.workingDirectory?.lowercase()?.contains(q) == true -> conv to null
+                    else -> {
+                        val match = conv.messages.firstOrNull { it.text.lowercase().contains(q) }
+                        if (match != null) conv to matchSnippet(match.text, q) else null
+                    }
+                }
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -82,9 +114,17 @@ fun ConversationListSheet(
                 }
             }
 
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = DS.Spacing.l, vertical = DS.Spacing.xs)
+            )
+
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-            if (conversations.isEmpty()) {
+            if (filtered.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -92,17 +132,19 @@ fun ConversationListSheet(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No conversations yet",
+                        text = if (searchQuery.isBlank()) "No conversations yet"
+                               else "No conversations found",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
                     )
                 }
             } else {
                 LazyColumn {
-                    items(conversations, key = { it.id }) { conv ->
+                    items(filtered, key = { it.first.id }) { (conv, snippet) ->
                         ConversationRow(
                             conversation = conv,
                             isActive = conv.id == activeConversationId,
+                            matchSnippet = snippet,
                             onTap = {
                                 onSelect(conv)
                                 onDismiss()
@@ -118,9 +160,64 @@ fun ConversationListSheet(
 }
 
 @Composable
+private fun SearchBar(query: String, onQueryChange: (String) -> Unit, modifier: Modifier = Modifier) {
+    val focusRequester = remember { FocusRequester() }
+
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(DS.Radius.m))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+            modifier = Modifier.size(DS.Icon.m)
+        )
+        BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier
+                .weight(1f)
+                .focusRequester(focusRequester),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            cursorBrush = SolidColor(Accent),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                if (query.isEmpty()) {
+                    Text(
+                        text = "Search conversations...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                    )
+                }
+                innerTextField()
+            }
+        )
+        if (query.isNotEmpty()) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Clear",
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+                modifier = Modifier
+                    .size(DS.Icon.m)
+                    .clip(CircleShape)
+                    .clickable { onQueryChange("") }
+            )
+        }
+    }
+}
+
+@Composable
 private fun ConversationRow(
     conversation: Conversation,
     isActive: Boolean,
+    matchSnippet: String? = null,
     onTap: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -176,6 +273,19 @@ private fun ConversationRow(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
                 )
             }
+            if (matchSnippet != null) {
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s))) {
+                            append(matchSnippet)
+                        }
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = DS.Spacing.xs)
+                )
+            }
         }
 
         if (!isActive) {
@@ -189,6 +299,17 @@ private fun ConversationRow(
             }
         }
     }
+}
+
+private fun matchSnippet(text: String, query: String): String {
+    val flat = text.replace('\n', ' ')
+    val idx = flat.lowercase().indexOf(query)
+    if (idx < 0) return flat.take(80)
+    val start = maxOf(0, idx - 30)
+    val end = minOf(flat.length, idx + query.length + 50)
+    val prefix = if (start > 0) "..." else ""
+    val suffix = if (end < flat.length) "..." else ""
+    return "$prefix${flat.substring(start, end)}$suffix"
 }
 
 private fun formatRelativeTime(timestamp: Long): String {
