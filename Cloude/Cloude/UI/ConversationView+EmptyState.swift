@@ -111,7 +111,8 @@ struct EmptyConversationView: View {
                     }
                     .padding(.horizontal, DS.Spacing.l)
                     .padding(.vertical, DS.Spacing.m)
-                    .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.m))
+                    .background(Color.themeSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                 }
                 .buttonStyle(.plain)
             }

@@ -77,9 +77,7 @@ struct ConversationSearchSheet: View {
             }
             .background(Color.themeBackground)
             .searchable(text: $searchText, placement: .toolbar, prompt: "Search conversations...")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color.themeSecondary, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
         }
         .agenticID("conversation_search_sheet")
     }
