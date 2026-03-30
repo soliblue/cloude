@@ -9,6 +9,9 @@ import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.core.content.FileProvider
+import java.io.File
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -170,6 +173,47 @@ fun InputBar(
         attachedFiles = attachedFiles + newFiles
     }
 
+    var cameraUri by remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            cameraUri?.let { uri ->
+                context.contentResolver.openInputStream(uri)?.use { stream ->
+                    val bitmap = BitmapFactory.decodeStream(stream) ?: return@use
+                    val scaled = scaleBitmap(bitmap, 1920)
+                    val base64 = bitmapToBase64(scaled)
+                    attachedImages = attachedImages + (scaled to base64)
+                }
+            }
+        }
+    }
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val photoFile = File(context.cacheDir, "camera_photos").apply { mkdirs() }.let {
+                File(it, "photo_${System.currentTimeMillis()}.jpg")
+            }
+            val uri = FileProvider.getUriForFile(context, "com.cloude.app.fileprovider", photoFile)
+            cameraUri = uri
+            cameraLauncher.launch(uri)
+        }
+    }
+
+    fun launchCamera() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            val photoFile = File(context.cacheDir, "camera_photos").apply { mkdirs() }.let {
+                File(it, "photo_${System.currentTimeMillis()}.jpg")
+            }
+            val uri = FileProvider.getUriForFile(context, "com.cloude.app.fileprovider", photoFile)
+            cameraUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
     fun doSend() {
         if (text.isNotBlank() || attachedImages.isNotEmpty() || attachedFiles.isNotEmpty()) {
             val images = attachedImages.map { it.second }.takeIf { it.isNotEmpty() }
@@ -322,6 +366,20 @@ fun InputBar(
                 Icon(
                     imageVector = Icons.Default.Image,
                     contentDescription = "Attach image",
+                    tint = if (isRecording) MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s)
+                           else Accent,
+                    modifier = Modifier.size(DS.Icon.m)
+                )
+            }
+
+            IconButton(
+                onClick = { launchCamera() },
+                modifier = Modifier.size(DS.Size.m),
+                enabled = !isRecording
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CameraAlt,
+                    contentDescription = "Take photo",
                     tint = if (isRecording) MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.s)
                            else Accent,
                     modifier = Modifier.size(DS.Icon.m)

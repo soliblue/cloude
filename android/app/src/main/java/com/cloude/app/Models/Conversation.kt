@@ -52,7 +52,9 @@ data class ChatMessage(
     var model: String? = null,
     var isCollapsed: Boolean = false,
     var imageCount: Int = 0,
-    var fileCount: Int = 0
+    var fileCount: Int = 0,
+    var imageThumbnails: List<String>? = null,
+    var imagePreviews: List<String>? = null
 )
 
 @Serializable

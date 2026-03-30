@@ -48,7 +48,9 @@ import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelGreen
 import com.cloude.app.Utilities.PastelRed
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -190,22 +192,18 @@ fun DeploySheet(
     }
 }
 
-private fun saveAndInstall(context: Context, base64Data: String): Boolean {
-    val bytes = try {
-        Base64.decode(base64Data, Base64.DEFAULT)
-    } catch (e: Exception) {
-        return false
-    }
-    return writeAndInstall(context, bytes)
-}
+private suspend fun saveAndInstall(context: Context, base64Data: String): Boolean {
+    val apkFile = withContext(Dispatchers.IO) {
+        val bytes = try {
+            Base64.decode(base64Data, Base64.DEFAULT)
+        } catch (e: Exception) {
+            return@withContext null
+        }
+        val file = File(context.cacheDir, "cloude-update.apk")
+        file.writeBytes(bytes)
+        file
+    } ?: return false
 
-private fun writeAndInstall(context: Context, bytes: ByteArray): Boolean {
-    val apkFile = File(context.cacheDir, "cloude-update.apk")
-    apkFile.writeBytes(bytes)
-    return installApk(context, apkFile)
-}
-
-private fun installApk(context: Context, apkFile: File): Boolean {
     val uri = FileProvider.getUriForFile(context, "com.cloude.app.fileprovider", apkFile)
     val intent = Intent(Intent.ACTION_VIEW).apply {
         setDataAndType(uri, "application/vnd.android.package-archive")

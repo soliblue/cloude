@@ -1,5 +1,8 @@
 package com.cloude.app.Services
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import com.cloude.app.Models.AgentState
 import com.cloude.app.Models.AttachedFilePayload
@@ -18,6 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 
 class ChatViewModel(
     private val connectionManager: ConnectionManager,
@@ -73,7 +77,22 @@ class ChatViewModel(
         if (envId == null) return
         val conv = _conversation.value
 
-        val userMessage = ChatMessage(isUser = true, text = text, imageCount = imagesBase64?.size ?: 0, fileCount = filesBase64?.size ?: 0)
+        val messageId = java.util.UUID.randomUUID().toString()
+        val thumbnails = imagesBase64?.map { base64 ->
+            val bytes = Base64.decode(base64, Base64.DEFAULT)
+            val original = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            val scale = minOf(150f / original.width, 150f / original.height, 1f)
+            val thumb = if (scale < 1f) Bitmap.createScaledBitmap(original, (original.width * scale).toInt(), (original.height * scale).toInt(), true) else original
+            val stream = java.io.ByteArrayOutputStream()
+            thumb.compress(Bitmap.CompressFormat.JPEG, 70, stream)
+            Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+        }
+        val previewPaths = imagesBase64?.mapIndexed { index, base64 ->
+            val file = File(conversationStore.imagesDir, "${messageId}_${index}.jpg")
+            file.writeBytes(Base64.decode(base64, Base64.DEFAULT))
+            file.absolutePath
+        }
+        val userMessage = ChatMessage(id = messageId, isUser = true, text = text, imageCount = imagesBase64?.size ?: 0, fileCount = filesBase64?.size ?: 0, imageThumbnails = thumbnails, imagePreviews = previewPaths)
         val newMessages = conv.messages.toMutableList().apply { add(userMessage) }
         _conversation.value = conv.copy(
             messages = newMessages,

@@ -13,6 +13,9 @@ class ConversationStore(private val context: Context) {
     private val conversationsDir: File
         get() = File(context.filesDir, "conversations").also { it.mkdirs() }
 
+    val imagesDir: File
+        get() = File(context.filesDir, "image_previews").also { it.mkdirs() }
+
     private val _conversations = MutableStateFlow<List<Conversation>>(emptyList())
     val conversations: StateFlow<List<Conversation>> = _conversations
 

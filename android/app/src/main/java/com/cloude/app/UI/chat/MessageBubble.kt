@@ -3,8 +3,11 @@ package com.cloude.app.UI.chat
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.indication
@@ -18,6 +21,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -38,17 +47,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.cloude.app.Models.ChatMessage
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
@@ -67,6 +84,7 @@ fun MessageBubble(
     val interactionSource = remember { MutableInteractionSource() }
     var showMenu by remember { mutableStateOf(false) }
     var showTextSelection by remember { mutableStateOf(false) }
+    var expandedImageIndex by remember { mutableStateOf(-1) }
     val bubbleBackground = if (message.wasInterrupted && !message.isUser) {
         Accent.copy(alpha = 0.15f)
     } else if (message.isUser) {
@@ -95,7 +113,28 @@ fun MessageBubble(
             }
         }
 
-        if ((message.imageCount > 0 || message.fileCount > 0) && message.isUser) {
+        if (message.isUser && !message.imageThumbnails.isNullOrEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = DS.Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs, Alignment.End)
+            ) {
+                message.imageThumbnails!!.forEachIndexed { index, thumbBase64 ->
+                    val bytes = remember(thumbBase64) { Base64.decode(thumbBase64, Base64.DEFAULT) }
+                    val bitmap = remember(thumbBase64) { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Attached image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(DS.Size.l)
+                                .clip(RoundedCornerShape(DS.Radius.s))
+                                .clickable { expandedImageIndex = index }
+                        )
+                    }
+                }
+            }
+        } else if (message.isUser && (message.imageCount > 0 || message.fileCount > 0)) {
             val parts = mutableListOf<String>()
             if (message.imageCount > 0) parts.add("\uD83D\uDDBC ${message.imageCount} image${if (message.imageCount > 1) "s" else ""}")
             if (message.fileCount > 0) parts.add("\uD83D\uDCCE ${message.fileCount} file${if (message.fileCount > 1) "s" else ""}")
@@ -248,6 +287,68 @@ fun MessageBubble(
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = DS.Spacing.l, vertical = DS.Spacing.m)
                     )
+                }
+            }
+        }
+
+        if (expandedImageIndex >= 0) {
+            val previewPath = message.imagePreviews?.getOrNull(expandedImageIndex)
+            val fallbackBase64 = message.imageThumbnails?.getOrNull(expandedImageIndex)
+            val fullBitmap = remember(previewPath, fallbackBase64) {
+                if (previewPath != null) {
+                    val file = java.io.File(previewPath)
+                    if (file.exists()) BitmapFactory.decodeFile(previewPath)
+                    else fallbackBase64?.let { b64 ->
+                        val bytes = Base64.decode(b64, Base64.DEFAULT)
+                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                    }
+                } else fallbackBase64?.let { b64 ->
+                    val bytes = Base64.decode(b64, Base64.DEFAULT)
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                }
+            }
+            fullBitmap?.let { bmp ->
+                Dialog(
+                    onDismissRequest = { expandedImageIndex = -1 },
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                ) {
+                    var scale by remember { mutableFloatStateOf(1f) }
+                    var offset by remember { mutableStateOf(Offset.Zero) }
+                    val transformState = rememberTransformableState { zoomChange, panChange, _ ->
+                        scale = (scale * zoomChange).coerceIn(1f, 5f)
+                        offset = if (scale > 1f) offset + panChange else Offset.Zero
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onTap = { expandedImageIndex = -1 },
+                                    onDoubleTap = {
+                                        scale = if (scale > 1.5f) 1f else 3f
+                                        offset = Offset.Zero
+                                    }
+                                )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = bmp.asImageBitmap(),
+                            contentDescription = "Expanded image",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer(
+                                    scaleX = scale,
+                                    scaleY = scale,
+                                    translationX = offset.x,
+                                    translationY = offset.y
+                                )
+                                .transformable(state = transformState)
+                        )
+                    }
                 }
             }
         }
