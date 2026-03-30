@@ -49,8 +49,7 @@ struct WindowHeaderView: View {
                 ConversationInfoLabel(conversation: conversation)
                 Spacer()
             }
-            .padding(.horizontal, DS.Spacing.m)
-            .padding(.vertical, DS.Spacing.s)
+            .padding(DS.Spacing.m)
             .background(Color.themeSecondary)
         }
         .buttonStyle(.plain)
