@@ -34,8 +34,9 @@ fastlane/README.md
 *.ipa
 *.dSYM.zip
 
-# Tweet archive data (personal, never commit)
+# Personal data (never commit)
 .claude/skills/tweets/data/
+.claude/skills/notes/
 
 # Sora browser session (contains auth cookies)
 tools/sora/browser-data/
