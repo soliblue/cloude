@@ -11,3 +11,6 @@ Currently one CLI process per environment, one active conversation at a time. Sw
 Multiple CLI processes running in parallel on the agent/relay, each tied to a window. WebSocket messages tagged with conversation/session IDs so responses route to the correct window. Each chat window can independently stream its own conversation.
 
 **Requires changes to:** Agent/relay (process management), Android ConnectionManager (message multiplexing), WindowManager (conversation-window binding), ChatViewModel (per-window state). Should be implemented after the iOS version since the agent/relay changes are shared.
+
+## Blocked features
+- **Fork to new tab**: Forking a conversation should open the fork in a separate tab so the user can continue both chats independently. Currently fork replaces the active conversation because all windows share one ChatViewModel.
