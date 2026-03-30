@@ -81,8 +81,7 @@ struct MessageBubble: View {
             )
             #endif
         }
-        .padding(.horizontal, DS.Spacing.l)
-        .padding(.vertical, DS.Spacing.m)
+        .padding(DS.Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
         .modifier(BubbleInteractionModifier(

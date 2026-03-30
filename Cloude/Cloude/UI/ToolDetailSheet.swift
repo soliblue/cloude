@@ -91,8 +91,7 @@ struct ToolDetailSheet: View {
                     .foregroundColor(.secondary)
                 Spacer()
             }
-            .padding(.horizontal, DS.Spacing.m)
-            .padding(.vertical, DS.Spacing.m)
+            .padding(DS.Spacing.m)
             .background(Color.themeSecondary.opacity(DS.Opacity.m))
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
         }
