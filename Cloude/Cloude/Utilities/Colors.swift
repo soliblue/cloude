@@ -3,8 +3,10 @@ import SwiftUI
 extension Color {
     static var themeBackground: Color { Color(hex: AppTheme.current.palette.background) }
     static var themeSecondary: Color { Color(hex: AppTheme.current.palette.secondary) }
+    static var themeTertiary: Color { Color(hex: AppTheme.current.palette.tertiary) }
     static func themeBackground(_ theme: AppTheme) -> Color { Color(hex: theme.palette.background) }
     static func themeSecondary(_ theme: AppTheme) -> Color { Color(hex: theme.palette.secondary) }
+    static func themeTertiary(_ theme: AppTheme) -> Color { Color(hex: theme.palette.tertiary) }
 
     static let pastelGreen = Color(hex: 0x7AB87A)
     static let pastelRed = Color(hex: 0xB54E5E)

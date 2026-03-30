@@ -115,14 +115,16 @@ class ConnectionManager: ObservableObject {
         conversationEnvironments[conversationId] = environmentId
     }
 
+    func runningOutputs(for environmentId: UUID) -> [(conversationId: UUID, output: ConversationOutput)] {
+        conversationOutputs.compactMap { (convId, output) in
+            output.isRunning && conversationEnvironments[convId] == environmentId ? (convId, output) : nil
+        }
+    }
+
     func handleForegroundTransition() {
         for conn in connections.values {
-            if conn.runningConversationId != nil {
-                conn.handleDisconnect()
-            }
-            if conn.hasCredentials {
-                conn.reconnect()
-            }
+            if !runningOutputs(for: conn.environmentId).isEmpty { conn.handleDisconnect() }
+            if conn.hasCredentials { conn.reconnect() }
         }
     }
 

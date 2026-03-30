@@ -21,7 +21,7 @@ struct MainChatView: View {
     @State var drafts: [UUID: (text: String, images: [AttachedImage], effort: EffortLevel?, model: ModelSelection?)] = [:]
     @State var gitBranches: [String: String] = [:]
     @State var gitStats: [String: (additions: Int, deletions: Int)] = [:]
-    @State var pendingGitChecks: [String] = []
+    @State var pendingGitChecks: [(path: String, environmentId: UUID?)] = []
     @State var fileSearchResults: [String] = []
     @State var currentEffort: EffortLevel?
     @State var currentModel: ModelSelection?

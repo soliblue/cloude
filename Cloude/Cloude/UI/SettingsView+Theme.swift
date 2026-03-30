@@ -53,6 +53,9 @@ struct ThemeCard: View {
                 RoundedRectangle(cornerRadius: DS.Radius.s)
                     .fill(Color.themeSecondary(theme))
                     .frame(height: DS.Size.m)
+                RoundedRectangle(cornerRadius: DS.Radius.s)
+                    .fill(Color.themeTertiary(theme))
+                    .frame(height: DS.Size.m)
             }
             .padding(DS.Spacing.s)
 

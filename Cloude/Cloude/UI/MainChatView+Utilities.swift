@@ -37,14 +37,20 @@ extension MainChatView {
     }
 
     func checkGitForAllDirectories() {
-        pendingGitChecks = conversationStore.uniqueWorkingDirectories
-            .filter { gitBranches[$0] == nil }
+        var seen = Set<String>()
+        pendingGitChecks = conversationStore.listableConversations.compactMap { conv -> (path: String, environmentId: UUID?)? in
+            guard let dir = conv.workingDirectory, !dir.isEmpty, gitBranches[dir] == nil else { return nil }
+            let key = "\(dir)|\(conv.environmentId?.uuidString ?? "")"
+            guard !seen.contains(key) else { return nil }
+            seen.insert(key)
+            return (dir, conv.environmentId)
+        }
         checkNextGitDirectory()
     }
 
     func checkNextGitDirectory() {
-        guard let dir = pendingGitChecks.first, !dir.isEmpty else { return }
-        connection.gitStatus(path: dir)
+        guard let check = pendingGitChecks.first else { return }
+        connection.gitStatus(path: check.path, environmentId: check.environmentId)
     }
 
     func cleanupEmptyConversation(for windowId: UUID) {

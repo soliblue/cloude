@@ -13,6 +13,7 @@ struct WindowTabBar: View {
     let onSelectType: (WindowType) -> Void
     @State private var gitAdditions: Int = 0
     @State private var gitDeletions: Int = 0
+    @State private var gitBranch: String = ""
 
     var body: some View {
         HStack(spacing: 0) {
@@ -38,7 +39,7 @@ struct WindowTabBar: View {
             }
         }
         .padding(0)
-        .background(Color.themeSecondary)
+        .background(Color.themeTertiary)
         .agenticID("window_tab_bar")
         .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { event in
             if case let .gitStatus(path, status, envId) = event,
@@ -46,11 +47,13 @@ struct WindowTabBar: View {
                envId == environmentId {
                 gitAdditions = status.files.compactMap(\.additions).reduce(0, +)
                 gitDeletions = status.files.compactMap(\.deletions).reduce(0, +)
+                gitBranch = status.branch
             } else if case let .gitStatusError(path, _, envId) = event,
                       path == (repoPath ?? "~"),
                       envId == environmentId {
                 gitAdditions = 0
                 gitDeletions = 0
+                gitBranch = ""
             }
         }
     }
@@ -82,6 +85,16 @@ struct WindowTabBar: View {
                 }
             }
             .font(.system(size: DS.Text.m))
+            .opacity(enabled ? 1 : DS.Opacity.m)
+        } else if type == .gitChanges && !gitBranch.isEmpty {
+            HStack(spacing: DS.Spacing.xs) {
+                Image(systemName: type.icon)
+                    .font(.system(size: DS.Text.m))
+                Text(gitBranch.middleTruncated(limit: 8))
+                    .font(.system(size: DS.Text.m))
+                    .lineLimit(1)
+            }
+            .foregroundColor(isActive ? .accentColor : .secondary)
             .opacity(enabled ? 1 : DS.Opacity.m)
         } else if type == .files, let folderName {
             HStack(spacing: DS.Spacing.xs) {

@@ -72,6 +72,7 @@ extension EnvironmentValues {
 struct ThemePalette {
     let background: UInt
     let secondary: UInt
+    let tertiary: UInt
 }
 
 enum AppTheme: String, CaseIterable {

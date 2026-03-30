@@ -38,10 +38,6 @@ extension ToolCallLabel {
     }
 
     func midTruncate(_ text: String, maxLength: Int) -> String {
-        guard text.count > maxLength else { return text }
-        let half = (maxLength - 1) / 2
-        let start = text.prefix(half)
-        let end = text.suffix(half)
-        return "\(start)…\(end)"
+        text.middleTruncated(limit: maxLength)
     }
 }

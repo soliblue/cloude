@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("fontSizeStep") private var fontSizeStep = 0
     @State var selectedEnvironmentPage: Int = 0
+    @State var refreshRotation: Double = 0
 
     @Environment(\.dismiss) private var dismiss
 

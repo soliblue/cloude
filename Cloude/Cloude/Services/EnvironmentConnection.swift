@@ -13,7 +13,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     @Published var isTranscribing = false { didSet { if isTranscribing != oldValue { manager?.objectWillChange.send() } } }
     @Published var agentState: AgentState = .idle
     @Published var lastError: String?
-    @Published var processes: [AgentProcessInfo] = []
+    @Published var processes: [AgentProcessInfo] = [] { didSet { if processes.map(\.pid) != oldValue.map(\.pid) { manager?.objectWillChange.send() } } }
     @Published var defaultWorkingDirectory: String?
     @Published var skills: [Skill] = []
     @Published var chunkProgress: ChunkProgress?
@@ -26,7 +26,6 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     }
 
     var id: UUID { environmentId }
-    var runningConversationId: UUID?
     var gitStatusQueue: [String] = []
     var gitStatusInFlightPath: String?
     var gitStatusTimeoutTask: Task<Void, Never>?
