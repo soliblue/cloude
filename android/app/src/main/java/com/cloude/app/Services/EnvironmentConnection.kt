@@ -2,6 +2,7 @@ package com.cloude.app.Services
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Base64
 import android.util.Log
 import com.cloude.app.Models.AgentState
 import com.cloude.app.Models.ClientMessage
@@ -54,6 +55,14 @@ class EnvironmentConnection(
 
     private val _whisperReady = MutableStateFlow(false)
     val whisperReady: StateFlow<Boolean> = _whisperReady
+
+    private data class PendingChunks(
+        val chunks: MutableMap<Int, String>,
+        val totalChunks: Int,
+        val mimeType: String,
+        val size: Long
+    )
+    private val pendingChunks = mutableMapOf<String, PendingChunks>()
 
     fun connect(host: String, port: Int, token: String) {
         savedHost = host
@@ -111,6 +120,36 @@ class EnvironmentConnection(
                     is ServerMessage.DefaultWorkingDirectory -> _defaultWorkingDirectory.value = message.path
                     is ServerMessage.Skills -> _skills.value = message.skills
                     is ServerMessage.WhisperReady -> _whisperReady.value = message.ready
+                    is ServerMessage.FileChunk -> {
+                        val pending = pendingChunks.getOrPut(message.path) {
+                            PendingChunks(mutableMapOf(), message.totalChunks, message.mimeType, message.size)
+                        }
+                        pending.chunks[message.chunkIndex] = message.data
+                        Log.d("Cloude", "FileChunk ${pending.chunks.size}/${pending.totalChunks} for ${message.path}")
+                        onMessage(message)
+                        if (pending.chunks.size == pending.totalChunks) {
+                            val combined = ByteArray(0).let {
+                                var result = it
+                                for (i in 0 until pending.totalChunks) {
+                                    val chunkBytes = Base64.decode(pending.chunks[i]!!, Base64.DEFAULT)
+                                    result += chunkBytes
+                                }
+                                result
+                            }
+                            pendingChunks.remove(message.path)
+                            val combinedBase64 = Base64.encodeToString(combined, Base64.NO_WRAP)
+                            val synthetic = ServerMessage.FileContent(
+                                path = message.path,
+                                data = combinedBase64,
+                                mimeType = pending.mimeType,
+                                size = pending.size,
+                                truncated = false
+                            )
+                            Log.d("Cloude", "Chunks reassembled for ${message.path} (${combined.size} bytes)")
+                            onMessage(synthetic)
+                        }
+                        return
+                    }
                     else -> {}
                 }
 

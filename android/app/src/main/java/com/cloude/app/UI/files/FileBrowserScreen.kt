@@ -3,7 +3,6 @@ package com.cloude.app.UI.files
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +24,9 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -35,9 +36,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +47,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
+import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.sp
 import com.cloude.app.Models.ClientMessage
 import com.cloude.app.Models.FileEntry
@@ -56,7 +59,10 @@ import com.cloude.app.Models.ServerMessage
 import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Composable
 fun FileBrowserScreen(
@@ -219,27 +225,26 @@ private fun FileViewerSheet(
     environmentId: String,
     onDismiss: () -> Unit
 ) {
-    var content by remember { mutableStateOf<String?>(null) }
+    var rawBytes by remember { mutableStateOf<ByteArray?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val ext = file.name.substringAfterLast('.', "").lowercase()
+    val isAudio = ext in setOf("wav", "mp3", "m4a", "aac", "ogg", "flac")
+    val isVideo = ext in setOf("mp4", "mov", "m4v", "avi", "webm")
+    val isImage = ext in setOf("png", "jpg", "jpeg", "gif", "webp", "bmp", "ico")
 
     LaunchedEffect(file.path) {
+        val deferred = async {
+            connectionManager.events
+                .filterIsInstance<ServerMessage.FileContent>()
+                .first { it.path == file.path }
+        }
         connectionManager.send(ClientMessage.GetFile(file.path), environmentId)
-    }
-
-    LaunchedEffect(file.path) {
-        connectionManager.events
-            .filterIsInstance<ServerMessage.FileContent>()
-            .collect { fc ->
-                if (fc.path == file.path) {
-                    content = try {
-                        String(Base64.decode(fc.data, Base64.DEFAULT))
-                    } catch (_: Exception) {
-                        fc.data
-                    }
-                    isLoading = false
-                }
-            }
+        val result = withTimeoutOrNull(30_000L) { deferred.await() }
+        rawBytes = if (result != null) {
+            try { Base64.decode(result.data, Base64.DEFAULT) } catch (_: Exception) { null }
+        } else null
+        isLoading = false
     }
 
     ModalBottomSheet(
@@ -266,23 +271,104 @@ private fun FileViewerSheet(
                     CircularProgressIndicator(color = Accent, modifier = Modifier.size(DS.Size.m))
                 }
             } else {
-                Text(
-                    text = content ?: "Unable to load file",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        lineHeight = 18.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(DS.Spacing.m)
-                        .background(
-                            MaterialTheme.colorScheme.surface,
-                            RoundedCornerShape(DS.Radius.m)
+                val bytes = rawBytes
+                val containerModifier = Modifier
+                    .fillMaxWidth()
+                    .padding(DS.Spacing.m)
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(DS.Radius.m))
+
+                if (bytes == null) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(DS.Spacing.xxl * 4),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Unable to load file",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
                         )
-                        .padding(DS.Spacing.m)
-                        .horizontalScroll(rememberScrollState())
-                )
+                    }
+                } else if (isImage) {
+                    val bitmap = remember(bytes) { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = file.name,
+                            contentScale = ContentScale.Fit,
+                            modifier = containerModifier.padding(DS.Spacing.m)
+                        )
+                    } else {
+                        Text(
+                            text = "Unable to decode image",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = containerModifier.padding(DS.Spacing.m)
+                        )
+                    }
+                } else if (isAudio) {
+                    AudioPreview(data = bytes, fileName = file.name, modifier = containerModifier)
+                } else if (isVideo) {
+                    VideoPreview(data = bytes, fileName = file.name, modifier = containerModifier)
+                } else if (ext == "pdf") {
+                    Text(
+                        text = "PDF preview not supported",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+                        modifier = containerModifier.padding(DS.Spacing.l)
+                    )
+                } else {
+                    val text = remember(bytes) {
+                        try { String(bytes, Charsets.UTF_8) } catch (_: Exception) { "Unable to decode file" }
+                    }
+                    val language = SyntaxHighlighter.languageForPath(file.name)
+                    val highlighted = remember(text, language) {
+                        if (language != null) SyntaxHighlighter.highlight(text, language) else null
+                    }
+                    val scrollState = rememberScrollState()
+
+                    when (ext) {
+                        "json" -> JSONTreeViewer(
+                            text = text,
+                            modifier = containerModifier
+                        )
+                        "yaml", "yml" -> YAMLTreeViewer(
+                            text = text,
+                            modifier = containerModifier
+                        )
+                        "csv" -> CSVTableViewer(
+                            text = text,
+                            modifier = containerModifier
+                        )
+                        "tsv" -> CSVTableViewer(
+                            text = text,
+                            delimiter = '\t',
+                            modifier = containerModifier
+                        )
+                        else -> {
+                            val codeModifier = containerModifier
+                                .padding(DS.Spacing.m)
+                                .horizontalScroll(scrollState)
+                            val codeStyle = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                lineHeight = 18.sp
+                            )
+                            if (highlighted != null) {
+                                Text(
+                                    text = highlighted,
+                                    style = codeStyle,
+                                    modifier = codeModifier
+                                )
+                            } else {
+                                Text(
+                                    text = text,
+                                    style = codeStyle,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = codeModifier
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -305,6 +391,8 @@ private fun fileIcon(entry: FileEntry): ImageVector {
         "json", "yaml", "yml", "toml", "xml", "plist" -> Icons.Default.DataObject
         "md", "txt", "rtf", "csv", "log" -> Icons.Default.Description
         "png", "jpg", "jpeg", "gif", "svg", "webp", "ico" -> Icons.Default.Image
+        "wav", "mp3", "m4a", "aac", "ogg", "flac" -> Icons.Default.AudioFile
+        "mp4", "mov", "m4v", "avi", "webm" -> Icons.Default.VideoFile
         else -> Icons.AutoMirrored.Filled.InsertDriveFile
     }
 }
@@ -321,7 +409,10 @@ private fun fileIconColor(entry: FileEntry): Color {
         "ts", "tsx" -> Color(0xFF3178C6)
         "js", "jsx" -> Color(0xFFF7DF1E)
         "json" -> Color(0xFF9E9E9E)
+        "yaml", "yml" -> Color(0xFFCB171E)
         "md" -> Color(0xFF42A5F5)
+        "wav", "mp3", "m4a", "aac", "ogg", "flac" -> Color(0xFFE91E63)
+        "mp4", "mov", "m4v", "avi", "webm" -> Color(0xFFFF5722)
         else -> Color(0xFF9E9E9E)
     }
 }
