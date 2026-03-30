@@ -48,6 +48,7 @@ import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelGreen
 import com.cloude.app.Utilities.PastelRed
+import kotlinx.coroutines.launch
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,63 +66,37 @@ fun DeploySheet(
     val listState = rememberLazyListState()
     val deployId = remember { "deploy-${System.currentTimeMillis()}" }
     val apkPath = "$workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk"
-    val chunks = remember { mutableMapOf<Int, String>() }
-    var totalChunks by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
-        outputLines.add("Building APK...")
-        val buildCmd = "export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" && " +
-            "cd $workingDirectory/android && " +
-            "./gradlew assembleDebug --daemon 2>&1"
-        connectionManager.send(
-            ClientMessage.TerminalExec(buildCmd, workingDirectory, deployId),
-            environmentId
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        connectionManager.events.collect { msg ->
-            when {
-                msg is ServerMessage.TerminalOutput && msg.terminalId == deployId -> {
-                    msg.output.lines().filter { it.isNotBlank() }.forEach { outputLines.add(it) }
-                    if (msg.exitCode != null) {
-                        if (msg.exitCode == 0 && phase == "building") {
-                            phase = "transferring"
-                            outputLines.add("")
-                            outputLines.add("Transferring APK...")
-                            connectionManager.send(
-                                ClientMessage.GetFileFullQuality(apkPath),
-                                environmentId
-                            )
-                        } else if (msg.exitCode != 0) {
-                            phase = "error"
-                            outputLines.add("Build failed with exit code ${msg.exitCode}")
+        launch {
+            connectionManager.events.collect { msg ->
+                when {
+                    msg is ServerMessage.TerminalOutput && msg.terminalId == deployId -> {
+                        msg.output.lines().filter { it.isNotBlank() }.forEach { outputLines.add(it) }
+                        if (msg.exitCode != null) {
+                            if (msg.exitCode == 0 && phase == "building") {
+                                phase = "transferring"
+                                outputLines.add("")
+                                outputLines.add("Transferring APK...")
+                                connectionManager.send(
+                                    ClientMessage.GetFileFullQuality(apkPath),
+                                    environmentId
+                                )
+                            } else if (msg.exitCode != 0) {
+                                phase = "error"
+                                outputLines.add("Build failed with exit code ${msg.exitCode}")
+                            }
                         }
                     }
-                }
-                msg is ServerMessage.FileContent && phase == "transferring" -> {
-                    outputLines.add("APK received (${msg.size / 1024}KB)")
-                    outputLines.add("Installing...")
-                    phase = "installing"
-                    val success = saveAndInstall(context, msg.data)
-                    if (success) {
-                        phase = "done"
-                        outputLines.add("")
-                        outputLines.add("Install dialog opened!")
-                    } else {
-                        phase = "error"
-                        outputLines.add("Failed to save APK")
+                    msg is ServerMessage.FileChunk && phase == "transferring" -> {
+                        outputLines.removeAll { it.startsWith("Receiving chunk") }
+                        outputLines.add("Receiving chunk ${msg.chunkIndex + 1}/${msg.totalChunks}")
                     }
-                }
-                msg is ServerMessage.FileChunk && phase == "transferring" -> {
-                    chunks[msg.chunkIndex] = msg.data
-                    totalChunks = msg.totalChunks
-                    outputLines.removeAll { it.startsWith("Receiving chunk") }
-                    outputLines.add("Receiving chunk ${chunks.size}/$totalChunks")
-                    if (chunks.size == totalChunks) {
-                        outputLines.add("All chunks received, installing...")
+                    msg is ServerMessage.FileContent && phase == "transferring" -> {
+                        outputLines.add("APK received (${msg.size / 1024}KB)")
+                        outputLines.add("Installing...")
                         phase = "installing"
-                        val success = saveChunksAndInstall(context, chunks, totalChunks)
+                        val success = saveAndInstall(context, msg.data)
                         if (success) {
                             phase = "done"
                             outputLines.add("")
@@ -131,10 +106,19 @@ fun DeploySheet(
                             outputLines.add("Failed to save APK")
                         }
                     }
+                    else -> {}
                 }
-                else -> {}
             }
         }
+
+        outputLines.add("Building APK...")
+        val buildCmd = "export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" && " +
+            "cd $workingDirectory/android && " +
+            "./gradlew assembleDebug --daemon 2>&1"
+        connectionManager.send(
+            ClientMessage.TerminalExec(buildCmd, workingDirectory, deployId),
+            environmentId
+        )
     }
 
     LaunchedEffect(outputLines.size) {
@@ -213,22 +197,6 @@ private fun saveAndInstall(context: Context, base64Data: String): Boolean {
         return false
     }
     return writeAndInstall(context, bytes)
-}
-
-private fun saveChunksAndInstall(context: Context, chunks: Map<Int, String>, totalChunks: Int): Boolean {
-    val apkFile = File(context.cacheDir, "cloude-update.apk")
-    try {
-        apkFile.outputStream().use { out ->
-            for (i in 0 until totalChunks) {
-                val chunkData = chunks[i] ?: return false
-                val bytes = Base64.decode(chunkData, Base64.DEFAULT)
-                out.write(bytes)
-            }
-        }
-    } catch (e: Exception) {
-        return false
-    }
-    return installApk(context, apkFile)
 }
 
 private fun writeAndInstall(context: Context, bytes: ByteArray): Boolean {

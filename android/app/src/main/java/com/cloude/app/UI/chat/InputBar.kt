@@ -65,6 +65,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -88,6 +89,8 @@ fun InputBar(
     currentEffort: String?,
     currentModel: String?,
     skills: List<Skill> = emptyList(),
+    initialDraft: String = "",
+    onDraftChange: (String) -> Unit = {},
     onSend: (String, List<String>?, List<AttachedFilePayload>?) -> Unit,
     onAbort: () -> Unit,
     onTranscribe: (String) -> Unit = {},
@@ -96,15 +99,18 @@ fun InputBar(
     onModelChange: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(initialDraft) }
     var attachedImages by remember { mutableStateOf<List<Pair<Bitmap, String>>>(emptyList()) }
     var attachedFiles by remember { mutableStateOf<List<AttachedFilePayload>>(emptyList()) }
     var expandedImage by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val recorder = remember { AudioRecorder() }
     val isRecording by recorder.isRecording.collectAsState()
     val audioLevel by recorder.audioLevel.collectAsState()
+
+    LaunchedEffect(text) { onDraftChange(text) }
 
     DisposableEffect(Unit) { onDispose { recorder.release() } }
 
@@ -172,6 +178,7 @@ fun InputBar(
             text = ""
             attachedImages = emptyList()
             attachedFiles = emptyList()
+            keyboardController?.hide()
         }
     }
 

@@ -47,6 +47,8 @@ fun ChatScreen(
     viewModel: ChatViewModel,
     connectionManager: ConnectionManager,
     environmentId: String,
+    initialDraft: String = "",
+    onDraftChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val skills by connectionManager.connection(environmentId)?.skills?.collectAsState()
@@ -210,6 +212,8 @@ fun ChatScreen(
             currentEffort = conversation.defaultEffort,
             currentModel = conversation.defaultModel,
             skills = skills,
+            initialDraft = initialDraft,
+            onDraftChange = onDraftChange,
             onSend = { text, images, files ->
                 when {
                     text.trim().equals("/usage", ignoreCase = true) -> viewModel.requestUsageStats()

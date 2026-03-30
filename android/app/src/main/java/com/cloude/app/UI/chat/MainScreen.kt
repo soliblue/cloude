@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.cloude.app.Models.WindowType
@@ -32,6 +34,7 @@ fun MainScreen(
 ) {
     val windows by windowManager.windows.collectAsState()
     val activeIndex by windowManager.activeIndex.collectAsState()
+    val drafts = remember { mutableStateMapOf<String, String>() }
 
     val pagerState = rememberPagerState(
         initialPage = activeIndex,
@@ -83,6 +86,8 @@ fun MainScreen(
                     viewModel = viewModel,
                     connectionManager = connectionManager,
                     environmentId = environmentId,
+                    initialDraft = drafts[window.id] ?: "",
+                    onDraftChange = { drafts[window.id] = it },
                     modifier = Modifier.fillMaxSize()
                 )
                 WindowType.Files -> FileBrowserScreen(
