@@ -71,22 +71,16 @@ extension MainChatView {
 
     @ViewBuilder
     func windowIndicatorIcon(window: ChatWindow, conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
-        let iconWeight: Font.Weight = .semibold
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
-
-        let symbol = (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
         let name = conversation?.name ?? "New"
 
         VStack(spacing: DS.Spacing.xs) {
-            Image(systemName: symbol)
-                .font(.system(size: DS.Icon.l, weight: iconWeight))
-                .foregroundStyle(color)
-                .frame(height: DS.Icon.l)
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-            Text(name.count > 9 ? String(name.prefix(9)) + ".." : name)
-                .font(.system(size: DS.Text.m))
+            Text(name)
+                .font(.system(size: DS.Text.m, weight: isActive ? .semibold : .regular))
                 .foregroundStyle(color)
                 .lineLimit(1)
+                .truncationMode(.middle)
+                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
         }
     }
 }
