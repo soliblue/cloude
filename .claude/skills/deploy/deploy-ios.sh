@@ -21,7 +21,10 @@ if [[ -z "$XCODE_DEVICE" ]]; then
         exit 1
     fi
     echo "📱 iPhone not connected, falling back to TestFlight..."
-    source .env && fastlane ios beta_local
+    set -a
+    source .env
+    set +a
+    fastlane ios beta_local
     exit 0
 fi
 

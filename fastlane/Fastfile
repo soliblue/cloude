@@ -49,59 +49,43 @@ end
 platform :ios do
   desc "Build and upload iOS app to TestFlight"
   lane :beta_local do
-    begin
-      setup_signing
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: false
+    )
 
-      profile_name = ENV["PROVISIONING_PROFILE_NAME"]
-
-      unless profile_name
-        UI.user_error!("PROVISIONING_PROFILE_NAME not set in environment")
-      end
-
-      api_key = app_store_connect_api_key(
-        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-        issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
-        key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-        is_key_content_base64: false
-      )
-
-      increment_build_number(
-        xcodeproj: "Cloude/Cloude.xcodeproj",
-        build_number: latest_testflight_build_number(
-          api_key: api_key,
-          app_identifier: "soli.Cloude"
-        ) + 1
-      )
-
-      update_code_signing_settings(
-        use_automatic_signing: false,
-        path: "Cloude/Cloude.xcodeproj",
-        team_id: "Q9U8224WWM",
-        profile_name: profile_name,
-        targets: ["Cloude"]
-      )
-
-      build_app(
-        project: "Cloude/Cloude.xcodeproj",
-        scheme: "Cloude",
-        export_method: "app-store",
-        export_options: {
-          signingStyle: "manual",
-          teamID: "Q9U8224WWM",
-          provisioningProfiles: {
-            "soli.Cloude" => profile_name
-          }
-        }
-      )
-
-      upload_to_testflight(
+    increment_build_number(
+      xcodeproj: "Cloude/Cloude.xcodeproj",
+      build_number: latest_testflight_build_number(
         api_key: api_key,
-        skip_waiting_for_build_processing: true,
-        distribute_external: false
-      )
-    ensure
-      cleanup_signing
-    end
+        app_identifier: "soli.Cloude"
+      ) + 1
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      path: "Cloude/Cloude.xcodeproj",
+      team_id: "Q9U8224WWM",
+      targets: ["Cloude"]
+    )
+
+    build_app(
+      project: "Cloude/Cloude.xcodeproj",
+      scheme: "Cloude",
+      export_method: "app-store",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: "Q9U8224WWM"
+      }
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      distribute_external: false
+    )
   end
 end
 

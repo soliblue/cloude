@@ -40,7 +40,7 @@ Phone only:
 
 Mac agent:
 ```bash
-osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --show-toplevel) && source .env && fastlane mac build_agent"'
+osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --show-toplevel) && set -a && source .env && set +a && fastlane mac build_agent"'
 ```
 
 Never run `fastlane mac build_agent` directly inside the current session.

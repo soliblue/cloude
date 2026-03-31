@@ -6,13 +6,7 @@ HOST="${CLOUDE_SIM_HOST:-127.0.0.1}"
 PORT="${CLOUDE_SIM_PORT:-8765}"
 BUNDLE_ID="${CLOUDE_BUNDLE_ID:-soli.Cloude}"
 DERIVED_DATA_PATH="${CLOUDE_SIM_DERIVED_DATA:-/tmp/cloude-sim-build}"
-TOKEN="$(security find-generic-password -s com.cloude.agent -a authToken -w)"
 DEVICE_LINE="$(xcrun simctl list devices available | grep " ($DEVICE_NAME)" -m 1 || true)"
-
-if [[ -z "$TOKEN" ]]; then
-    echo "Missing Cloude agent token in Keychain"
-    exit 1
-fi
 
 if [[ -z "$DEVICE_LINE" ]]; then
     DEVICE_LINE="$(xcrun simctl list devices available | grep "$DEVICE_NAME" -m 1 || true)"
@@ -30,8 +24,24 @@ if [[ -z "$DEVICE_ID" ]]; then
 fi
 
 echo "Building and launching Mac agent..."
+set -a
 source .env
+set +a
 fastlane mac build_agent
+
+TOKEN=""
+for _ in {1..10}; do
+    TOKEN="$(security find-generic-password -s com.cloude.agent -a authToken -w 2>/dev/null || true)"
+    if [[ -n "$TOKEN" ]]; then
+        break
+    fi
+    sleep 1
+done
+
+if [[ -z "$TOKEN" ]]; then
+    echo "Cloude agent launched but no auth token was found in Keychain"
+    exit 1
+fi
 
 if xcrun simctl list devices booted | grep -q "$DEVICE_ID"; then
     echo "Using already booted simulator $DEVICE_NAME ($DEVICE_ID)"
