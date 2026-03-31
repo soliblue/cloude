@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct GitDiffView: View {
-    @ObservedObject var connection: ConnectionManager
+    let connection: ConnectionManager
     let repoPath: String
     let file: GitFileStatus
     var environmentId: UUID?

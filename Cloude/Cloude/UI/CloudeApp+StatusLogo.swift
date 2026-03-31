@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ConnectionStatusLogo: View {
-    @ObservedObject var connection: ConnectionManager
+    let connection: ConnectionManager
     @State private var isRotating = false
 
     var body: some View {

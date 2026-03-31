@@ -5,7 +5,7 @@ import HighlightSwift
 
 struct FilePreviewView: View {
     let path: String
-    @ObservedObject var connection: ConnectionManager
+    let connection: ConnectionManager
     var environmentId: UUID?
     var onBrowseFolder: ((String) -> Void)?
     @Environment(\.dismiss) var dismiss

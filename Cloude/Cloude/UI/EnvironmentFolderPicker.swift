@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct EnvironmentFolderPicker: View {
-    @ObservedObject var environmentStore: EnvironmentStore
-    @ObservedObject var connection: ConnectionManager
-    @ObservedObject var conversationStore: ConversationStore
+    let environmentStore: EnvironmentStore
+    let connection: ConnectionManager
+    let conversationStore: ConversationStore
     let conversation: Conversation
     var editable: Bool = true
 

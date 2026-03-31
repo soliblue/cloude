@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct FolderPickerView: View {
-    @ObservedObject var connection: ConnectionManager
+    let connection: ConnectionManager
     var environmentId: UUID?
     let onSelect: (String) -> Void
 

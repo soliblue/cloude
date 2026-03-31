@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct GitChangesView: View {
-    @ObservedObject var connection: ConnectionManager
+    let connection: ConnectionManager
     var rootPath: String?
     var environmentId: UUID?
 

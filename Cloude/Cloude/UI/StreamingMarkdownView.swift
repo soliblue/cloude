@@ -77,43 +77,42 @@ struct StreamingMarkdownView: View {
     }
 
     private func stableSplitPointIncremental(in text: String) -> String.Index? {
-        guard text.count > cachedSplitOffset else {
+        let utf8 = text.utf8
+        guard utf8.count > cachedSplitOffset else {
             cachedSplitOffset = 0
             cachedFenceState = false
             cachedLastBlankOffset = nil
             return nil
         }
 
-        let startOffset = cachedSplitOffset
+        let startIdx = utf8.index(utf8.startIndex, offsetBy: cachedSplitOffset)
         var insideFence = cachedFenceState
-        var lastBlankOffset = cachedLastBlankOffset
+        var lastBlankIdx: String.Index? = cachedLastBlankOffset.map { utf8.index(utf8.startIndex, offsetBy: $0) }
 
-        var i = startOffset
+        var idx = startIdx
         var prevWasBlank = false
-        var prevBlankOffset: Int? = nil
+        var prevBlankIdx: String.Index? = nil
 
-        while i < text.count {
-            let lineStart = i
-            while i < text.count && text[text.index(text.startIndex, offsetBy: i)] != "\n" {
-                i += 1
+        while idx < utf8.endIndex {
+            let lineStart = idx
+            while idx < utf8.endIndex && utf8[idx] != UInt8(ascii: "\n") {
+                utf8.formIndex(after: &idx)
             }
-            let lineEnd = i
-            if i < text.count { i += 1 }
+            let lineEnd = idx
+            if idx < utf8.endIndex { utf8.formIndex(after: &idx) }
 
-            let lineStartIdx = text.index(text.startIndex, offsetBy: lineStart)
-            let lineEndIdx = text.index(text.startIndex, offsetBy: lineEnd)
-            let line = text[lineStartIdx..<lineEndIdx]
+            let line = text[String.Index(lineStart, within: text)!..<String.Index(lineEnd, within: text)!]
             let trimmed = line.drop(while: { $0 == " " || $0 == "\t" })
 
             if trimmed.hasPrefix("```") || trimmed.hasPrefix("~~~") {
                 insideFence = !insideFence
             }
-            if !insideFence && trimmed.isEmpty && lineStart > 0 {
+            if !insideFence && trimmed.isEmpty && lineStart > utf8.startIndex {
                 prevWasBlank = true
-                prevBlankOffset = i
+                prevBlankIdx = idx
             } else if !insideFence && !trimmed.isEmpty && prevWasBlank {
-                if let blankOff = prevBlankOffset {
-                    lastBlankOffset = blankOff
+                if let blankIdx = prevBlankIdx {
+                    lastBlankIdx = blankIdx
                 }
                 prevWasBlank = false
             } else {
@@ -121,14 +120,11 @@ struct StreamingMarkdownView: View {
             }
         }
 
-        cachedSplitOffset = text.count
+        cachedSplitOffset = utf8.count
         cachedFenceState = insideFence
-        cachedLastBlankOffset = lastBlankOffset
+        cachedLastBlankOffset = lastBlankIdx.map { utf8.distance(from: utf8.startIndex, to: $0) }
 
-        if let offset = lastBlankOffset, offset <= text.count {
-            return text.index(text.startIndex, offsetBy: offset)
-        }
-        return nil
+        return lastBlankIdx
     }
 }
 
