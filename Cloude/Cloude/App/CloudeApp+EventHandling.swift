@@ -34,7 +34,7 @@ extension CloudeApp {
         case .streamingStarted(let convId):
             let output = connection.output(for: convId)
             if output.liveMessageId == nil, let conv = conversationStore.findConversation(withId: convId) {
-                output.liveMessageId = conversationStore.insertLiveMessage(into: conv)
+                conversationStore.resumeOrInsertLiveMessage(output: output, into: conv)
             }
 
         case .disconnect(let convId, let output):
@@ -121,8 +121,14 @@ extension CloudeApp {
                 }
                 conversationStore.replaceMessages(conv, with: newMessages)
                 let output = connection.output(for: conv.id)
-                if output.isRunning && output.liveMessageId != nil {
-                    output.liveMessageId = conversationStore.insertLiveMessage(into: conv)
+                if output.isRunning {
+                    if let freshConv = conversationStore.findConversation(withId: conv.id),
+                       let lastAssistant = freshConv.messages.last, !lastAssistant.isUser {
+                        output.liveMessageId = lastAssistant.id
+                        output.seedForReconnect(lastAssistant.text, toolCalls: lastAssistant.toolCalls)
+                    } else if output.liveMessageId != nil {
+                        output.liveMessageId = conversationStore.insertLiveMessage(into: conv)
+                    }
                 }
             }
 

@@ -91,7 +91,7 @@ struct ConversationView: View {
         .onAppear {
             if let output = convOutput, output.isRunning, output.liveMessageId == nil {
                 if let conv = effectiveConversation {
-                    output.liveMessageId = store.insertLiveMessage(into: conv)
+                    store.resumeOrInsertLiveMessage(output: output, into: conv)
                 }
             }
         }
