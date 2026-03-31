@@ -102,35 +102,15 @@ extension WindowEditForm {
         SwipeToDeleteRow(onTap: { onSelectConversation(conv) }, onDelete: {
             conversationStore.deleteConversation(conv)
         }) {
-            HStack(spacing: DS.Spacing.m) {
-                Image.safeSymbol(conv.symbol)
-                    .font(.system(size: DS.Text.m))
-                    .foregroundColor(.secondary)
-                VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-                    Text(conv.name)
-                        .font(.system(size: DS.Text.m))
-                        .lineLimit(1)
-                    HStack(spacing: DS.Spacing.s) {
-                        if let dir = conv.workingDirectory, !dir.isEmpty {
-                            Text(dir.lastPathComponent)
-                                .foregroundColor(.accentColor)
-                        }
-                        Text("\(conv.messages.count) msgs")
-                            .foregroundColor(.secondary)
-                    }
-                    .font(.system(size: DS.Text.s))
+            ConversationRowContent(
+                symbol: conv.symbol,
+                name: conv.name,
+                messageCount: conv.messages.count,
+                lastMessageAt: conv.lastMessageAt,
+                envSymbol: conv.environmentId.flatMap { envId in
+                    environmentStore.environments.first { $0.id == envId }?.symbol
                 }
-                Spacer()
-                if let envId = conv.environmentId,
-                   let env = environmentStore.environments.first(where: { $0.id == envId }) {
-                    Image.safeSymbol(env.symbol)
-                        .font(.system(size: DS.Text.m))
-                        .foregroundColor(.secondary)
-                }
-                Text(relativeTime(conv.lastMessageAt))
-                    .font(.system(size: DS.Text.s))
-                    .foregroundColor(.secondary)
-            }
+            )
             .padding(.horizontal, DS.Spacing.m)
             .padding(.vertical, DS.Spacing.m)
         }
@@ -139,16 +119,5 @@ extension WindowEditForm {
             Divider()
                 .padding(.leading, DS.Spacing.l)
         }
-    }
-
-    func relativeTime(_ date: Date) -> String {
-        let seconds = Int(-date.timeIntervalSinceNow)
-        if seconds < 60 { return "now" }
-        let minutes = seconds / 60
-        if minutes < 60 { return "\(minutes)m ago" }
-        let hours = minutes / 60
-        if hours < 24 { return "\(hours)h ago" }
-        let days = hours / 24
-        return "\(days)d ago"
     }
 }

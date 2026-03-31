@@ -72,6 +72,8 @@ struct EnvironmentFolderPicker: View {
                     Text(selectedEnv?.host ?? "Select environment")
                         .font(.system(size: DS.Text.m, design: .monospaced))
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: DS.Text.m))
@@ -146,6 +148,8 @@ struct EnvironmentFolderPicker: View {
             Text(selectedEnv?.host ?? "")
                 .font(.system(size: DS.Text.m, design: .monospaced))
                 .foregroundColor(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
             if let dir = conversation.workingDirectory, !dir.isEmpty {
                 Spacer()
                 Text(dir)
