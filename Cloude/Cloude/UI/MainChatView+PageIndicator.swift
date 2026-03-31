@@ -48,6 +48,7 @@ extension MainChatView {
             .buttonStyle(.plain)
             }
         }
+        .padding(.horizontal, DS.Spacing.m)
         .frame(maxWidth: .infinity)
         .background(Color.themeBackground)
         .agenticID("window_picker")
