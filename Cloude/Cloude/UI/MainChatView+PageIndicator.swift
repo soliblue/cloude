@@ -49,7 +49,6 @@ extension MainChatView {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 0)
         .background(Color.themeBackground)
         .agenticID("window_picker")
         .contentShape(Rectangle())
@@ -74,13 +73,11 @@ extension MainChatView {
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
         let name = conversation?.name ?? "New"
 
-        VStack(spacing: DS.Spacing.xs) {
-            Text(name)
-                .font(.system(size: DS.Text.m, weight: isActive ? .semibold : .regular))
-                .foregroundStyle(color)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-        }
+        Text(name)
+            .font(.system(size: DS.Text.m, weight: isActive ? .semibold : .regular))
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .modifier(StreamingPulseModifier(isStreaming: isStreaming))
     }
 }
