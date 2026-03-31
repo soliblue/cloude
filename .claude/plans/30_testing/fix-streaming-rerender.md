@@ -1,4 +1,5 @@
 # Fix Streaming Re-renders {gauge.with.dots.needle.bottom.50percent}
+<!-- build: 122 -->
 <!-- priority: 4 -->
 <!-- tags: streaming, performance -->
 > Eliminate unnecessary re-renders of non-live message bubbles during streaming.

@@ -26,13 +26,21 @@ extension ConversationStore {
                 removeMessage(liveId, from: freshConv)
             } else {
                 AppLogger.connectionInfo("finalize live message update convId=\(freshConv.id.uuidString) liveId=\(liveId.uuidString) chars=\(trimmedText.count) tools=\(adjustedToolCalls.count)")
-                updateMessage(liveId, in: freshConv) { msg in
-                    msg.text = trimmedText
-                    msg.toolCalls = adjustedToolCalls
-                    msg.durationMs = output.runStats?.durationMs
-                    msg.costUsd = output.runStats?.costUsd
-                    msg.serverUUID = output.messageUUID
-                    msg.model = output.runStats?.model
+                let runStats = output.runStats
+                let messageUUID = output.messageUUID
+                mutate(freshConv.id) { conv in
+                    if let msgIdx = conv.messages.firstIndex(where: { $0.id == liveId }) {
+                        conv.messages[msgIdx].text = trimmedText
+                        conv.messages[msgIdx].toolCalls = adjustedToolCalls
+                        conv.messages[msgIdx].durationMs = runStats?.durationMs
+                        conv.messages[msgIdx].costUsd = runStats?.costUsd
+                        conv.messages[msgIdx].serverUUID = messageUUID
+                        conv.messages[msgIdx].model = runStats?.model
+                    }
+                    if let cost = runStats?.costUsd, cost > 0 {
+                        let computed = conv.messages.compactMap(\.costUsd).reduce(0, +)
+                        conv.savedTotalCost = max(computed, conv.savedTotalCost ?? 0)
+                    }
                 }
             }
             output.resetAfterLiveMessageHandoff()
@@ -54,17 +62,16 @@ extension ConversationStore {
                     serverUUID: output.messageUUID,
                     model: output.runStats?.model
                 )
-                addMessage(message, to: conversation)
+                mutate(conversation.id) { conv in
+                    conv.messages.append(message)
+                    conv.lastMessageAt = Date()
+                    if let cost = message.costUsd, cost > 0 {
+                        let computed = conv.messages.compactMap(\.costUsd).reduce(0, +)
+                        conv.savedTotalCost = max(computed, conv.savedTotalCost ?? 0)
+                    }
+                }
             }
             output.reset()
-        }
-
-        if let cost = output.runStats?.costUsd, cost > 0 {
-            let convId = conversation.id
-            mutate(convId) { conv in
-                let computed = conv.messages.compactMap(\.costUsd).reduce(0, +)
-                conv.savedTotalCost = max(computed, conv.savedTotalCost ?? 0)
-            }
         }
     }
 

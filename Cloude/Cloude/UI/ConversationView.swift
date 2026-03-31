@@ -2,8 +2,8 @@ import SwiftUI
 import CloudeShared
 
 struct ConversationView: View {
-    @ObservedObject var connection: ConnectionManager
-    @ObservedObject var store: ConversationStore
+    let connection: ConnectionManager
+    let store: ConversationStore
     var environmentStore: EnvironmentStore?
     @Environment(\.scenePhase) var scenePhase
 
