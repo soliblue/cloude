@@ -142,9 +142,11 @@ private struct FrozenBlocksSection: View, Equatable {
     }
 
     var body: some View {
-        ForEach(blocks, id: \.id) { block in
-            StreamingBlockView(block: block)
-                .padding(.bottom, DS.Spacing.s)
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(blocks, id: \.id) { block in
+                StreamingBlockView(block: block)
+                    .padding(.bottom, DS.Spacing.s)
+            }
         }
     }
 }
