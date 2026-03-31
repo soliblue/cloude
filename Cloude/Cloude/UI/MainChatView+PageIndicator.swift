@@ -4,7 +4,7 @@ extension MainChatView {
     @ViewBuilder
     func pageIndicator() -> some View {
         let maxIndex = windowManager.windows.count - 1
-        HStack(spacing: 0) {
+        HStack(spacing: DS.Spacing.s) {
             #if DEBUG
             let _ = DebugMetrics.log("PageIndicator", "render | windows=\(windowManager.windows.count) active=\(currentPageIndex)")
             #endif
