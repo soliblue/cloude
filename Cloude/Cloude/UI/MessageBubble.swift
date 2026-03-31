@@ -81,8 +81,7 @@ struct MessageBubble: View {
             )
             #endif
         }
-        .padding(.horizontal, DS.Spacing.l)
-        .padding(.vertical, DS.Spacing.m)
+        .padding(DS.Spacing.m)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(backgroundColor)
         .modifier(BubbleInteractionModifier(
@@ -104,7 +103,7 @@ struct MessageBubble: View {
             items.append((identity.icon, identity.displayName))
         }
         if let cost = message.costUsd {
-            items.append(("dollarsign.circle", cost < 0.01 ? String(format: "$%.4f", cost) : String(format: "$%.2f", cost)))
+            items.append(("dollarsign.circle", cost.asCost))
         }
         if let ms = message.durationMs {
             let s = Double(ms) / 1000.0

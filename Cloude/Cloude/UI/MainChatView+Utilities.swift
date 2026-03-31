@@ -37,14 +37,20 @@ extension MainChatView {
     }
 
     func checkGitForAllDirectories() {
-        pendingGitChecks = conversationStore.uniqueWorkingDirectories
-            .filter { gitBranches[$0] == nil }
+        var seen = Set<String>()
+        pendingGitChecks = conversationStore.listableConversations.compactMap { conv -> (path: String, environmentId: UUID?)? in
+            guard let dir = conv.workingDirectory, !dir.isEmpty, gitBranches[dir] == nil else { return nil }
+            let key = "\(dir)|\(conv.environmentId?.uuidString ?? "")"
+            guard !seen.contains(key) else { return nil }
+            seen.insert(key)
+            return (dir, conv.environmentId)
+        }
         checkNextGitDirectory()
     }
 
     func checkNextGitDirectory() {
-        guard let dir = pendingGitChecks.first, !dir.isEmpty else { return }
-        connection.gitStatus(path: dir)
+        guard let check = pendingGitChecks.first else { return }
+        connection.gitStatus(path: check.path, environmentId: check.environmentId)
     }
 
     func cleanupEmptyConversation(for windowId: UUID) {
@@ -69,14 +75,14 @@ extension MainChatView {
         guard status == .authorized || status == .limited else {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
                 if newStatus == .authorized || newStatus == .limited {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.l) {
                         self.loadLatestPhoto()
                     }
                 }
             }
             return
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.l) {
             self.loadLatestPhoto()
         }
     }
@@ -90,7 +96,7 @@ extension MainChatView {
 
         let result = PHAsset.fetchAssets(with: options)
         if result.firstObject == nil, attempt < 5 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
                 self.loadLatestPhoto(attempt: attempt + 1)
             }
             return

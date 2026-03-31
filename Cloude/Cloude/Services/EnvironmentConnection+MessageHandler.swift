@@ -66,8 +66,7 @@ extension EnvironmentConnection {
     func handleDisconnect() {
         guard let mgr = manager else { return }
         AppLogger.connectionInfo("handleDisconnect envId=\(environmentId.uuidString)")
-        if let convId = runningConversationId,
-           let output = mgr.conversationOutputs[convId] {
+        for (convId, output) in mgr.runningOutputs(for: environmentId) {
             output.flushBuffer()
             output.completeExecutingTools()
             mgr.events.send(.disconnect(conversationId: convId, output: output))
@@ -79,7 +78,6 @@ extension EnvironmentConnection {
         isWhisperReady = false
         isTranscribing = false
         agentState = .idle
-        runningConversationId = nil
         gitStatusQueue.removeAll()
         gitStatusInFlightPath = nil
         mgr.endBackgroundStreaming()
@@ -87,7 +85,7 @@ extension EnvironmentConnection {
     }
 
     func targetConversationId(from conversationId: String?) -> UUID? {
-        conversationId.flatMap { UUID(uuidString: $0) } ?? runningConversationId
+        conversationId.flatMap { UUID(uuidString: $0) }
     }
 
     func sendNextGitStatusIfNeeded() {

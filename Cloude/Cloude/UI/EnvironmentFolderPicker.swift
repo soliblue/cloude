@@ -8,6 +8,9 @@ struct EnvironmentFolderPicker: View {
     var editable: Bool = true
 
     @State private var showFolderPicker = false
+    @State private var pendingConnectionEnvId: UUID?
+
+    private var isConnecting: Bool { pendingConnectionEnvId != nil }
 
     private var selectedEnv: ServerEnvironment? {
         let envId = conversation.environmentId ?? environmentStore.activeEnvironmentId
@@ -39,8 +42,18 @@ struct EnvironmentFolderPicker: View {
                     Button(action: {
                         conversationStore.setEnvironmentId(conversation, environmentId: env.id)
                         environmentStore.setActive(env.id)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            if isEnvConnected { showFolderPicker = true }
+                        if connection.connection(for: env.id)?.isConnected ?? false {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
+                                showFolderPicker = true
+                            }
+                        } else {
+                            pendingConnectionEnvId = env.id
+                            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.xxl) {
+                                if pendingConnectionEnvId == env.id {
+                                    pendingConnectionEnvId = nil
+                                }
+                            }
                         }
                     }) {
                         Label {
@@ -59,6 +72,8 @@ struct EnvironmentFolderPicker: View {
                     Text(selectedEnv?.host ?? "Select environment")
                         .font(.system(size: DS.Text.m, design: .monospaced))
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: DS.Text.m))
@@ -73,27 +88,44 @@ struct EnvironmentFolderPicker: View {
 
             Button(action: { if isEnvConnected { showFolderPicker = true } }) {
                 HStack(spacing: DS.Spacing.s) {
-                    Image(systemName: "folder.fill")
-                        .font(.system(size: DS.Text.m))
-                        .foregroundColor(.accentColor)
-                    Text(folderDisplayName)
+                    if isConnecting {
+                        ProgressView()
+                            .scaleEffect(DS.Scale.s)
+                            .frame(width: DS.Text.m, height: DS.Text.m)
+                    } else {
+                        Image(systemName: "folder.fill")
+                            .font(.system(size: DS.Text.m))
+                            .foregroundColor(.accentColor)
+                    }
+                    Text(isConnecting ? "Connecting..." : folderDisplayName)
                         .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                     Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: DS.Text.m))
-                        .foregroundColor(.secondary)
+                    if !isConnecting {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: DS.Text.m))
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding(.horizontal, DS.Spacing.l)
                 .padding(.vertical, DS.Spacing.m)
             }
             .buttonStyle(.plain)
-            .opacity(isEnvConnected ? 1 : DS.Opacity.m)
+            .disabled(isConnecting)
+            .opacity(isEnvConnected || isConnecting ? 1 : DS.Opacity.m)
         }
         .background(Color.themeSecondary)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
+        .onReceive(connection.events) { event in
+            if case .authenticated = event, let envId = pendingConnectionEnvId {
+                if connection.connection(for: envId)?.isConnected ?? false {
+                    pendingConnectionEnvId = nil
+                    showFolderPicker = true
+                }
+            }
+        }
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(
                 connection: connection,
@@ -116,6 +148,8 @@ struct EnvironmentFolderPicker: View {
             Text(selectedEnv?.host ?? "")
                 .font(.system(size: DS.Text.m, design: .monospaced))
                 .foregroundColor(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
             if let dir = conversation.workingDirectory, !dir.isEmpty {
                 Spacer()
                 Text(dir)

@@ -111,27 +111,20 @@ struct EmptyConversationView: View {
                     }
                     .padding(.horizontal, DS.Spacing.l)
                     .padding(.vertical, DS.Spacing.m)
-                    .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.m))
+                    .background(Color.themeSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.m))
                 }
                 .buttonStyle(.plain)
             }
             ForEach(recentConversations) { conv in
                 Button(action: { onSelectConversation?(conv) }) {
-                    HStack(spacing: DS.Spacing.m) {
-                        Image.safeSymbol(conv.symbol ?? "bubble.left")
-                            .font(.system(size: DS.Text.m))
-                            .foregroundColor(.secondary)
-                        Text(conv.name)
-                            .font(.system(size: DS.Text.m))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                        Spacer()
-                        if let symbol = envSymbol(for: conv) {
-                            Image.safeSymbol(symbol)
-                                .font(.system(size: DS.Text.s))
-                                .foregroundColor(.secondary)
-                        }
-                    }
+                    ConversationRowContent(
+                        symbol: conv.symbol,
+                        name: conv.name,
+                        messageCount: conv.messages.count,
+                        lastMessageAt: conv.lastMessageAt,
+                        envSymbol: envSymbol(for: conv)
+                    )
                     .padding(.horizontal, DS.Spacing.l)
                     .padding(.vertical, DS.Spacing.m)
                 }

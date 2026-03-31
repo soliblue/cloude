@@ -3,40 +3,13 @@ import CloudeShared
 
 extension ConversationSearchSheet {
     func conversationRow(_ conv: Conversation) -> some View {
-        HStack(spacing: DS.Spacing.m) {
-            Image.safeSymbol(conv.symbol)
-                .font(.system(size: DS.Text.m))
-                .foregroundColor(.secondary)
-            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-                Text(conv.name)
-                    .font(.system(size: DS.Text.m))
-                    .lineLimit(1)
-                HStack(spacing: DS.Spacing.s) {
-                    if let dir = conv.workingDirectory, !dir.isEmpty {
-                        Text(dir.lastPathComponent)
-                            .foregroundColor(.accentColor)
-                    }
-                    Text("\(conv.messages.count) msgs")
-                        .foregroundColor(.secondary)
-                    if conv.totalCost > 0 {
-                        Text(String(format: "$%.2f", conv.totalCost))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .font(.system(size: DS.Text.s))
-                if !searchText.isEmpty, let match = firstMessageMatch(conv) {
-                    Text(match)
-                        .font(.system(size: DS.Text.s))
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                        .padding(.top, DS.Spacing.xs)
-                }
-            }
-            Spacer()
-            Text(relativeTime(conv.lastMessageAt))
-                .font(.system(size: DS.Text.s))
-                .foregroundColor(.secondary)
-        }
+        ConversationRowContent(
+            symbol: conv.symbol,
+            name: conv.name,
+            messageCount: conv.messages.count,
+            lastMessageAt: conv.lastMessageAt,
+            searchSnippet: searchText.isEmpty ? nil : firstMessageMatch(conv)
+        )
         .padding(.horizontal, DS.Spacing.m)
         .padding(.vertical, DS.Spacing.m)
     }
@@ -59,14 +32,4 @@ extension ConversationSearchSheet {
         return nil
     }
 
-    func relativeTime(_ date: Date) -> String {
-        let seconds = Int(-date.timeIntervalSinceNow)
-        if seconds < 60 { return "now" }
-        let minutes = seconds / 60
-        if minutes < 60 { return "\(minutes)m ago" }
-        let hours = minutes / 60
-        if hours < 24 { return "\(hours)h ago" }
-        let days = hours / 24
-        return "\(days)d ago"
-    }
 }

@@ -47,10 +47,16 @@ extension MainChatView {
             let adds = status.files.compactMap(\.additions).reduce(0, +)
             let dels = status.files.compactMap(\.deletions).reduce(0, +)
             gitStats[path] = (adds, dels)
-            if let idx = pendingGitChecks.firstIndex(of: path) {
+            if let idx = pendingGitChecks.firstIndex(where: { $0.path == path }) {
                 pendingGitChecks.remove(at: idx)
             }
             checkNextGitDirectory()
+
+        case .turnCompleted(let convId):
+            if let conv = conversationStore.conversation(withId: convId),
+               let dir = conv.workingDirectory, !dir.isEmpty {
+                connection.gitStatus(path: dir, environmentId: conv.environmentId)
+            }
 
         case .lastAssistantMessageCostUpdate(let convId, let costUsd):
             guard let conversation = conversationStore.conversation(withId: convId),

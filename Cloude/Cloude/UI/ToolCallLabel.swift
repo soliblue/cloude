@@ -115,14 +115,11 @@ struct ToolCallLabel: View {
             if isScript { return nil }
             return bashDisplayDetail(input)
         case "Glob", "Grep":
-            let truncated = input.prefix(8)
-            return truncated.count < input.count ? "\(truncated)..." : String(input)
+            return truncateText(input, maxLength: 8)
         case "Skill":
             let parts = input.split(separator: ":", maxSplits: 1)
             if parts.count >= 2 {
-                let args = String(parts[1]).trimmingCharacters(in: .whitespaces)
-                let truncated = args.prefix(16)
-                return truncated.count < args.count ? "\(truncated)..." : args
+                return truncateText(String(parts[1]).trimmingCharacters(in: .whitespaces), maxLength: 16)
             }
             return nil
         case "Task":

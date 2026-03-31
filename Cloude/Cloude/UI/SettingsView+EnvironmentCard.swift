@@ -67,8 +67,8 @@ struct EnvironmentCard: View {
             }
 
             Button(action: {
-                if isConnected { onDisconnect() }
-                else if !isConnecting { onConnect() }
+                if isConnected || isConnecting { onDisconnect() }
+                else { onConnect() }
             }) {
                 Image(systemName: "power")
                     .font(.system(size: DS.Icon.m))

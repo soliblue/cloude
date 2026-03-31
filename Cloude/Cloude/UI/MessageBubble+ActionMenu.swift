@@ -8,7 +8,7 @@ struct CopyFeedback {
     static func perform(_ text: String, showToast: Binding<Bool>) {
         ClipboardHelper.copy(text)
         withAnimation { showToast.wrappedValue = true }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.xl) {
             withAnimation { showToast.wrappedValue = false }
         }
     }
@@ -82,7 +82,7 @@ struct MessageInfoSheet: View {
             result.append(("timer", formattedDuration(durationMs)))
         }
         if let costUsd = message.costUsd {
-            result.append(("dollarsign.circle", formattedCost(costUsd)))
+            result.append(("dollarsign.circle", costUsd.asCost))
         }
         result.append(("textformat.size", "\(message.text.count) chars"))
         if !message.toolCalls.isEmpty {
@@ -140,7 +140,4 @@ struct MessageInfoSheet: View {
         return "\(minutes)m \(remainingSeconds)s"
     }
 
-    private func formattedCost(_ usd: Double) -> String {
-        usd < 0.01 ? String(format: "$%.4f", usd) : String(format: "$%.2f", usd)
-    }
 }

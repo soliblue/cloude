@@ -77,8 +77,7 @@ struct DiffLineView: View {
             Text(line.text)
                 .font(.system(size: DS.Text.s, design: .monospaced))
                 .foregroundStyle(.secondary)
-                .padding(.vertical, DS.Spacing.s)
-                .padding(.horizontal, DS.Spacing.s)
+                .padding(DS.Spacing.s)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.blue.opacity(DS.Opacity.s))
         case .added:

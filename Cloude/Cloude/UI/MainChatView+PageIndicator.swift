@@ -49,7 +49,6 @@ extension MainChatView {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 0)
         .background(Color.themeBackground)
         .agenticID("window_picker")
         .contentShape(Rectangle())
@@ -71,25 +70,14 @@ extension MainChatView {
 
     @ViewBuilder
     func windowIndicatorIcon(window: ChatWindow, conversation: Conversation?, isActive: Bool, isStreaming: Bool) -> some View {
-        let iconWeight: Font.Weight = .semibold
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
+        let name = conversation?.name ?? "New"
 
-        let symbol = (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
-        let title = {
-            let name = conversation?.name ?? "New Chat"
-            return name.count > 9 ? String(name.prefix(9)) + ".." : name
-        }()
-
-        VStack(spacing: DS.Spacing.xs) {
-            Image(systemName: symbol)
-                .font(.system(size: DS.Icon.l, weight: iconWeight))
-                .foregroundStyle(color)
-                .frame(height: DS.Icon.l)
-                .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-            Text(title)
-                .font(.system(size: DS.Text.s))
-                .foregroundStyle(color)
-                .lineLimit(1)
-        }
+        Text(name)
+            .font(.system(size: DS.Text.m, weight: isActive ? .semibold : .regular))
+            .foregroundStyle(color)
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .modifier(StreamingPulseModifier(isStreaming: isStreaming))
     }
 }

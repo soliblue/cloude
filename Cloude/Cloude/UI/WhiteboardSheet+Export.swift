@@ -8,7 +8,7 @@ extension WhiteboardSheet {
         if let uiImage = Self.renderToImage(store: store) {
             UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
             showExportSuccess = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.xl) {
                 showExportSuccess = false
             }
         }

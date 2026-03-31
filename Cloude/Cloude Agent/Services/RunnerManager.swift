@@ -43,7 +43,8 @@ class RunnerManager: ObservableObject {
                 command: proc.command,
                 startTime: proc.startTime,
                 conversationId: matchingRunner?.conversationId,
-                conversationName: matchingRunner?.conversationName
+                conversationName: matchingRunner?.conversationName,
+                parentPid: proc.parentPid
             )
         }
     }

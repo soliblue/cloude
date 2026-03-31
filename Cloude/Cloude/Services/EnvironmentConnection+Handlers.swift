@@ -12,30 +12,19 @@ extension EnvironmentConnection {
         }
     }
 
-    private func ensureRunning(_ out: ConversationOutput, convId: UUID) {
-        if !out.isRunning {
-            out.isRunning = true
-            runningConversationId = convId
-        }
+    private func ensureRunning(_ out: ConversationOutput) {
+        if !out.isRunning { out.isRunning = true }
     }
 
     func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?) {
-        if let convIdStr = conversationId, let convId = UUID(uuidString: convIdStr) {
-            AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count)")
-            AppLogger.endInterval("chat.firstToken", key: convId.uuidString)
-            ensureLiveMessage(mgr, convId: convId)
-            let out = mgr.output(for: convId)
-            out.completeTopLevelExecutingTools()
-            out.appendText(text)
-            ensureRunning(out, convId: convId)
-        } else if let convId = runningConversationId {
-            AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count)")
-            AppLogger.endInterval("chat.firstToken", key: convId.uuidString)
-            ensureLiveMessage(mgr, convId: convId)
-            let out = mgr.output(for: convId)
-            out.completeTopLevelExecutingTools()
-            out.appendText(text)
-        }
+        guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
+        AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count)")
+        AppLogger.endInterval("chat.firstToken", key: convId.uuidString)
+        ensureLiveMessage(mgr, convId: convId)
+        let out = mgr.output(for: convId)
+        out.completeTopLevelExecutingTools()
+        out.appendText(text)
+        ensureRunning(out)
     }
 
     func handleStatus(_ mgr: ConnectionManager, state: AgentState, conversationId: String?) {
@@ -64,7 +53,7 @@ extension EnvironmentConnection {
             }
         }
         if state == .idle {
-            runningConversationId = nil
+            if wasRunning { mgr.events.send(.turnCompleted(conversationId: convId)) }
             if !mgr.isAnyRunning { mgr.endBackgroundStreaming() }
         }
     }
@@ -95,7 +84,7 @@ extension EnvironmentConnection {
         AppLogger.connectionInfo("tool call convId=\(convId.uuidString) toolId=\(toolId) name=\(name)")
         ensureLiveMessage(mgr, convId: convId)
         let out = mgr.output(for: convId)
-        ensureRunning(out, convId: convId)
+        ensureRunning(out)
         if parentToolId == nil {
             out.completeTopLevelExecutingTools()
         }

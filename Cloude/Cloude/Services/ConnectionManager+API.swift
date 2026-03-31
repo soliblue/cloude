@@ -13,7 +13,6 @@ extension ConnectionManager {
         if let convId = conversationId {
             AppLogger.beginInterval("chat.firstToken", key: convId.uuidString, details: "chars=\(message.count)")
             AppLogger.beginInterval("chat.complete", key: convId.uuidString, details: "chars=\(message.count)")
-            conn.runningConversationId = convId
             registerConversation(convId, environmentId: conn.environmentId)
             output(for: convId).reset()
             output(for: convId).isRunning = true

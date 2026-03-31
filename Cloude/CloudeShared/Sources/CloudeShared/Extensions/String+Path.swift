@@ -28,4 +28,10 @@ public extension String {
     var nilIfEmpty: String? {
         isEmpty ? nil : self
     }
+
+    func middleTruncated(limit: Int) -> String {
+        guard count > limit else { return self }
+        let keep = max((limit - 1) / 2, 1)
+        return "\(prefix(keep))…\(suffix(keep))"
+    }
 }
