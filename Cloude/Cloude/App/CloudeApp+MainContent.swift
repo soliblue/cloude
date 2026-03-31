@@ -39,8 +39,15 @@ extension CloudeApp {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
                             if let window = windowManager.activeWindow {
-                                windowManager.setActive(window.id)
-                                windowManager.removeWindow(window.id)
+                                if windowManager.windows.count > 1 {
+                                    windowManager.removeWindow(window.id)
+                                } else {
+                                    let newConv = conversationStore.newConversation(
+                                        workingDirectory: window.conversation(in: conversationStore)?.workingDirectory,
+                                        environmentId: window.conversation(in: conversationStore)?.environmentId
+                                    )
+                                    windowManager.linkToCurrentConversation(window.id, conversation: newConv)
+                                }
                             }
                         }) {
                             Image(systemName: "xmark")
