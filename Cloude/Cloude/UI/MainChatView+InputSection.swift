@@ -52,6 +52,6 @@ extension MainChatView {
         }
         .contentShape(.interaction, ExpandedTopRect(expansion: DS.Size.l))
         .onTapGesture { }
-        .background(Color.themeBackground)
+        .background(Color.themeBackground.ignoresSafeArea(.container, edges: .bottom).ignoresSafeArea(.keyboard))
     }
 }
