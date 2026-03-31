@@ -75,14 +75,14 @@ extension MainChatView {
         guard status == .authorized || status == .limited else {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
                 if newStatus == .authorized || newStatus == .limited {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.l) {
                         self.loadLatestPhoto()
                     }
                 }
             }
             return
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.l) {
             self.loadLatestPhoto()
         }
     }
@@ -96,7 +96,7 @@ extension MainChatView {
 
         let result = PHAsset.fetchAssets(with: options)
         if result.firstObject == nil, attempt < 5 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
                 self.loadLatestPhoto(attempt: attempt + 1)
             }
             return

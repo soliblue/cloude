@@ -31,7 +31,7 @@ struct WindowTabBar: View {
                 }) {
                     tabLabel(for: type, enabled: enabled)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, DS.Spacing.s)
+                        .padding(.vertical, DS.Spacing.m)
                         .contentShape(Rectangle())
                 }
                 .agenticID("window_tab_\(type.rawValue)")
@@ -65,7 +65,7 @@ struct WindowTabBar: View {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: type.icon)
                     .font(.system(size: DS.Text.m))
-                Text("$\(String(format: "%.2f", totalCost))")
+                Text(totalCost.asCost)
                     .font(.system(size: DS.Text.m))
             }
             .foregroundColor(isActive ? .accentColor : .secondary)

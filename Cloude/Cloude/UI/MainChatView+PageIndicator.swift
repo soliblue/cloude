@@ -75,10 +75,7 @@ extension MainChatView {
         let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
 
         let symbol = (conversation?.symbol).flatMap { $0.isValidSFSymbol ? $0 : nil } ?? "bubble.left.fill"
-        let title = {
-            let name = conversation?.name ?? "New Chat"
-            return name.count > 9 ? String(name.prefix(9)) + ".." : name
-        }()
+        let name = conversation?.name ?? "New"
 
         VStack(spacing: DS.Spacing.xs) {
             Image(systemName: symbol)
@@ -86,8 +83,8 @@ extension MainChatView {
                 .foregroundStyle(color)
                 .frame(height: DS.Icon.l)
                 .modifier(StreamingPulseModifier(isStreaming: isStreaming))
-            Text(title)
-                .font(.system(size: DS.Text.s))
+            Text(name.count > 9 ? String(name.prefix(9)) + ".." : name)
+                .font(.system(size: DS.Text.m))
                 .foregroundStyle(color)
                 .lineLimit(1)
         }

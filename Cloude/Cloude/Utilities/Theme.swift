@@ -51,6 +51,14 @@ enum DS {
         static let l: Double = 0.8
     }
 
+    enum Delay {
+        static let s: Double = 0.1
+        static let m: Double = 0.3
+        static let l: Double = 0.5
+        static let xl: Double = 1.5
+        static let xxl: Double = 10.0
+    }
+
     enum Opacity {
         static let s: Double = 0.15
         static let m: Double = 0.4

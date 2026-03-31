@@ -30,7 +30,7 @@ struct ConversationInfoLabel: View {
                     .truncationMode(.middle)
             }
             if showCost, let conv = conversation, conv.totalCost > 0 {
-                Text("• $\(String(format: "%.2f", conv.totalCost))")
+                Text("• \(conv.totalCost.asCost)")
                     .font(.system(size: DS.Text.s))
                     .foregroundColor(.secondary)
                     .lineLimit(1)

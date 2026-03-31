@@ -43,13 +43,13 @@ struct EnvironmentFolderPicker: View {
                         conversationStore.setEnvironmentId(conversation, environmentId: env.id)
                         environmentStore.setActive(env.id)
                         if connection.connection(for: env.id)?.isConnected ?? false {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
                                 showFolderPicker = true
                             }
                         } else {
                             pendingConnectionEnvId = env.id
                             connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.xxl) {
                                 if pendingConnectionEnvId == env.id {
                                     pendingConnectionEnvId = nil
                                 }
@@ -88,7 +88,7 @@ struct EnvironmentFolderPicker: View {
                 HStack(spacing: DS.Spacing.s) {
                     if isConnecting {
                         ProgressView()
-                            .scaleEffect(0.7)
+                            .scaleEffect(DS.Scale.s)
                             .frame(width: DS.Text.m, height: DS.Text.m)
                     } else {
                         Image(systemName: "folder.fill")

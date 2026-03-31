@@ -15,7 +15,7 @@ extension MainChatView {
 struct PageSwipeDisabler: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.s) {
             guard let hostingView = view.findHostingParent() else { return }
             hostingView.disableHorizontalScrollViews()
         }

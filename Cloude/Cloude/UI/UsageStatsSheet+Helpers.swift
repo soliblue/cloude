@@ -63,7 +63,7 @@ extension UsageStatsSheet {
         let count = stats.hourCounts["\(hour)"] ?? 0
         let maxCount = stats.hourCounts.values.max() ?? 1
         let intensity = Double(count) / Double(max(maxCount, 1))
-        return Color.blue.opacity(0.3 + intensity * 0.7)
+        return Color.blue.opacity(DS.Opacity.m + intensity * (1 - DS.Opacity.m))
     }
 
     func formatHour(_ h: Int) -> String {

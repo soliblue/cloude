@@ -38,7 +38,7 @@ struct CodeBlock: View {
             Button {
                 UIPasteboard.general.string = code
                 copied = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
+                DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.xl) { copied = false }
             } label: {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                     .font(.system(size: DS.Text.s))

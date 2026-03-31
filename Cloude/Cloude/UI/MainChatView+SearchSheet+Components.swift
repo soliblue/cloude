@@ -19,7 +19,7 @@ extension ConversationSearchSheet {
                     Text("\(conv.messages.count) msgs")
                         .foregroundColor(.secondary)
                     if conv.totalCost > 0 {
-                        Text(String(format: "$%.2f", conv.totalCost))
+                        Text(conv.totalCost.asCost)
                             .foregroundColor(.secondary)
                     }
                 }

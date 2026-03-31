@@ -5,7 +5,7 @@ extension GlobalInputBar {
         if !showInputBar || isTranscribing {
             return 0
         }
-        return clampedSwipeProgress.map { 1.0 - $0 * 0.7 } ?? 1
+        return clampedSwipeProgress.map { 1.0 - $0 * DS.Opacity.l } ?? 1
     }
 
     var recordingOverlayOpacity: Double {

@@ -1,5 +1,11 @@
 import Foundation
 
+extension Double {
+    var asCost: String {
+        self < 0.01 ? String(format: "$%.4f", self) : String(format: "$%.2f", self)
+    }
+}
+
 enum DateFormatters {
     private static let shared: DateFormatter = {
         let f = DateFormatter()

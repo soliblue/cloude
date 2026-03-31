@@ -18,7 +18,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                     withAnimation(.easeOut(duration: DS.Duration.s)) {
                         offset = -400
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + DS.Duration.s) {
                         onDelete()
                     }
                 }) {
@@ -37,7 +37,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                 .onTapGesture {
                     if offset < 0 {
                         withAnimation(.easeOut(duration: DS.Duration.s)) { offset = 0 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { showDelete = false }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Duration.s) { showDelete = false }
                     } else {
                         onTap()
                     }
@@ -61,7 +61,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                                 withAnimation(.easeOut(duration: DS.Duration.s)) { offset = threshold }
                             } else {
                                 withAnimation(.easeOut(duration: DS.Duration.s)) { offset = 0 }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { showDelete = false }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + DS.Duration.s) { showDelete = false }
                             }
                         }
                 )
