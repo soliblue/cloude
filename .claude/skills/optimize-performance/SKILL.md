@@ -230,3 +230,16 @@ This makes the skill smarter over time. Future runs start by reading these entri
 - **Numbers**: 9,233 → 1,036 total renders. ~8,900 → 16 wasted renders.
 - **Gotcha**: `isLive` now relies on store mutations to trigger parent re-evaluation (implicit dependency). Works because `liveMessageId` always changes alongside a store mutation. Codex flagged this as medium risk but confirmed all current code paths are safe.
 - **Gotcha**: The 16 remaining wasted renders are initial layout passes in the first ~2 seconds. Unavoidable SwiftUI behavior.
+
+### Observation chain + FPS degradation (build 123)
+- **What**: ConversationView double-subscribed to ConnectionManager/ConversationStore. FPS degraded from ~47 to 21 during long streams.
+- **Root cause 1**: `@ObservedObject` on ConversationView duplicated observation already handled by parent (MainChatView). ConversationView re-rendered from both its own subscription AND the parent passing new values.
+- **Root cause 2**: `StreamingMarkdownView` used a non-lazy `VStack` with `ForEach` over ALL blocks (frozen + tail). As blocks accumulated during streaming, layout cost grew linearly. Also, `stableSplitPoint` scanned all lines O(n) on every 60Hz update.
+- **Root cause 3**: `finalizeStreamingMessage` called `mutate` twice (message update + cost update), causing two ConversationStore publishes per completion.
+- **Fix 1**: Changed `@ObservedObject var connection/store` to `let` on ConversationView. Parent already observes and passes updated data.
+- **Fix 2**: Extracted frozen blocks into `FrozenBlocksSection` conforming to `Equatable`. With `.equatable()`, SwiftUI skips body evaluation entirely when frozen blocks haven't changed. Made `stableSplitPoint` incremental (caches fence state + search offset, only scans new content).
+- **Fix 3**: Combined message update + cost update into single `mutate` call in both finalization paths.
+- **Numbers**: FPS during long stream: 47→21 (degrading) → 55-61 (stable). Shell renders per stream: reasonable (MainChat ~9, ConvView ~16 for 2 windows).
+- **Gotcha**: `FrozenBlocksSection` equality compares block count + last block ID, not full content. Safe because frozen blocks only grow (append-only during streaming).
+- **Gotcha**: Equatable only helps text-only streaming. With tool calls, all blocks go in tailBlocks (no freezing). Tool call path was already fast since responses are shorter.
+- **Pattern**: When parent already observes a shared object, child views should use `let` (not `@ObservedObject`) to avoid double-subscription. Use `Equatable` views with `.equatable()` for sections that don't change between renders.
