@@ -5,6 +5,7 @@ struct FileTreeView: View {
     let connection: ConnectionManager
     var rootPath: String?
     var environmentId: UUID?
+    var isVisible: Bool
     @ObservedObject var state: FileTreeState
     @State var selectedFile: FileEntry?
 
@@ -48,11 +49,11 @@ struct FileTreeView: View {
         .sheet(item: $selectedFile) { file in
             FilePreviewView(file: file, connection: connection, environmentId: environmentId)
         }
-        .onAppear { loadRootIfNeeded() }
-        .onChange(of: rootPath) { _, _ in resetAndLoad() }
-        .onChange(of: defaultWorkingDirectory) { _, newValue in
-            guard rootPath == nil, let newValue, !newValue.isEmpty, state.isInitialLoad else { return }
-            resetAndLoad()
+        .onChange(of: resolvedRootPath) { oldValue, newValue in
+            if oldValue != newValue { resetAndLoad() }
+        }
+        .onChange(of: isVisible) { _, visible in
+            if visible { loadRootIfNeeded() }
         }
         .onReceive(connection.events) { event in
             if case let .directoryListing(path, entries, envId) = event, envId == environmentId {

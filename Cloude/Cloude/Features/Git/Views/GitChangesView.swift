@@ -42,16 +42,8 @@ struct GitChangesView: View {
             GitDiffView(connection: connection, repoPath: repoPath, file: file, environmentId: environmentId)
         }
         .onAppear { loadIfNeeded() }
-        .onChange(of: rootPath) { _, _ in
-            resetAndLoad()
-        }
-        .onChange(of: connection.connection(for: environmentId)?.isAuthenticated ?? false) { _, isAuthenticated in
-            if isAuthenticated && state.isInitialLoad && state.gitStatus == nil {
-                loadStatus()
-            }
-        }
-        .onChange(of: defaultWorkingDirectory) { _, newValue in
-            if rootPath == nil, newValue?.isEmpty == false {
+        .onChange(of: resolvedRepoPath) { oldValue, newValue in
+            if oldValue != newValue {
                 resetAndLoad()
             }
         }

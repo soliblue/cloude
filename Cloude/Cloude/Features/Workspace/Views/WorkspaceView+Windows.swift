@@ -50,23 +50,26 @@ extension WorkspaceView {
                 .opacity(window.tab == .chat ? 1 : 0)
                 .allowsHitTesting(window.tab == .chat)
 
-                if window.tab == .files {
-                    FileTreeView(
-                        connection: connection,
-                        rootPath: window.fileBrowserRootPath ?? conversation?.workingDirectory,
-                        environmentId: conversation?.environmentId,
-                        state: windowManager.fileTreeState(for: window.id)
-                    )
-                }
+                FileTreeView(
+                    connection: connection,
+                    rootPath: window.fileBrowserRootPath ?? conversation?.workingDirectory,
+                    environmentId: conversation?.environmentId,
+                    isVisible: window.tab == .files,
+                    state: windowManager.fileTreeState(for: window.id)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(window.tab == .files ? 1 : 0)
+                .allowsHitTesting(window.tab == .files)
 
-                if window.tab == .gitChanges {
-                    GitChangesView(
-                        connection: connection,
-                        rootPath: window.gitRepoRootPath ?? conversation?.workingDirectory,
-                        environmentId: conversation?.environmentId,
-                        state: windowManager.gitChangesState(for: window.id)
-                    )
-                }
+                GitChangesView(
+                    connection: connection,
+                    rootPath: window.gitRepoRootPath ?? conversation?.workingDirectory,
+                    environmentId: conversation?.environmentId,
+                    state: windowManager.gitChangesState(for: window.id)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(window.tab == .gitChanges ? 1 : 0)
+                .allowsHitTesting(window.tab == .gitChanges)
 
             }
         }
