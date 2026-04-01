@@ -129,11 +129,11 @@ struct MessageBubble: View {
                 } else if isLive && (liveOutput?.isCompacting ?? false) {
                     CompactingIndicator()
                 } else if hasToolCalls {
-                    StreamingMarkdownView(text: effectiveText, toolCalls: effectiveToolCalls, isComplete: !isLive) { tool, children in
+                    StreamingMarkdownView(text: effectiveText, toolCalls: effectiveToolCalls) { tool, children in
                         selectedToolDetail = ToolDetailItem(toolCall: tool, children: children)
                     }
                 } else if !effectiveText.isEmpty {
-                    StreamingMarkdownView(text: effectiveText, isComplete: !isLive)
+                    StreamingMarkdownView(text: effectiveText)
                 } else if isLive {
                     SisyphusLoadingView()
                 }

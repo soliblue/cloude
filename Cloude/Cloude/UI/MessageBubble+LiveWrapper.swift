@@ -11,6 +11,7 @@ struct ObservedMessageBubble: View {
 
     @State private var liveText: String = ""
     @State private var liveToolCalls: [ToolCall] = []
+    @State private var lastTextUpdate: CFTimeInterval = 0
 
     private var isLive: Bool { output.liveMessageId == message.id }
 
@@ -29,7 +30,13 @@ struct ObservedMessageBubble: View {
             isCompact: isCompact
         )
         .onReceive(output.$text) { newText in
-            if isLive { liveText = newText }
+            guard isLive else { return }
+            let now = CACurrentMediaTime()
+            if newText.count > 3000 {
+                guard now - lastTextUpdate >= 0.05 || newText.count <= liveText.count else { return }
+            }
+            liveText = newText
+            lastTextUpdate = now
         }
         .onReceive(output.$toolCalls) { newCalls in
             if isLive { liveToolCalls = newCalls }

@@ -5,7 +5,6 @@ import SwiftUI
 struct StreamingMarkdownView: View {
     let text: String
     var toolCalls: [ToolCall] = []
-    var isComplete: Bool = true
     var onSelectTool: ((ToolCall, [ToolCall]) -> Void)?
     @State private var frozenBlocks: [StreamingBlock] = []
     @State private var frozenUpTo: String = ""
@@ -39,7 +38,6 @@ struct StreamingMarkdownView: View {
     private func updateIncremental() {
         let rev = toolRevision
         if text == lastText && rev == lastToolRevision { return }
-        let textChanged = text != lastText
         lastText = text
         lastToolRevision = rev
 
