@@ -1,5 +1,3 @@
-// MessageBubble.swift
-
 import SwiftUI
 import UIKit
 import CloudeShared
@@ -12,10 +10,9 @@ struct MessageBubble: View {
     var liveToolCalls: [ToolCall]?
     var onRefresh: (() -> Void)?
     var isRefreshing: Bool = false
-    var isCompact: Bool = false
+    var onSelectToolDetail: ((ToolDetailItem) -> Void)?
     @State private var showCopiedToast = false
     @State private var showTextSelection = false
-    @State private var selectedToolDetail: ToolDetailItem?
     @Environment(\.appTheme) private var appTheme
 
     private var isLive: Bool { liveOutput != nil }
@@ -130,7 +127,7 @@ struct MessageBubble: View {
                     CompactingIndicator()
                 } else if hasToolCalls {
                     StreamingMarkdownView(text: effectiveText, toolCalls: effectiveToolCalls) { tool, children in
-                        selectedToolDetail = ToolDetailItem(toolCall: tool, children: children)
+                        onSelectToolDetail?(ToolDetailItem(toolCall: tool, children: children))
                     }
                 } else if !effectiveText.isEmpty {
                     StreamingMarkdownView(text: effectiveText)
@@ -156,9 +153,6 @@ struct MessageBubble: View {
                 .font(.system(size: DS.Text.s))
                 .foregroundColor(.secondary.opacity(DS.Opacity.l))
             }
-        }
-        .sheet(item: $selectedToolDetail) { item in
-            ToolDetailSheet(toolCall: item.toolCall, children: item.children)
         }
     }
 

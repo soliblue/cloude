@@ -1,5 +1,3 @@
-// StreamingMarkdownView+ToolGroup.swift
-
 import SwiftUI
 
 struct StreamingBlockView: View {
@@ -35,7 +33,8 @@ struct StreamingBlockView: View {
             }
 
         case .toolGroup(_, let tools):
-            ToolGroupView(tools: tools, onSelectTool: onSelectTool)
+            ToolGroupView(blockId: block.id, tools: tools, onSelectTool: onSelectTool)
+                .equatable()
 
         case .xml(_, let nodes):
             XMLBlockView(nodes: nodes)
@@ -43,50 +42,39 @@ struct StreamingBlockView: View {
     }
 }
 
-struct ToolGroupView: View {
+struct ToolGroupView: View, Equatable {
+    let blockId: String
     let tools: [ToolCall]
     var onSelectTool: ((ToolCall, [ToolCall]) -> Void)?
 
-    private var toolHierarchy: [(parent: ToolCall, children: [ToolCall])] {
-        var childrenByParent: [String: [ToolCall]] = [:]
-        var topLevel: [ToolCall] = []
-        for tool in tools {
-            if let parentId = tool.parentToolId {
-                childrenByParent[parentId, default: []].append(tool)
-            } else {
-                topLevel.append(tool)
-            }
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.blockId == rhs.blockId, lhs.tools.count == rhs.tools.count else { return false }
+        for i in lhs.tools.indices {
+            if lhs.tools[i].toolId != rhs.tools[i].toolId || lhs.tools[i].state != rhs.tools[i].state { return false }
         }
-        return topLevel.map { ($0, childrenByParent[$0.toolId] ?? []) }
-    }
-
-    private var widgets: [(parent: ToolCall, children: [ToolCall])] {
-        toolHierarchy.filter { WidgetRegistry.isWidget($0.parent.name) }
-    }
-
-    private var nonWidgets: [(parent: ToolCall, children: [ToolCall])] {
-        toolHierarchy.filter { !WidgetRegistry.isWidget($0.parent.name) }
+        return true
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.s) {
-            ForEach(widgets, id: \.parent.toolId) { item in
-                WidgetRegistry.view(for: item.parent.name, input: item.parent.input)
-            }
-
-            if !nonWidgets.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: DS.Spacing.s) {
-                        ForEach(nonWidgets, id: \.parent.toolId) { item in
-                            InlineToolPill(toolCall: item.parent, children: item.children) {
-                                onSelectTool?(item.parent, item.children)
+            ForEach(ToolGroupLayout.orderedItems(for: tools)) { group in
+                switch group {
+                case .widget(let parent, _):
+                    WidgetRegistry.view(for: parent.name, input: parent.input)
+                case .pills(_, let items):
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: DS.Spacing.s) {
+                            ForEach(items, id: \.parent.toolId) { node in
+                                InlineToolPill(toolCall: node.parent, children: node.children) {
+                                    onSelectTool?(node.parent, node.children)
+                                }
                             }
                         }
+                        .padding(.horizontal, DS.Spacing.l)
                     }
-                    .padding(.horizontal, DS.Spacing.l)
+                    .padding(.horizontal, -DS.Spacing.l)
+                    .scrollClipDisabled()
                 }
-                .padding(.horizontal, -DS.Spacing.l)
-                .scrollClipDisabled()
             }
         }
     }

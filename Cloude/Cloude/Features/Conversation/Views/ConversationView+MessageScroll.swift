@@ -24,6 +24,9 @@ extension ChatMessageList {
                     .onChange(of: geo.size.height) { _, h in scrollViewportHeight = h }
             }
         }
+        .sheet(item: $selectedToolDetail) { item in
+            ToolDetailSheet(toolCall: item.toolCall, children: item.children)
+        }
         .simultaneousGesture(
             TapGesture()
                 .onEnded { onInteraction?() }
@@ -63,7 +66,7 @@ extension ChatMessageList {
                     skills: connection?.skills ?? [],
                     onRefresh: message.isUser ? nil : { refreshMessage(message) },
                     isRefreshing: refreshingMessageId == message.id,
-                    isCompact: isCompact
+                    onSelectToolDetail: { selectedToolDetail = $0 }
                 )
                 .readingProgress(
                     isAssistant: !message.isUser,
@@ -75,7 +78,8 @@ extension ChatMessageList {
                     message: message,
                     skills: connection?.skills ?? [],
                     onRefresh: message.isUser ? nil : { refreshMessage(message) },
-                    isRefreshing: refreshingMessageId == message.id
+                    isRefreshing: refreshingMessageId == message.id,
+                    onSelectToolDetail: { selectedToolDetail = $0 }
                 )
                 .readingProgress(
                     isAssistant: !message.isUser,

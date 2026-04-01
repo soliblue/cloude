@@ -1,5 +1,3 @@
-// StreamingMarkdownParser+ToolCalls.swift
-
 import Foundation
 import CloudeShared
 
@@ -17,25 +15,27 @@ extension StreamingMarkdownParser {
 
         var result: [StreamingBlock] = []
         var currentPosition = 0
-        var segmentIndex = 0
         var pendingTools: [ToolCall] = []
 
         for tool in topLevelTools {
             let toolPosition = tool.textPosition ?? 0
+            if toolPosition > text.count {
+                continue
+            }
 
             if toolPosition > currentPosition && toolPosition <= text.count {
                 if !pendingTools.isEmpty {
+                    let groupId = "tools-\(pendingTools[0].toolId)"
                     let groupWithChildren = includeChildren(parents: pendingTools, allChildren: childTools)
-                    result.append(.toolGroup(id: "tools-\(currentPosition)", tools: groupWithChildren))
+                    result.append(.toolGroup(id: groupId, tools: groupWithChildren))
                     pendingTools = []
                 }
                 let startIdx = text.index(text.startIndex, offsetBy: currentPosition)
                 let endIdx = text.index(text.startIndex, offsetBy: toolPosition)
                 let segment = String(text[startIdx..<endIdx])
                 if !segment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    let prefix = "s\(segmentIndex)-"
+                    let prefix = "s\(currentPosition)-"
                     result.append(contentsOf: parse(segment).map { $0.prefixed(prefix) })
-                    segmentIndex += 1
                 }
                 currentPosition = toolPosition
             }
@@ -43,15 +43,16 @@ extension StreamingMarkdownParser {
         }
 
         if !pendingTools.isEmpty {
+            let groupId = "tools-\(pendingTools[0].toolId)"
             let groupWithChildren = includeChildren(parents: pendingTools, allChildren: childTools)
-            result.append(.toolGroup(id: "tools-\(currentPosition)", tools: groupWithChildren))
+            result.append(.toolGroup(id: groupId, tools: groupWithChildren))
         }
 
         if currentPosition < text.count {
             let startIdx = text.index(text.startIndex, offsetBy: currentPosition)
             let remaining = String(text[startIdx...])
             if !remaining.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                let prefix = "s\(segmentIndex)-"
+                let prefix = "s\(currentPosition)-"
                 result.append(contentsOf: parse(remaining).map { $0.prefixed(prefix) })
             }
         }

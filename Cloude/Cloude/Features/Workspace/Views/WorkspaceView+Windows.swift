@@ -26,7 +26,6 @@ extension WorkspaceView {
                     conversation: conversation,
                     window: window,
                     windowManager: windowManager,
-                    isCompact: false,
                     isKeyboardVisible: isKeyboardVisible,
                     onInteraction: { dismissKeyboard() },
                     onSelectRecentConversation: { conv in

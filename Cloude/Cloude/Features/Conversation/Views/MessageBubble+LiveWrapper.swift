@@ -7,7 +7,7 @@ struct ObservedMessageBubble: View {
     var skills: [Skill] = []
     var onRefresh: (() -> Void)?
     var isRefreshing: Bool = false
-    var isCompact: Bool = false
+    var onSelectToolDetail: ((ToolDetailItem) -> Void)?
 
     @State private var liveText: String = ""
     @State private var liveToolCalls: [ToolCall] = []
@@ -27,7 +27,7 @@ struct ObservedMessageBubble: View {
             liveToolCalls: isLive ? liveToolCalls : nil,
             onRefresh: onRefresh,
             isRefreshing: isRefreshing,
-            isCompact: isCompact
+            onSelectToolDetail: onSelectToolDetail
         )
         .onReceive(output.$text) { newText in
             guard isLive else { return }

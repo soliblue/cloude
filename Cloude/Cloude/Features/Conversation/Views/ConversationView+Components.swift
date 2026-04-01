@@ -8,7 +8,6 @@ struct ChatMessageList: View {
     var queuedMessages: [ChatMessage] = []
     let agentState: AgentState
     let conversationId: UUID?
-    var isCompact: Bool = false
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
     var onDeleteQueued: ((UUID) -> Void)?
@@ -27,6 +26,7 @@ struct ChatMessageList: View {
     @State var scrollViewportHeight: CGFloat = 0
     @State var refreshingMessageId: UUID?
     @State var scrollPos = ScrollPosition()
+    @State var selectedToolDetail: ToolDetailItem?
 
     private var isOutputEmpty: Bool {
         conversationOutput?.text.isEmpty ?? true

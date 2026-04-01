@@ -23,6 +23,32 @@ enum StreamingBlock: Identifiable {
         }
     }
 
+    var renderSignature: String {
+        switch self {
+        case .text(let id, let content, _):
+            let value = String(content.characters)
+            return "text:\(id):\(value.count):\(value.hashValue)"
+        case .code(let id, let content, let language, let isComplete):
+            return "code:\(id):\(content.count):\(content.hashValue):\(language ?? ""):\(isComplete)"
+        case .table(let id, let rows):
+            let value = rows.flatMap(\.self).joined(separator: "|")
+            return "table:\(id):\(rows.count):\(value.hashValue)"
+        case .blockquote(let id, let content):
+            return "blockquote:\(id):\(content.count):\(content.hashValue)"
+        case .horizontalRule(let id):
+            return "hr:\(id)"
+        case .header(let id, let level, let content, _):
+            let value = String(content.characters)
+            return "header:\(id):\(level):\(value.count):\(value.hashValue)"
+        case .toolGroup(let id, let tools):
+            let value = tools.map { "\($0.toolId):\($0.state.rawValue):\($0.name)" }.joined(separator: "|")
+            return "tools:\(id):\(value.hashValue)"
+        case .xml(let id, let nodes):
+            let value = String(describing: nodes)
+            return "xml:\(id):\(value.hashValue)"
+        }
+    }
+
     func prefixed(_ prefix: String) -> StreamingBlock {
         switch self {
         case .text(let id, let a, let s): return .text(id: prefix + id, a, segments: s)

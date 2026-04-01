@@ -10,7 +10,6 @@ struct ConversationView: View {
     let conversation: Conversation?
     var window: Window?
     var windowManager: WindowManager?
-    var isCompact: Bool = false
     var showHeader: Bool = false
     var isKeyboardVisible: Bool = false
     var onSelectConversation: (() -> Void)?
@@ -63,7 +62,6 @@ struct ConversationView: View {
                 queuedMessages: queuedMessages,
                 agentState: isThisConversationRunning ? .running : .idle,
                 conversationId: effectiveConversation?.id,
-                isCompact: isCompact,
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction,
                 onDeleteQueued: { messageId in
