@@ -51,10 +51,11 @@ extension WorkspaceView {
                 .allowsHitTesting(window.tab == .chat)
 
                 if window.tab == .files {
-                    FileBrowserView(
+                    FileTreeView(
                         connection: connection,
                         rootPath: window.fileBrowserRootPath ?? conversation?.workingDirectory,
-                        environmentId: conversation?.environmentId
+                        environmentId: conversation?.environmentId,
+                        state: windowManager.fileTreeState(for: window.id)
                     )
                 }
 

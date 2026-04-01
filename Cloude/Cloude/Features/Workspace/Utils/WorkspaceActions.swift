@@ -20,19 +20,20 @@ extension App {
     }
 
     func createNewConversation(path: String? = nil) {
+        let current = activeConversation()
+
         if windowManager.activeWindow == nil {
             windowManager.addWindow()
         }
         guard let activeWindow = windowManager.activeWindow else { return }
 
-        let workingDirectory = path?.nilIfEmpty
         let conversation = conversationStore.newConversation(
-            workingDirectory: workingDirectory,
-            environmentId: environmentStore.activeEnvironmentId
+            workingDirectory: path?.nilIfEmpty ?? current?.workingDirectory,
+            environmentId: current?.environmentId ?? environmentStore.activeEnvironmentId
         )
         windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         AppLogger.bootstrapInfo(
-            "created new conversation convId=\(conversation.id.uuidString) windowId=\(activeWindow.id.uuidString) path=\(workingDirectory ?? "-")"
+            "created new conversation convId=\(conversation.id.uuidString) windowId=\(activeWindow.id.uuidString) path=\(conversation.workingDirectory ?? "-")"
         )
     }
 

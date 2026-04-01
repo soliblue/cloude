@@ -7,6 +7,8 @@ class WindowManager: ObservableObject {
     @Published var windows: [Window] = [Window()]
     @Published var activeWindowId: UUID?
 
+    var fileTreeStates: [UUID: FileTreeState] = [:]
+
     private let windowsKey = "windowManager_windows"
     private let activeKey = "windowManager_activeWindowId"
 
@@ -73,6 +75,7 @@ class WindowManager: ObservableObject {
             activeWindowId = index > 0 ? windows[index - 1].id : windows[1].id
         }
         windows.removeAll { $0.id == id }
+        fileTreeStates.removeValue(forKey: id)
         save()
     }
 
@@ -114,6 +117,13 @@ class WindowManager: ObservableObject {
         guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
         windows[index].gitRepoRootPath = path
         save()
+    }
+
+    func fileTreeState(for windowId: UUID) -> FileTreeState {
+        if let existing = fileTreeStates[windowId] { return existing }
+        let state = FileTreeState()
+        fileTreeStates[windowId] = state
+        return state
     }
 
     func windowIndex(for id: UUID) -> Int? {

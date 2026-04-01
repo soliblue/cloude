@@ -66,6 +66,7 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - **No guard clauses** - always check for success, never check for failure: `if let subject = args.subject { process(subject) }`
 
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
+- **One component per file** - every struct, class, or enum gets its own file, even if tiny
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
 - Struct-first design, explicit imports, lean composable views
 - `App/` contains only app entry, composition, and app-owned overlays or routing entry points

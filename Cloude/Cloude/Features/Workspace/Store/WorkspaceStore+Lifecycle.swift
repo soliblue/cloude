@@ -67,10 +67,12 @@ extension WorkspaceStore {
         windowManager: WindowManager,
         environmentStore: EnvironmentStore
     ) {
+        let dir = activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore)
+        let envId = activeWindowEnvironmentId(windowManager: windowManager, conversationStore: conversationStore, environmentStore: environmentStore)
         let newWindowId = windowManager.addWindow()
         let newConv = conversationStore.newConversation(
-            workingDirectory: activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore),
-            environmentId: activeWindowEnvironmentId(windowManager: windowManager, conversationStore: conversationStore, environmentStore: environmentStore)
+            workingDirectory: dir,
+            environmentId: envId
         )
         windowManager.linkToCurrentConversation(newWindowId, conversation: newConv)
     }
