@@ -290,3 +290,9 @@ This makes the skill smarter over time. Future runs start by reading these entri
 - **Fix 2**: Set `link.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)` on the text drain display link. Halves publisher event volume. At 300-1200 chars/sec, 30fps means 10-40 chars per tick, imperceptible vs 60fps.
 - **Fix 3**: Removed unused `@ObservedObject var windowManager` from ConversationSearchSheet. Prevents unnecessary re-renders when windowManager publishes while search sheet is open.
 - **Pattern**: Guard mutations on @Published properties with a contains check before map+reassign. Reduce display link frame rate when the visual effect doesn't benefit from 60fps. Remove unused @ObservedObject subscriptions.
+
+### Async GIF decoding + frame cache (build 127)
+- **What**: Startup FPS drop when EmptyConversationView renders. AnimatedGIFView decoded all GIF frames synchronously on the main thread in `makeUIView`.
+- **Root cause**: `CGImageSourceCreateImageAtIndex` in a loop during `makeUIView` blocks the main thread. If the GIF has 20+ frames, this is measurable. Also decoded fresh every time the view was recreated (no caching).
+- **Fix**: Added `GIFFrameCache` static cache mapping name to decoded frames. First render checks cache; if miss, decodes on `Task.detached(priority: .userInitiated)` and applies to the UIImageView on MainActor when done. Subsequent renders use cached frames instantly.
+- **Pattern**: Decode media assets off the main thread during view creation. Cache decoded results statically to avoid re-decoding on view recreation. UIViewRepresentable's `makeUIView` should never do heavy I/O.
