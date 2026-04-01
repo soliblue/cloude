@@ -3,10 +3,10 @@ import CloudeShared
 
 struct WindowEditForm: View {
     let window: ChatWindow
-    @ObservedObject var conversationStore: ConversationStore
-    @ObservedObject var windowManager: WindowManager
-    @ObservedObject var connection: ConnectionManager
-    @ObservedObject var environmentStore: EnvironmentStore
+    let conversationStore: ConversationStore
+    let windowManager: WindowManager
+    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     let onSelectConversation: (Conversation) -> Void
 
     @State private var name: String = ""

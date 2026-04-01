@@ -26,7 +26,7 @@ struct StreamingMarkdownView: View {
         VStack(alignment: .leading, spacing: 0) {
             FrozenBlocksSection(blocks: frozenBlocks, blockCount: frozenBlockCount, lastBlockId: frozenLastId)
                 .equatable()
-            ForEach(tailBlocks.map { $0.prefixed("tail-") }, id: \.id) { block in
+            ForEach(tailBlocks, id: \.id) { block in
                 StreamingBlockView(block: block, onSelectTool: onSelectTool)
                     .padding(.bottom, DS.Spacing.s)
             }
@@ -44,35 +44,56 @@ struct StreamingMarkdownView: View {
         lastToolRevision = rev
 
         if !toolCalls.isEmpty {
-            frozenBlocks = []
-            frozenUpTo = ""
-            frozenBlockCount = 0
-            frozenLastId = ""
-            cachedSplitOffset = 0
-            cachedFenceState = false
-            cachedLastBlankOffset = nil
-            tailBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
+            let splitIndex = stableSplitPointIncremental(in: text)
+            if let splitIndex {
+                let frozenStr = String(text[text.startIndex..<splitIndex])
+                if frozenStr != frozenUpTo {
+                    frozenBlocks = StreamingMarkdownParser.parseWithToolCalls(frozenStr, toolCalls: toolCalls)
+                    frozenUpTo = frozenStr
+                    frozenBlockCount = frozenBlocks.count
+                    frozenLastId = frozenBlocks.last?.id ?? ""
+                }
+                let frozenCharCount = frozenStr.count
+                let tailStr = String(text[splitIndex...])
+                let adjustedTools = toolCalls.map { tool -> ToolCall in
+                    var t = tool
+                    if let pos = t.textPosition { t.textPosition = pos - frozenCharCount }
+                    return t
+                }
+                tailBlocks = StreamingMarkdownParser.parseWithToolCalls(tailStr, toolCalls: adjustedTools).map { $0.prefixed("tail-") }
+            } else {
+                frozenBlocks = []
+                frozenUpTo = ""
+                frozenBlockCount = 0
+                frozenLastId = ""
+                tailBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls).map { $0.prefixed("tail-") }
+            }
             return
         }
 
-        let splitIndex = textChanged ? stableSplitPointIncremental(in: text) : stableSplitPointIncremental(in: text)
+        let splitIndex = stableSplitPointIncremental(in: text)
 
         if let splitIndex {
             let frozenStr = String(text[text.startIndex..<splitIndex])
             if frozenStr != frozenUpTo {
-                frozenBlocks = StreamingMarkdownParser.parse(frozenStr)
+                if !frozenUpTo.isEmpty && frozenStr.hasPrefix(frozenUpTo) {
+                    let delta = String(frozenStr[frozenStr.index(frozenStr.startIndex, offsetBy: frozenUpTo.count)...])
+                    frozenBlocks.append(contentsOf: StreamingMarkdownParser.parse(delta))
+                } else {
+                    frozenBlocks = StreamingMarkdownParser.parse(frozenStr)
+                }
                 frozenUpTo = frozenStr
                 frozenBlockCount = frozenBlocks.count
                 frozenLastId = frozenBlocks.last?.id ?? ""
             }
             let tail = String(text[splitIndex...])
-            tailBlocks = StreamingMarkdownParser.parse(tail)
+            tailBlocks = StreamingMarkdownParser.parse(tail).map { $0.prefixed("tail-") }
         } else {
             frozenBlocks = []
             frozenUpTo = ""
             frozenBlockCount = 0
             frozenLastId = ""
-            tailBlocks = StreamingMarkdownParser.parse(text)
+            tailBlocks = StreamingMarkdownParser.parse(text).map { $0.prefixed("tail-") }
         }
     }
 
