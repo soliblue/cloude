@@ -7,12 +7,14 @@ struct ConversationSearchSheet: View {
     let onSelect: (Conversation) -> Void
 
     @State var searchText = ""
+    @State private var debouncedQuery = ""
+    @State private var searchTask: Task<Void, Never>?
 
     private var results: [Conversation] {
         let all = conversationStore.listableConversations
             .sorted { $0.lastMessageAt > $1.lastMessageAt }
-        if searchText.isEmpty { return all }
-        let query = searchText.lowercased()
+        if debouncedQuery.isEmpty { return all }
+        let query = debouncedQuery.lowercased()
         return all.filter { conv in
             conv.name.lowercased().contains(query) ||
             (conv.workingDirectory?.lowercased().contains(query) ?? false) ||
@@ -78,6 +80,17 @@ struct ConversationSearchSheet: View {
             .background(Color.themeBackground)
             .searchable(text: $searchText, placement: .toolbar, prompt: "Search conversations...")
             .toolbar(.hidden, for: .navigationBar)
+            .onChange(of: searchText) { _, newValue in
+                searchTask?.cancel()
+                if newValue.isEmpty {
+                    debouncedQuery = ""
+                } else {
+                    searchTask = Task {
+                        try? await Task.sleep(for: .milliseconds(200))
+                        if !Task.isCancelled { debouncedQuery = newValue }
+                    }
+                }
+            }
         }
         .agenticID("conversation_search_sheet")
     }
