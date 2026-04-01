@@ -40,11 +40,6 @@ extension ChatMessageList {
             if new > 0 && isInitialLoad {
                 isInitialLoad = false
             }
-            if new > old, messages.last?.isUser == true {
-                withAnimation(.easeOut(duration: DS.Duration.m)) {
-                    scrollPos.scrollTo(edge: .bottom)
-                }
-            }
         }
         .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
             if case .historySync = event { refreshingMessageId = nil }
