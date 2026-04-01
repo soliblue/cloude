@@ -5,9 +5,8 @@ struct GitChangesView: View {
     let connection: ConnectionManager
     var rootPath: String?
     var environmentId: UUID?
+    @ObservedObject var state: GitChangesState
 
-    @State private var gitStatus: GitStatusInfo?
-    @State private var isLoading = false
     @State private var selectedFile: GitFileStatus?
     @State private var pendingRepoPath: String?
 
@@ -25,10 +24,10 @@ struct GitChangesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if isLoading {
+            if state.isInitialLoad && state.gitStatus == nil {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let status = gitStatus {
+            } else if let status = state.gitStatus {
                 statusHeader(status)
                 filesList(status.files)
             } else {
@@ -38,34 +37,71 @@ struct GitChangesView: View {
         .sheet(item: $selectedFile) { file in
             GitDiffView(connection: connection, repoPath: repoPath, file: file, environmentId: environmentId)
         }
-        .onAppear { loadStatus() }
+        .onAppear { loadIfNeeded() }
         .onChange(of: rootPath) { _, _ in
-            loadStatus()
+            resetAndLoad()
         }
         .onChange(of: connection.connection(for: environmentId)?.isAuthenticated ?? false) { _, isAuthenticated in
-            if isAuthenticated && isLoading && gitStatus == nil {
+            if isAuthenticated && state.isInitialLoad && state.gitStatus == nil {
                 loadStatus()
             }
         }
         .onChange(of: defaultWorkingDirectory) { _, newValue in
             if rootPath == nil, newValue?.isEmpty == false {
-                loadStatus()
+                resetAndLoad()
             }
         }
         .refreshable { loadStatus() }
         .onReceive(connection.events) { event in
             if case let .gitStatus(path, status, envId) = event, path == repoPath, envId == environmentId {
-                gitStatus = status
-                isLoading = false
+                state.applyStatus(status)
                 AppLogger.endInterval("git.status", key: pendingRepoPath ?? path, details: "files=\(status.files.count)")
                 pendingRepoPath = nil
             } else if case let .gitStatusError(path, _, envId) = event, path == repoPath, envId == environmentId {
-                isLoading = false
-                gitStatus = nil
+                state.applyError()
                 AppLogger.cancelInterval("git.status", key: pendingRepoPath ?? path, reason: "error")
                 pendingRepoPath = nil
             }
         }
+    }
+
+    private func loadIfNeeded() {
+        if state.isInitialLoad {
+            loadStatus()
+        } else {
+            refreshInBackground()
+        }
+    }
+
+    private func resetAndLoad() {
+        state.reset()
+        loadStatus()
+    }
+
+    private func refreshInBackground() {
+        guard let repoPath = resolvedRepoPath else { return }
+        state.beginLoading()
+        pendingRepoPath = repoPath
+        connection.gitStatus(path: repoPath, environmentId: environmentId)
+    }
+
+    private func loadStatus() {
+        guard let repoPath = resolvedRepoPath else {
+            pendingRepoPath = nil
+            state.reset()
+            return
+        }
+
+        if let conn = connection.connection(for: environmentId) {
+            if conn.gitStatusInFlightPath != nil {
+                conn.gitStatusTimeoutTask?.cancel()
+                conn.gitStatusInFlightPath = nil
+            }
+        }
+        state.beginLoading()
+        pendingRepoPath = repoPath
+        AppLogger.beginInterval("git.status", key: repoPath)
+        connection.gitStatus(path: repoPath, environmentId: environmentId)
     }
 
     private func statusHeader(_ status: GitStatusInfo) -> some View {
@@ -154,26 +190,5 @@ struct GitChangesView: View {
         .scrollContentBackground(.hidden)
         .background(Color.themeBackground)
         .contentMargins(.top, 0, for: .scrollContent)
-    }
-
-    private func loadStatus() {
-        guard let repoPath = resolvedRepoPath else {
-            pendingRepoPath = nil
-            gitStatus = nil
-            isLoading = connection.connection(for: environmentId)?.isAuthenticated != true
-            return
-        }
-
-        if let conn = connection.connection(for: environmentId) {
-            if conn.gitStatusInFlightPath != nil {
-                conn.gitStatusTimeoutTask?.cancel()
-                conn.gitStatusInFlightPath = nil
-            }
-        }
-        pendingRepoPath = repoPath
-        AppLogger.beginInterval("git.status", key: repoPath)
-        isLoading = true
-        gitStatus = nil
-        connection.gitStatus(path: repoPath, environmentId: environmentId)
     }
 }

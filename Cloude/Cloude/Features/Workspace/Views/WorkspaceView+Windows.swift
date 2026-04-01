@@ -63,7 +63,8 @@ extension WorkspaceView {
                     GitChangesView(
                         connection: connection,
                         rootPath: window.gitRepoRootPath ?? conversation?.workingDirectory,
-                        environmentId: conversation?.environmentId
+                        environmentId: conversation?.environmentId,
+                        state: windowManager.gitChangesState(for: window.id)
                     )
                 }
 

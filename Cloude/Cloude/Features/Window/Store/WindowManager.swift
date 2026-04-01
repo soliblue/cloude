@@ -8,6 +8,7 @@ class WindowManager: ObservableObject {
     @Published var activeWindowId: UUID?
 
     var fileTreeStates: [UUID: FileTreeState] = [:]
+    var gitChangesStates: [UUID: GitChangesState] = [:]
 
     private let windowsKey = "windowManager_windows"
     private let activeKey = "windowManager_activeWindowId"
@@ -76,6 +77,7 @@ class WindowManager: ObservableObject {
         }
         windows.removeAll { $0.id == id }
         fileTreeStates.removeValue(forKey: id)
+        gitChangesStates.removeValue(forKey: id)
         save()
     }
 
@@ -123,6 +125,13 @@ class WindowManager: ObservableObject {
         if let existing = fileTreeStates[windowId] { return existing }
         let state = FileTreeState()
         fileTreeStates[windowId] = state
+        return state
+    }
+
+    func gitChangesState(for windowId: UUID) -> GitChangesState {
+        if let existing = gitChangesStates[windowId] { return existing }
+        let state = GitChangesState()
+        gitChangesStates[windowId] = state
         return state
     }
 
