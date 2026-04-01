@@ -115,9 +115,6 @@ struct GitChangesView: View {
 
     private func statusHeader(_ status: GitStatusInfo) -> some View {
         HStack(spacing: DS.Spacing.s) {
-            Image(systemName: "arrow.triangle.branch")
-                .font(.system(size: DS.Text.m))
-                .foregroundColor(.secondary)
             Text(status.branch)
                 .font(.system(size: DS.Text.m, weight: .semibold))
 
