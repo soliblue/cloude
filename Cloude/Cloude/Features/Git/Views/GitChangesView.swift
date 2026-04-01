@@ -29,7 +29,11 @@ struct GitChangesView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let status = state.gitStatus {
                 statusHeader(status)
-                filesList(status.files)
+                if status.hasChanges {
+                    filesList(status.files)
+                } else {
+                    commitsList
+                }
             } else {
                 ContentUnavailableView("No Repository", systemImage: "folder.badge.questionmark", description: Text("Not a git repository"))
             }
@@ -57,10 +61,15 @@ struct GitChangesView: View {
                 state.applyStatus(status)
                 AppLogger.endInterval("git.status", key: pendingRepoPath ?? path, details: "files=\(status.files.count)")
                 pendingRepoPath = nil
+                if !status.hasChanges {
+                    connection.gitLog(path: path, environmentId: environmentId)
+                }
             } else if case let .gitStatusError(path, _, envId) = event, path == repoPath, envId == environmentId {
                 state.applyError()
                 AppLogger.cancelInterval("git.status", key: pendingRepoPath ?? path, reason: "error")
                 pendingRepoPath = nil
+            } else if case let .gitLog(path, commits, envId) = event, path == repoPath, envId == environmentId {
+                state.applyCommits(commits)
             }
         }
     }
@@ -155,6 +164,31 @@ struct GitChangesView: View {
         .padding(.horizontal, DS.Spacing.l)
         .padding(.vertical, DS.Spacing.m)
         .background(Color.themeSecondary)
+    }
+
+    private var commitsList: some View {
+        Group {
+            if state.recentCommits.isEmpty {
+                ContentUnavailableView("No Changes", systemImage: "checkmark.circle", description: Text("Working tree clean"))
+            } else {
+                List {
+                    Section {
+                        ForEach(state.recentCommits) { commit in
+                            GitCommitRow(commit: commit)
+                                .listRowBackground(Color.themeBackground)
+                        }
+                    } header: {
+                        Text("Recent Commits")
+                            .font(.system(size: DS.Text.s, weight: .semibold))
+                            .textCase(.uppercase)
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .background(Color.themeBackground)
+                .contentMargins(.top, 0, for: .scrollContent)
+            }
+        }
     }
 
     private func filesList(_ files: [GitFileStatus]) -> some View {

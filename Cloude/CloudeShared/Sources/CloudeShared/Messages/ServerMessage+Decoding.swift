@@ -98,6 +98,10 @@ extension ServerMessage {
             let success = try container.decode(Bool.self, forKey: .success)
             let message = try container.decodeIfPresent(String.self, forKey: .message)
             return .gitCommitResult(success: success, message: message)
+        case "git_log_result":
+            let path = try container.decode(String.self, forKey: .path)
+            let commits = try container.decode([GitCommit].self, forKey: .commits)
+            return .gitLogResult(path: path, commits: commits)
         case "transcription":
             let text = try container.decode(String.self, forKey: .text)
             return .transcription(text: text)

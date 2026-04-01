@@ -48,6 +48,10 @@ extension ClientMessage {
             try container.encode(path, forKey: .path)
             try container.encode(message, forKey: .message)
             try container.encode(files, forKey: .files)
+        case .gitLog(let path, let count):
+            try container.encode("git_log", forKey: .type)
+            try container.encode(path, forKey: .path)
+            try container.encode(count, forKey: .count)
         case .transcribe(let audioBase64):
             try container.encode("transcribe", forKey: .type)
             try container.encode(audioBase64, forKey: .audioBase64)

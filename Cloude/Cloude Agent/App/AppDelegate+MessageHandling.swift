@@ -53,6 +53,9 @@ extension AppDelegate {
         case .gitCommit(let path, let message, let files):
             handleGitCommit(path, message: message, files: files, connection: connection)
 
+        case .gitLog(let path, let count):
+            handleGitLog(path, count: count, connection: connection)
+
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
 

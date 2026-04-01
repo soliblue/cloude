@@ -86,6 +86,10 @@ extension ServerMessage {
             try container.encode("git_commit_result", forKey: .type)
             try container.encode(success, forKey: .success)
             try container.encodeIfPresent(message, forKey: .message)
+        case .gitLogResult(let path, let commits):
+            try container.encode("git_log_result", forKey: .type)
+            try container.encode(path, forKey: .path)
+            try container.encode(commits, forKey: .commits)
         case .transcription(let text):
             try container.encode("transcription", forKey: .type)
             try container.encode(text, forKey: .text)

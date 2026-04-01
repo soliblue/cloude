@@ -42,6 +42,7 @@ extension EnvironmentConnection {
         case .fileSearchResults(let files, let query):    mgr.events.send(.fileSearchResults(files: files, query: query))
         case .gitStatusResult(let status):                handleGitStatusResult(mgr, status)
         case .gitDiffResult(let path, let diff):          mgr.events.send(.gitDiff(path: path, diff: diff))
+        case .gitLogResult(let path, let commits):       mgr.events.send(.gitLog(path: path, commits: commits, environmentId: environmentId))
         case .transcription(let text):                    handleTranscription(mgr, text)
         case .whisperReady(let ready):                    isWhisperReady = ready
         case .memories(let sections):                     mgr.events.send(.memories(sections))

@@ -56,6 +56,19 @@ export function handleGitDiff(path, file, staged, ws, sendTo) {
   }
 }
 
+export function handleGitLog(path, count, ws, sendTo) {
+  try {
+    const output = execSync(`git log --format="%h\t%s\t%an\t%aI" -n ${count}`, { cwd: path, encoding: 'utf8' })
+    const commits = output.trim().split('\n').filter(Boolean).map(line => {
+      const [hash, message, author, date] = line.split('\t')
+      return { hash, message, author, date }
+    })
+    sendTo(ws, { type: 'git_log_result', path, commits })
+  } catch (e) {
+    sendError(ws, sendTo, e)
+  }
+}
+
 export function handleGitCommit(path, message, files, ws, sendTo) {
   try {
     for (const f of files) execSync(`git add '${f}'`, { cwd: path })

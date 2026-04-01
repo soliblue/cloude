@@ -21,6 +21,7 @@ public enum ClientMessage: Codable {
     case gitStatus(path: String)
     case gitDiff(path: String, file: String?, staged: Bool)
     case gitCommit(path: String, message: String, files: [String])
+    case gitLog(path: String, count: Int)
     case transcribe(audioBase64: String)
     case getMemories
     case getProcesses
@@ -38,6 +39,6 @@ public enum ClientMessage: Codable {
     case ping(sentAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged, sentAt
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged, sentAt, count
     }
 }
