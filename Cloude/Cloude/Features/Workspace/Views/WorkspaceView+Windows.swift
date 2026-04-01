@@ -45,7 +45,7 @@ extension WorkspaceView {
                         windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
-                .id("\(window.id.uuidString)-\(refreshTrigger)")
+                .id(window.id)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .opacity(window.tab == .chat ? 1 : 0)
                 .allowsHitTesting(window.tab == .chat)

@@ -25,7 +25,6 @@ final class WorkspaceStore: ObservableObject {
     @Published var usageStats: UsageStats?
     @Published var awaitingUsageStats = false
     @Published var refreshingSessionIds: Set<String> = []
-    @Published var refreshTrigger = false
     @Published var exportCopied = false
 
     func currentConversation(windowManager: WindowManager, conversationStore: ConversationStore) -> Conversation? {

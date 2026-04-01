@@ -104,15 +104,11 @@ extension App {
             )
             .agenticID("whiteboard_sheet")
         }
-        .sheet(item: $filePathToPreview, onDismiss: {
-            NotificationCenter.default.post(name: .refreshActiveChatView, object: nil)
-        }) { path in
+        .sheet(item: $filePathToPreview) { path in
             FilePreviewView(path: path, connection: connection, environmentId: filePreviewEnvironmentId)
                 .agenticID("file_preview_sheet")
         }
-        .sheet(item: $gitDiffRequest, onDismiss: {
-            NotificationCenter.default.post(name: .refreshActiveChatView, object: nil)
-        }) { request in
+        .sheet(item: $gitDiffRequest) { request in
             GitDiffView(connection: connection, repoPath: request.repoPath, file: request.file, environmentId: request.environmentId)
                 .agenticID("git_diff_sheet")
         }

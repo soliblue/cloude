@@ -149,11 +149,6 @@ extension WorkspaceView {
         nonmutating set { store.refreshingSessionIds = newValue }
     }
 
-    var refreshTrigger: Bool {
-        get { store.refreshTrigger }
-        nonmutating set { store.refreshTrigger = newValue }
-    }
-
     var exportCopied: Bool {
         get { store.exportCopied }
         nonmutating set { store.exportCopied = newValue }

@@ -4,7 +4,6 @@ import CloudeShared
 extension Notification.Name {
     static let openConversationSearch = Notification.Name("openConversationSearch")
     static let requestUsageStats = Notification.Name("requestUsageStats")
-    static let refreshActiveChatView = Notification.Name("refreshActiveChatView")
     static let dismissWorkspaceTransientUI = Notification.Name("dismissWorkspaceTransientUI")
 }
 

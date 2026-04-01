@@ -89,9 +89,6 @@ struct WorkspaceView: View {
                 windowManager: windowManager
             )
         }
-        .onReceive(NotificationCenter.default.publisher(for: .refreshActiveChatView)) { _ in
-            store.triggerRefresh()
-        }
         .onReceive(NotificationCenter.default.publisher(for: .dismissWorkspaceTransientUI)) { _ in
             store.dismissTransientUI()
         }

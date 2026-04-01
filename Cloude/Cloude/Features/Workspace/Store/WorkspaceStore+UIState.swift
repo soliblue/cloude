@@ -88,10 +88,6 @@ extension WorkspaceStore {
         connection.getUsageStats(environmentId: currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId)
     }
 
-    func triggerRefresh() {
-        refreshTrigger.toggle()
-    }
-
     func setKeyboardVisible(_ visible: Bool) {
         isKeyboardVisible = visible
     }
