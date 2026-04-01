@@ -118,6 +118,8 @@ extension WorkspaceInputBar {
                     suggestions: historySuggestions,
                     onSelect: { text in
                         inputText = text
+                        isInputFocused = false
+                        onSend()
                     }
                 )
             }

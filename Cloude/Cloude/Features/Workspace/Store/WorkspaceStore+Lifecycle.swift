@@ -29,7 +29,8 @@ extension WorkspaceStore {
         oldId: UUID?,
         newId: UUID?,
         conversationStore: ConversationStore,
-        windowManager: WindowManager
+        windowManager: WindowManager,
+        connection: ConnectionManager? = nil
     ) {
         if let oldId = oldId {
             drafts[oldId] = (inputText, attachedImages, currentEffort, currentModel)
@@ -45,6 +46,14 @@ extension WorkspaceStore {
             attachedImages = []
             currentEffort = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.defaultEffort
             currentModel = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.defaultModel
+        }
+        if let newId, let connection {
+            let window = windowManager.windows.first(where: { $0.id == newId })
+            let conv = window?.conversation(in: conversationStore)
+            let dir = window?.gitRepoRootPath ?? conv?.workingDirectory
+            if let dir, !dir.isEmpty {
+                connection.gitStatus(path: dir, environmentId: conv?.environmentId)
+            }
         }
     }
 

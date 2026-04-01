@@ -64,7 +64,7 @@ struct WorkspaceView: View {
             store.checkNextGitDirectory(connection: connection)
         }
         .onChange(of: windowManager.activeWindowId) { oldValue, newValue in
-            store.handleActiveWindowChange(oldId: oldValue, newId: newValue, conversationStore: conversationStore, windowManager: windowManager)
+            store.handleActiveWindowChange(oldId: oldValue, newId: newValue, conversationStore: conversationStore, windowManager: windowManager, connection: connection)
         }
         .onChange(of: currentModel) { _, newValue in
             store.handleModelChange(newValue, conversationStore: conversationStore, windowManager: windowManager)
