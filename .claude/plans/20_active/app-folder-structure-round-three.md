@@ -72,7 +72,6 @@ Each feature may use subfolders like:
 - `Store/`
 - `Services/`
 - `Utils/`
-- `Parsing/`
 
 Subfolders should exist only when needed.
 
@@ -107,7 +106,7 @@ The important constraint is that `Shared/` stays earned and small.
 - Deep-link routing can enter through `App/`, but feature-specific handling should live in the feature.
 
 3. Feature-local types stay local.
-- Local models, stores, parsers, services, and utils should live inside the owning feature.
+- Local models, stores, services, utils, and feature-specific transformation code should live inside the owning feature.
 
 4. Shared code must be truly shared.
 - Use the 2-consumer rule before moving anything into `Shared/`.
@@ -115,8 +114,8 @@ The important constraint is that `Shared/` stays earned and small.
 5. `Shared/` must not become a second global junk drawer.
 - If a file only makes sense in one feature, move it back to that feature.
 
-6. Parsing belongs with the owning feature unless it is truly cross-feature.
-- Example: markdown parsing that only serves conversation rendering should live under `Features/Conversation/Parsing/`, not top-level `Parsing/`.
+6. Feature-specific transformation code belongs with the owning feature unless it is truly cross-feature.
+- Example: markdown parsing that only serves conversation rendering should live under `Features/Conversation/Utils/`, not in a top-level global bucket.
 
 ## Proposed First Mapping
 
@@ -139,7 +138,7 @@ Likely to move out of `App/` later:
 Initial likely mapping:
 - `Features/Workspace/Views/` for `WorkspaceView*`
 - `Features/Conversation/Views/` for `ConversationView*`, `MessageBubble*`, and conversation-owned markdown rendering
-- `Features/Conversation/Parsing/` for `StreamingMarkdownParser*`, `StreamingBlock.swift`, `XMLNode*`, and likely `BashCommandParser*`
+- `Features/Conversation/Utils/` for `StreamingMarkdownParser*`, `StreamingBlock.swift`, `XMLNode*`, and likely `BashCommandParser*`
 - `Features/Files/Views/` for `FileBrowserView*` and `FilePreviewView*`
 - `Features/Git/Views/` for `GitChangesView*` and `GitDiffView*`
 - `Features/Settings/Views/` for `SettingsView*`
@@ -171,7 +170,7 @@ Replace the round-two layer-first guidance with feature-first rules:
 - Shared code is the only cross-feature home outside `App/`
 
 3. Feature-local ownership rule
-- Local views, models, stores, services, utils, and parsers stay inside their feature
+- Local views, models, stores, services, utils, and feature-specific transformation code stay inside their feature
 - Small concepts should stay inside a parent feature instead of creating a tiny feature folder too early
 
 4. Shared discipline rule
@@ -182,8 +181,8 @@ Replace the round-two layer-first guidance with feature-first rules:
 - `App/` wires features together and owns entry points
 - `App/` should not accumulate feature logic
 
-6. Parsing rule
-- Parsing should live inside the owning feature unless it is truly cross-feature
+6. Feature transformation rule
+- Feature-specific transformation code should live inside the owning feature unless it is truly cross-feature
 
 ## Migration Order
 

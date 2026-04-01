@@ -13,24 +13,14 @@ struct App: SwiftUI.App {
     @StateObject var conversationStore = ConversationStore()
     @StateObject var windowManager = WindowManager()
     @StateObject var environmentStore = EnvironmentStore()
+    @StateObject var settingsStore = SettingsStore()
     @StateObject var whiteboardStore = WhiteboardStore()
-    @State var showSettings = false
-    @State var showMemories = false
-    @State var memorySections: [MemorySection] = []
-    @State var isLoadingMemories = false
-    @State var memoriesFromCache = false
-    @State var showPlans = false
-    @State var showWhiteboard = false
-    @State var planStages: [String: [PlanItem]] = [:]
-    @State var initialPlanStage: String? = nil
-    @State var isLoadingPlans = false
-    @State var plansFromCache = false
+    @StateObject var memoriesStore = MemoriesStore()
+    @StateObject var plansStore = PlansStore()
     @State var wasBackgrounded = false
     @State var lastActiveSessionId: String? = nil
     @State var filePathToPreview: String? = nil
     @State var filePreviewEnvironmentId: UUID? = nil
-    @State var fileBrowserRootOverrides: [UUID: String] = [:]
-    @State var gitRepoRootOverrides: [UUID: String] = [:]
     @State var gitDiffRequest: GitDiffRequest?
     @AppStorage("appTheme") var appThemeRaw: String = AppTheme.majorelle.rawValue
     var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
@@ -41,7 +31,7 @@ struct App: SwiftUI.App {
 
     var body: some Scene {
         WindowGroup {
-            mainContent
+            shell
             .overlay { FullscreenColorOverlay() }
             .overlay {
                 if debugOverlayEnabled {

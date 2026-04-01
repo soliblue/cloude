@@ -42,7 +42,7 @@ extension App {
             #if DEBUG
             DebugMetrics.log("Bootstrap", "no configured environment, opening settings")
             #endif
-            showSettings = true
+            settingsStore.isPresented = true
         }
     }
 
@@ -50,40 +50,5 @@ extension App {
         for env in environmentStore.environments where !env.host.isEmpty && !env.token.isEmpty {
             connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
         }
-    }
-
-    func selectEnvironment(id: UUID) {
-        guard environmentStore.environments.contains(where: { $0.id == id }) else {
-            AppLogger.bootstrapInfo("select environment failed envId=\(id.uuidString)")
-            return
-        }
-        environmentStore.setActive(id)
-        AppLogger.bootstrapInfo("selected environment envId=\(id.uuidString)")
-    }
-
-    func connectEnvironment(id: UUID) {
-        guard let environment = environmentStore.environments.first(where: { $0.id == id }) else {
-            AppLogger.bootstrapInfo("connect environment failed envId=\(id.uuidString)")
-            return
-        }
-        environmentStore.setActive(id)
-        connection.connectEnvironment(environment.id, host: environment.host, port: environment.port, token: environment.token, symbol: environment.symbol)
-        AppLogger.bootstrapInfo("connect environment envId=\(id.uuidString)")
-    }
-
-    func disconnectEnvironment(id: UUID) {
-        connection.disconnectEnvironment(id, clearCredentials: false)
-        AppLogger.bootstrapInfo("disconnect environment envId=\(id.uuidString)")
-    }
-
-    func setActiveConversationEnvironment(id: UUID) {
-        guard environmentStore.environments.contains(where: { $0.id == id }),
-              let conversation = activeConversation() else {
-            AppLogger.bootstrapInfo("set conversation environment ignored envId=\(id.uuidString)")
-            return
-        }
-        conversationStore.setEnvironmentId(conversation, environmentId: id)
-        environmentStore.setActive(id)
-        AppLogger.bootstrapInfo("set conversation environment convId=\(conversation.id.uuidString) envId=\(id.uuidString)")
     }
 }

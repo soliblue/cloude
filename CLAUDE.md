@@ -24,13 +24,9 @@ Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers in CLAUDE.
 ```
 Cloude/
 ├── Cloude/                    # iOS app
-│   ├── App/                   # App.swift and App+*.swift only
-│   ├── Views/                 # SwiftUI views and owner-local split files
-│   ├── Stores/                # Observable mutable state
-│   ├── Models/
-│   ├── Services/
-│   ├── Parsing/               # Parsers and parser-owned intermediate types
-│   └── Utilities/
+│   ├── App/                   # Root composition and app entry wiring only
+│   ├── Features/              # Product-owned code grouped by feature first
+│   └── Shared/                # Cross-feature code with 2+ real consumers
 ├── Cloude Agent/              # macOS menu bar agent
 │   ├── App/
 │   ├── UI/
@@ -72,13 +68,13 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
 - Struct-first design, explicit imports, lean composable views
-- `App/` contains only `App.swift` and `App+*.swift`
-- `Views/` contains only SwiftUI view files
-- `Stores/` contains observable mutable state
-- `Models/` contains pure value types with no SwiftUI or observation imports
-- `Services/` contains system and integration boundaries
-- `Parsing/` contains parsers and parser-owned intermediate types, and must not import SwiftUI
-- `Utilities/` contains only truly generic helpers
+- `App/` contains only app entry, composition, and app-owned overlays or routing entry points
+- `Features/` contains product-specific code
+- `Shared/` contains only code with 2+ real feature consumers
+- Features must not import other features
+- Feature-local views, models, stores, services, and utils stay inside the owning feature
+- If transformation or parsing code is feature-local, keep it under that feature's existing local subfolders instead of inventing a special top-level concept
+- `Shared/` must stay earned and small, never a default dumping ground
 - Owner-local views with a single call site should use the owner prefix or live in the owner file
 - View files: no logic. Logic files: no SwiftUI.
 - Sheets: use NavigationStack + `.toolbar`, not custom HStacks
