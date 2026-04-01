@@ -76,7 +76,8 @@ struct StreamingMarkdownView: View {
             if frozenStr != frozenUpTo {
                 if !frozenUpTo.isEmpty && frozenStr.hasPrefix(frozenUpTo) {
                     let delta = String(frozenStr[frozenStr.index(frozenStr.startIndex, offsetBy: frozenUpTo.count)...])
-                    frozenBlocks.append(contentsOf: StreamingMarkdownParser.parse(delta))
+                    let prefix = "f\(frozenBlockCount)-"
+                    frozenBlocks.append(contentsOf: StreamingMarkdownParser.parse(delta).map { $0.prefixed(prefix) })
                 } else {
                     frozenBlocks = StreamingMarkdownParser.parse(frozenStr)
                 }

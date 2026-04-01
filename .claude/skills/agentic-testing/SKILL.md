@@ -77,7 +77,7 @@ Use `open-repo-conversation.sh` before core tests so the active conversation is 
 
 ### 4. Send a message
 
-Before using this step, switch the active conversation model to `haiku` unless the test specifically targets model behavior.
+Before using this step, wait until `app-debug.log` shows `finish name=environment.auth ... success=true`. If you send before auth, you are testing queued replay on reconnect instead of the live streaming path. Switch the active conversation model to `haiku` unless the test specifically targets model behavior.
 
 ```bash
 .claude/skills/agentic-testing/send-simulator-message.sh "hello from codex"
@@ -133,9 +133,10 @@ Do not use `cloude://screenshot` for testing screenshots. That path creates a ne
 
 1. Launch the stack.
 2. Start log streaming.
-3. Open a fresh conversation rooted at the current working directory.
-4. Switch the active conversation model to `haiku` unless the test specifically targets model behavior.
-5. Trigger the flow under test with deep links or scripted send.
+3. Wait for `finish name=environment.auth ... success=true` in `app-debug.log`.
+4. Open a fresh conversation rooted at the current working directory.
+5. Switch the active conversation model to `haiku` unless the test specifically targets model behavior.
+6. Trigger the flow under test with deep links or scripted send.
 6. Read app logs first.
 7. Take screenshots only when the UI itself matters.
 
@@ -143,7 +144,7 @@ Do not use `cloude://screenshot` for testing screenshots. That path creates a ne
 
 Run this after any meaningful app change. These are the default checks unless the change is narrowly scoped and clearly cannot affect them.
 
-Before running the suite, switch the active conversation to `haiku` to reduce token cost unless the change specifically targets model behavior:
+Before running the suite, wait for `finish name=environment.auth ... success=true`, then switch the active conversation to `haiku` to reduce token cost unless the change specifically targets model behavior:
 
 ```bash
 .claude/skills/agentic-testing/open-repo-conversation.sh

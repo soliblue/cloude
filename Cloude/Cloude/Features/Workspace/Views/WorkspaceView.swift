@@ -98,10 +98,6 @@ struct WorkspaceView: View {
         .onReceive(connection.events) { event in
             store.handleConnectionEvent(event, connection: connection, conversationStore: conversationStore)
         }
-        .onChange(of: connection.isAuthenticated) { _, authed in
-            guard authed else { return }
-            store.replayQueuedMessagesIfNeeded(connection: connection, conversationStore: conversationStore)
-        }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
             withAnimation(keyboardAnimation(from: notification)) { store.setKeyboardVisible(true) }
         }
