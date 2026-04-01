@@ -17,7 +17,7 @@ struct EmptyConversationView: View {
     var environmentStore: EnvironmentStore?
     var conversation: Conversation?
     var windowManager: WindowManager?
-    var window: ChatWindow?
+    var window: Window?
     var onSelectConversation: ((Conversation) -> Void)?
     var onSeeAll: (() -> Void)?
 
@@ -29,7 +29,7 @@ struct EmptyConversationView: View {
         environmentStore: EnvironmentStore? = nil,
         conversation: Conversation? = nil,
         windowManager: WindowManager? = nil,
-        window: ChatWindow? = nil,
+        window: Window? = nil,
         onSelectConversation: ((Conversation) -> Void)? = nil,
         onSeeAll: (() -> Void)? = nil
     ) {
@@ -64,7 +64,7 @@ struct EmptyConversationView: View {
             Spacer()
 
             if Self.animatedCharacters.contains(character) {
-                AnimatedGIFView(name: "\(character)-anim", playOnce: true)
+                ConversationEmptyStateAnimatedGIF(name: "\(character)-anim", playOnce: true)
                     .frame(width: DS.Size.xxl * 3 / 8, height: DS.Size.xxl * 3 / 8)
             } else {
                 Image(character)

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WindowEditSheet: View {
-    let window: ChatWindow
+    let window: Window
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var connection: ConnectionManager

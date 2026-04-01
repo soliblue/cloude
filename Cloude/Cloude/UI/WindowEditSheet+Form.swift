@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct WindowEditForm: View {
-    let window: ChatWindow
+    let window: Window
     let conversationStore: ConversationStore
     let windowManager: WindowManager
     let connection: ConnectionManager

@@ -15,7 +15,7 @@ struct ChatMessageList: View {
     var conversation: Conversation?
     var conversationStore: ConversationStore?
     var connection: ConnectionManager?
-    var window: ChatWindow?
+    var window: Window?
     var windowManager: WindowManager?
     var onSelectConversation: ((Conversation) -> Void)?
     var onSeeAllConversations: (() -> Void)?

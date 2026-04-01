@@ -8,7 +8,7 @@ struct ConversationView: View {
     @Environment(\.scenePhase) var scenePhase
 
     let conversation: Conversation?
-    var window: ChatWindow?
+    var window: Window?
     var windowManager: WindowManager?
     var isCompact: Bool = false
     var showHeader: Bool = false
@@ -51,7 +51,7 @@ struct ConversationView: View {
 
         VStack(spacing: 0) {
             if showHeader {
-                WindowHeaderView(
+                ConversationHeaderView(
                     conversation: effectiveConversation,
                     onSelectConversation: onSelectConversation
                 )

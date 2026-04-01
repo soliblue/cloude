@@ -4,7 +4,7 @@ import CloudeShared
 
 @MainActor
 class WindowManager: ObservableObject {
-    @Published var windows: [ChatWindow] = [ChatWindow()]
+    @Published var windows: [Window] = [Window()]
     @Published var activeWindowId: UUID?
 
     private let windowsKey = "windowManager_windows"
@@ -13,7 +13,7 @@ class WindowManager: ObservableObject {
     init() {
         load()
         if windows.isEmpty {
-            windows = [ChatWindow()]
+            windows = [Window()]
         }
         if activeWindowId == nil {
             activeWindowId = windows.first?.id
@@ -28,7 +28,7 @@ class WindowManager: ObservableObject {
     }
 
     private func load() {
-        windows = UserDefaults.standard.codable([ChatWindow].self, forKey: windowsKey, default: [])
+        windows = UserDefaults.standard.codable([Window].self, forKey: windowsKey, default: [])
         if let idString = UserDefaults.standard.string(forKey: activeKey),
            let id = UUID(uuidString: idString),
            windows.contains(where: { $0.id == id }) {
@@ -36,7 +36,7 @@ class WindowManager: ObservableObject {
         }
     }
 
-    var activeWindow: ChatWindow? {
+    var activeWindow: Window? {
         windows.first { $0.id == activeWindowId }
     }
 
@@ -58,7 +58,7 @@ class WindowManager: ObservableObject {
 
     @discardableResult
     func addWindow() -> UUID {
-        let window = ChatWindow()
+        let window = Window()
         guard canAddWindow else { return window.id }
         windows.append(window)
         activeWindowId = window.id
@@ -98,9 +98,9 @@ class WindowManager: ObservableObject {
         save()
     }
 
-    func setWindowType(_ windowId: UUID, type: WindowType) {
+    func setWindowTab(_ windowId: UUID, tab: WindowTab) {
         guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
-        windows[index].type = type
+        windows[index].tab = tab
         save()
     }
 
