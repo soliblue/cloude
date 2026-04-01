@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 import CloudeShared
 
-struct WindowTabBar: View {
+struct WindowTabBar: View, Equatable {
     let activeType: WindowType
     let envConnected: Bool
     var connection: ConnectionManager? = nil
@@ -11,6 +11,15 @@ struct WindowTabBar: View {
     var folderName: String? = nil
     var totalCost: Double = 0
     let onSelectType: (WindowType) -> Void
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.activeType == rhs.activeType &&
+        lhs.envConnected == rhs.envConnected &&
+        lhs.totalCost == rhs.totalCost &&
+        lhs.folderName == rhs.folderName &&
+        lhs.repoPath == rhs.repoPath &&
+        lhs.environmentId == rhs.environmentId
+    }
     @State private var gitAdditions: Int = 0
     @State private var gitDeletions: Int = 0
     @State private var gitBranch: String = ""

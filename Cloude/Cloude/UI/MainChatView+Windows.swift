@@ -16,6 +16,7 @@ extension MainChatView {
                 totalCost: conversation?.totalCost ?? 0,
                 onSelectType: { type in windowManager.setWindowType(window.id, type: type) }
             )
+            .equatable()
 
             ZStack {
                 ConversationView(
