@@ -3,7 +3,6 @@ import CloudeShared
 
 struct ConversationSearchSheet: View {
     @ObservedObject var conversationStore: ConversationStore
-    @ObservedObject var windowManager: WindowManager
     let onSelect: (Conversation) -> Void
 
     @State var searchText = ""

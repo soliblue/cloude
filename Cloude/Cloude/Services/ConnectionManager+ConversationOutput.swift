@@ -37,6 +37,7 @@ final class ConversationOutput: ObservableObject {
         }
         lastDrainTime = CACurrentMediaTime()
         let link = CADisplayLink(target: self, selector: #selector(drainTick))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
@@ -87,6 +88,7 @@ final class ConversationOutput: ObservableObject {
     }
 
     func completeExecutingTools() {
+        guard toolCalls.contains(where: { $0.state == .executing }) else { return }
         toolCalls = toolCalls.map { tool in
             if tool.state == .executing {
                 var updated = tool
@@ -98,6 +100,7 @@ final class ConversationOutput: ObservableObject {
     }
 
     func completeTopLevelExecutingTools() {
+        guard toolCalls.contains(where: { $0.state == .executing && $0.parentToolId == nil }) else { return }
         toolCalls = toolCalls.map { tool in
             if tool.state == .executing && tool.parentToolId == nil {
                 var updated = tool

@@ -100,7 +100,6 @@ extension MainChatView {
     func conversationSearchSheetContent() -> some View {
         ConversationSearchSheet(
             conversationStore: conversationStore,
-            windowManager: windowManager,
             onSelect: { conv in
                 showConversationSearch = false
                 if let activeWindow = windowManager.activeWindow {
