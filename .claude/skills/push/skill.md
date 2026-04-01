@@ -27,10 +27,10 @@ If unsure, stop and ask.
 1. Check testing queue size in `plans/30_testing/` and warn if it is crowded.
 2. Review changes with `git status`, `git diff --stat`, and recent commits.
 3. If changes span multiple unrelated concerns and can easily be split, make separate focused commits. Only split when the grouping is obvious; do not over-engineer it.
-4. Stage changes.
-5. Commit with a conventional prefix.
-6. Push.
-7. Ensure every code change has a matching plan in `plans/40_done/`. If a plan exists in `20_active/` or `30_testing/`, move it to `40_done/`. If no plan exists, create one directly in `40_done/`.
+4. Ensure every code change has a matching plan in `plans/40_done/`. If a plan exists in `20_active/` or `30_testing/`, move it to `40_done/`. If no plan exists, create one directly in `40_done/`.
+5. Stage changes.
+6. Commit with a conventional prefix.
+7. Push.
 
 ## Rules
 
