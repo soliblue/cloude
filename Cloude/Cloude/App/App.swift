@@ -45,7 +45,7 @@ struct App: SwiftUI.App {
             .overlay { FullscreenColorOverlay() }
             .overlay {
                 if debugOverlayEnabled {
-                    DebugOverlayView()
+                    AppDebugOverlay()
                 }
             }
             .environmentObject(connection)

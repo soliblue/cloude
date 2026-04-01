@@ -135,7 +135,7 @@ struct MessageBubble: View {
                 } else if !effectiveText.isEmpty {
                     StreamingMarkdownView(text: effectiveText)
                 } else if isLive {
-                    SisyphusLoadingView()
+                    MessageBubbleLoadingView()
                 }
             }
             .font(.system(size: DS.Text.m))

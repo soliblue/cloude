@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct DebugOverlayView: View {
+struct AppDebugOverlay: View {
     @StateObject private var metrics = DebugMetrics.shared
     @State private var expanded = false
     @State private var showLogs = false

@@ -1,7 +1,7 @@
 import SwiftUI
 import CloudeShared
 
-struct WorkspaceTitlePill: View {
+struct WindowTitlePill: View {
     let symbol: String?
 
     var body: some View {

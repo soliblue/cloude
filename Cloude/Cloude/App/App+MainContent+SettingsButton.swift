@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ConnectionStatusLogo: View {
+struct SettingsButton: View {
     let connection: ConnectionManager
     @State private var isRotating = false
 

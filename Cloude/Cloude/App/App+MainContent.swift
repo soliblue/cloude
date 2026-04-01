@@ -27,13 +27,13 @@ extension App {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button(action: { showSettings = true }) {
-                            ConnectionStatusLogo(connection: connection)
+                            SettingsButton(connection: connection)
                         }
                         .agenticID("toolbar_settings_button")
                         .buttonStyle(.borderless)
                     }
                     ToolbarItem(placement: .principal) {
-                        WorkspaceTitlePill(
+                        WindowTitlePill(
                             symbol: windowManager.activeWindow?
                                 .conversation(in: conversationStore)?
                                 .environmentId

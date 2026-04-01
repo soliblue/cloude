@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SisyphusLoadingView: View {
+struct MessageBubbleLoadingView: View {
     private let start = Date()
     private let pushFrames = (1...6).map { "cloude-anim-\($0)" }
     private let retreatFrames = (11...18).map { "cloude-anim-\($0)" }

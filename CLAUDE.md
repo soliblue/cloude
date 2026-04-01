@@ -24,10 +24,13 @@ Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers in CLAUDE.
 ```
 Cloude/
 ├── Cloude/                    # iOS app
-│   ├── App/
-│   ├── UI/                    # Split into +Components files
+│   ├── App/                   # App.swift and App+*.swift only
+│   ├── Views/                 # SwiftUI views and owner-local split files
+│   ├── Stores/                # Observable mutable state
 │   ├── Models/
-│   └── Services/
+│   ├── Services/
+│   ├── Parsing/               # Parsers and parser-owned intermediate types
+│   └── Utilities/
 ├── Cloude Agent/              # macOS menu bar agent
 │   ├── App/
 │   ├── UI/
@@ -69,7 +72,15 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
 - Struct-first design, explicit imports, lean composable views
-- UI files: no logic. Logic files: no SwiftUI.
+- `App/` contains only `App.swift` and `App+*.swift`
+- `Views/` contains only SwiftUI view files
+- `Stores/` contains observable mutable state
+- `Models/` contains pure value types with no SwiftUI or observation imports
+- `Services/` contains system and integration boundaries
+- `Parsing/` contains parsers and parser-owned intermediate types, and must not import SwiftUI
+- `Utilities/` contains only truly generic helpers
+- Owner-local views with a single call site should use the owner prefix or live in the owner file
+- View files: no logic. Logic files: no SwiftUI.
 - Sheets: use NavigationStack + `.toolbar`, not custom HStacks
 - SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
 - **Toolbar layout**: All toolbar icons use `DS.Icon.m` for consistent sizing across the app. Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: DS.Spacing.m)` with `.padding(.horizontal, DS.Spacing.l)`, use `Divider().frame(height: DS.Size.divider)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
