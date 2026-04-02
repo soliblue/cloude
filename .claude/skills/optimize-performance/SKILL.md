@@ -1,6 +1,6 @@
 ---
 name: optimize-performance
-description: "Measure, compare, and eliminate unnecessary re-renders and wasted work across the app using before/after simulator testing."
+description: "Run measured SwiftUI performance investigations through investigator, solver, and reviewer passes with proof-based before/after verification."
 user-invocable: true
 metadata:
   icon: gauge.with.dots.needle.bottom.50percent
@@ -10,19 +10,64 @@ argument-hint: "[view or area to optimize]"
 
 # Optimize Performance
 
-Eliminate unnecessary re-renders and wasted work. Every optimization must be measured with before/after data on the simulator.
+Run performance work as explicit rounds. Each round gets one plan document, one measured problem statement, one fix attempt, and one reviewer decision backed by proof.
 
-## Principles
+## Core Rules
 
 - Measure first, optimize second. No guessing.
-- Before/after comparison is mandatory. No "should be faster."
-- Read completed performance plans before proposing changes.
-- Consult codex on your planned change before implementing.
-- The goal is zero unnecessary re-renders, not just fewer.
+- Every round starts with an investigator-created plan doc.
+- Investigators may add instrumentation, never logic changes.
+- Solvers must consult the other model before implementing.
+- Reviewers rerun the measured scenario and broader regressions.
+- Proof requires same scenario, same logging method, and concrete before/after numbers.
+- Remove unnecessary instrumentation and throwaway changes once the proof is captured.
+- If review fails, the round returns to investigation.
+- When review passes, move the plan to done and make a local commit. Do not push.
+- Tag every accepted round with `performance`.
+- Every accepted round must improve at least one shared artifact: a scenario, a script, a logging helper, or an optimization note in this skill.
+
+## File Layout
+
+- `SKILL.md`: orchestrates the workflow and stores shared performance knowledge.
+- `roles/investigator.md`: creates the plan, instrumentation, baseline, and hypothesis.
+- `roles/solver.md`: proposes the fix, consults the other model, implements, and measures after.
+- `roles/reviewer.md`: validates proof, runs regression coverage, and approves or rejects.
+- `templates/perf-plan.md`: required structure for every round document.
+- `scripts/`: editable helpers for baselines, regressions, and log summaries.
+- `scenarios/`: editable prompts that stress known-danger rendering paths.
+- `references/`: checklists and shared instrumentation guidance.
+
+## Round Lifecycle
+
+1. Investigator creates a new plan doc under `.claude/plans/20_active/` using `templates/perf-plan.md`.
+2. Investigator reads prior art, picks or extends the relevant scenario, adds only the instrumentation needed, reproduces the issue, and records baseline numbers.
+3. Solver reads the plan, proposes the smallest fix that addresses the measured cause, consults the other model, implements, and records after numbers.
+4. Reviewer reruns the baseline scenario, runs regression coverage, and checks the methodology and behavior.
+5. If reviewer rejects, move ownership back to investigator and remove weak changes.
+6. If reviewer accepts, update the shared script, scenario, or logging artifact learned from the round, move the doc to `.claude/plans/40_done/`, and make a local commit.
+7. Append the biggest win, pattern, or pitfall from the round to the Optimization Log in this file.
+
+## Required Plan Discipline
+
+Every round must have exactly one active plan document. Keep role updates high level and append only what is necessary to make the next handoff unambiguous.
+
+The plan must always contain:
+
+- a concrete goal with a number
+- exact reproduction steps
+- instrumentation used
+- baseline numbers
+- root-cause hypothesis
+- proposed fix
+- consultation summary
+- after numbers
+- regression results
+- approval or rejection
+- shared artifact updated by the round
 
 ## Prior Art
 
-Read these done plans before starting. They document past performance decisions and patterns:
+Read these done plans before starting. They document existing patterns and previous tradeoffs.
 
 ```bash
 cat .claude/plans/40_done/window-tab-rerender-fix.md
@@ -37,6 +82,56 @@ Search for more with:
 ```bash
 grep -l "tags:.*performance\|re-render\|owcPerSec" .claude/plans/40_done/*.md
 ```
+
+## Role Execution
+
+Read and follow the role file that matches the current pass:
+
+- `roles/investigator.md`
+- `roles/solver.md`
+- `roles/reviewer.md`
+
+If one model handles multiple passes in a row, still obey the role boundaries. Do not skip the artifacts because the same model is carrying the work.
+
+## Shared Artifacts
+
+These files are meant to change as the team learns:
+
+- `scenarios/mixed-markdown-multi-tool.txt`: canonical mixed-content stress case.
+- `scenarios/deep-trace-checklist.md`: prompts and behaviors worth tracing when a round gets weird.
+- `scripts/run-perf-scenario.sh`: boots the simulator, opens the repo conversation, sends a scenario, and summarizes logs.
+- `scripts/run-perf-regression.sh`: reviewer regression entry point.
+- `scripts/summarize-render-logs.sh`: quick counts from debug logs.
+- `references/logging-checklist.md`: what to log in baseline mode and deep-trace mode.
+
+When a round finds a new breakage shape, update the artifact that should catch it next time.
+
+## Instrumentation Modes
+
+Use two logging levels instead of one giant permanent firehose.
+
+### Baseline instrumentation
+
+Use this by default for comparable before and after numbers.
+
+- render counts by source
+- FPS samples
+- objectWillChange rate
+- key state transitions
+- timing around the target path only when the metric depends on it
+
+### Deep trace mode
+
+Use this when baseline numbers show a problem but the cause is still unclear.
+
+- every meaningful view re-render in the affected path
+- event ordering around live-to-static handoff
+- tool-group lifecycle updates
+- parser split movement
+- state transitions that can fan out renders
+- any temporary probes needed to explain the baseline
+
+Deep trace is for diagnosis, not permanent noise. Remove or narrow it once the round proves the cause.
 
 ## Debug Metrics
 
@@ -59,7 +154,7 @@ xcrun simctl spawn booted defaults write soli.Cloude debugOverlayEnabled -bool t
 
 ### Adding render logs
 
-Add `#if DEBUG` render logs to any view you're investigating:
+Add `#if DEBUG` render logs to any view under investigation:
 
 ```swift
 #if DEBUG
@@ -81,218 +176,137 @@ debug sample fps=60 owcPerSec=0
 
 Find these in `Documents/app-debug.log`.
 
-## Workflow
+## Standard Simulator Flow
 
-### 1. Understand
-
-Read the prior art plans. Understand why the current architecture looks the way it does. Many decisions have non-obvious reasons (e.g., `resetAfterLiveMessageHandoff` ordering, `wasInterrupted` flags, `seedForReconnect`).
-
-### 2. Identify
-
-Add render logs to the view(s) under investigation. Build and test on simulator.
+Start the full scenario runner with:
 
 ```bash
-.claude/skills/agentic-testing/start-local-simulator.sh
+.claude/skills/optimize-performance/scripts/run-perf-scenario.sh
 ```
 
-Enable debug overlay:
+Useful variants:
 
 ```bash
-xcrun simctl spawn booted defaults write soli.Cloude debugOverlayEnabled -bool true
+.claude/skills/optimize-performance/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45
+.claude/skills/optimize-performance/scripts/run-perf-scenario.sh --no-start --no-summary
+.claude/skills/optimize-performance/scripts/run-perf-regression.sh
 ```
 
-Terminate and relaunch:
+## Canonical Scenario Shape
 
-```bash
-xcrun simctl terminate booted soli.Cloude
-sleep 1
-xcrun simctl launch booted soli.Cloude
-```
+The strongest default regression case mixes content types so render boundaries and parser boundaries both get stressed. The canonical scenario should include:
 
-### 3. Measure baseline
+- markdown before any tools
+- multiple tool calls in one group
+- uneven tool completion timing
+- markdown immediately after the tool group
+- multiple paragraphs after the tools
+- lists, headings, and a code fence
+- enough total text to force incremental rendering behavior
 
-Open a conversation, switch to haiku, trigger the flow being tested:
+Start from `scenarios/mixed-markdown-multi-tool.txt` and keep improving it when a real bug slips through.
 
-```bash
-.claude/skills/agentic-testing/open-repo-conversation.sh
-xcrun simctl openurl booted "cloude://conversation/model?value=haiku"
-```
+## Reviewer Regression Coverage
 
-Clear the metrics log, trigger the flow, capture results:
+Reviewers must confirm the optimized path still behaves correctly across the broader surface, not just the target metric. At minimum, exercise:
 
-```bash
-CONTAINER=$(xcrun simctl get_app_container booted soli.Cloude data)
-echo "" > "$CONTAINER/Documents/debug-metrics.log"
+- plain markdown streaming
+- heavy markdown streaming
+- multiple tool calls in one group
+- uneven tool durations inside one group
+- agent messages
+- long responses
+- live-to-static handoff
+- interruption or completion edge cases relevant to the change
 
-# trigger the flow (streaming, navigation, sheet open, etc.)
-.claude/skills/agentic-testing/send-simulator-message.sh "your prompt"
-sleep 30
+Use haiku when possible so the regression suite stays repeatable and cheap.
 
-# count renders per source
-for source in LiveBubble ConvView MainChat WindowTabBar PageIndicator InputBar; do
-    count=$(grep "\[$source\]" "$CONTAINER/Documents/debug-metrics.log" | wc -l)
-    echo "$source: $count renders"
-done
+## Proof Standard
 
-# check FPS
-grep "debug sample" "$CONTAINER/Documents/app-debug.log" | tail -20
-```
+A performance claim is only accepted if all of these are true:
 
-### 4. Plan the fix
+- the before and after runs use the same scenario
+- the before and after runs use the same instrumentation
+- the targeted metric improves clearly
+- no material behavioral regression appears in review
+- the code complexity added is justified by the gain
 
-Consult codex with your diff and the architectural context:
+If any of these fail, the round is not done.
 
-```bash
-codex exec -s read-only -C "$(git rev-parse --show-toplevel)" "QUESTION WITH DIFF AND CONTEXT"
-```
+## SwiftUI Notes
 
-### 5. Implement and measure after
+### Observation
 
-Apply the fix. Rebuild:
-
-```bash
-cd Cloude && xcodebuild -project Cloude.xcodeproj -scheme Cloude -configuration Debug -sdk iphonesimulator -destination 'id=DEVICE_ID' build
-xcrun simctl terminate booted soli.Cloude
-xcrun simctl install booted PATH_TO_APP
-sleep 1
-xcrun simctl launch booted soli.Cloude
-```
-
-Run the exact same test as baseline. Compare numbers.
-
-### 6. Report
-
-Present a before/after table:
-
-```
-| Metric | Before | After |
-|--------|--------|-------|
-| Total renders | X | Y |
-| Wasted renders | X | Y |
-| FPS | X | Y |
-```
-
-## Key Architecture Notes
-
-### SwiftUI observation
-
-- `@ObservedObject` subscribes to ALL `@Published` changes on the object. Every subscriber re-evaluates its body on every publish.
+- `@ObservedObject` subscribes to all `@Published` changes on the object. Every subscriber re-evaluates its body on every publish.
 - `@State` changes only re-evaluate the owning view's body.
-- `.onReceive(publisher)` fires the closure but does NOT re-evaluate the body unless `@State` changes inside it.
-- `let` reference types do NOT create observation subscriptions. The view only re-evaluates when a parent triggers it.
+- `.onReceive(publisher)` fires the closure but does not re-evaluate the body unless `@State` changes inside it.
+- `let` reference types do not create observation subscriptions. The view only re-evaluates when a parent triggers it.
 
-### Streaming data flow
+### Streaming Data Flow
 
-1. WebSocket chunks arrive → `ConversationOutput.appendText()` → `fullText` grows
-2. `CADisplayLink` drain at 60Hz → `@Published var text` updates (300-1200 chars/sec)
-3. `text` publishes → any `@ObservedObject` subscriber re-evaluates
-4. `StreamingMarkdownView` incrementally appends via `frozenBlocks` + `tailBlocks`
-5. On completion: `finalizeStreamingMessage` → `resetAfterLiveMessageHandoff` (clears `liveMessageId` first, then text on next tick)
+1. WebSocket chunks arrive -> `ConversationOutput.appendText()` -> `fullText` grows.
+2. `CADisplayLink` drain at 60Hz -> `@Published var text` updates.
+3. `text` publishes -> any `@ObservedObject` subscriber re-evaluates.
+4. `StreamingMarkdownView` incrementally appends via `frozenBlocks` and `tailBlocks`.
+5. On completion: `finalizeStreamingMessage` -> `resetAfterLiveMessageHandoff`.
 
-### What propagates to ConnectionManager
+### What Propagates To ConnectionManager
 
-Only state transitions propagate up (trigger MainChatView, InputBar, etc.):
+Only state transitions propagate up and trigger shell-level views:
+
 - `isRunning` changes
 - `isCompacting` changes
-- `text` empty↔non-empty transition
+- `text` empty to non-empty or back
 - `newSessionId` changes
 - `skipped` changes
 
-These do NOT propagate (only ObservedMessageBubble sees them):
-- `text` content updates (60Hz drain)
+These do not propagate and stay local to live message observers:
+
+- `text` content updates during drain
 - `toolCalls` updates
 - `runStats` updates
 
-### Common anti-patterns
+## Common Patterns
 
-1. **@ObservedObject on shared state**: N views observing the same object = N re-renders per publish. Fix: use `let` + `.onReceive` with guarded `@State` updates.
-2. **View type branching in ForEach**: `if condition { ViewA } else { ViewB }` causes view destruction/recreation when the branch changes. Fix: keep the same view type, vary props.
-3. **Passing observable objects through view hierarchy**: Each level that stores an `@ObservedObject` creates another subscriber. Fix: pass as `let` and only observe at the leaf that needs updates.
-4. **Over-broad store observation**: Observing `ConversationStore` means re-rendering on ANY conversation change. Consider whether the view actually needs the full store.
+- Parent already observes shared state -> child should usually hold it as `let`, not `@ObservedObject`.
+- Incremental append beats full re-parse when content is append-only.
+- Split frozen and live regions so unchanged content can become inert.
+- Measurement logic must live outside `body` when possible. Per-render allocations and derived arrays add up fast.
+- A fix that improves one metric but broadens observation scope is usually not a real win.
 
-### 7. Document learnings
+## Common Pitfalls
 
-After each optimization run, append what you learned to the **Optimization Log** section at the bottom of this skill file. Each entry should include:
-- What was optimized
-- The root cause
-- The fix pattern used
-- Before/after numbers
-- Any gotchas or surprises
-
-This makes the skill smarter over time. Future runs start by reading these entries to avoid repeating mistakes and to reuse proven patterns.
+- Measuring different scenarios before and after.
+- Leaving temporary probes in place after the round.
+- Accepting an FPS win without checking correctness.
+- Fixing a symptom in the leaf while the subscription problem starts higher in the tree.
+- Keeping dead cleanup code from a rejected fix attempt.
 
 ## Optimization Log
 
+Add one short entry after every accepted round. Capture the biggest win, the root cause, the fix pattern, and the before/after numbers so the skill compounds over time.
+
 ### Streaming message re-renders (build 122)
-- **What**: All message bubbles re-rendered ~60x/sec during streaming
-- **Root cause**: `@ObservedObject var output: ConversationOutput` in `ObservedMessageBubble` subscribed every message to the 60Hz text drain
-- **Fix**: `let output` + `@State` + `.onReceive` with guarded updates. Non-live closures check `isLive` and skip, so no `@State` change, so no body re-evaluation.
-- **Numbers**: 9,233 → 1,036 total renders. ~8,900 → 16 wasted renders.
-- **Gotcha**: `isLive` now relies on store mutations to trigger parent re-evaluation (implicit dependency). Works because `liveMessageId` always changes alongside a store mutation. Codex flagged this as medium risk but confirmed all current code paths are safe.
-- **Gotcha**: The 16 remaining wasted renders are initial layout passes in the first ~2 seconds. Unavoidable SwiftUI behavior.
+- **What**: All message bubbles re-rendered about 60 times per second during streaming.
+- **Root cause**: `@ObservedObject var output: ConversationOutput` in `ObservedMessageBubble` subscribed every message to the 60Hz text drain.
+- **Fix**: `let output` plus `@State` plus `.onReceive` with guarded updates.
+- **Numbers**: 9,233 to 1,036 total renders. About 8,900 to 16 wasted renders.
+- **Gotcha**: `isLive` now relies on store mutations to trigger parent re-evaluation.
 
 ### Observation chain + FPS degradation (build 123)
-- **What**: ConversationView double-subscribed to ConnectionManager/ConversationStore. FPS degraded from ~47 to 21 during long streams.
-- **Root cause 1**: `@ObservedObject` on ConversationView duplicated observation already handled by parent (MainChatView). ConversationView re-rendered from both its own subscription AND the parent passing new values.
-- **Root cause 2**: `StreamingMarkdownView` used a non-lazy `VStack` with `ForEach` over ALL blocks (frozen + tail). As blocks accumulated during streaming, layout cost grew linearly. Also, `stableSplitPoint` scanned all lines O(n) on every 60Hz update.
-- **Root cause 3**: `finalizeStreamingMessage` called `mutate` twice (message update + cost update), causing two ConversationStore publishes per completion.
-- **Fix 1**: Changed `@ObservedObject var connection/store` to `let` on ConversationView. Parent already observes and passes updated data.
-- **Fix 2**: Extracted frozen blocks into `FrozenBlocksSection` conforming to `Equatable`. With `.equatable()`, SwiftUI skips body evaluation entirely when frozen blocks haven't changed. Made `stableSplitPoint` incremental (caches fence state + search offset, only scans new content).
-- **Fix 3**: Combined message update + cost update into single `mutate` call in both finalization paths.
-- **Numbers**: FPS during long stream: 47→21 (degrading) → 55-61 (stable). Shell renders per stream: reasonable (MainChat ~9, ConvView ~16 for 2 windows).
-- **Gotcha**: `FrozenBlocksSection` equality compares block count + last block ID, not full content. Safe because frozen blocks only grow (append-only during streaming).
-- **Gotcha**: Equatable only helps text-only streaming. With tool calls, all blocks go in tailBlocks (no freezing). Tool call path was already fast since responses are shorter.
-- **Pattern**: When parent already observes a shared object, child views should use `let` (not `@ObservedObject`) to avoid double-subscription. Use `Equatable` views with `.equatable()` for sections that don't change between renders.
+- **What**: ConversationView double-subscribed to ConnectionManager and ConversationStore. FPS degraded from about 47 to 21 during long streams.
+- **Root cause**: Child observation duplicated work already handled by the parent, and non-lazy layout cost grew with block count.
+- **Fix**: Use `let` instead of `@ObservedObject`, freeze stable sections, make split-point scanning incremental, and collapse double `mutate` calls.
+- **Numbers**: FPS during long stream stabilized around 55 to 61 instead of degrading to 21.
+- **Pattern**: If the parent already observes the shared object, children should not subscribe again.
 
 ### Frozen split for tool calls + incremental parsing (build 124)
-- **What**: Tool-call streaming responses (14K+ chars, 5+ tools) caused FPS to degrade from 60 to 20. WindowEditForm had 4 unnecessary @ObservedObject subscriptions.
-- **Root cause**: When toolCalls was non-empty, StreamingMarkdownView disabled frozen/tail split entirely, putting ALL blocks in tailBlocks. With 14K chars, re-parsing everything at 60Hz was too expensive. Also, text-only frozen blocks were fully re-parsed on every split point move instead of appending the delta. Tail block prefix computation happened in body instead of during state update.
-- **Fix 1**: Enabled frozen/tail split for tool-call responses. Tool call textPositions are adjusted relative to the tail region. Tools in frozen region are naturally skipped by parseWithToolCalls position checks.
-- **Fix 2**: Incremental frozen block parsing: when frozen content grows (append-only), only the delta is parsed and appended to existing blocks.
-- **Fix 3**: Moved `prefixed("tail-")` mapping from ForEach in body to updateIncremental(), avoiding array allocation per body evaluation.
-- **Fix 4**: WindowEditForm 4 @ObservedObject to let (parent WindowEditSheet already observes).
-- **Numbers**: Long text stream FPS: 47-20 (degrading) to 54-61 (stable). Tool call stream: 20-35 (degrading) to 60-61 (stable).
-- **Gotcha**: Tool calls in frozen region are always complete by the time text streaming resumes after them, so stale tool state in frozen blocks is not a practical concern.
-- **Pattern**: When content has positional metadata (tool calls), adjust positions when splitting into regions. Incremental append is safe when split points are at clean block boundaries (blank lines for markdown).
+- **What**: Tool-call streaming responses with large text payloads degraded FPS from 60 to about 20.
+- **Root cause**: Tool-call mode disabled the frozen and tail split, so the full text kept getting re-parsed.
+- **Fix**: Re-enable frozen and tail splitting for tool flows, adjust tool positions relative to the tail, and move derived array work out of `body`.
+- **Numbers**: Tool-call streams improved from roughly 20 to 35 degrading FPS to a stable 60 to 61.
+- **Pattern**: Positional metadata can still work with region splitting if offsets are adjusted correctly.
 
 ### Adaptive streaming throttle (build 125)
-- **What**: LiveBubble rendered 1059 times per stream, causing FPS to degrade from 55 to 20 in the final seconds of long responses (8K+ chars).
-- **Root cause**: Every CADisplayLink text publish (60Hz) triggered a @State change in ObservedMessageBubble, even when the tail section had grown large and each render was expensive.
-- **Fix**: Adaptive throttle in `.onReceive(output.$text)`: when text exceeds 3000 chars, updates are limited to 20Hz (50ms minimum interval). Below 3000 chars, full 60Hz updates. Also removed dead `isComplete` property from StreamingMarkdownView and dead `textChanged` variable.
-- **Numbers**: LiveBubble renders: 1059 → 726 (31% reduction). FPS during 12K char stream: 55-61 throughout (no degradation). Previously: 55 → 20.
-- **Gotcha**: The throttle must still allow "shrinking" updates (text.count < liveText.count) to pass through immediately for abort/reset scenarios.
-- **Pattern**: Adaptive throttle: use full update rate when cheap, reduce when expensive. The threshold (3000 chars) roughly corresponds to when tail blocks start accumulating enough to impact layout cost.
-
-### Search sheet debounce (build 125)
-- **What**: ConversationSearchSheet filtered through all message text on every keystroke.
-- **Root cause**: `results` computed property did `conv.messages.contains { $0.text.lowercased().contains(query) }` for every conversation — O(n*m*k) per keystroke where n=conversations, m=messages, k=message length.
-- **Fix**: Added 200ms debounce between `searchText` and `debouncedQuery`. Empty query clears immediately for instant "show all" behavior.
-- **Pattern**: Debounce expensive computed properties that depend on user input. Use immediate clear for empty state to avoid perceived latency.
-
-### Equatable PageIndicator (build 126)
-- **What**: PageIndicator rendered 14 times per stream, same as MainChatView, despite its visible content rarely changing.
-- **Root cause**: PageIndicator was an inline `@ViewBuilder func` on MainChatView, so it re-evaluated on every MainChatView body evaluation. It also did O(n) conversation lookups per window inside the render path.
-- **Fix**: Extracted as a separate `PageIndicatorView` struct conforming to `Equatable`. Pre-computes display data (window names, streaming states) as `WindowItem` array. Custom `==` ignores closures, only compares visible data. Uses `.equatable()` modifier.
-- **Numbers**: PageIndicator renders: 14 → 3 per stream.
-- **Pattern**: For views with closures that need equatable optimization: conform to Equatable with custom `==` that ignores closure properties. SwiftUI reuses old view hierarchy (including old closures) when equatable says "same". Safe because @State/@Binding references are stable across renders.
-
-### Equatable WindowTabBar (build 126)
-- **What**: WindowTabBar rendered 22 times per stream (once per ConversationView parent evaluation, ~11 per window).
-- **Root cause**: Already a separate struct but without Equatable conformance. Parent recreation always triggered body evaluation because closure property prevented SwiftUI's automatic diffing.
-- **Fix**: Added Equatable conformance comparing display properties only (activeType, envConnected, totalCost, folderName, repoPath, environmentId). Added `.equatable()` at call site.
-- **Numbers**: WindowTabBar renders: 22 → 2. ConvView renders also dropped: 21 → 11 (side effect of equatable child reducing layout recalculation pressure).
-- **Pattern**: Same closure-ignoring Equatable pattern. Include filtering properties (repoPath, environmentId) in equality to ensure correct data when switching contexts.
-
-### Guard toolCalls mutations + reduce display link rate (build 127)
-- **What**: During text streaming, `completeTopLevelExecutingTools()` was called on every text chunk, reassigning `toolCalls` via `@Published` even when no tools were executing. Display link fired at 60fps for text draining when 30fps produces identical visual quality.
-- **Root cause**: `completeTopLevelExecutingTools()` and `completeExecutingTools()` always mapped the full toolCalls array and reassigned it, firing `@Published`. With 60fps display link, this meant 60 unnecessary Combine events/sec to every ObservedMessageBubble during text-only chunks. Also removed unused `windowManager` @ObservedObject from ConversationSearchSheet.
-- **Fix 1**: Added `guard toolCalls.contains(where:)` early returns to both `completeExecutingTools()` and `completeTopLevelExecutingTools()`. No-op when nothing needs completing.
-- **Fix 2**: Set `link.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)` on the text drain display link. Halves publisher event volume. At 300-1200 chars/sec, 30fps means 10-40 chars per tick, imperceptible vs 60fps.
-- **Fix 3**: Removed unused `@ObservedObject var windowManager` from ConversationSearchSheet. Prevents unnecessary re-renders when windowManager publishes while search sheet is open.
-- **Pattern**: Guard mutations on @Published properties with a contains check before map+reassign. Reduce display link frame rate when the visual effect doesn't benefit from 60fps. Remove unused @ObservedObject subscriptions.
-
-### Async GIF decoding + frame cache (build 127)
-- **What**: Startup FPS drop when EmptyConversationView renders. AnimatedGIFView decoded all GIF frames synchronously on the main thread in `makeUIView`.
-- **Root cause**: `CGImageSourceCreateImageAtIndex` in a loop during `makeUIView` blocks the main thread. If the GIF has 20+ frames, this is measurable. Also decoded fresh every time the view was recreated (no caching).
-- **Fix**: Added `GIFFrameCache` static cache mapping name to decoded frames. First render checks cache; if miss, decodes on `Task.detached(priority: .userInitiated)` and applies to the UIImageView on MainActor when done. Subsequent renders use cached frames instantly.
-- **Pattern**: Decode media assets off the main thread during view creation. Cache decoded results statically to avoid re-decoding on view recreation. UIViewRepresentable's `makeUIView` should never do heavy I/O.
+- **What**: LiveBubble rendered 1,059 times per stream, dragging FPS down in the final seconds of long responses.
+- **Root cause**: Every display-link text publish triggered a local state update even when rendering had become expensive.

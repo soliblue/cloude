@@ -1,0 +1,41 @@
+This is a test of the app's streaming and tool-call rendering. Follow these instructions exactly.
+
+You must produce exactly 3 phases in one single response.
+
+Phase 1:
+- Write one short markdown paragraph labeled `Phase 1 Text Before`.
+- Then make exactly 3 tool calls total.
+- Only use these tools: `Bash`, `Read`, `Grep`.
+- After the 3rd tool call, stop calling tools.
+- Then write one short markdown paragraph labeled `Phase 1 Text After`.
+
+Phase 2:
+- Write one short markdown paragraph labeled `Phase 2 Text Before`.
+- Then make exactly 3 tool calls total.
+- Only use these tools: `Bash`, `Read`, `Grep`.
+- After the 3rd tool call, stop calling tools.
+- Then write one short markdown paragraph labeled `Phase 2 Text After`.
+
+Phase 3:
+- Write one short markdown paragraph labeled `Phase 3 Text Before`.
+- Then make exactly 3 tool calls total.
+- Only use these tools: `Bash`, `Read`, `Grep`.
+- After the 3rd tool call, stop calling tools.
+- Then write one short markdown paragraph labeled `Phase 3 Text After`.
+
+After all 3 phases, write:
+- one markdown heading
+- two bullet points
+- one numbered list with three items
+- one fenced code block
+- two final paragraphs
+
+Hard rules:
+- Exactly 9 tool calls in total.
+- Exactly 3 tool calls per phase.
+- Do not use any tool other than `Bash`, `Read`, or `Grep`.
+- Do not call any subagent tools.
+- Do not use whiteboard tools.
+- Do not call more tools after the 9th tool call.
+- Keep everything in one response.
+- Do not explain the instructions.
