@@ -85,6 +85,17 @@ class AudioRecorder {
         return Base64.encodeToString(wrapWav(pcm), Base64.NO_WRAP)
     }
 
+    fun cancelRecording() {
+        _isRecording.value = false
+        recordingThread?.join(1000)
+        recordingThread = null
+        audioRecord?.stop()
+        audioRecord?.release()
+        audioRecord = null
+        pcmOutput = null
+        _audioLevel.value = 0f
+    }
+
     fun release() {
         if (_isRecording.value) {
             _isRecording.value = false

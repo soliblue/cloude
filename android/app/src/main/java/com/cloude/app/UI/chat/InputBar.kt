@@ -38,6 +38,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -69,6 +73,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -120,6 +125,7 @@ fun InputBar(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     var isFocused by remember { mutableStateOf(false) }
+    var dragCancelled by remember { mutableStateOf(false) }
     val recentHistory = remember { mutableListOf<String>() }
 
     val recorder = remember { AudioRecorder() }
@@ -519,6 +525,7 @@ fun InputBar(
             if (isRecording) {
                 RecordingIndicator(
                     audioLevel = audioLevel,
+                    isCancelling = dragCancelled,
                     modifier = Modifier
                         .weight(1f)
                         .padding(vertical = DS.Spacing.xs)
@@ -585,20 +592,47 @@ fun InputBar(
                         tint = PastelRed
                     )
                 }
-            } else if (isRecording) {
-                IconButton(onClick = { stopRecordingAndTranscribe() }) {
-                    Icon(
-                        imageVector = Icons.Default.Stop,
-                        contentDescription = "Stop recording",
-                        tint = PastelRed
-                    )
-                }
             } else if (text.isEmpty() && attachedImages.isEmpty() && attachedFiles.isEmpty() && whisperReady && !isTranscribing) {
-                IconButton(onClick = { startRecordingWithPermission() }) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .scale(if (isRecording) 1.3f else 1f)
+                        .pointerInput(Unit) {
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                dragCancelled = false
+                                startRecordingWithPermission()
+                                var totalDragX = 0f
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull() ?: break
+                                    if (!change.pressed) {
+                                        if (dragCancelled) {
+                                            recorder.cancelRecording()
+                                        } else {
+                                            stopRecordingAndTranscribe()
+                                        }
+                                        break
+                                    }
+                                    totalDragX += change.positionChange().x
+                                    if (totalDragX < -160f && !dragCancelled) {
+                                        dragCancelled = true
+                                    }
+                                    change.consume()
+                                }
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
-                        imageVector = Icons.Default.Mic,
-                        contentDescription = "Record voice",
-                        tint = Accent
+                        imageVector = if (isRecording && dragCancelled) Icons.Default.Close
+                                     else if (isRecording) Icons.Default.Mic
+                                     else Icons.Default.Mic,
+                        contentDescription = if (isRecording) "Release to send, drag left to cancel" else "Hold to record",
+                        tint = if (isRecording && dragCancelled) PastelRed
+                               else if (isRecording) PastelRed
+                               else Accent,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             } else {
@@ -623,7 +657,7 @@ fun InputBar(
 }
 
 @Composable
-private fun RecordingIndicator(audioLevel: Float, modifier: Modifier = Modifier) {
+private fun RecordingIndicator(audioLevel: Float, isCancelling: Boolean = false, modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "recording")
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
@@ -647,7 +681,7 @@ private fun RecordingIndicator(audioLevel: Float, modifier: Modifier = Modifier)
                 .background(PastelRed.copy(alpha = pulseAlpha))
         )
         Text(
-            text = "Recording...",
+            text = if (isCancelling) "Release to cancel" else "Recording... slide left to cancel",
             style = MaterialTheme.typography.bodyMedium,
             color = PastelRed
         )

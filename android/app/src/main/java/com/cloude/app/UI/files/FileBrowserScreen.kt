@@ -310,12 +310,9 @@ private fun FileViewerSheet(
                 } else if (isVideo) {
                     VideoPreview(data = bytes, fileName = file.name, modifier = containerModifier)
                 } else if (ext == "pdf") {
-                    Text(
-                        text = "PDF preview not supported",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
-                        modifier = containerModifier.padding(DS.Spacing.l)
-                    )
+                    PdfPreview(data = bytes, modifier = containerModifier)
+                } else if (ext == "svg") {
+                    SvgPreview(data = bytes, modifier = containerModifier)
                 } else {
                     val text = remember(bytes) {
                         try { String(bytes, Charsets.UTF_8) } catch (_: Exception) { "Unable to decode file" }
