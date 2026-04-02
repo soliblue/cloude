@@ -2,9 +2,6 @@ import Foundation
 
 public enum NetworkHelper {
     public static func getIPAddress() -> String? {
-        #if os(Android)
-        return nil
-        #else
         var address: String?
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
 
@@ -34,6 +31,5 @@ public enum NetworkHelper {
             }
         }
         return address
-        #endif
     }
 }
