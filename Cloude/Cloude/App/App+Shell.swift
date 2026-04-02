@@ -33,7 +33,7 @@ extension App {
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button(action: { settingsStore.isPresented = true }) {
-                            SettingsButton(connection: connection)
+                            SettingsButton()
                         }
                         .agenticID("toolbar_settings_button")
                         .buttonStyle(.borderless)
