@@ -13,10 +13,9 @@ Analyze the codebase and propose improvements without fighting the existing arch
 
 ## Principles
 
-- Small files are fine.
-- Do not merge files for the sake of fewer files.
-- Focus on dead code, duplication, naming, real complexity, and hardcoded values.
-- Suggest abstractions only when they are earned.
+- Small files are fine. Do not merge files for the sake of fewer files.
+- Focus on dead code, duplication, naming, real complexity, and style violations.
+- Suggest abstractions only when they are earned (2+ real consumers).
 
 ## Analysis
 
@@ -26,26 +25,52 @@ find ./Cloude -type f -name "*.swift" -exec wc -l {} \; | sort -rn | head -20
 ```
 
 Look for:
-- dead code
-- unused imports
-- unclear naming
-- duplicated logic
-- overly complex functions
-- missing abstractions with repeated payoff
-- large files that should split
-- hardcoded design values that should use tokens
 
-Do not suggest:
-- consolidation for its own sake
-- bigger files as a simplification tactic
-- abstractions with no clear payoff
+### Dead code & imports
+- Unused code, unreachable branches, unused imports
+
+### Style violations
+- Comments (inline, docstrings, headers) - remove all
+- try-catch blocks not explicitly requested - let errors propagate
+- Single-use variables - return or use the expression directly
+- Single-use functions - inline the logic
+- Guard clauses checking for failure - always check for success (`if let x = y { use(x) }`)
+- Em dashes anywhere in code or strings
+
+### Design system violations
+- Hardcoded colors, spacing, fonts, opacities, durations - must use `DS.*` / `AppTheme` / `Theme.swift` tokens
+- `Spacer().frame(width:)` or `Spacer().frame(height:)` for fixed gaps - use `HStack(spacing:)` / `VStack(spacing:)` instead
+- Standalone icons not using `DS.Icon` sizes
+- Inline icons next to text not using matching `DS.Text` size
+- Toolbar icons not using `DS.Icon.m`
+- Multiple toolbar buttons missing `HStack(spacing: DS.Spacing.m)` wrapper
+
+### Architecture violations
+- Files >150 lines that should split with `Parent+Feature.swift` extensions
+- Multiple components in one file (one struct/class/enum per file)
+- View files containing logic, or logic files importing SwiftUI
+- Features reaching into another feature's internals (cross-feature imports of public stores/models are fine)
+- Code in `Shared/` with fewer than 2 real consumers
+- Sheets using custom HStacks instead of `NavigationStack` + `.toolbar`
+- Feature-local code placed in `Shared/` instead of under the owning feature
+
+### Naming & duplication
+- Unclear or inconsistent naming
+- Duplicated logic across files
+
+## Do not suggest
+
+- Consolidation for its own sake
+- Bigger files as a simplification tactic
+- Abstractions with no clear payoff
+- Adding comments, docstrings, or type annotations
 
 ## Output
 
 Provide:
-1. specific files or functions
-2. why the change helps
-3. what the change should look like
+1. Specific files or functions
+2. Why the change helps
+3. What the change should look like
 
 Present suggestions first and wait for approval before implementing. If approved, create a plan ticket in `.claude/plans/20_active/` or `.claude/plans/30_testing/`.
 

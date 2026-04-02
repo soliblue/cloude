@@ -72,7 +72,7 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - `App/` contains only app entry, composition, and app-owned overlays or routing entry points
 - `Features/` contains product-specific code
 - `Shared/` contains only code with 2+ real feature consumers
-- Features must not import other features
+- Features may import other features when the dependency is genuine, but should not reach into another feature's internals
 - Feature-local views, models, stores, services, and utils stay inside the owning feature
 - If transformation or parsing code is feature-local, keep it under that feature's existing local subfolders instead of inventing a special top-level concept
 - `Shared/` must stay earned and small, never a default dumping ground
