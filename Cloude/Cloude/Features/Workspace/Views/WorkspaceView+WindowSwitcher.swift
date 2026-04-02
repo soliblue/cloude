@@ -5,9 +5,11 @@ extension WorkspaceView {
     func windowSwitcher() -> some View {
         let items = windowManager.windows.map { window -> WindowSwitcherView.WindowItem in
             let convId = window.conversationId
+            let conv = window.conversation(in: conversationStore)
             let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
-            let name = window.conversation(in: conversationStore)?.name ?? "New"
-            return WindowSwitcherView.WindowItem(id: window.id, name: name, isStreaming: isStreaming)
+            let name = conv?.name ?? "New"
+            let symbol = conv?.symbol ?? "bubble.left"
+            return WindowSwitcherView.WindowItem(id: window.id, name: name, symbol: symbol, isStreaming: isStreaming)
         }
 
         WindowSwitcherView(
@@ -45,6 +47,7 @@ private struct WindowSwitcherView: View, Equatable {
     struct WindowItem: Equatable {
         let id: UUID
         let name: String
+        let symbol: String
         let isStreaming: Bool
     }
 
@@ -72,7 +75,7 @@ private struct WindowSwitcherView: View, Equatable {
                 Button {
                     onSelect(index)
                 } label: {
-                    windowSwitcherLabel(name: item.name, isActive: isActive, isStreaming: item.isStreaming)
+                    windowSwitcherLabel(item: item, isActive: isActive, useSymbols: items.count >= 4)
                         .frame(maxWidth: .infinity)
                         .contentShape(Rectangle())
                 }
@@ -92,14 +95,21 @@ private struct WindowSwitcherView: View, Equatable {
     }
 
     @ViewBuilder
-    private func windowSwitcherLabel(name: String, isActive: Bool, isStreaming: Bool) -> some View {
-        let color: Color = isActive ? .accentColor : (isStreaming ? .accentColor : .secondary)
+    private func windowSwitcherLabel(item: WindowItem, isActive: Bool, useSymbols: Bool) -> some View {
+        let color: Color = isActive ? .accentColor : (item.isStreaming ? .accentColor : .secondary)
 
-        Text(name)
-            .font(.system(size: DS.Text.m, weight: isActive ? .semibold : .regular))
-            .foregroundStyle(color)
-            .lineLimit(1)
-            .truncationMode(.middle)
-            .modifier(StreamingPulseModifier(isStreaming: isStreaming))
+        if useSymbols {
+            Image(systemName: item.symbol)
+                .font(.system(size: DS.Icon.m, weight: isActive ? .semibold : .regular))
+                .foregroundStyle(color)
+                .modifier(StreamingPulseModifier(isStreaming: item.isStreaming))
+        } else {
+            Text(item.name)
+                .font(.system(size: DS.Text.m, weight: isActive ? .semibold : .regular))
+                .foregroundStyle(color)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .modifier(StreamingPulseModifier(isStreaming: item.isStreaming))
+        }
     }
 }

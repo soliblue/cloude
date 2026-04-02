@@ -36,15 +36,7 @@ struct WindowEditSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     HStack(spacing: DS.Spacing.m) {
-                        Button(action: onNewConversation) {
-                            Image(systemName: "plus")
-                                .font(.system(size: DS.Icon.s, weight: .medium))
-                        }
-
                         if let conv = conversation, conv.sessionId != nil {
-                            Divider()
-                                .frame(height: DS.Icon.m)
-
                             Button {
                                 if let newConv = conversationStore.duplicateConversation(conv) {
                                     onDuplicate?(newConv)
@@ -56,8 +48,10 @@ struct WindowEditSheet: View {
                         }
 
                         if onRefresh != nil {
-                            Divider()
-                                .frame(height: DS.Icon.m)
+                            if conversation?.sessionId != nil {
+                                Divider()
+                                    .frame(height: DS.Icon.m)
+                            }
 
                             Button {
                                 guard !isRefreshing else { return }

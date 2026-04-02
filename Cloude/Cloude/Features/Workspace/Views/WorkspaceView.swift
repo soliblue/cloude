@@ -53,7 +53,7 @@ struct WorkspaceView: View {
             .overlay(alignment: .trailing) {
                 if !isKeyboardVisible && !(currentConversation?.messages.isEmpty ?? true) {
                     WindowCreateButton {
-                        if windowManager.windows.count >= 3, let id = windowManager.activeWindowId {
+                        if windowManager.windows.count >= 5, let id = windowManager.activeWindowId {
                             windowManager.removeWindow(id)
                         }
                         store.addWindowWithNewChat(
