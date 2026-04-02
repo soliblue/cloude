@@ -60,16 +60,20 @@ struct ChatMessageList: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if showEmptyState {
-                EmptyConversationView(
-                    connection: connection,
-                    conversationStore: conversationStore,
-                    environmentStore: environmentStore,
-                    conversation: conversation,
-                    windowManager: windowManager,
-                    window: window,
-                    onSelectConversation: onSelectConversation,
-                    onSeeAll: onSeeAllConversations
-                )
+                ScrollView(showsIndicators: false) {
+                    EmptyConversationView(
+                        connection: connection,
+                        conversationStore: conversationStore,
+                        environmentStore: environmentStore,
+                        conversation: conversation,
+                        windowManager: windowManager,
+                        window: window,
+                        onSelectConversation: onSelectConversation,
+                        onSeeAll: onSeeAllConversations
+                    )
+                    .frame(minHeight: scrollViewportHeight)
+                }
+                .scrollDismissesKeyboard(.interactively)
             }
 
             if !showEmptyState || !hasRequiredDependencies {
