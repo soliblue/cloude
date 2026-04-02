@@ -57,6 +57,7 @@ fun ChatScreen(
         ?: remember { mutableStateOf(false) }
     val isTranscribing by viewModel.isTranscribing.collectAsState()
     val pendingTranscription by viewModel.pendingTranscription.collectAsState()
+    val fileSearchResults by viewModel.fileSearchResults.collectAsState()
     val conversation by viewModel.conversation.collectAsState()
     val output = remember(conversation.id) { connectionManager.output(conversation.id) }
     val streamingText by output.text.collectAsState()
@@ -223,6 +224,9 @@ fun ChatScreen(
             currentEffort = conversation.defaultEffort,
             currentModel = conversation.defaultModel,
             skills = skills,
+            fileSearchResults = fileSearchResults,
+            workingDirectory = conversation.workingDirectory
+                ?: connectionManager.connection(environmentId)?.defaultWorkingDirectory?.value,
             initialDraft = initialDraft,
             onDraftChange = onDraftChange,
             onSend = { text, images, files ->
@@ -239,6 +243,8 @@ fun ChatScreen(
             onTranscriptionConsumed = { viewModel.consumeTranscription() },
             onEffortChange = { viewModel.setEffort(it) },
             onModelChange = { viewModel.setModel(it) },
+            onFileSearch = { viewModel.searchFiles(it) },
+            onFileSearchClear = { viewModel.clearFileSearchResults() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s)

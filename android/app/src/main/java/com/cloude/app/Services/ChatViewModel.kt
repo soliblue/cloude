@@ -19,10 +19,21 @@ import com.cloude.app.Models.UsageStats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
+
+sealed class DeviceAction {
+    data class Haptic(val style: String) : DeviceAction()
+    data class Notify(val message: String) : DeviceAction()
+    data class Screenshot(val conversationId: String?) : DeviceAction()
+}
 
 class ChatViewModel(
     private val connectionManager: ConnectionManager,
@@ -56,6 +67,15 @@ class ChatViewModel(
 
     private val _showSkills = MutableStateFlow(false)
     val showSkills: StateFlow<Boolean> = _showSkills
+
+    private val _deviceActions = MutableSharedFlow<DeviceAction>(extraBufferCapacity = 8)
+    val deviceActions: SharedFlow<DeviceAction> = _deviceActions
+
+    private val deviceJson = Json { ignoreUnknownKeys = true; isLenient = true }
+
+    private val _fileSearchResults = MutableStateFlow<List<String>>(emptyList())
+    val fileSearchResults: StateFlow<List<String>> = _fileSearchResults
+    private var pendingFileSearchQuery: String? = null
 
     private var awaitingUsageStats = false
 
@@ -293,6 +313,35 @@ class ChatViewModel(
         persistConversation()
     }
 
+    fun searchFiles(query: String) {
+        val envId = activeEnvId ?: return
+        val workingDir = _conversation.value.workingDirectory
+            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value ?: return
+        pendingFileSearchQuery = query
+        val serverQuery = if (query.contains('/')) query.substringAfterLast('/') else query
+        connectionManager.send(ClientMessage.SearchFiles(serverQuery, workingDir), envId)
+    }
+
+    fun clearFileSearchResults() {
+        _fileSearchResults.value = emptyList()
+    }
+
+    private fun handleDeviceToolCall(name: String, input: String?, conversationId: String?) {
+        val action = name.removePrefix("mcp__ios__")
+        val params = input?.let {
+            try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
+        }
+        when (action) {
+            "haptic" -> _deviceActions.tryEmit(
+                DeviceAction.Haptic(params?.get("style")?.jsonPrimitive?.content ?: "medium")
+            )
+            "notify" -> params?.get("message")?.jsonPrimitive?.content?.let {
+                _deviceActions.tryEmit(DeviceAction.Notify(it))
+            }
+            "screenshot" -> _deviceActions.tryEmit(DeviceAction.Screenshot(conversationId))
+        }
+    }
+
     fun toggleCollapse(messageId: String) {
         val conv = _conversation.value
         val updated = conv.messages.map {
@@ -326,18 +375,22 @@ class ChatViewModel(
             }
 
             is ServerMessage.ToolCall -> {
-                val convId = message.conversationId ?: _conversation.value.id
-                connectionManager.output(convId).addToolCall(
-                    ToolCall(
-                        name = message.name,
-                        input = message.input,
-                        toolId = message.toolId,
-                        parentToolId = message.parentToolId,
-                        textPosition = message.textPosition,
-                        state = ToolCallState.executing,
-                        editInfo = message.editInfo
+                if (message.name.startsWith("mcp__ios__")) {
+                    handleDeviceToolCall(message.name, message.input, message.conversationId)
+                } else {
+                    val convId = message.conversationId ?: _conversation.value.id
+                    connectionManager.output(convId).addToolCall(
+                        ToolCall(
+                            name = message.name,
+                            input = message.input,
+                            toolId = message.toolId,
+                            parentToolId = message.parentToolId,
+                            textPosition = message.textPosition,
+                            state = ToolCallState.executing,
+                            editInfo = message.editInfo
+                        )
                     )
-                )
+                }
             }
 
             is ServerMessage.ToolResult -> {
@@ -436,6 +489,14 @@ class ChatViewModel(
                     )
                     persistConversation()
                 }
+            }
+
+            is ServerMessage.FileSearchResults -> {
+                val fullQuery = pendingFileSearchQuery
+                val results = if (fullQuery != null && fullQuery.contains('/')) {
+                    message.files.filter { it.lowercase().contains(fullQuery.lowercase()) }
+                } else message.files
+                _fileSearchResults.value = results
             }
 
             is ServerMessage.Error -> {

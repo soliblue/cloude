@@ -1,10 +1,18 @@
 package com.cloude.app.App
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.util.Base64
+import android.view.PixelCopy
+import androidx.lifecycle.lifecycleScope
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -46,6 +54,8 @@ import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Services.ChatViewModel
 import com.cloude.app.Services.CloudeNotificationManager
 import com.cloude.app.Services.ConnectionManager
+import com.cloude.app.Services.DeviceAction
+import kotlinx.coroutines.launch
 import com.cloude.app.Services.WebSocketForegroundService
 import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.chat.ConversationListSheet
@@ -85,6 +95,16 @@ class MainActivity : ComponentActivity() {
         windowManager = WindowManager(applicationContext)
 
         CloudeNotificationManager.createChannels(applicationContext)
+
+        lifecycleScope.launch {
+            chatViewModel.deviceActions.collect { action ->
+                when (action) {
+                    is DeviceAction.Haptic -> triggerHaptic(action.style)
+                    is DeviceAction.Notify -> CloudeNotificationManager.notifyAgentComplete(applicationContext, action.message)
+                    is DeviceAction.Screenshot -> captureScreenshot(action.conversationId)
+                }
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
@@ -317,5 +337,48 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.data?.let { deepLinkRouter.handle(it) }
+    }
+
+    private fun triggerHaptic(style: String) {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+        val effect = when (style) {
+            "light" -> VibrationEffect.createOneShot(30, 80)
+            "heavy" -> VibrationEffect.createOneShot(80, 255)
+            "rigid" -> VibrationEffect.createOneShot(20, 255)
+            "soft" -> VibrationEffect.createOneShot(50, 40)
+            else -> VibrationEffect.createOneShot(50, 150)
+        }
+        vibrator.vibrate(effect)
+    }
+
+    private fun captureScreenshot(conversationId: String?) {
+        val rootView = window.decorView.rootView
+        rootView.post {
+            val bitmap = Bitmap.createBitmap(rootView.width, rootView.height, Bitmap.Config.ARGB_8888)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                PixelCopy.request(window, bitmap, { result ->
+                    if (result == PixelCopy.SUCCESS) sendScreenshot(bitmap, conversationId)
+                }, android.os.Handler(mainLooper))
+            } else {
+                @Suppress("DEPRECATION")
+                rootView.isDrawingCacheEnabled = true
+                @Suppress("DEPRECATION")
+                rootView.drawingCache?.let { sendScreenshot(it, conversationId) }
+                @Suppress("DEPRECATION")
+                rootView.isDrawingCacheEnabled = false
+            }
+        }
+    }
+
+    private fun sendScreenshot(bitmap: Bitmap, conversationId: String?) {
+        val stream = java.io.ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream)
+        val base64 = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
+        chatViewModel.sendMessage("[screenshot]", imagesBase64 = listOf(base64))
     }
 }

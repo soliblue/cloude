@@ -33,8 +33,8 @@ struct FileSearchService {
 
             guard !url.hasDirectoryPath else { continue }
 
-            let filename = url.lastPathComponent.lowercased()
-            if filename.contains(lowercaseQuery) {
+            let relativeLower = relativePath.lowercased()
+            if relativeLower.contains(lowercaseQuery) {
                 results.append(url.path)
             }
         }

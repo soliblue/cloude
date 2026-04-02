@@ -12,6 +12,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.core.content.FileProvider
 import java.io.File
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -58,6 +62,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -68,6 +73,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -92,6 +98,8 @@ fun InputBar(
     currentEffort: String?,
     currentModel: String?,
     skills: List<Skill> = emptyList(),
+    fileSearchResults: List<String> = emptyList(),
+    workingDirectory: String? = null,
     initialDraft: String = "",
     onDraftChange: (String) -> Unit = {},
     onSend: (String, List<String>?, List<AttachedFilePayload>?) -> Unit,
@@ -100,6 +108,8 @@ fun InputBar(
     onTranscriptionConsumed: () -> Unit = {},
     onEffortChange: (String?) -> Unit,
     onModelChange: (String?) -> Unit,
+    onFileSearch: (String) -> Unit = {},
+    onFileSearchClear: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var text by remember { mutableStateOf(initialDraft) }
@@ -108,6 +118,9 @@ fun InputBar(
     var expandedImage by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    var isFocused by remember { mutableStateOf(false) }
+    val recentHistory = remember { mutableListOf<String>() }
 
     val recorder = remember { AudioRecorder() }
     val isRecording by recorder.isRecording.collectAsState()
@@ -216,6 +229,12 @@ fun InputBar(
 
     fun doSend() {
         if (text.isNotBlank() || attachedImages.isNotEmpty() || attachedFiles.isNotEmpty()) {
+            val trimmed = text.trim()
+            if (trimmed.isNotBlank() && !trimmed.startsWith("/") && trimmed.length <= 100) {
+                recentHistory.remove(trimmed)
+                recentHistory.add(0, trimmed)
+                if (recentHistory.size > 20) recentHistory.removeLast()
+            }
             val images = attachedImages.map { it.second }.takeIf { it.isNotEmpty() }
             val files = attachedFiles.takeIf { it.isNotEmpty() }
             onSend(text, images, files)
@@ -223,6 +242,26 @@ fun InputBar(
             attachedImages = emptyList()
             attachedFiles = emptyList()
             keyboardController?.hide()
+        }
+    }
+
+    val tips = remember { listOf(
+        "Ask anything...",
+        "Try /compact to save context",
+        "Attach images with the gallery button",
+        "Use /plans to view your roadmap",
+        "Try /skills to browse available skills",
+        "Take a photo with the camera button",
+        "Use /usage to check token stats",
+        "Attach files with the paperclip",
+        "Long-press messages to copy or fork",
+        "Swipe between windows with tabs"
+    ) }
+    var tipIndex by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(8000)
+            tipIndex = (tipIndex + 1) % tips.size
         }
     }
 
@@ -234,7 +273,84 @@ fun InputBar(
         if (slashQuery != null) SlashCommand.filtered(slashQuery, skills) else emptyList()
     }
 
+    val atQuery = remember(text) {
+        val lastAt = text.lastIndexOf('@')
+        if (lastAt < 0) return@remember null
+        val before = text.getOrNull(lastAt - 1)
+        if (before != null && !before.isWhitespace()) return@remember null
+        val after = text.substring(lastAt + 1)
+        if (after.contains(' ') || after.contains('\n')) return@remember null
+        after.takeIf { it.isNotEmpty() }
+    }
+
+    LaunchedEffect(atQuery) {
+        if (atQuery != null) {
+            kotlinx.coroutines.delay(300)
+            onFileSearch(atQuery)
+        } else {
+            onFileSearchClear()
+        }
+    }
+
     Column(modifier = modifier) {
+        if (isFocused && text.isEmpty() && recentHistory.isNotEmpty() && !isRunning) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = DS.Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+            ) {
+                recentHistory.take(10).forEach { entry ->
+                    Text(
+                        text = entry,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+                        maxLines = 1,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(DS.Radius.m))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { text = entry }
+                            .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs)
+                    )
+                }
+            }
+        }
+
+        if (atQuery != null && fileSearchResults.isNotEmpty() && !isRunning) {
+            val wdPrefix = workingDirectory?.let { if (it.endsWith("/")) it else "$it/" } ?: ""
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = DS.Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+            ) {
+                fileSearchResults.take(10).forEach { path ->
+                    val relativePath = if (wdPrefix.isNotEmpty() && path.startsWith(wdPrefix))
+                        path.removePrefix(wdPrefix) else path.substringAfterLast('/')
+                    Text(
+                        text = relativePath,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        ),
+                        color = Accent,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(DS.Radius.m))
+                            .background(Accent.copy(alpha = 0.1f))
+                            .clickable {
+                                val lastAt = text.lastIndexOf('@')
+                                text = if (lastAt >= 0) text.substring(0, lastAt) + path + " "
+                                       else text + path + " "
+                                onFileSearchClear()
+                            }
+                            .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs)
+                    )
+                }
+            }
+        }
+
         if (suggestions.isNotEmpty() && !isRunning) {
             Row(
                 modifier = Modifier
@@ -432,7 +548,8 @@ fun InputBar(
                     onValueChange = { text = it },
                     modifier = Modifier
                         .weight(1f)
-                        .padding(vertical = DS.Spacing.xs),
+                        .padding(vertical = DS.Spacing.xs)
+                        .onFocusChanged { isFocused = it.isFocused },
                     textStyle = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurface
                     ),
@@ -443,11 +560,17 @@ fun InputBar(
                     }),
                     decorationBox = { innerTextField ->
                         if (text.isEmpty()) {
-                            Text(
-                                text = "Message...",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
-                            )
+                            AnimatedContent(
+                                targetState = tipIndex,
+                                transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(400)) },
+                                label = "tip"
+                            ) { idx ->
+                                Text(
+                                    text = tips[idx],
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                )
+                            }
                         }
                         innerTextField()
                     }
