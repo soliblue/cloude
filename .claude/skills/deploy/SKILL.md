@@ -40,10 +40,9 @@ Phone only:
 
 Mac agent:
 ```bash
-osascript -e 'tell application "Terminal" to do script "cd $(git rev-parse --show-toplevel) && source .env && fastlane mac build_agent"'
+set -a && source .env && set +a && fastlane mac build_agent
 ```
 
-Never run `fastlane mac build_agent` directly inside the current session.
 
 ## Workflow
 
@@ -51,7 +50,7 @@ Never run `fastlane mac build_agent` directly inside the current session.
 2. Run the script(s), never manual deploy steps.
 3. Stop on failure.
 4. Report the build number with `cd Cloude && agvtool what-version -terse`.
-5. Tag untagged plans in `plans/30_testing/` with the build number.
+5. Tag untagged plans in `.claude/plans/30_testing/` with the build number.
 6. Update deploy tracking in `CLAUDE.local.md`.
 
 ## Rules

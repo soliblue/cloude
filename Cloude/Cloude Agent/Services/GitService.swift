@@ -59,6 +59,32 @@ struct GitService {
         return .success(output)
     }
 
+    static func getLog(at path: String, count: Int) -> Result<[GitCommit], Error> {
+        guard isGitRepository(at: path) else {
+            return .failure(GitError.notARepository)
+        }
+
+        let format = "%h\t%s\t%an\t%aI"
+        let output = runGit(["log", "--format=\(format)", "-n", "\(count)"], at: path)
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+
+        let commits = output.split(separator: "\n").compactMap { line -> GitCommit? in
+            let parts = line.split(separator: "\t", maxSplits: 3)
+            guard parts.count >= 4 else { return nil }
+            let date = formatter.date(from: String(parts[3])) ?? Date()
+            return GitCommit(
+                hash: String(parts[0]),
+                message: String(parts[1]),
+                author: String(parts[2]),
+                date: date
+            )
+        }
+
+        return .success(commits)
+    }
+
     private static func runGit(_ args: [String], at path: String) -> String {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/git")

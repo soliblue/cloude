@@ -15,6 +15,7 @@ Use this skill to rebuild the local stack, open Cloude in Simulator, and debug t
 ## Principles
 
 - Prefer logs over screenshots.
+- For streaming, rendering, and tool-call regressions, logs are the source of truth. Do not diagnose ordering, duplication, or incremental-render bugs from screenshots unless the logs are missing the needed signal.
 - Prefer deterministic launch state over manual tapping.
 - Prefer deep links over ad hoc navigation.
 - Before message-based tests, switch the active conversation model to `haiku` unless the test is specifically about model behavior.
@@ -77,7 +78,7 @@ Use `open-repo-conversation.sh` before core tests so the active conversation is 
 
 ### 4. Send a message
 
-Before using this step, switch the active conversation model to `haiku` unless the test specifically targets model behavior.
+Before using this step, wait until `app-debug.log` shows `finish name=environment.auth ... success=true`. If you send before auth, you are testing queued replay on reconnect instead of the live streaming path. Switch the active conversation model to `haiku` unless the test specifically targets model behavior.
 
 ```bash
 .claude/skills/agentic-testing/send-simulator-message.sh "hello from codex"
@@ -97,8 +98,8 @@ Do not use `cloude://screenshot` for testing screenshots. That path creates a ne
 
 - Chat: `cloude://send?text=...`, `cloude://conversation/new`, `cloude://conversation/duplicate`, `cloude://conversation/refresh`
 - Conversation config: `cloude://conversation/model?value=...`, `cloude://conversation/effort?value=...`, `cloude://conversation/environment?id=...`
-- Windows: `cloude://window?index=...`, `cloude://window/new?type=chat|files|gitChanges`, `cloude://window/edit`, `cloude://window/close`
-- Tabs/surfaces: `cloude://tab?type=chat|files|gitChanges`, `cloude://settings`, `cloude://memory`, `cloude://memories`, `cloude://plans`, `cloude://whiteboard`, `cloude://usage`, `cloude://search`
+- Windows: `cloude://window?index=...`, `cloude://window/new?tab=chat|files|gitChanges`, `cloude://window/edit`, `cloude://window/close`
+- Tabs/surfaces: `cloude://tab?tab=chat|files|gitChanges`, `cloude://settings`, `cloude://memory`, `cloude://memories`, `cloude://plans`, `cloude://whiteboard`, `cloude://usage`, `cloude://search`
 - Files/git: `cloude://file/...`, `cloude://files?path=...`, `cloude://git?path=...`, `cloude://git/diff?path=...&file=...&staged=true|false`
 - Runtime: `cloude://run/stop`
 - Environment: `cloude://environment/select?id=...`, `cloude://environment/connect?id=...`, `cloude://environment/disconnect?id=...`
@@ -133,17 +134,18 @@ Do not use `cloude://screenshot` for testing screenshots. That path creates a ne
 
 1. Launch the stack.
 2. Start log streaming.
-3. Open a fresh conversation rooted at the current working directory.
-4. Switch the active conversation model to `haiku` unless the test specifically targets model behavior.
-5. Trigger the flow under test with deep links or scripted send.
+3. Wait for `finish name=environment.auth ... success=true` in `app-debug.log`.
+4. Open a fresh conversation rooted at the current working directory.
+5. Switch the active conversation model to `haiku` unless the test specifically targets model behavior.
+6. Trigger the flow under test with deep links or scripted send.
 6. Read app logs first.
-7. Take screenshots only when the UI itself matters.
+7. Use screenshots only as secondary confirmation once the logs already support the conclusion.
 
 ## Core Verification
 
 Run this after any meaningful app change. These are the default checks unless the change is narrowly scoped and clearly cannot affect them.
 
-Before running the suite, switch the active conversation to `haiku` to reduce token cost unless the change specifically targets model behavior:
+Before running the suite, wait for `finish name=environment.auth ... success=true`, then switch the active conversation to `haiku` to reduce token cost unless the change specifically targets model behavior:
 
 ```bash
 .claude/skills/agentic-testing/open-repo-conversation.sh
@@ -189,20 +191,22 @@ What to watch for:
 
 ### 3. Tool-call streaming
 
-Send a prompt that should trigger one or more tool calls, for example:
+Send a prompt that forces two separate tool groups with assistant text between them. Use this exact regression case:
 
 ```bash
-.claude/skills/agentic-testing/send-simulator-message.sh "Read the README and summarize the project structure in markdown."
+.claude/skills/agentic-testing/send-simulator-message.sh "Stream in markdown as you go and follow this exact order. First write a short intro paragraph titled Intro. Then call Bash to run ls on the repo root, then Bash to run sleep 2, then Read README.md. After those three tool calls, write a markdown section titled Group One Summary. Then do a second group: Bash pwd, Bash ls Cloude/Cloude/Features/Conversation/Views, and Read Cloude/Cloude/Features/Conversation/Views/StreamingMarkdownView.swift. After that, write a final markdown section titled Final Summary and end with a 2-column markdown table. Do not batch all tools first. Keep text between the two groups."
 ```
 
 Pass criteria:
 
-- `tool call ...`
-- `tool result ...`
-- interleaved assistant output before or after tool activity
+- first assistant text arrives before the first tool group
+- first tool group contains multiple tool calls
+- assistant text appears between the first and second tool groups
+- second tool group contains multiple tool calls
+- final assistant text and table appear after the second tool group
 - `finish name=chat.complete ...`
 
-This protects the most important “agent actually works” path, not just plain text rendering.
+This protects the real mixed streaming path where tool pills and markdown sections can drift or duplicate if incremental rendering is wrong.
 
 ### 4. Abort / stop-run behavior
 
@@ -228,7 +232,7 @@ Suggested checks:
 ```bash
 xcrun simctl openurl booted "cloude://file/Users/soli/Desktop/CODING/cloude/README.md"
 xcrun simctl openurl booted "cloude://git?path=/Users/soli/Desktop/CODING/cloude"
-xcrun simctl openurl booted "cloude://git/diff?path=/Users/soli/Desktop/CODING/cloude&file=Cloude/Cloude/App/CloudeApp+Actions.swift&staged=false"
+xcrun simctl openurl booted "cloude://git/diff?path=/Users/soli/Desktop/CODING/cloude&file=Cloude/Cloude/Features/Workspace/Utils/WorkspaceActions.swift&staged=false"
 ```
 
 Pass criteria:

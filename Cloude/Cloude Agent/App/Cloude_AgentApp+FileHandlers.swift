@@ -77,6 +77,16 @@ extension AppDelegate {
         }
     }
 
+    func handleGitLog(_ path: String, count: Int, connection: NWConnection) {
+        let expandedPath = path.expandingTildeInPath
+        switch GitService.getLog(at: expandedPath, count: count) {
+        case .success(let commits):
+            server.sendMessage(.gitLogResult(path: expandedPath, commits: commits), to: connection)
+        case .failure(let error):
+            server.sendMessage(.error(message: error.localizedDescription), to: connection)
+        }
+    }
+
     func handleGitCommit(_ path: String, message: String, files: [String], connection: NWConnection) {
         let expandedPath = path.expandingTildeInPath
         switch GitService.commit(at: expandedPath, message: message, files: files) {

@@ -53,6 +53,10 @@ extension ClientMessage {
             let message = try container.decode(String.self, forKey: .message)
             let files = try container.decode([String].self, forKey: .files)
             self = .gitCommit(path: path, message: message, files: files)
+        case "git_log":
+            let path = try container.decode(String.self, forKey: .path)
+            let count = try container.decodeIfPresent(Int.self, forKey: .count) ?? 10
+            self = .gitLog(path: path, count: count)
         case "transcribe":
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)

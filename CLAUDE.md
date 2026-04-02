@@ -24,10 +24,9 @@ Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers in CLAUDE.
 ```
 Cloude/
 ├── Cloude/                    # iOS app
-│   ├── App/
-│   ├── UI/                    # Split into +Components files
-│   ├── Models/
-│   └── Services/
+│   ├── App/                   # Root composition and app entry wiring only
+│   ├── Features/              # Product-owned code grouped by feature first
+│   └── Shared/                # Cross-feature code with 2+ real consumers
 ├── Cloude Agent/              # macOS menu bar agent
 │   ├── App/
 │   ├── UI/
@@ -67,9 +66,18 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - **No guard clauses** - always check for success, never check for failure: `if let subject = args.subject { process(subject) }`
 
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
+- **One component per file** - every struct, class, or enum gets its own file, even if tiny
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
 - Struct-first design, explicit imports, lean composable views
-- UI files: no logic. Logic files: no SwiftUI.
+- `App/` contains only app entry, composition, and app-owned overlays or routing entry points
+- `Features/` contains product-specific code
+- `Shared/` contains only code with 2+ real feature consumers
+- Features may import other features when the dependency is genuine, but should not reach into another feature's internals
+- Feature-local views, models, stores, services, and utils stay inside the owning feature
+- If transformation or parsing code is feature-local, keep it under that feature's existing local subfolders instead of inventing a special top-level concept
+- `Shared/` must stay earned and small, never a default dumping ground
+- Owner-local views with a single call site should use the owner prefix or live in the owner file
+- View files: no logic. Logic files: no SwiftUI.
 - Sheets: use NavigationStack + `.toolbar`, not custom HStacks
 - SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
 - **Toolbar layout**: All toolbar icons use `DS.Icon.m` for consistent sizing across the app. Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: DS.Spacing.m)` with `.padding(.horizontal, DS.Spacing.l)`, use `Divider().frame(height: DS.Size.divider)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.

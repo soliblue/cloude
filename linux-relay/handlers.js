@@ -1,6 +1,6 @@
 import { log } from './log.js'
 import { handleListDirectory, handleGetFile, handleSearchFiles } from './handlers-files.js'
-import { handleGitStatus, handleGitDiff, handleGitCommit } from './handlers-git.js'
+import { handleGitStatus, handleGitDiff, handleGitCommit, handleGitLog } from './handlers-git.js'
 import { handleGetUsageStats, handleListRemoteSessions, handleSyncHistory } from './handlers-history.js'
 import { handleGetMemories, handleGetPlans, handleDeletePlan } from './handlers-plans.js'
 import { handleSuggestName } from './handlers-naming.js'
@@ -52,6 +52,10 @@ export function handleMessage(msg, ws, ctx) {
 
     case 'git_commit':
       handleGitCommit(msg.path, msg.message, msg.files, ws, sendTo)
+      break
+
+    case 'git_log':
+      handleGitLog(msg.path, msg.count || 10, ws, sendTo)
       break
 
     case 'get_memories':
