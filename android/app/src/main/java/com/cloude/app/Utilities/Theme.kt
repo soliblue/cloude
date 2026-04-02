@@ -72,7 +72,8 @@ enum class AppTheme(val displayName: String) {
     Malevich("Malevich"),
     Bauder("Bauder"),
     Majorelle("Majorelle"),
-    Klimt("Klimt");
+    Klimt("Klimt"),
+    Vermeer("Vermeer");
 
     val isLight: Boolean
         get() = this == Monet || this == Turner
@@ -85,5 +86,6 @@ enum class AppTheme(val displayName: String) {
             Bauder -> ThemePalette(background = 0xFF131A24, secondary = 0xFF1A2332)
             Majorelle -> ThemePalette(background = 0xFF0C0F1F, secondary = 0xFF141A35)
             Klimt -> ThemePalette(background = 0xFF141008, secondary = 0xFF221A0C)
+            Vermeer -> ThemePalette(background = 0xFF0A1628, secondary = 0xFF122240)
         }
 }

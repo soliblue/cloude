@@ -128,13 +128,15 @@ class EnvironmentConnection(
                         Log.d("Cloude", "FileChunk ${pending.chunks.size}/${pending.totalChunks} for ${message.path}")
                         onMessage(message)
                         if (pending.chunks.size == pending.totalChunks) {
-                            val combined = ByteArray(0).let {
-                                var result = it
-                                for (i in 0 until pending.totalChunks) {
-                                    val chunkBytes = Base64.decode(pending.chunks[i]!!, Base64.DEFAULT)
-                                    result += chunkBytes
-                                }
-                                result
+                            val decodedChunks = (0 until pending.totalChunks).map { i ->
+                                Base64.decode(pending.chunks[i]!!, Base64.DEFAULT)
+                            }
+                            val totalSize = decodedChunks.sumOf { it.size }
+                            val combined = ByteArray(totalSize)
+                            var offset = 0
+                            for (chunk in decodedChunks) {
+                                System.arraycopy(chunk, 0, combined, offset, chunk.size)
+                                offset += chunk.size
                             }
                             pendingChunks.remove(message.path)
                             val combinedBase64 = Base64.encodeToString(combined, Base64.NO_WRAP)
