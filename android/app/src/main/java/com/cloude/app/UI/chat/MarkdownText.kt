@@ -38,13 +38,57 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
+import com.cloude.app.Utilities.PastelGreen
+
+private val FILE_PATH_PREFIXES = listOf("/Users/", "/tmp/", "/var/", "/home/", "/opt/", "/etc/")
+
+private val FILE_EXTENSIONS = setOf(
+    "swift", "kt", "kts", "java", "py", "js", "ts", "tsx", "jsx", "json", "md", "txt",
+    "html", "css", "yml", "yaml", "sh", "plist", "xml", "sql", "log", "toml", "env",
+    "lock", "csv", "tsv", "go", "rs", "rb", "php", "c", "cpp", "h", "hpp", "m",
+    "png", "jpg", "jpeg", "gif", "webp", "heic", "svg", "pdf",
+    "mp4", "mov", "m4v", "avi", "webm", "mp3", "m4a", "wav", "aac", "ogg",
+    "gradle", "pro", "cfg", "ini", "conf"
+)
+
+private fun looksLikeFilePath(path: String): Boolean {
+    val dot = path.lastIndexOf('.')
+    if (dot < 0 || dot == path.lastIndex) return false
+    val ext = path.substring(dot + 1).lowercase()
+    return ext in FILE_EXTENSIONS
+}
+
+private fun filePathColor(path: String): Color {
+    val dot = path.lastIndexOf('.')
+    if (dot < 0) return Accent
+    return when (path.substring(dot + 1).lowercase()) {
+        "swift" -> Color(0xFFFF6F3E)
+        "kt", "kts" -> Color(0xFF7B6FDE)
+        "java" -> Color(0xFFE76F00)
+        "py" -> Color(0xFF3776AB)
+        "js", "jsx" -> Color(0xFFF7DF1E)
+        "ts", "tsx" -> Color(0xFF3178C6)
+        "go" -> Color(0xFF00ADD8)
+        "rs" -> Color(0xFFDEA584)
+        "json", "yaml", "yml", "toml" -> Color(0xFF8BC34A)
+        "md", "txt" -> Color(0xFF9E9E9E)
+        "html", "css" -> Color(0xFFE44D26)
+        "sh" -> PastelGreen
+        "sql" -> Color(0xFF336791)
+        "png", "jpg", "jpeg", "gif", "svg", "webp" -> Color(0xFFE040FB)
+        "pdf" -> Color(0xFFFF1744)
+        else -> Accent
+    }
+}
 
 @Composable
 fun MarkdownText(
     text: String,
     color: Color = MaterialTheme.colorScheme.onSurface,
     onLongPress: (() -> Unit)? = null,
+    onFilePathTap: ((String) -> Unit)? = null,
     interactionSource: MutableInteractionSource? = null,
     modifier: Modifier = Modifier
 ) {
@@ -176,8 +220,10 @@ fun MarkdownText(
                                     onTap = { pos ->
                                         layoutResult.value?.let { layout ->
                                             val offset = layout.getOffsetForPosition(pos)
-                                            annotated.getStringAnnotations("URL", offset, offset)
-                                                .firstOrNull()?.let { uriHandler.openUri(it.item) }
+                                            annotated.getStringAnnotations("FILE_PATH", offset, offset)
+                                                .firstOrNull()?.let { onFilePathTap?.invoke(it.item) }
+                                                ?: annotated.getStringAnnotations("URL", offset, offset)
+                                                    .firstOrNull()?.let { uriHandler.openUri(it.item) }
                                         }
                                     },
                                     onLongPress = { onLongPress?.invoke() }
@@ -264,8 +310,10 @@ fun MarkdownText(
                                     onTap = { pos ->
                                         layoutResult.value?.let { layout ->
                                             val offset = layout.getOffsetForPosition(pos)
-                                            annotated.getStringAnnotations("URL", offset, offset)
-                                                .firstOrNull()?.let { uriHandler.openUri(it.item) }
+                                            annotated.getStringAnnotations("FILE_PATH", offset, offset)
+                                                .firstOrNull()?.let { onFilePathTap?.invoke(it.item) }
+                                                ?: annotated.getStringAnnotations("URL", offset, offset)
+                                                    .firstOrNull()?.let { uriHandler.openUri(it.item) }
                                         }
                                     },
                                     onLongPress = { onLongPress?.invoke() }
@@ -423,6 +471,35 @@ private fun parseInline(
     }
 
     while (i < chars.size) {
+        val remaining = text.substring(i)
+        val matchedPrefix = FILE_PATH_PREFIXES.firstOrNull { remaining.startsWith(it) }
+        if (matchedPrefix != null) {
+            var pathEnd = i
+            while (pathEnd < chars.size && !chars[pathEnd].isWhitespace() &&
+                chars[pathEnd] != ')' && chars[pathEnd] != ']' &&
+                chars[pathEnd] != ',' && chars[pathEnd] != ';') {
+                pathEnd++
+            }
+            val pathText = text.substring(i, pathEnd)
+            if (looksLikeFilePath(pathText)) {
+                val fileName = pathText.substringAfterLast('/')
+                val pathColor = filePathColor(pathText)
+                pushStringAnnotation("FILE_PATH", pathText)
+                withStyle(SpanStyle(
+                    fontFamily = FontFamily.Monospace,
+                    color = pathColor,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp,
+                    background = pathColor.copy(alpha = 0.1f)
+                )) {
+                    append(fileName)
+                }
+                pop()
+                i = pathEnd
+                continue
+            }
+        }
+
         if (match("**") || match("__")) {
             val delim = text.substring(i, i + 2)
             val end = text.indexOf(delim, i + 2)

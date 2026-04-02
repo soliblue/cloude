@@ -34,7 +34,10 @@ class ChatViewModel(
     private val _conversation = MutableStateFlow(Conversation())
     val conversation: StateFlow<Conversation> = _conversation
 
-    val output = ConversationOutput()
+    fun output(conversationId: String): ConversationOutput = connectionManager.output(conversationId)
+
+    val activeOutput: ConversationOutput
+        get() = connectionManager.output(_conversation.value.id)
 
     private val _isTranscribing = MutableStateFlow(false)
     val isTranscribing: StateFlow<Boolean> = _isTranscribing
@@ -50,6 +53,9 @@ class ChatViewModel(
 
     private val _memorySections = MutableStateFlow<List<MemorySection>?>(null)
     val memorySections: StateFlow<List<MemorySection>?> = _memorySections
+
+    private val _showSkills = MutableStateFlow(false)
+    val showSkills: StateFlow<Boolean> = _showSkills
 
     private var awaitingUsageStats = false
 
@@ -77,7 +83,7 @@ class ChatViewModel(
 
     fun sendMessage(text: String, imagesBase64: List<String>? = null, filesBase64: List<AttachedFilePayload>? = null) {
         val envId = activeEnvId
-        Log.d("Cloude", "sendMessage: envId=$envId sessionId=${_conversation.value.sessionId} isRunning=${output.isRunning.value} images=${imagesBase64?.size ?: 0} files=${filesBase64?.size ?: 0}")
+        Log.d("Cloude", "sendMessage: envId=$envId sessionId=${_conversation.value.sessionId} images=${imagesBase64?.size ?: 0} files=${filesBase64?.size ?: 0}")
         if (envId == null) return
         val conv = _conversation.value
 
@@ -104,8 +110,10 @@ class ChatViewModel(
         )
         persistConversation()
 
-        output.reset()
-        output.setRunning(true)
+        connectionManager.registerConversation(conv.id, envId)
+        val out = connectionManager.output(conv.id)
+        out.reset()
+        out.setRunning(true)
 
         val workingDir = conv.workingDirectory
             ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value
@@ -155,9 +163,11 @@ class ChatViewModel(
     fun abort() {
         val envId = activeEnvId ?: return
         Log.d("Cloude", "abort called")
-        connectionManager.send(ClientMessage.Abort(conversationId = _conversation.value.id), envId)
-        output.setRunning(false)
-        output.setCompacting(false)
+        val convId = _conversation.value.id
+        connectionManager.send(ClientMessage.Abort(conversationId = convId), envId)
+        val out = connectionManager.output(convId)
+        out.setRunning(false)
+        out.setCompacting(false)
     }
 
     fun setEnvironmentId(envId: String) {
@@ -221,6 +231,14 @@ class ChatViewModel(
         _memorySections.value = null
     }
 
+    fun showSkills() {
+        _showSkills.value = true
+    }
+
+    fun dismissSkills() {
+        _showSkills.value = false
+    }
+
     fun renameConversation(name: String) {
         _conversation.value = _conversation.value.copy(name = name, userRenamed = true)
         persistConversation()
@@ -246,6 +264,35 @@ class ChatViewModel(
         _conversation.value = forked
     }
 
+    fun injectTestWidgets() {
+        val conv = _conversation.value
+        val widgetMessage = ChatMessage(
+            isUser = false,
+            text = "Here are test widgets:",
+            toolCalls = mutableListOf(
+                ToolCall(
+                    name = "mcp__widgets__pie_chart",
+                    input = """{"title":"Language Usage","slices":[{"label":"Kotlin","value":45},{"label":"Swift","value":30},{"label":"TypeScript","value":15},{"label":"Go","value":10}]}"""
+                ),
+                ToolCall(
+                    name = "mcp__widgets__timeline",
+                    input = """{"title":"Release History","events":[{"date":"Mar 2026","title":"v1.0 Launch","description":"Initial iOS release","color":"blue"},{"date":"Mar 2026","title":"v1.1 Android","description":"Android app ported","color":"green"},{"date":"Apr 2026","title":"v1.2 Widgets","description":"Widget views added","color":"purple"}]}"""
+                ),
+                ToolCall(
+                    name = "mcp__widgets__tree",
+                    input = """{"root":{"label":"cloude","children":[{"label":"android","children":[{"label":"app","children":[{"label":"build.gradle.kts"},{"label":"src"}]},{"label":"gradle"}]},{"label":"Cloude","children":[{"label":"App"},{"label":"Features"},{"label":"Shared"}]},{"label":"linux-relay","children":[{"label":"index.js"},{"label":"handlers.js"}]}]}}"""
+                ),
+                ToolCall(
+                    name = "mcp__widgets__color_palette",
+                    input = """{"title":"Cloude Theme","colors":[{"hex":"#CC7257","label":"Accent"},{"hex":"#7AB87A","label":"PastelGreen"},{"hex":"#B54E5E","label":"PastelRed"},{"hex":"#64B5F6","label":"LinkBlue"},{"hex":"#FFD54F","label":"FolderYellow"}]}"""
+                )
+            )
+        )
+        val newMessages = conv.messages.toMutableList().apply { add(widgetMessage) }
+        _conversation.value = conv.copy(messages = newMessages, lastMessageAt = System.currentTimeMillis())
+        persistConversation()
+    }
+
     fun toggleCollapse(messageId: String) {
         val conv = _conversation.value
         val updated = conv.messages.map {
@@ -256,25 +303,31 @@ class ChatViewModel(
 
     private fun handleMessage(message: ServerMessage) {
         when (message) {
-            is ServerMessage.Output -> output.appendText(message.text)
+            is ServerMessage.Output -> {
+                val convId = message.conversationId ?: _conversation.value.id
+                connectionManager.output(convId).appendText(message.text)
+            }
 
             is ServerMessage.Status -> {
-                Log.d("Cloude", "VM Status: ${message.state}")
+                val convId = message.conversationId ?: _conversation.value.id
+                val out = connectionManager.output(convId)
+                Log.d("Cloude", "VM Status: ${message.state} convId=$convId")
                 when (message.state) {
                     AgentState.running -> {
-                        output.setRunning(true)
-                        output.setCompacting(false)
+                        out.setRunning(true)
+                        out.setCompacting(false)
                     }
                     AgentState.compacting -> {
-                        output.setCompacting(true)
-                        output.setRunning(true)
+                        out.setCompacting(true)
+                        out.setRunning(true)
                     }
-                    AgentState.idle -> finalizeAssistantMessage()
+                    AgentState.idle -> finalizeAssistantMessage(convId)
                 }
             }
 
             is ServerMessage.ToolCall -> {
-                output.addToolCall(
+                val convId = message.conversationId ?: _conversation.value.id
+                connectionManager.output(convId).addToolCall(
                     ToolCall(
                         name = message.name,
                         input = message.input,
@@ -288,21 +341,31 @@ class ChatViewModel(
             }
 
             is ServerMessage.ToolResult -> {
-                output.updateToolResult(message.toolId, message.summary, message.output)
+                val convId = message.conversationId ?: _conversation.value.id
+                connectionManager.output(convId).updateToolResult(message.toolId, message.summary, message.output)
             }
 
             is ServerMessage.SessionId -> {
-                output.newSessionId = message.id
-                _conversation.value = _conversation.value.copy(sessionId = message.id)
-                persistConversation()
+                val convId = message.conversationId ?: _conversation.value.id
+                connectionManager.output(convId).newSessionId = message.id
+                if (convId == _conversation.value.id) {
+                    _conversation.value = _conversation.value.copy(sessionId = message.id)
+                    persistConversation()
+                } else {
+                    conversationStore.conversation(convId)?.let { conv ->
+                        conversationStore.save(conv.copy(sessionId = message.id))
+                    }
+                }
             }
 
             is ServerMessage.RunStats -> {
-                output.runStats = Triple(message.durationMs, message.costUsd, message.model)
+                val convId = message.conversationId ?: _conversation.value.id
+                connectionManager.output(convId).runStats = Triple(message.durationMs, message.costUsd, message.model)
             }
 
             is ServerMessage.MessageUUID -> {
-                output.messageUUID = message.uuid
+                val convId = message.conversationId ?: _conversation.value.id
+                connectionManager.output(convId).messageUUID = message.uuid
             }
 
             is ServerMessage.Transcription -> {
@@ -332,13 +395,19 @@ class ChatViewModel(
             }
 
             is ServerMessage.NameSuggestion -> {
-                val conv = _conversation.value
-                if (message.conversationId == conv.id && !conv.userRenamed) {
-                    _conversation.value = conv.copy(
-                        name = message.name,
-                        symbol = message.symbol
-                    )
-                    persistConversation()
+                val convId = message.conversationId
+                if (convId == _conversation.value.id) {
+                    val conv = _conversation.value
+                    if (!conv.userRenamed) {
+                        _conversation.value = conv.copy(name = message.name, symbol = message.symbol)
+                        persistConversation()
+                    }
+                } else {
+                    conversationStore.conversation(convId)?.let { conv ->
+                        if (!conv.userRenamed) {
+                            conversationStore.save(conv.copy(name = message.name, symbol = message.symbol))
+                        }
+                    }
                 }
             }
 
@@ -370,61 +439,71 @@ class ChatViewModel(
             }
 
             is ServerMessage.Error -> {
-                output.appendText("\n**Error:** ${message.message}")
-                finalizeAssistantMessage()
+                val convId = _conversation.value.id
+                connectionManager.output(convId).appendText("\n**Error:** ${message.message}")
+                finalizeAssistantMessage(convId)
             }
 
             else -> {}
         }
     }
 
-    private fun finalizeAssistantMessage() {
-        Log.d("Cloude", "finalizeAssistantMessage: fullText=${output.fullText.length} toolCalls=${output.toolCalls.value.size}")
-        val text = output.fullText
-        if (text.isEmpty() && output.toolCalls.value.isEmpty()) {
-            output.setRunning(false)
-            output.setCompacting(false)
+    private fun finalizeAssistantMessage(conversationId: String) {
+        val out = connectionManager.output(conversationId)
+        Log.d("Cloude", "finalizeAssistantMessage: convId=$conversationId fullText=${out.fullText.length} toolCalls=${out.toolCalls.value.size}")
+        val text = out.fullText
+        if (text.isEmpty() && out.toolCalls.value.isEmpty()) {
+            out.setRunning(false)
+            out.setCompacting(false)
             return
         }
 
-        output.completeExecutingTools()
+        out.completeExecutingTools()
         val assistantMessage = ChatMessage(
             isUser = false,
             text = text,
-            toolCalls = output.toolCalls.value.toMutableList(),
-            durationMs = output.runStats?.first,
-            costUsd = output.runStats?.second,
-            serverUUID = output.messageUUID,
-            model = output.runStats?.third
+            toolCalls = out.toolCalls.value.toMutableList(),
+            durationMs = out.runStats?.first,
+            costUsd = out.runStats?.second,
+            serverUUID = out.messageUUID,
+            model = out.runStats?.third
         )
 
-        val conv = _conversation.value
+        val isActive = conversationId == _conversation.value.id
+        val conv = if (isActive) _conversation.value else conversationStore.conversation(conversationId)
+        if (conv == null) {
+            out.reset()
+            return
+        }
+
         val newMessages = conv.messages.toMutableList().apply { add(assistantMessage) }
-        _conversation.value = conv.copy(
-            messages = newMessages,
-            lastMessageAt = System.currentTimeMillis()
-        )
+        val updated = conv.copy(messages = newMessages, lastMessageAt = System.currentTimeMillis())
 
-        Log.d("Cloude", "finalizeAssistantMessage: done, isRunning will be false")
-        persistConversation()
+        if (isActive) {
+            _conversation.value = updated
+            persistConversation()
+        } else {
+            conversationStore.save(updated)
+        }
 
-        val updatedConv = _conversation.value
-        val assistantCount = updatedConv.messages.count { !it.isUser }
-        if ((assistantCount == 2 || (assistantCount > 0 && assistantCount % 5 == 0)) && !updatedConv.userRenamed) {
-            val envId = activeEnvId
+        Log.d("Cloude", "finalizeAssistantMessage: done convId=$conversationId")
+
+        val assistantCount = updated.messages.count { !it.isUser }
+        if ((assistantCount == 2 || (assistantCount > 0 && assistantCount % 5 == 0)) && !updated.userRenamed) {
+            val envId = if (isActive) activeEnvId else connectionManager.connectionForConversation(conversationId)?.environmentId
             if (envId != null) {
-                val contextMessages = updatedConv.messages.takeLast(10).map {
+                val contextMessages = updated.messages.takeLast(10).map {
                     (if (it.isUser) "User: " else "Assistant: ") + it.text.take(300)
                 }
-                val lastUserMsg = updatedConv.messages.lastOrNull { it.isUser }?.text ?: ""
+                val lastUserMsg = updated.messages.lastOrNull { it.isUser }?.text ?: ""
                 connectionManager.send(
-                    ClientMessage.SuggestName(text = lastUserMsg, context = contextMessages, conversationId = updatedConv.id),
+                    ClientMessage.SuggestName(text = lastUserMsg, context = contextMessages, conversationId = updated.id),
                     envId
                 )
             }
         }
 
-        output.reset()
+        out.reset()
     }
 
     private fun persistConversation() {

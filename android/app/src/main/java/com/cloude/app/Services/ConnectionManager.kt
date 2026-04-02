@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 class ConnectionManager(private val appContext: android.content.Context? = null) {
     private val connections = mutableMapOf<String, EnvironmentConnection>()
+    private val conversationOutputs = mutableMapOf<String, ConversationOutput>()
+    private val conversationEnvironments = mutableMapOf<String, String>()
 
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected
@@ -23,6 +25,19 @@ class ConnectionManager(private val appContext: android.content.Context? = null)
 
     private val _events = MutableSharedFlow<ServerMessage>(extraBufferCapacity = 64)
     val events: SharedFlow<ServerMessage> = _events
+
+    val isAnyRunning: Boolean
+        get() = conversationOutputs.values.any { it.isRunning.value }
+
+    fun output(conversationId: String): ConversationOutput =
+        conversationOutputs.getOrPut(conversationId) { ConversationOutput() }
+
+    fun registerConversation(conversationId: String, environmentId: String) {
+        conversationEnvironments[conversationId] = environmentId
+    }
+
+    fun connectionForConversation(conversationId: String): EnvironmentConnection? =
+        conversationEnvironments[conversationId]?.let { connections[it] }
 
     fun connection(forId: String): EnvironmentConnection? = connections[forId]
 

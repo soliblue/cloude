@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Psychology
@@ -51,6 +52,7 @@ import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.chat.MainScreen
 import com.cloude.app.UI.chat.PlansSheet
 import com.cloude.app.UI.chat.RenameDialog
+import com.cloude.app.UI.chat.SkillsSheet
 import com.cloude.app.UI.deploy.DeploySheet
 import com.cloude.app.UI.memories.MemoriesSheet
 import com.cloude.app.UI.settings.SettingsScreen
@@ -292,6 +294,19 @@ class MainActivity : ComponentActivity() {
                         MemoriesSheet(
                             rawSections = memorySections!!,
                             onDismiss = { chatViewModel.dismissMemories() }
+                        )
+                    }
+
+                    val shouldShowSkills by chatViewModel.showSkills.collectAsState()
+                    if (shouldShowSkills) {
+                        val skillsList by connectionManager.connection(envId)?.skills?.collectAsState()
+                            ?: remember { mutableStateOf(emptyList()) }
+                        SkillsSheet(
+                            skills = skillsList,
+                            onSelect = { command ->
+                                chatViewModel.dismissSkills()
+                            },
+                            onDismiss = { chatViewModel.dismissSkills() }
                         )
                     }
                 }

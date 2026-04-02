@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -62,6 +64,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -69,6 +73,17 @@ import androidx.compose.ui.window.DialogProperties
 import com.cloude.app.Models.ChatMessage
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
+
+private val SLASH_CMD_RE = Regex("^/([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+(.+))?$", RegexOption.DOT_MATCHES_ALL)
+
+private fun slashCommandIcon(name: String): String = when (name) {
+    "compact" -> "\u21BB"
+    "context" -> "\u25CF"
+    "cost" -> "$"
+    "usage" -> "\u2261"
+    "clear" -> "\u2715"
+    else -> "\u2726"
+}
 
 private val COLLAPSED_MAX_HEIGHT = 120.dp
 
@@ -78,6 +93,7 @@ fun MessageBubble(
     message: ChatMessage,
     onToggleCollapse: (() -> Unit)? = null,
     onFork: (() -> Unit)? = null,
+    onFilePathTap: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -102,14 +118,27 @@ fun MessageBubble(
             )
     ) {
         if (message.toolCalls.isNotEmpty()) {
-            FlowRow(
-                modifier = Modifier.padding(bottom = DS.Spacing.xs),
-                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
-                verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
-            ) {
-                message.toolCalls.forEach { toolCall ->
-                    ToolCallLabel(toolCall = toolCall)
+            val regularTools = message.toolCalls.filter { !isWidget(it.name) }
+            val widgetTools = message.toolCalls.filter { isWidget(it.name) }
+
+            if (regularTools.isNotEmpty()) {
+                FlowRow(
+                    modifier = Modifier.padding(bottom = DS.Spacing.xs),
+                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                    verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+                ) {
+                    regularTools.forEach { toolCall ->
+                        ToolCallLabel(toolCall = toolCall)
+                    }
                 }
+            }
+
+            widgetTools.forEach { toolCall ->
+                WidgetView(
+                    toolName = toolCall.name,
+                    inputJson = toolCall.input
+                )
+                Spacer(modifier = Modifier.height(DS.Spacing.xs))
             }
         }
 
@@ -150,21 +179,65 @@ fun MessageBubble(
         if (message.text.isNotEmpty()) {
             Box {
                 if (message.isUser) {
-                    Text(
-                        text = message.text,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(DS.Radius.l))
-                            .background(bubbleBackground)
-                            .combinedClickable(
-                                onClick = {},
-                                onLongClick = { showMenu = true }
-                            )
-                            .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s)
-                    )
+                    val slashMatch = SLASH_CMD_RE.matchEntire(message.text.trim())
+                    if (slashMatch != null) {
+                        val cmdName = slashMatch.groupValues[1]
+                        val cmdArgs = slashMatch.groupValues[2].takeIf { it.isNotBlank() }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(onClick = {}, onLongClick = { showMenu = true }),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(DS.Radius.l))
+                                    .background(Accent.copy(alpha = 0.15f))
+                                    .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s),
+                                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = slashCommandIcon(cmdName),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Accent
+                                )
+                                Text(
+                                    text = "/$cmdName",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = Accent
+                                )
+                                if (cmdArgs != null) {
+                                    Text(
+                                        text = cmdArgs,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontFamily = FontFamily.Monospace
+                                        ),
+                                        color = Accent.copy(alpha = DS.Opacity.m)
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = message.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(DS.Radius.l))
+                                .background(bubbleBackground)
+                                .combinedClickable(
+                                    onClick = {},
+                                    onLongClick = { showMenu = true }
+                                )
+                                .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s)
+                        )
+                    }
                 } else {
                     Column {
                         Box(
@@ -189,6 +262,7 @@ fun MessageBubble(
                                 text = message.text,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 onLongPress = { showMenu = true },
+                                onFilePathTap = onFilePathTap,
                                 interactionSource = interactionSource,
                             )
 

@@ -1,5 +1,6 @@
 package com.cloude.app.Models
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -71,7 +72,7 @@ data class Skill(
     val description: String? = null,
     val icon: String? = null,
     val aliases: List<String> = emptyList(),
-    val userInvocable: Boolean = false,
+    @SerialName("user_invocable") val userInvocable: Boolean = false,
     val parameters: List<SkillParameter> = emptyList()
 )
 

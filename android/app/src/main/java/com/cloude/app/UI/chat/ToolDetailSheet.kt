@@ -3,10 +3,12 @@ package com.cloude.app.UI.chat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cloude.app.Models.ToolCall
 import com.cloude.app.Utilities.DS
@@ -67,15 +70,11 @@ fun ToolDetailSheet(
 
             if (toolCall.editInfo != null) {
                 val edit = toolCall.editInfo!!
-                if (edit.oldString != null) {
-                    SectionLabel("Removed")
-                    DiffBlock(edit.oldString, isRemoval = true)
-                    Spacer(modifier = Modifier.height(DS.Spacing.s))
-                }
-                if (edit.newString != null) {
-                    SectionLabel("Added")
-                    DiffBlock(edit.newString, isRemoval = false)
-                }
+                SectionLabel("Changes")
+                UnifiedDiffBlock(
+                    oldString = edit.oldString,
+                    newString = edit.newString
+                )
             } else if (toolCall.input != null) {
                 SectionLabel("Input")
                 CodeBlock(toolCall.input)
@@ -132,22 +131,60 @@ private fun CodeBlock(text: String) {
 }
 
 @Composable
-private fun DiffBlock(text: String, isRemoval: Boolean) {
-    val bgColor = if (isRemoval) PastelRed.copy(alpha = 0.1f) else PastelGreen.copy(alpha = 0.1f)
-    val borderColor = if (isRemoval) PastelRed.copy(alpha = 0.3f) else PastelGreen.copy(alpha = 0.3f)
+private fun UnifiedDiffBlock(oldString: String?, newString: String?) {
+    val monoStyle = MaterialTheme.typography.bodySmall.copy(
+        fontFamily = FontFamily.Monospace,
+        lineHeight = 18.sp
+    )
+    val textColor = MaterialTheme.colorScheme.onSurface
 
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall.copy(
-            fontFamily = FontFamily.Monospace,
-            lineHeight = 18.sp
-        ),
-        color = MaterialTheme.colorScheme.onSurface,
+    Column(
         modifier = Modifier
             .padding(horizontal = DS.Spacing.l)
             .fillMaxWidth()
-            .background(bgColor, RoundedCornerShape(DS.Radius.m))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(DS.Radius.m))
             .horizontalScroll(rememberScrollState())
-            .padding(DS.Spacing.m)
-    )
+            .padding(vertical = DS.Spacing.xs)
+    ) {
+        oldString?.lines()?.forEach { line ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PastelRed.copy(alpha = 0.1f))
+                    .padding(horizontal = DS.Spacing.s, vertical = 1.dp)
+            ) {
+                Text(
+                    text = "-",
+                    style = monoStyle,
+                    color = PastelRed,
+                    modifier = Modifier.width(16.dp)
+                )
+                Text(
+                    text = line,
+                    style = monoStyle,
+                    color = textColor
+                )
+            }
+        }
+        newString?.lines()?.forEach { line ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PastelGreen.copy(alpha = 0.1f))
+                    .padding(horizontal = DS.Spacing.s, vertical = 1.dp)
+            ) {
+                Text(
+                    text = "+",
+                    style = monoStyle,
+                    color = PastelGreen,
+                    modifier = Modifier.width(16.dp)
+                )
+                Text(
+                    text = line,
+                    style = monoStyle,
+                    color = textColor
+                )
+            }
+        }
+    }
 }

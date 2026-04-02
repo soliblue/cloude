@@ -58,10 +58,11 @@ fun ChatScreen(
     val isTranscribing by viewModel.isTranscribing.collectAsState()
     val pendingTranscription by viewModel.pendingTranscription.collectAsState()
     val conversation by viewModel.conversation.collectAsState()
-    val streamingText by viewModel.output.text.collectAsState()
-    val streamingTools by viewModel.output.toolCalls.collectAsState()
-    val isRunning by viewModel.output.isRunning.collectAsState()
-    val isCompacting by viewModel.output.isCompacting.collectAsState()
+    val output = remember(conversation.id) { connectionManager.output(conversation.id) }
+    val streamingText by output.text.collectAsState()
+    val streamingTools by output.toolCalls.collectAsState()
+    val isRunning by output.isRunning.collectAsState()
+    val isCompacting by output.isCompacting.collectAsState()
     val messageCount = conversation.messages.size
     val hasStreaming = streamingText.isNotEmpty() || streamingTools.isNotEmpty()
     val itemCount = 1 + messageCount + (if (hasStreaming) 1 else 0) + 1
@@ -174,14 +175,24 @@ fun ChatScreen(
                                 .padding(start = DS.Spacing.xs, end = DS.Spacing.xxl)
                         ) {
                             if (streamingTools.isNotEmpty()) {
-                                FlowRow(
-                                    modifier = Modifier.padding(bottom = DS.Spacing.xs),
-                                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
-                                    verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
-                                ) {
-                                    streamingTools.forEach { toolCall ->
-                                        ToolCallLabel(toolCall = toolCall)
+                                val regularTools = streamingTools.filter { !isWidget(it.name) }
+                                val widgetTools = streamingTools.filter { isWidget(it.name) }
+
+                                if (regularTools.isNotEmpty()) {
+                                    FlowRow(
+                                        modifier = Modifier.padding(bottom = DS.Spacing.xs),
+                                        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                                        verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+                                    ) {
+                                        regularTools.forEach { toolCall ->
+                                            ToolCallLabel(toolCall = toolCall)
+                                        }
                                     }
+                                }
+
+                                widgetTools.forEach { toolCall ->
+                                    WidgetView(toolName = toolCall.name, inputJson = toolCall.input)
+                                    Spacer(modifier = Modifier.height(DS.Spacing.xs))
                                 }
                             }
                             if (streamingText.isNotEmpty()) {
@@ -218,6 +229,8 @@ fun ChatScreen(
                 when {
                     text.trim().equals("/usage", ignoreCase = true) -> viewModel.requestUsageStats()
                     text.trim().equals("/plans", ignoreCase = true) -> viewModel.requestPlans()
+                    text.trim().equals("/skills", ignoreCase = true) -> viewModel.showSkills()
+                    text.trim().equals("/test-widgets", ignoreCase = true) -> viewModel.injectTestWidgets()
                     else -> viewModel.sendMessage(text, images, files)
                 }
             },
