@@ -47,7 +47,7 @@ Provide:
 2. why the change helps
 3. what the change should look like
 
-Present suggestions first and wait for approval before implementing. If approved, create a plan ticket in `plans/20_active/` or `plans/30_testing/`.
+Present suggestions first and wait for approval before implementing. If approved, create a plan ticket in `.claude/plans/20_active/` or `.claude/plans/30_testing/`.
 
 ## Second Opinion
 

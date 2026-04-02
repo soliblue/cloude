@@ -9,7 +9,7 @@ metadata:
 
 # Test
 
-`plans/30_testing/` is the source of truth for what needs testing.
+`.claude/plans/30_testing/` is the source of truth for what needs testing.
 
 ## Flags
 
@@ -28,7 +28,7 @@ Report pass or fail clearly.
 ## Show What Needs Testing
 
 1. Get the current build number with `cd Cloude && agvtool what-version -terse`.
-2. Read plans in `plans/30_testing/`.
+2. Read plans in `.claude/plans/30_testing/`.
 3. A feature is testable if it has `<!-- build: X -->` and `X <= current build`.
 4. For each testable item, provide:
    - feature name
@@ -38,5 +38,5 @@ Report pass or fail clearly.
 
 ## After Testing
 
-- Move passed plans from `plans/30_testing/` to `plans/40_done/`.
+- Move passed plans from `.claude/plans/30_testing/` to `.claude/plans/40_done/`.
 - If many items are waiting, prioritize testing before adding more.
