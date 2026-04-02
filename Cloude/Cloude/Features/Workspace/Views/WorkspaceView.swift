@@ -21,14 +21,16 @@ struct WorkspaceView: View {
         let _ = DebugMetrics.log("MainChat", "render")
         #endif
         VStack(spacing: 0) {
-            TabView(selection: currentPageIndexBinding) {
+            ZStack {
                 ForEach(Array(windowManager.windows.enumerated()), id: \.element.id) { index, window in
+                    let isActive = currentPageIndex == index
                     pagedWindowContent(for: window)
-                        .tag(index)
+                        .opacity(isActive ? 1 : 0)
+                        .zIndex(isActive ? 1 : 0)
+                        .allowsHitTesting(isActive)
+                        .animation(isActive ? .easeIn(duration: 0.2).delay(0.01) : .easeOut(duration: 0.2).delay(0.2), value: currentPageIndex)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .background(PageSwipeDisabler())
             .onChange(of: currentPageIndex) { oldValue, newValue in
                 store.handlePageChange(oldIndex: oldValue, newIndex: newValue, conversationStore: conversationStore, windowManager: windowManager)
             }
@@ -41,7 +43,7 @@ struct WorkspaceView: View {
             .onChange(of: windowManager.activeWindowId) { _, newId in
                 if let id = newId, let index = windowManager.windowIndex(for: id) {
                     if currentPageIndex != index {
-                        withAnimation { currentPageIndex = index }
+                        currentPageIndex = index
                     }
                 }
             }
@@ -49,7 +51,7 @@ struct WorkspaceView: View {
                 dismissKeyboard()
             }
             .overlay(alignment: .trailing) {
-                if !isKeyboardVisible {
+                if !isKeyboardVisible && !(currentConversation?.messages.isEmpty ?? true) {
                     WindowCreateButton {
                         if windowManager.windows.count >= 3, let id = windowManager.activeWindowId {
                             windowManager.removeWindow(id)

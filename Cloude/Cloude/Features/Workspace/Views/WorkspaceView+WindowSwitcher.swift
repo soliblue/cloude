@@ -14,7 +14,7 @@ extension WorkspaceView {
             items: items,
             activeIndex: currentPageIndex,
             onSelect: { index in
-                withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex = index }
+                currentPageIndex = index
             },
             onLongPress: { index in
                 store.beginEditingWindow(at: index, windowManager: windowManager)
@@ -31,9 +31,9 @@ extension WorkspaceView {
                     let vertical = abs(value.translation.height)
                     if horizontal > vertical {
                         if value.translation.width > 0 && currentPageIndex < maxIndex {
-                            withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex += 1 }
+                            currentPageIndex += 1
                         } else if value.translation.width < 0 && currentPageIndex > 0 {
-                            withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex -= 1 }
+                            currentPageIndex -= 1
                         }
                     }
                 }

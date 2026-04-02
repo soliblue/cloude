@@ -14,7 +14,7 @@ extension WorkspaceView {
                 environmentId: conversation?.environmentId,
                 folderName: conversation?.workingDirectory.flatMap { $0.isEmpty ? nil : URL(fileURLWithPath: $0).lastPathComponent },
                 totalCost: conversation?.totalCost ?? 0,
-                onSelectTab: { tab in windowManager.setWindowTab(window.id, tab: tab) }
+                onSelectTab: { tab in withAnimation(.easeInOut(duration: DS.Duration.s)) { windowManager.setWindowTab(window.id, tab: tab) } }
             )
             .equatable()
 
