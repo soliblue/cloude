@@ -13,16 +13,8 @@ extension WorkspaceView {
         WindowSwitcherView(
             items: items,
             activeIndex: currentPageIndex,
-            canAddWindow: windowManager.windows.count < 3,
             onSelect: { index in
                 withAnimation(.easeInOut(duration: DS.Duration.m)) { currentPageIndex = index }
-            },
-            onAdd: {
-                store.addWindowWithNewChat(
-                    conversationStore: conversationStore,
-                    windowManager: windowManager,
-                    environmentStore: environmentStore
-                )
             },
             onLongPress: { index in
                 store.beginEditingWindow(at: index, windowManager: windowManager)
@@ -58,13 +50,11 @@ private struct WindowSwitcherView: View, Equatable {
 
     let items: [WindowItem]
     let activeIndex: Int
-    let canAddWindow: Bool
     let onSelect: (Int) -> Void
-    let onAdd: () -> Void
     let onLongPress: (Int) -> Void
 
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.items == rhs.items && lhs.activeIndex == rhs.activeIndex && lhs.canAddWindow == rhs.canAddWindow
+        lhs.items == rhs.items && lhs.activeIndex == rhs.activeIndex
     }
 
     var body: some View {
@@ -95,18 +85,6 @@ private struct WindowSwitcherView: View, Equatable {
                 )
             }
 
-            if canAddWindow {
-                Divider().frame(height: DS.Icon.l)
-                Button(action: onAdd) {
-                    Image(systemName: "plus")
-                        .font(.system(size: DS.Icon.l, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .contentShape(Rectangle())
-                }
-                .agenticID("window_add_button")
-                .buttonStyle(.plain)
-            }
         }
         .padding(.horizontal, DS.Spacing.m)
         .frame(maxWidth: .infinity)

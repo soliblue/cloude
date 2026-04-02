@@ -48,6 +48,21 @@ struct WorkspaceView: View {
             .onTapGesture {
                 dismissKeyboard()
             }
+            .overlay(alignment: .trailing) {
+                if !isKeyboardVisible {
+                    WindowCreateButton {
+                        if windowManager.windows.count >= 3, let id = windowManager.activeWindowId {
+                            windowManager.removeWindow(id)
+                        }
+                        store.addWindowWithNewChat(
+                            conversationStore: conversationStore,
+                            windowManager: windowManager,
+                            environmentStore: environmentStore
+                        )
+                    }
+                    .transition(.opacity.animation(.easeIn(duration: DS.Duration.m)))
+                }
+            }
 
             inputSection()
                 .zIndex(1)

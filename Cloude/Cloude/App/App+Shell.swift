@@ -50,11 +50,7 @@ extension App {
                             .agenticID("toolbar_title")
                     }
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: closeOrResetActiveWindow) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: DS.Icon.m, weight: .medium))
-                                .foregroundColor(.secondary)
-                        }
+                        WindowCloseButton(action: closeOrResetActiveWindow)
                         .agenticID("toolbar_close_window_button")
                         .buttonStyle(.borderless)
                     }
