@@ -67,21 +67,28 @@ fun DeploySheet(
     var phase by remember { mutableStateOf("building") }
     val listState = rememberLazyListState()
     val deployId = remember { "deploy-${System.currentTimeMillis()}" }
-    val apkPath = "$workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk"
+    var resolvedApkPath by remember { mutableStateOf("$workingDirectory/android/app/build/outputs/apk/debug/app-debug.apk") }
 
     LaunchedEffect(Unit) {
         launch {
             connectionManager.events.collect { msg ->
                 when {
                     msg is ServerMessage.TerminalOutput && msg.terminalId == deployId -> {
-                        msg.output.lines().filter { it.isNotBlank() }.forEach { outputLines.add(it) }
+                        msg.output.lines().filter { it.isNotBlank() }.forEach { line ->
+                            if (line.startsWith("APK_DIR=")) {
+                                val dir = line.removePrefix("APK_DIR=").trim()
+                                resolvedApkPath = "$dir/app/build/outputs/apk/debug/app-debug.apk"
+                            } else {
+                                outputLines.add(line)
+                            }
+                        }
                         if (msg.exitCode != null) {
                             if (msg.exitCode == 0 && phase == "building") {
                                 phase = "transferring"
                                 outputLines.add("")
                                 outputLines.add("Transferring APK...")
                                 connectionManager.send(
-                                    ClientMessage.GetFileFullQuality(apkPath),
+                                    ClientMessage.GetFileFullQuality(resolvedApkPath),
                                     environmentId
                                 )
                             } else if (msg.exitCode != 0) {
@@ -115,7 +122,9 @@ fun DeploySheet(
 
         outputLines.add("Building APK...")
         val buildCmd = "export JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" && " +
-            "cd $workingDirectory/android && " +
+            "ANDROID_DIR=\"$workingDirectory/android\" && " +
+            "if [ ! -d \"\$ANDROID_DIR\" ]; then ANDROID_DIR=\"\$(git -C \"\$HOME/Documents/projects/cloude\" rev-parse --show-toplevel)/android\"; fi && " +
+            "cd \"\$ANDROID_DIR\" && echo \"APK_DIR=\$ANDROID_DIR\" && " +
             "./gradlew assembleDebug --daemon 2>&1"
         connectionManager.send(
             ClientMessage.TerminalExec(buildCmd, workingDirectory, deployId),

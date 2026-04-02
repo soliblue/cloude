@@ -22,7 +22,7 @@ public enum ClientMessage: Codable {
     case gitDiff(path: String, file: String?, staged: Bool)
     case gitCommit(path: String, message: String, files: [String])
     case transcribe(audioBase64: String)
-    case getMemories
+    case getMemories(workingDirectory: String?)
     case getProcesses
     case killProcess(pid: Int32)
     case killAllProcesses

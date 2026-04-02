@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
 import com.cloude.app.Models.AgentState
+import com.cloude.app.Models.MemorySection
 import com.cloude.app.Models.AttachedFilePayload
 import com.cloude.app.Models.ChatMessage
 import com.cloude.app.Models.ClientMessage
@@ -46,6 +47,9 @@ class ChatViewModel(
 
     private val _plans = MutableStateFlow<Map<String, List<com.cloude.app.Models.PlanItem>>?>(null)
     val plans: StateFlow<Map<String, List<com.cloude.app.Models.PlanItem>>?> = _plans
+
+    private val _memorySections = MutableStateFlow<List<MemorySection>?>(null)
+    val memorySections: StateFlow<List<MemorySection>?> = _memorySections
 
     private var awaitingUsageStats = false
 
@@ -206,6 +210,17 @@ class ChatViewModel(
         _plans.value = null
     }
 
+    fun requestMemories() {
+        val envId = activeEnvId ?: return
+        val workingDir = _conversation.value.workingDirectory
+            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value ?: return
+        connectionManager.send(ClientMessage.GetMemories(workingDir), envId)
+    }
+
+    fun dismissMemories() {
+        _memorySections.value = null
+    }
+
     fun renameConversation(name: String) {
         _conversation.value = _conversation.value.copy(name = name, userRenamed = true)
         persistConversation()
@@ -304,6 +319,10 @@ class ChatViewModel(
 
             is ServerMessage.Plans -> {
                 _plans.value = message.stages
+            }
+
+            is ServerMessage.Memories -> {
+                _memorySections.value = message.sections
             }
 
             is ServerMessage.PlanDeleted -> {

@@ -31,7 +31,7 @@ sealed class ClientMessage {
     data class GitDiff(val path: String, val file: String? = null, val staged: Boolean = false) : ClientMessage()
     data class GitCommit(val path: String, val message: String, val files: List<String>) : ClientMessage()
     data class Transcribe(val audioBase64: String) : ClientMessage()
-    data object GetMemories : ClientMessage()
+    data class GetMemories(val workingDirectory: String) : ClientMessage()
     data object GetProcesses : ClientMessage()
     data class KillProcess(val pid: Int) : ClientMessage()
     data object KillAllProcesses : ClientMessage()
@@ -116,7 +116,10 @@ sealed class ClientMessage {
                 put("type", "transcribe")
                 put("audioBase64", msg.audioBase64)
             }
-            is GetMemories -> put("type", "get_memories")
+            is GetMemories -> {
+                put("type", "get_memories")
+                put("workingDirectory", msg.workingDirectory)
+            }
             is GetProcesses -> put("type", "get_processes")
             is KillProcess -> {
                 put("type", "kill_process")

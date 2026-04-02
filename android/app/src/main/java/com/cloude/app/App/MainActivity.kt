@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.RocketLaunch
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,7 +52,9 @@ import com.cloude.app.UI.chat.MainScreen
 import com.cloude.app.UI.chat.PlansSheet
 import com.cloude.app.UI.chat.RenameDialog
 import com.cloude.app.UI.deploy.DeploySheet
+import com.cloude.app.UI.memories.MemoriesSheet
 import com.cloude.app.UI.settings.SettingsScreen
+import com.cloude.app.Models.MemorySection
 import com.cloude.app.UI.theme.CloudeTheme
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.AppTheme
@@ -65,6 +68,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var connectionManager: ConnectionManager
     private lateinit var chatViewModel: ChatViewModel
     private lateinit var windowManager: WindowManager
+    private lateinit var deepLinkRouter: DeepLinkRouter
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,6 +102,29 @@ class MainActivity : ComponentActivity() {
             chatViewModel.loadConversation(it.id)
         }
 
+        val showSettingsState = mutableStateOf(false)
+        val showDeployState = mutableStateOf(false)
+        val showConversationsState = mutableStateOf(false)
+
+        deepLinkRouter = DeepLinkRouter(
+            chatViewModel = chatViewModel,
+            windowManager = windowManager,
+            connectionManager = connectionManager,
+            environmentStore = environmentStore,
+            uiActions = object : DeepLinkRouter.UIActions {
+                override fun showSettings() { showSettingsState.value = true }
+                override fun showDeploy() { showDeployState.value = true }
+                override fun showConversations() { showConversationsState.value = true }
+                override fun dismissAll() {
+                    showSettingsState.value = false
+                    showDeployState.value = false
+                    showConversationsState.value = false
+                }
+            }
+        )
+
+        intent?.data?.let { deepLinkRouter.handle(it) }
+
         val prefs = getSharedPreferences("cloude", MODE_PRIVATE)
         setContent {
             var appTheme by remember {
@@ -107,9 +134,9 @@ class MainActivity : ComponentActivity() {
                     } ?: AppTheme.Majorelle
                 )
             }
-            var showSettings by remember { mutableStateOf(false) }
-            var showConversations by remember { mutableStateOf(false) }
-            var showDeploy by remember { mutableStateOf(false) }
+            var showSettings by showSettingsState
+            var showConversations by showConversationsState
+            var showDeploy by showDeployState
             var showRename by remember { mutableStateOf(false) }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
             val conversation by chatViewModel.conversation.collectAsState()
@@ -161,6 +188,15 @@ class MainActivity : ComponentActivity() {
                                         Icon(
                                             imageVector = Icons.Default.RocketLaunch,
                                             contentDescription = "Deploy",
+                                            tint = Accent
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        chatViewModel.requestMemories()
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Psychology,
+                                            contentDescription = "Memories",
                                             tint = Accent
                                         )
                                     }
@@ -250,8 +286,21 @@ class MainActivity : ComponentActivity() {
                             onDismiss = { chatViewModel.dismissPlans() }
                         )
                     }
+
+                    val memorySections by chatViewModel.memorySections.collectAsState()
+                    if (memorySections != null) {
+                        MemoriesSheet(
+                            rawSections = memorySections!!,
+                            onDismiss = { chatViewModel.dismissMemories() }
+                        )
+                    }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.data?.let { deepLinkRouter.handle(it) }
     }
 }

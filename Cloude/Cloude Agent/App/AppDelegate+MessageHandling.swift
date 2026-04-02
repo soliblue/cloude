@@ -56,8 +56,11 @@ extension AppDelegate {
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
 
-        case .getMemories:
-            Log.info("Received getMemories request")
+        case .getMemories(let workingDirectory):
+            Log.info("Received getMemories request, workingDirectory=\(workingDirectory ?? "nil")")
+            if let dir = workingDirectory {
+                MemoryService.projectDirectory = dir
+            }
             let sections = MemoryService.parseMemories()
             server.sendMessage(.memories(sections: sections), to: connection)
 

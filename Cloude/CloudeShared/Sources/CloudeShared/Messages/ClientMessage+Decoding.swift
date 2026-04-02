@@ -57,7 +57,8 @@ extension ClientMessage {
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)
         case "get_memories":
-            self = .getMemories
+            let workingDirectory = try container.decodeIfPresent(String.self, forKey: .workingDirectory)
+            self = .getMemories(workingDirectory: workingDirectory)
         case "get_processes":
             self = .getProcesses
         case "kill_process":
