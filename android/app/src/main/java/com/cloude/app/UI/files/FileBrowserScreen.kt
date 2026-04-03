@@ -231,7 +231,9 @@ private fun FileViewerSheet(
     val ext = file.name.substringAfterLast('.', "").lowercase()
     val isAudio = ext in setOf("wav", "mp3", "m4a", "aac", "ogg", "flac")
     val isVideo = ext in setOf("mp4", "mov", "m4v", "avi", "webm")
-    val isImage = ext in setOf("png", "jpg", "jpeg", "gif", "webp", "bmp", "ico")
+    val isImage = ext in setOf("png", "jpg", "jpeg", "webp", "bmp", "ico")
+    val isGif = ext == "gif"
+    val isHtml = ext in setOf("html", "htm")
 
     LaunchedEffect(file.path) {
         val deferred = async {
@@ -305,6 +307,8 @@ private fun FileViewerSheet(
                             modifier = containerModifier.padding(DS.Spacing.m)
                         )
                     }
+                } else if (isGif) {
+                    GifPreview(data = bytes, modifier = containerModifier.padding(DS.Spacing.m))
                 } else if (isAudio) {
                     AudioPreview(data = bytes, fileName = file.name, modifier = containerModifier)
                 } else if (isVideo) {
@@ -313,6 +317,8 @@ private fun FileViewerSheet(
                     PdfPreview(data = bytes, modifier = containerModifier)
                 } else if (ext == "svg") {
                     SvgPreview(data = bytes, modifier = containerModifier)
+                } else if (isHtml) {
+                    HtmlPreview(data = bytes, modifier = containerModifier)
                 } else {
                     val text = remember(bytes) {
                         try { String(bytes, Charsets.UTF_8) } catch (_: Exception) { "Unable to decode file" }
