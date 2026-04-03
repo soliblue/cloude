@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,6 +86,22 @@ fun ChatScreen(
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth(),
                 color = Accent
+            )
+        }
+
+        if (itemCount > 3) {
+            val scrollProgress = remember(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset, itemCount) {
+                if (itemCount <= 1) 1f
+                else (listState.firstVisibleItemIndex.toFloat() / (itemCount - 1).toFloat()).coerceIn(0f, 1f)
+            }
+            val isAtBottom = listState.firstVisibleItemIndex >= itemCount - 3
+            LinearProgressIndicator(
+                progress = { scrollProgress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (isAtBottom) 0f else 0.4f),
+                color = Accent.copy(alpha = 0.5f),
+                trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
             )
         }
 

@@ -19,8 +19,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -169,12 +177,53 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         CenterAlignedTopAppBar(
                             title = {
-                                Text(
-                                    text = if (showSettings) "Settings" else conversation.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = if (!showSettings) Modifier.clickable { showRename = true } else Modifier
-                                )
+                                if (showSettings) {
+                                    Text(
+                                        text = "Settings",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                } else {
+                                    Column(
+                                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                        modifier = Modifier.clickable { showRename = true }
+                                    ) {
+                                        AnimatedContent(
+                                            targetState = conversation.name,
+                                            transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
+                                            label = "title"
+                                        ) { name ->
+                                            Text(
+                                                text = name,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1,
+                                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                            )
+                                        }
+                                        val workDir = conversation.workingDirectory
+                                            ?: connectionManager.connection(environmentStore.activeEnvironmentId.value ?: "")?.defaultWorkingDirectory?.value
+                                        if (workDir != null) {
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = workDir.substringAfterLast('/'),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                                                )
+                                                if (conversation.totalCost > 0) {
+                                                    Text(
+                                                        text = "$${String.format("%.2f", conversation.totalCost)}",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = Accent.copy(alpha = DS.Opacity.m)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             },
                             navigationIcon = {
                                 if (showSettings) {
