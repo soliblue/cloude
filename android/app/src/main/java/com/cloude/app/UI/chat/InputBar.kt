@@ -592,7 +592,7 @@ fun InputBar(
                         tint = PastelRed
                     )
                 }
-            } else if (text.isEmpty() && attachedImages.isEmpty() && attachedFiles.isEmpty() && whisperReady && !isTranscribing) {
+            } else if (text.isEmpty() && whisperReady && !isTranscribing) {
                 Box(
                     modifier = Modifier
                         .size(48.dp)
