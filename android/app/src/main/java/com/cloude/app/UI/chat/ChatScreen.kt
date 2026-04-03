@@ -72,9 +72,19 @@ fun ChatScreen(
     val hasStreaming = streamingText.isNotEmpty() || streamingTools.isNotEmpty()
     val itemCount = 1 + messageCount + (if (hasStreaming) 1 else 0) + 1
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = maxOf(0, itemCount - 1))
+    var lastConversationId by remember { mutableStateOf(conversation.id) }
+
+    LaunchedEffect(conversation.id) {
+        if (conversation.id != lastConversationId) {
+            lastConversationId = conversation.id
+            if (itemCount > 1) listState.scrollToItem(itemCount - 1)
+        }
+    }
 
     LaunchedEffect(messageCount, streamingText) {
-        if (itemCount > 2) listState.animateScrollToItem(itemCount - 1)
+        if (itemCount > 2 && conversation.id == lastConversationId) {
+            listState.animateScrollToItem(itemCount - 1)
+        }
     }
 
     Column(
