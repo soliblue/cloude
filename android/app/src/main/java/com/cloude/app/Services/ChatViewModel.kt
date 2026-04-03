@@ -379,15 +379,23 @@ class ChatViewModel(
         _conversation.value = conv.copy(messages = updated.toMutableList())
     }
 
+    private fun resolveConversationId(messageConvId: String?): String? {
+        if (messageConvId != null) return messageConvId
+        val activeId = _conversation.value.id
+        val out = connectionManager.output(activeId)
+        if (out.isRunning.value || out.fullText.isNotEmpty()) return activeId
+        return null
+    }
+
     private fun handleMessage(message: ServerMessage) {
         when (message) {
             is ServerMessage.Output -> {
-                val convId = message.conversationId ?: _conversation.value.id
+                val convId = resolveConversationId(message.conversationId) ?: return
                 connectionManager.output(convId).appendText(message.text)
             }
 
             is ServerMessage.Status -> {
-                val convId = message.conversationId ?: _conversation.value.id
+                val convId = resolveConversationId(message.conversationId) ?: _conversation.value.id
                 val out = connectionManager.output(convId)
                 Log.d("Cloude", "VM Status: ${message.state} convId=$convId")
                 when (message.state) {
@@ -407,7 +415,7 @@ class ChatViewModel(
                 if (message.name.startsWith("mcp__ios__")) {
                     handleDeviceToolCall(message.name, message.input, message.conversationId)
                 } else {
-                    val convId = message.conversationId ?: _conversation.value.id
+                    val convId = resolveConversationId(message.conversationId) ?: return
                     connectionManager.output(convId).addToolCall(
                         ToolCall(
                             name = message.name,
@@ -423,7 +431,7 @@ class ChatViewModel(
             }
 
             is ServerMessage.ToolResult -> {
-                val convId = message.conversationId ?: _conversation.value.id
+                val convId = resolveConversationId(message.conversationId) ?: return
                 connectionManager.output(convId).updateToolResult(message.toolId, message.summary, message.output)
             }
 
@@ -441,12 +449,12 @@ class ChatViewModel(
             }
 
             is ServerMessage.RunStats -> {
-                val convId = message.conversationId ?: _conversation.value.id
+                val convId = resolveConversationId(message.conversationId) ?: return
                 connectionManager.output(convId).runStats = Triple(message.durationMs, message.costUsd, message.model)
             }
 
             is ServerMessage.MessageUUID -> {
-                val convId = message.conversationId ?: _conversation.value.id
+                val convId = resolveConversationId(message.conversationId) ?: return
                 connectionManager.output(convId).messageUUID = message.uuid
             }
 
