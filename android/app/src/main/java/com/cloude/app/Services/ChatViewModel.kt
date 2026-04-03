@@ -326,6 +326,35 @@ class ChatViewModel(
         _fileSearchResults.value = emptyList()
     }
 
+    fun exportConversation(): String {
+        val conv = _conversation.value
+        return buildString {
+            appendLine("# ${conv.name}")
+            appendLine()
+            conv.messages.forEach { msg ->
+                val role = if (msg.isUser) "**User**" else "**Assistant**"
+                appendLine("$role:")
+                appendLine()
+                if (msg.toolCalls.isNotEmpty()) {
+                    msg.toolCalls.forEach { tc ->
+                        val status = if (tc.state == ToolCallState.complete) "done" else "running"
+                        appendLine("> Tool: ${tc.name} ($status)")
+                        tc.resultSummary?.let { appendLine("> $it") }
+                    }
+                    appendLine()
+                }
+                if (msg.text.isNotBlank()) {
+                    appendLine(msg.text)
+                    appendLine()
+                }
+                msg.costUsd?.let { appendLine("*${msg.model ?: ""}  $${"%.4f".format(it)}*") }
+                appendLine("---")
+                appendLine()
+            }
+            appendLine("*Total cost: $${"%.4f".format(conv.totalCost)}*")
+        }
+    }
+
     private fun handleDeviceToolCall(name: String, input: String?, conversationId: String?) {
         val action = name.removePrefix("mcp__ios__")
         val params = input?.let {

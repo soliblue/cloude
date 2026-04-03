@@ -1,5 +1,6 @@
 package com.cloude.app.UI.chat
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import com.cloude.app.Services.ChatViewModel
 import com.cloude.app.Services.ConnectionManager
@@ -51,6 +53,7 @@ fun ChatScreen(
     onDraftChange: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val skills by connectionManager.connection(environmentId)?.skills?.collectAsState()
         ?: remember { mutableStateOf(emptyList()) }
     val whisperReady by connectionManager.connection(environmentId)?.whisperReady?.collectAsState()
@@ -235,6 +238,14 @@ fun ChatScreen(
                     text.trim().equals("/plans", ignoreCase = true) -> viewModel.requestPlans()
                     text.trim().equals("/skills", ignoreCase = true) -> viewModel.showSkills()
                     text.trim().equals("/test-widgets", ignoreCase = true) -> viewModel.injectTestWidgets()
+                    text.trim().equals("/export", ignoreCase = true) -> {
+                        val markdown = viewModel.exportConversation()
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, markdown)
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Export conversation"))
+                    }
                     else -> viewModel.sendMessage(text, images, files)
                 }
             },
