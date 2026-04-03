@@ -22,7 +22,6 @@ struct WorkspaceInputBar: View {
     let skills: [Skill]
     let fileSearchResults: [String]
     let conversationDefaultEffort: EffortLevel?
-    let conversationDefaultModel: ModelSelection?
     let environmentMismatch: Bool
     let isEnvironmentDisconnected: Bool
     let onSend: () -> Void

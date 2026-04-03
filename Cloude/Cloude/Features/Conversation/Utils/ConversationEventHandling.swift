@@ -27,13 +27,6 @@ extension App {
         }
     }
 
-    func handleStreamingStarted(conversationId: UUID) {
-        let output = connection.output(for: conversationId)
-        if output.liveMessageId == nil, let conversation = conversationStore.findConversation(withId: conversationId) {
-            conversationStore.resumeOrInsertLiveMessage(output: output, into: conversation)
-        }
-    }
-
     func handleDisconnect(conversationId: UUID, output: ConversationOutput) {
         let trimmedText = output.text.trimmingCharacters(in: .whitespacesAndNewlines)
         let hasContent = !trimmedText.isEmpty || !output.toolCalls.isEmpty
@@ -93,16 +86,6 @@ extension App {
                 )
             }
             conversationStore.replaceMessages(conversation, with: newMessages)
-            let output = connection.output(for: conversation.id)
-            if output.isRunning {
-                if let freshConversation = conversationStore.findConversation(withId: conversation.id),
-                   let lastAssistant = freshConversation.messages.last, !lastAssistant.isUser {
-                    output.liveMessageId = lastAssistant.id
-                    output.seedForReconnect(lastAssistant.text, toolCalls: lastAssistant.toolCalls)
-                } else if output.liveMessageId != nil {
-                    output.liveMessageId = conversationStore.insertLiveMessage(into: conversation)
-                }
-            }
         }
     }
 
@@ -114,9 +97,11 @@ extension App {
 
     func handleReconnectRunning(conversationId: UUID) {
         if let conversation = conversationStore.findConversation(withId: conversationId),
-           let sessionId = conversation.sessionId,
-           let workingDirectory = conversation.workingDirectory, !workingDirectory.isEmpty {
-            connection.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory, environmentId: conversation.environmentId)
+           let lastMsg = conversation.messages.last, !lastMsg.isUser, lastMsg.wasInterrupted {
+            let output = connection.output(for: conversationId)
+            output.liveMessageId = lastMsg.id
+            output.seedForReconnect(lastMsg.text, toolCalls: lastMsg.toolCalls)
+            conversationStore.updateMessage(lastMsg.id, in: conversation) { $0.wasInterrupted = false }
         }
     }
 }

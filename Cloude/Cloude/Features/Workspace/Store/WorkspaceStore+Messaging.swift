@@ -141,6 +141,8 @@ extension WorkspaceStore {
                 environmentId: conv.environmentId
             )
 
+            connection.output(for: conv.id).liveMessageId = conversationStore.insertLiveMessage(into: conv)
+
             if isNewSession {
                 AppLogger.connectionInfo("request name suggestion convId=\(conv.id.uuidString)")
                 connection.requestNameSuggestion(text: text, context: [], conversationId: conv.id)

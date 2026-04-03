@@ -8,8 +8,6 @@ extension App {
         switch event {
         case .missedResponse(_, let text, _, let storedToolCalls, let interruptedConvId, let interruptedMsgId):
             handleMissedResponse(text: text, storedToolCalls: storedToolCalls, interruptedConvId: interruptedConvId, interruptedMsgId: interruptedMsgId)
-        case .streamingStarted(let convId):
-            handleStreamingStarted(conversationId: convId)
         case .disconnect(let convId, let output):
             handleDisconnect(conversationId: convId, output: output)
         case .memories(let sections):

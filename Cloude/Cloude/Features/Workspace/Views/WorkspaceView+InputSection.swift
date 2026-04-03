@@ -15,7 +15,6 @@ extension WorkspaceView {
                 skills: activeEnvConnection?.skills ?? [],
                 fileSearchResults: fileSearchResults,
                 conversationDefaultEffort: currentConversation?.defaultEffort,
-                conversationDefaultModel: currentConversation?.defaultModel,
                 environmentMismatch: hasEnvironmentMismatch,
                 isEnvironmentDisconnected: activeEnvConnection?.isAuthenticated != true,
                 onSend: {

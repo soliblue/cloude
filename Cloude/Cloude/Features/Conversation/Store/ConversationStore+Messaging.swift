@@ -102,5 +102,7 @@ extension ConversationStore {
             conversationSymbol: updatedConv.symbol,
             environmentId: updatedConv.environmentId
         )
+
+        connection.output(for: updatedConv.id).liveMessageId = insertLiveMessage(into: updatedConv)
     }
 }

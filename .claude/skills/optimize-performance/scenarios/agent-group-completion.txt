@@ -1,0 +1,22 @@
+This is a focused regression test for inline agent tool pills and completion behavior. Follow these instructions exactly.
+
+Write one short markdown paragraph labeled `Agent Group Intro`.
+
+Then make exactly 3 `Agent` tool calls in one continuous group with no text between them.
+
+For each `Agent` tool call:
+- Ask the agent to run one `Bash` command that sleeps and then lists files.
+- Use three different delays: `sleep 1`, `sleep 2`, and `sleep 3`.
+- End each command by running `ls`.
+
+Hard rules for the tool section:
+- Exactly 3 `Agent` tool calls total.
+- No text between the first and third `Agent` calls.
+- Do not use any tool other than `Agent` inside the main response.
+- Each spawned agent may use `Bash` only.
+
+After all 3 agent calls finish, write:
+- one short markdown paragraph labeled `Agent Group Completion`
+- a markdown heading
+- two bullet points
+- one final short paragraph

@@ -152,6 +152,8 @@ extension App {
             environmentId: updatedConv.environmentId
         )
 
+        connection.output(for: updatedConv.id).liveMessageId = conversationStore.insertLiveMessage(into: updatedConv)
+
         if isNewSession {
             AppLogger.connectionInfo("debug send request name suggestion convId=\(updatedConv.id.uuidString)")
             connection.requestNameSuggestion(text: trimmedText, context: [], conversationId: updatedConv.id)

@@ -1,7 +1,27 @@
 import SwiftUI
 import CloudeShared
 
-struct ObservedMessageBubble: View {
+private struct LiveToolRenderState: Equatable {
+    let name: String
+    let input: String?
+    let toolId: String
+    let parentToolId: String?
+    let textPosition: Int?
+    let state: ToolCallState
+    let editInfo: EditInfo?
+
+    nonisolated init(_ toolCall: ToolCall) {
+        name = toolCall.name
+        input = toolCall.input
+        toolId = toolCall.toolId
+        parentToolId = toolCall.parentToolId
+        textPosition = toolCall.textPosition
+        state = toolCall.state
+        editInfo = toolCall.editInfo
+    }
+}
+
+struct ObservedMessageBubble: View, Equatable {
     let message: ChatMessage
     let output: ConversationOutput
     var skills: [Skill] = []
@@ -13,6 +33,13 @@ struct ObservedMessageBubble: View {
     @State private var liveToolCalls: [ToolCall] = []
 
     private var isLive: Bool { output.liveMessageId == message.id }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.message == rhs.message &&
+        lhs.output === rhs.output &&
+        lhs.skills == rhs.skills &&
+        lhs.isRefreshing == rhs.isRefreshing
+    }
 
     var body: some View {
         #if DEBUG
@@ -29,10 +56,15 @@ struct ObservedMessageBubble: View {
             onSelectToolDetail: onSelectToolDetail
         )
         .onReceive(output.$text) { newText in
-            if isLive { liveText = newText }
+            if isLive && liveText != newText {
+                liveText = newText
+            }
         }
         .onReceive(output.$toolCalls) { newCalls in
-            if isLive { liveToolCalls = newCalls }
+            if isLive {
+                let changed = liveToolCalls.count != newCalls.count || zip(liveToolCalls, newCalls).contains { LiveToolRenderState($0) != LiveToolRenderState($1) }
+                if changed { liveToolCalls = newCalls }
+            }
         }
     }
 }

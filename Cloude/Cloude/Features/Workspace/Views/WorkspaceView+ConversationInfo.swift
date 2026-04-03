@@ -38,20 +38,3 @@ struct ConversationInfoLabel: View {
         }
     }
 }
-
-struct ConversationHeaderView: View {
-    let conversation: Conversation?
-    let onSelectConversation: (() -> Void)?
-
-    var body: some View {
-        Button(action: { onSelectConversation?() }) {
-            HStack(spacing: DS.Spacing.s) {
-                ConversationInfoLabel(conversation: conversation)
-                Spacer()
-            }
-            .padding(DS.Spacing.m)
-            .background(Color.themeSecondary)
-        }
-        .buttonStyle(.plain)
-    }
-}

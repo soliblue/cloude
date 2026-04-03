@@ -28,16 +28,6 @@ extension ConversationStore {
         return message.id
     }
 
-    func resumeOrInsertLiveMessage(output: ConversationOutput, into conversation: Conversation) {
-        if let lastMsg = conversation.messages.last, !lastMsg.isUser, lastMsg.wasInterrupted {
-            output.liveMessageId = lastMsg.id
-            output.seedForReconnect(lastMsg.text, toolCalls: lastMsg.toolCalls)
-            updateMessage(lastMsg.id, in: conversation) { $0.wasInterrupted = false }
-        } else {
-            output.liveMessageId = insertLiveMessage(into: conversation)
-        }
-    }
-
     func queueMessage(_ message: ChatMessage, to conversation: Conversation) {
         mutate(conversation.id) { $0.pendingMessages.append(message) }
     }

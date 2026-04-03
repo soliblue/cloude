@@ -11,6 +11,7 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(attributed)
+                    .contentTransition(.interpolate)
             }
 
         case .code(_, let content, let language, _):
@@ -30,6 +31,7 @@ struct StreamingBlockView: View {
                 InlineTextView(segments: segments)
             } else {
                 Text(content)
+                    .contentTransition(.interpolate)
             }
 
         case .toolGroup(_, let tools):
@@ -58,15 +60,11 @@ struct ToolGroupView: View {
         return topLevel.map { ($0, childrenByParent[$0.toolId] ?? []) }
     }
 
-    private var widgets: [(parent: ToolCall, children: [ToolCall])] {
-        toolHierarchy.filter { WidgetRegistry.isWidget($0.parent.name) }
-    }
-
-    private var nonWidgets: [(parent: ToolCall, children: [ToolCall])] {
-        toolHierarchy.filter { !WidgetRegistry.isWidget($0.parent.name) }
-    }
-
     var body: some View {
+        let hierarchy = toolHierarchy
+        let widgets = hierarchy.filter { WidgetRegistry.isWidget($0.parent.name) }
+        let nonWidgets = hierarchy.filter { !WidgetRegistry.isWidget($0.parent.name) }
+
         VStack(alignment: .leading, spacing: DS.Spacing.s) {
             ForEach(widgets, id: \.parent.toolId) { item in
                 WidgetRegistry.view(for: item.parent.name, input: item.parent.input)

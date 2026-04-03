@@ -49,6 +49,12 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - Without this, anyone who scans the IP can bypass Cloudflare's DDoS/WAF protections entirely
 - Setup script: `linux-relay/scripts/harden-firewall.sh`
 
+### Streaming Architecture
+- The iOS app shows a "live bubble" for the currently streaming response, identified by `ConversationOutput.liveMessageId`
+- Live bubble is inserted at send time (after `sendChat`), at every call site. On reconnect, `handleHistorySync` restores it from server history
+- **JSONL timing**: Claude Code writes JSONL entries per completed message turn. The currently streaming response is NOT in the JSONL until it completes. This means `syncHistory` (which reads the JSONL) will NOT include the in-progress assistant message. On reconnect, the "last assistant message" in history is the previous completed response, not the one being streamed
+- Chunks arriving during reconnect accumulate in `output.fullText` even before `liveMessageId` is set
+
 ### Engineering Philosophy
 - **Build over theorize** - prefer code and architecture that prove the idea over essays about the idea
 - **Simplicity as understanding** - the simplest solution is usually the one that understood the problem well enough to discard everything unnecessary

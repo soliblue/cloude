@@ -33,6 +33,7 @@ extension App {
                             conversationName: conv.name,
                             conversationSymbol: conv.symbol
                         )
+                        self.connection.output(for: targetConvId).liveMessageId = self.conversationStore.insertLiveMessage(into: conv)
                     }
                 }
             }

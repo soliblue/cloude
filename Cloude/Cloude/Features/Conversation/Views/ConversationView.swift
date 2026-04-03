@@ -10,13 +10,10 @@ struct ConversationView: View {
     let conversation: Conversation?
     var window: Window?
     var windowManager: WindowManager?
-    var showHeader: Bool = false
-    var isKeyboardVisible: Bool = false
     var onSelectConversation: (() -> Void)?
     var onInteraction: (() -> Void)?
     var onSelectRecentConversation: ((Conversation) -> Void)?
     var onSeeAllConversations: (() -> Void)?
-    var onNewConversation: (() -> Void)?
 
     private var effectiveConversation: Conversation? {
         if let conversation = conversation {
@@ -49,18 +46,9 @@ struct ConversationView: View {
         let output = convOutput
 
         VStack(spacing: 0) {
-            if showHeader {
-                ConversationHeaderView(
-                    conversation: effectiveConversation,
-                    onSelectConversation: onSelectConversation
-                )
-                Divider()
-            }
-
             ChatMessageList(
                 messages: messages,
                 queuedMessages: queuedMessages,
-                agentState: isThisConversationRunning ? .running : .idle,
                 conversationId: effectiveConversation?.id,
                 onRefresh: refreshMissedResponse,
                 onInteraction: onInteraction,
@@ -76,7 +64,6 @@ struct ConversationView: View {
                 windowManager: windowManager,
                 onSelectConversation: onSelectRecentConversation,
                 onSeeAllConversations: onSeeAllConversations,
-                onNewConversation: onNewConversation,
                 environmentStore: environmentStore,
                 conversationOutput: output
             )
@@ -84,13 +71,6 @@ struct ConversationView: View {
         .onChange(of: output?.isRunning) { oldValue, newValue in
             if oldValue == true && newValue == false {
                 handleCompletion()
-            }
-        }
-        .onAppear {
-            if let output = convOutput, output.isRunning, output.liveMessageId == nil {
-                if let conv = effectiveConversation {
-                    store.resumeOrInsertLiveMessage(output: output, into: conv)
-                }
             }
         }
     }

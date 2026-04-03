@@ -2,6 +2,32 @@ import SwiftUI
 
 extension WorkspaceView {
     @ViewBuilder
+    func windowPage(for window: Window, isActive: Bool) -> some View {
+        if isActive {
+            pagedWindowContent(for: window)
+                .opacity(1)
+                .zIndex(1)
+                .allowsHitTesting(true)
+                .animation(.easeIn(duration: 0.2).delay(0.01), value: currentPageIndex)
+        } else {
+            InactiveWindowPage(
+                snapshot: .init(
+                    id: window.id,
+                    tab: window.tab,
+                    conversationId: window.conversationId,
+                    fileBrowserRootPath: window.fileBrowserRootPath,
+                    gitRepoRootPath: window.gitRepoRootPath
+                ),
+                content: { AnyView(pagedWindowContent(for: window)) }
+            )
+            .opacity(0)
+            .zIndex(0)
+            .allowsHitTesting(false)
+            .animation(.easeOut(duration: 0.2).delay(0.2), value: currentPageIndex)
+        }
+    }
+
+    @ViewBuilder
     func pagedWindowContent(for window: Window) -> some View {
         let conversation = window.conversation(in: conversationStore)
 
@@ -26,23 +52,13 @@ extension WorkspaceView {
                     conversation: conversation,
                     window: window,
                     windowManager: windowManager,
-                    isKeyboardVisible: isKeyboardVisible,
+                    onSelectConversation: nil,
                     onInteraction: { dismissKeyboard() },
                     onSelectRecentConversation: { conv in
                         windowManager.linkToCurrentConversation(window.id, conversation: conv)
                     },
                     onSeeAllConversations: {
                         store.openConversationSearch()
-                    },
-                    onNewConversation: {
-                        let workingDir = store.activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore)
-                        let environmentId = store.activeWindowEnvironmentId(
-                            windowManager: windowManager,
-                            conversationStore: conversationStore,
-                            environmentStore: environmentStore
-                        )
-                        let newConv = conversationStore.newConversation(workingDirectory: workingDir, environmentId: environmentId)
-                        windowManager.linkToCurrentConversation(window.id, conversation: newConv)
                     }
                 )
                 .id(window.id)
@@ -73,5 +89,26 @@ extension WorkspaceView {
 
             }
         }
+    }
+}
+
+private struct InactiveWindowPageSnapshot: Equatable {
+    let id: UUID
+    let tab: WindowTab
+    let conversationId: UUID?
+    let fileBrowserRootPath: String?
+    let gitRepoRootPath: String?
+}
+
+private struct InactiveWindowPage: View, Equatable {
+    let snapshot: InactiveWindowPageSnapshot
+    let content: () -> AnyView
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.snapshot == rhs.snapshot
+    }
+
+    var body: some View {
+        content()
     }
 }

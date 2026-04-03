@@ -6,7 +6,6 @@ struct ChatMessageList: View {
     @AppStorage("fontSizeStep") var fontSizeStep = 0
     let messages: [ChatMessage]
     var queuedMessages: [ChatMessage] = []
-    let agentState: AgentState
     let conversationId: UUID?
     var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
@@ -18,7 +17,6 @@ struct ChatMessageList: View {
     var windowManager: WindowManager?
     var onSelectConversation: ((Conversation) -> Void)?
     var onSeeAllConversations: (() -> Void)?
-    var onNewConversation: (() -> Void)?
     var environmentStore: EnvironmentStore?
     var conversationOutput: ConversationOutput?
 

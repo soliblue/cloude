@@ -24,11 +24,7 @@ struct WorkspaceView: View {
             ZStack {
                 ForEach(Array(windowManager.windows.enumerated()), id: \.element.id) { index, window in
                     let isActive = currentPageIndex == index
-                    pagedWindowContent(for: window)
-                        .opacity(isActive ? 1 : 0)
-                        .zIndex(isActive ? 1 : 0)
-                        .allowsHitTesting(isActive)
-                        .animation(isActive ? .easeIn(duration: 0.2).delay(0.01) : .easeOut(duration: 0.2).delay(0.2), value: currentPageIndex)
+                    windowPage(for: window, isActive: isActive)
                 }
             }
             .onChange(of: currentPageIndex) { oldValue, newValue in

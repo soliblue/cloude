@@ -1,38 +1,65 @@
 import SwiftUI
 
+private struct FrozenState {
+    var blocks: [StreamingBlock] = []
+    var upTo = ""
+    var blockCount = 0
+    var lastId = ""
+
+    mutating func reset() {
+        blocks = []
+        upTo = ""
+        blockCount = 0
+        lastId = ""
+    }
+}
+
+private struct SplitCache {
+    var offset = 0
+    var insideFence = false
+    var lastBlankOffset: Int?
+
+    mutating func reset() {
+        offset = 0
+        insideFence = false
+        lastBlankOffset = nil
+    }
+}
+
 struct StreamingMarkdownView: View {
     let text: String
     var toolCalls: [ToolCall] = []
     var onSelectTool: ((ToolCall, [ToolCall]) -> Void)?
-    @State private var frozenBlocks: [StreamingBlock] = []
-    @State private var frozenUpTo = ""
-    @State private var frozenBlockCount = 0
-    @State private var frozenLastId = ""
+    @State private var frozen = FrozenState()
     @State private var tailBlocks: [StreamingBlock] = []
     @State private var lastText = ""
-    @State private var lastToolRevision = ""
-    @State private var cachedSplitOffset = 0
-    @State private var cachedFenceState = false
-    @State private var cachedLastBlankOffset: Int?
+    @State private var lastToolRevision = 0
+    @State private var splitCache = SplitCache()
 
-    private var toolRevision: String {
-        toolCalls.map { "\($0.toolId):\($0.state.rawValue)" }.joined(separator: ",")
+    private var toolRevision: Int {
+        var hasher = Hasher()
+        for call in toolCalls {
+            hasher.combine(call.toolId)
+            hasher.combine(call.state.rawValue)
+        }
+        return hasher.finalize()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             FrozenBlocksSection(
-                blocks: frozenBlocks,
-                blockCount: frozenBlockCount,
-                lastBlockId: frozenLastId,
+                blocks: frozen.blocks,
+                blockCount: frozen.blockCount,
+                lastBlockId: frozen.lastId,
                 onSelectTool: onSelectTool
             )
             .equatable()
-            ForEach(tailBlocks.map { $0.prefixed("tail-") }, id: \.id) { block in
+            ForEach(tailBlocks, id: \.id) { block in
                 StreamingBlockView(block: block, onSelectTool: onSelectTool)
                     .padding(.bottom, DS.Spacing.s)
             }
         }
+        .animation(.easeOut(duration: 0.6), value: text)
         .onAppear { updateIncremental() }
         .onChange(of: text) { _, _ in updateIncremental() }
         .onChange(of: toolRevision) { _, _ in updateIncremental() }
@@ -41,54 +68,41 @@ struct StreamingMarkdownView: View {
     private func updateIncremental() {
         let revision = toolRevision
         if text == lastText && revision == lastToolRevision { return }
-        let textChanged = text != lastText
         lastText = text
         lastToolRevision = revision
 
         if !toolCalls.isEmpty {
-            frozenBlocks = []
-            frozenUpTo = ""
-            frozenBlockCount = 0
-            frozenLastId = ""
-            cachedSplitOffset = 0
-            cachedFenceState = false
-            cachedLastBlankOffset = nil
-            tailBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls)
+            frozen.reset()
+            splitCache.reset()
+            tailBlocks = StreamingMarkdownParser.parseWithToolCalls(text, toolCalls: toolCalls).map { $0.prefixed("tail-") }
             return
         }
 
-        let splitIndex = textChanged ? stableSplitPointIncremental(in: text) : stableSplitPointIncremental(in: text)
-
-        if let splitIndex {
+        if let splitIndex = stableSplitPointIncremental(in: text) {
             let frozenText = String(text[text.startIndex..<splitIndex])
-            if frozenText != frozenUpTo {
-                frozenBlocks = StreamingMarkdownParser.parse(frozenText)
-                frozenUpTo = frozenText
-                frozenBlockCount = frozenBlocks.count
-                frozenLastId = frozenBlocks.last?.id ?? ""
+            if frozenText != frozen.upTo {
+                frozen.blocks = StreamingMarkdownParser.parse(frozenText)
+                frozen.upTo = frozenText
+                frozen.blockCount = frozen.blocks.count
+                frozen.lastId = frozen.blocks.last?.id ?? ""
             }
-            tailBlocks = StreamingMarkdownParser.parse(String(text[splitIndex...]))
+            tailBlocks = StreamingMarkdownParser.parse(String(text[splitIndex...])).map { $0.prefixed("tail-") }
         } else {
-            frozenBlocks = []
-            frozenUpTo = ""
-            frozenBlockCount = 0
-            frozenLastId = ""
-            tailBlocks = StreamingMarkdownParser.parse(text)
+            frozen.reset()
+            tailBlocks = StreamingMarkdownParser.parse(text).map { $0.prefixed("tail-") }
         }
     }
 
     private func stableSplitPointIncremental(in text: String) -> String.Index? {
         let utf8 = text.utf8
-        if utf8.count <= cachedSplitOffset {
-            cachedSplitOffset = 0
-            cachedFenceState = false
-            cachedLastBlankOffset = nil
+        if utf8.count <= splitCache.offset {
+            splitCache.reset()
             return nil
         }
 
-        let startIndex = utf8.index(utf8.startIndex, offsetBy: cachedSplitOffset)
-        var insideFence = cachedFenceState
-        var lastBlankIndex: String.Index? = cachedLastBlankOffset.map { utf8.index(utf8.startIndex, offsetBy: $0) }
+        let startIndex = utf8.index(utf8.startIndex, offsetBy: splitCache.offset)
+        var insideFence = splitCache.insideFence
+        var lastBlankIndex: String.Index? = splitCache.lastBlankOffset.map { utf8.index(utf8.startIndex, offsetBy: $0) }
         var index = startIndex
         var previousWasBlank = false
         var previousBlankIndex: String.Index?
@@ -120,9 +134,9 @@ struct StreamingMarkdownView: View {
             }
         }
 
-        cachedSplitOffset = utf8.count
-        cachedFenceState = insideFence
-        cachedLastBlankOffset = lastBlankIndex.map { utf8.distance(from: utf8.startIndex, to: $0) }
+        splitCache.offset = utf8.count
+        splitCache.insideFence = insideFence
+        splitCache.lastBlankOffset = lastBlankIndex.map { utf8.distance(from: utf8.startIndex, to: $0) }
         return lastBlankIndex
     }
 }

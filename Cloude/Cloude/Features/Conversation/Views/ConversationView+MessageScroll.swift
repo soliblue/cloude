@@ -64,6 +64,7 @@ extension ChatMessageList {
                     isRefreshing: refreshingMessageId == message.id,
                     onSelectToolDetail: { selectedToolDetail = $0 }
                 )
+                .equatable()
                 .readingProgress(
                     isAssistant: !message.isUser,
                     viewportHeight: viewportHeight

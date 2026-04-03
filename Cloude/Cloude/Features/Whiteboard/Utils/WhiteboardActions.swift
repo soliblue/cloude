@@ -89,6 +89,7 @@ extension App {
                         conversationName: conv.name,
                         conversationSymbol: conv.symbol
                     )
+                    connection.output(for: targetConvId).liveMessageId = conversationStore.insertLiveMessage(into: conv)
                 }
             }
 
@@ -111,6 +112,7 @@ extension App {
                         conversationName: conv.name,
                         conversationSymbol: conv.symbol
                     )
+                    connection.output(for: targetConvId).liveMessageId = conversationStore.insertLiveMessage(into: conv)
                 }
             }
 

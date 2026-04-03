@@ -5,13 +5,6 @@ import Combine
 import CloudeShared
 
 extension EnvironmentConnection {
-    private func ensureLiveMessage(_ mgr: ConnectionManager, convId: UUID) {
-        let out = mgr.output(for: convId)
-        if out.liveMessageId == nil {
-            mgr.events.send(.streamingStarted(conversationId: convId))
-        }
-    }
-
     private func ensureRunning(_ out: ConversationOutput) {
         if !out.isRunning { out.isRunning = true }
     }
@@ -20,7 +13,6 @@ extension EnvironmentConnection {
         guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
         AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count)")
         AppLogger.endInterval("chat.firstToken", key: convId.uuidString)
-        ensureLiveMessage(mgr, convId: convId)
         let out = mgr.output(for: convId)
         out.completeTopLevelExecutingTools()
         out.appendText(text)
@@ -47,7 +39,6 @@ extension EnvironmentConnection {
         out.isRunning = (state == .running || state == .compacting)
         out.isCompacting = (state == .compacting)
         if state == .running || state == .compacting {
-            ensureLiveMessage(mgr, convId: convId)
             if !wasRunning {
                 mgr.events.send(.reconnectRunning(conversationId: convId))
             }
@@ -82,7 +73,6 @@ extension EnvironmentConnection {
     func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
         AppLogger.connectionInfo("tool call convId=\(convId.uuidString) toolId=\(toolId) name=\(name)")
-        ensureLiveMessage(mgr, convId: convId)
         let out = mgr.output(for: convId)
         ensureRunning(out)
         if parentToolId == nil {
@@ -143,9 +133,7 @@ extension EnvironmentConnection {
     func handleNoMissedResponse(_ mgr: ConnectionManager, sessionId: String) {
         if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
             interruptedSession = nil
-            let output = mgr.output(for: interrupted.conversationId)
-            output.reset()
-            output.isRunning = false
+            mgr.events.send(.reconnectRunning(conversationId: interrupted.conversationId))
         }
     }
 

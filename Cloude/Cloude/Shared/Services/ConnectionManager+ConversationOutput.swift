@@ -37,7 +37,6 @@ final class ConversationOutput: ObservableObject {
         }
         lastDrainTime = CACurrentMediaTime()
         let link = CADisplayLink(target: self, selector: #selector(drainTick))
-        link.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
