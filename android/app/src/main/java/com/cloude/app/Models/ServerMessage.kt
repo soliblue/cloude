@@ -33,6 +33,7 @@ sealed class ServerMessage {
     data class GitStatusResult(val status: GitStatusInfo) : ServerMessage()
     data class GitDiffResult(val path: String, val diff: String) : ServerMessage()
     data class GitCommitResult(val success: Boolean, val message: String? = null) : ServerMessage()
+    data class GitLogResult(val path: String, val commits: List<GitCommit>) : ServerMessage()
     data class Transcription(val text: String) : ServerMessage()
     data class WhisperReady(val ready: Boolean) : ServerMessage()
     data class Memories(val sections: List<MemorySection>) : ServerMessage()
@@ -151,6 +152,10 @@ sealed class ServerMessage {
                 "git_commit_result" -> GitCommitResult(
                     success = obj["success"]?.jsonPrimitive?.boolean ?: false,
                     message = obj.strOrNull("message")
+                )
+                "git_log_result" -> GitLogResult(
+                    path = obj.str("path") ?: "",
+                    commits = obj["commits"]?.jsonArray?.map { json.decodeFromJsonElement(GitCommit.serializer(), it) } ?: emptyList()
                 )
                 "transcription" -> Transcription(text = obj.str("text") ?: "")
                 "whisper_ready" -> WhisperReady(ready = obj["ready"]?.jsonPrimitive?.boolean ?: false)

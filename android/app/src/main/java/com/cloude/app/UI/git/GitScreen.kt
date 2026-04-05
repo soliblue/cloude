@@ -53,6 +53,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.cloude.app.Models.ClientMessage
+import com.cloude.app.Models.GitCommit
 import com.cloude.app.Models.GitFileStatus
 import com.cloude.app.Models.GitStatusInfo
 import com.cloude.app.Models.ServerMessage
@@ -71,6 +72,7 @@ fun GitScreen(
     modifier: Modifier = Modifier
 ) {
     var status by remember { mutableStateOf<GitStatusInfo?>(null) }
+    var recentCommits by remember { mutableStateOf<List<GitCommit>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedFile by remember { mutableStateOf<GitFileStatus?>(null) }
     var diffText by remember { mutableStateOf<String?>(null) }
@@ -91,6 +93,9 @@ fun GitScreen(
                 is ServerMessage.GitStatusResult -> {
                     status = msg.status
                     isLoading = false
+                    if (msg.status.files.isEmpty()) {
+                        connectionManager.send(ClientMessage.GitLog(workingDirectory), environmentId)
+                    }
                     msg.status.files.filter { it.path.endsWith("/") }.forEach { dir ->
                         val fullPath = if (dir.path.startsWith("/")) dir.path
                             else "$workingDirectory/${dir.path}"
@@ -117,6 +122,9 @@ fun GitScreen(
                 is ServerMessage.GitDiffResult -> {
                     Log.d("Cloude", "GitDiff received: path=${msg.path} len=${msg.diff.length}")
                     if (selectedFile != null) diffText = msg.diff
+                }
+                is ServerMessage.GitLogResult -> {
+                    recentCommits = msg.commits
                 }
                 is ServerMessage.FileContent -> {
                     Log.d("Cloude", "FileContent in Git: path=${msg.path} selectedFile=${selectedFile?.path}")
@@ -195,12 +203,29 @@ fun GitScreen(
                 CircularProgressIndicator(color = Accent, modifier = Modifier.size(DS.Size.m))
             }
         } else if (status?.files.isNullOrEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "Working tree clean",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
-                )
+            if (recentCommits.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Working tree clean",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                    )
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item {
+                        Text(
+                            text = "Recent Commits",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Accent,
+                            modifier = Modifier.padding(start = DS.Spacing.l, top = DS.Spacing.m, bottom = DS.Spacing.xs)
+                        )
+                    }
+                    items(recentCommits, key = { it.hash }) { commit ->
+                        GitCommitRow(commit)
+                    }
+                    item { Spacer(modifier = Modifier.height(DS.Spacing.l)) }
+                }
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -471,4 +496,58 @@ private fun CommitDialog(fileCount: Int, onCommit: (String) -> Unit, onDismiss: 
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
     )
+}
+
+@Composable
+private fun GitCommitRow(commit: GitCommit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = DS.Spacing.l, vertical = DS.Spacing.s),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = commit.hash.take(7),
+            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+            color = Accent,
+            modifier = Modifier.width(56.dp)
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = commit.message.lines().first(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)) {
+                Text(
+                    text = commit.author.substringBefore(" <"),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                )
+                if (commit.date > 0) {
+                    Text(
+                        text = formatCommitTime(commit.date),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun formatCommitTime(epochSeconds: Double): String {
+    val diff = (System.currentTimeMillis() / 1000.0 - epochSeconds).toLong()
+    val minutes = diff / 60
+    val hours = minutes / 60
+    val days = hours / 24
+    return when {
+        minutes < 1 -> "now"
+        minutes < 60 -> "${minutes}m ago"
+        hours < 24 -> "${hours}h ago"
+        days < 7 -> "${days}d ago"
+        else -> "${days / 7}w ago"
+    }
 }

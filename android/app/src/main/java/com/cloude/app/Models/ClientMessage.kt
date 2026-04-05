@@ -30,6 +30,7 @@ sealed class ClientMessage {
     data class GitStatus(val path: String) : ClientMessage()
     data class GitDiff(val path: String, val file: String? = null, val staged: Boolean = false) : ClientMessage()
     data class GitCommit(val path: String, val message: String, val files: List<String>) : ClientMessage()
+    data class GitLog(val path: String, val count: Int = 10) : ClientMessage()
     data class Transcribe(val audioBase64: String) : ClientMessage()
     data class GetMemories(val workingDirectory: String) : ClientMessage()
     data object GetProcesses : ClientMessage()
@@ -111,6 +112,11 @@ sealed class ClientMessage {
                 put("path", msg.path)
                 put("message", msg.message)
                 put("files", buildJsonArray { msg.files.forEach { add(JsonPrimitive(it)) } })
+            }
+            is GitLog -> {
+                put("type", "git_log")
+                put("path", msg.path)
+                put("count", msg.count)
             }
             is Transcribe -> {
                 put("type", "transcribe")

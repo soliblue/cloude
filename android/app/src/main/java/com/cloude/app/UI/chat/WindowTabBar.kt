@@ -15,10 +15,12 @@ import androidx.compose.material.icons.filled.Difference
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import com.cloude.app.Models.WindowType
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
@@ -26,6 +28,7 @@ import com.cloude.app.Utilities.DS
 @Composable
 fun WindowTabBar(
     activeType: WindowType,
+    gitBranch: String = "",
     onTypeSelected: (WindowType) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -48,7 +51,7 @@ fun WindowTabBar(
         ) {
             tabs.forEach { (type, icon) ->
                 val isActive = type == activeType
-                Box(
+                Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(DS.Radius.m))
                         .then(
@@ -57,7 +60,8 @@ fun WindowTabBar(
                         )
                         .clickable { onTypeSelected(type) }
                         .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s),
-                    contentAlignment = Alignment.Center
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
                 ) {
                     Icon(
                         imageVector = icon,
@@ -65,6 +69,15 @@ fun WindowTabBar(
                         tint = if (isActive) Accent else MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
                         modifier = Modifier.size(DS.Icon.l)
                     )
+                    if (type == WindowType.GitChanges && gitBranch.isNotEmpty()) {
+                        Text(
+                            text = gitBranch,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isActive) Accent else MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }

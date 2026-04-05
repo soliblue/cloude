@@ -13,10 +13,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import com.cloude.app.Models.ServerMessage
 import com.cloude.app.Models.WindowType
+import kotlinx.coroutines.flow.filterIsInstance
 import com.cloude.app.Services.ChatViewModel
 import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.Services.WindowManager
@@ -35,6 +39,13 @@ fun MainScreen(
     val windows by windowManager.windows.collectAsState()
     val activeIndex by windowManager.activeIndex.collectAsState()
     val drafts = remember { mutableStateMapOf<String, String>() }
+    var gitBranch by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        connectionManager.events
+            .filterIsInstance<ServerMessage.GitStatusResult>()
+            .collect { gitBranch = it.status.branch }
+    }
 
     val pagerState = rememberPagerState(
         initialPage = activeIndex,
@@ -58,6 +69,7 @@ fun MainScreen(
     Column(modifier = modifier.fillMaxSize().imePadding()) {
         WindowTabBar(
             activeType = activeWindow?.type ?: WindowType.Chat,
+            gitBranch = gitBranch,
             onTypeSelected = { type ->
                 activeWindow?.let { windowManager.setWindowType(it.id, type) }
             }

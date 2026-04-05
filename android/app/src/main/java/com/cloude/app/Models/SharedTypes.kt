@@ -52,6 +52,14 @@ data class GitFileStatus(
 )
 
 @Serializable
+data class GitCommit(
+    val hash: String,
+    val message: String,
+    val author: String,
+    val date: Double = 0.0
+)
+
+@Serializable
 data class MemorySection(
     val title: String,
     val content: String
