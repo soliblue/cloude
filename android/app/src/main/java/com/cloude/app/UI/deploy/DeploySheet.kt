@@ -103,16 +103,24 @@ fun DeploySheet(
                     }
                     msg is ServerMessage.FileContent && phase == "transferring" -> {
                         outputLines.add("APK received (${msg.size / 1024}KB)")
-                        outputLines.add("Installing...")
+                        outputLines.add("Saving APK...")
                         phase = "installing"
-                        val success = saveAndInstall(context, msg.data)
+                        val apkFile = withContext(Dispatchers.IO) {
+                            val bytes = Base64.decode(msg.data, Base64.DEFAULT)
+                            val file = File(context.cacheDir, "cloude-update.apk")
+                            file.writeBytes(bytes)
+                            file
+                        }
+                        outputLines.add("Opening installer...")
+                        kotlinx.coroutines.delay(300)
+                        val success = launchInstall(context, apkFile)
                         if (success) {
                             phase = "done"
                             outputLines.add("")
                             outputLines.add("Install dialog opened!")
                         } else {
                             phase = "error"
-                            outputLines.add("Failed to save APK")
+                            outputLines.add("Failed to open installer")
                         }
                     }
                     else -> {}
@@ -201,18 +209,7 @@ fun DeploySheet(
     }
 }
 
-private suspend fun saveAndInstall(context: Context, base64Data: String): Boolean {
-    val apkFile = withContext(Dispatchers.IO) {
-        val bytes = try {
-            Base64.decode(base64Data, Base64.DEFAULT)
-        } catch (e: Exception) {
-            return@withContext null
-        }
-        val file = File(context.cacheDir, "cloude-update.apk")
-        file.writeBytes(bytes)
-        file
-    } ?: return false
-
+private fun launchInstall(context: Context, apkFile: File): Boolean {
     val uri = FileProvider.getUriForFile(context, "com.cloude.app.fileprovider", apkFile)
     val intent = Intent(Intent.ACTION_VIEW).apply {
         setDataAndType(uri, "application/vnd.android.package-archive")
