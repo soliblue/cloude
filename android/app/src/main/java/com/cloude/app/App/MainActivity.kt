@@ -78,6 +78,7 @@ import com.cloude.app.UI.chat.SkillsSheet
 import com.cloude.app.UI.deploy.DeploySheet
 import com.cloude.app.UI.memories.MemoriesSheet
 import com.cloude.app.UI.settings.SettingsScreen
+import com.cloude.app.UI.whiteboard.WhiteboardSheet
 import com.cloude.app.Models.MemorySection
 import com.cloude.app.UI.theme.CloudeTheme
 import com.cloude.app.Utilities.Accent
@@ -427,6 +428,16 @@ class MainActivity : ComponentActivity() {
                                 chatViewModel.dismissSkills()
                             },
                             onDismiss = { chatViewModel.dismissSkills() }
+                        )
+                    }
+
+                    val showWhiteboard by chatViewModel.showWhiteboard.collectAsState()
+                    if (showWhiteboard) {
+                        val wbState by chatViewModel.whiteboardState.collectAsState()
+                        WhiteboardSheet(
+                            state = wbState,
+                            onStateChange = { chatViewModel.updateWhiteboardState(it) },
+                            onDismiss = { chatViewModel.dismissWhiteboard() }
                         )
                     }
 

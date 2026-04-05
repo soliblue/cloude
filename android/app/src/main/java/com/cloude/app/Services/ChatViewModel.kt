@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 
@@ -67,6 +68,12 @@ class ChatViewModel(
 
     private val _showSkills = MutableStateFlow(false)
     val showSkills: StateFlow<Boolean> = _showSkills
+
+    private val _whiteboardState = MutableStateFlow(com.cloude.app.UI.whiteboard.WhiteboardCanvasState())
+    val whiteboardState: StateFlow<com.cloude.app.UI.whiteboard.WhiteboardCanvasState> = _whiteboardState
+
+    private val _showWhiteboard = MutableStateFlow(false)
+    val showWhiteboard: StateFlow<Boolean> = _showWhiteboard
 
     private val _deviceActions = MutableSharedFlow<DeviceAction>(extraBufferCapacity = 8)
     val deviceActions: SharedFlow<DeviceAction> = _deviceActions
@@ -269,6 +276,58 @@ class ChatViewModel(
 
     fun showSkills() {
         _showSkills.value = true
+    }
+
+    fun updateWhiteboardState(state: com.cloude.app.UI.whiteboard.WhiteboardCanvasState) {
+        _whiteboardState.value = state
+    }
+
+    fun dismissWhiteboard() {
+        _showWhiteboard.value = false
+    }
+
+    fun handleWhiteboardAction(action: String, json: kotlinx.serialization.json.JsonObject?) {
+        val state = _whiteboardState.value
+        when (action) {
+            "open" -> _showWhiteboard.value = true
+            "clear" -> _whiteboardState.value = state.copy(elements = emptyList())
+            "add" -> {
+                val elements = json?.get("elements")?.let {
+                    deviceJson.decodeFromJsonElement(
+                        kotlinx.serialization.builtins.ListSerializer(com.cloude.app.UI.whiteboard.WhiteboardElement.serializer()),
+                        it
+                    )
+                } ?: emptyList()
+                _whiteboardState.value = state.copy(elements = state.elements + elements)
+                _showWhiteboard.value = true
+            }
+            "remove" -> {
+                val ids = json?.get("ids")?.jsonArray?.mapNotNull { it.jsonPrimitive.content }?.toSet() ?: emptySet()
+                _whiteboardState.value = state.copy(elements = state.elements.filter { it.id !in ids })
+            }
+            "update" -> {
+                val id = json?.get("id")?.jsonPrimitive?.content ?: return
+                _whiteboardState.value = state.copy(elements = state.elements.map { el ->
+                    if (el.id == id) el.copy(
+                        x = json["x"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.x,
+                        y = json["y"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.y,
+                        w = json["w"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.w,
+                        h = json["h"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.h,
+                        label = json["label"]?.jsonPrimitive?.content ?: el.label,
+                        fill = json["fill"]?.jsonPrimitive?.content ?: el.fill,
+                        stroke = json["stroke"]?.jsonPrimitive?.content ?: el.stroke
+                    ) else el
+                })
+            }
+            "viewport" -> {
+                val vp = state.viewport
+                _whiteboardState.value = state.copy(viewport = vp.copy(
+                    x = json?.get("x")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.x,
+                    y = json?.get("y")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.y,
+                    zoom = json?.get("zoom")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.zoom
+                ))
+            }
+        }
     }
 
     fun dismissSkills() {
@@ -536,6 +595,12 @@ class ChatViewModel(
             is ServerMessage.ToolCall -> {
                 if (message.name.startsWith("mcp__ios__")) {
                     handleDeviceToolCall(message.name, message.input, message.conversationId)
+                } else if (message.name.startsWith("mcp__whiteboard__")) {
+                    val action = message.name.removePrefix("mcp__whiteboard__")
+                    val json = message.input?.let {
+                        try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
+                    }
+                    handleWhiteboardAction(action, json)
                 } else {
                     val convId = resolveConversationId(message.conversationId) ?: return
                     connectionManager.output(convId).addToolCall(
