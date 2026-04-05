@@ -41,7 +41,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
@@ -75,6 +78,10 @@ fun DebugOverlay(
     val lastError by conn?.lastError?.collectAsState() ?: remember { mutableStateOf(null) }
     var processes by remember { mutableStateOf<List<AgentProcessInfo>>(emptyList()) }
     var uptime by remember { mutableLongStateOf(0L) }
+    var parentWidth by remember { mutableFloatStateOf(0f) }
+    var parentHeight by remember { mutableFloatStateOf(0f) }
+    var pillWidth by remember { mutableFloatStateOf(0f) }
+    var pillHeight by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -91,6 +98,10 @@ fun DebugOverlay(
 
     Box(
         modifier = modifier
+            .onGloballyPositioned { coords ->
+                parentWidth = coords.size.width.toFloat()
+                parentHeight = coords.size.height.toFloat()
+            }
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .pointerInput(expanded) {
                 if (!expanded) {
@@ -100,8 +111,10 @@ fun DebugOverlay(
                         }
                     ) { change, dragAmount ->
                         change.consume()
-                        offsetX += dragAmount.x
-                        offsetY += dragAmount.y
+                        val maxX = parentWidth - pillWidth
+                        val maxY = parentHeight - pillHeight
+                        offsetX = (offsetX + dragAmount.x).coerceIn(0f, maxX.coerceAtLeast(0f))
+                        offsetY = (offsetY + dragAmount.y).coerceIn(-maxY.coerceAtLeast(0f), 0f)
                     }
                 }
             }
@@ -110,6 +123,10 @@ fun DebugOverlay(
         if (!expanded) {
             Row(
                 modifier = Modifier
+                    .onGloballyPositioned { coords ->
+                        pillWidth = coords.size.width.toFloat()
+                        pillHeight = coords.size.height.toFloat()
+                    }
                     .clip(RoundedCornerShape(DS.Radius.m))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f))
                     .clickable { expanded = true; offsetX = 0f; offsetY = 0f }
