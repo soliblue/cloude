@@ -379,6 +379,36 @@ class ChatViewModel(
         }
     }
 
+    private fun handleWhiteboardActionForConversation(convId: String, action: String, json: kotlinx.serialization.json.JsonObject?) {
+        scope.launch(Dispatchers.IO) {
+            val file = File(whiteboardDir(), "$convId.json")
+            val existing = if (file.exists()) {
+                try { deviceJson.decodeFromString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), file.readText()) }
+                catch (_: Exception) { com.cloude.app.UI.whiteboard.WhiteboardPersistState() }
+            } else com.cloude.app.UI.whiteboard.WhiteboardPersistState()
+
+            val updated = when (action) {
+                "clear" -> existing.copy(elements = emptyList())
+                "add" -> {
+                    val elements = json?.get("elements")?.let {
+                        deviceJson.decodeFromJsonElement(
+                            kotlinx.serialization.builtins.ListSerializer(com.cloude.app.UI.whiteboard.WhiteboardElement.serializer()),
+                            it
+                        )
+                    } ?: emptyList()
+                    existing.copy(elements = existing.elements + elements)
+                }
+                "remove" -> {
+                    val ids = json?.get("ids")?.jsonArray?.mapNotNull { it.jsonPrimitive.content }?.toSet() ?: emptySet()
+                    existing.copy(elements = existing.elements.filter { it.id !in ids })
+                }
+                else -> existing
+            }
+            if (updated.elements.isEmpty()) file.delete()
+            else file.writeText(deviceJson.encodeToString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), updated))
+        }
+    }
+
     fun dismissSkills() {
         _showSkills.value = false
     }
@@ -646,12 +676,14 @@ class ChatViewModel(
                     handleDeviceToolCall(message.name, message.input, message.conversationId)
                 } else if (message.name.startsWith("mcp__whiteboard__")) {
                     val convId = resolveConversationId(message.conversationId)
+                    val action = message.name.removePrefix("mcp__whiteboard__")
+                    val json = message.input?.let {
+                        try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
+                    }
                     if (convId == _conversation.value.id) {
-                        val action = message.name.removePrefix("mcp__whiteboard__")
-                        val json = message.input?.let {
-                            try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
-                        }
                         handleWhiteboardAction(action, json)
+                    } else if (convId != null) {
+                        handleWhiteboardActionForConversation(convId, action, json)
                     }
                 } else {
                     val convId = resolveConversationId(message.conversationId) ?: return
