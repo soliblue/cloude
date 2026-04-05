@@ -642,11 +642,14 @@ class ChatViewModel(
                 if (message.name.startsWith("mcp__ios__")) {
                     handleDeviceToolCall(message.name, message.input, message.conversationId)
                 } else if (message.name.startsWith("mcp__whiteboard__")) {
-                    val action = message.name.removePrefix("mcp__whiteboard__")
-                    val json = message.input?.let {
-                        try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
+                    val convId = resolveConversationId(message.conversationId)
+                    if (convId == _conversation.value.id) {
+                        val action = message.name.removePrefix("mcp__whiteboard__")
+                        val json = message.input?.let {
+                            try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
+                        }
+                        handleWhiteboardAction(action, json)
                     }
-                    handleWhiteboardAction(action, json)
                 } else {
                     val convId = resolveConversationId(message.conversationId) ?: return
                     connectionManager.output(convId).addToolCall(
