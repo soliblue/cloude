@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -27,14 +25,10 @@ import androidx.compose.material.icons.filled.PanTool
 import androidx.compose.material.icons.filled.Rectangle
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.TrendingFlat
-import androidx.compose.material.icons.filled.Undo
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,27 +41,48 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import java.util.UUID
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WhiteboardSheet(
     state: WhiteboardCanvasState,
     onStateChange: (WhiteboardCanvasState) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var drawingPoints by remember { mutableStateOf<List<List<Double>>>(emptyList()) }
     var arrowSource by remember { mutableStateOf<String?>(null) }
 
-    ModalBottomSheet(
+    Dialog(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.background
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = DS.Spacing.s, vertical = DS.Spacing.xs),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onDismiss, modifier = Modifier.size(DS.Size.m)) {
+                    Icon(Icons.Default.Close, "Close", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(DS.Icon.m))
+                }
+                Text(
+                    text = "Whiteboard",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f).padding(start = DS.Spacing.s)
+                )
+            }
+
             Toolbar(
                 activeTool = state.activeTool,
                 activeColor = state.activeColor,
@@ -83,8 +98,7 @@ fun WhiteboardSheet(
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp)
+                    .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
                     .pointerInput(Unit) {
                         detectTransformGestures { _, pan, zoom, _ ->
@@ -107,78 +121,78 @@ fun WhiteboardSheet(
                             when (state.activeTool) {
                                 ActiveTool.Hand -> {}
                                 ActiveTool.Pencil -> detectDragGestures(
-                                onDragStart = { offset ->
-                                    drawingPoints = listOf(screenToCanvas(offset, size, state.viewport))
-                                },
-                                onDrag = { _, dragAmount ->
-                                    val last = drawingPoints.lastOrNull() ?: return@detectDragGestures
-                                    val vp = state.viewport
-                                    val dx = dragAmount.x / vp.zoom
-                                    val dy = dragAmount.y / vp.zoom
-                                    drawingPoints = drawingPoints + listOf(listOf(last[0] + dx, last[1] + dy))
-                                },
-                                onDragEnd = {
-                                    if (drawingPoints.size >= 2) {
+                                    onDragStart = { offset ->
+                                        drawingPoints = listOf(screenToCanvas(offset, size, state.viewport))
+                                    },
+                                    onDrag = { _, dragAmount ->
+                                        val last = drawingPoints.lastOrNull() ?: return@detectDragGestures
+                                        val vp = state.viewport
+                                        val dx = dragAmount.x / vp.zoom
+                                        val dy = dragAmount.y / vp.zoom
+                                        drawingPoints = drawingPoints + listOf(listOf(last[0] + dx, last[1] + dy))
+                                    },
+                                    onDragEnd = {
+                                        if (drawingPoints.size >= 2) {
+                                            val el = WhiteboardElement(
+                                                id = UUID.randomUUID().toString().take(8),
+                                                type = "path",
+                                                points = drawingPoints,
+                                                stroke = state.activeColor,
+                                                strokeWidth = 2.0
+                                            )
+                                            onStateChange(state.copy(elements = state.elements + el))
+                                        }
+                                        drawingPoints = emptyList()
+                                    }
+                                )
+                                ActiveTool.Arrow -> detectTapGestures { offset ->
+                                    val canvas = screenToCanvas(offset, size, state.viewport)
+                                    val hit = hitTest(state.elements, canvas[0], canvas[1])
+                                    if (arrowSource == null) {
+                                        arrowSource = hit?.id
+                                    } else if (hit != null && hit.id != arrowSource) {
                                         val el = WhiteboardElement(
                                             id = UUID.randomUUID().toString().take(8),
-                                            type = "path",
-                                            points = drawingPoints,
-                                            stroke = state.activeColor,
-                                            strokeWidth = 2.0
+                                            type = "arrow",
+                                            from = arrowSource,
+                                            to = hit.id,
+                                            stroke = state.activeColor
+                                        )
+                                        onStateChange(state.copy(elements = state.elements + el))
+                                        arrowSource = null
+                                    } else {
+                                        arrowSource = null
+                                    }
+                                }
+                                else -> detectTapGestures { offset ->
+                                    val canvas = screenToCanvas(offset, size, state.viewport)
+                                    val hit = hitTest(state.elements, canvas[0], canvas[1])
+                                    if (hit != null) {
+                                        onStateChange(state.copy(selectedIds = setOf(hit.id)))
+                                    } else {
+                                        val el = WhiteboardElement(
+                                            id = UUID.randomUUID().toString().take(8),
+                                            type = when (state.activeTool) {
+                                                ActiveTool.Rect -> "rect"
+                                                ActiveTool.Ellipse -> "ellipse"
+                                                ActiveTool.Triangle -> "triangle"
+                                                ActiveTool.Text -> "text"
+                                                else -> "rect"
+                                            },
+                                            x = canvas[0] - 50,
+                                            y = canvas[1] - 30,
+                                            w = 100.0,
+                                            h = 60.0,
+                                            fill = state.activeColor,
+                                            stroke = "#FFFFFF",
+                                            label = if (state.activeTool == ActiveTool.Text) "Text" else null,
+                                            fontSize = 14.0
                                         )
                                         onStateChange(state.copy(elements = state.elements + el))
                                     }
-                                    drawingPoints = emptyList()
-                                }
-                            )
-                            ActiveTool.Arrow -> detectTapGestures { offset ->
-                                val canvas = screenToCanvas(offset, size, state.viewport)
-                                val hit = hitTest(state.elements, canvas[0], canvas[1])
-                                if (arrowSource == null) {
-                                    arrowSource = hit?.id
-                                } else if (hit != null && hit.id != arrowSource) {
-                                    val el = WhiteboardElement(
-                                        id = UUID.randomUUID().toString().take(8),
-                                        type = "arrow",
-                                        from = arrowSource,
-                                        to = hit.id,
-                                        stroke = state.activeColor
-                                    )
-                                    onStateChange(state.copy(elements = state.elements + el))
-                                    arrowSource = null
-                                } else {
-                                    arrowSource = null
                                 }
                             }
-                            else -> detectTapGestures { offset ->
-                                val canvas = screenToCanvas(offset, size, state.viewport)
-                                val hit = hitTest(state.elements, canvas[0], canvas[1])
-                                if (hit != null) {
-                                    onStateChange(state.copy(selectedIds = setOf(hit.id)))
-                                } else {
-                                    val el = WhiteboardElement(
-                                        id = UUID.randomUUID().toString().take(8),
-                                        type = when (state.activeTool) {
-                                            ActiveTool.Rect -> "rect"
-                                            ActiveTool.Ellipse -> "ellipse"
-                                            ActiveTool.Triangle -> "triangle"
-                                            ActiveTool.Text -> "text"
-                                            else -> "rect"
-                                        },
-                                        x = canvas[0] - 50,
-                                        y = canvas[1] - 30,
-                                        w = 100.0,
-                                        h = 60.0,
-                                        fill = state.activeColor,
-                                        stroke = "#FFFFFF",
-                                        label = if (state.activeTool == ActiveTool.Text) "Text" else null,
-                                        fontSize = 14.0
-                                    )
-                                    onStateChange(state.copy(elements = state.elements + el))
-                                }
-                            }
-                        }
-                    })
+                        })
             ) {
                 WhiteboardCanvas(
                     state = if (drawingPoints.size >= 2) {
@@ -193,8 +207,6 @@ fun WhiteboardSheet(
                     } else state
                 )
             }
-
-            Spacer(modifier = Modifier.height(DS.Spacing.l))
         }
     }
 }
@@ -209,7 +221,11 @@ private fun Toolbar(
     onDelete: () -> Unit,
     onClear: () -> Unit
 ) {
-    Column(modifier = Modifier.padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs)) {
+    Column(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -250,7 +266,7 @@ private fun Toolbar(
                         .clickable { onColorChange(hex) }
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "Clear",
                 style = MaterialTheme.typography.labelSmall,
