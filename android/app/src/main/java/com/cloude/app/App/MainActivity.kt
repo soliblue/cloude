@@ -431,13 +431,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (debugOverlayEnabled) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(innerPadding)
-                                .padding(bottom = 80.dp),
-                            contentAlignment = Alignment.BottomStart
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
                             DebugOverlay(
                                 connectionManager = connectionManager,
                                 environmentId = envId

@@ -68,9 +68,10 @@ fun DebugOverlay(
     modifier: Modifier = Modifier
 ) {
     val prefs = LocalContext.current.getSharedPreferences("cloude", android.content.Context.MODE_PRIVATE)
+    val density = LocalDensity.current
     var expanded by remember { mutableStateOf(false) }
-    var offsetX by remember { mutableFloatStateOf(prefs.getFloat("debugX", 0f)) }
-    var offsetY by remember { mutableFloatStateOf(prefs.getFloat("debugY", 0f)) }
+    var offsetX by remember { mutableFloatStateOf(prefs.getFloat("debugX", -1f)) }
+    var offsetY by remember { mutableFloatStateOf(prefs.getFloat("debugY", -1f)) }
     val isConnected by connectionManager.isConnected.collectAsState()
     val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
     val agentState by connectionManager.agentState.collectAsState()
@@ -101,6 +102,10 @@ fun DebugOverlay(
             .onGloballyPositioned { coords ->
                 parentWidth = coords.size.width.toFloat()
                 parentHeight = coords.size.height.toFloat()
+                if (offsetX < 0f || offsetY < 0f) {
+                    offsetX = with(density) { DS.Spacing.m.toPx() }
+                    offsetY = parentHeight - with(density) { 120.dp.toPx() }
+                }
             }
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .pointerInput(expanded) {
@@ -111,10 +116,10 @@ fun DebugOverlay(
                         }
                     ) { change, dragAmount ->
                         change.consume()
-                        val maxX = parentWidth - pillWidth
-                        val maxY = parentHeight - pillHeight
-                        offsetX = (offsetX + dragAmount.x).coerceIn(0f, maxX.coerceAtLeast(0f))
-                        offsetY = (offsetY + dragAmount.y).coerceIn(-maxY.coerceAtLeast(0f), 0f)
+                        val maxX = (parentWidth - pillWidth).coerceAtLeast(0f)
+                        val maxY = (parentHeight - pillHeight).coerceAtLeast(0f)
+                        offsetX = (offsetX + dragAmount.x).coerceIn(0f, maxX)
+                        offsetY = (offsetY + dragAmount.y).coerceIn(0f, maxY)
                     }
                 }
             }
@@ -129,7 +134,11 @@ fun DebugOverlay(
                     }
                     .clip(RoundedCornerShape(DS.Radius.m))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f))
-                    .clickable { expanded = true; offsetX = 0f; offsetY = 0f }
+                    .clickable {
+                        expanded = true
+                        offsetX = with(density) { DS.Spacing.m.toPx() }
+                        offsetY = with(density) { DS.Spacing.m.toPx() }
+                    }
                     .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
@@ -184,8 +193,10 @@ fun DebugOverlay(
                         IconButton(
                             onClick = {
                                 expanded = false
-                                offsetX = prefs.getFloat("debugX", 0f)
-                                offsetY = prefs.getFloat("debugY", 0f)
+                                val savedX = prefs.getFloat("debugX", -1f)
+                                val savedY = prefs.getFloat("debugY", -1f)
+                                offsetX = if (savedX >= 0f) savedX else with(density) { DS.Spacing.m.toPx() }
+                                offsetY = if (savedY >= 0f) savedY else parentHeight - with(density) { 120.dp.toPx() }
                             },
                             modifier = Modifier.size(DS.Size.m)
                         ) {
