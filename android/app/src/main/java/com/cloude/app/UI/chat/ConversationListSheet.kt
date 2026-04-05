@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,8 +29,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -156,7 +160,7 @@ fun ConversationListSheet(
                             )
                         }
                         items(items, key = { it.first.id }) { (conv, snippet) ->
-                            ConversationRow(
+                            SwipeableConversationRow(
                                 conversation = conv,
                                 isActive = conv.id == activeConversationId,
                                 matchSnippet = snippet,
@@ -170,7 +174,7 @@ fun ConversationListSheet(
             } else {
                 LazyColumn {
                     items(filtered, key = { it.first.id }) { (conv, snippet) ->
-                        ConversationRow(
+                        SwipeableConversationRow(
                             conversation = conv,
                             isActive = conv.id == activeConversationId,
                             matchSnippet = snippet,
@@ -239,13 +243,68 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit, modifier: 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ConversationRow(
+private fun SwipeableConversationRow(
     conversation: Conversation,
     isActive: Boolean,
     matchSnippet: String? = null,
     onTap: () -> Unit,
     onDelete: () -> Unit
+) {
+    if (isActive) {
+        ConversationRow(
+            conversation = conversation,
+            isActive = true,
+            matchSnippet = matchSnippet,
+            onTap = onTap
+        )
+    } else {
+        val dismissState = rememberSwipeToDismissBoxState(
+            confirmValueChange = { value ->
+                if (value == SwipeToDismissBoxValue.EndToStart) {
+                    onDelete()
+                    true
+                } else false
+            }
+        )
+        SwipeToDismissBox(
+            state = dismissState,
+            backgroundContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.error),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.onError,
+                        modifier = Modifier
+                            .padding(end = DS.Spacing.xl)
+                            .size(DS.Icon.l)
+                    )
+                }
+            },
+            enableDismissFromStartToEnd = false
+        ) {
+            ConversationRow(
+                conversation = conversation,
+                isActive = false,
+                matchSnippet = matchSnippet,
+                onTap = onTap
+            )
+        }
+    }
+}
+
+@Composable
+private fun ConversationRow(
+    conversation: Conversation,
+    isActive: Boolean,
+    matchSnippet: String? = null,
+    onTap: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -321,17 +380,6 @@ private fun ConversationRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = DS.Spacing.xs)
-                )
-            }
-        }
-
-        if (!isActive) {
-            IconButton(onClick = onDelete, modifier = Modifier.size(DS.Size.m)) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
-                    modifier = Modifier.size(DS.Icon.m)
                 )
             }
         }
