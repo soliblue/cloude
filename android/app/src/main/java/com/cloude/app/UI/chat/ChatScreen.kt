@@ -199,6 +199,18 @@ fun ChatScreen(
                     )
                 }
 
+                if (isRunning && streamingText.isEmpty() && streamingTools.isEmpty()) {
+                    item(key = "loading") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = DS.Spacing.xs, end = DS.Spacing.xxl)
+                        ) {
+                            SisyphusAnimation()
+                        }
+                    }
+                }
+
                 if (streamingText.isNotEmpty() || streamingTools.isNotEmpty()) {
                     item(key = "streaming") {
                         Column(
