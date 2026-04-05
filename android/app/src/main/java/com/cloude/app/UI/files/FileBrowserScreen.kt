@@ -88,7 +88,7 @@ fun FileBrowserScreen(
     var loadingPaths by remember { mutableStateOf(setOf<String>()) }
     var isInitialLoad by remember { mutableStateOf(true) }
     var selectedFile by remember { mutableStateOf<FileEntry?>(null) }
-    val rootPath = initialPath
+    var rootPath by remember { mutableStateOf(initialPath) }
 
     LaunchedEffect(Unit) {
         connectionManager.events
@@ -99,16 +99,17 @@ fun FileBrowserScreen(
                 )
                 childEntries[listing.path] = sorted
                 loadingPaths = loadingPaths - listing.path
+                if (isInitialLoad) rootPath = listing.path
                 isInitialLoad = false
             }
     }
 
-    LaunchedEffect(rootPath) {
+    LaunchedEffect(initialPath) {
         isInitialLoad = true
-        connectionManager.send(ClientMessage.ListDirectory(rootPath), environmentId)
+        connectionManager.send(ClientMessage.ListDirectory(initialPath), environmentId)
     }
 
-    val visibleNodes = remember(childEntries.toMap(), expandedPaths, loadingPaths) {
+    val visibleNodes = remember(childEntries.toMap(), expandedPaths, loadingPaths, rootPath) {
         buildList {
             fun appendNodes(parentPath: String, depth: Int) {
                 val entries = childEntries[parentPath] ?: return
