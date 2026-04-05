@@ -43,6 +43,7 @@ fun MainScreen(
     val activeIndex by windowManager.activeIndex.collectAsState()
     val drafts = remember { mutableStateMapOf<String, String>() }
     var gitBranch by remember { mutableStateOf("") }
+    val mountedTabs = remember { mutableStateMapOf<String, MutableSet<WindowType>>() }
 
     LaunchedEffect(Unit) {
         connectionManager.events
@@ -96,6 +97,9 @@ fun MainScreen(
             beyondViewportPageCount = 1
         ) { page ->
             val window = windows.getOrNull(page) ?: return@HorizontalPager
+            val visited = mountedTabs.getOrPut(window.id) { mutableSetOf(WindowType.Chat) }
+            if (window.type !in visited) visited.add(window.type)
+
             Box(modifier = Modifier.fillMaxSize()) {
                 ChatScreen(
                     viewModel = viewModel,
@@ -107,22 +111,26 @@ fun MainScreen(
                         .alpha(if (window.type == WindowType.Chat) 1f else 0f)
                         .zIndex(if (window.type == WindowType.Chat) 1f else 0f)
                 )
-                FileBrowserScreen(
-                    connectionManager = connectionManager,
-                    environmentId = environmentId,
-                    initialPath = workingDirectory,
-                    modifier = Modifier.fillMaxSize()
-                        .alpha(if (window.type == WindowType.Files) 1f else 0f)
-                        .zIndex(if (window.type == WindowType.Files) 1f else 0f)
-                )
-                GitScreen(
-                    connectionManager = connectionManager,
-                    environmentId = environmentId,
-                    workingDirectory = workingDirectory,
-                    modifier = Modifier.fillMaxSize()
-                        .alpha(if (window.type == WindowType.GitChanges) 1f else 0f)
-                        .zIndex(if (window.type == WindowType.GitChanges) 1f else 0f)
-                )
+                if (WindowType.Files in visited) {
+                    FileBrowserScreen(
+                        connectionManager = connectionManager,
+                        environmentId = environmentId,
+                        initialPath = workingDirectory,
+                        modifier = Modifier.fillMaxSize()
+                            .alpha(if (window.type == WindowType.Files) 1f else 0f)
+                            .zIndex(if (window.type == WindowType.Files) 1f else 0f)
+                    )
+                }
+                if (WindowType.GitChanges in visited) {
+                    GitScreen(
+                        connectionManager = connectionManager,
+                        environmentId = environmentId,
+                        workingDirectory = workingDirectory,
+                        modifier = Modifier.fillMaxSize()
+                            .alpha(if (window.type == WindowType.GitChanges) 1f else 0f)
+                            .zIndex(if (window.type == WindowType.GitChanges) 1f else 0f)
+                    )
+                }
             }
         }
     }
