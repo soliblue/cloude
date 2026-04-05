@@ -116,7 +116,7 @@ fun ChatScreen(
             )
         }
 
-        if (conversation.messages.isEmpty() && streamingText.isEmpty()) {
+        if (conversation.messages.isEmpty() && conversation.pendingMessages.isEmpty() && streamingText.isEmpty()) {
             var showFolderPicker by remember { mutableStateOf(false) }
             val workingDir = conversation.workingDirectory
                 ?: connectionManager.connection(environmentId)?.defaultWorkingDirectory?.collectAsState()?.value
