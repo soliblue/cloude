@@ -96,16 +96,19 @@ class ChatViewModel(
                 handleMessage(message)
             }
         }
+        loadWhiteboard(_conversation.value.id)
     }
 
     fun loadConversation(id: String) {
         conversationStore.conversation(id)?.let { _conversation.value = it }
+        loadWhiteboard(id)
     }
 
     fun newConversation() {
         _conversation.value = Conversation(
             environmentId = environmentStore.activeEnvironmentId.value
         )
+        _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState()
     }
 
     fun sendMessage(text: String, imagesBase64: List<String>? = null, filesBase64: List<AttachedFilePayload>? = null) {
@@ -280,17 +283,56 @@ class ChatViewModel(
 
     fun updateWhiteboardState(state: com.cloude.app.UI.whiteboard.WhiteboardCanvasState) {
         _whiteboardState.value = state
+        persistWhiteboard()
     }
 
     fun dismissWhiteboard() {
         _showWhiteboard.value = false
     }
 
+    private fun whiteboardDir(): File =
+        File(conversationStore.imagesDir.parentFile, "whiteboards").also { it.mkdirs() }
+
+    private fun persistWhiteboard() {
+        val convId = _conversation.value.id
+        val state = _whiteboardState.value
+        if (state.elements.isEmpty()) return
+        scope.launch(Dispatchers.IO) {
+            val persist = com.cloude.app.UI.whiteboard.WhiteboardPersistState(
+                viewport = state.viewport,
+                elements = state.elements
+            )
+            val file = File(whiteboardDir(), "$convId.json")
+            file.writeText(deviceJson.encodeToString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), persist))
+        }
+    }
+
+    private fun loadWhiteboard(conversationId: String) {
+        val file = File(whiteboardDir(), "$conversationId.json")
+        if (!file.exists()) {
+            _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState()
+            return
+        }
+        val persist = try {
+            deviceJson.decodeFromString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), file.readText())
+        } catch (_: Exception) {
+            _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState()
+            return
+        }
+        _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState(
+            elements = persist.elements,
+            viewport = persist.viewport
+        )
+    }
+
     fun handleWhiteboardAction(action: String, json: kotlinx.serialization.json.JsonObject?) {
         val state = _whiteboardState.value
         when (action) {
             "open" -> _showWhiteboard.value = true
-            "clear" -> _whiteboardState.value = state.copy(elements = emptyList())
+            "clear" -> {
+                _whiteboardState.value = state.copy(elements = emptyList())
+                persistWhiteboard()
+            }
             "add" -> {
                 val elements = json?.get("elements")?.let {
                     deviceJson.decodeFromJsonElement(
@@ -300,10 +342,12 @@ class ChatViewModel(
                 } ?: emptyList()
                 _whiteboardState.value = state.copy(elements = state.elements + elements)
                 _showWhiteboard.value = true
+                persistWhiteboard()
             }
             "remove" -> {
                 val ids = json?.get("ids")?.jsonArray?.mapNotNull { it.jsonPrimitive.content }?.toSet() ?: emptySet()
                 _whiteboardState.value = state.copy(elements = state.elements.filter { it.id !in ids })
+                persistWhiteboard()
             }
             "update" -> {
                 val id = json?.get("id")?.jsonPrimitive?.content ?: return
@@ -318,6 +362,7 @@ class ChatViewModel(
                         stroke = json["stroke"]?.jsonPrimitive?.content ?: el.stroke
                     ) else el
                 })
+                persistWhiteboard()
             }
             "viewport" -> {
                 val vp = state.viewport
@@ -326,6 +371,7 @@ class ChatViewModel(
                     y = json?.get("y")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.y,
                     zoom = json?.get("zoom")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.zoom
                 ))
+                persistWhiteboard()
             }
         }
     }

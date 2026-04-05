@@ -45,3 +45,9 @@ enum class ActiveTool {
 }
 
 val paletteColors = listOf("#FFFFFF", "#FF6B6B", "#4ECDC4", "#FFE66D", "#A78BFA", "#FF8C42")
+
+@Serializable
+data class WhiteboardPersistState(
+    val viewport: WhiteboardViewport = WhiteboardViewport(),
+    val elements: List<WhiteboardElement> = emptyList()
+)
