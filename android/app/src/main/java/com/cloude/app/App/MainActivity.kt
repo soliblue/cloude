@@ -57,6 +57,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cloude.app.Models.ConversationStore
 import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Services.ChatViewModel
@@ -67,6 +69,7 @@ import kotlinx.coroutines.launch
 import com.cloude.app.Services.WebSocketForegroundService
 import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.chat.ConversationListSheet
+import com.cloude.app.UI.chat.IconPickerSheet
 import com.cloude.app.UI.chat.MainScreen
 import com.cloude.app.UI.chat.PlansSheet
 import com.cloude.app.UI.chat.RenameDialog
@@ -81,6 +84,7 @@ import com.cloude.app.Utilities.AppTheme
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelGreen
 import com.cloude.app.Utilities.PastelRed
+import com.cloude.app.Utilities.symbolToIcon
 
 class MainActivity : ComponentActivity() {
     private lateinit var environmentStore: EnvironmentStore
@@ -168,6 +172,7 @@ class MainActivity : ComponentActivity() {
             var showConversations by showConversationsState
             var showDeploy by showDeployState
             var showRename by remember { mutableStateOf(false) }
+            var showIconPicker by remember { mutableStateOf(false) }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
             val conversation by chatViewModel.conversation.collectAsState()
 
@@ -184,41 +189,70 @@ class MainActivity : ComponentActivity() {
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                 } else {
-                                    Column(
-                                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                                        modifier = Modifier.clickable { showRename = true }
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
                                     ) {
-                                        AnimatedContent(
-                                            targetState = conversation.name,
-                                            transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
-                                            label = "title"
-                                        ) { name ->
-                                            Text(
-                                                text = name,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                maxLines = 1,
-                                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                            )
-                                        }
-                                        val workDir = conversation.workingDirectory
-                                            ?: connectionManager.connection(environmentStore.activeEnvironmentId.value ?: "")?.defaultWorkingDirectory?.value
-                                        if (workDir != null) {
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
-                                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                    text = workDir.substringAfterLast('/'),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                                        val convIcon = symbolToIcon(conversation.symbol)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .clip(CircleShape)
+                                                .background(if (convIcon != null) Accent.copy(alpha = 0.2f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                                                .clickable { showIconPicker = true },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (convIcon != null) {
+                                                Icon(
+                                                    imageVector = convIcon,
+                                                    contentDescription = "Change icon",
+                                                    tint = Accent,
+                                                    modifier = Modifier.size(12.dp)
                                                 )
-                                                if (conversation.totalCost > 0) {
+                                            } else {
+                                                Text(
+                                                    text = conversation.name.take(1),
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.l)
+                                                )
+                                            }
+                                        }
+                                        Column(
+                                            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                            modifier = Modifier.clickable { showRename = true }
+                                        ) {
+                                            AnimatedContent(
+                                                targetState = conversation.name,
+                                                transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(300)) },
+                                                label = "title"
+                                            ) { name ->
+                                                Text(
+                                                    text = name,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    maxLines = 1,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                                )
+                                            }
+                                            val workDir = conversation.workingDirectory
+                                                ?: connectionManager.connection(environmentStore.activeEnvironmentId.value ?: "")?.defaultWorkingDirectory?.value
+                                            if (workDir != null) {
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                                ) {
                                                     Text(
-                                                        text = "$${String.format("%.2f", conversation.totalCost)}",
+                                                        text = workDir.substringAfterLast('/'),
                                                         style = MaterialTheme.typography.labelSmall,
-                                                        color = Accent.copy(alpha = DS.Opacity.m)
+                                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
                                                     )
+                                                    if (conversation.totalCost > 0) {
+                                                        Text(
+                                                            text = "$${String.format("%.2f", conversation.totalCost)}",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = Accent.copy(alpha = DS.Opacity.m)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -346,6 +380,14 @@ class MainActivity : ComponentActivity() {
                             currentName = conversation.name,
                             onConfirm = { chatViewModel.renameConversation(it) },
                             onDismiss = { showRename = false }
+                        )
+                    }
+
+                    if (showIconPicker) {
+                        IconPickerSheet(
+                            selectedIcon = conversation.symbol,
+                            onSelect = { chatViewModel.setSymbol(it) },
+                            onDismiss = { showIconPicker = false }
                         )
                     }
 

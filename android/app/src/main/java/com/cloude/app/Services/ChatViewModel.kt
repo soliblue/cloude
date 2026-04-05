@@ -264,6 +264,11 @@ class ChatViewModel(
         persistConversation()
     }
 
+    fun setSymbol(symbol: String?) {
+        _conversation.value = _conversation.value.copy(symbol = symbol?.ifEmpty { null })
+        persistConversation()
+    }
+
     fun forkConversation(upToMessageId: String) {
         val conv = _conversation.value
         if (conv.sessionId == null) return

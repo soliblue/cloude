@@ -19,39 +19,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Memory
-import androidx.compose.material.icons.filled.NightsStay
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Terminal
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VpnKey
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.Work
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -81,6 +51,7 @@ import com.cloude.app.Models.Conversation
 import com.cloude.app.Models.ConversationStore
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
+import com.cloude.app.Utilities.symbolToIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -376,39 +347,6 @@ private fun matchSnippet(text: String, query: String): String {
     val prefix = if (start > 0) "..." else ""
     val suffix = if (end < flat.length) "..." else ""
     return "$prefix${flat.substring(start, end)}$suffix"
-}
-
-private fun symbolToIcon(symbol: String?): ImageVector? = when (symbol) {
-    "star" -> Icons.Default.Star
-    "heart" -> Icons.Default.Favorite
-    "bolt" -> Icons.Default.Bolt
-    "flame" -> Icons.Default.LocalFireDepartment
-    "leaf" -> Icons.Default.Explore
-    "moon" -> Icons.Default.NightsStay
-    "sun.max" -> Icons.Default.WbSunny
-    "cloud" -> Icons.Default.Cloud
-    "sparkles", "wand.and.stars" -> Icons.Default.AutoAwesome
-    "lightbulb" -> Icons.Default.Lightbulb
-    "paperplane" -> Icons.Default.Send
-    "rocket" -> Icons.Default.RocketLaunch
-    "globe" -> Icons.Default.Public
-    "map" -> Icons.Default.Map
-    "flag" -> Icons.Default.Flag
-    "bookmark" -> Icons.Default.Bookmark
-    "tag" -> Icons.Default.Bookmark
-    "bubble.left", "terminal" -> Icons.Default.Terminal
-    "paintbrush", "pencil" -> Icons.Default.Palette
-    "folder" -> Icons.Default.Folder
-    "doc" -> Icons.Default.Description
-    "book" -> Icons.Default.Book
-    "briefcase" -> Icons.Default.Work
-    "hammer", "wrench" -> Icons.Default.Build
-    "gearshape" -> Icons.Default.Settings
-    "cpu" -> Icons.Default.Memory
-    "lock" -> Icons.Default.Lock
-    "key" -> Icons.Default.VpnKey
-    "eye" -> Icons.Default.Visibility
-    else -> null
 }
 
 private fun formatRelativeTime(timestamp: Long): String {
