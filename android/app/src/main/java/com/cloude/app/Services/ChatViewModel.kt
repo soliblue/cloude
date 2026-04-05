@@ -296,13 +296,16 @@ class ChatViewModel(
     private fun persistWhiteboard() {
         val convId = _conversation.value.id
         val state = _whiteboardState.value
-        if (state.elements.isEmpty()) return
+        val file = File(whiteboardDir(), "$convId.json")
+        if (state.elements.isEmpty()) {
+            scope.launch(Dispatchers.IO) { file.delete() }
+            return
+        }
         scope.launch(Dispatchers.IO) {
             val persist = com.cloude.app.UI.whiteboard.WhiteboardPersistState(
                 viewport = state.viewport,
                 elements = state.elements
             )
-            val file = File(whiteboardDir(), "$convId.json")
             file.writeText(deviceJson.encodeToString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), persist))
         }
     }
