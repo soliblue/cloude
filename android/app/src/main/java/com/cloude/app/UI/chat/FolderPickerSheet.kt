@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,17 +38,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import com.cloude.app.Models.ClientMessage
+import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Models.FileEntry
 import com.cloude.app.Models.ServerMessage
 import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterIsInstance
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderPickerSheet(
     connectionManager: ConnectionManager,
+    environmentStore: EnvironmentStore? = null,
     environmentId: String,
     initialPath: String,
     onSelect: (String) -> Unit,
@@ -57,10 +61,39 @@ fun FolderPickerSheet(
     var currentPath by remember { mutableStateOf(initialPath) }
     var folders by remember { mutableStateOf<List<FileEntry>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var isConnecting by remember { mutableStateOf(false) }
+    var connectionFailed by remember { mutableStateOf(false) }
 
-    LaunchedEffect(currentPath) {
-        isLoading = true
+    val conn = connectionManager.connection(environmentId)
+    val isAuthenticated by conn?.isAuthenticated?.collectAsState() ?: remember { mutableStateOf(false) }
+
+    LaunchedEffect(environmentId) {
+        if (!isAuthenticated) {
+            val env = environmentStore?.environments?.value?.firstOrNull { it.id == environmentId }
+            if (env != null) {
+                isConnecting = true
+                connectionManager.connectEnvironment(env)
+                var waited = 0L
+                while (waited < 10_000L) {
+                    delay(250)
+                    waited += 250
+                    if (connectionManager.connection(environmentId)?.isAuthenticated?.value == true) break
+                }
+                isConnecting = false
+                if (connectionManager.connection(environmentId)?.isAuthenticated?.value != true) {
+                    connectionFailed = true
+                    return@LaunchedEffect
+                }
+            }
+        }
         connectionManager.send(ClientMessage.ListDirectory(currentPath), environmentId)
+    }
+
+    LaunchedEffect(currentPath, isAuthenticated) {
+        if (isAuthenticated && !isConnecting) {
+            isLoading = true
+            connectionManager.send(ClientMessage.ListDirectory(currentPath), environmentId)
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -101,7 +134,32 @@ fun FolderPickerSheet(
                 modifier = Modifier.padding(vertical = DS.Spacing.s)
             )
 
-            if (isLoading) {
+            if (isConnecting || connectionFailed) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(DS.Size.xxl),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isConnecting) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = Accent, modifier = Modifier.size(DS.Size.m))
+                            Text(
+                                text = "Connecting...",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+                                modifier = Modifier.padding(top = DS.Spacing.s)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "Connection failed",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            } else if (isLoading) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
