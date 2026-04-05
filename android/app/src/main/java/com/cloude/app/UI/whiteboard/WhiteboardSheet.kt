@@ -5,8 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -82,26 +81,26 @@ fun WhiteboardSheet(
                 onClear = { onStateChange(state.copy(elements = emptyList(), selectedIds = emptySet())) }
             )
 
-            val transformState = rememberTransformableState { zoomChange, panChange, _ ->
-                val vp = state.viewport
-                val newZoom = (vp.zoom * zoomChange).coerceIn(0.3, 5.0)
-                onStateChange(
-                    state.copy(
-                        viewport = vp.copy(
-                            x = vp.x - panChange.x / newZoom,
-                            y = vp.y - panChange.y / newZoom,
-                            zoom = newZoom
-                        )
-                    )
-                )
-            }
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(400.dp)
                     .background(MaterialTheme.colorScheme.surface)
-                    .transformable(state = transformState)
+                    .pointerInput(Unit) {
+                        detectTransformGestures { _, pan, zoom, _ ->
+                            val vp = state.viewport
+                            val newZoom = (vp.zoom * zoom).coerceIn(0.3, 5.0)
+                            onStateChange(
+                                state.copy(
+                                    viewport = vp.copy(
+                                        x = vp.x - pan.x / newZoom,
+                                        y = vp.y - pan.y / newZoom,
+                                        zoom = newZoom
+                                    )
+                                )
+                            )
+                        }
+                    }
                     .then(
                         if (state.activeTool == ActiveTool.Hand) Modifier
                         else Modifier.pointerInput(state.activeTool) {
