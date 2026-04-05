@@ -1,5 +1,6 @@
 package com.cloude.app.UI.files
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.VideoFile
@@ -38,11 +40,13 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
@@ -52,6 +56,7 @@ import android.util.Base64
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cloude.app.Models.ClientMessage
 import com.cloude.app.Models.FileEntry
@@ -64,6 +69,13 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
+private data class TreeNode(
+    val entry: FileEntry,
+    val depth: Int,
+    val isExpanded: Boolean,
+    val isLoading: Boolean
+)
+
 @Composable
 fun FileBrowserScreen(
     connectionManager: ConnectionManager,
@@ -71,40 +83,57 @@ fun FileBrowserScreen(
     initialPath: String,
     modifier: Modifier = Modifier
 ) {
-    var currentPath by remember { mutableStateOf(initialPath) }
-    var entries by remember { mutableStateOf<List<FileEntry>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+    val childEntries = remember { mutableStateMapOf<String, List<FileEntry>>() }
+    var expandedPaths by remember { mutableStateOf(setOf<String>()) }
+    var loadingPaths by remember { mutableStateOf(setOf<String>()) }
+    var isInitialLoad by remember { mutableStateOf(true) }
     var selectedFile by remember { mutableStateOf<FileEntry?>(null) }
-
-    LaunchedEffect(currentPath) {
-        isLoading = true
-        connectionManager.send(ClientMessage.ListDirectory(currentPath), environmentId)
-    }
+    val rootPath = initialPath
 
     LaunchedEffect(Unit) {
         connectionManager.events
             .filterIsInstance<ServerMessage.DirectoryListing>()
             .collect { listing ->
-                currentPath = listing.path
-                entries = listing.entries.sortedWith(
+                val sorted = listing.entries.sortedWith(
                     compareByDescending<FileEntry> { it.isDirectory }.thenBy { it.name.lowercase() }
                 )
-                isLoading = false
+                childEntries[listing.path] = sorted
+                loadingPaths = loadingPaths - listing.path
+                isInitialLoad = false
             }
     }
 
+    LaunchedEffect(rootPath) {
+        isInitialLoad = true
+        connectionManager.send(ClientMessage.ListDirectory(rootPath), environmentId)
+    }
+
+    val visibleNodes = remember(childEntries.toMap(), expandedPaths, loadingPaths) {
+        buildList {
+            fun appendNodes(parentPath: String, depth: Int) {
+                val entries = childEntries[parentPath] ?: return
+                for (entry in entries) {
+                    val expanded = entry.path in expandedPaths
+                    val loading = entry.path in loadingPaths
+                    add(TreeNode(entry, depth, expanded, loading))
+                    if (entry.isDirectory && expanded) {
+                        appendNodes(entry.path, depth + 1)
+                    }
+                }
+            }
+            appendNodes(rootPath, 0)
+        }
+    }
+
     Column(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        PathBar(
-            path = currentPath,
-            onNavigate = { currentPath = it }
-        )
+        PathBar(path = rootPath, onNavigate = {})
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-        if (isLoading) {
+        if (isInitialLoad) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Accent, modifier = Modifier.size(DS.Size.m))
             }
-        } else if (entries.isEmpty()) {
+        } else if (visibleNodes.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = "Empty folder",
@@ -114,14 +143,25 @@ fun FileBrowserScreen(
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(entries, key = { it.path }) { entry ->
-                    FileRow(
-                        entry = entry,
+                items(visibleNodes, key = { it.entry.path }) { node ->
+                    TreeRow(
+                        node = node,
                         onClick = {
-                            if (entry.isDirectory) {
-                                currentPath = entry.path
+                            if (node.entry.isDirectory) {
+                                if (node.isExpanded) {
+                                    expandedPaths = expandedPaths - node.entry.path
+                                } else {
+                                    expandedPaths = expandedPaths + node.entry.path
+                                    if (node.entry.path !in childEntries) {
+                                        loadingPaths = loadingPaths + node.entry.path
+                                        connectionManager.send(
+                                            ClientMessage.ListDirectory(node.entry.path),
+                                            environmentId
+                                        )
+                                    }
+                                }
                             } else {
-                                selectedFile = entry
+                                selectedFile = node.entry
                             }
                         }
                     )
@@ -155,7 +195,7 @@ private fun PathBar(path: String, onNavigate: (String) -> Unit) {
             .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        components.forEachIndexed { index, (name, componentPath) ->
+        components.forEachIndexed { index, (name, _) ->
             if (index > 0) {
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
@@ -164,54 +204,71 @@ private fun PathBar(path: String, onNavigate: (String) -> Unit) {
                     modifier = Modifier.size(DS.Icon.s)
                 )
             }
-            val isLast = index == components.lastIndex
             Text(
                 text = name,
                 style = MaterialTheme.typography.labelMedium,
-                color = if (isLast) MaterialTheme.colorScheme.onSurface else Accent,
-                modifier = if (isLast) Modifier else Modifier.clickable { onNavigate(componentPath) }
+                color = if (index == components.lastIndex) MaterialTheme.colorScheme.onSurface else Accent
             )
         }
     }
 }
 
 @Composable
-private fun FileRow(entry: FileEntry, onClick: () -> Unit) {
+private fun TreeRow(node: TreeNode, onClick: () -> Unit) {
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (node.isExpanded) 90f else 0f,
+        label = "chevron"
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = DS.Spacing.l, vertical = DS.Spacing.m),
+            .padding(start = DS.Spacing.l + (DS.Spacing.l * node.depth), end = DS.Spacing.l, top = DS.Spacing.s, bottom = DS.Spacing.s),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (node.entry.isDirectory) {
+            if (node.isLoading) {
+                CircularProgressIndicator(
+                    color = Accent,
+                    strokeWidth = 1.5.dp,
+                    modifier = Modifier.size(DS.Icon.s)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.l),
+                    modifier = Modifier
+                        .size(DS.Icon.s)
+                        .rotate(chevronRotation)
+                )
+            }
+            Spacer(modifier = Modifier.width(DS.Spacing.xs))
+        } else {
+            Spacer(modifier = Modifier.width(DS.Icon.s + DS.Spacing.xs))
+        }
+
         Icon(
-            imageVector = fileIcon(entry),
+            imageVector = if (node.entry.isDirectory && node.isExpanded) Icons.Default.FolderOpen else fileIcon(node.entry),
             contentDescription = null,
-            tint = fileIconColor(entry),
+            tint = fileIconColor(node.entry),
             modifier = Modifier.size(DS.Icon.l)
         )
-        Spacer(modifier = Modifier.width(DS.Spacing.m))
+        Spacer(modifier = Modifier.width(DS.Spacing.s))
         Text(
-            text = entry.name,
+            text = node.entry.name,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
-        if (!entry.isDirectory && entry.size != null) {
+        if (!node.entry.isDirectory && node.entry.size != null) {
             Text(
-                text = formatSize(entry.size),
+                text = formatSize(node.entry.size),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
-            )
-        }
-        if (entry.isDirectory) {
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                modifier = Modifier.size(DS.Icon.m)
             )
         }
     }
