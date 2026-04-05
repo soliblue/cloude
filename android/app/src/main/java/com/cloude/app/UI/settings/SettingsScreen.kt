@@ -39,6 +39,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Models.ServerEnvironment
 import com.cloude.app.Services.ConnectionManager
@@ -56,6 +58,8 @@ fun SettingsScreen(
     connectionManager: ConnectionManager,
     currentTheme: AppTheme,
     onThemeChange: (AppTheme) -> Unit,
+    debugOverlayEnabled: Boolean = false,
+    onDebugOverlayChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val environments by environmentStore.environments.collectAsState()
@@ -167,6 +171,36 @@ fun SettingsScreen(
         ) {
             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(DS.Icon.m))
             Text(" Add", style = MaterialTheme.typography.labelLarge)
+        }
+
+        Spacer(modifier = Modifier.height(DS.Spacing.xl))
+
+        Text(
+            text = "Developer",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(DS.Spacing.m))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(DS.Radius.m))
+                .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Debug Overlay",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Switch(
+                checked = debugOverlayEnabled,
+                onCheckedChange = onDebugOverlayChange,
+                colors = SwitchDefaults.colors(checkedTrackColor = Accent)
+            )
         }
     }
 }

@@ -70,6 +70,7 @@ import com.cloude.app.Services.WebSocketForegroundService
 import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.chat.IconPickerSheet
+import com.cloude.app.UI.debug.DebugOverlay
 import com.cloude.app.UI.chat.MainScreen
 import com.cloude.app.UI.chat.PlansSheet
 import com.cloude.app.UI.chat.RenameDialog
@@ -173,6 +174,9 @@ class MainActivity : ComponentActivity() {
             var showDeploy by showDeployState
             var showRename by remember { mutableStateOf(false) }
             var showIconPicker by remember { mutableStateOf(false) }
+            var debugOverlayEnabled by remember {
+                mutableStateOf(prefs.getBoolean("debugOverlay", false))
+            }
             val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
             val conversation by chatViewModel.conversation.collectAsState()
 
@@ -343,6 +347,11 @@ class MainActivity : ComponentActivity() {
                                 appTheme = it
                                 prefs.edit().putString("theme", it.name).apply()
                             },
+                            debugOverlayEnabled = debugOverlayEnabled,
+                            onDebugOverlayChange = {
+                                debugOverlayEnabled = it
+                                prefs.edit().putBoolean("debugOverlay", it).apply()
+                            },
                             modifier = Modifier.padding(innerPadding)
                         )
                         else -> MainScreen(
@@ -419,6 +428,18 @@ class MainActivity : ComponentActivity() {
                             },
                             onDismiss = { chatViewModel.dismissSkills() }
                         )
+                    }
+
+                    if (debugOverlayEnabled) {
+                        Box(
+                            modifier = Modifier.fillMaxSize().padding(innerPadding),
+                            contentAlignment = Alignment.BottomStart
+                        ) {
+                            DebugOverlay(
+                                connectionManager = connectionManager,
+                                environmentId = envId
+                            )
+                        }
                     }
                 }
             }
