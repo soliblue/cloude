@@ -82,30 +82,32 @@ fun WhiteboardSheet(
                 onClear = { onStateChange(state.copy(elements = emptyList(), selectedIds = emptySet())) }
             )
 
+            val transformState = rememberTransformableState { zoomChange, panChange, _ ->
+                val vp = state.viewport
+                val newZoom = (vp.zoom * zoomChange).coerceIn(0.3, 5.0)
+                onStateChange(
+                    state.copy(
+                        viewport = vp.copy(
+                            x = vp.x - panChange.x / newZoom,
+                            y = vp.y - panChange.y / newZoom,
+                            zoom = newZoom
+                        )
+                    )
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(400.dp)
                     .background(MaterialTheme.colorScheme.surface)
-                    .transformable(
-                        state = rememberTransformableState { zoomChange, panChange, _ ->
-                            val vp = state.viewport
-                            val newZoom = (vp.zoom * zoomChange).coerceIn(0.3, 5.0)
-                            onStateChange(
-                                state.copy(
-                                    viewport = vp.copy(
-                                        x = vp.x - panChange.x / newZoom,
-                                        y = vp.y - panChange.y / newZoom,
-                                        zoom = newZoom
-                                    )
-                                )
-                            )
-                        }
-                    )
-                    .pointerInput(state.activeTool) {
-                        when (state.activeTool) {
-                            ActiveTool.Hand -> {}
-                            ActiveTool.Pencil -> detectDragGestures(
+                    .transformable(state = transformState)
+                    .then(
+                        if (state.activeTool == ActiveTool.Hand) Modifier
+                        else Modifier.pointerInput(state.activeTool) {
+                            when (state.activeTool) {
+                                ActiveTool.Hand -> {}
+                                ActiveTool.Pencil -> detectDragGestures(
                                 onDragStart = { offset ->
                                     drawingPoints = listOf(screenToCanvas(offset, size, state.viewport))
                                 },
@@ -177,7 +179,7 @@ fun WhiteboardSheet(
                                 }
                             }
                         }
-                    }
+                    })
             ) {
                 WhiteboardCanvas(
                     state = if (drawingPoints.size >= 2) {

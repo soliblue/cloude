@@ -286,6 +286,7 @@ fun ChatScreen(
                     text.trim().equals("/plans", ignoreCase = true) -> viewModel.requestPlans()
                     text.trim().equals("/skills", ignoreCase = true) -> viewModel.showSkills()
                     text.trim().equals("/test-widgets", ignoreCase = true) -> viewModel.injectTestWidgets()
+                    text.trim().equals("/whiteboard", ignoreCase = true) -> viewModel.handleWhiteboardAction("open", null)
                     text.trim().equals("/export", ignoreCase = true) -> {
                         val markdown = viewModel.exportConversation()
                         val intent = Intent(Intent.ACTION_SEND).apply {
