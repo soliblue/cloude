@@ -123,6 +123,22 @@ class ChatViewModel(
             file.absolutePath
         }
         val userMessage = ChatMessage(id = messageId, isUser = true, text = text, imageCount = imagesBase64?.size ?: 0, fileCount = filesBase64?.size ?: 0, imageThumbnails = thumbnails, imagePreviews = previewPaths)
+
+        val isConnected = connectionManager.connection(envId)?.isAuthenticated?.value == true
+        val isRunning = connectionManager.output(conv.id).isRunning.value
+
+        if (!isConnected || isRunning) {
+            Log.d("Cloude", "Queueing message: connected=$isConnected running=$isRunning")
+            val queued = userMessage.copy(isQueued = true)
+            val pending = conv.pendingMessages.toMutableList().apply { add(queued) }
+            _conversation.value = conv.copy(
+                pendingMessages = pending,
+                lastMessageAt = System.currentTimeMillis()
+            )
+            persistConversation()
+            return
+        }
+
         val newMessages = conv.messages.toMutableList().apply { add(userMessage) }
         _conversation.value = conv.copy(
             messages = newMessages,
@@ -267,6 +283,107 @@ class ChatViewModel(
     fun setSymbol(symbol: String?) {
         _conversation.value = _conversation.value.copy(symbol = symbol?.ifEmpty { null })
         persistConversation()
+    }
+
+    fun deleteQueuedMessage(messageId: String) {
+        val conv = _conversation.value
+        val pending = conv.pendingMessages.filter { it.id != messageId }.toMutableList()
+        _conversation.value = conv.copy(pendingMessages = pending)
+        persistConversation()
+    }
+
+    private fun flushPendingMessages() {
+        val conv = _conversation.value
+        if (conv.pendingMessages.isEmpty()) return
+        val envId = activeEnvId ?: return
+        val connection = connectionManager.connection(envId)
+        if (connection?.isAuthenticated?.value != true) return
+        if (connectionManager.output(conv.id).isRunning.value) return
+
+        Log.d("Cloude", "Flushing ${conv.pendingMessages.size} pending messages")
+        val pending = conv.pendingMessages.toList()
+        val flushed = pending.map { it.copy(isQueued = false) }
+        val newMessages = conv.messages.toMutableList().apply { addAll(flushed) }
+        _conversation.value = conv.copy(
+            messages = newMessages,
+            pendingMessages = mutableListOf(),
+            lastMessageAt = System.currentTimeMillis()
+        )
+        persistConversation()
+
+        connectionManager.registerConversation(conv.id, envId)
+        val out = connectionManager.output(conv.id)
+        out.reset()
+        out.setRunning(true)
+
+        val combinedText = pending.joinToString("\n\n") { it.text }
+        val workingDir = conv.workingDirectory
+            ?: connection.defaultWorkingDirectory?.value
+        val isNewSession = conv.sessionId == null
+
+        connectionManager.send(
+            ClientMessage.Chat(
+                message = combinedText,
+                workingDirectory = workingDir,
+                sessionId = conv.sessionId,
+                isNewSession = isNewSession,
+                conversationId = conv.id,
+                conversationName = conv.name,
+                effort = conv.defaultEffort,
+                model = conv.defaultModel
+            ),
+            envId
+        )
+
+        if (isNewSession) {
+            connectionManager.send(
+                ClientMessage.SuggestName(text = combinedText, context = emptyList(), conversationId = conv.id),
+                envId
+            )
+        }
+    }
+
+    private fun flushAllPendingMessages() {
+        val currentConvId = _conversation.value.id
+        conversationStore.conversations.value
+            .filter { it.pendingMessages.isNotEmpty() && it.id != currentConvId }
+            .forEach { conv ->
+                val envId = conv.environmentId ?: environmentStore.activeEnvironmentId.value ?: return@forEach
+                val connection = connectionManager.connection(envId)
+                if (connection?.isAuthenticated?.value != true) return@forEach
+                if (connectionManager.output(conv.id).isRunning.value) return@forEach
+
+                Log.d("Cloude", "Flushing ${conv.pendingMessages.size} pending messages for conv ${conv.id}")
+                val pending = conv.pendingMessages.toList()
+                val flushed = pending.map { it.copy(isQueued = false) }
+                val newMessages = conv.messages.toMutableList().apply { addAll(flushed) }
+                conversationStore.save(conv.copy(
+                    messages = newMessages,
+                    pendingMessages = mutableListOf(),
+                    lastMessageAt = System.currentTimeMillis()
+                ))
+
+                connectionManager.registerConversation(conv.id, envId)
+                val out = connectionManager.output(conv.id)
+                out.reset()
+                out.setRunning(true)
+
+                val combinedText = pending.joinToString("\n\n") { it.text }
+                connectionManager.send(
+                    ClientMessage.Chat(
+                        message = combinedText,
+                        workingDirectory = conv.workingDirectory ?: connection.defaultWorkingDirectory?.value,
+                        sessionId = conv.sessionId,
+                        isNewSession = conv.sessionId == null,
+                        conversationId = conv.id,
+                        conversationName = conv.name,
+                        effort = conv.defaultEffort,
+                        model = conv.defaultModel
+                    ),
+                    envId
+                )
+            }
+        flushPendingMessages()
     }
 
     fun forkConversation(upToMessageId: String) {
@@ -541,6 +658,10 @@ class ChatViewModel(
                 _fileSearchResults.value = results
             }
 
+            is ServerMessage.AuthResult -> {
+                if (message.success) flushAllPendingMessages()
+            }
+
             is ServerMessage.Error -> {
                 val convId = _conversation.value.id
                 connectionManager.output(convId).appendText("\n**Error:** ${message.message}")
@@ -607,6 +728,7 @@ class ChatViewModel(
         }
 
         out.reset()
+        flushPendingMessages()
     }
 
     private fun persistConversation() {

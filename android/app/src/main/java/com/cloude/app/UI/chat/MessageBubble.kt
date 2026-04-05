@@ -37,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ForkRight
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.DropdownMenu
@@ -434,6 +435,26 @@ fun MessageBubble(
                 color = Accent.copy(alpha = DS.Opacity.m),
                 modifier = Modifier.padding(top = DS.Spacing.xs)
             )
+        }
+
+        if (message.isQueued) {
+            Row(
+                modifier = Modifier.padding(top = DS.Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m),
+                    modifier = Modifier.size(DS.Icon.s)
+                )
+                Text(
+                    text = "queued",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                )
+            }
         }
 
         if (message.costUsd != null) {

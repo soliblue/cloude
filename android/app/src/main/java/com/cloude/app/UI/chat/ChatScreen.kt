@@ -69,8 +69,9 @@ fun ChatScreen(
     val isRunning by output.isRunning.collectAsState()
     val isCompacting by output.isCompacting.collectAsState()
     val messageCount = conversation.messages.size
+    val queuedCount = conversation.pendingMessages.size
     val hasStreaming = streamingText.isNotEmpty() || streamingTools.isNotEmpty()
-    val itemCount = 1 + messageCount + (if (hasStreaming) 1 else 0) + 1
+    val itemCount = 1 + messageCount + (if (hasStreaming) 1 else 0) + queuedCount + 1
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = maxOf(0, itemCount - 1))
     var lastConversationId by remember { mutableStateOf(conversation.id) }
 
@@ -81,7 +82,7 @@ fun ChatScreen(
         }
     }
 
-    LaunchedEffect(messageCount, streamingText) {
+    LaunchedEffect(messageCount, queuedCount, streamingText, streamingTools.size) {
         if (itemCount > 2 && conversation.id == lastConversationId) {
             listState.animateScrollToItem(itemCount - 1)
         }
@@ -238,6 +239,14 @@ fun ChatScreen(
                                         .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.s)
                                 )
                             }
+                        }
+                    }
+                }
+
+                if (conversation.pendingMessages.isNotEmpty()) {
+                    items(conversation.pendingMessages, key = { "queued-${it.id}" }) { message ->
+                        Box(modifier = Modifier.alpha(DS.Opacity.l)) {
+                            MessageBubble(message = message)
                         }
                     }
                 }
