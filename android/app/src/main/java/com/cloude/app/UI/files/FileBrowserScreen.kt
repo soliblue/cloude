@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -89,6 +90,8 @@ fun FileBrowserScreen(
     var isInitialLoad by remember { mutableStateOf(true) }
     var selectedFile by remember { mutableStateOf<FileEntry?>(null) }
     var rootPath by remember { mutableStateOf(initialPath) }
+    val isAuthenticated by connectionManager.connection(environmentId)?.isAuthenticated?.collectAsState()
+        ?: remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         connectionManager.events
@@ -104,9 +107,12 @@ fun FileBrowserScreen(
             }
     }
 
-    LaunchedEffect(initialPath) {
-        isInitialLoad = true
-        connectionManager.send(ClientMessage.ListDirectory(initialPath), environmentId)
+    LaunchedEffect(initialPath, isAuthenticated) {
+        if (isAuthenticated) {
+            isInitialLoad = true
+            childEntries.clear()
+            connectionManager.send(ClientMessage.ListDirectory(initialPath), environmentId)
+        }
     }
 
     val visibleNodes = remember(childEntries.toMap(), expandedPaths, loadingPaths, rootPath) {
