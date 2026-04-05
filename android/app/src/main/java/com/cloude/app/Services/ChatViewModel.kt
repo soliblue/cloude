@@ -111,6 +111,34 @@ class ChatViewModel(
         _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState()
     }
 
+    fun startSession() {
+        val envId = activeEnvId ?: return
+        val conv = _conversation.value
+        if (conv.sessionId != null) return
+
+        connectionManager.registerConversation(conv.id, envId)
+        val out = connectionManager.output(conv.id)
+        out.reset()
+        out.setRunning(true)
+
+        val workingDir = conv.workingDirectory
+            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value
+
+        connectionManager.send(
+            ClientMessage.Chat(
+                message = "",
+                workingDirectory = workingDir,
+                sessionId = null,
+                isNewSession = true,
+                conversationId = conv.id,
+                conversationName = conv.name,
+                effort = conv.defaultEffort,
+                model = conv.defaultModel
+            ),
+            envId
+        )
+    }
+
     fun sendMessage(text: String, imagesBase64: List<String>? = null, filesBase64: List<AttachedFilePayload>? = null) {
         val envId = activeEnvId
         Log.d("Cloude", "sendMessage: envId=$envId sessionId=${_conversation.value.sessionId} images=${imagesBase64?.size ?: 0} files=${filesBase64?.size ?: 0}")

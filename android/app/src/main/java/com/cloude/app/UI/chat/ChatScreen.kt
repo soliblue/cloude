@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -166,6 +167,28 @@ fun ChatScreen(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(top = DS.Spacing.xs)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(DS.Spacing.l))
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(DS.Radius.l))
+                            .background(Accent.copy(alpha = 0.15f))
+                            .clickable { viewModel.startSession() }
+                            .padding(horizontal = DS.Spacing.l, vertical = DS.Spacing.s),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
+                    ) {
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            null,
+                            tint = Accent,
+                            modifier = Modifier.size(DS.Icon.m)
+                        )
+                        Text(
+                            text = "Start Session",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Accent
                         )
                     }
                 }
