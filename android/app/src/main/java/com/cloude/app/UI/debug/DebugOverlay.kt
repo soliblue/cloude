@@ -102,9 +102,12 @@ fun DebugOverlay(
             .onGloballyPositioned { coords ->
                 parentWidth = coords.size.width.toFloat()
                 parentHeight = coords.size.height.toFloat()
-                if (offsetX < 0f || offsetY < 0f) {
+                val needsReset = offsetX < 0f || offsetY < 0f
+                    || offsetX > parentWidth || offsetY > parentHeight
+                if (needsReset) {
                     offsetX = with(density) { DS.Spacing.m.toPx() }
-                    offsetY = parentHeight - with(density) { 120.dp.toPx() }
+                    offsetY = (parentHeight - with(density) { 120.dp.toPx() }).coerceAtLeast(0f)
+                    prefs.edit().putFloat("debugX", offsetX).putFloat("debugY", offsetY).apply()
                 }
             }
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
