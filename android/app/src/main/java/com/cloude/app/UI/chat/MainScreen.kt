@@ -1,11 +1,14 @@
 package com.cloude.app.UI.chat
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.zIndex
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -93,26 +96,32 @@ fun MainScreen(
             beyondViewportPageCount = 1
         ) { page ->
             val window = windows.getOrNull(page) ?: return@HorizontalPager
-            when (window.type) {
-                WindowType.Chat -> ChatScreen(
+            Box(modifier = Modifier.fillMaxSize()) {
+                ChatScreen(
                     viewModel = viewModel,
                     connectionManager = connectionManager,
                     environmentId = environmentId,
                     initialDraft = drafts[window.id] ?: "",
                     onDraftChange = { drafts[window.id] = it },
                     modifier = Modifier.fillMaxSize()
+                        .alpha(if (window.type == WindowType.Chat) 1f else 0f)
+                        .zIndex(if (window.type == WindowType.Chat) 1f else 0f)
                 )
-                WindowType.Files -> FileBrowserScreen(
+                FileBrowserScreen(
                     connectionManager = connectionManager,
                     environmentId = environmentId,
                     initialPath = workingDirectory,
                     modifier = Modifier.fillMaxSize()
+                        .alpha(if (window.type == WindowType.Files) 1f else 0f)
+                        .zIndex(if (window.type == WindowType.Files) 1f else 0f)
                 )
-                WindowType.GitChanges -> GitScreen(
+                GitScreen(
                     connectionManager = connectionManager,
                     environmentId = environmentId,
                     workingDirectory = workingDirectory,
                     modifier = Modifier.fillMaxSize()
+                        .alpha(if (window.type == WindowType.GitChanges) 1f else 0f)
+                        .zIndex(if (window.type == WindowType.GitChanges) 1f else 0f)
                 )
             }
         }
