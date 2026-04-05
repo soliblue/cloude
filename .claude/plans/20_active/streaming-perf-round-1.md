@@ -32,7 +32,7 @@ Tags: performance
 - Scenario: `mixed-markdown-multi-tool.txt`
 - Model: `haiku`
 - Steps:
-  - run `.claude/skills/optimize-performance/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
+  - run `.claude/skills/sim/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
   - use the built-in summary from `summarize-render-logs.sh`
   - compare only against the same scenario and same logs
 

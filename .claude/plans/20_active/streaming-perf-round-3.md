@@ -7,7 +7,7 @@ status: accepted
 Reduce hidden inactive-window rerenders during the canonical mixed streaming scenario.
 
 ## Reproduction
-- `.claude/skills/optimize-performance/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
+- `.claude/skills/sim/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
 
 ## Instrumentation
 - Baseline render logging via `debugOverlayEnabled`

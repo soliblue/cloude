@@ -39,7 +39,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-SCENARIO_PATH="$ROOT/scenarios/$SCENARIO_NAME"
+SCENARIO_PATH="$REPO_ROOT/.claude/skills/sim/scenarios/$SCENARIO_NAME"
 
 if [[ ! -f "$SCENARIO_PATH" ]]; then
   echo "Missing scenario: $SCENARIO_PATH" >&2
@@ -47,7 +47,7 @@ if [[ ! -f "$SCENARIO_PATH" ]]; then
 fi
 
 if [[ "$START_SIMULATOR" -eq 1 ]]; then
-  "$REPO_ROOT/.claude/skills/agentic-testing/start-local-simulator.sh"
+  "$REPO_ROOT/.claude/skills/sim/scripts/start-local-simulator.sh"
 fi
 
 xcrun simctl spawn "$UDID" defaults write soli.Cloude debugOverlayEnabled -bool true
@@ -71,7 +71,7 @@ sleep 1
 xcrun simctl openurl "$UDID" "cloude://environment/connect?id=$ENVIRONMENT_ID"
 sleep 2
 
-"$REPO_ROOT/.claude/skills/agentic-testing/open-repo-conversation.sh" "$REPO_ROOT"
+"$REPO_ROOT/.claude/skills/sim/scripts/open-repo-conversation.sh" "$REPO_ROOT"
 sleep 2
 xcrun simctl openurl "$UDID" "cloude://conversation/environment?id=$ENVIRONMENT_ID"
 sleep 1
@@ -85,7 +85,7 @@ APP_LOG="$APP_CONTAINER/Documents/app-debug.log"
 : > "$APP_LOG"
 
 SCENARIO_TEXT="$(cat "$SCENARIO_PATH")"
-"$REPO_ROOT/.claude/skills/agentic-testing/send-simulator-message.sh" "$SCENARIO_TEXT"
+"$REPO_ROOT/.claude/skills/sim/scripts/send-simulator-message.sh" "$SCENARIO_TEXT"
 
 echo "Scenario: $SCENARIO_NAME"
 echo "Model: $MODEL"

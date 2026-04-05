@@ -7,7 +7,7 @@ status: accepted
 Trim remaining hot-path container inputs after the hidden-window freeze.
 
 ## Reproduction
-- `.claude/skills/optimize-performance/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
+- `.claude/skills/sim/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
 
 ## Instrumentation
 - Baseline render logging via `debugOverlayEnabled`

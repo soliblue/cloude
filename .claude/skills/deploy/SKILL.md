@@ -57,4 +57,4 @@ set -a && source .env && set +a && fastlane mac build_agent
 
 - When in doubt, deploy both.
 - Every deploy needs corresponding testing plans.
-- If the user only wants local investigation, use `agentic-testing` instead.
+- If the user only wants local investigation, use `sim` instead.

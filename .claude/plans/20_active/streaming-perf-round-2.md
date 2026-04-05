@@ -7,7 +7,7 @@ status: accepted
 Reduce parent/container churn without touching streaming logic.
 
 ## Reproduction
-- `.claude/skills/optimize-performance/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
+- `.claude/skills/sim/scripts/run-perf-scenario.sh --scenario mixed-markdown-multi-tool.txt --wait 45`
 
 ## Instrumentation
 - Baseline render logging already enabled via `debugOverlayEnabled`

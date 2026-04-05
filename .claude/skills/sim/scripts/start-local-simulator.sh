@@ -1,27 +1,44 @@
 #!/bin/bash
 set -euo pipefail
 
-DEVICE_NAME="${1:-iPhone 17 Pro}"
+DEVICE_NAME="${1:-${CLOUDE_SIM_DEVICE_NAME:-}}"
 HOST="${CLOUDE_SIM_HOST:-127.0.0.1}"
 PORT="${CLOUDE_SIM_PORT:-8765}"
 BUNDLE_ID="${CLOUDE_BUNDLE_ID:-soli.Cloude}"
 DERIVED_DATA_PATH="${CLOUDE_SIM_DERIVED_DATA:-/tmp/cloude-sim-build}"
-DEVICE_LINE="$(xcrun simctl list devices available | grep " ($DEVICE_NAME)" -m 1 || true)"
+BOOTED_DEVICE_LINE="$(xcrun simctl list devices booted | grep -m 1 'iPhone' || true)"
+DEVICE_LINE=""
 
-if [[ -z "$DEVICE_LINE" ]]; then
-    DEVICE_LINE="$(xcrun simctl list devices available | grep "$DEVICE_NAME" -m 1 || true)"
+if [[ -n "$DEVICE_NAME" ]]; then
+    DEVICE_LINE="$(xcrun simctl list devices available | grep " ($DEVICE_NAME)" -m 1 || true)"
 fi
 
 if [[ -z "$DEVICE_LINE" ]]; then
-    echo "No available simulator named '$DEVICE_NAME'"
+    if [[ -n "$DEVICE_NAME" ]]; then
+        DEVICE_LINE="$(xcrun simctl list devices available | grep "$DEVICE_NAME" -m 1 || true)"
+    fi
+fi
+
+if [[ -z "$DEVICE_LINE" && -n "$BOOTED_DEVICE_LINE" ]]; then
+    DEVICE_LINE="$BOOTED_DEVICE_LINE"
+fi
+
+if [[ -z "$DEVICE_LINE" ]]; then
+    DEVICE_LINE="$(xcrun simctl list devices available | grep -m 1 'iPhone' || true)"
+fi
+
+if [[ -z "$DEVICE_LINE" ]]; then
+    echo "No available iPhone simulator was found"
     exit 1
 fi
 
 DEVICE_ID="$(echo "$DEVICE_LINE" | grep -oE '[0-9A-F-]{36}' | head -1)"
 if [[ -z "$DEVICE_ID" ]]; then
-    echo "Could not resolve simulator UDID for '$DEVICE_NAME'"
+    echo "Could not resolve simulator UDID from: $DEVICE_LINE"
     exit 1
 fi
+
+DEVICE_NAME="$(echo "$DEVICE_LINE" | sed -E 's/^[[:space:]]*([^()]+) \([0-9A-F-]{36}\).*/\1/' | sed -E 's/[[:space:]]+$//')"
 
 echo "Building and launching Mac agent..."
 set -a
@@ -53,7 +70,7 @@ else
 fi
 
 echo "Building iOS app for $DEVICE_NAME..."
-xcodebuild -project Cloude/Cloude.xcodeproj \
+env GIT_CONFIG_GLOBAL=/dev/null xcodebuild -project Cloude/Cloude.xcodeproj \
     -scheme Cloude \
     -destination "platform=iOS Simulator,id=$DEVICE_ID" \
     -derivedDataPath "$DERIVED_DATA_PATH" \

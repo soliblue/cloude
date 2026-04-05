@@ -1,9 +1,9 @@
 # <Round Title>
 
-Tags: performance
+Tags:
 
 ## Goal
-- Metric:
+- Metric or behavior:
 - Baseline target:
 - Success threshold:
 
@@ -12,9 +12,10 @@ Tags: performance
 - Files likely involved:
 - Constraints:
 
-## Prior Art
+## Prior Memory
+- Relevant memory docs:
 - Relevant done plans:
-- Patterns reused:
+- Known traps:
 
 ## Reproduction
 - Scenario:
@@ -29,12 +30,12 @@ Tags: performance
 
 ## Baseline
 - Build or commit context:
-- Before numbers:
+- Before numbers or observed behavior:
 - Notes:
 
 ## Hypothesis
 - Suspected root cause:
-- Why this metric moves:
+- Why the signal points there:
 
 ## Investigator Notes
 - Summary:
@@ -54,8 +55,8 @@ Tags: performance
 - Temporary instrumentation removed:
 - Notes:
 
-## After Measurement
-- After numbers:
+## After Verification
+- After numbers or observed behavior:
 - Comparison to baseline:
 - Remaining gap:
 
@@ -65,7 +66,7 @@ Tags: performance
 ## Reviewer Verification
 - Scenario rerun:
 - Methodology matched:
-- Numbers verified:
+- Claim verified:
 
 ## Regression Check
 - Cases exercised:
