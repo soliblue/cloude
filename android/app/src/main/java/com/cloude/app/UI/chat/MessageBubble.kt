@@ -37,11 +37,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TextSnippet
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ForkRight
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -101,6 +103,7 @@ fun MessageBubble(
     val interactionSource = remember { MutableInteractionSource() }
     var showMenu by remember { mutableStateOf(false) }
     var showTextSelection by remember { mutableStateOf(false) }
+    var showInfo by remember { mutableStateOf(false) }
     var expandedImageIndex by remember { mutableStateOf(-1) }
     val bubbleBackground = if (message.wasInterrupted && !message.isUser) {
         Accent.copy(alpha = 0.15f)
@@ -343,6 +346,16 @@ fun MessageBubble(
                             }
                         )
                     }
+                    if (!message.isUser) {
+                        DropdownMenuItem(
+                            text = { Text("Info") },
+                            leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
+                            onClick = {
+                                showInfo = true
+                                showMenu = false
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -457,24 +470,76 @@ fun MessageBubble(
             }
         }
 
-        if (message.costUsd != null) {
-            Row(
-                modifier = Modifier.padding(top = DS.Spacing.xs),
-                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.s)
-            ) {
-                message.model?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
-                    )
-                }
-                Text(
-                    text = "$${String.format("%.4f", message.costUsd)}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
-                )
+    }
+
+    if (showInfo) {
+        MessageInfoSheet(message = message, onDismiss = { showInfo = false })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MessageInfoSheet(message: ChatMessage, onDismiss: () -> Unit) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = DS.Spacing.l, vertical = DS.Spacing.m),
+            verticalArrangement = Arrangement.spacedBy(DS.Spacing.m)
+        ) {
+            Text(
+                text = "Message Info",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+
+            message.model?.let {
+                InfoRow("Model", it)
             }
+            message.costUsd?.let {
+                InfoRow("Cost", "$${String.format("%.4f", it)}")
+            }
+            message.durationMs?.let {
+                val seconds = it / 1000.0
+                InfoRow("Duration", "${String.format("%.1f", seconds)}s")
+            }
+            InfoRow("Characters", "${message.text.length}")
+            if (message.toolCalls.isNotEmpty()) {
+                InfoRow("Tool Calls", "${message.toolCalls.size}")
+            }
+
+            val date = java.text.SimpleDateFormat("MMM d, yyyy HH:mm:ss", java.util.Locale.getDefault())
+                .format(java.util.Date(message.timestamp))
+            InfoRow("Timestamp", date)
+
+            Spacer(modifier = Modifier.height(DS.Spacing.l))
         }
+    }
+}
+
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.l)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
