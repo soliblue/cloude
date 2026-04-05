@@ -1,8 +1,9 @@
 package com.cloude.app.UI.debug
 
-import androidx.compose.animation.AnimatedVisibility
+import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,9 +40,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import com.cloude.app.Models.AgentProcessInfo
 import com.cloude.app.Models.ClientMessage
 import com.cloude.app.Models.ServerMessage
@@ -57,7 +64,10 @@ fun DebugOverlay(
     environmentId: String,
     modifier: Modifier = Modifier
 ) {
+    val prefs = LocalContext.current.getSharedPreferences("cloude", android.content.Context.MODE_PRIVATE)
     var expanded by remember { mutableStateOf(false) }
+    var offsetX by remember { mutableFloatStateOf(prefs.getFloat("debugX", 0f)) }
+    var offsetY by remember { mutableFloatStateOf(prefs.getFloat("debugY", 0f)) }
     val isConnected by connectionManager.isConnected.collectAsState()
     val isAuthenticated by connectionManager.isAuthenticated.collectAsState()
     val agentState by connectionManager.agentState.collectAsState()
@@ -79,13 +89,30 @@ fun DebugOverlay(
             .collect { processes = it.processes }
     }
 
-    Box(modifier = modifier.padding(DS.Spacing.m)) {
+    Box(
+        modifier = modifier
+            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+            .pointerInput(expanded) {
+                if (!expanded) {
+                    detectDragGestures(
+                        onDragEnd = {
+                            prefs.edit().putFloat("debugX", offsetX).putFloat("debugY", offsetY).apply()
+                        }
+                    ) { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                    }
+                }
+            }
+            .padding(DS.Spacing.m)
+    ) {
         if (!expanded) {
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(DS.Radius.m))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f))
-                    .clickable { expanded = true }
+                    .clickable { expanded = true; offsetX = 0f; offsetY = 0f }
                     .padding(horizontal = DS.Spacing.m, vertical = DS.Spacing.xs),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
@@ -138,7 +165,11 @@ fun DebugOverlay(
                             Icon(Icons.Default.Refresh, null, tint = Accent, modifier = Modifier.size(DS.Icon.s))
                         }
                         IconButton(
-                            onClick = { expanded = false },
+                            onClick = {
+                                expanded = false
+                                offsetX = prefs.getFloat("debugX", 0f)
+                                offsetY = prefs.getFloat("debugY", 0f)
+                            },
                             modifier = Modifier.size(DS.Size.m)
                         ) {
                             Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(DS.Icon.s))
