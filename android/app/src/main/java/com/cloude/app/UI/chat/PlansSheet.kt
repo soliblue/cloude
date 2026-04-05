@@ -465,6 +465,63 @@ private fun priorityColor(priority: Int): Color = when {
     else -> Color.Gray
 }
 
+@Composable
+fun PlansScreen(
+    stages: Map<String, List<PlanItem>>?,
+    onDelete: (stage: String, filename: String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (stages == null) {
+        Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            androidx.compose.material3.CircularProgressIndicator(
+                color = Accent,
+                modifier = Modifier.size(DS.Size.m)
+            )
+        }
+    } else {
+        var selectedStage by remember(stages) {
+            val initial = STAGE_ORDER.firstOrNull { (stages[it]?.size ?: 0) > 0 } ?: "active"
+            mutableStateOf(initial)
+        }
+        var selectedTags by remember { mutableStateOf(emptySet<String>()) }
+        var detailPlan by remember { mutableStateOf<PlanItem?>(null) }
+
+        val currentPlans = stages[selectedStage] ?: emptyList()
+        val availableTags = currentPlans.flatMap { it.tags }.toSet().sorted()
+        val filteredPlans = (if (selectedTags.isEmpty()) currentPlans
+            else currentPlans.filter { plan -> plan.tags.any { it in selectedTags } })
+            .sortedBy { it.priority }
+
+        if (detailPlan != null) {
+            PlanDetailView(
+                plan = detailPlan!!,
+                stage = selectedStage,
+                onBack = { detailPlan = null },
+                onDelete = {
+                    onDelete(selectedStage, detailPlan!!.filename)
+                    detailPlan = null
+                }
+            )
+        } else {
+            PlanListView(
+                stages = stages,
+                selectedStage = selectedStage,
+                selectedTags = selectedTags,
+                availableTags = availableTags,
+                filteredPlans = filteredPlans,
+                onStageSelected = { selectedStage = it },
+                onTagToggle = { tag ->
+                    selectedTags = if (tag in selectedTags) selectedTags - tag else selectedTags + tag
+                },
+                onClearTags = { selectedTags = emptySet() },
+                onPlanTap = { detailPlan = it },
+                onDelete = { onDelete(selectedStage, it.filename) },
+                onDismiss = {}
+            )
+        }
+    }
+}
+
 private fun tagColor(tag: String): Color = when (tag) {
     "ui" -> Color(0xFF5B9BD5)
     "agent" -> Color(0xFF9B59B6)

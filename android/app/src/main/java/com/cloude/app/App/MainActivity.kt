@@ -37,9 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.RocketLaunch
-import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,11 +70,9 @@ import com.cloude.app.UI.chat.ConversationListSheet
 import com.cloude.app.UI.chat.IconPickerSheet
 import com.cloude.app.UI.debug.DebugOverlay
 import com.cloude.app.UI.chat.MainScreen
-import com.cloude.app.UI.chat.PlansSheet
 import com.cloude.app.UI.chat.RenameDialog
 import com.cloude.app.UI.chat.SkillsSheet
 import com.cloude.app.UI.deploy.DeploySheet
-import com.cloude.app.UI.memories.MemoriesSheet
 import com.cloude.app.UI.settings.SettingsScreen
 import com.cloude.app.UI.whiteboard.WhiteboardSheet
 import com.cloude.app.Models.MemorySection
@@ -301,24 +297,6 @@ class MainActivity : ComponentActivity() {
                                             tint = Accent
                                         )
                                     }
-                                    IconButton(onClick = {
-                                        chatViewModel.requestMemories()
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Psychology,
-                                            contentDescription = "Memories",
-                                            tint = Accent
-                                        )
-                                    }
-                                    IconButton(onClick = {
-                                        chatViewModel.requestPlans()
-                                    }) {
-                                        Icon(
-                                            imageVector = Icons.Default.ListAlt,
-                                            contentDescription = "Plans",
-                                            tint = Accent
-                                        )
-                                    }
                                     IconButton(onClick = { showConversations = true }) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.List,
@@ -398,23 +376,6 @@ class MainActivity : ComponentActivity() {
                             selectedIcon = conversation.symbol,
                             onSelect = { chatViewModel.setSymbol(it) },
                             onDismiss = { showIconPicker = false }
-                        )
-                    }
-
-                    val plans by chatViewModel.plans.collectAsState()
-                    if (plans != null) {
-                        PlansSheet(
-                            stages = plans!!,
-                            onDelete = { stage, filename -> chatViewModel.deletePlan(stage, filename) },
-                            onDismiss = { chatViewModel.dismissPlans() }
-                        )
-                    }
-
-                    val memorySections by chatViewModel.memorySections.collectAsState()
-                    if (memorySections != null) {
-                        MemoriesSheet(
-                            rawSections = memorySections!!,
-                            onDismiss = { chatViewModel.dismissMemories() }
                         )
                     }
 

@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Difference
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,7 +45,9 @@ fun WindowTabBar(
         val tabs = listOf(
             WindowType.Chat to Icons.AutoMirrored.Filled.Chat,
             WindowType.Files to Icons.Default.Folder,
-            WindowType.GitChanges to Icons.Default.Difference
+            WindowType.GitChanges to Icons.Default.Difference,
+            WindowType.Memories to Icons.Default.Psychology,
+            WindowType.Plans to Icons.Default.Checklist
         )
 
         Row(

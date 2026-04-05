@@ -257,3 +257,54 @@ private fun MemoryItemCard(item: MemoryItem) {
         )
     }
 }
+
+@Composable
+fun MemoriesScreen(
+    sections: List<MemorySection>?,
+    modifier: Modifier = Modifier
+) {
+    val parsed = remember(sections) {
+        sections?.let {
+            try { MemoryParser.parse(it) } catch (_: Exception) { emptyList() }
+        }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(DS.Spacing.l)
+    ) {
+        if (parsed == null) {
+            Box(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    color = Accent,
+                    modifier = Modifier.size(DS.Size.m)
+                )
+            }
+        } else if (parsed.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No memories yet",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
+                )
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(DS.Spacing.m)
+            ) {
+                itemsIndexed(parsed) { _, section ->
+                    MemorySectionCard(section = section, depth = 0)
+                }
+                item { Spacer(modifier = Modifier.height(DS.Spacing.xxl)) }
+            }
+        }
+    }
+}
