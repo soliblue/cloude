@@ -22,8 +22,6 @@ struct PieChartWidget: View {
 
     var body: some View {
         WidgetContainer {
-            WidgetHeader(icon: "chart.pie", title: title ?? "Pie Chart", color: .orange)
-
             Chart {
                 ForEach(Array(slices.enumerated()), id: \.offset) { index, slice in
                     let isSelected = selectedSlice == index

@@ -57,6 +57,18 @@ const tools = [
     },
   },
   {
+    name: "sf_symbols",
+    description: "Render a grid of SF Symbols so the user can see and compare them visually. Use for: icon selection, comparing symbol options, showing available icons.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Optional heading" },
+        symbols: { type: "array", items: { type: "object", properties: { name: { type: "string", description: "SF Symbol name (e.g. gearshape, slider.horizontal.3)" }, label: { type: "string", description: "Optional display label (defaults to symbol name)" } }, required: ["name"] } },
+      },
+      required: ["symbols"],
+    },
+  },
+  {
     name: "tree",
     description: "Render a collapsible tree diagram. Use for: folder structures, dependency trees, class hierarchies, architecture overviews. PREFER this over markdown code blocks for any hierarchical structure.",
     inputSchema: {

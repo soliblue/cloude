@@ -15,6 +15,7 @@ enum WidgetRegistry {
         "tree": .init(displayName: "Tree", icon: "filemenu.and.selection", color: .yellow),
         "color_palette": .init(displayName: "Color Palette", icon: "paintpalette", color: .purple),
         "image_carousel": .init(displayName: "Images", icon: "photo.on.rectangle", color: .green),
+        "sf_symbols": .init(displayName: "SF Symbols", icon: "square.grid.2x2", color: .teal),
     ]
 
     static func isWidget(_ toolName: String) -> Bool {
@@ -41,6 +42,7 @@ enum WidgetRegistry {
             case "tree": TreeWidget(data: data)
             case "color_palette": ColorPaletteWidget(data: data)
             case "image_carousel": ImageCarouselWidget(data: data)
+            case "sf_symbols": SFSymbolsWidget(data: data)
             default: Text("Unknown widget: \(type)").font(.system(size: DS.Text.s)).foregroundColor(.secondary)
             }
         }
