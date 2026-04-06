@@ -16,8 +16,6 @@ struct TimelineWidget: View {
 
     var body: some View {
         WidgetContainer {
-            WidgetHeader(icon: "calendar.day.timeline.left", title: title ?? "Timeline", color: .blue)
-
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(events.enumerated()), id: \.offset) { index, event in
                     HStack(alignment: .top, spacing: DS.Spacing.m) {
