@@ -19,28 +19,14 @@ struct WorkspaceView: View {
         let _ = DebugMetrics.log("MainChat", "render")
         #endif
         VStack(spacing: 0) {
-            ZStack {
-                ForEach(Array(windowManager.windows.enumerated()), id: \.element.id) { index, window in
-                    let isActive = currentPageIndex == index
-                    windowPage(for: window, isActive: isActive)
+            TabView(selection: activeWindowIdBinding) {
+                ForEach(windowManager.windows) { window in
+                    pagedWindowContent(for: window)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .tag(window.id)
                 }
             }
-            .onChange(of: currentPageIndex) { oldValue, newValue in
-                store.handlePageChange(oldIndex: oldValue, newIndex: newValue, conversationStore: conversationStore, windowManager: windowManager)
-            }
-            .onAppear {
-                if let activeId = windowManager.activeWindowId,
-                   let index = windowManager.windowIndex(for: activeId) {
-                    currentPageIndex = index
-                }
-            }
-            .onChange(of: windowManager.activeWindowId) { _, newId in
-                if let id = newId, let index = windowManager.windowIndex(for: id) {
-                    if currentPageIndex != index {
-                        currentPageIndex = index
-                    }
-                }
-            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
             .onTapGesture {
                 dismissKeyboard()
             }
@@ -61,7 +47,6 @@ struct WorkspaceView: View {
             }
 
             inputSection()
-                .zIndex(1)
         }
         .onAppear {
             store.initializeFirstWindow(conversationStore: conversationStore, windowManager: windowManager)

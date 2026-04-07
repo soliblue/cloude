@@ -12,19 +12,6 @@ extension WorkspaceStore {
         }
     }
 
-    func handlePageChange(oldIndex: Int, newIndex: Int, conversationStore: ConversationStore, windowManager: WindowManager) {
-        if oldIndex < windowManager.windows.count {
-            let oldWindow = windowManager.windows[oldIndex]
-            if let convId = oldWindow.conversationId,
-               let conv = conversationStore.conversation(withId: convId),
-               conv.isEmpty {
-                conversationStore.deleteConversation(conv)
-                windowManager.removeWindow(oldWindow.id)
-            }
-        }
-        windowManager.navigateToWindow(at: newIndex)
-    }
-
     func handleActiveWindowChange(
         oldId: UUID?,
         newId: UUID?,

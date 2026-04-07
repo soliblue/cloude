@@ -8,7 +8,6 @@ import CloudeShared
 @MainActor
 final class WorkspaceStore: ObservableObject {
     @Published var editingWindow: Window?
-    @Published var currentPageIndex = 0
     @Published var isKeyboardVisible = false
     @Published var inputText = ""
     @Published var attachedImages: [AttachedImage] = []

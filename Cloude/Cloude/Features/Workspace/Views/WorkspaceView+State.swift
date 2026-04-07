@@ -23,8 +23,11 @@ extension WorkspaceView {
         store.activeConversationIsRunning(connection: connection, windowManager: windowManager)
     }
 
-    var currentPageIndexBinding: Binding<Int> {
-        Binding(get: { store.currentPageIndex }, set: { store.currentPageIndex = $0 })
+    var activeWindowIdBinding: Binding<UUID?> {
+        Binding(
+            get: { windowManager.activeWindowId },
+            set: { windowManager.activeWindowId = $0 }
+        )
     }
 
     var editingWindowBinding: Binding<Window?> {
@@ -62,11 +65,6 @@ extension WorkspaceView {
     var editingWindow: Window? {
         get { store.editingWindow }
         nonmutating set { store.editingWindow = newValue }
-    }
-
-    var currentPageIndex: Int {
-        get { store.currentPageIndex }
-        nonmutating set { store.currentPageIndex = newValue }
     }
 
     var isKeyboardVisible: Bool {

@@ -14,12 +14,12 @@ extension WorkspaceView {
 
         WindowSwitcherView(
             items: items,
-            activeIndex: currentPageIndex,
-            onSelect: { index in
-                currentPageIndex = index
+            activeId: windowManager.activeWindowId,
+            onSelect: { id in
+                windowManager.activeWindowId = id
             },
-            onLongPress: { index in
-                store.beginEditingWindow(at: index, windowManager: windowManager)
+            onLongPress: { id in
+                store.beginEditingWindow(id, windowManager: windowManager)
             }
         )
         .equatable()
@@ -28,14 +28,16 @@ extension WorkspaceView {
         .gesture(
             DragGesture(minimumDistance: 30)
                 .onEnded { value in
-                    let maxIndex = windowManager.windows.count - 1
                     let horizontal = abs(value.translation.width)
                     let vertical = abs(value.translation.height)
-                    if horizontal > vertical {
-                        if value.translation.width > 0 && currentPageIndex < maxIndex {
-                            currentPageIndex += 1
-                        } else if value.translation.width < 0 && currentPageIndex > 0 {
-                            currentPageIndex -= 1
+                    if horizontal > vertical,
+                       let currentId = windowManager.activeWindowId,
+                       let currentIndex = windowManager.windowIndex(for: currentId) {
+                        let maxIndex = windowManager.windows.count - 1
+                        if value.translation.width > 0 && currentIndex < maxIndex {
+                            windowManager.activeWindowId = windowManager.windows[currentIndex + 1].id
+                        } else if value.translation.width < 0 && currentIndex > 0 {
+                            windowManager.activeWindowId = windowManager.windows[currentIndex - 1].id
                         }
                     }
                 }
@@ -52,28 +54,28 @@ private struct WindowSwitcherView: View, Equatable {
     }
 
     let items: [WindowItem]
-    let activeIndex: Int
-    let onSelect: (Int) -> Void
-    let onLongPress: (Int) -> Void
+    let activeId: UUID?
+    let onSelect: (UUID) -> Void
+    let onLongPress: (UUID) -> Void
 
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.items == rhs.items && lhs.activeIndex == rhs.activeIndex
+        lhs.items == rhs.items && lhs.activeId == rhs.activeId
     }
 
     var body: some View {
         #if DEBUG
-        let _ = DebugMetrics.log("WindowSwitcher", "render | windows=\(items.count) active=\(activeIndex)")
+        let _ = DebugMetrics.log("WindowSwitcher", "render | windows=\(items.count) active=\(activeId?.uuidString.prefix(6) ?? "nil")")
         #endif
         HStack(spacing: DS.Spacing.s) {
             ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                let isActive = activeIndex == index
+                let isActive = activeId == item.id
 
                 if index > 0 {
                     Divider().frame(height: DS.Icon.l)
                 }
 
                 Button {
-                    onSelect(index)
+                    onSelect(item.id)
                 } label: {
                     windowSwitcherLabel(item: item, isActive: isActive, useSymbols: items.count >= 4)
                         .frame(maxWidth: .infinity)
@@ -83,7 +85,7 @@ private struct WindowSwitcherView: View, Equatable {
                 .buttonStyle(.plain)
                 .simultaneousGesture(
                     LongPressGesture().onEnded { _ in
-                        onLongPress(index)
+                        onLongPress(item.id)
                     }
                 )
             }

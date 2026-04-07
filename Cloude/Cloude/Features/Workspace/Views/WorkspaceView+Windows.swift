@@ -2,32 +2,6 @@ import SwiftUI
 
 extension WorkspaceView {
     @ViewBuilder
-    func windowPage(for window: Window, isActive: Bool) -> some View {
-        if isActive {
-            pagedWindowContent(for: window)
-                .opacity(1)
-                .zIndex(1)
-                .allowsHitTesting(true)
-                .animation(.easeIn(duration: 0.2).delay(0.01), value: currentPageIndex)
-        } else {
-            InactiveWindowPage(
-                snapshot: .init(
-                    id: window.id,
-                    tab: window.tab,
-                    conversationId: window.conversationId,
-                    fileBrowserRootPath: window.fileBrowserRootPath,
-                    gitRepoRootPath: window.gitRepoRootPath
-                ),
-                content: { AnyView(pagedWindowContent(for: window)) }
-            )
-            .opacity(0)
-            .zIndex(0)
-            .allowsHitTesting(false)
-            .animation(.easeOut(duration: 0.2).delay(0.2), value: currentPageIndex)
-        }
-    }
-
-    @ViewBuilder
     func pagedWindowContent(for window: Window) -> some View {
         let conversation = window.conversation(in: conversationStore)
 
@@ -44,7 +18,7 @@ extension WorkspaceView {
             )
             .equatable()
 
-            ZStack {
+            TabView(selection: windowTabBinding(for: window.id)) {
                 ConversationView(
                     connection: connection,
                     store: conversationStore,
@@ -63,8 +37,7 @@ extension WorkspaceView {
                 )
                 .id(window.id)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(window.tab == .chat ? 1 : 0)
-                .allowsHitTesting(window.tab == .chat)
+                .tag(WindowTab.chat)
 
                 FileTreeView(
                     connection: connection,
@@ -74,8 +47,7 @@ extension WorkspaceView {
                     state: windowManager.fileTreeState(for: window.id)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(window.tab == .files ? 1 : 0)
-                .allowsHitTesting(window.tab == .files)
+                .tag(WindowTab.files)
 
                 GitChangesView(
                     connection: connection,
@@ -84,31 +56,16 @@ extension WorkspaceView {
                     state: windowManager.gitChangesState(for: window.id)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(window.tab == .gitChanges ? 1 : 0)
-                .allowsHitTesting(window.tab == .gitChanges)
-
+                .tag(WindowTab.gitChanges)
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
         }
     }
-}
 
-private struct InactiveWindowPageSnapshot: Equatable {
-    let id: UUID
-    let tab: WindowTab
-    let conversationId: UUID?
-    let fileBrowserRootPath: String?
-    let gitRepoRootPath: String?
-}
-
-private struct InactiveWindowPage: View, Equatable {
-    let snapshot: InactiveWindowPageSnapshot
-    let content: () -> AnyView
-
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.snapshot == rhs.snapshot
-    }
-
-    var body: some View {
-        content()
+    func windowTabBinding(for windowId: UUID) -> Binding<WindowTab> {
+        Binding(
+            get: { windowManager.windows.first { $0.id == windowId }?.tab ?? .chat },
+            set: { windowManager.setWindowTab(windowId, tab: $0) }
+        )
     }
 }
