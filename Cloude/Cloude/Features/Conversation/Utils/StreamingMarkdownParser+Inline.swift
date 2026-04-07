@@ -1,5 +1,3 @@
-// StreamingMarkdownParser+Inline.swift
-
 import Foundation
 import SwiftUI
 

@@ -1,5 +1,3 @@
-// WhiteboardSheet+Sketchy.swift
-
 import SwiftUI
 
 extension WhiteboardSheet {

@@ -1,5 +1,3 @@
-// XMLNode+ParserHelpers.swift
-
 import Foundation
 
 extension XMLBlockParser {

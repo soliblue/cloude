@@ -1,5 +1,3 @@
-// FilePreviewView+Content.swift
-
 import SwiftUI
 import AVKit
 import Combine

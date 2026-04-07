@@ -1,5 +1,3 @@
-// StreamingMarkdownParser+Blocks.swift
-
 import Foundation
 import CloudeShared
 

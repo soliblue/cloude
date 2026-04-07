@@ -1,5 +1,3 @@
-// WhiteboardSheet+Gestures.swift
-
 import SwiftUI
 import UIKit
 

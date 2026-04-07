@@ -1,5 +1,3 @@
-// FilePreviewView+SourceView.swift
-
 import SwiftUI
 import CloudeShared
 

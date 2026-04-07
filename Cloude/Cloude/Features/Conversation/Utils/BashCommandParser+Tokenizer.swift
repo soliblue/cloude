@@ -1,5 +1,3 @@
-// BashCommandParser+Tokenizer.swift
-
 import Foundation
 
 extension BashCommandParser {

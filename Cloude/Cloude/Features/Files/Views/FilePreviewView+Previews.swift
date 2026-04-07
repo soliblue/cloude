@@ -1,5 +1,3 @@
-// FilePreviewView+Previews.swift
-
 import SwiftUI
 import AVKit
 import AVFoundation

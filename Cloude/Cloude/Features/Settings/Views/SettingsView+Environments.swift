@@ -1,5 +1,3 @@
-// SettingsView+Environments.swift
-
 import SwiftUI
 
 extension SettingsView {

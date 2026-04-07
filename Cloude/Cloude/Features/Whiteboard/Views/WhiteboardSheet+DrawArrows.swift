@@ -1,5 +1,3 @@
-// WhiteboardSheet+DrawArrows.swift
-
 import SwiftUI
 
 extension WhiteboardSheet {

@@ -1,5 +1,3 @@
-// StreamingMarkdownParser+XML.swift
-
 import Foundation
 
 extension StreamingMarkdownParser {

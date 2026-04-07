@@ -1,5 +1,3 @@
-// WhiteboardSheet+ContextBar.swift
-
 import SwiftUI
 
 extension WhiteboardSheet {

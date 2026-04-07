@@ -1,5 +1,3 @@
-// WhiteboardStore+HitTesting.swift
-
 import Foundation
 import SwiftUI
 

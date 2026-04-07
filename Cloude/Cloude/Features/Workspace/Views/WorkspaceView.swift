@@ -1,5 +1,3 @@
-//  WorkspaceView.swift
-
 import SwiftUI
 import UIKit
 import Combine

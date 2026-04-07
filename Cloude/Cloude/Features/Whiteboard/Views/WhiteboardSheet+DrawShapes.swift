@@ -1,5 +1,3 @@
-// WhiteboardSheet+DrawShapes.swift
-
 import SwiftUI
 
 extension WhiteboardSheet {

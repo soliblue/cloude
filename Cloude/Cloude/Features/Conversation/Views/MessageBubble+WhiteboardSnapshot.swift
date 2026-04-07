@@ -1,5 +1,3 @@
-// MessageBubble+WhiteboardSnapshot.swift
-
 import SwiftUI
 
 struct WhiteboardSnapshotPill: View {

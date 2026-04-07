@@ -1,5 +1,3 @@
-// WhiteboardStore+Layout.swift
-
 import Foundation
 
 extension WhiteboardStore {

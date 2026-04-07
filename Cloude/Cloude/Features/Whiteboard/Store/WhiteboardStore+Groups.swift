@@ -1,5 +1,3 @@
-// WhiteboardStore+Groups.swift
-
 import Foundation
 
 extension WhiteboardStore {

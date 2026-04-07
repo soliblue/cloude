@@ -24,7 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
-        Log.startup("Cloude Agent \(version) (\(build)) — PID \(ProcessInfo.processInfo.processIdentifier)")
+        Log.startup("Cloude Agent \(version) (\(build)) - PID \(ProcessInfo.processInfo.processIdentifier)")
 
         let killedAgents = ProcessMonitor.killOtherAgents()
         if killedAgents > 0 {
@@ -44,7 +44,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         initializeWhisper()
 
-        Log.startup("Ready on :\(server.port) — log: \(Log.logPath)")
+        Log.startup("Ready on :\(server.port) - log: \(Log.logPath)")
     }
 
     func applicationWillTerminate(_ notification: Notification) {

@@ -1,5 +1,3 @@
-// WhiteboardStore+Persistence.swift
-
 import Foundation
 
 extension WhiteboardStore {

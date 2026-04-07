@@ -1,5 +1,3 @@
-// BashCommandParser.swift
-
 import Foundation
 
 enum ShellOperator: String {

@@ -1,5 +1,3 @@
-// WhiteboardSheet+Toolbar.swift
-
 import SwiftUI
 
 extension WhiteboardSheet {

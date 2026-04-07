@@ -1,5 +1,3 @@
-// WhiteboardSheet.swift
-
 import SwiftUI
 
 struct WhiteboardSheet: View {

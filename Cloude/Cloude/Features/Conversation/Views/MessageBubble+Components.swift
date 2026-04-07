@@ -1,5 +1,3 @@
-// MessageBubble+Components.swift
-
 import SwiftUI
 
 struct MessageImageThumbnails: View {

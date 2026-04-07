@@ -1,5 +1,3 @@
-//  WorkspaceView+Lifecycle.swift
-
 import SwiftUI
 import CloudeShared
 

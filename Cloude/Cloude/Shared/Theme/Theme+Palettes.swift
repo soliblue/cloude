@@ -1,5 +1,3 @@
-// Theme+Palettes.swift
-
 import SwiftUI
 
 extension AppTheme {

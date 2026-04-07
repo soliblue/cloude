@@ -1,5 +1,3 @@
-// XMLNode+Parser.swift
-
 import Foundation
 
 struct XMLBlockParser {

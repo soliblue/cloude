@@ -1,5 +1,3 @@
-// WhiteboardStore+Elements.swift
-
 import Foundation
 
 extension WhiteboardStore {

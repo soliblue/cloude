@@ -1,5 +1,3 @@
-// StreamingMarkdownView+Table.swift
-
 import SwiftUI
 
 struct MarkdownTableView: View {

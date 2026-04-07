@@ -1,5 +1,3 @@
-// WhiteboardSheet+GestureHandlers.swift
-
 import SwiftUI
 
 extension WhiteboardSheet {

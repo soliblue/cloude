@@ -6,8 +6,8 @@ class FileService {
     static let shared = FileService()
 
     private let fileManager = FileManager.default
-    private let chunkSize: Int = 512 * 1024 // 512KB chunks (~700KB after base64, safe for iOS WebSocket)
-    private let maxFileSize: Int64 = 100 * 1024 * 1024 // 100MB absolute max
+    private let chunkSize: Int = 512 * 1024
+    private let maxFileSize: Int64 = 100 * 1024 * 1024
 
     func listDirectory(at path: String) -> Result<[FileEntry], Error> {
         let url = URL(fileURLWithPath: path)
@@ -21,7 +21,6 @@ class FileService {
 
             let entries = contents.compactMap { FileEntry.from(url: $0) }
                 .sorted { (a, b) in
-                    // Directories first, then alphabetically
                     if a.isDirectory != b.isDirectory {
                         return a.isDirectory
                     }
@@ -78,7 +77,7 @@ class FileService {
     }
 
     private let imageExtensions = Set(["jpg", "jpeg", "png", "heic", "heif", "tiff", "tif", "gif", "bmp"])
-    private let thumbnailMaxSize = 200 * 1024 // 200KB thumbnail target
+    private let thumbnailMaxSize = 200 * 1024
 
     func isImage(at path: String) -> Bool {
         let ext = path.pathExtension.lowercased()

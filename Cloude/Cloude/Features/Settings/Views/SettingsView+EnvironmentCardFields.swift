@@ -1,5 +1,3 @@
-// SettingsView+EnvironmentCardFields.swift
-
 import SwiftUI
 
 extension EnvironmentCard {

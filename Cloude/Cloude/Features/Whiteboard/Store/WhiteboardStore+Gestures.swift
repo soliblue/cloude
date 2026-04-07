@@ -1,5 +1,3 @@
-// WhiteboardStore+Gestures.swift
-
 import Foundation
 import SwiftUI
 

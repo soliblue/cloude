@@ -2,7 +2,6 @@ import Foundation
 import CloudeShared
 
 enum ConnectionEvent {
-    // Files
     case directoryListing(path: String, entries: [FileEntry], environmentId: UUID?)
     case fileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool)
     case fileChunk(path: String, chunkIndex: Int, totalChunks: Int, data: String, mimeType: String, size: Int64)
@@ -10,7 +9,6 @@ enum ConnectionEvent {
     case fileSearchResults(files: [String], query: String)
     case fileError(String)
 
-    // Chat/session
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?, interruptedConversationId: UUID?, interruptedMessageId: UUID?)
     case gitStatus(path: String, status: GitStatusInfo, environmentId: UUID?)
     case gitStatusError(path: String, message: String, environmentId: UUID?)
@@ -23,16 +21,13 @@ enum ConnectionEvent {
     case historySync(sessionId: String, messages: [HistoryMessage])
     case historySyncError(sessionId: String, error: String)
 
-    // Plans
     case plans([String: [PlanItem]])
     case planDeleted(stage: String, filename: String)
 
-    // Streaming lifecycle
     case reconnectRunning(conversationId: UUID)
     case turnCompleted(conversationId: UUID)
     case liveSnapshot(conversationId: UUID)
 
-    // UI / orchestration
     case defaultWorkingDirectory(path: String, environmentId: UUID)
     case authenticated
     case usageStats(UsageStats)

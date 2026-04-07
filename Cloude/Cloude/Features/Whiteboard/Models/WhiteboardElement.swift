@@ -1,5 +1,3 @@
-// WhiteboardElement.swift
-
 import Foundation
 
 enum WhiteboardElementType: String, Codable {

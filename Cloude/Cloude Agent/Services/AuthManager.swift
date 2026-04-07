@@ -38,7 +38,6 @@ class AuthManager {
             if let existing = getFromKeychain() {
                 return existing
             }
-            // Generate new token on first run
             let newToken = generateToken()
             saveToKeychain(newToken)
             return newToken
@@ -55,7 +54,6 @@ class AuthManager {
     }
 
     private func generateToken() -> String {
-        // Generate a secure random token
         var bytes = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
         return Data(bytes).base64EncodedString()
@@ -86,7 +84,6 @@ class AuthManager {
     }
 
     private func saveToKeychain(_ token: String) {
-        // Delete existing
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -94,7 +91,6 @@ class AuthManager {
         ]
         SecItemDelete(deleteQuery as CFDictionary)
 
-        // Add new
         guard let data = token.data(using: .utf8) else { return }
 
         let addQuery: [String: Any] = [

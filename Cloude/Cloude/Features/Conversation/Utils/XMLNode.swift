@@ -1,5 +1,3 @@
-// XMLNode.swift
-
 import Foundation
 
 struct XMLNode: Identifiable {

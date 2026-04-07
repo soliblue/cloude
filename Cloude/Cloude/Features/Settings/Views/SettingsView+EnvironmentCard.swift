@@ -1,5 +1,3 @@
-// SettingsView+EnvironmentCard.swift
-
 import SwiftUI
 
 struct EnvironmentCard: View {

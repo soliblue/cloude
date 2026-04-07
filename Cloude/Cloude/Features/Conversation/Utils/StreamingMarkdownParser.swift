@@ -1,5 +1,3 @@
-// StreamingMarkdownParser.swift
-
 import Foundation
 import SwiftUI
 import CloudeShared
