@@ -70,6 +70,7 @@ extension ConversationStore {
                 let existing: ChatMessage?
                 if let serverUUID = merged[i].serverUUID {
                     existing = existingByServerUUID[serverUUID]
+                        ?? (i < $0.messages.count && $0.messages[i].isUser == merged[i].isUser ? $0.messages[i] : nil)
                 } else if i < $0.messages.count, $0.messages[i].isUser == merged[i].isUser {
                     existing = $0.messages[i]
                 } else {
@@ -79,6 +80,8 @@ extension ConversationStore {
                     merged[i].id = existing.id
                     if merged[i].durationMs == nil { merged[i].durationMs = existing.durationMs }
                     if merged[i].costUsd == nil { merged[i].costUsd = existing.costUsd }
+                    if merged[i].model == nil { merged[i].model = existing.model }
+                    if merged[i].toolCalls.count < existing.toolCalls.count { merged[i].toolCalls = existing.toolCalls }
                     if merged[i].imageBase64 == nil { merged[i].imageBase64 = existing.imageBase64 }
                     if merged[i].imageThumbnails == nil { merged[i].imageThumbnails = existing.imageThumbnails }
                 }

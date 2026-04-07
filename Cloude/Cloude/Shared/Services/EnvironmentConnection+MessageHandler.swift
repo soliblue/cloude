@@ -31,7 +31,7 @@ extension EnvironmentConnection {
         case .toolCall(let n, let i, let t, let p, let c, let pos, let ei): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos, editInfo: ei)
         case .toolResult(let id, let sum, let out, let c):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c)
         case .runStats(let ms, let cost, let m, let c):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c)
-        case .missedResponse(let sid, let t, _, let tc):  handleMissedResponse(mgr, sessionId: sid, text: t, storedToolCalls: tc)
+        case .missedResponse(let sid, let t, _, let tc, let durationMs, let costUsd, let model):  handleMissedResponse(mgr, sessionId: sid, text: t, storedToolCalls: tc, durationMs: durationMs, costUsd: costUsd, model: model)
         case .noMissedResponse(let sid):                  handleNoMissedResponse(mgr, sessionId: sid)
         case .sessionId(let id, let c):                   handleSessionId(mgr, id, conversationId: c)
         case .messageUUID(let uuid, let c):               handleMessageUUID(mgr, uuid, conversationId: c)
@@ -70,7 +70,13 @@ extension EnvironmentConnection {
         for (convId, output) in mgr.runningOutputs(for: environmentId) {
             output.flushBuffer()
             output.completeExecutingTools()
-            mgr.events.send(.disconnect(conversationId: convId, output: output))
+            let snapshot = ConversationOutput()
+            snapshot.text = output.text
+            snapshot.fullText = output.fullText
+            snapshot.toolCalls = output.toolCalls
+            snapshot.newSessionId = output.newSessionId
+            snapshot.liveMessageId = output.liveMessageId
+            mgr.events.send(.disconnect(conversationId: convId, output: snapshot))
             output.reset()
             output.isRunning = false
         }

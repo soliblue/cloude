@@ -6,8 +6,8 @@ import CloudeShared
 extension App {
     func handleConnectionEvent(_ event: ConnectionEvent) {
         switch event {
-        case .missedResponse(_, let text, _, let storedToolCalls, let interruptedConvId, let interruptedMsgId):
-            handleMissedResponse(text: text, storedToolCalls: storedToolCalls, interruptedConvId: interruptedConvId, interruptedMsgId: interruptedMsgId)
+        case .missedResponse(_, let text, _, let storedToolCalls, let durationMs, let costUsd, let model, let interruptedConvId, let interruptedMsgId):
+            handleMissedResponse(text: text, storedToolCalls: storedToolCalls, durationMs: durationMs, costUsd: costUsd, model: model, interruptedConvId: interruptedConvId, interruptedMsgId: interruptedMsgId)
         case .disconnect(let convId, let output):
             handleDisconnect(conversationId: convId, output: output)
         case .memories(let sections):
@@ -24,6 +24,8 @@ extension App {
             handleSetConversationSymbol(conversationId: convId, symbol: symbol)
         case .sessionIdReceived(let convId, let sessionId):
             handleSessionIdReceived(conversationId: convId, sessionId: sessionId)
+        case .turnCompleted(let convId):
+            handleTurnCompleted(conversationId: convId)
         case .historySync(let sessionId, let historyMessages):
             handleHistorySync(sessionId: sessionId, historyMessages: historyMessages)
         case .deleteConversation(let convId):
@@ -48,6 +50,8 @@ extension App {
 
         case .reconnectRunning(let convId):
             handleReconnectRunning(conversationId: convId)
+        case .liveSnapshot(let convId):
+            handleLiveSnapshot(conversationId: convId)
 
         case .question:
             break

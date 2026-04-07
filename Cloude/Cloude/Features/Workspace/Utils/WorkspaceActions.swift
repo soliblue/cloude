@@ -21,6 +21,9 @@ extension App {
 
     func createNewConversation(path: String? = nil) {
         let current = activeConversation()
+        let environmentId = current?.environmentId.flatMap {
+            connection.connection(for: $0) == nil ? nil : $0
+        } ?? environmentStore.activeEnvironmentId
 
         if windowManager.activeWindow == nil {
             windowManager.addWindow()
@@ -29,7 +32,7 @@ extension App {
 
         let conversation = conversationStore.newConversation(
             workingDirectory: path?.nilIfEmpty ?? current?.workingDirectory,
-            environmentId: current?.environmentId ?? environmentStore.activeEnvironmentId
+            environmentId: environmentId
         )
         windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         AppLogger.bootstrapInfo(
@@ -115,7 +118,7 @@ extension App {
             return
         }
 
-        if conv.environmentId == nil {
+        if conv.environmentId == nil || connection.connection(for: conv.environmentId) == nil {
             conversationStore.setEnvironmentId(conv, environmentId: environmentStore.activeEnvironmentId)
         }
         let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv

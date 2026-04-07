@@ -15,7 +15,6 @@ extension ChatMessageList {
             .frame(minHeight: scrollViewportHeight, alignment: .top)
         }
         .defaultScrollAnchor(.bottom)
-        .scrollPosition($scrollPos)
         .coordinateSpace(name: "chatScroll")
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)

@@ -17,13 +17,14 @@ final class ConversationOutput: ObservableObject {
     var lastSavedMessageId: UUID?
     var messageUUID: String?
     @Published var liveMessageId: UUID?
+    var needsHistorySync = false
 
-    var previousCumulativeCost: Double = 0
     var fullText: String = ""
     private var displayIndex: String.Index?
     private var displayLink: CADisplayLink?
     private var lastDrainTime: CFTimeInterval = 0
     private let charsPerSecond: Double = 300
+    private var transientStateGeneration = 0
 
     func appendText(_ chunk: String) {
         fullText += chunk
@@ -120,12 +121,17 @@ final class ConversationOutput: ObservableObject {
         )
         #endif
         liveMessageId = nil
+        transientStateGeneration += 1
+        let generation = transientStateGeneration
         DispatchQueue.main.async { [weak self] in
-            self?.clearTransientState()
+            if let self, self.transientStateGeneration == generation, !self.isRunning, self.liveMessageId == nil {
+                self.clearTransientState()
+            }
         }
     }
 
     func seedForReconnect(_ existingText: String, toolCalls existingToolCalls: [ToolCall]) {
+        transientStateGeneration += 1
         stopDraining()
         fullText = existingText
         text = existingText
@@ -142,6 +148,7 @@ final class ConversationOutput: ObservableObject {
             "isRunning=\(isRunning)"
         )
         #endif
+        transientStateGeneration += 1
         liveMessageId = nil
         clearTransientState()
         #if DEBUG
@@ -163,6 +170,7 @@ final class ConversationOutput: ObservableObject {
         runStats = nil
         newSessionId = nil
         messageUUID = nil
+        needsHistorySync = false
         isCompacting = false
         skipped = false
     }

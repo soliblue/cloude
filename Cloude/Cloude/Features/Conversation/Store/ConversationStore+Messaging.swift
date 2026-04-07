@@ -20,7 +20,9 @@ extension ConversationStore {
             return adjusted
         }
 
-        if let liveId = output.liveMessageId {
+        let fallbackLiveId = freshConv.messages.last?.isRecoverableLiveMessage == true ? freshConv.messages.last?.id : nil
+
+        if let liveId = output.liveMessageId ?? fallbackLiveId {
             if trimmedText.isEmpty && adjustedToolCalls.isEmpty {
                 AppLogger.connectionInfo("finalize live message remove convId=\(freshConv.id.uuidString) liveId=\(liveId.uuidString)")
                 removeMessage(liveId, from: freshConv)
@@ -79,27 +81,31 @@ extension ConversationStore {
         guard connection.isAuthenticated else { return }
 
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
+        guard let queuedMessage = freshConv.pendingMessages.first else { return }
+        AppLogger.connectionInfo("replay queued messages convId=\(freshConv.id.uuidString) count=\(freshConv.pendingMessages.count)")
 
-        let pending = popPendingMessages(from: freshConv)
-        guard !pending.isEmpty else { return }
-        AppLogger.connectionInfo("replay queued messages convId=\(freshConv.id.uuidString) count=\(pending.count)")
-
-        for var msg in pending {
-            msg.isQueued = false
-            addMessage(msg, to: freshConv)
+        mutate(freshConv.id) {
+            if !$0.pendingMessages.isEmpty {
+                $0.pendingMessages.removeFirst()
+            }
         }
 
-        let combinedText = pending.map { $0.text }.joined(separator: "\n\n")
+        var replayedMessage = queuedMessage
+        replayedMessage.isQueued = false
+        addMessage(replayedMessage, to: freshConv)
+
         let updatedConv = self.conversation(withId: conversation.id) ?? freshConv
 
         connection.sendChat(
-            combinedText,
+            replayedMessage.text,
             workingDirectory: updatedConv.workingDirectory,
             sessionId: updatedConv.sessionId,
             isNewSession: false,
             conversationId: updatedConv.id,
             conversationName: updatedConv.name,
             conversationSymbol: updatedConv.symbol,
+            effort: updatedConv.defaultEffort?.rawValue,
+            model: updatedConv.defaultModel?.rawValue,
             environmentId: updatedConv.environmentId
         )
 

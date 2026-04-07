@@ -5,6 +5,7 @@ import CloudeShared
 @MainActor
 class ConversationStore: ObservableObject {
     @Published var conversations: [Conversation] = []
+    var pendingHistorySyncMetadata: [UUID: (durationMs: Int?, costUsd: Double?, model: String?)] = [:]
 
     let legacySaveKey = "saved_conversations_v2"
 

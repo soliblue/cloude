@@ -107,50 +107,58 @@ extension WorkspaceStore {
         }
         guard let conv = conversation else { return }
 
-        if conv.environmentId == nil {
-            conversationStore.setEnvironmentId(conv, environmentId: activeWindowEnvironmentId(windowManager: windowManager, conversationStore: conversationStore, environmentStore: environmentStore))
+        if conv.environmentId == nil || connection.connection(for: conv.environmentId) == nil {
+            conversationStore.setEnvironmentId(
+                conv,
+                environmentId: activeWindowEnvironmentId(
+                    windowManager: windowManager,
+                    conversationStore: conversationStore,
+                    environmentStore: environmentStore
+                )
+            )
         }
+        let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv
 
-        let isRunning = connection.output(for: conv.id).isRunning
+        let isRunning = connection.output(for: updatedConv.id).isRunning
         if isRunning || !connection.isAuthenticated {
-            AppLogger.connectionInfo("queue user message convId=\(conv.id.uuidString) chars=\(text.count) running=\(isRunning) authenticated=\(connection.isAuthenticated)")
+            AppLogger.connectionInfo("queue user message convId=\(updatedConv.id.uuidString) chars=\(text.count) running=\(isRunning) authenticated=\(connection.isAuthenticated)")
             let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
-            conversationStore.queueMessage(userMessage, to: conv)
+            conversationStore.queueMessage(userMessage, to: updatedConv)
         } else {
-            AppLogger.connectionInfo("send user message convId=\(conv.id.uuidString) chars=\(text.count) images=\(imagesBase64?.count ?? 0) files=\(filesBase64?.count ?? 0)")
+            AppLogger.connectionInfo("send user message convId=\(updatedConv.id.uuidString) chars=\(text.count) images=\(imagesBase64?.count ?? 0) files=\(filesBase64?.count ?? 0)")
             let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
-            conversationStore.addMessage(userMessage, to: conv)
+            conversationStore.addMessage(userMessage, to: updatedConv)
 
-            let isFork = conv.pendingFork
-            let isNewSession = conv.sessionId == nil && !isFork
-            let effortValue = (currentEffort ?? conv.defaultEffort)?.rawValue
-            let modelValue = (currentModel ?? conv.defaultModel)?.rawValue
+            let isFork = updatedConv.pendingFork
+            let isNewSession = updatedConv.sessionId == nil && !isFork
+            let effortValue = (currentEffort ?? updatedConv.defaultEffort)?.rawValue
+            let modelValue = (currentModel ?? updatedConv.defaultModel)?.rawValue
             connection.sendChat(
                 text,
-                workingDirectory: conv.workingDirectory,
-                sessionId: conv.sessionId,
+                workingDirectory: updatedConv.workingDirectory,
+                sessionId: updatedConv.sessionId,
                 isNewSession: isNewSession,
-                conversationId: conv.id,
+                conversationId: updatedConv.id,
                 imagesBase64: imagesBase64,
                 filesBase64: filesBase64,
-                conversationName: conv.name,
-                conversationSymbol: conv.symbol,
+                conversationName: updatedConv.name,
+                conversationSymbol: updatedConv.symbol,
                 forkSession: isFork,
                 effort: effortValue,
                 model: modelValue,
-                environmentId: conv.environmentId
+                environmentId: updatedConv.environmentId
             )
 
-            connection.output(for: conv.id).liveMessageId = conversationStore.insertLiveMessage(into: conv)
+            connection.output(for: updatedConv.id).liveMessageId = conversationStore.insertLiveMessage(into: updatedConv)
 
             if isNewSession {
-                AppLogger.connectionInfo("request name suggestion convId=\(conv.id.uuidString)")
-                connection.requestNameSuggestion(text: text, context: [], conversationId: conv.id)
+                AppLogger.connectionInfo("request name suggestion convId=\(updatedConv.id.uuidString)")
+                connection.requestNameSuggestion(text: text, context: [], conversationId: updatedConv.id)
             }
 
             if isFork {
-                AppLogger.connectionInfo("clear pending fork convId=\(conv.id.uuidString)")
-                conversationStore.clearPendingFork(conv)
+                AppLogger.connectionInfo("clear pending fork convId=\(updatedConv.id.uuidString)")
+                conversationStore.clearPendingFork(updatedConv)
             }
         }
     }

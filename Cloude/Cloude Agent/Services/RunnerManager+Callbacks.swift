@@ -36,6 +36,10 @@ extension RunnerManager {
         }
 
         runner.onRunStats = { [weak self] durationMs, costUsd, model in
+            if var convRunner = self?.activeRunners[conversationId] {
+                convRunner.runStats = (durationMs, costUsd, model)
+                self?.activeRunners[conversationId] = convRunner
+            }
             self?.onRunStats?(durationMs, costUsd, model, conversationId)
         }
 
@@ -57,11 +61,12 @@ extension RunnerManager {
             let response = convRunner?.accumulatedResponse ?? ""
             let toolCalls = convRunner?.accumulatedToolCalls ?? []
             let sessionId = convRunner?.sessionId
+            let runStats = convRunner?.runStats
 
             Log.info("Runner for \(conversationId.prefix(8)) complete, response length=\(response.count), toolCalls=\(toolCalls.count)")
 
-            if let sid = sessionId, !response.isEmpty {
-                ResponseStore.store(sessionId: sid, text: response, toolCalls: toolCalls)
+            if let sid = sessionId, !response.isEmpty || !toolCalls.isEmpty || runStats != nil {
+                ResponseStore.store(sessionId: sid, text: response, toolCalls: toolCalls, durationMs: runStats?.durationMs, costUsd: runStats?.costUsd, model: runStats?.model)
             }
 
             self.onComplete?(conversationId, sessionId)

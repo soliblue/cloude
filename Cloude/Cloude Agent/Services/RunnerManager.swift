@@ -9,6 +9,7 @@ struct ConversationRunner {
     var accumulatedResponse: String = ""
     var accumulatedToolCalls: [StoredToolCall] = []
     var sessionId: String?
+    var runStats: (durationMs: Int, costUsd: Double, model: String?)?
 }
 
 @MainActor

@@ -23,7 +23,6 @@ struct ChatMessageList: View {
     @State var isInitialLoad = true
     @State var scrollViewportHeight: CGFloat = 0
     @State var refreshingMessageId: UUID?
-    @State var scrollPos = ScrollPosition()
     @State var selectedToolDetail: ToolDetailItem?
 
     private var isOutputEmpty: Bool {

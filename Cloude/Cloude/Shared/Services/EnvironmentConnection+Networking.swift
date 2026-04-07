@@ -49,13 +49,17 @@ extension EnvironmentConnection {
         webSocket?.cancel(with: .goingAway, reason: nil)
         webSocket = nil
         session = nil
-        gitStatusQueue.removeAll()
-        gitStatusInFlightPath = nil
-        isConnected = false
-        isAuthenticated = false
-        isWhisperReady = false
-        isTranscribing = false
-        agentState = .idle
+        if let manager, !manager.runningOutputs(for: environmentId).isEmpty {
+            handleDisconnect()
+        } else {
+            gitStatusQueue.removeAll()
+            gitStatusInFlightPath = nil
+            isConnected = false
+            isAuthenticated = false
+            isWhisperReady = false
+            isTranscribing = false
+            agentState = .idle
+        }
 
         if clearCredentials {
             savedHost = ""
@@ -87,8 +91,8 @@ extension EnvironmentConnection {
     }
 
     func checkForMissedResponse() {
-        if let interrupted = interruptedSession {
-            send(.requestMissedResponse(sessionId: interrupted.sessionId))
+        for sessionId in interruptedSessions.keys {
+            send(.requestMissedResponse(sessionId: sessionId))
         }
     }
 

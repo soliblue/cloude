@@ -29,10 +29,8 @@ extension EnvironmentConnection {
             out.completeExecutingTools()
             AppLogger.cancelInterval("chat.firstToken", key: convId.uuidString, reason: "idle")
             AppLogger.cancelInterval("chat.complete", key: convId.uuidString, reason: "idle")
-            if let stats = out.runStats {
-                let turnCost = max(0, stats.costUsd - out.previousCumulativeCost)
-                out.previousCumulativeCost = stats.costUsd
-                mgr.events.send(.lastAssistantMessageCostUpdate(conversationId: convId, costUsd: turnCost))
+            if let stats = out.runStats, stats.costUsd > 0 {
+                mgr.events.send(.lastAssistantMessageCostUpdate(conversationId: convId, costUsd: stats.costUsd))
             }
         }
         let wasRunning = out.isRunning
@@ -81,6 +79,7 @@ extension EnvironmentConnection {
         let currentTextLength = out.fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
         out.toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
+        mgr.events.send(.liveSnapshot(conversationId: convId))
         if name.hasPrefix("mcp__ios__") {
             handleIOSToolCall(mgr, name: name, input: input, conversationId: conversationId)
             return
@@ -95,6 +94,9 @@ extension EnvironmentConnection {
         guard let convId = targetConversationId(from: conversationId) else { return }
         AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) summaryChars=\(summary?.count ?? 0) outputChars=\(output?.count ?? 0)")
         let out = mgr.output(for: convId)
+        if !out.toolCalls.contains(where: { $0.toolId == toolId }) {
+            out.needsHistorySync = true
+        }
         out.toolCalls = out.toolCalls.map { tool in
             if tool.toolId == toolId {
                 var updated = tool
@@ -114,27 +116,45 @@ extension EnvironmentConnection {
         mgr.output(for: convId).runStats = (durationMs, costUsd, model)
     }
 
-    func handleMissedResponse(_ mgr: ConnectionManager, sessionId: String, text: String, storedToolCalls: [StoredToolCall]) {
+    func handleMissedResponse(_ mgr: ConnectionManager, sessionId: String, text: String, storedToolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?) {
+        let toolCalls = storedToolCalls.map { ToolCall(from: $0) }
         var interruptedConvId: UUID?
         var interruptedMsgId: UUID?
-        if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
+        if let interrupted = interruptedSessions[sessionId] {
             interruptedConvId = interrupted.conversationId
             interruptedMsgId = interrupted.messageId
-            interruptedSession = nil
+            interruptedSessions.removeValue(forKey: sessionId)
+        } else if let target = pendingMissedResponseTargets[sessionId] {
+            interruptedConvId = target.conversationId
+            interruptedMsgId = target.messageId
+            pendingMissedResponseTargets.removeValue(forKey: sessionId)
         }
-        mgr.events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: storedToolCalls, interruptedConversationId: interruptedConvId, interruptedMessageId: interruptedMsgId))
+        AppLogger.connectionInfo("missed response sessionId=\(sessionId) chars=\(text.count) tools=\(toolCalls.count) convId=\(interruptedConvId?.uuidString ?? "nil")")
+        if let convId = interruptedConvId, let durationMs, let costUsd {
+            AppLogger.connectionInfo("run stats convId=\(convId.uuidString) durationMs=\(durationMs) costUsd=\(costUsd)")
+        }
+        mgr.events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: storedToolCalls, durationMs: durationMs, costUsd: costUsd, model: model, interruptedConversationId: interruptedConvId, interruptedMessageId: interruptedMsgId))
         if let convId = interruptedConvId {
             let output = mgr.output(for: convId)
-            output.reset()
-            output.isRunning = false
+            if let durationMs, let costUsd {
+                output.runStats = (durationMs, costUsd, model)
+            }
+            if output.isRunning {
+                output.liveMessageId = interruptedMsgId ?? output.liveMessageId
+                output.seedForReconnect(text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
+                output.needsHistorySync = true
+            } else {
+                output.reset()
+                output.isRunning = false
+            }
         }
     }
 
     func handleNoMissedResponse(_ mgr: ConnectionManager, sessionId: String) {
-        if let interrupted = interruptedSession, interrupted.sessionId == sessionId {
-            interruptedSession = nil
-            mgr.events.send(.reconnectRunning(conversationId: interrupted.conversationId))
+        if pendingMissedResponseTargets.removeValue(forKey: sessionId) != nil {
+            return
         }
+        interruptedSessions.removeValue(forKey: sessionId)
     }
 
     func handleSessionId(_ mgr: ConnectionManager, _ id: String, conversationId: String?) {

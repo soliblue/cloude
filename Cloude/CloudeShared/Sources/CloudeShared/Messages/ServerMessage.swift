@@ -11,7 +11,7 @@ public enum ServerMessage: Codable {
     case directoryListing(path: String, entries: [FileEntry])
     case fileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool)
     case sessionId(id: String, conversationId: String?)
-    case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall])
+    case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?)
     case noMissedResponse(sessionId: String)
     case toolCall(name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil)
     case toolResult(toolId: String, summary: String?, output: String?, conversationId: String?)

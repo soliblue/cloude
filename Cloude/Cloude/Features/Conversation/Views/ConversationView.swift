@@ -5,7 +5,6 @@ struct ConversationView: View {
     let connection: ConnectionManager
     let store: ConversationStore
     var environmentStore: EnvironmentStore?
-    @Environment(\.scenePhase) var scenePhase
 
     let conversation: Conversation?
     var window: Window?
@@ -43,8 +42,18 @@ struct ConversationView: View {
         #if DEBUG
         let _ = DebugMetrics.log("ConvView", "render | msgs=\(messages.count)")
         #endif
-        let output = convOutput
+        if let output = convOutput {
+            content(output: output)
+                .onReceive(output.$text) { _ in
+                    persistLiveTextStartIfNeeded()
+                }
+        } else {
+            content(output: nil)
+        }
+    }
 
+    @ViewBuilder
+    private func content(output: ConversationOutput?) -> some View {
         VStack(spacing: 0) {
             ChatMessageList(
                 messages: messages,
@@ -68,41 +77,6 @@ struct ConversationView: View {
                 conversationOutput: output
             )
         }
-        .onChange(of: output?.isRunning) { oldValue, newValue in
-            if oldValue == true && newValue == false {
-                handleCompletion()
-            }
-        }
-    }
-
-    private func handleCompletion() {
-        guard let output = convOutput, !output.isRunning else { return }
-
-        if scenePhase != .active && !output.text.isEmpty {
-            NotificationManager.showCompletionNotification(preview: output.text)
-        }
-
-        guard var conv = effectiveConversation else { return }
-
-        if let newSessionId = output.newSessionId {
-            store.updateSessionId(conv, sessionId: newSessionId, workingDirectory: conv.workingDirectory)
-            conv = store.conversation(withId: conv.id) ?? conv
-        }
-
-        store.finalizeStreamingMessage(output: output, conversation: conv)
-
-        let updatedConv = store.conversation(withId: conv.id) ?? conv
-        let assistantCount = updatedConv.messages.filter { !$0.isUser }.count
-        let shouldRename = assistantCount == 2 || (assistantCount > 0 && assistantCount % 5 == 0)
-        if shouldRename {
-            let contextMessages = updatedConv.messages.suffix(10).map {
-                ($0.isUser ? "User: " : "Assistant: ") + String($0.text.prefix(300))
-            }
-            let lastUserMsg = updatedConv.messages.last(where: { $0.isUser })?.text ?? ""
-            connection.requestNameSuggestion(text: lastUserMsg, context: contextMessages, conversationId: conv.id)
-        }
-
-        store.replayQueuedMessages(conversation: conv, connection: connection)
     }
 
     private func refreshMissedResponse() async {
@@ -111,5 +85,18 @@ struct ConversationView: View {
               let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
         connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
         try? await Task.sleep(for: .seconds(1))
+    }
+
+    private func persistLiveTextStartIfNeeded() {
+        guard let output = convOutput,
+              let liveId = output.liveMessageId,
+              let conv = effectiveConversation,
+              let message = conv.messages.first(where: { $0.id == liveId }) else { return }
+        if message.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !output.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            store.updateMessage(liveId, in: conv) {
+                $0.text = output.text
+            }
+        }
     }
 }

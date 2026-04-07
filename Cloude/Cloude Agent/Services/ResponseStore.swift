@@ -6,12 +6,18 @@ struct StoredResponse: Codable {
     let text: String
     let completedAt: Date
     let toolCalls: [StoredToolCall]
+    let durationMs: Int?
+    let costUsd: Double?
+    let model: String?
 
-    init(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall] = []) {
+    init(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, model: String? = nil) {
         self.sessionId = sessionId
         self.text = text
         self.completedAt = completedAt
         self.toolCalls = toolCalls
+        self.durationMs = durationMs
+        self.costUsd = costUsd
+        self.model = model
     }
 }
 
@@ -24,9 +30,9 @@ struct ResponseStore {
         load()
     }()
 
-    static func store(sessionId: String, text: String, toolCalls: [StoredToolCall] = []) {
+    static func store(sessionId: String, text: String, toolCalls: [StoredToolCall] = [], durationMs: Int? = nil, costUsd: Double? = nil, model: String? = nil) {
         prune()
-        responses[sessionId] = StoredResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: toolCalls)
+        responses[sessionId] = StoredResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: toolCalls, durationMs: durationMs, costUsd: costUsd, model: model)
         if responses.count > maxEntries {
             let sorted = responses.values.sorted { $0.completedAt < $1.completedAt }
             for response in sorted.prefix(responses.count - maxEntries) {

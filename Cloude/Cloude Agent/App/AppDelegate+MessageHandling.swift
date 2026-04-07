@@ -36,7 +36,7 @@ extension AppDelegate {
 
         case .requestMissedResponse(let sessionId):
             if let stored = ResponseStore.retrieve(sessionId: sessionId) {
-                server.sendMessage(.missedResponse(sessionId: sessionId, text: stored.text, completedAt: stored.completedAt, toolCalls: stored.toolCalls), to: connection)
+                server.sendMessage(.missedResponse(sessionId: sessionId, text: stored.text, completedAt: stored.completedAt, toolCalls: stored.toolCalls, durationMs: stored.durationMs, costUsd: stored.costUsd, model: stored.model), to: connection)
                 ResponseStore.clear(sessionId: sessionId)
             } else if let convRunner = runnerManager.activeRunners.values.first(where: { $0.sessionId == sessionId && $0.runner.isRunning }) {
                 server.sendMessage(.status(state: .running, conversationId: convRunner.conversationId), to: connection)

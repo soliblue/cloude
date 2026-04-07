@@ -8,6 +8,7 @@ extension WorkspaceStore {
             AppLogger.endInterval("conversation.refresh", key: conversationStore.findConversation(withSessionId: sessionId)?.id.uuidString, details: "sessionId=\(sessionId)")
             refreshingSessionIds.remove(sessionId)
         case .authenticated:
+            recoverInterruptedMessagesIfNeeded(connection: connection, conversationStore: conversationStore)
             replayQueuedMessagesIfNeeded(connection: connection, conversationStore: conversationStore)
         case .transcription(let text):
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -51,7 +52,9 @@ extension WorkspaceStore {
             }
         case .lastAssistantMessageCostUpdate(let convId, let costUsd):
             if let conversation = conversationStore.conversation(withId: convId),
-               let lastAssistantMsg = conversation.messages.last(where: { !$0.isUser }) {
+               let lastAssistantMsg = conversation.messages.last(where: { !$0.isUser }),
+               costUsd > 0,
+               !lastAssistantMsg.isRecoverableLiveMessage {
                 conversationStore.updateMessage(lastAssistantMsg.id, in: conversation) { msg in
                     msg.costUsd = costUsd
                 }
@@ -67,8 +70,23 @@ extension WorkspaceStore {
 
     func replayQueuedMessagesIfNeeded(connection: ConnectionManager, conversationStore: ConversationStore) {
         for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
-            if !connection.output(for: conv.id).isRunning {
+            if !connection.output(for: conv.id).isRunning,
+               conv.messages.last?.isRecoverableLiveMessage != true {
                 conversationStore.replayQueuedMessages(conversation: conv, connection: connection)
+            }
+        }
+    }
+
+    func recoverInterruptedMessagesIfNeeded(connection: ConnectionManager, conversationStore: ConversationStore) {
+        for conv in conversationStore.conversations {
+            if let lastMessage = conv.messages.last,
+               lastMessage.isRecoverableLiveMessage,
+               let sessionId = conv.sessionId,
+               !sessionId.isEmpty,
+               let environmentConnection = connection.connection(for: conv.environmentId),
+               environmentConnection.interruptedSessions[sessionId] == nil {
+                environmentConnection.interruptedSessions[sessionId] = (conv.id, lastMessage.id)
+                connection.requestMissedResponse(sessionId: sessionId, environmentId: conv.environmentId)
             }
         }
     }

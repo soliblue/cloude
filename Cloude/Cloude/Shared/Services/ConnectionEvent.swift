@@ -11,7 +11,7 @@ enum ConnectionEvent {
     case fileError(String)
 
     // Chat/session
-    case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], interruptedConversationId: UUID?, interruptedMessageId: UUID?)
+    case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?, interruptedConversationId: UUID?, interruptedMessageId: UUID?)
     case gitStatus(path: String, status: GitStatusInfo, environmentId: UUID?)
     case gitStatusError(path: String, message: String, environmentId: UUID?)
     case gitLog(path: String, commits: [GitCommit], environmentId: UUID?)
@@ -30,6 +30,7 @@ enum ConnectionEvent {
     // Streaming lifecycle
     case reconnectRunning(conversationId: UUID)
     case turnCompleted(conversationId: UUID)
+    case liveSnapshot(conversationId: UUID)
 
     // UI / orchestration
     case defaultWorkingDirectory(path: String, environmentId: UUID)

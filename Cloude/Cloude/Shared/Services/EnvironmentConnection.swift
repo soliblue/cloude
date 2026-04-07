@@ -31,7 +31,8 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     var gitStatusTimeoutTask: Task<Void, Never>?
     var fileCache = FileCache()
     var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
-    var interruptedSession: (conversationId: UUID, sessionId: String, messageId: UUID)?
+    var interruptedSessions: [String: (conversationId: UUID, messageId: UUID?)] = [:]
+    var pendingMissedResponseTargets: [String: (conversationId: UUID, messageId: UUID?)] = [:]
 
     var webSocket: URLSessionWebSocketTask?
     var session: URLSession?

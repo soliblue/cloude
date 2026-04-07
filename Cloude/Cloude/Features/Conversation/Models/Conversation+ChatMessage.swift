@@ -67,6 +67,14 @@ struct ChatMessage: Codable, Identifiable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID, model
     }
+
+    var isRecoverableLiveMessage: Bool {
+        if isUser { return false }
+        if wasInterrupted { return true }
+        return serverUUID == nil &&
+            durationMs == nil &&
+            costUsd == nil
+    }
 }
 
 enum EffortLevel: String, Codable, CaseIterable {
