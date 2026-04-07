@@ -49,50 +49,10 @@ public enum ToolInputExtractor {
         }
     }
 
-    public static func extractDisplayDetail(name: String, input: [String: Any]?) -> String? {
-        guard let raw = extract(name: name, input: input) else { return nil }
-        switch name {
-        case "Bash":
-            let firstLine = raw.components(separatedBy: .newlines).first ?? raw
-            let trimmed = firstLine.trimmingCharacters(in: .whitespaces)
-            return truncate(trimmed, to: 40)
-        case "Read", "Write", "Edit":
-            return raw.lastPathComponent
-        case "Grep":
-            return truncate(raw, to: 30)
-        case "Task":
-            let description = input?["description"] as? String ?? ""
-            return truncate(description, to: 60)
-        default:
-            if name.hasPrefix("mcp__widgets__") {
-                return input?["expression"] as? String
-                    ?? input?["name"] as? String
-                    ?? input?["hint"] as? String
-                    ?? truncate(raw, to: 40)
-            }
-            return raw
-        }
-    }
-
-    public static func extractDisplayDetail(name: String, jsonString: String) -> String? {
-        guard let data = jsonString.data(using: .utf8),
-              let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return nil
-        }
-        return extractDisplayDetail(name: name, input: parsed)
-    }
-
     public static func extractEditInfo(input: [String: Any]?) -> EditInfo? {
         guard let input,
               let oldString = input["old_string"] as? String,
               let newString = input["new_string"] as? String else { return nil }
         return EditInfo(oldString: oldString, newString: newString)
-    }
-
-    private static func truncate(_ string: String, to limit: Int) -> String {
-        if string.count > limit {
-            return String(string.prefix(limit - 3)) + "..."
-        }
-        return string
     }
 }

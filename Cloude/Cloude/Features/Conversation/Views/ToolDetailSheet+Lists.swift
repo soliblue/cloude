@@ -13,9 +13,7 @@ extension ToolDetailSheet {
                     HStack(spacing: DS.Spacing.m) {
                         ToolCallLabel(name: child.name, input: child.input)
                             .lineLimit(1)
-
                         Spacer()
-
                         if child.state == .executing {
                             ProgressView()
                                 .scaleEffect(DS.Scale.s)
@@ -52,7 +50,6 @@ extension ToolDetailSheet {
                         Image(systemName: todoStatusIcon(todo["status"] ?? "pending"))
                             .font(.system(size: DS.Text.m, weight: .medium))
                             .foregroundColor(todoStatusColor(todo["status"] ?? "pending"))
-
                         Text(todo["content"] ?? "")
                             .font(.system(size: DS.Text.m))
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -79,22 +76,19 @@ extension ToolDetailSheet {
                 .foregroundColor(.secondary)
 
             VStack(spacing: 0) {
-                ForEach(Array(chainedCommands.enumerated()), id: \.offset) { index, chained in
-                    VStack(spacing: 0) {
-                        HStack(alignment: .center, spacing: DS.Spacing.m) {
-                            Image(systemName: ToolCallLabel(name: "Bash", input: chained.command).iconName)
-                                .font(.system(size: DS.Text.m, weight: .medium))
-                                .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
-
-                            Text(chained.command)
-                                .font(.system(size: DS.Text.m, design: .monospaced))
-                                .textSelection(.enabled)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(.vertical, DS.Spacing.m)
-                        .padding(.horizontal, DS.Spacing.m)
-
+                ForEach(Array(meta.chainedCommands.enumerated()), id: \.offset) { _, chained in
+                    let cmdMeta = ToolMetadata(name: "Bash", input: chained.command)
+                    HStack(alignment: .center, spacing: DS.Spacing.m) {
+                        Image(systemName: cmdMeta.icon)
+                            .font(.system(size: DS.Text.m, weight: .medium))
+                            .foregroundColor(cmdMeta.color)
+                        Text(chained.command)
+                            .font(.system(size: DS.Text.m, design: .monospaced))
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .padding(.vertical, DS.Spacing.m)
+                    .padding(.horizontal, DS.Spacing.m)
                 }
             }
             .background(Color.themeSecondary.opacity(DS.Opacity.m))

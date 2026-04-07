@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudeShared
 
 extension Notification.Name {
     static let openWhiteboard = Notification.Name("openWhiteboard")
@@ -10,57 +11,34 @@ struct InlineToolPill: View {
     var onTap: (() -> Void)?
     @State private var shimmerPhase: CGFloat = -1
 
-    private var chainedCommands: [ChainedCommand] {
-        guard toolCall.name == "Bash", let input = toolCall.input else { return [] }
-        return BashCommandParser.chainedCommandsWithOperators(for: input)
-    }
-
-    private var isIOSControl: Bool { ToolCallLabel.isIOSControl(toolCall.name) }
-    private var isWhiteboardTool: Bool { ToolCallLabel.isWhiteboardTool(toolCall.name) }
-
-    private var isInertTool: Bool { toolCall.name == "ToolSearch" }
+    private var meta: ToolMetadata { ToolMetadata(name: toolCall.name, input: toolCall.input) }
+    private var isExecuting: Bool { toolCall.state == .executing }
 
     var body: some View {
-        if isIOSControl || isInertTool {
+        if meta.isIOSControl || meta.isInert {
             pillContent
-        } else if isWhiteboardTool {
-            Button {
-                NotificationCenter.default.post(name: .openWhiteboard, object: nil)
-            } label: {
-                pillContent
-            }
-            .buttonStyle(.plain)
+        } else if meta.isWhiteboardTool {
+            Button { NotificationCenter.default.post(name: .openWhiteboard, object: nil) } label: { pillContent }
+                .buttonStyle(.plain)
         } else {
-            Button {
-                onTap?()
-            } label: {
-                pillContent
-            }
-            .buttonStyle(.plain)
+            Button { onTap?() } label: { pillContent }
+                .buttonStyle(.plain)
         }
     }
 
-    private var isExecuting: Bool {
-        toolCall.state == .executing
-    }
-
     private var pillContent: some View {
-        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
-            HStack(spacing: DS.Spacing.xs) {
-                if !chainedCommands.isEmpty {
-                    chainedPillContent
-                } else {
-                    ToolCallLabel(name: toolCall.name, input: toolCall.input)
-                        .lineLimit(1)
-                }
-
-                if !children.isEmpty {
-                    Text("\(children.count)")
-                        .font(.system(size: DS.Text.s, weight: .bold, design: .rounded))
-                        .foregroundColor(.secondary)
-                }
+        HStack(spacing: DS.Spacing.xs) {
+            if !meta.chainedCommands.isEmpty {
+                chainedPillContent
+            } else {
+                ToolCallLabel(name: toolCall.name, input: toolCall.input)
+                    .lineLimit(1)
             }
-
+            if !children.isEmpty {
+                Text("\(children.count)")
+                    .font(.system(size: DS.Text.s, weight: .bold, design: .rounded))
+                    .foregroundColor(.secondary)
+            }
         }
         .padding(.horizontal, DS.Spacing.s)
         .padding(.vertical, DS.Spacing.xs)
@@ -75,16 +53,12 @@ struct InlineToolPill: View {
         .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: DS.Radius.s))
         .onChange(of: toolCall.state) { _, newState in
             if newState == .complete {
-                withAnimation(.easeOut(duration: DS.Duration.m)) {
-                    shimmerPhase = -1
-                }
+                withAnimation(.easeOut(duration: DS.Duration.m)) { shimmerPhase = -1 }
             }
         }
         .onAppear {
             if isExecuting {
-                withAnimation(.easeInOut(duration: DS.Duration.l * 4).repeatForever(autoreverses: true)) {
-                    shimmerPhase = 1.5
-                }
+                withAnimation(.easeInOut(duration: DS.Duration.l * 4).repeatForever(autoreverses: true)) { shimmerPhase = 1.5 }
             } else {
                 shimmerPhase = -1
             }
@@ -92,22 +66,22 @@ struct InlineToolPill: View {
     }
 
     private var chainedPillContent: some View {
-        HStack(spacing: DS.Spacing.s) {
-            ForEach(Array(chainedCommands.prefix(3).enumerated()), id: \.offset) { index, chained in
+        let commands = meta.chainedCommands
+        return HStack(spacing: DS.Spacing.s) {
+            ForEach(Array(commands.prefix(3).enumerated()), id: \.offset) { index, chained in
                 if index > 0 {
-                    let prevOp = chainedCommands[index - 1].operatorAfter
-                    Text(prevOp == .pipe ? "|" : "›")
+                    Text(commands[index - 1].operatorAfter == .pipe ? "|" : "›")
                         .font(.system(size: DS.Text.s, weight: .light))
                         .foregroundColor(.secondary)
                 }
                 let parsed = BashCommandParser.parse(chained.command)
                 Text(parsed.command.isEmpty ? "cmd" : parsed.command)
                     .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
-                    .foregroundColor(toolCallColor(for: "Bash", input: chained.command))
+                    .foregroundColor(ToolMetadata(name: "Bash", input: chained.command).color)
                     .lineLimit(1)
             }
-            if chainedCommands.count > 3 {
-                Text("+\(chainedCommands.count - 3)")
+            if commands.count > 3 {
+                Text("+\(commands.count - 3)")
                     .font(.system(size: DS.Text.s, weight: .semibold))
                     .foregroundColor(.secondary)
             }
