@@ -77,7 +77,7 @@ private struct WindowSwitcherView: View, Equatable {
                 Button {
                     onSelect(item.id)
                 } label: {
-                    windowSwitcherLabel(item: item, isActive: isActive, useSymbols: items.count >= 4)
+                    windowSwitcherLabel(item: item, isActive: isActive, useSymbols: items.count >= 3)
                         .frame(maxWidth: .infinity)
                         .contentShape(Rectangle())
                 }

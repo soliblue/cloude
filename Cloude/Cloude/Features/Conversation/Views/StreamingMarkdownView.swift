@@ -47,13 +47,15 @@ struct StreamingMarkdownView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.s) {
-            FrozenBlocksSection(
-                blocks: frozen.blocks,
-                blockCount: frozen.blockCount,
-                lastBlockId: frozen.lastId,
-                onSelectTool: onSelectTool
-            )
-            .equatable()
+            if !frozen.blocks.isEmpty {
+                FrozenBlocksSection(
+                    blocks: frozen.blocks,
+                    blockCount: frozen.blockCount,
+                    lastBlockId: frozen.lastId,
+                    onSelectTool: onSelectTool
+                )
+                .equatable()
+            }
             ForEach(tailBlocks, id: \.id) { block in
                 StreamingBlockView(block: block, onSelectTool: onSelectTool)
             }

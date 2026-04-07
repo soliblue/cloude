@@ -58,7 +58,6 @@ extension WorkspaceView {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .tag(WindowTab.gitChanges)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
         }
     }
 
