@@ -93,22 +93,6 @@ struct MessageBubble: View {
         ))
     }
 
-    private var statusBarItems: [(icon: String, text: String)] {
-        var items: [(String, String)] = []
-        if let model = message.model {
-            let identity = ModelIdentity(model)
-            items.append((identity.icon, identity.displayName))
-        }
-        if let cost = message.costUsd {
-            items.append(("dollarsign.circle", cost.asCost))
-        }
-        if let ms = message.durationMs {
-            let s = Double(ms) / 1000.0
-            items.append(("timer", s < 60 ? String(format: "%.1fs", s) : "\(Int(s)/60)m \(Int(s)%60)s"))
-        }
-        return items
-    }
-
     private var messageContent: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.s) {
             MessageImageThumbnails(message: message)
@@ -137,22 +121,6 @@ struct MessageBubble: View {
             }
             .font(.system(size: DS.Text.m))
 
-            if !isLive && !message.isUser && !statusBarItems.isEmpty {
-                HStack(spacing: DS.Spacing.xs) {
-                    ForEach(Array(statusBarItems.enumerated()), id: \.offset) { i, item in
-                        if i > 0 {
-                            Text("·")
-                                .foregroundColor(.secondary.opacity(DS.Opacity.m))
-                        }
-                        HStack(spacing: DS.Spacing.xs) {
-                            Image(systemName: item.icon)
-                            Text(item.text)
-                        }
-                    }
-                }
-                .font(.system(size: DS.Text.s))
-                .foregroundColor(.secondary.opacity(DS.Opacity.l))
-            }
         }
     }
 

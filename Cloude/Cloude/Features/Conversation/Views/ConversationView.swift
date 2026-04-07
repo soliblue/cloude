@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import CloudeShared
 
 struct ConversationView: View {
@@ -39,17 +40,11 @@ struct ConversationView: View {
     }
 
     var body: some View {
-        #if DEBUG
-        let _ = DebugMetrics.log("ConvView", "render | msgs=\(messages.count)")
-        #endif
-        if let output = convOutput {
-            content(output: output)
-                .onReceive(output.$text) { _ in
-                    persistLiveTextStartIfNeeded()
-                }
-        } else {
-            content(output: nil)
-        }
+        let _ = NSLog("[STABILITY] ConversationView.body | msgs=\(messages.count) hasOutput=\(convOutput != nil) convId=\(effectiveConversation?.id.uuidString.prefix(6) ?? "nil")")
+        content(output: convOutput)
+            .onReceive(convOutput?.$text.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { _ in
+                persistLiveTextStartIfNeeded()
+            }
     }
 
     @ViewBuilder

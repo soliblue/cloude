@@ -21,7 +21,6 @@ struct ChatMessageList: View {
     var conversationOutput: ConversationOutput?
 
     @State var isInitialLoad = true
-    @State var scrollViewportHeight: CGFloat = 0
     @State var refreshingMessageId: UUID?
     @State var selectedToolDetail: ToolDetailItem?
 
@@ -45,7 +44,12 @@ struct ChatMessageList: View {
         window != nil && conversationStore != nil && windowManager != nil && connection != nil
     }
 
+    private var hideMessageList: Bool {
+        showEmptyState && hasRequiredDependencies
+    }
+
     var body: some View {
+        let _ = NSLog("[STABILITY] ChatMessageList.body | msgs=\(messages.count) queued=\(queuedMessages.count) loading=\(showLoadingIndicator) empty=\(showEmptyState) deps=\(hasRequiredDependencies) initialLoad=\(isInitialLoad) outputEmpty=\(isOutputEmpty) streaming=\(isStreaming) convId=\(conversationId?.uuidString.prefix(6) ?? "nil")")
         ZStack(alignment: .bottomTrailing) {
             if showLoadingIndicator {
                 VStack {
@@ -68,14 +72,14 @@ struct ChatMessageList: View {
                         onSelectConversation: onSelectConversation,
                         onSeeAll: onSeeAllConversations
                     )
-                    .frame(minHeight: scrollViewportHeight)
+                    .containerRelativeFrame(.vertical)
                 }
                 .scrollDismissesKeyboard(.interactively)
             }
 
-            if !showEmptyState || !hasRequiredDependencies {
-                scrollableContent
-            }
+            scrollableContent
+                .opacity(hideMessageList ? 0 : 1)
+                .allowsHitTesting(!hideMessageList)
         }
         .background(Color.themeBackground)
         .onChange(of: conversationId) { _, _ in

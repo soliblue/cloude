@@ -5,25 +5,14 @@ import CloudeShared
 extension ChatMessageList {
     var scrollableContent: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    messageListSection(viewportHeight: scrollViewportHeight)
-                    queuedMessagesSection
-                }
-                Spacer(minLength: 0)
+            LazyVStack(alignment: .leading, spacing: 0) {
+                messageListSection
+                queuedMessagesSection
             }
-            .frame(minHeight: scrollViewportHeight, alignment: .top)
         }
         .defaultScrollAnchor(.bottom)
-        .coordinateSpace(name: "chatScroll")
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
-        .background {
-            GeometryReader { geo in
-                Color.clear.onAppear { scrollViewportHeight = geo.size.height }
-                    .onChange(of: geo.size.height) { _, h in scrollViewportHeight = h }
-            }
-        }
         .sheet(item: $selectedToolDetail) { item in
             ToolDetailSheet(toolCall: item.toolCall, children: item.children)
         }
@@ -52,7 +41,7 @@ extension ChatMessageList {
         }
     }
 
-    func messageListSection(viewportHeight: CGFloat) -> some View {
+    var messageListSection: some View {
         ForEach(messages) { message in
             if let output = conversationOutput {
                 ObservedMessageBubble(
@@ -64,10 +53,6 @@ extension ChatMessageList {
                     onSelectToolDetail: { selectedToolDetail = $0 }
                 )
                 .equatable()
-                .readingProgress(
-                    isAssistant: !message.isUser,
-                    viewportHeight: viewportHeight
-                )
                 .id("\(message.id.uuidString)-\(fontSizeStep)")
             } else {
                 MessageBubble(
@@ -76,10 +61,6 @@ extension ChatMessageList {
                     onRefresh: message.isUser ? nil : { refreshMessage(message) },
                     isRefreshing: refreshingMessageId == message.id,
                     onSelectToolDetail: { selectedToolDetail = $0 }
-                )
-                .readingProgress(
-                    isAssistant: !message.isUser,
-                    viewportHeight: viewportHeight
                 )
                 .id("\(message.id.uuidString)-\(fontSizeStep)")
             }
