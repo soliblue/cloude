@@ -99,12 +99,6 @@ class ConnectionManager: ObservableObject {
         connections[envId]?.disconnect(clearCredentials: clearCredentials)
     }
 
-    func disconnectAll(clearCredentials: Bool = true) {
-        for conn in connections.values {
-            conn.disconnect(clearCredentials: clearCredentials)
-        }
-    }
-
     func reconnectAll() {
         for conn in connections.values {
             conn.reconnectIfNeeded()
@@ -140,9 +134,5 @@ class ConnectionManager: ObservableObject {
         let taskId = backgroundTaskId
         backgroundTaskId = .invalid
         UIApplication.shared.endBackgroundTask(taskId)
-    }
-
-    func fileCache(for environmentId: UUID?) -> FileCache? {
-        environmentId.flatMap { connections[$0]?.fileCache }
     }
 }

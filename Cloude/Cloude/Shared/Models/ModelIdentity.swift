@@ -30,15 +30,6 @@ enum ModelIdentity {
         }
     }
 
-    var badge: String {
-        switch self {
-        case .opus: "O"
-        case .sonnet: "S"
-        case .haiku: "H"
-        case .unknown(let raw): String(raw.prefix(1)).uppercased()
-        }
-    }
-
     var icon: String {
         switch self {
         case .opus: "crown"

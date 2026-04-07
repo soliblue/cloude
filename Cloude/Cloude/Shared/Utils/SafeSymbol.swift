@@ -12,16 +12,3 @@ extension Image {
         return Image(systemName: fallback)
     }
 }
-
-extension String {
-    var isValidSFSymbol: Bool {
-        UIImage(systemName: self) != nil
-    }
-}
-
-extension Optional where Wrapped == String {
-    var isValidSFSymbol: Bool {
-        guard let self = self, !self.isEmpty else { return false }
-        return UIImage(systemName: self) != nil
-    }
-}

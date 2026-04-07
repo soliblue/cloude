@@ -34,10 +34,6 @@ extension ConnectionManager {
         connectionForSend(environmentId: environmentId)?.send(.getPlans(workingDirectory: workingDirectory))
     }
 
-    func deletePlan(stage: String, filename: String, workingDirectory: String, environmentId: UUID? = nil) {
-        connectionForSend(environmentId: environmentId)?.send(.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory))
-    }
-
     func getUsageStats(environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getUsageStats) }
     func listDirectory(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.listDirectory(path: path)) }
     func getFile(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFile(path: path)) }
@@ -56,13 +52,9 @@ extension ConnectionManager {
 
     func gitLog(path: String, count: Int = 10, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.gitLog(path: path, count: count)) }
     func gitDiff(path: String, file: String? = nil, staged: Bool = false, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.gitDiff(path: path, file: file, staged: staged)) }
-    func gitCommit(path: String, message: String, files: [String], environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.gitCommit(path: path, message: message, files: files)) }
     func getProcesses(environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getProcesses) }
     func killProcess(pid: Int32, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.killProcess(pid: pid)) }
-    func killAllProcesses(environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.killAllProcesses) }
     func syncHistory(sessionId: String, workingDirectory: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)) }
-    func listRemoteSessions(workingDirectory: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.listRemoteSessions(workingDirectory: workingDirectory)) }
-
     func transcribe(audioBase64: String, environmentId: UUID? = nil) {
         if let conn = connectionForSend(environmentId: environmentId) {
             conn.isTranscribing = true
@@ -76,9 +68,5 @@ extension ConnectionManager {
 
     func send(_ message: ClientMessage, environmentId: UUID? = nil) {
         connectionForSend(environmentId: environmentId)?.send(message)
-    }
-
-    func sendPing(environmentId: UUID? = nil) {
-        connectionForSend(environmentId: environmentId)?.send(.ping(sentAt: Date().timeIntervalSince1970))
     }
 }
