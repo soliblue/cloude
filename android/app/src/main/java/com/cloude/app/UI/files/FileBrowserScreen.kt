@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
@@ -394,6 +395,15 @@ private fun FileViewerSheet(
                     val scrollState = rememberScrollState()
 
                     when (ext) {
+                        "md" -> {
+                            val scrollState2 = rememberScrollState()
+                            com.cloude.app.UI.chat.MarkdownText(
+                                text = text,
+                                modifier = containerModifier
+                                    .padding(DS.Spacing.m)
+                                    .verticalScroll(scrollState2)
+                            )
+                        }
                         "json" -> JSONTreeViewer(
                             text = text,
                             modifier = containerModifier
