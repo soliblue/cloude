@@ -1,8 +1,22 @@
-import { spawn } from 'child_process'
+import { spawn, execSync } from 'child_process'
 import { writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
 import { log } from './log.js'
 import { extractToolInput } from './shared.js'
+
+function resolveClaudeBinary() {
+  const candidates = [
+    join(process.env.HOME || '', '.local', 'bin', 'claude'),
+    join(process.env.HOME || '', '.npm-global', 'bin', 'claude'),
+    '/usr/local/bin/claude'
+  ]
+  for (const p of candidates) {
+    if (existsSync(p)) return p
+  }
+  return 'claude'
+}
+
+const CLAUDE_BIN = resolveClaudeBinary()
 
 export class ClaudeCodeRunner {
   constructor(conversationId, onEvent) {
@@ -53,7 +67,7 @@ export class ClaudeCodeRunner {
       args[args.length - 1] = `${prefix}\n${args[args.length - 1]}`
     }
 
-    this.process = spawn('claude', args, { cwd, env })
+    this.process = spawn(CLAUDE_BIN, args, { cwd, env })
     this.process.stdin.end()
 
     this.process.on('error', (err) => {

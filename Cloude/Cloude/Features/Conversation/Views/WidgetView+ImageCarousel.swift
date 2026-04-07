@@ -16,8 +16,6 @@ struct ImageCarouselWidget: View {
 
     var body: some View {
         WidgetContainer {
-            WidgetHeader(icon: "photo.on.rectangle", title: title, color: .green)
-
             if images.count == 1, let image = images.first {
                 imageSlide(image)
             } else if images.count > 1 {
