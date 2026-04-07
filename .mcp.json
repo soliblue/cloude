@@ -1,13 +1,5 @@
 {
   "mcpServers": {
-    "widgets": {
-      "type": "stdio",
-      "command": "node",
-      "args": [
-        ".claude/widgets-mcp/server.js"
-      ],
-      "env": {}
-    },
     "ios": {
       "type": "stdio",
       "command": "node",

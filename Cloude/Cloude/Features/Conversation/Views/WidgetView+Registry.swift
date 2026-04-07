@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum WidgetRegistry {
-    private static let prefix = "mcp__widgets__"
+    private static let prefix = "mcp__ios__"
 
     private struct WidgetMeta {
         let displayName: String
@@ -19,7 +19,8 @@ enum WidgetRegistry {
     ]
 
     static func isWidget(_ toolName: String) -> Bool {
-        toolName.hasPrefix(prefix)
+        guard toolName.hasPrefix(prefix) else { return false }
+        return meta.keys.contains(String(toolName.dropFirst(prefix.count)))
     }
 
     static func widgetType(_ toolName: String) -> String? {
