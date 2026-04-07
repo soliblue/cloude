@@ -106,11 +106,11 @@ struct WorkspaceView: View {
         .onReceive(connection.events) { event in
             store.handleConnectionEvent(event, connection: connection, conversationStore: conversationStore)
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
-            withAnimation(keyboardAnimation(from: notification)) { store.setKeyboardVisible(true) }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            store.setKeyboardVisible(true)
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { notification in
-            withAnimation(keyboardAnimation(from: notification)) { store.setKeyboardVisible(false) }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            store.setKeyboardVisible(false)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
             store.fetchLatestScreenshot()

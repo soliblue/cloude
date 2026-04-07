@@ -46,7 +46,7 @@ struct StreamingMarkdownView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             FrozenBlocksSection(
                 blocks: frozen.blocks,
                 blockCount: frozen.blockCount,
@@ -56,7 +56,6 @@ struct StreamingMarkdownView: View {
             .equatable()
             ForEach(tailBlocks, id: \.id) { block in
                 StreamingBlockView(block: block, onSelectTool: onSelectTool)
-                    .padding(.bottom, DS.Spacing.s)
             }
         }
         .animation(.easeOut(duration: 0.6), value: text)
@@ -152,10 +151,9 @@ private struct FrozenBlocksSection: View, Equatable {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: DS.Spacing.s) {
             ForEach(blocks, id: \.id) { block in
                 StreamingBlockView(block: block, onSelectTool: onSelectTool)
-                    .padding(.bottom, DS.Spacing.s)
             }
         }
     }

@@ -52,14 +52,10 @@ struct ChatMessageList: View {
         let _ = NSLog("[STABILITY] ChatMessageList.body | msgs=\(messages.count) queued=\(queuedMessages.count) loading=\(showLoadingIndicator) empty=\(showEmptyState) deps=\(hasRequiredDependencies) initialLoad=\(isInitialLoad) outputEmpty=\(isOutputEmpty) streaming=\(isStreaming) convId=\(conversationId?.uuidString.prefix(6) ?? "nil")")
         ZStack(alignment: .bottomTrailing) {
             if showLoadingIndicator {
-                VStack {
-                    Spacer()
-                    ProgressView()
-                        .scaleEffect(DS.Scale.l)
-                        .tint(.secondary)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ProgressView()
+                    .scaleEffect(DS.Scale.l)
+                    .tint(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if showEmptyState {
                 ScrollView(showsIndicators: false) {
                     EmptyConversationView(

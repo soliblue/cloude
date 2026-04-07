@@ -49,29 +49,27 @@ struct ConversationView: View {
 
     @ViewBuilder
     private func content(output: ConversationOutput?) -> some View {
-        VStack(spacing: 0) {
-            ChatMessageList(
-                messages: messages,
-                queuedMessages: queuedMessages,
-                conversationId: effectiveConversation?.id,
-                onRefresh: refreshMissedResponse,
-                onInteraction: onInteraction,
-                onDeleteQueued: { messageId in
-                    if let conv = effectiveConversation {
-                        store.removePendingMessage(messageId, from: conv)
-                    }
-                },
-                conversation: effectiveConversation,
-                conversationStore: store,
-                connection: connection,
-                window: window,
-                windowManager: windowManager,
-                onSelectConversation: onSelectRecentConversation,
-                onSeeAllConversations: onSeeAllConversations,
-                environmentStore: environmentStore,
-                conversationOutput: output
-            )
-        }
+        ChatMessageList(
+            messages: messages,
+            queuedMessages: queuedMessages,
+            conversationId: effectiveConversation?.id,
+            onRefresh: refreshMissedResponse,
+            onInteraction: onInteraction,
+            onDeleteQueued: { messageId in
+                if let conv = effectiveConversation {
+                    store.removePendingMessage(messageId, from: conv)
+                }
+            },
+            conversation: effectiveConversation,
+            conversationStore: store,
+            connection: connection,
+            window: window,
+            windowManager: windowManager,
+            onSelectConversation: onSelectRecentConversation,
+            onSeeAllConversations: onSeeAllConversations,
+            environmentStore: environmentStore,
+            conversationOutput: output
+        )
     }
 
     private func refreshMissedResponse() async {

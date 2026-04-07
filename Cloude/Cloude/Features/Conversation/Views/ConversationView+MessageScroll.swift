@@ -10,7 +10,6 @@ extension ChatMessageList {
                 queuedMessagesSection
             }
         }
-        .defaultScrollAnchor(.bottom)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .sheet(item: $selectedToolDetail) { item in

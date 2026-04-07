@@ -2,14 +2,6 @@ import SwiftUI
 import UIKit
 
 extension WorkspaceView {
-    func keyboardAnimation(from notification: Notification) -> Animation {
-        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.25
-        let curveRaw = notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt ?? 0
-        if UIView.AnimationCurve(rawValue: Int(curveRaw)) == .easeInOut {
-            return .easeInOut(duration: duration)
-        }
-        return .easeOut(duration: duration)
-    }
 }
 
 struct PageSwipeDisabler: UIViewRepresentable {
