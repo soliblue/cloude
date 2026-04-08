@@ -18,7 +18,7 @@ extension WorkspaceView {
             )
             .equatable()
 
-            TabView(selection: windowTabBinding(for: window.id)) {
+            ZStack {
                 ConversationView(
                     connection: connection,
                     store: conversationStore,
@@ -37,7 +37,8 @@ extension WorkspaceView {
                 )
                 .id(window.id)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .tag(WindowTab.chat)
+                .opacity(window.tab == .chat ? 1 : 0)
+                .allowsHitTesting(window.tab == .chat)
 
                 FileTreeView(
                     connection: connection,
@@ -47,7 +48,8 @@ extension WorkspaceView {
                     state: windowManager.fileTreeState(for: window.id)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .tag(WindowTab.files)
+                .opacity(window.tab == .files ? 1 : 0)
+                .allowsHitTesting(window.tab == .files)
 
                 GitChangesView(
                     connection: connection,
@@ -56,15 +58,9 @@ extension WorkspaceView {
                     state: windowManager.gitChangesState(for: window.id)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .tag(WindowTab.gitChanges)
+                .opacity(window.tab == .gitChanges ? 1 : 0)
+                .allowsHitTesting(window.tab == .gitChanges)
             }
         }
-    }
-
-    func windowTabBinding(for windowId: UUID) -> Binding<WindowTab> {
-        Binding(
-            get: { windowManager.windows.first { $0.id == windowId }?.tab ?? .chat },
-            set: { windowManager.setWindowTab(windowId, tab: $0) }
-        )
     }
 }
