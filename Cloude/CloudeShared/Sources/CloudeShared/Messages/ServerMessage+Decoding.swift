@@ -20,15 +20,6 @@ extension ServerMessage {
             let text = try container.decode(String.self, forKey: .text)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             return .output(text: text, conversationId: conversationId)
-        case "file_change":
-            let path = try container.decode(String.self, forKey: .path)
-            let diff = try container.decodeIfPresent(String.self, forKey: .diff)
-            let content = try container.decodeIfPresent(String.self, forKey: .content)
-            return .fileChange(path: path, diff: diff, content: content)
-        case "image":
-            let path = try container.decode(String.self, forKey: .path)
-            let base64 = try container.decode(String.self, forKey: .base64)
-            return .image(path: path, base64: base64)
         case "status":
             let state = try container.decode(AgentState.self, forKey: .state)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)

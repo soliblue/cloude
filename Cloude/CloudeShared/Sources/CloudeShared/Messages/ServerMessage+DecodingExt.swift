@@ -35,11 +35,7 @@ extension ServerMessage {
             return .fileThumbnail(path: path, data: data, fullSize: fullSize)
         case "file_search_results":
             let files = try container.decode([String].self, forKey: .files)
-            let query = try container.decode(String.self, forKey: .query)
-            return .fileSearchResults(files: files, query: query)
-        case "remote_session_list":
-            let sessions = try container.decode([RemoteSession].self, forKey: .sessions)
-            return .remoteSessionList(sessions: sessions)
+            return .fileSearchResults(files: files)
         case "message_uuid":
             let uuid = try container.decode(String.self, forKey: .uuid)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)

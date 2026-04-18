@@ -33,13 +33,9 @@ extension ServerMessage {
             try container.encode(path, forKey: .path)
             try container.encode(data, forKey: .data)
             try container.encode(fullSize, forKey: .fullSize)
-        case .fileSearchResults(let files, let query):
+        case .fileSearchResults(let files):
             try container.encode("file_search_results", forKey: .type)
             try container.encode(files, forKey: .files)
-            try container.encode(query, forKey: .query)
-        case .remoteSessionList(let sessions):
-            try container.encode("remote_session_list", forKey: .type)
-            try container.encode(sessions, forKey: .sessions)
         case .messageUUID(let uuid, let conversationId):
             try container.encode("message_uuid", forKey: .type)
             try container.encode(uuid, forKey: .uuid)

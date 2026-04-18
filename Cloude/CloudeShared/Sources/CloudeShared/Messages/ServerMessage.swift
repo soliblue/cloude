@@ -2,8 +2,6 @@ import Foundation
 
 public enum ServerMessage: Codable {
     case output(text: String, conversationId: String?)
-    case fileChange(path: String, diff: String?, content: String?)
-    case image(path: String, base64: String)
     case status(state: AgentState, conversationId: String?)
     case authRequired
     case authResult(success: Bool, message: String?)
@@ -29,13 +27,12 @@ public enum ServerMessage: Codable {
     case historySyncError(sessionId: String, error: String)
     case fileChunk(path: String, chunkIndex: Int, totalChunks: Int, data: String, mimeType: String, size: Int64)
     case fileThumbnail(path: String, data: String, fullSize: Int64)
-    case fileSearchResults(files: [String], query: String)
-    case remoteSessionList(sessions: [RemoteSession])
+    case fileSearchResults(files: [String])
     case messageUUID(uuid: String, conversationId: String?)
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
     case pong(sentAt: Double, serverAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, stages, stage, filename, editInfo, sentAt, serverAt, commits
+        case type, text, path, diff, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, uuid, summary, output, stages, stage, filename, editInfo, sentAt, serverAt, commits
     }
 }

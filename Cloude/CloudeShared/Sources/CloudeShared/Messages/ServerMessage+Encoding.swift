@@ -8,15 +8,6 @@ extension ServerMessage {
             try container.encode("output", forKey: .type)
             try container.encode(text, forKey: .text)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .fileChange(let path, let diff, let content):
-            try container.encode("file_change", forKey: .type)
-            try container.encode(path, forKey: .path)
-            try container.encodeIfPresent(diff, forKey: .diff)
-            try container.encodeIfPresent(content, forKey: .content)
-        case .image(let path, let base64):
-            try container.encode("image", forKey: .type)
-            try container.encode(path, forKey: .path)
-            try container.encode(base64, forKey: .base64)
         case .status(let state, let conversationId):
             try container.encode("status", forKey: .type)
             try container.encode(state, forKey: .state)
@@ -100,7 +91,7 @@ extension ServerMessage {
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
         case .processList, .defaultWorkingDirectory, .skills, .historySync, .historySyncError,
-             .fileChunk, .fileThumbnail, .fileSearchResults, .remoteSessionList, .messageUUID,
+             .fileChunk, .fileThumbnail, .fileSearchResults, .messageUUID,
              .nameSuggestion, .pong:
             try encodeExtendedCases(&container)
         }

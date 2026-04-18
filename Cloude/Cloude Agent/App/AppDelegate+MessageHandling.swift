@@ -69,15 +69,10 @@ extension AppDelegate {
             let procs = runnerManager.getProcessInfo()
             server.broadcast(.processList(processes: procs))
 
-        case .killAllProcesses:
-            Log.info("Killing all Claude processes")
-            _ = ProcessMonitor.killAllClaudeProcesses()
-            server.broadcast(.processList(processes: []))
-
         case .searchFiles(let query, let workingDirectory):
             Log.info("Searching files for '\(query)' in \(workingDirectory)")
             let files = FileSearchService.search(query: query, in: workingDirectory)
-            server.sendMessage(.fileSearchResults(files: files, query: query), to: connection)
+            server.sendMessage(.fileSearchResults(files: files), to: connection)
 
         case .syncHistory(let sessionId, let workingDirectory):
             Log.info("Syncing history for session \(sessionId.prefix(8)) in \(workingDirectory)")
@@ -95,12 +90,6 @@ extension AppDelegate {
                 Log.error("History sync failed: \(errorMsg)")
                 server.sendMessage(.historySyncError(sessionId: sessionId, error: errorMsg), to: connection)
             }
-
-        case .listRemoteSessions(let workingDirectory):
-            Log.info("Listing remote sessions for \(workingDirectory)")
-            let sessions = HistoryService.listSessions(workingDirectory: workingDirectory)
-            Log.info("Found \(sessions.count) sessions")
-            server.sendMessage(.remoteSessionList(sessions: sessions), to: connection)
 
         case .suggestName(let text, let context, let conversationId):
             Log.info("Name suggestion request for \(conversationId.prefix(8))")

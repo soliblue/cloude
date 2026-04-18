@@ -25,10 +25,8 @@ public enum ClientMessage: Codable {
     case transcribe(audioBase64: String)
     case getProcesses
     case killProcess(pid: Int32)
-    case killAllProcesses
     case syncHistory(sessionId: String, workingDirectory: String)
     case searchFiles(query: String, workingDirectory: String)
-    case listRemoteSessions(workingDirectory: String)
     case suggestName(text: String, context: [String], conversationId: String)
     case ping(sentAt: Double)
 

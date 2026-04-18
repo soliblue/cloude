@@ -33,10 +33,8 @@ sealed class ClientMessage {
     data class Transcribe(val audioBase64: String) : ClientMessage()
     data object GetProcesses : ClientMessage()
     data class KillProcess(val pid: Int) : ClientMessage()
-    data object KillAllProcesses : ClientMessage()
     data class SyncHistory(val sessionId: String, val workingDirectory: String) : ClientMessage()
     data class SearchFiles(val query: String, val workingDirectory: String) : ClientMessage()
-    data class ListRemoteSessions(val workingDirectory: String) : ClientMessage()
     data class SuggestName(val text: String, val context: List<String> = emptyList(), val conversationId: String) : ClientMessage()
 
     fun toJson(): String = buildJsonObject {
@@ -120,7 +118,6 @@ sealed class ClientMessage {
                 put("type", "kill_process")
                 put("pid", msg.pid)
             }
-            is KillAllProcesses -> put("type", "kill_all_processes")
             is SyncHistory -> {
                 put("type", "sync_history")
                 put("sessionId", msg.sessionId)
@@ -129,10 +126,6 @@ sealed class ClientMessage {
             is SearchFiles -> {
                 put("type", "search_files")
                 put("query", msg.query)
-                put("workingDirectory", msg.workingDirectory)
-            }
-            is ListRemoteSessions -> {
-                put("type", "list_remote_sessions")
                 put("workingDirectory", msg.workingDirectory)
             }
             is SuggestName -> {

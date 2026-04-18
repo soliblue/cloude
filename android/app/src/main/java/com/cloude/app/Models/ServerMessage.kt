@@ -16,8 +16,6 @@ import kotlinx.serialization.json.long
 
 sealed class ServerMessage {
     data class Output(val text: String, val conversationId: String? = null) : ServerMessage()
-    data class FileChange(val path: String, val diff: String? = null, val content: String? = null) : ServerMessage()
-    data class Image(val path: String, val base64: String) : ServerMessage()
     data class Status(val state: AgentState, val conversationId: String? = null) : ServerMessage()
     data object AuthRequired : ServerMessage()
     data class AuthResult(val success: Boolean, val message: String? = null) : ServerMessage()
@@ -43,8 +41,7 @@ sealed class ServerMessage {
     data class HistorySyncError(val sessionId: String, val error: String) : ServerMessage()
     data class FileChunk(val path: String, val chunkIndex: Int, val totalChunks: Int, val data: String, val mimeType: String, val size: Long) : ServerMessage()
     data class FileThumbnail(val path: String, val data: String, val fullSize: Long) : ServerMessage()
-    data class FileSearchResults(val files: List<String>, val query: String) : ServerMessage()
-    data class RemoteSessionList(val sessions: List<RemoteSession>) : ServerMessage()
+    data class FileSearchResults(val files: List<String>) : ServerMessage()
     data class MessageUUID(val uuid: String, val conversationId: String? = null) : ServerMessage()
     data class NameSuggestion(val name: String, val symbol: String? = null, val conversationId: String) : ServerMessage()
 
@@ -66,15 +63,6 @@ sealed class ServerMessage {
                 "output" -> Output(
                     text = obj.str("text") ?: "",
                     conversationId = obj.strOrNull("conversationId")
-                )
-                "file_change" -> FileChange(
-                    path = obj.str("path") ?: "",
-                    diff = obj.strOrNull("diff"),
-                    content = obj.strOrNull("content")
-                )
-                "image" -> Image(
-                    path = obj.str("path") ?: "",
-                    base64 = obj.str("base64") ?: ""
                 )
                 "status" -> Status(
                     state = when (obj.str("state")) {
@@ -183,11 +171,7 @@ sealed class ServerMessage {
                     fullSize = obj["fullSize"]?.jsonPrimitive?.long ?: 0
                 )
                 "file_search_results" -> FileSearchResults(
-                    files = obj["files"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList(),
-                    query = obj.str("query") ?: ""
-                )
-                "remote_session_list" -> RemoteSessionList(
-                    sessions = obj["sessions"]?.jsonArray?.map { json.decodeFromJsonElement(RemoteSession.serializer(), it) } ?: emptyList()
+                    files = obj["files"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList()
                 )
                 "name_suggestion" -> NameSuggestion(
                     name = obj.str("name") ?: "",

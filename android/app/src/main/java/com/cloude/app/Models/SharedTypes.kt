@@ -94,13 +94,6 @@ data class HistoryMessage(
 )
 
 @Serializable
-data class RemoteSession(
-    val id: String,
-    val workingDirectory: String? = null,
-    val startedAt: Double? = null
-)
-
-@Serializable
 data class AttachedFilePayload(
     val name: String,
     val data: String

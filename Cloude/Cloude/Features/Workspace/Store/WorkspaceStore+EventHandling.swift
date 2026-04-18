@@ -24,7 +24,7 @@ extension WorkspaceStore {
                 inputText = inputText.isEmpty ? text : inputText + " " + text
             }
             AudioRecorder.clearPendingAudioFile()
-        case .fileSearchResults(let files, _):
+        case .fileSearchResults(let files):
             fileSearchResults = files
         case .gitStatus(let path, let status, _):
             if gitBranches[path] == nil, !status.branch.isEmpty {

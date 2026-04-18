@@ -65,8 +65,6 @@ extension ClientMessage {
         case "kill_process":
             let pid = try container.decode(Int32.self, forKey: .pid)
             self = .killProcess(pid: pid)
-        case "kill_all_processes":
-            self = .killAllProcesses
         case "sync_history":
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
@@ -75,9 +73,6 @@ extension ClientMessage {
             let query = try container.decode(String.self, forKey: .query)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
             self = .searchFiles(query: query, workingDirectory: workingDirectory)
-        case "list_remote_sessions":
-            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
-            self = .listRemoteSessions(workingDirectory: workingDirectory)
         case "suggest_name":
             let text = try container.decode(String.self, forKey: .text)
             let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []

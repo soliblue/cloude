@@ -11,51 +11,6 @@ extension HistoryService {
         let editInfo: EditInfo?
     }
 
-    static func listSessions(workingDirectory: String) -> [RemoteSession] {
-        let projectPath = workingDirectory.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ".", with: "-")
-        let claudeProjectsDir = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".claude/projects")
-            .appendingPathComponent(projectPath)
-
-        guard FileManager.default.fileExists(atPath: claudeProjectsDir.path) else {
-            return []
-        }
-
-        do {
-            let files = try FileManager.default.contentsOfDirectory(at: claudeProjectsDir, includingPropertiesForKeys: [.contentModificationDateKey])
-            var sessions: [RemoteSession] = []
-
-            for file in files where file.pathExtension == "jsonl" {
-                let sessionId = file.deletingPathExtension().lastPathComponent
-                guard UUID(uuidString: sessionId) != nil else { continue }
-
-                let attributes = try file.resourceValues(forKeys: [.contentModificationDateKey])
-                let lastModified = attributes.contentModificationDate ?? Date.distantPast
-
-                let content = try String(contentsOf: file, encoding: .utf8)
-                let messageCount = content.components(separatedBy: .newlines)
-                    .filter { line in
-                        guard !line.isEmpty,
-                              let data = line.data(using: .utf8),
-                              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                              let type = json["type"] as? String else { return false }
-                        return type == "user" || type == "assistant"
-                    }.count
-
-                sessions.append(RemoteSession(
-                    sessionId: sessionId,
-                    workingDirectory: workingDirectory,
-                    lastModified: lastModified,
-                    messageCount: messageCount
-                ))
-            }
-
-            return sessions.sorted { $0.lastModified > $1.lastModified }
-        } catch {
-            return []
-        }
-    }
-
     static func extractToolInput(name: String, input: [String: Any]?) -> String? {
         ToolInputExtractor.extract(name: name, input: input)
     }

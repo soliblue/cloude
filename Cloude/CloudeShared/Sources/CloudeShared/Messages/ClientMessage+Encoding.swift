@@ -60,8 +60,6 @@ extension ClientMessage {
         case .killProcess(let pid):
             try container.encode("kill_process", forKey: .type)
             try container.encode(pid, forKey: .pid)
-        case .killAllProcesses:
-            try container.encode("kill_all_processes", forKey: .type)
         case .syncHistory(let sessionId, let workingDirectory):
             try container.encode("sync_history", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
@@ -69,9 +67,6 @@ extension ClientMessage {
         case .searchFiles(let query, let workingDirectory):
             try container.encode("search_files", forKey: .type)
             try container.encode(query, forKey: .query)
-            try container.encode(workingDirectory, forKey: .workingDirectory)
-        case .listRemoteSessions(let workingDirectory):
-            try container.encode("list_remote_sessions", forKey: .type)
             try container.encode(workingDirectory, forKey: .workingDirectory)
         case .suggestName(let text, let context, let conversationId):
             try container.encode("suggest_name", forKey: .type)

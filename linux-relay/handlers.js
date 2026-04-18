@@ -1,12 +1,12 @@
 import { log } from './log.js'
 import { handleListDirectory, handleGetFile, handleSearchFiles } from './handlers-files.js'
 import { handleGitStatus, handleGitDiff, handleGitCommit, handleGitLog } from './handlers-git.js'
-import { handleListRemoteSessions, handleSyncHistory } from './handlers-history.js'
+import { handleSyncHistory } from './handlers-history.js'
 import { handleSuggestName } from './handlers-naming.js'
 import { handleTranscribe } from './handlers-transcribe.js'
 
 export function handleMessage(msg, ws, ctx) {
-  const { manager, broadcast, sendTo } = ctx
+  const { manager, sendTo } = ctx
 
   switch (msg.type) {
     case 'chat': {
@@ -66,21 +66,12 @@ export function handleMessage(msg, ws, ctx) {
       sendTo(ws, { type: 'process_list', processes: manager.getProcessInfo() })
       break
 
-    case 'kill_all_processes':
-      manager.abortAll()
-      broadcast({ type: 'process_list', processes: [] })
-      break
-
     case 'search_files':
       handleSearchFiles(msg.query, msg.workingDirectory, ws, sendTo)
       break
 
     case 'sync_history':
       handleSyncHistory(msg.sessionId, msg.workingDirectory, ws, sendTo)
-      break
-
-    case 'list_remote_sessions':
-      handleListRemoteSessions(msg.workingDirectory, ws, sendTo)
       break
 
     case 'suggest_name':

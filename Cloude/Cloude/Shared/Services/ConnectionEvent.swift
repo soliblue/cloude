@@ -6,7 +6,7 @@ enum ConnectionEvent {
     case fileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool)
     case fileChunk(path: String, chunkIndex: Int, totalChunks: Int, data: String, mimeType: String, size: Int64)
     case fileThumbnail(path: String, data: String, fullSize: Int64)
-    case fileSearchResults(files: [String], query: String)
+    case fileSearchResults(files: [String])
     case fileError(String)
 
     case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?, interruptedConversationId: UUID?, interruptedMessageId: UUID?)
@@ -29,7 +29,7 @@ enum ConnectionEvent {
     case renameConversation(conversationId: UUID, name: String)
     case setConversationSymbol(conversationId: UUID, symbol: String?)
     case sessionIdReceived(conversationId: UUID, sessionId: String)
-case lastAssistantMessageCostUpdate(conversationId: UUID, costUsd: Double)
+    case lastAssistantMessageCostUpdate(conversationId: UUID, costUsd: Double)
     case deleteConversation(conversationId: UUID)
     case switchConversation(conversationId: UUID)
     case notify(title: String?, body: String)

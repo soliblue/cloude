@@ -1,34 +1,6 @@
-import { readdirSync, statSync } from 'fs'
-import { join, basename } from 'path'
+import { join } from 'path'
 import { log } from './log.js'
-import { toAppleDate, toAppleTimestamp, projectDir, parseJSONL, extractToolInput, UUID_REGEX } from './shared.js'
-
-export function handleListRemoteSessions(workingDirectory, ws, sendTo) {
-  const dirPath = projectDir(workingDirectory)
-  try {
-    const files = readdirSync(dirPath).filter(f => f.endsWith('.jsonl'))
-    const sessions = []
-
-    for (const file of files) {
-      const sessionId = basename(file, '.jsonl')
-      if (!UUID_REGEX.test(sessionId)) continue
-
-      const filePath = join(dirPath, file)
-      const st = statSync(filePath)
-      const entries = parseJSONL(filePath)
-      const messageCount = entries.filter(e => e.type === 'user' || e.type === 'assistant').length
-
-      sessions.push({ sessionId, workingDirectory, lastModified: toAppleTimestamp(st.mtime.getTime()), messageCount })
-    }
-
-    sessions.sort((a, b) => b.lastModified - a.lastModified)
-    log(`Remote sessions: ${sessions.length} for ${workingDirectory}`)
-    sendTo(ws, { type: 'remote_session_list', sessions })
-  } catch (e) {
-    log(`List sessions error: ${e.message}`)
-    sendTo(ws, { type: 'remote_session_list', sessions: [] })
-  }
-}
+import { toAppleDate, projectDir, parseJSONL, extractToolInput } from './shared.js'
 
 export function handleSyncHistory(sessionId, workingDirectory, ws, sendTo) {
   const sessionFile = join(projectDir(workingDirectory), `${sessionId}.jsonl`)

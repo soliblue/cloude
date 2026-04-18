@@ -39,7 +39,7 @@ extension EnvironmentConnection {
         case .fileContent(let p, let d, let m, let s, let t): handleFileContent(mgr, path: p, data: d, mimeType: m, size: s, truncated: t)
         case .fileChunk(let p, let ci, let tc, let d, let m, let s): handleFileChunk(mgr, path: p, chunkIndex: ci, totalChunks: tc, data: d, mimeType: m, size: s)
         case .fileThumbnail(let p, let d, let fs):        mgr.events.send(.fileThumbnail(path: p, data: d, fullSize: fs))
-        case .fileSearchResults(let files, let query):    mgr.events.send(.fileSearchResults(files: files, query: query))
+        case .fileSearchResults(let files):               mgr.events.send(.fileSearchResults(files: files))
         case .gitStatusResult(let status):                handleGitStatusResult(mgr, status)
         case .gitDiffResult(let path, let diff):          mgr.events.send(.gitDiff(path: path, diff: diff))
         case .gitLogResult(let path, let commits):       mgr.events.send(.gitLog(path: path, commits: commits, environmentId: environmentId))
@@ -52,10 +52,9 @@ extension EnvironmentConnection {
         case .processList(let procs):                     processes = procs
         case .historySync(let sid, let msgs):             mgr.events.send(.historySync(sessionId: sid, messages: msgs))
         case .historySyncError(let sid, let err):          mgr.events.send(.historySyncError(sessionId: sid, error: err))
-        case .remoteSessionList:                          break
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(mgr, name: name, symbol: sym, conversationId: c)
         case .pong(let sentAt, _):                        latencyMs = (Date().timeIntervalSince1970 - sentAt) * 1000
-        case .fileChange, .image, .gitCommitResult:       break
+        case .gitCommitResult:                            break
         }
     }
 

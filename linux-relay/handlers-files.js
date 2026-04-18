@@ -69,8 +69,8 @@ export function handleSearchFiles(query, workingDirectory, ws, sendTo) {
     const pattern = query.includes('/') ? `*${query}*` : `*${query}*`
     const output = execSync(`find '${workingDirectory}' -maxdepth 5 ${findFlag} '${pattern}' -not -path '*/node_modules/*' -not -path '*/.git/*' 2>/dev/null | head -50`, { encoding: 'utf8' })
     const files = output.split('\n').filter(Boolean)
-    sendTo(ws, { type: 'file_search_results', files, query })
+    sendTo(ws, { type: 'file_search_results', files })
   } catch {
-    sendTo(ws, { type: 'file_search_results', files: [], query })
+    sendTo(ws, { type: 'file_search_results', files: [] })
   }
 }
