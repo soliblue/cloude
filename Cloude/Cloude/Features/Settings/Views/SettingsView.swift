@@ -19,8 +19,8 @@ struct SettingsView: View {
             List {
                 environmentsCarousel
                     .listSectionSeparator(.hidden)
-                processesSection
                 preferencesSection
+                processesSection
                 aboutSection
             }
             .contentMargins(.top, DS.Spacing.s, for: .scrollContent)

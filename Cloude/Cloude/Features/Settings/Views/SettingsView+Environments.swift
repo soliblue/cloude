@@ -3,7 +3,7 @@ import SwiftUI
 extension SettingsView {
     var environmentsCarousel: some View {
         Section {
-            VStack(spacing: DS.Spacing.m) {
+            VStack(spacing: 0) {
                 TabView(selection: $selectedEnvironmentPage) {
                     ForEach(Array(environmentStore.environments.enumerated()), id: \.element.id) { index, env in
                         EnvironmentCard(
@@ -45,7 +45,7 @@ extension SettingsView {
                     .frame(width: DS.Size.s, height: DS.Size.s)
             }
         }
-        .padding(.top, DS.Spacing.xs)
+        .padding(.top, DS.Text.step)
         .padding(.bottom, DS.Spacing.s)
         .frame(maxWidth: .infinity)
     }
