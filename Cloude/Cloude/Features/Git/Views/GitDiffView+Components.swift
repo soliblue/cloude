@@ -79,7 +79,7 @@ struct DiffLineView: View {
                 .foregroundStyle(.secondary)
                 .padding(DS.Spacing.s)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.blue.opacity(DS.Opacity.s))
+                .background(AppColor.blue.opacity(DS.Opacity.s))
         case .added:
             HStack(spacing: DS.Spacing.s) {
                 Text("+")

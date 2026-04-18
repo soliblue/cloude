@@ -6,7 +6,7 @@ extension EnvironmentCard {
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "server.rack")
                     .font(.system(size: DS.Icon.m))
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColor.blue)
                 TextField("Host", text: hostBinding)
                     .font(.system(size: DS.Text.m))
                     .textFieldStyle(.plain)
@@ -21,7 +21,7 @@ extension EnvironmentCard {
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "number")
                     .font(.system(size: DS.Icon.m))
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColor.blue)
                 TextField("Port", text: portTextBinding)
                     .keyboardType(.numberPad)
                     .font(.system(size: DS.Text.m, design: .monospaced))
@@ -34,7 +34,7 @@ extension EnvironmentCard {
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "key.fill")
                     .font(.system(size: DS.Icon.m))
-                    .foregroundColor(.orange)
+                    .foregroundColor(AppColor.orange)
 
                 Group {
                     if showToken {

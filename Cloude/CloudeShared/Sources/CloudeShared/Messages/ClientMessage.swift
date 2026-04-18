@@ -23,7 +23,6 @@ public enum ClientMessage: Codable {
     case gitCommit(path: String, message: String, files: [String])
     case gitLog(path: String, count: Int)
     case transcribe(audioBase64: String)
-    case getMemories
     case getProcesses
     case killProcess(pid: Int32)
     case killAllProcesses
@@ -31,14 +30,9 @@ public enum ClientMessage: Codable {
     case searchFiles(query: String, workingDirectory: String)
     case listRemoteSessions(workingDirectory: String)
     case suggestName(text: String, context: [String], conversationId: String)
-    case getPlans(workingDirectory: String)
-    case deletePlan(stage: String, filename: String, workingDirectory: String)
-    case getUsageStats
-    case terminalExec(command: String, workingDirectory: String, terminalId: String?)
-    case terminalInput(text: String, terminalId: String?)
     case ping(sentAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, command, terminalId, staged, sentAt, count
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, staged, sentAt, count
     }
 }

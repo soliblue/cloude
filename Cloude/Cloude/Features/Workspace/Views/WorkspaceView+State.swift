@@ -38,10 +38,6 @@ extension WorkspaceView {
         Binding(get: { store.showConversationSearch }, set: { store.showConversationSearch = $0 })
     }
 
-    var showUsageStatsBinding: Binding<Bool> {
-        Binding(get: { store.showUsageStats }, set: { store.showUsageStats = $0 })
-    }
-
     var inputTextBinding: Binding<String> {
         Binding(get: { store.inputText }, set: { store.inputText = $0 })
     }
@@ -125,21 +121,6 @@ extension WorkspaceView {
     var showConversationSearch: Bool {
         get { store.showConversationSearch }
         nonmutating set { store.showConversationSearch = newValue }
-    }
-
-    var showUsageStats: Bool {
-        get { store.showUsageStats }
-        nonmutating set { store.showUsageStats = newValue }
-    }
-
-    var usageStats: UsageStats? {
-        get { store.usageStats }
-        nonmutating set { store.usageStats = newValue }
-    }
-
-    var awaitingUsageStats: Bool {
-        get { store.awaitingUsageStats }
-        nonmutating set { store.awaitingUsageStats = newValue }
     }
 
     var refreshingSessionIds: Set<String> {

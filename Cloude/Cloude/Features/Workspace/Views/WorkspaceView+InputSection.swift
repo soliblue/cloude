@@ -24,8 +24,6 @@ extension WorkspaceView {
                         conversationStore: conversationStore,
                         windowManager: windowManager,
                         environmentStore: environmentStore,
-                        onShowPlans: onShowPlans,
-                        onShowMemories: onShowMemories,
                         onShowSettings: onShowSettings,
                         onShowWhiteboard: onShowWhiteboard
                     )

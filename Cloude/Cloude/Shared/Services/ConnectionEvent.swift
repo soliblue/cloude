@@ -16,13 +16,9 @@ enum ConnectionEvent {
     case gitDiff(path: String, diff: String)
     case disconnect(conversationId: UUID, output: ConversationOutput)
     case transcription(String)
-    case memories([MemorySection])
     case skills([Skill])
     case historySync(sessionId: String, messages: [HistoryMessage])
     case historySyncError(sessionId: String, error: String)
-
-    case plans([String: [PlanItem]])
-    case planDeleted(stage: String, filename: String)
 
     case reconnectRunning(conversationId: UUID)
     case turnCompleted(conversationId: UUID)
@@ -30,7 +26,6 @@ enum ConnectionEvent {
 
     case defaultWorkingDirectory(path: String, environmentId: UUID)
     case authenticated
-    case usageStats(UsageStats)
     case renameConversation(conversationId: UUID, name: String)
     case setConversationSymbol(conversationId: UUID, symbol: String?)
     case sessionIdReceived(conversationId: UUID, sessionId: String)

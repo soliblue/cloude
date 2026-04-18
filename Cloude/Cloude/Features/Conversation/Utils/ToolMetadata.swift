@@ -6,8 +6,8 @@ struct ToolMetadata {
     let input: String?
 
     var isWidget: Bool { WidgetRegistry.isWidget(name) }
-    var isIOSControl: Bool { name.hasPrefix("mcp__ios__") && !isWidget }
-    var isWhiteboardTool: Bool { name.hasPrefix("mcp__whiteboard__") }
+    var isWhiteboardTool: Bool { name.hasPrefix("mcp__ios__whiteboard_") }
+    var isIOSControl: Bool { name.hasPrefix("mcp__ios__") && !isWidget && !isWhiteboardTool }
     var isInert: Bool { name == "ToolSearch" }
 
     var isScript: Bool {
@@ -21,7 +21,7 @@ struct ToolMetadata {
 
     var displayName: String {
         if let action = iosAction { return action.capitalized }
-        if isWhiteboardTool { return String(name.dropFirst("mcp__whiteboard__".count)).capitalized }
+        if isWhiteboardTool { return String(name.dropFirst("mcp__ios__whiteboard_".count)).capitalized }
         if isWidget { return WidgetRegistry.displayName(name) }
         switch name {
         case "TodoWrite": return "Tasks"
@@ -78,14 +78,14 @@ struct ToolMetadata {
     }
 
     var color: Color {
-        if isIOSControl { return .mint }
-        if isWidget { return WidgetRegistry.color(name) }
+        if isIOSControl { return AppColor.mint }
+        if isWidget { return .secondary }
         if name == "Bash" {
-            if isScript { return .teal }
+            if isScript { return AppColor.teal }
             if let input { return bashColor(input) }
-            return .green
+            return AppColor.green
         }
-        return Self.toolColors[name] ?? .secondary
+        return AppColor.tool(name)
     }
 
     var sheetTitle: String {
@@ -147,15 +147,6 @@ struct ToolMetadata {
         "Claudius", "Solai", "Layl", "Archie", "Zein",
         "Gaudi", "Zima", "Hundertwasser", "Bauder",
         "Alan", "Luna", "Turing", "Cantor", "Andy"
-    ]
-
-    private static let toolColors: [String: Color] = [
-        "Read": .blue, "Write": .orange, "Edit": .orange,
-        "Glob": .purple, "Grep": .pink, "Task": .cyan,
-        "WebFetch": .indigo, "WebSearch": .indigo,
-        "TodoWrite": .mint, "Skill": .purple, "NotebookEdit": .purple,
-        "AskUserQuestion": .orange, "TeamCreate": .cyan, "TeamDelete": .cyan,
-        "SendMessage": .teal, "Agent": .yellow
     ]
 }
 

@@ -103,7 +103,7 @@ extension StreamingMarkdownParser {
         }
         if let url = URL(string: urlString) {
             attr.link = url
-            attr.foregroundColor = .blue
+            attr.foregroundColor = AppColor.blue
         }
         return .text(attr)
     }

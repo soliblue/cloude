@@ -81,8 +81,8 @@ extension WebSocketServer {
             if authenticate(connection, token: token) {
                 sendMessage(.authResult(success: true, message: nil), to: connection)
                 sendMessage(.whisperReady(ready: WhisperService.shared.isReady), to: connection)
-                sendMessage(.defaultWorkingDirectory(path: MemoryService.projectRoot), to: connection)
-                let skills = SkillService.loadSkills(from: MemoryService.projectRoot)
+                sendMessage(.defaultWorkingDirectory(path: ProjectRootService.projectRoot), to: connection)
+                let skills = SkillService.loadSkills(from: ProjectRootService.projectRoot)
                 if !skills.isEmpty {
                     sendMessage(.skills(skills), to: connection)
                 }

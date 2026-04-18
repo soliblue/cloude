@@ -51,22 +51,6 @@ extension ServerMessage {
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             return .nameSuggestion(name: name, symbol: symbol, conversationId: conversationId)
-        case "plans":
-            let stages = try container.decode([String: [PlanItem]].self, forKey: .stages)
-            return .plans(stages: stages)
-        case "plan_deleted":
-            let stage = try container.decode(String.self, forKey: .stage)
-            let filename = try container.decode(String.self, forKey: .filename)
-            return .planDeleted(stage: stage, filename: filename)
-        case "usage_stats":
-            let stats = try container.decode(UsageStats.self, forKey: .stats)
-            return .usageStats(stats: stats)
-        case "terminal_output":
-            let output = try container.decode(String.self, forKey: .output)
-            let exitCode = try container.decodeIfPresent(Int.self, forKey: .exitCode)
-            let isError = try container.decodeIfPresent(Bool.self, forKey: .isError) ?? false
-            let terminalId = try container.decodeIfPresent(String.self, forKey: .terminalId)
-            return .terminalOutput(output: output, exitCode: exitCode, isError: isError, terminalId: terminalId)
         default:
             return nil
         }

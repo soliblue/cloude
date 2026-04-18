@@ -57,7 +57,7 @@ struct FileRow: View {
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: entry.isDirectory ? "folder.fill" : fileIconName(for: entry.name))
                     .font(.system(size: DS.Text.m))
-                    .foregroundColor(entry.isDirectory ? .blue : fileIconColor(for: entry.name))
+                    .foregroundColor(entry.isDirectory ? AppColor.blue : fileIconColor(for: entry.name))
 
                 HStack {
                     Text(entry.name)

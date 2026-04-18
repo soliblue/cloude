@@ -41,9 +41,9 @@ struct CompactingIndicator: View {
             Text("Compacting")
                 .font(.system(size: DS.Text.s, weight: .semibold, design: .monospaced))
         } background: {
-            Color.cyan.opacity(DS.Opacity.s)
+            AppColor.cyan.opacity(DS.Opacity.s)
         }
-        .foregroundColor(.cyan)
+        .foregroundColor(AppColor.cyan)
         .onAppear { pulse = true }
     }
 }

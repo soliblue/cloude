@@ -8,24 +8,11 @@ extension Color {
     static func themeSecondary(_ theme: AppTheme) -> Color { Color(hex: theme.palette.secondary) }
     static func themeTertiary(_ theme: AppTheme) -> Color { Color(hex: theme.palette.tertiary) }
 
-    static let pastelGreen = Color(hex: 0x7AB87A)
-    static let pastelRed = Color(hex: 0xB54E5E)
+    static let pastelGreen = AppColor.success
+    static let pastelRed = AppColor.danger
 
-    static func fromName(_ name: String?, default defaultColor: Color = .blue) -> Color {
-        switch name?.lowercased() {
-        case "blue": return .blue
-        case "green": return .green
-        case "red": return .red
-        case "purple": return .purple
-        case "orange": return .orange
-        case "cyan": return .cyan
-        case "magenta", "pink": return .pink
-        case "yellow": return .yellow
-        case "teal": return .teal
-        case "indigo": return .indigo
-        case "mint": return .mint
-        default: return defaultColor
-        }
+    static func fromName(_ name: String?, default defaultColor: Color = AppColor.blue) -> Color {
+        AppColor.named(name, default: defaultColor)
     }
 
     init(hex: UInt, alpha: Double = 1.0) {

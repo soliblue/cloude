@@ -3,7 +3,6 @@ import SwiftUI
 struct TimelineWidget: View {
     let data: [String: Any]
 
-    private var title: String? { data["title"] as? String }
     private var events: [(date: String, title: String, description: String?, icon: String, color: Color)] {
         guard let arr = data["events"] as? [[String: Any]] else { return [] }
         return arr.compactMap { e in
@@ -54,6 +53,6 @@ struct TimelineWidget: View {
     }
 
     private func parseColor(_ name: String?) -> Color {
-        .fromName(name)
+        AppColor.named(name)
     }
 }

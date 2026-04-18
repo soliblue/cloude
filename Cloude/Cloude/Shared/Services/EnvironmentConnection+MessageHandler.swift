@@ -45,7 +45,6 @@ extension EnvironmentConnection {
         case .gitLogResult(let path, let commits):       mgr.events.send(.gitLog(path: path, commits: commits, environmentId: environmentId))
         case .transcription(let text):                    handleTranscription(mgr, text)
         case .whisperReady(let ready):                    isWhisperReady = ready
-        case .memories(let sections):                     mgr.events.send(.memories(sections))
         case .skills(let s):                              handleSkills(mgr, s)
         case .defaultWorkingDirectory(let path):
             defaultWorkingDirectory = path
@@ -55,10 +54,6 @@ extension EnvironmentConnection {
         case .historySyncError(let sid, let err):          mgr.events.send(.historySyncError(sessionId: sid, error: err))
         case .remoteSessionList:                          break
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(mgr, name: name, symbol: sym, conversationId: c)
-        case .plans(let stages):                          mgr.events.send(.plans(stages))
-        case .planDeleted(let stage, let filename):       mgr.events.send(.planDeleted(stage: stage, filename: filename))
-        case .usageStats(let stats):                        mgr.events.send(.usageStats(stats))
-        case .terminalOutput:                                break
         case .pong(let sentAt, _):                        latencyMs = (Date().timeIntervalSince1970 - sentAt) * 1000
         case .fileChange, .image, .gitCommitResult:       break
         }

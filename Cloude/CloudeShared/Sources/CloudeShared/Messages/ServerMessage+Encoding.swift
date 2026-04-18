@@ -99,12 +99,9 @@ extension ServerMessage {
         case .whisperReady(let ready):
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
-        case .memories(let sections):
-            try container.encode("memories", forKey: .type)
-            try container.encode(sections, forKey: .sections)
         case .processList, .defaultWorkingDirectory, .skills, .historySync, .historySyncError,
              .fileChunk, .fileThumbnail, .fileSearchResults, .remoteSessionList, .messageUUID,
-             .nameSuggestion, .plans, .planDeleted, .usageStats, .terminalOutput, .pong:
+             .nameSuggestion, .pong:
             try encodeExtendedCases(&container)
         }
     }

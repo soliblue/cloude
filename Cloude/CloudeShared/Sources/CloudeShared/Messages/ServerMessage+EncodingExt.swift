@@ -49,22 +49,6 @@ extension ServerMessage {
             try container.encode(name, forKey: .name)
             try container.encodeIfPresent(symbol, forKey: .symbol)
             try container.encode(conversationId, forKey: .conversationId)
-        case .plans(let stages):
-            try container.encode("plans", forKey: .type)
-            try container.encode(stages, forKey: .stages)
-        case .planDeleted(let stage, let filename):
-            try container.encode("plan_deleted", forKey: .type)
-            try container.encode(stage, forKey: .stage)
-            try container.encode(filename, forKey: .filename)
-        case .usageStats(let stats):
-            try container.encode("usage_stats", forKey: .type)
-            try container.encode(stats, forKey: .stats)
-        case .terminalOutput(let output, let exitCode, let isError, let terminalId):
-            try container.encode("terminal_output", forKey: .type)
-            try container.encode(output, forKey: .output)
-            try container.encodeIfPresent(exitCode, forKey: .exitCode)
-            try container.encode(isError, forKey: .isError)
-            try container.encodeIfPresent(terminalId, forKey: .terminalId)
         case .pong(let sentAt, let serverAt):
             try container.encode("pong", forKey: .type)
             try container.encode(sentAt, forKey: .sentAt)

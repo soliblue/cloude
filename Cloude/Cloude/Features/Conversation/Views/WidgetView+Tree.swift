@@ -4,7 +4,6 @@ struct TreeWidget: View {
     let data: [String: Any]
     @State private var collapsed: Set<String> = []
 
-    private var title: String? { data["title"] as? String }
     private var root: TreeNode? { parseNode(data["root"] as? [String: Any]) }
 
     var body: some View {
@@ -73,8 +72,8 @@ struct TreeWidget: View {
     }
 
     private func parseColor(_ name: String?, hasChildren: Bool) -> Color {
-        if let name { return .fromName(name, default: hasChildren ? .yellow : .blue) }
-        return hasChildren ? .yellow : .blue
+        if let name { return AppColor.named(name, default: hasChildren ? AppColor.yellow : AppColor.blue) }
+        return hasChildren ? AppColor.yellow : AppColor.blue
     }
 }
 

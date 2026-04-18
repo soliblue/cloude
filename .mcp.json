@@ -7,14 +7,6 @@
         ".claude/ios-mcp/server.js"
       ],
       "env": {}
-    },
-    "whiteboard": {
-      "type": "stdio",
-      "command": "node",
-      "args": [
-        ".claude/ios-mcp/whiteboard-server.js"
-      ],
-      "env": {}
     }
   }
 }

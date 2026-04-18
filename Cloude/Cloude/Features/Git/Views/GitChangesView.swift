@@ -125,11 +125,11 @@ struct GitChangesView: View {
                 HStack(spacing: DS.Spacing.xs) {
                     if totalAdd > 0 {
                         Text("+\(totalAdd)")
-                            .foregroundColor(.pastelGreen)
+                            .foregroundColor(AppColor.success)
                     }
                     if totalDel > 0 {
                         Text("-\(totalDel)")
-                            .foregroundColor(.pastelRed)
+                            .foregroundColor(AppColor.danger)
                     }
                 }
                 .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
@@ -140,13 +140,13 @@ struct GitChangesView: View {
             if !status.stagedFiles.isEmpty {
                 Text("\(status.stagedFiles.count) staged")
                     .font(.system(size: DS.Text.s, weight: .medium))
-                    .foregroundColor(.pastelGreen)
+                    .foregroundColor(AppColor.success)
                 Text("·")
                     .foregroundColor(.secondary)
             }
             Text("\(status.unstagedFiles.count) changed")
                 .font(.system(size: DS.Text.s, weight: .medium))
-                .foregroundColor(status.hasChanges ? .orange : .pastelGreen)
+                .foregroundColor(status.hasChanges ? AppColor.orange : AppColor.success)
         }
         .font(.system(size: DS.Text.s))
         .foregroundColor(.secondary)

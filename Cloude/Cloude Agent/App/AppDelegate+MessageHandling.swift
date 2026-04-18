@@ -8,7 +8,7 @@ extension AppDelegate {
         case .chat(let text, let workingDirectory, let sessionId, let isNewSession, let imagesBase64, let filesBase64, let conversationId, let conversationName, let forkSession, let effort, let model):
             Log.info("Chat received: \(text.prefix(50))... (convId=\(conversationId?.prefix(8) ?? "nil"), images=\(imagesBase64?.count ?? 0), files=\(filesBase64?.count ?? 0), isNew=\(isNewSession), fork=\(forkSession), effort=\(effort ?? "nil"), model=\(model ?? "nil"))")
             if let wd = workingDirectory, !wd.isEmpty {
-                MemoryService.projectDirectory = wd
+                ProjectRootService.projectDirectory = wd
             }
             let convId = conversationId ?? UUID().uuidString
             runnerManager.run(prompt: text, workingDirectory: workingDirectory, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, filesBase64: filesBase64, conversationId: convId, conversationName: conversationName, forkSession: forkSession, model: model, effort: effort)
@@ -59,11 +59,6 @@ extension AppDelegate {
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
 
-        case .getMemories:
-            Log.info("Received getMemories request")
-            let sections = MemoryService.parseMemories()
-            server.sendMessage(.memories(sections: sections), to: connection)
-
         case .getProcesses:
             let procs = runnerManager.getProcessInfo()
             server.sendMessage(.processList(processes: procs), to: connection)
@@ -113,27 +108,6 @@ extension AppDelegate {
                 Log.info("Name suggestion: \"\(name)\" symbol=\(symbol ?? "nil")")
                 self?.server.broadcast(.nameSuggestion(name: name, symbol: symbol, conversationId: conversationId))
             }
-
-        case .getPlans(let workingDirectory):
-            Log.info("Received getPlans request for \(workingDirectory)")
-            let stages = PlansService.readPlans(workingDirectory: workingDirectory)
-            server.sendMessage(.plans(stages: stages), to: connection)
-
-        case .deletePlan(let stage, let filename, let workingDirectory):
-            Log.info("Received deletePlan: \(stage)/\(filename)")
-            PlansService.deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
-            server.sendMessage(.planDeleted(stage: stage, filename: filename), to: connection)
-
-        case .getUsageStats:
-            Log.info("Received getUsageStats request")
-            let stats = UsageStatsService.readStats()
-            server.sendMessage(.usageStats(stats: stats), to: connection)
-
-        case .terminalExec(let command, let workingDirectory, let terminalId):
-            handleTerminalExec(command, workingDirectory: workingDirectory, terminalId: terminalId, connection: connection)
-
-        case .terminalInput(let text, let terminalId):
-            handleTerminalInput(text, terminalId: terminalId, connection: connection)
 
         case .ping(let sentAt):
             server.sendMessage(.pong(sentAt: sentAt, serverAt: Date().timeIntervalSince1970), to: connection)

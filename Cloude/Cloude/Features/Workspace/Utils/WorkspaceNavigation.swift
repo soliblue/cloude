@@ -3,25 +3,16 @@ import CloudeShared
 
 extension Notification.Name {
     static let openConversationSearch = Notification.Name("openConversationSearch")
-    static let requestUsageStats = Notification.Name("requestUsageStats")
     static let dismissWorkspaceTransientUI = Notification.Name("dismissWorkspaceTransientUI")
 }
 
 extension App {
     func dismissTransientUI() {
         settingsStore.isPresented = false
-        memoriesStore.isPresented = false
-        plansStore.isPresented = false
         whiteboardStore.isPresented = false
         filePathToPreview = nil
         gitDiffRequest = nil
         NotificationCenter.default.post(name: .dismissWorkspaceTransientUI, object: nil)
-    }
-
-    func openUsageStats() {
-        AppLogger.beginInterval("usage.open")
-        NotificationCenter.default.post(name: .requestUsageStats, object: nil)
-        AppLogger.bootstrapInfo("open usage stats requested")
     }
 
     func openConversationSearch(query: String? = nil) {

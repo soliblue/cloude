@@ -111,9 +111,6 @@ extension ServerMessage {
         case "whisper_ready":
             let ready = try container.decode(Bool.self, forKey: .ready)
             return .whisperReady(ready: ready)
-        case "memories":
-            let sections = try container.decode([MemorySection].self, forKey: .sections)
-            return .memories(sections: sections)
         case "pong":
             let sentAt = try container.decode(Double.self, forKey: .sentAt)
             let serverAt = try container.decode(Double.self, forKey: .serverAt)

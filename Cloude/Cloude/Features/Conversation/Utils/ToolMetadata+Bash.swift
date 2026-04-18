@@ -44,23 +44,7 @@ extension ToolMetadata {
     }
 
     func bashColor(_ cmd: String) -> Color {
-        let parsed = BashCommandParser.parse(cmd)
-        switch parsed.command {
-        case "cargo": return Color(red: 0.87, green: 0.46, blue: 0.19)
-        case "git", "swift", "xcodebuild", "fastlane": return .orange
-        case "npm", "yarn", "pnpm", "bun", "rm", "kill", "killall": return .red
-        case "node", "pytest", "jest", "mocha", "vitest": return .green
-        case "python", "python3", "pip", "pip3", "brew": return .yellow
-        case "ls", "cd", "pwd", "mkdir", "rmdir": return .cyan
-        case "cp", "mv": return .teal
-        case "cat", "head", "tail", "less", "more", "docker", "kubectl": return .blue
-        case "curl", "wget", "ssh", "scp", "rsync": return .indigo
-        case "grep", "rg", "ag", "find", "fd": return .pink
-        case "tar", "zip", "unzip", "gzip": return .brown
-        case "vim", "nvim", "nano", "emacs", "code", "eslint", "prettier", "rubocop", "claude": return .purple
-        case "cloude": return .accentColor
-        default: return .green
-        }
+        AppColor.bashCommand(BashCommandParser.parse(cmd).command)
     }
 
     private static let subcommandParents: Set<String> = [

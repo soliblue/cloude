@@ -9,8 +9,6 @@ struct WorkspaceView: View {
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var environmentStore: EnvironmentStore
-    var onShowPlans: (() -> Void)?
-    var onShowMemories: (() -> Void)?
     var onShowSettings: (() -> Void)?
     var onShowWhiteboard: (() -> Void)?
 
@@ -70,20 +68,11 @@ struct WorkspaceView: View {
         }
         .sheet(item: editingWindowBinding) { window in editWindowSheet(window) }
         .sheet(isPresented: showConversationSearchBinding) { conversationSearchSheetContent() }
-        .sheet(isPresented: showUsageStatsBinding) { usageStatsSheetContent() }
         .onReceive(NotificationCenter.default.publisher(for: .editActiveWindow)) { _ in
             store.beginEditingActiveWindow(windowManager: windowManager)
         }
         .onReceive(NotificationCenter.default.publisher(for: .openConversationSearch)) { _ in
             store.openConversationSearch()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .requestUsageStats)) { _ in
-            store.requestUsageStats(
-                connection: connection,
-                environmentStore: environmentStore,
-                conversationStore: conversationStore,
-                windowManager: windowManager
-            )
         }
         .onReceive(NotificationCenter.default.publisher(for: .dismissWorkspaceTransientUI)) { _ in
             store.dismissTransientUI()

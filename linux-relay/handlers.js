@@ -1,10 +1,9 @@
 import { log } from './log.js'
 import { handleListDirectory, handleGetFile, handleSearchFiles } from './handlers-files.js'
 import { handleGitStatus, handleGitDiff, handleGitCommit, handleGitLog } from './handlers-git.js'
-import { handleGetUsageStats, handleListRemoteSessions, handleSyncHistory } from './handlers-history.js'
-import { handleGetMemories, handleGetPlans, handleDeletePlan } from './handlers-plans.js'
+import { handleListRemoteSessions, handleSyncHistory } from './handlers-history.js'
 import { handleSuggestName } from './handlers-naming.js'
-import { handleTranscribe, handleTerminalExec, handleTerminalInput } from './handlers-terminal.js'
+import { handleTranscribe } from './handlers-transcribe.js'
 
 export function handleMessage(msg, ws, ctx) {
   const { manager, broadcast, sendTo } = ctx
@@ -58,10 +57,6 @@ export function handleMessage(msg, ws, ctx) {
       handleGitLog(msg.path, msg.count || 10, ws, sendTo)
       break
 
-    case 'get_memories':
-      handleGetMemories(msg.workingDirectory, ws, sendTo)
-      break
-
     case 'get_processes':
       sendTo(ws, { type: 'process_list', processes: manager.getProcessInfo() })
       break
@@ -78,18 +73,6 @@ export function handleMessage(msg, ws, ctx) {
 
     case 'search_files':
       handleSearchFiles(msg.query, msg.workingDirectory, ws, sendTo)
-      break
-
-    case 'get_plans':
-      handleGetPlans(msg.workingDirectory, ws, sendTo)
-      break
-
-    case 'delete_plan':
-      handleDeletePlan(msg.stage, msg.filename, msg.workingDirectory, ws, sendTo)
-      break
-
-    case 'get_usage_stats':
-      handleGetUsageStats(ws, sendTo)
       break
 
     case 'sync_history':
@@ -109,14 +92,6 @@ export function handleMessage(msg, ws, ctx) {
 
     case 'transcribe':
       handleTranscribe(msg.audioBase64, ws, sendTo)
-      break
-
-    case 'terminal_exec':
-      handleTerminalExec(msg.command, msg.workingDirectory, msg.terminalId, ws, sendTo)
-      break
-
-    case 'terminal_input':
-      handleTerminalInput(msg.text, msg.terminalId, ws)
       break
 
     case 'ping':

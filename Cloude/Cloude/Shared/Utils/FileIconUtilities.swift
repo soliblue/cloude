@@ -86,29 +86,5 @@ func fileIconName(for filename: String) -> String {
 }
 
 func fileIconColor(for filename: String) -> Color {
-    let ext = filename.pathExtension.lowercased()
-    switch ext {
-    case "swift", "xcodeproj", "xcworkspace": return .orange
-    case "py": return .yellow
-    case "js", "jsx": return .yellow
-    case "ts", "tsx": return .blue
-    case "go": return .cyan
-    case "rs": return Color(red: 0.87, green: 0.46, blue: 0.19)
-    case "rb": return .red
-    case "java", "kt": return .orange
-    case "html", "xml", "plist": return .orange
-    case "css", "scss", "sass", "less": return .blue
-    case "json": return .yellow
-    case "yaml", "yml", "toml": return .pink
-    case "md", "txt", "rtf": return .secondary
-    case "sh", "bash", "zsh", "fish": return .green
-    case "png", "jpg", "jpeg", "gif", "webp", "heic", "svg": return .purple
-    case "pdf": return .red
-    case "mp4", "mov", "avi", "mkv", "webm": return .indigo
-    case "mp3", "wav", "aac", "flac", "ogg", "m4a": return .pink
-    case "zip", "tar", "gz", "rar", "7z": return .brown
-    case "env": return .yellow
-    case "lock": return .gray
-    default: return .secondary
-    }
+    AppColor.fileExtension(filename.pathExtension.lowercased())
 }

@@ -55,7 +55,7 @@ struct SettingsView: View {
     private var preferencesSection: some View {
         Section {
             Button(action: { showThemePicker = true }) {
-                SettingsRow(icon: "paintpalette.fill", color: .purple) {
+                SettingsRow(icon: "paintpalette.fill", color: AppColor.purple) {
                     Text("Theme")
                         .font(.system(size: DS.Text.m))
                     Spacer()
@@ -73,7 +73,7 @@ struct SettingsView: View {
                 ThemePickerView()
             }
 
-            SettingsRow(icon: "textformat.size", color: .mint) {
+            SettingsRow(icon: "textformat.size", color: AppColor.mint) {
                 HStack {
                     Text("Font Size")
                         .font(.system(size: DS.Text.m))
@@ -104,13 +104,13 @@ struct SettingsView: View {
                 }
             }
 
-            SettingsRow(icon: "text.word.spacing", color: .cyan) {
+            SettingsRow(icon: "text.word.spacing", color: AppColor.cyan) {
                 Toggle("Wrap Code Lines", isOn: $wrapCodeLines)
                     .font(.system(size: DS.Text.m))
                     .controlSize(.regular)
             }
 
-            SettingsRow(icon: "ant.fill", color: .orange) {
+            SettingsRow(icon: "ant.fill", color: AppColor.orange) {
                 Toggle("Debug Overlay", isOn: $debugOverlayEnabled)
                     .font(.system(size: DS.Text.m))
                     .controlSize(.regular)

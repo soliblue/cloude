@@ -82,10 +82,6 @@ extension EnvironmentConnection {
             handleIOSToolCall(mgr, name: name, input: input, conversationId: conversationId)
             return
         }
-        if name.hasPrefix("mcp__whiteboard__") {
-            handleWhiteboardToolCall(mgr, name: name, input: input, conversationId: conversationId)
-            return
-        }
     }
 
     func handleToolResult(_ mgr: ConnectionManager, toolId: String, summary: String?, output: String?, conversationId: String?) {

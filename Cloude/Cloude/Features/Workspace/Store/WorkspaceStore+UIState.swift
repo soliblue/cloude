@@ -5,7 +5,6 @@ extension WorkspaceStore {
     func dismissTransientUI() {
         editingWindow = nil
         showConversationSearch = false
-        showUsageStats = false
     }
 
     func beginEditingActiveWindow(windowManager: WindowManager) {
@@ -85,11 +84,6 @@ extension WorkspaceStore {
             }
             windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         }
-    }
-
-    func requestUsageStats(connection: ConnectionManager, environmentStore: EnvironmentStore, conversationStore: ConversationStore, windowManager: WindowManager) {
-        awaitingUsageStats = true
-        connection.getUsageStats(environmentId: currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId)
     }
 
     func setKeyboardVisible(_ visible: Bool) {

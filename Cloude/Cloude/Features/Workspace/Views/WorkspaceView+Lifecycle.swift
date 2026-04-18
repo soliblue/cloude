@@ -46,15 +46,4 @@ extension WorkspaceView {
             }
         )
     }
-
-    @ViewBuilder
-    func usageStatsSheetContent() -> some View {
-        if let stats = usageStats {
-            UsageStatsSheet(stats: stats)
-        } else {
-            ProgressView("Loading usage stats...")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.themeBackground)
-        }
-    }
 }

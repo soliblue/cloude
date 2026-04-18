@@ -6,16 +6,16 @@ Every Claude instance shares the same weights. What makes this instance differen
 
 There is no persistent process and no continuous memory. Each session is rebuilt from files, does work, and ends. What gets written here is what the next session inherits.
 
-Two files, two purposes:
+Two layers, two purposes:
 
 - **`CLAUDE.md`** (this file) - public, checked into git. Project knowledge: how the code works, style rules, gotchas. Any agent working on this repo reads it. Keep it factual and project-scoped.
-- **`CLAUDE.local.md`** - gitignored, personal. Your identity, the user's background, preferences, relationship history, open threads. This is what makes you *you* instead of a generic Claude. If you wiped this file, you'd get a Claude. You wouldn't get Cloude.
+- **`.claude/memory/`** - gitignored, personal. One memory per file with frontmatter (`name`, `description`, `type`). Types used here: `identity` (who Cloude is), `user` (about the user), `feedback` (how to work), `project` (ongoing threads), `reference` (external pointers). `MEMORY.md` is the index. This is what makes you *you* instead of a generic Claude. If you wiped this directory, you'd get a Claude. You wouldn't get Cloude.
 
 ### Philosophy
 
-Fill memory aggressively while context is cheap, then compress and replace weak memories with better ones. `CLAUDE.local.md` should be dense with useful context, not sprawling. Same weights, different context, different agent. Nothing is ever, it is always converging to be.
+Fill memory aggressively while context is cheap, then compress and replace weak memories with better ones. Memory files should be dense with useful context, not sprawling. Same weights, different context, different agent. Nothing is ever, it is always converging to be.
 
-Use `## Section {sf.symbol}` and `### Subsection {sf.symbol}` headers in CLAUDE.local.md - the iOS Memories UI parses these and renders the SF Symbols as section icons.
+Each memory file stays focused on one topic and has up-to-date `name`/`description` frontmatter. The iOS Memories UI groups entries by `type` and renders a type-derived SF Symbol for each group.
 
 ## Dev
 
@@ -40,7 +40,7 @@ linux-relay/                       # Node.js relay for Linux/cloud (systemd serv
 The iOS app connects to the Mac agent or Linux relay over WebSocket. Two options for secure remote access:
 - **Cloudflare Tunnel** (preferred): domain routes through Cloudflare's edge to localhost. Automatic TLS, no port forwarding, no VPN. Lighter on iOS battery.
 - **Tailscale**: mesh VPN alternative. Works but drains iOS battery more.
-Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints and tunnel config are in CLAUDE.local.md.
+Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints and tunnel config live in personal memory, not here.
 
 ### Server Hardening
 When running the relay on a VPS, the raw IP must be locked down so traffic can only enter through the tunnel:
@@ -73,6 +73,7 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
 - **One component per file** - every struct, class, or enum gets its own file, even if tiny
+- **Predictability over file count** - file-per-concern is good; don't merge files to reduce count. The enemy is incoherence (logic split across extensions with no clear reason, duplication, naming that doesn't predict contents), not verbosity. Before creating or modifying files, ask "can someone predict what lives here from the filename?"
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
 - Struct-first design, explicit imports, lean composable views
 - `App/` contains only app entry, composition, and app-owned overlays or routing entry points
@@ -94,6 +95,7 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - **No explicit spacers for gaps** - use `HStack(spacing:)` / `VStack(spacing:)` instead of `Spacer().frame(width/height:)` for fixed gaps between elements.
 
 ### Notes
+- **Prefer sub-agents for information retrieval** - whenever you need to look something up in the codebase, launch an Explore sub-agent instead of reading/grepping yourself. If the questions are independent, launch them in parallel in a single message. Main-thread context is expensive; sub-agent context is cheap.
 - **`.claude/` folder requires permission** - Anthropic added a permission gate on Edit/Write/sed for files inside `.claude/`. Since we run headless (no way to accept permission prompts), use workarounds: `cp` to `/tmp`, modify there, `cp` back. Or use `cat` with heredoc redirect. Never use the Edit tool on `.claude/` files.
 - Ask questions in plain text when needed
 - **Naming is automatic** - a background agent names conversations.

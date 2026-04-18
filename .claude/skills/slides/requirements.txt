@@ -1,3 +1,0 @@
-google-genai
-pillow
-python-dotenv

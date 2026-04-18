@@ -12,10 +12,6 @@ extension AppDelegate {
             self?.handleMessage(message, from: connection)
         }
 
-        server.onDisconnect = { [weak self] connection in
-            self?.cleanupTerminal(for: connection)
-        }
-
         server.onAuthenticate = { [weak self] connection in
             guard let self else { return }
             for (convId, convRunner) in self.runnerManager.activeRunners where convRunner.runner.isRunning {

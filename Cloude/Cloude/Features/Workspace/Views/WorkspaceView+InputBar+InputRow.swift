@@ -24,7 +24,7 @@ extension WorkspaceInputBar {
                     .textFieldStyle(.plain)
                     .lineLimit(1...4)
                     .focused($isInputFocused)
-                    .foregroundColor(isSlashCommand ? .cyan : .primary)
+                    .foregroundColor(isSlashCommand ? AppColor.cyan : .primary)
                     .id("inputField")
                     .agenticID("chat_input_field")
             }

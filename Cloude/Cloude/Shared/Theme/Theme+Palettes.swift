@@ -4,9 +4,9 @@ extension AppTheme {
     var palette: ThemePalette {
         switch self {
         case .monet:
-            return ThemePalette(background: 0xFFFFFF, secondary: 0xF2F2F7, tertiary: 0xE5E5ED)
+            return ThemePalette(background: 0xFFFFFF, secondary: 0xF2F2F7, tertiary: 0xFAFAFD)
         case .turner:
-            return ThemePalette(background: 0xFDF6E3, secondary: 0xEEE8D5, tertiary: 0xE2DCC8)
+            return ThemePalette(background: 0xFDF6E3, secondary: 0xEEE8D5, tertiary: 0xF7F0DC)
         case .malevich:
             return ThemePalette(background: 0x000000, secondary: 0x0A0A0A, tertiary: 0x141414)
         case .bauder:

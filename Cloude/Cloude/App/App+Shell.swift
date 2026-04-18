@@ -10,17 +10,6 @@ extension App {
                 conversationStore: conversationStore,
                 windowManager: windowManager,
                 environmentStore: environmentStore,
-                onShowPlans: {
-                    plansStore.open(
-                        connection: connection,
-                        windowManager: windowManager,
-                        conversationStore: conversationStore,
-                        environmentStore: environmentStore
-                    )
-                },
-                onShowMemories: {
-                    memoriesStore.open(connection: connection)
-                },
                 onShowSettings: { settingsStore.isPresented = true },
                 onShowWhiteboard: {
                     whiteboardStore.present(conversationId: windowManager.activeWindow?.conversation(in: conversationStore)?.id)
@@ -28,7 +17,7 @@ extension App {
             )
             .agenticID("main_chat_view")
             .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(Color.themeSecondary, for: .navigationBar)
+                .toolbarBackground(Color.themeBackground, for: .navigationBar)
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -63,29 +52,6 @@ extension App {
         .sheet(isPresented: $settingsStore.isPresented) {
             SettingsView(connection: connection, environmentStore: environmentStore)
                 .agenticID("settings_sheet")
-        }
-        .sheet(isPresented: $memoriesStore.isPresented) {
-            MemoriesSheet(sections: memoriesStore.sections, isLoading: memoriesStore.isLoading, fromCache: memoriesStore.fromCache)
-                .agenticID("memories_sheet")
-        }
-        .sheet(isPresented: $plansStore.isPresented) {
-            PlansSheet(
-                stages: plansStore.stages,
-                isLoading: plansStore.isLoading,
-                fromCache: plansStore.fromCache,
-                initialStage: plansStore.initialStage,
-                onOpenFile: { path in
-                    let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-                    if connection.connection(for: envId)?.isAuthenticated == true {
-                        plansStore.isPresented = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + DS.Duration.m) {
-                            filePreviewEnvironmentId = envId
-                            filePathToPreview = path
-                        }
-                    }
-                }
-            )
-            .agenticID("plans_sheet")
         }
         .fullScreenCover(isPresented: $whiteboardStore.isPresented) {
             WhiteboardSheet(

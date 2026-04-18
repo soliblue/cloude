@@ -19,7 +19,7 @@ extension SettingsView {
                 HStack {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: DS.Icon.m))
-                        .foregroundColor(.pastelGreen)
+                        .foregroundColor(AppColor.success)
                     Text("No Claude processes running")
                         .font(.system(size: DS.Text.m))
                         .foregroundColor(.secondary)
@@ -99,7 +99,7 @@ extension SettingsView {
 
     var aboutSection: some View {
         Section {
-            SettingsRow(icon: "cloud.fill", color: .blue) {
+            SettingsRow(icon: "cloud.fill", color: AppColor.blue) {
                 Text("Cloude")
                     .font(.system(size: DS.Text.m))
                 Spacer()
@@ -109,7 +109,7 @@ extension SettingsView {
             }
 
             Link(destination: URL(string: "https://x.com/_xsoli")!) {
-                SettingsRow(icon: "questionmark.circle", color: .cyan) {
+                SettingsRow(icon: "questionmark.circle", color: AppColor.cyan) {
                     Text("Help & Support")
                         .font(.system(size: DS.Text.m))
                     Spacer()

@@ -27,7 +27,7 @@ struct SwipeToDeleteRow<Content: View>: View {
                         .foregroundColor(.white)
                         .frame(width: DS.Size.l)
                         .frame(maxHeight: .infinity)
-                        .background(Color.red)
+                        .background(AppColor.red)
                 }
                 .buttonStyle(.plain)
             }

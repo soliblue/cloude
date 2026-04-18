@@ -7,7 +7,6 @@ extension Notification.Name {
 struct ColorPaletteWidget: View {
     let data: [String: Any]
 
-    private var title: String? { data["title"] as? String }
     private var colors: [(hex: String, label: String?)] {
         guard let arr = data["colors"] as? [[String: Any]] else { return [] }
         return arr.compactMap { item in

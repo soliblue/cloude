@@ -14,8 +14,6 @@ extension App {
             handleGitDeepLink(host: host, url: url)
             handleWindowDeepLink(host: host, url: url)
             handleSettingsDeepLink(host: host, url: url)
-            handleMemoriesDeepLink(host: host, url: url)
-            handlePlansDeepLink(host: host, url: url)
             handleWhiteboardDeepLink(host: host, url: url)
         }
     }

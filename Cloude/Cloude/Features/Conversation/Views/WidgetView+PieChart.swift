@@ -7,7 +7,6 @@ struct PieChartWidget: View {
     @State private var selectedSlice: Int?
     @State private var selectedAngleValue: Double?
 
-    private var title: String? { data["title"] as? String }
     private var slices: [(label: String, value: Double)] {
         guard let arr = data["slices"] as? [[String: Any]] else { return [] }
         return arr.compactMap { slice in
@@ -18,7 +17,7 @@ struct PieChartWidget: View {
     }
     private var total: Double { slices.map(\.value).reduce(0, +) }
 
-    private let colors: [Color] = [.blue, .orange, .green, .purple, .red, .teal, .pink, .indigo, .yellow, .mint]
+    private let colors: [Color] = [AppColor.blue, AppColor.orange, AppColor.green, AppColor.purple, AppColor.red, AppColor.teal, AppColor.pink, AppColor.indigo, AppColor.yellow, AppColor.mint]
 
     var body: some View {
         WidgetContainer {

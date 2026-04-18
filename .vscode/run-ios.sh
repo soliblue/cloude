@@ -9,6 +9,7 @@ SIMULATOR_DERIVED_DATA_PATH="$ROOT_DIR/build/vscode-simulator"
 DEVICE_DERIVED_DATA_PATH="$ROOT_DIR/build/vscode-device"
 BUNDLE_IDENTIFIER="soli.Cloude"
 MODE="${1:-simulator}"
+DEVICECTL_UUID_PATTERN='^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$'
 
 simulator_id_from_args="${2:-}"
 device_id_from_args="${2:-}"
@@ -40,15 +41,50 @@ resolve_simulator_id() {
   rm -f "$json_path"
 }
 
-resolve_device_id() {
-  if [[ -n "${CLOUDE_DEVICE_ID:-}" ]]; then
-    echo "$CLOUDE_DEVICE_ID"
+resolve_xcode_device_id() {
+  if [[ -n "${CLOUDE_XCODE_DEVICE_ID:-}" ]]; then
+    echo "$CLOUDE_XCODE_DEVICE_ID"
     return
   fi
 
+  if [[ -n "${CLOUDE_DEVICE_ID:-}" ]]; then
+    if [[ ! "$CLOUDE_DEVICE_ID" =~ $DEVICECTL_UUID_PATTERN ]]; then
+      echo "$CLOUDE_DEVICE_ID"
+      return
+    fi
+  fi
+
   if [[ -n "$device_id_from_args" ]]; then
-    echo "$device_id_from_args"
+    if [[ ! "$device_id_from_args" =~ $DEVICECTL_UUID_PATTERN ]]; then
+      echo "$device_id_from_args"
+      return
+    fi
+  fi
+
+  xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME_NAME" -showdestinations 2>&1 \
+    | grep "platform:iOS, arch:" \
+    | head -1 \
+    | sed -E 's/.*id:([^,}]+).*/\1/'
+}
+
+resolve_devicectl_device_id() {
+  if [[ -n "${CLOUDE_DEVICECTL_ID:-}" ]]; then
+    echo "$CLOUDE_DEVICECTL_ID"
     return
+  fi
+
+  if [[ -n "${CLOUDE_DEVICE_ID:-}" ]]; then
+    if [[ "$CLOUDE_DEVICE_ID" =~ $DEVICECTL_UUID_PATTERN ]]; then
+      echo "$CLOUDE_DEVICE_ID"
+      return
+    fi
+  fi
+
+  if [[ -n "$device_id_from_args" ]]; then
+    if [[ "$device_id_from_args" =~ $DEVICECTL_UUID_PATTERN ]]; then
+      echo "$device_id_from_args"
+      return
+    fi
   fi
 
   local json_path
@@ -76,17 +112,25 @@ run_on_simulator() {
 }
 
 run_on_device() {
-  local device_id
-  device_id="$(resolve_device_id)"
+  local xcode_device_id
+  xcode_device_id="$(resolve_xcode_device_id)"
 
-  if [[ -z "$device_id" ]]; then
+  if [[ -z "$xcode_device_id" ]]; then
+    echo "No connected iPhone was found in Xcode destinations."
+    exit 1
+  fi
+
+  local devicectl_device_id
+  devicectl_device_id="$(resolve_devicectl_device_id)"
+
+  if [[ -z "$devicectl_device_id" ]]; then
     echo "No paired iPhone with Developer Mode enabled was found."
     exit 1
   fi
 
-  xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME_NAME" -configuration Debug -destination "id=$device_id" -derivedDataPath "$DEVICE_DERIVED_DATA_PATH" build
-  xcrun devicectl device install app --device "$device_id" "$DEVICE_DERIVED_DATA_PATH/Build/Products/Debug-iphoneos/Cloude.app"
-  xcrun devicectl device process launch --console --terminate-existing --device "$device_id" "$BUNDLE_IDENTIFIER"
+  xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME_NAME" -configuration Debug -destination "id=$xcode_device_id" -derivedDataPath "$DEVICE_DERIVED_DATA_PATH" build
+  xcrun devicectl device install app --device "$devicectl_device_id" "$DEVICE_DERIVED_DATA_PATH/Build/Products/Debug-iphoneos/Cloude.app"
+  xcrun devicectl device process launch --console --terminate-existing --device "$devicectl_device_id" "$BUNDLE_IDENTIFIER"
 }
 
 if [[ "$MODE" == "simulator" ]]; then

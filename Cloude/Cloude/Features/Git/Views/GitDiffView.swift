@@ -50,10 +50,10 @@ struct GitDiffView: View {
             if file.staged {
                 Text("Staged")
                     .font(.system(size: DS.Text.s, weight: .medium))
-                    .foregroundColor(.pastelGreen)
+                    .foregroundColor(AppColor.success)
                     .padding(.horizontal, DS.Spacing.s)
                     .padding(.vertical, DS.Spacing.xs)
-                    .background(Color.pastelGreen.opacity(DS.Opacity.s))
+                    .background(AppColor.success.opacity(DS.Opacity.s))
                     .cornerRadius(DS.Radius.s)
             }
             Spacer()
@@ -95,12 +95,7 @@ struct GitDiffView: View {
     }
 
     private var statusColor: Color {
-        switch file.status {
-        case "M": return .orange
-        case "A": return .pastelGreen
-        case "D": return .pastelRed
-        default: return .secondary
-        }
+        AppColor.gitStatus(file.status)
     }
 
     private func loadDiff() {

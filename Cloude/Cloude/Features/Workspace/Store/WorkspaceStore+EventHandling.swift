@@ -24,13 +24,6 @@ extension WorkspaceStore {
                 inputText = inputText.isEmpty ? text : inputText + " " + text
             }
             AudioRecorder.clearPendingAudioFile()
-        case .usageStats(let stats):
-            if awaitingUsageStats {
-                AppLogger.endInterval("usage.open", details: "dataPoints=\(stats.dailyActivity.count)")
-                awaitingUsageStats = false
-                usageStats = stats
-                showUsageStats = true
-            }
         case .fileSearchResults(let files, _):
             fileSearchResults = files
         case .gitStatus(let path, let status, _):

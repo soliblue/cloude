@@ -8,7 +8,6 @@ struct ImageCarouselWidget: View {
     @State private var selectedIndex = 0
     @State private var previewPath: String?
 
-    private var title: String? { data["title"] as? String }
     private var images: [(path: String?, url: String?, caption: String?)] {
         guard let arr = data["images"] as? [[String: Any]] else { return [] }
         return arr.map { (path: $0["path"] as? String, url: $0["url"] as? String, caption: $0["caption"] as? String) }

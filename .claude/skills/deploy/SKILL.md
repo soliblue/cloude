@@ -51,7 +51,7 @@ set -a && source .env && set +a && fastlane mac build_agent
 3. Stop on failure.
 4. Report the build number with `cd Cloude && agvtool what-version -terse`.
 5. Tag untagged plans in `.claude/plans/30_testing/` with the build number.
-6. Update deploy tracking in `CLAUDE.local.md`.
+6. Deploy tracking lives in `.claude/plans/30_testing/`; no separate memory file.
 
 ## Rules
 

@@ -61,7 +61,7 @@ struct FolderRow: View {
             HStack(spacing: DS.Spacing.m) {
                 Image(systemName: "folder.fill")
                     .font(.system(size: DS.Icon.l))
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColor.blue)
 
                 Text(entry.name)
                     .font(.system(size: DS.Text.m))

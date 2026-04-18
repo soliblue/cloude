@@ -6,6 +6,10 @@ extension EnvironmentConnection {
     func handleIOSToolCall(_ mgr: ConnectionManager, name: String, input: String?, conversationId: String?) {
         let action = String(name.dropFirst("mcp__ios__".count))
         let json = toolInputJSON(input)
+        if action.hasPrefix("whiteboard_") {
+            mgr.events.send(.whiteboard(action: String(action.dropFirst("whiteboard_".count)), json: json, conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
+            return
+        }
 
         switch action {
         case "rename":
@@ -25,12 +29,6 @@ extension EnvironmentConnection {
         default:
             break
         }
-    }
-
-    func handleWhiteboardToolCall(_ mgr: ConnectionManager, name: String, input: String?, conversationId: String?) {
-        let action = String(name.dropFirst("mcp__whiteboard__".count))
-        let json = toolInputJSON(input)
-        mgr.events.send(.whiteboard(action: action, json: json, conversationId: conversationId.flatMap { UUID(uuidString: $0) }))
     }
 
     private func toolInputJSON(_ input: String?) -> [String: Any] {

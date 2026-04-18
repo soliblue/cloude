@@ -25,7 +25,7 @@ struct XMLBlockView: View {
             .padding(.horizontal, DS.Spacing.m)
             .padding(.vertical, DS.Spacing.s)
 
-            Divider().overlay(Color.gray.opacity(DS.Opacity.m))
+            Divider().overlay(AppColor.gray.opacity(DS.Opacity.m))
 
             if showSource {
                 Text(rawXML)
@@ -73,20 +73,20 @@ private struct XMLNodeView: View {
 
                 Text(node.tagName)
                     .font(.system(size: DS.Text.s, weight: .medium, design: .monospaced))
-                    .foregroundColor(.purple)
+                    .foregroundColor(AppColor.purple)
 
                 if !node.attributes.isEmpty {
                     ForEach(Array(node.attributes.enumerated()), id: \.offset) { _, attr in
                         Text(attr.key)
                             .font(.system(size: DS.Text.s, design: .monospaced))
-                            .foregroundColor(.orange)
+                            .foregroundColor(AppColor.orange)
                         if !attr.value.isEmpty {
                             Text("=")
                                 .font(.system(size: DS.Text.s, design: .monospaced))
                                 .foregroundColor(.secondary)
                             Text(attr.value)
                                 .font(.system(size: DS.Text.s, design: .monospaced))
-                                .foregroundColor(.green)
+                                .foregroundColor(AppColor.green)
                         }
                     }
                 }

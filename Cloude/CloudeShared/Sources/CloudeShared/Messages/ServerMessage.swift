@@ -22,7 +22,6 @@ public enum ServerMessage: Codable {
     case gitLogResult(path: String, commits: [GitCommit])
     case transcription(text: String)
     case whisperReady(ready: Bool)
-    case memories(sections: [MemorySection])
     case processList(processes: [AgentProcessInfo])
     case defaultWorkingDirectory(path: String)
     case skills([Skill])
@@ -34,13 +33,9 @@ public enum ServerMessage: Codable {
     case remoteSessionList(sessions: [RemoteSession])
     case messageUUID(uuid: String, conversationId: String?)
     case nameSuggestion(name: String, symbol: String?, conversationId: String)
-    case plans(stages: [String: [PlanItem]])
-    case planDeleted(stage: String, filename: String)
-    case usageStats(stats: UsageStats)
-    case terminalOutput(output: String, exitCode: Int?, isError: Bool, terminalId: String?)
     case pong(sentAt: Double, serverAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, sections, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, stages, stage, filename, stats, exitCode, isError, terminalId, editInfo, sentAt, serverAt, commits
+        case type, text, path, diff, content, base64, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, query, sessions, uuid, summary, output, stages, stage, filename, editInfo, sentAt, serverAt, commits
     }
 }

@@ -30,11 +30,6 @@ extension ConnectionManager {
         connectionForSend(environmentId: environmentId)?.send(.searchFiles(query: query, workingDirectory: workingDirectory))
     }
 
-    func getPlans(workingDirectory: String, environmentId: UUID? = nil) {
-        connectionForSend(environmentId: environmentId)?.send(.getPlans(workingDirectory: workingDirectory))
-    }
-
-    func getUsageStats(environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getUsageStats) }
     func listDirectory(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.listDirectory(path: path)) }
     func getFile(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFile(path: path)) }
     func getFileFullQuality(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFileFullQuality(path: path)) }

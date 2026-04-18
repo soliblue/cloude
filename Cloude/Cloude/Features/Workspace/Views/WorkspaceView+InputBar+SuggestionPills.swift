@@ -106,12 +106,12 @@ struct FilePill: View {
                 .lineLimit(1)
         } background: {
             RoundedRectangle(cornerRadius: DS.Radius.s)
-                .fill(Color.orange.opacity(DS.Opacity.s))
+                .fill(AppColor.orange.opacity(DS.Opacity.s))
                 .overlay(
                     RoundedRectangle(cornerRadius: DS.Radius.s)
                         .stroke(
                             LinearGradient(
-                                colors: [Color.orange.opacity(DS.Opacity.m), Color.yellow.opacity(DS.Opacity.m)],
+                                colors: [AppColor.orange.opacity(DS.Opacity.m), AppColor.yellow.opacity(DS.Opacity.m)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -124,7 +124,7 @@ struct FilePill: View {
 
     private var fileGradient: LinearGradient {
         LinearGradient(
-            colors: [.orange, .yellow.opacity(DS.Opacity.l)],
+            colors: [AppColor.orange, AppColor.yellow.opacity(DS.Opacity.l)],
             startPoint: .leading,
             endPoint: .trailing
         )

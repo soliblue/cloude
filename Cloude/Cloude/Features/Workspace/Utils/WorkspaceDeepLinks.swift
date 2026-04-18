@@ -12,9 +12,6 @@ extension App {
         case "send":
             dismissTransientUI()
             sendDebugMessage(url.queryValue(named: "text") ?? "")
-        case "usage":
-            dismissTransientUI()
-            openUsageStats()
         case "search":
             dismissTransientUI()
             openConversationSearch(query: url.queryValue(named: "query"))

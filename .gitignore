@@ -20,6 +20,7 @@ node_modules/
 .claude/settings.local.json
 .claude/credentials.json
 CLAUDE.local.md
+.claude/memory/
 moltbook.local.json
 
 # Secrets
@@ -81,3 +82,4 @@ linux-relay/whisper-models/
 
 # Cloudflare Wrangler
 .wrangler/
+.claude/agents/tester/output/

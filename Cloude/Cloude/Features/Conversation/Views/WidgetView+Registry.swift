@@ -6,16 +6,15 @@ enum WidgetRegistry {
     private struct WidgetMeta {
         let displayName: String
         let icon: String
-        let color: Color
     }
 
     private static let meta: [String: WidgetMeta] = [
-        "pie_chart": .init(displayName: "Pie Chart", icon: "chart.pie", color: .orange),
-        "timeline": .init(displayName: "Timeline", icon: "calendar.day.timeline.left", color: .blue),
-        "tree": .init(displayName: "Tree", icon: "filemenu.and.selection", color: .yellow),
-        "color_palette": .init(displayName: "Color Palette", icon: "paintpalette", color: .purple),
-        "image_carousel": .init(displayName: "Images", icon: "photo.on.rectangle", color: .green),
-        "sf_symbols": .init(displayName: "SF Symbols", icon: "square.grid.2x2", color: .teal),
+        "pie_chart": .init(displayName: "Pie Chart", icon: "chart.pie"),
+        "timeline": .init(displayName: "Timeline", icon: "calendar.day.timeline.left"),
+        "tree": .init(displayName: "Tree", icon: "filemenu.and.selection"),
+        "color_palette": .init(displayName: "Color Palette", icon: "paintpalette"),
+        "image_carousel": .init(displayName: "Images", icon: "photo.on.rectangle"),
+        "sf_symbols": .init(displayName: "SF Symbols", icon: "square.grid.2x2"),
     ]
 
     static func isWidget(_ toolName: String) -> Bool {
@@ -55,9 +54,5 @@ enum WidgetRegistry {
 
     static func iconName(_ toolName: String) -> String {
         widgetType(toolName).flatMap { meta[$0]?.icon } ?? "puzzlepiece"
-    }
-
-    static func color(_ toolName: String) -> Color {
-        widgetType(toolName).flatMap { meta[$0]?.color } ?? .secondary
     }
 }

@@ -1,0 +1,1 @@
+Read the entire repo and write a detailed architecture summary with many citations.

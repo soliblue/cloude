@@ -20,9 +20,6 @@ final class WorkspaceStore: ObservableObject {
     @Published var currentEffort: EffortLevel?
     @Published var currentModel: ModelSelection?
     @Published var showConversationSearch = false
-    @Published var showUsageStats = false
-    @Published var usageStats: UsageStats?
-    @Published var awaitingUsageStats = false
     @Published var refreshingSessionIds: Set<String> = []
     @Published var exportCopied = false
 

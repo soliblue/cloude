@@ -49,11 +49,11 @@ struct MessageBubble: View {
 
     private var backgroundColor: Color {
         if message.wasInterrupted {
-            return Color.orange.opacity(DS.Opacity.s)
+            return AppColor.orange.opacity(DS.Opacity.s)
         } else if message.isUser {
-            return Color(hex: appTheme.palette.background)
+            return Color(hex: appTheme.palette.tertiary)
         } else {
-            return Color(hex: appTheme.palette.secondary).opacity(DS.Opacity.m)
+            return .clear
         }
     }
 

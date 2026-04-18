@@ -10,14 +10,6 @@ extension App {
             handleMissedResponse(text: text, storedToolCalls: storedToolCalls, durationMs: durationMs, costUsd: costUsd, model: model, interruptedConvId: interruptedConvId, interruptedMsgId: interruptedMsgId)
         case .disconnect(let convId, let output):
             handleDisconnect(conversationId: convId, output: output)
-        case .memories(let sections):
-            handleMemories(sections: sections)
-        case .plans(let stages):
-            handlePlans(stages: stages)
-        case .defaultWorkingDirectory(let path, let environmentId):
-            handleDefaultWorkingDirectory(path: path, environmentId: environmentId)
-        case .planDeleted(let stage, let filename):
-            handlePlanDeleted(stage: stage, filename: filename)
         case .renameConversation(let convId, let name):
             handleRenameConversation(conversationId: convId, name: name)
         case .setConversationSymbol(let convId, let symbol):

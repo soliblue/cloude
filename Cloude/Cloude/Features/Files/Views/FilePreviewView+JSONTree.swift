@@ -43,19 +43,19 @@ private struct JSONNodeView: View {
             case .string(let s):
                 leafRow {
                     Text("\"\(s)\"")
-                        .foregroundColor(.green)
+                        .foregroundColor(AppColor.green)
                         .textSelection(.enabled)
                 }
             case .number(let n):
                 leafRow {
                     Text(n.description)
-                        .foregroundColor(.orange)
+                        .foregroundColor(AppColor.orange)
                         .textSelection(.enabled)
                 }
             case .bool(let b):
                 leafRow {
                     Text(b ? "true" : "false")
-                        .foregroundColor(.blue)
+                        .foregroundColor(AppColor.blue)
                         .textSelection(.enabled)
                 }
             case .null:

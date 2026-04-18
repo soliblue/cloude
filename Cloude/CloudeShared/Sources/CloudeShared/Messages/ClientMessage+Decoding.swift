@@ -60,8 +60,6 @@ extension ClientMessage {
         case "transcribe":
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)
-        case "get_memories":
-            self = .getMemories
         case "get_processes":
             self = .getProcesses
         case "kill_process":
@@ -85,25 +83,6 @@ extension ClientMessage {
             let context = try container.decodeIfPresent([String].self, forKey: .context) ?? []
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             self = .suggestName(text: text, context: context, conversationId: conversationId)
-        case "get_plans":
-            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
-            self = .getPlans(workingDirectory: workingDirectory)
-        case "delete_plan":
-            let stage = try container.decode(String.self, forKey: .stage)
-            let filename = try container.decode(String.self, forKey: .filename)
-            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
-            self = .deletePlan(stage: stage, filename: filename, workingDirectory: workingDirectory)
-        case "get_usage_stats":
-            self = .getUsageStats
-        case "terminal_exec":
-            let command = try container.decode(String.self, forKey: .command)
-            let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
-            let terminalId = try container.decodeIfPresent(String.self, forKey: .terminalId)
-            self = .terminalExec(command: command, workingDirectory: workingDirectory, terminalId: terminalId)
-        case "terminal_input":
-            let text = try container.decode(String.self, forKey: .text)
-            let terminalId = try container.decodeIfPresent(String.self, forKey: .terminalId)
-            self = .terminalInput(text: text, terminalId: terminalId)
         default:
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.type], debugDescription: "Unknown type: \(type)"))
         }

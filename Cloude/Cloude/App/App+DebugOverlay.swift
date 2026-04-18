@@ -12,8 +12,8 @@ struct AppDebugOverlay: View {
 
     private var fpsColor: Color {
         if metrics.fps >= 55 { return .pastelGreen }
-        if metrics.fps >= 30 { return .yellow }
-        return .red
+        if metrics.fps >= 30 { return AppColor.yellow }
+        return AppColor.red
     }
 
     var body: some View {
@@ -65,7 +65,7 @@ struct AppDebugOverlay: View {
 
             VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 metricRow("FPS", value: "\(metrics.fps)", color: fpsColor)
-                metricRow("OWC/sec", value: "\(metrics.objectWillChangeRate)", color: metrics.objectWillChangeRate > 10 ? .red : .pastelGreen)
+                metricRow("OWC/sec", value: "\(metrics.objectWillChangeRate)", color: metrics.objectWillChangeRate > 10 ? AppColor.red : .pastelGreen)
                 metricRow("Logs", value: "\(totalLogCount)", color: .secondary)
             }
 

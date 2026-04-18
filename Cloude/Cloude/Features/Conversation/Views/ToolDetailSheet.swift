@@ -130,10 +130,6 @@ struct ToolDetailSheet: View {
     }
 
     func todoStatusColor(_ status: String) -> Color {
-        switch status {
-        case "completed": return .pastelGreen
-        case "in_progress": return .mint
-        default: return .secondary
-        }
+        AppColor.todoStatus(status)
     }
 }

@@ -80,9 +80,9 @@ struct EnvironmentCard: View {
     }
 
     private var statusColor: Color {
-        if isConnected { return .pastelGreen }
-        if isConnecting { return .yellow }
-        return .gray
+        if isConnected { return AppColor.success }
+        if isConnecting { return AppColor.yellow }
+        return AppColor.gray
     }
 
     private var statusText: String {

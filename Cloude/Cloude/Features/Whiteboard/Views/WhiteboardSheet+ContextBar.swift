@@ -123,7 +123,7 @@ extension WhiteboardSheet {
 
         Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
-        contextAction(icon: "trash", tint: .red.opacity(DS.Opacity.l)) {
+        contextAction(icon: "trash", tint: AppColor.red.opacity(DS.Opacity.l)) {
             if let id = store.selectedElementId {
                 store.removeElement(id: id)
             }
@@ -160,7 +160,7 @@ extension WhiteboardSheet {
 
         Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
-        contextAction(icon: "trash", tint: .red.opacity(DS.Opacity.l), disabled: store.selectedIds.isEmpty) {
+        contextAction(icon: "trash", tint: AppColor.red.opacity(DS.Opacity.l), disabled: store.selectedIds.isEmpty) {
             store.removeElements(ids: Array(store.selectedIds))
             store.clearSelection()
         }

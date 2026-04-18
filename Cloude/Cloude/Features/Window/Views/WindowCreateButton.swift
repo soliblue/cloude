@@ -6,7 +6,7 @@ struct WindowCreateButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: "plus")
-                .font(.system(size: DS.Icon.s, weight: .semibold))
+                .font(.system(size: DS.Icon.m, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .padding(.leading, DS.Spacing.s)
                 .padding(.trailing, DS.Spacing.l)

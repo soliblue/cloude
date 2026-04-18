@@ -8,8 +8,6 @@ extension WorkspaceStore {
         conversationStore: ConversationStore,
         windowManager: WindowManager,
         environmentStore: EnvironmentStore,
-        onShowPlans: (() -> Void)?,
-        onShowMemories: (() -> Void)?,
         onShowSettings: (() -> Void)?,
         onShowWhiteboard: (() -> Void)?
     ) {
@@ -29,19 +27,6 @@ extension WorkspaceStore {
         }
 
         let trimmedLower = text.lowercased().trimmingCharacters(in: .whitespaces)
-        if trimmedLower == "/usage" {
-            awaitingUsageStats = true
-            connection.getUsageStats(environmentId: currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId)
-            return
-        }
-        if trimmedLower == "/plans" {
-            onShowPlans?()
-            return
-        }
-        if trimmedLower == "/memories" {
-            onShowMemories?()
-            return
-        }
         if trimmedLower == "/settings" {
             onShowSettings?()
             return

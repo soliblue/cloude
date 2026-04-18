@@ -15,8 +15,6 @@ struct App: SwiftUI.App {
     @StateObject var environmentStore = EnvironmentStore()
     @StateObject var settingsStore = SettingsStore()
     @StateObject var whiteboardStore = WhiteboardStore()
-    @StateObject var memoriesStore = MemoriesStore()
-    @StateObject var plansStore = PlansStore()
     @State var wasBackgrounded = false
     @State var lastActiveSessionId: String? = nil
     @State var filePathToPreview: String? = nil

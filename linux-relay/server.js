@@ -1,7 +1,6 @@
 import { WebSocketServer } from 'ws'
 import { log } from './log.js'
 import { handleMessage } from './handlers.js'
-import { cleanupTerminal } from './handlers-terminal.js'
 import { RunnerManager } from './runner.js'
 import { loadSkills } from './skills.js'
 import { DEFAULT_PROJECT } from './shared.js'
@@ -59,7 +58,6 @@ export function createServer(port, token, dataDir) {
     })
 
     ws.on('close', () => {
-      cleanupTerminal(ws)
       authenticated.delete(ws)
       log('Client disconnected')
     })

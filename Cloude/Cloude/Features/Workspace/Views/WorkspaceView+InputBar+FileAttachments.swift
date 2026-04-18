@@ -36,15 +36,15 @@ struct FileAttachmentPill: View {
             }
             .buttonStyle(.plain)
         }
-        .foregroundStyle(.cyan)
+        .foregroundStyle(AppColor.cyan)
         .padding(.horizontal, DS.Spacing.m)
         .padding(.vertical, DS.Spacing.s)
         .background(
             RoundedRectangle(cornerRadius: DS.Radius.m)
-                .fill(Color.cyan.opacity(DS.Opacity.s))
+                .fill(AppColor.cyan.opacity(DS.Opacity.s))
                 .overlay(
                     RoundedRectangle(cornerRadius: DS.Radius.m)
-                        .stroke(Color.cyan.opacity(DS.Opacity.m), lineWidth: DS.Stroke.m)
+                        .stroke(AppColor.cyan.opacity(DS.Opacity.m), lineWidth: DS.Stroke.m)
                 )
         )
     }
@@ -58,7 +58,7 @@ struct PendingAudioBanner: View {
         HStack(spacing: DS.Spacing.m) {
             Image(systemName: "waveform.circle.fill")
                 .font(.system(size: DS.Icon.m))
-                .foregroundColor(.orange)
+                .foregroundColor(AppColor.orange)
 
             Text("Unsent voice note")
                 .font(.system(size: DS.Text.m))
