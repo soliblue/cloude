@@ -33,9 +33,7 @@ struct FileBrowserView: View {
             fileList
         }
         .sheet(item: $selectedFile) { file in
-            FilePreviewView(file: file, connection: connection, environmentId: environmentId) { folderPath in
-                navigateTo(folderPath)
-            }
+            FilePreviewView(file: file, connection: connection, environmentId: environmentId)
         }
         .onAppear {
             loadDirectory()

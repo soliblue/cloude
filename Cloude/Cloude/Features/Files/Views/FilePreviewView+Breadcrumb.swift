@@ -6,7 +6,6 @@ private let maxComponentLength = 20
 struct FileViewerBreadcrumb: View {
     let path: String
     var environmentSymbol: String? = nil
-    let onNavigate: (String) -> Void
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -26,13 +25,9 @@ struct FileViewerBreadcrumb: View {
                                 .font(.system(size: DS.Text.s))
                                 .foregroundColor(.secondary)
                         } else {
-                            Button(action: { onNavigate(component.path) }) {
-                                Text(component.name)
-                                    .font(.system(size: DS.Text.s))
-                                    .foregroundColor(.accentColor)
-                            }
-                            .buttonStyle(.plain)
-                            .id(component.path)
+                            Text(component.name)
+                                .font(.system(size: DS.Text.s))
+                                .foregroundColor(.secondary)
                         }
                         Image(systemName: "chevron.right")
                             .font(.system(size: DS.Text.s))
