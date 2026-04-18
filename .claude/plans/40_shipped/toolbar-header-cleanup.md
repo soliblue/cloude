@@ -1,10 +1,14 @@
+---
+title: "Toolbar & Window Header Cleanup"
+description: "Simplify the toolbar and window header by removing clutter and fixing the nav pill crash."
+created_at: 2026-03-23
+tags: ["ui", "cleanup", "windows"]
+icon: paintbrush
+build: 103
+---
+
+
 # Toolbar & Window Header Cleanup {paintbrush}
-<!-- priority: 10 -->
-<!-- tags: ui, cleanup, windows -->
-
-> Simplify the toolbar and window header by removing clutter and fixing the nav pill crash.
-
-
 ## Background
 
 Originally planned as a bigger rehaul (see original plan below) with context menus on bottom bar, right-aligned nav pill, removing exportCopied state, etc. Tried that on a `ui-rehaul` branch but it didn't work out well. Instead took an incremental approach on main, making small targeted changes and deploying each one to test on device. The result is cleaner and simpler than the original plan.

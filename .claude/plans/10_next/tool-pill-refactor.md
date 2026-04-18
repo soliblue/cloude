@@ -1,8 +1,14 @@
-# Tool Pill Refactor {wrench.and.screwdriver}
-<!-- priority: 10 -->
-<!-- tags: ui, streaming -->
-> 1,307 lines across 13 files for colored pills with an icon and a name. Cut hard.
+---
+title: "Tool Pill Refactor"
+description: "1,307 lines across 13 files for colored pills with an icon and a name. Cut hard."
+created_at: 2026-04-07
+tags: ["ui", "streaming"]
+icon: wrench.and.screwdriver
+build: 145
+---
 
+
+# Tool Pill Refactor {wrench.and.screwdriver}
 ## Problem
 
 ### 1,307 lines for pills

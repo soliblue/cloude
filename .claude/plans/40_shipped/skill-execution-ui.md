@@ -1,9 +1,14 @@
+---
+title: "Skill Execution UI"
+description: "Show skill name and arguments in the tool pill instead of a generic \"Skill\" label."
+created_at: 2026-02-06
+tags: ["skills", "ui"]
+icon: gearshape.fill
+build: 33
+---
+
+
 # Skill Execution UI {gearshape.fill}
-<!-- priority: 10 -->
-<!-- tags: skills, ui -->
-
-> Show skill name and arguments in the tool pill instead of a generic "Skill" label.
-
 Show more information when a skill is executed, instead of the generic "Skill" pill with a gear icon.
 
 ## Problem

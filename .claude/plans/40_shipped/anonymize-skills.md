@@ -1,9 +1,14 @@
+---
+title: "Anonymize Skills for Public Repo"
+description: "Made all skills generic by removing hardcoded personal references, paths, and account-specific config for public repo use."
+created_at: 2026-02-11
+tags: ["skills"]
+icon: eye.slash
+build: 71
+---
+
+
 # Anonymize Skills for Public Repo {eye.slash}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Made all skills generic by removing hardcoded personal references, paths, and account-specific config for public repo use.
-
 ## Goal
 Make all skills generic so anyone cloning the repo can use them without editing hardcoded personal references.
 

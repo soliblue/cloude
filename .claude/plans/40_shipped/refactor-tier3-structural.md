@@ -1,10 +1,14 @@
+---
+title: "Refactor Tier 3: Structural Improvements"
+description: "Larger architectural refactors improving structure after Tier 1+2 stabilized."
+created_at: 2026-02-07
+tags: ["refactor"]
+icon: building.columns
+build: 43
+---
+
+
 # Refactor Tier 3: Structural Improvements {building.columns}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-<!-- build: 56 -->
-
-> Larger architectural refactors improving structure after Tier 1+2 stabilized.
-
 ## Status: Active
 
 ## Scope

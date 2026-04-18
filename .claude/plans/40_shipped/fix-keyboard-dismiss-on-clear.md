@@ -1,10 +1,14 @@
+---
+title: "Fix Keyboard Dismissing When Clearing Input Bar"
+description: "Fixed keyboard dismissing when clearing input bar by using stable TextField identity."
+created_at: 2026-03-13
+tags: ["ui", "input"]
+icon: keyboard
+build: 86
+---
+
+
 # Fix Keyboard Dismissing When Clearing Input Bar {keyboard}
-<!-- priority: 10 -->
-<!-- tags: ui, input -->
-<!-- build: 86 -->
-
-> Fixed keyboard dismissing when clearing input bar by using stable TextField identity.
-
 Clearing all text in the global input bar dismissed the keyboard, forcing users to tap the field again to keep typing.
 
 ## Root Cause

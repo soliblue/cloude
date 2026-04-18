@@ -1,10 +1,14 @@
+---
+title: "Pill Style Consolidation"
+description: "Consolidated shared pill styles into PillStyles.swift, deduplicating SkillPill and SlashCommandBubble."
+created_at: 2026-02-06
+tags: ["refactor", "tool-pill"]
+icon: capsule
+build: 36
+---
+
+
 # Pill Style Consolidation {capsule}
-<!-- priority: 10 -->
-<!-- tags: refactor, tool-pill -->
-<!-- build: 56 -->
-
-> Consolidated shared pill styles into PillStyles.swift, deduplicating SkillPill and SlashCommandBubble.
-
 ## Changes
 - Created `PillStyles.swift` with shared `skillGradient`, `builtInGradient`, `SkillPillBackground`
 - `SkillPill` and `SlashCommandBubble` now use shared styles (were copy-pasted)

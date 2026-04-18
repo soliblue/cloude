@@ -1,9 +1,14 @@
+---
+title: "Collaborative Whiteboard v0"
+description: "Built shared whiteboard canvas with touch drawing, 5 element types, MCP tools for Claude to draw, undo/redo, and per-conversation persistence."
+created_at: 2026-03-21
+tags: ["ui", "widget"]
+icon: pencil.and.scribble
+build: 103
+---
+
+
 # Collaborative Whiteboard v0 {pencil.and.scribble}
-<!-- priority: 10 -->
-<!-- tags: ui, widget -->
-
-> Built shared whiteboard canvas with touch drawing, 5 element types, MCP tools for Claude to draw, undo/redo, and per-conversation persistence.
-
 Shared canvas where Soli draws by touch and Claude adds/draws elements via MCP tools. `/whiteboard` slash command opens as fullScreenCover.
 
 ## Shipped

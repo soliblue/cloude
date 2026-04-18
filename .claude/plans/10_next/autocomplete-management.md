@@ -1,9 +1,14 @@
+---
+title: "Smart Autocomplete"
+description: "AI-powered suggestions that improve over time, stored server-side per environment."
+created_at: 2026-03-15
+tags: ["input", "agent", "relay", "ui"]
+icon: text.badge.star
+build: 86
+---
+
+
 # Smart Autocomplete {text.badge.star}
-<!-- priority: 9 -->
-<!-- tags: input, agent, relay, ui -->
-
-> AI-powered suggestions that improve over time, stored server-side per environment.
-
 ## How It Works
 
 ### The file

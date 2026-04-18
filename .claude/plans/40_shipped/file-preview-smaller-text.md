@@ -1,9 +1,14 @@
+---
+title: "File Preview Smaller Text"
+description: "Reduced font size in all text-based file previews from 12-13pt to 10pt for denser mobile viewing."
+created_at: 2026-03-15
+tags: ["ui", "file-preview"]
+icon: textformat.size.smaller
+build: 86
+---
+
+
 # File Preview Smaller Text {textformat.size.smaller}
-<!-- priority: 10 -->
-<!-- tags: ui, file-preview -->
-
-> Reduced font size in all text-based file previews from 12-13pt to 10pt for denser mobile viewing.
-
 Reduced font size in all text-based file previews from 12-13pt to 10pt for denser code viewing on mobile.
 
 - Source code view: 12pt to 10pt (line numbers + highlighted/plain text)

@@ -1,10 +1,14 @@
+---
+title: "Launcher UX Improvements"
+description: "Full-width page indicator, swipe-to-delete conversations, and empty window cleanup."
+created_at: 2026-03-24
+tags: ["ui", "ux"]
+icon: sparkles
+build: 103
+---
+
+
 # Launcher UX Improvements {sparkles}
-<!-- build: 103 -->
-<!-- priority: 10 -->
-<!-- tags: ui, ux -->
-
-> Full-width page indicator, swipe-to-delete conversations, and empty window cleanup.
-
 ## Changes
 - **Full-width page indicator**: Icons spread across full screen width with equal spacing and large tap targets (44pt)
 - **Plus button hidden at max**: Hide add button when all 5 window slots are used

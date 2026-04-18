@@ -1,9 +1,14 @@
+---
+title: "Image Skill Animation Docs Update"
+description: "Rewrote animation pipeline docs in SKILL.md based on real production experience."
+created_at: 2026-03-15
+tags: ["skills"]
+icon: doc.text
+build: 86
+---
+
+
 # Image Skill Animation Docs Update {doc.text}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Rewrote animation pipeline docs in SKILL.md based on real production experience.
-
 - Full proven pipeline: magenta canvas, Veo 3.1, frame extraction, hybrid bg removal, union bbox crop, GIF assembly
 - Hybrid color key approach for pixel art (Apple Vision mask + color key + fringe replacement)
 - Background color comparison table (magenta wins)

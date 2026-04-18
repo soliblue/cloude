@@ -1,10 +1,14 @@
+---
+title: "Git Changes: Staged/Unstaged Sections + Deleted Files"
+description: "Split git changes into staged/unstaged sections with proper deleted file handling and cached diffs."
+created_at: 2026-03-15
+tags: ["ui", "git"]
+icon: list.bullet.indent
+build: 86
+---
+
+
 # Git Changes: Staged/Unstaged Sections + Deleted Files {list.bullet.indent}
-<!-- priority: 10 -->
-<!-- tags: ui, git -->
-<!-- build: 86 -->
-
-> Split git changes into staged/unstaged sections with proper deleted file handling and cached diffs.
-
 Split the git changes view into two sections (staged vs working tree) and handle deleted files properly.
 
 ## Background

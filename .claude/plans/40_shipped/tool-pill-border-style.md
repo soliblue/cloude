@@ -1,10 +1,14 @@
+---
+title: "Tool Pill Border Style"
+description: "Changed tool pills from colored background fill to colored border outline for a subtler look."
+created_at: 2026-02-08
+tags: ["tool-pill", "ui"]
+icon: circle.dashed
+build: 61
+---
+
+
 # Tool Pill Border Style {circle.dashed}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 62 -->
-
-> Changed tool pills from colored background fill to colored border outline for a subtler look.
-
 ## Summary
 Changed tool pills from colored background fill to colored border outline for a more subtle, cleaner look.
 

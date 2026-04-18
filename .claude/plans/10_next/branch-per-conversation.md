@@ -1,9 +1,14 @@
+---
+title: "Branch-per-Conversation via Git Worktrees"
+description: "Isolate each conversation's git state with worktrees so branch switches do not leak across sessions."
+created_at: 2026-03-24
+tags: ["git", "relay", "agent"]
+icon: arrow.triangle.branch
+build: 103
+---
+
+
 # Branch-per-Conversation via Git Worktrees {arrow.triangle.branch}
-<!-- priority: 8 -->
-<!-- tags: git, relay, agent -->
-
-> Isolate each conversation's git state with worktrees so branch switches do not leak across sessions.
-
 ## Problem
 
 All conversations share one working directory. If one conversation changes branches, every other conversation sees the same switch.

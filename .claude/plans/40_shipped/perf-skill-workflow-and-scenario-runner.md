@@ -1,3 +1,13 @@
+---
+title: "Perf Skill Workflow And Scenario Runner"
+description: "Turn the performance skill into a repeatable workflow with reusable scenarios, logging references, and runnable simulator scripts."
+created_at: 2026-04-03
+tags: ["performance", "skills", "automation"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 133
+---
+
+
 # Perf Skill Workflow And Scenario Runner
 
 Tags: performance

@@ -1,9 +1,14 @@
+---
+title: "Agent Tool Output as Markdown"
+description: "Agent tool results in ToolDetailSheet now render via StreamingMarkdownView instead of monospaced Text."
+created_at: 2026-03-18
+tags: ["agent", "tool-pill", "markdown"]
+icon: text.document
+build: 86
+---
+
+
 # Agent Tool Output as Markdown {text.document}
-<!-- priority: 10 -->
-<!-- tags: agent, tool-pill, markdown -->
-
-> Agent tool results in ToolDetailSheet now render via StreamingMarkdownView instead of monospaced Text.
-
 Agent tool results in ToolDetailSheet now render via `StreamingMarkdownView` instead of monospaced `Text`.
 
 ## Changes

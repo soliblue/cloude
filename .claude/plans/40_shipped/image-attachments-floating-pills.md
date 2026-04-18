@@ -1,10 +1,14 @@
+---
+title: "Floating Image Attachment Pills"
+description: "Moved image attachments to floating pills above the input bar with multi-image support."
+created_at: 2026-02-07
+tags: ["heartbeat", "input", "tools", "ui"]
+icon: photo.badge.plus
+build: 43
+---
+
+
 # Floating Image Attachment Pills {photo.badge.plus}
-<!-- priority: 10 -->
-<!-- tags: heartbeat, input, tools, ui -->
-<!-- build: 56 -->
-
-> Moved image attachments to floating pills above the input bar with multi-image support.
-
 ## Problem
 When attaching an image, it currently renders as a 36x36 thumbnail **inside** the text field area (GlobalInputBar.swift:162-176), shrinking the available typing space. Only one image can be attached at a time (`selectedImageData: Data?` is singular). Screenshots require an extra tap on the banner to attach — they should auto-attach.
 

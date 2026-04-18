@@ -1,9 +1,14 @@
+---
+title: "Sticky Tasks Above Input Bar"
+description: "Keep current TodoWrite progress visible above the input bar during streaming."
+created_at: 2026-03-21
+tags: ["ui"]
+icon: checklist
+build: 103
+---
+
+
 # Sticky Tasks Above Input Bar {checklist}
-<!-- priority: 7 -->
-<!-- tags: ui -->
-
-> Keep current TodoWrite progress visible above the input bar during streaming.
-
 When Claude is working and has active tasks (TodoWrite with incomplete items), there's no persistent visibility into progress. You have to scroll up or tap a tool pill to see what's being worked on. During streaming this is especially annoying since new messages push the task list out of view.
 
 ## Desired Outcome

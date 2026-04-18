@@ -1,7 +1,14 @@
-# Streaming Perf Round 4
+---
+title: "Streaming Perf Round 4"
+description: "Trim the remaining hot-path container inputs after the hidden-window rerender fix landed."
+created_at: 2026-04-03
+tags: ["performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 133
+---
 
-tags: performance
-status: accepted
+
+# Streaming Perf Round 4
 
 ## Goal
 Trim remaining hot-path container inputs after the hidden-window freeze.

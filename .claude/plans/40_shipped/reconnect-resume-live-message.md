@@ -1,8 +1,14 @@
-# Reconnect Resume Live Message {arrow.triangle.2.circlepath}
-<!-- priority: 10 -->
-<!-- tags: streaming -->
-> Resume streaming into the same message bubble after app disconnect/reconnect instead of splitting into two bubbles.
+---
+title: "Reconnect Resume Live Message"
+description: "Resume streaming into the same message bubble after app disconnect/reconnect instead of splitting into two bubbles."
+created_at: 2026-03-31
+tags: ["streaming"]
+icon: arrow.triangle.2.circlepath
+build: 122
+---
 
+
+# Reconnect Resume Live Message {arrow.triangle.2.circlepath}
 ## Problem
 
 When the app disconnects mid-stream (background, network drop) and reconnects while the server is still running, the partial message was saved as interrupted and a new empty live message was created below it. This split one assistant turn into two bubbles with a status bar between them.

@@ -1,10 +1,14 @@
+---
+title: "Dead Code and Unused Imports Cleanup"
+description: "Removed dead functions, unused scroll state vars, unused imports, and fixed force unwraps."
+created_at: 2026-02-07
+tags: ["refactor"]
+icon: trash
+build: 43
+---
+
+
 # Dead Code and Unused Imports Cleanup {trash}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-<!-- build: 56 -->
-
-> Removed dead functions, unused scroll state vars, unused imports, and fixed force unwraps.
-
 **Status**: Active
 **Agent**: Cleanup agent
 

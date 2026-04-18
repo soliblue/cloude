@@ -1,9 +1,14 @@
+---
+title: "Markdown XML Tag Handling"
+description: "Styled XML tags in markdown as labeled inline blocks instead of raw text."
+created_at: 2026-03-18
+tags: ["markdown", "ui"]
+icon: chevron.left.slash.chevron.right
+build: 93
+---
+
+
 # Markdown XML Tag Handling {chevron.left.slash.chevron.right}
-<!-- priority: 10 -->
-<!-- tags: markdown, ui -->
-
-> Styled XML tags in markdown as labeled inline blocks instead of raw text.
-
 ## Goals
 - XML blocks outside code fences render as styled inline blocks (like code blocks but for XML)
 - Tag name shown as a small label (like the language label on code blocks)

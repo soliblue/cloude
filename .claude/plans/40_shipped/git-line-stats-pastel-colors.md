@@ -1,10 +1,14 @@
+---
+title: "Git Line Stats + Pastel Colors"
+description: "Added per-file line stats to git tab and replaced system green/red with pastel colors app-wide."
+created_at: 2026-03-15
+tags: ["ui", "git", "theme"]
+icon: plus.forwardslash.minus
+build: 86
+---
+
+
 # Git Line Stats + Pastel Colors {plus.forwardslash.minus}
-<!-- priority: 10 -->
-<!-- tags: ui, git, theme -->
-<!-- build: 86 -->
-
-> Added per-file line stats to git tab and replaced system green/red with pastel colors app-wide.
-
 ## What changed
 - Git tab shows +N/-N lines added/removed per file row
 - Total +N/-N in the status header bar

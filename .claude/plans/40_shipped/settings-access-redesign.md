@@ -1,9 +1,14 @@
+---
+title: "Settings Access Redesign"
+description: "Moved settings access to long-press on connection button and tap on Cloude logo, freeing header space."
+created_at: 2026-02-17
+tags: ["settings", "ui", "header"]
+icon: gearshape
+build: 71
+---
+
+
 # Settings Access Redesign {gearshape}
-<!-- priority: 10 -->
-<!-- tags: settings, ui, header -->
-
-> Moved settings access to long-press on connection button and tap on Cloude logo, freeing header space.
-
 ## Summary
 Move settings access out of the top-left header area. Make it accessible via long-press on the connection status button (top-right) and press on the Cloude logo.
 

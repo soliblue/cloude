@@ -1,10 +1,14 @@
+---
+title: "Word Wrap in File Preview"
+description: "Enabled word wrapping for code/text files in file preview by removing horizontal scroll wrapper."
+created_at: 2026-02-06
+tags: ["file-preview"]
+icon: text.word.spacing
+build: 34
+---
+
+
 # Word Wrap in File Preview {text.word.spacing}
-<!-- priority: 10 -->
-<!-- tags: file-preview -->
-<!-- build: 56 -->
-
-> Enabled word wrapping for code/text files in file preview by removing horizontal scroll wrapper.
-
 Enable word wrapping for code/text files in the file preview, like most IDEs default to.
 
 ## Change

@@ -1,10 +1,14 @@
+---
+title: "Compact Tree Widget"
+description: "Made tree widget more compact by removing header, shrinking fonts/icons, and tightening indentation."
+created_at: 2026-03-15
+tags: ["widget", "ui"]
+icon: list.bullet.indent
+build: 86
+---
+
+
 # Compact Tree Widget {list.bullet.indent}
-<!-- priority: 10 -->
-<!-- tags: widget, ui -->
-<!-- build: 86 -->
-
-> Made tree widget more compact by removing header, shrinking fonts/icons, and tightening indentation.
-
 Removed header, smaller font/icons, added icon-label spacing, tighter indentation. More compact overall.
 
 ## Changes

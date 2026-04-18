@@ -1,10 +1,14 @@
+---
+title: "Tool Pill List Unresponsive During Streaming"
+description: "Tapping a tool pill while its row is still loading shows visual feedback but does nothing."
+created_at: 2026-03-29
+tags: ["ui", "streaming"]
+icon: wrench.and.screwdriver
+build: 120
+---
+
+
 # Tool Pill List Unresponsive During Streaming {wrench.and.screwdriver}
-<!-- priority: 9 -->
-<!-- build: 120 -->
-<!-- tags: ui, streaming -->
-
-> Tapping a tool pill while its row is still loading shows visual feedback but does nothing.
-
 ## Problem
 When multiple tool calls arrive consecutively with no text between them, they render as a horizontal scrollable row. While any tool in that row is still loading:
 - Tapping a pill highlights it but the detail sheet does not open

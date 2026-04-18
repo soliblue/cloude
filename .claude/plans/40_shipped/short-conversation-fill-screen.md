@@ -1,9 +1,14 @@
+---
+title: "Short conversations fill screen properly"
+description: "Fixed short conversations floating at the bottom by using a Spacer to push messages to the top."
+created_at: 2026-03-16
+tags: ["ui"]
+icon: rectangle.expand.vertical
+build: 86
+---
+
+
 # Short conversations fill screen properly {rectangle.expand.vertical}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-
-> Fixed short conversations floating at the bottom by using a Spacer to push messages to the top.
-
 ## Problem
 When a conversation had few short messages, the messages floated at the bottom of the screen with empty space above (due to `.defaultScrollAnchor(.bottom)`).
 

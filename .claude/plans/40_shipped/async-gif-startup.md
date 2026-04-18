@@ -1,8 +1,14 @@
-# Async GIF Decoding on Startup {hare}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-> Move GIF frame decoding off the main thread and cache decoded frames to eliminate startup FPS drop.
+---
+title: "Async GIF Decoding on Startup"
+description: "Move GIF frame decoding off the main thread and cache decoded frames to eliminate startup FPS drop."
+created_at: 2026-04-01
+tags: ["ui"]
+icon: hare
+build: 122
+---
 
+
+# Async GIF Decoding on Startup {hare}
 ## Changes
 - AnimatedGIFView now decodes GIF frames asynchronously on first load
 - Decoded frames cached statically for instant reuse on view recreation

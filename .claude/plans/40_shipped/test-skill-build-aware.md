@@ -1,15 +1,19 @@
+---
+title: "Test Skill: Build-Aware Testing"
+description: "Made /test skill filter testable features by comparing plan build tags against the current app build number."
+created_at: 2026-02-08
+tags: ["skills"]
+icon: hammer.fill
+build: 56
+---
+
+
 # Test Skill: Build-Aware Testing {hammer.fill}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-<!-- build: 56 -->
-
-> Made /test skill filter testable features by comparing plan build tags against the current app build number.
-
 **Feature**: Test skill automatically filters testable features based on build number comparison.
 
 **What changed**:
 - `/test` now reads current build number via `agvtool what-version -terse`
-- Parses `<!-- build: X -->` metadata from all `plans/testing/*.md` files
+- Parses `build: X` front matter from all `plans/testing/*.md` files
 - Only shows features where build tag ≤ current running build
 - Generates minimal testing instructions for each testable feature
 

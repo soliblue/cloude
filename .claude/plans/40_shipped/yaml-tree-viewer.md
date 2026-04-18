@@ -1,6 +1,11 @@
-# YAML Tree Viewer {list.bullet.rectangle}
-<!-- priority: 10 -->
-<!-- tags: file-preview -->
-<!-- build: 56 -->
+---
+title: "YAML Tree Viewer"
+description: "Added collapsible tree view for YAML files using a lightweight parser and the existing JSONTreeView component."
+created_at: 2026-02-07
+tags: ["file-preview"]
+icon: list.bullet.rectangle
+build: 43
+---
 
-> Added collapsible tree view for YAML files using a lightweight parser and the existing JSONTreeView component.
+
+# YAML Tree Viewer {list.bullet.rectangle}

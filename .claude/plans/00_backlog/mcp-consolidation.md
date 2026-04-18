@@ -1,9 +1,14 @@
+---
+title: "Consolidate MCP Tools"
+description: "Merge widget MCP into the iOS MCP, drop the prefix, and strip unused iOS tools."
+created_at: 2026-04-07
+tags: ["agent", "streaming"]
+icon: wrench.and.screwdriver
+build: 145
+---
+
+
 # Consolidate MCP Tools {wrench.and.screwdriver}
-<!-- priority: 5 -->
-<!-- tags: agent, streaming -->
-
-> Merge widget MCP into the iOS MCP, drop the prefix, and strip unused iOS tools.
-
 ## Problem
 
 Three issues with the current MCP setup:

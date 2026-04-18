@@ -1,9 +1,14 @@
+---
+title: "iMessage Skill"
+description: "Built iMessage skill for reading and sending messages via SQLite and AppleScript."
+created_at: 2026-02-14
+tags: ["skill", "integration", "communication"]
+icon: message.fill
+build: 71
+---
+
+
 # iMessage Skill {message.fill}
-<!-- priority: 7 -->
-<!-- tags: skill, integration, communication -->
-
-> Built iMessage skill for reading and sending messages via SQLite and AppleScript.
-
 ## Architecture
 - **Read**: Python script reads `~/Library/Messages/chat.db` directly, decodes both `text` and `attributedBody` formats
 - **Send**: AppleScript via `osascript` to Messages.app

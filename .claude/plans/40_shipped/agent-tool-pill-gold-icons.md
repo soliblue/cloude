@@ -1,10 +1,14 @@
+---
+title: "Agent Tool Pill Gold Icons"
+description: "Gave Agent tool pills distinct geometric SF Symbol icons with gold color, deterministically assigned by input hash."
+created_at: 2026-03-16
+tags: ["tool-pill", "ui"]
+icon: diamond.fill
+build: 86
+---
+
+
 # Agent Tool Pill Gold Icons {diamond.fill}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 86 -->
-
-> Gave Agent tool pills distinct geometric SF Symbol icons with gold color, deterministically assigned by input hash.
-
 Give Agent tool pills distinct geometric SF Symbol icons (diamond, pentagon, hexagon, seal, octagon, shield) with gold color. Each agent gets a deterministic icon based on its input hash, so the same agent always shows the same shape. All agents share the gold color to convey "highest order command" status.
 
 ## Changes

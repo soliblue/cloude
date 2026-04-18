@@ -1,3 +1,13 @@
+---
+title: "Streaming Perf Round 1"
+description: "Reduce live bubble render churn during the canonical mixed markdown and multi-tool streaming scenario."
+created_at: 2026-04-03
+tags: ["performance", "streaming"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 133
+---
+
+
 # Streaming Perf Round 1
 
 Tags: performance

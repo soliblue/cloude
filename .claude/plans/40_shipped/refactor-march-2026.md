@@ -1,9 +1,14 @@
+---
+title: "Refactor: March 2026 Cleanup"
+description: "Major cleanup pass extracting shared helpers, splitting large files, and removing dead state."
+created_at: 2026-03-15
+tags: ["refactor"]
+icon: wrench.and.screwdriver
+build: 86
+---
+
+
 # Refactor: March 2026 Cleanup {wrench.and.screwdriver}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-
-> Major cleanup pass extracting shared helpers, splitting large files, and removing dead state.
-
 ## HIGH Priority
 - [x] ProcessMonitor: Extract shared `findProcesses(matching:excludingSelf:)` to deduplicate 95% identical code
 - [x] ClaudeCodeRunner+Streaming: Split `processStreamLines` into typed handlers

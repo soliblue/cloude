@@ -1,10 +1,14 @@
+---
+title: "CSV Paths Not Clickable"
+description: "Fixed CSV file paths not rendering as clickable file pills in chat messages."
+created_at: 2026-02-08
+tags: ["ui", "file-preview"]
+icon: link.badge.plus
+build: 56
+---
+
+
 # CSV Paths Not Clickable {link.badge.plus}
-<!-- priority: 10 -->
-<!-- tags: ui, file-preview -->
-<!-- build: 60 -->
-
-> Fixed CSV file paths not rendering as clickable file pills in chat messages.
-
 ## Problem
 CSV file paths sent in chat don't render as clickable file pills. Other file types (e.g. `.md`, `.swift`) work fine. Tested with `books.csv` — not tappable.
 

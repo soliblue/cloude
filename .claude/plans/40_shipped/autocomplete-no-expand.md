@@ -1,10 +1,14 @@
+---
+title: "Autocomplete Suggestions Should Not Expand Input Field"
+description: "Fixed multi-line autocomplete suggestions expanding the input bar by clamping suggestion text to single line."
+created_at: 2026-02-07
+tags: ["input"]
+icon: text.line.first.and.arrowtriangle.forward
+build: 43
+---
+
+
 # Autocomplete Suggestions Should Not Expand Input Field {text.line.first.and.arrowtriangle.forward}
-<!-- priority: 10 -->
-<!-- tags: input -->
-<!-- build: 56 -->
-
-> Fixed multi-line autocomplete suggestions expanding the input bar by clamping suggestion text to single line.
-
 ## Problem
 
 When Haiku returns a multi-line autocomplete suggestion, the input bar grows to accommodate it. For example, a 2-line suggestion makes the input field become 2 lines tall. The input field should stay at its default single-line height regardless of suggestion length.

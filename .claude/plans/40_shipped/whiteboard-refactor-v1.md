@@ -1,10 +1,14 @@
+---
+title: "Whiteboard Refactor v1"
+description: "Refactored whiteboard architecture with transaction pattern, DRY helpers, bug fixes for paths/ellipses/arrows, and MCP parity."
+created_at: 2026-03-21
+tags: ["refactor", "ui"]
+icon: pencil.and.ruler
+build: 103
+---
+
+
 # Whiteboard Refactor v1 {pencil.and.ruler}
-<!-- priority: 10 -->
-<!-- tags: refactor, ui -->
-<!-- build: 103 -->
-
-> Refactored whiteboard architecture with transaction pattern, DRY helpers, bug fixes for paths/ellipses/arrows, and MCP parity.
-
 ## Changes
 
 ### Architecture

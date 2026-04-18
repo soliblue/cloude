@@ -1,8 +1,14 @@
-# Scroll Reserve on Send {arrow.up.to.line}
-<!-- priority: 10 -->
-<!-- tags: ui, streaming -->
-> Pin the user's message to the top of the viewport after sending, reserving the full screen for the streaming response (like ChatGPT).
+---
+title: "Scroll Reserve on Send"
+description: "Pin the user's message to the top of the viewport after sending, reserving the full screen for the streaming response (like ChatGPT)."
+created_at: 2026-04-07
+tags: ["ui", "streaming"]
+icon: arrow.up.to.line
+build: 145
+---
 
+
+# Scroll Reserve on Send {arrow.up.to.line}
 ## Problem
 
 Currently when a message is sent, it appends to the bottom of the list and the streaming response grows the last bubble downward. The user message stays near the bottom with the response pushing content up via auto-scroll. This means constant scrolling as the response streams, and the user message quickly disappears off the top.

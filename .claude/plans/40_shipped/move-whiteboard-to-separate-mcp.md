@@ -1,10 +1,14 @@
+---
+title: "Move Whiteboard To Separate MCP"
+description: "Moved whiteboard tools out of the iOS MCP namespace into a dedicated whiteboard MCP without changing whiteboard behavior in the app."
+created_at: 2026-03-28
+tags: ["agent", "ui"]
+icon: paintbrush
+build: 120
+---
+
+
 # Move Whiteboard To Separate MCP
-<!-- build: 122 -->
-<!-- priority: 3 -->
-<!-- tags: agent, ui -->
-
-> Moved whiteboard tools out of the iOS MCP namespace into a dedicated whiteboard MCP without changing whiteboard behavior in the app.
-
 ## Problem
 Whiteboard actions were exposed through `mcp__ios__whiteboard_*`, which mixed a full canvas subsystem into the generic iOS control namespace. The feature itself was good, but the boundary was muddy and made the core iOS MCP broader than it needed to be.
 

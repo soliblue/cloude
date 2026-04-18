@@ -1,9 +1,14 @@
+---
+title: "Smart Reply: Persist While Typing"
+description: "Keep smart reply suggestions visible while typing up to 10 characters instead of disappearing on first keystroke."
+created_at: 2026-02-07
+tags: ["input", "ui"]
+icon: text.bubble.fill
+build: 52
+---
+
+
 # Smart Reply: Persist While Typing {text.bubble.fill}
-<!-- priority: 10 -->
-<!-- tags: input, ui -->
-
-> Keep smart reply suggestions visible while typing up to 10 characters instead of disappearing on first keystroke.
-
 Keep smart reply suggestion bubbles visible while user types up to 10 characters.
 Previously they disappeared on the first keystroke.
 

@@ -1,9 +1,14 @@
+---
+title: "Apple Calendar Skill"
+description: "Built Apple Calendar skill with CRUD operations, search, and recurring events via AppleScript."
+created_at: 2026-02-14
+tags: ["skill", "integration", "apple"]
+icon: calendar
+build: 71
+---
+
+
 # Apple Calendar Skill {calendar}
-<!-- priority: 8 -->
-<!-- tags: skill, integration, apple -->
-
-> Built Apple Calendar skill with CRUD operations, search, and recurring events via AppleScript.
-
 ## Approach
 Shell scripts wrapping `osascript` AppleScript commands — same pattern as OpenClaw. No API keys, no dependencies. Runs on the Mac agent.
 

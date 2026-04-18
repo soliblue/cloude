@@ -1,9 +1,14 @@
+---
+title: "Suggestions Settings Toggle"
+description: "Added a toggle in Settings to enable/disable smart reply suggestions, defaulting to off."
+created_at: 2026-02-08
+tags: ["settings", "ui"]
+icon: switch.2
+build: 56
+---
+
+
 # Suggestions Settings Toggle {switch.2}
-<!-- priority: 10 -->
-<!-- tags: settings, ui -->
-
-> Added a toggle in Settings to enable/disable smart reply suggestions, defaulting to off.
-
 **Status**: Testing
 
 Added a toggle in Settings > Features to enable/disable smart reply suggestions. Default is off.

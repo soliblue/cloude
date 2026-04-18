@@ -1,10 +1,14 @@
+---
+title: "Plans Sheet Empty on Device"
+description: "Plans sheet loads correctly in Simulator but shows empty on a real device."
+created_at: 2026-03-29
+tags: ["ui", "agent"]
+icon: doc.text.magnifyingglass
+build: 120
+---
+
+
 # Plans Sheet Empty on Device {doc.text.magnifyingglass}
-<!-- priority: 10 -->
-<!-- build: 120 -->
-<!-- tags: ui, agent -->
-
-> Plans sheet loads correctly in Simulator but shows empty on a real device.
-
 ## Problem
 Opening the plans sheet on a physical iPhone shows no plans, while the same build in Simulator displays them correctly. This is a device-specific bug — the data exists but is not loading or rendering on real hardware.
 

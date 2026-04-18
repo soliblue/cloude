@@ -1,10 +1,14 @@
+---
+title: "Tool Pill Live Updates"
+description: "Moved live tool execution details into the tool detail sheet instead of expanding pills inline."
+created_at: 2026-02-07
+tags: ["tool-pill", "ui"]
+icon: arrow.triangle.2.circlepath
+build: 43
+---
+
+
 # Tool Pill Live Updates {arrow.triangle.2.circlepath}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 56 -->
-
-> Moved live tool execution details into the tool detail sheet instead of expanding pills inline.
-
 ## Goal
 Show live tool execution info without expanding the pill inline. Keep the pill compact, put the detail in the sheet.
 

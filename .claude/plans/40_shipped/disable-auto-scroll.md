@@ -1,10 +1,14 @@
+---
+title: "Disable Auto-Scroll on Streaming Response"
+description: "Removed auto-scroll during streaming so content stops jumping while reading."
+created_at: 2026-03-15
+tags: ["ui", "streaming"]
+icon: arrow.down.to.line
+build: 86
+---
+
+
 # Disable Auto-Scroll on Streaming Response {arrow.down.to.line}
-<!-- priority: 10 -->
-<!-- tags: ui, streaming -->
-<!-- build: 86 -->
-
-> Removed auto-scroll during streaming so content stops jumping while reading.
-
 Auto-scroll during streaming output was annoying - content kept jumping while trying to read.
 
 ## Change

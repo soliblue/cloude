@@ -1,6 +1,11 @@
-# Token Regeneration {key.fill}
-<!-- priority: 10 -->
-<!-- tags: connection, security -->
-<!-- build: 56 -->
+---
+title: "Token Regeneration"
+description: "Added regenerateToken() method to AuthManager for programmatic auth token creation."
+created_at: 2026-02-05
+tags: ["connection", "security"]
+icon: key.fill
+build: 31
+---
 
-> Added regenerateToken() method to AuthManager for programmatic auth token creation.
+
+# Token Regeneration {key.fill}

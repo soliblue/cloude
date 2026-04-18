@@ -1,9 +1,14 @@
+---
+title: "Unified Streaming"
+description: "Streaming output and saved messages use duplicate rendering paths. When a response finishes, the streaming view disappears for a frame before the saved message appears. Fix: stream directly into a MessageBubble."
+created_at: 2026-03-22
+tags: ["streaming", "ui", "bug"]
+icon: bubble.left.and.text.bubble.right
+build: 103
+---
+
+
 # Unified Streaming {bubble.left.and.text.bubble.right}
-<!-- priority: 9 -->
-<!-- tags: streaming, ui, bug -->
-
-> Streaming output and saved messages use duplicate rendering paths. When a response finishes, the streaming view disappears for a frame before the saved message appears. Fix: stream directly into a MessageBubble.
-
 ## Problem
 
 Two separate rendering paths do the same thing:

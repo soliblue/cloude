@@ -1,10 +1,14 @@
+---
+title: "Remove Unused Widget Tools"
+description: "Removed unused widget MCP tools and their dead app-side widget views to reduce tool/context surface area."
+created_at: 2026-03-28
+tags: ["tools", "ui"]
+icon: scissors
+build: 120
+---
+
+
 # Remove Unused Widget Tools
-<!-- build: 121 -->
-<!-- priority: 3 -->
-<!-- tags: tools, ui -->
-
-> Removed unused widget MCP tools and their dead app-side widget views to reduce tool/context surface area.
-
 ## Problem
 The widget MCP server still exposed tools that are not part of the current workflow: `interactive_function`, `bar_chart`, `scatter_plot`, `function_plot`, and `line_chart`. Their corresponding widget views also remained in the app, which made the surface area larger than needed and kept stale docs around old capabilities.
 

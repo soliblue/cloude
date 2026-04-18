@@ -1,9 +1,14 @@
+---
+title: "Multi-Theme Support"
+description: "Added 9 distinct color themes with per-theme palettes for backgrounds, surfaces, and fills."
+created_at: 2026-03-01
+tags: ["theme", "ui", "settings"]
+icon: paintpalette.fill
+build: 82
+---
+
+
 # Multi-Theme Support {paintpalette.fill}
-<!-- priority: 10 -->
-<!-- tags: theme, ui, settings -->
-
-> Added 9 distinct color themes with per-theme palettes for backgrounds, surfaces, and fills.
-
 ## Summary
 Add 9 distinct color themes (up from 2 effective themes). Each theme has its own color palette for backgrounds, surfaces, and fills.
 

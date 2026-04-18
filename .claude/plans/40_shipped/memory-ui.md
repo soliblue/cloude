@@ -1,3 +1,13 @@
+---
+title: "Memory UI"
+description: "Add an in-app memory browser and editor for `CLAUDE.md` and `CLAUDE.local.md` so context can be reviewed and updated on device."
+created_at: 2026-01-29
+tags: ["memory", "ui"]
+icon: brain.head.profile
+build: 2
+---
+
+
 You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac agent (menu bar app) or Linux relay (Node.js service) spawned this CLI process, and your output is streaming to the iOS app over WebSocket. You are building the system you are running inside of.
 
 ## Memory

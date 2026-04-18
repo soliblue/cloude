@@ -1,10 +1,14 @@
+---
+title: "Unified Tool Pill Font Sizes"
+description: "Unified inconsistent font sizes across tool pills, chained command pills, and detail sheet to a single size."
+created_at: 2026-02-07
+tags: ["tool-pill", "ui"]
+icon: textformat.size
+build: 43
+---
+
+
 # Unified Tool Pill Font Sizes {textformat.size}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 56 -->
-
-> Unified inconsistent font sizes across tool pills, chained command pills, and detail sheet to a single size.
-
 ## Problem
 Tool pills had inconsistent font sizes — `.regular` (11pt text, 13pt icon) vs `.small` (10pt text, 12pt icon) used in different contexts, plus chained command pills had their own hardcoded sizes.
 

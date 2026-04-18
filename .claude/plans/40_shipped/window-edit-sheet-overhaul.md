@@ -1,10 +1,14 @@
+---
+title: "Window Edit Sheet Overhaul"
+description: "Overhauled window edit sheet with top-pinned content, toolbar actions, flat conversation list, and compact layout."
+created_at: 2026-02-07
+tags: ["ui", "settings"]
+icon: window.shade.open
+build: 40
+---
+
+
 # Window Edit Sheet Overhaul {window.shade.open}
-<!-- priority: 10 -->
-<!-- tags: ui, settings -->
-<!-- build: 56 -->
-
-> Overhauled window edit sheet with top-pinned content, toolbar actions, flat conversation list, and compact layout.
-
 ## Changes (Build 39-40)
 
 - Content pinned to top with ScrollView (was vertically centered)

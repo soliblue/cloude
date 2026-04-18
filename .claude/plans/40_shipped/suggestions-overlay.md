@@ -1,6 +1,14 @@
-# Suggestions Float as Overlay
-<!-- build: 115 -->
+---
+title: "Suggestions Float as Overlay"
+description: "Float slash-command, file, and history suggestions above the input bar so they stop pushing the message list around."
+created_at: 2026-03-27
+tags: ["ui", "input"]
+icon: capsule
+build: 115
+---
 
+
+# Suggestions Float as Overlay
 Suggestion pills (slash commands, file suggestions, history) now float above the input bar as an overlay instead of being in a VStack that pushes the message list up.
 
 ## Test

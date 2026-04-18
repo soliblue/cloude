@@ -1,9 +1,14 @@
+---
+title: "Remove runningConversationId"
+description: "Replace the single `runningConversationId` with multi-conversation-aware logic."
+created_at: 2026-03-30
+tags: ["refactor", "streaming"]
+icon: arrow.triangle.branch
+build: 120
+---
+
+
 # Remove runningConversationId {arrow.triangle.branch}
-<!-- priority: 7 -->
-<!-- tags: refactor, streaming -->
-
-> Replace the single `runningConversationId` with multi-conversation-aware logic.
-
 ## Problem
 
 `EnvironmentConnection.runningConversationId` tracks a single running conversation per environment. The relay always sends `conversationId` with every event, so the single-ID tracker is dead weight. Worse, `handleDisconnect` only flushes one conversation's output, orphaning others if multiple are streaming.

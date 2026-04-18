@@ -1,9 +1,14 @@
+---
+title: "Apple Photos Skill"
+description: "Built Apple Photos skill for browsing albums and exporting photos via AppleScript."
+created_at: 2026-02-14
+tags: ["skill", "integration", "apple"]
+icon: photo.on.rectangle
+build: 71
+---
+
+
 # Apple Photos Skill {photo.on.rectangle}
-<!-- priority: 5 -->
-<!-- tags: skill, integration, apple -->
-
-> Built Apple Photos skill for browsing albums and exporting photos via AppleScript.
-
 ## Permissions Needed
 - Automation → Photos.app (prompted on first use)
 

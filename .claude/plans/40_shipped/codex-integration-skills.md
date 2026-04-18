@@ -1,10 +1,14 @@
+---
+title: "Codex Integration in Skills"
+description: "Added Codex second opinion step to refactor, reflect, and skillsmith skills for cross-model analysis."
+created_at: 2026-02-07
+tags: ["skills"]
+icon: arrow.triangle.branch
+build: 43
+---
+
+
 # Codex Integration in Skills {arrow.triangle.branch}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-<!-- build: 56 -->
-
-> Added Codex second opinion step to refactor, reflect, and skillsmith skills for cross-model analysis.
-
 ## Summary
 Added Codex second opinion step to refactor, reflect, and skillsmith skills.
 

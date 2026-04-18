@@ -1,10 +1,14 @@
+---
+title: "GlobalInputBar Refactor"
+description: "Merge duplicate handlers, extract drag gesture and magic numbers from GlobalInputBar."
+created_at: 2026-02-07
+tags: ["input", "refactor"]
+icon: arrow.triangle.2.circlepath
+build: 43
+---
+
+
 # GlobalInputBar Refactor {arrow.triangle.2.circlepath}
-<!-- priority: 10 -->
-<!-- tags: input, refactor -->
-<!-- build: 56 -->
-
-> Merge duplicate handlers, extract drag gesture and magic numbers from GlobalInputBar.
-
 ## Status: Active
 
 ## Tasks

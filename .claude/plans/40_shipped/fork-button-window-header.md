@@ -1,9 +1,14 @@
+---
+title: "Fork Button in Window Header"
+description: "Added fork/duplicate conversation button to the window header toolbar."
+created_at: 2026-02-08
+tags: ["ui", "header"]
+icon: arrow.triangle.branch
+build: 56
+---
+
+
 # Fork Button in Window Header {arrow.triangle.branch}
-<!-- priority: 10 -->
-<!-- tags: ui, header -->
-
-> Added fork/duplicate conversation button to the window header toolbar.
-
 **Stage**: Testing
 **Build**: 56
 

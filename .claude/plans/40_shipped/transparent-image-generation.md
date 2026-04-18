@@ -1,9 +1,14 @@
+---
+title: "Transparent Image Generation (--transparent flag)"
+description: "Added --transparent flag to image generation skill with background removal via rembg and autocrop post-processing."
+created_at: 2026-03-03
+tags: ["skills"]
+icon: photo.artframe
+build: 82
+---
+
+
 # Transparent Image Generation (--transparent flag) {photo.artframe}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Added --transparent flag to image generation skill with background removal via rembg and autocrop post-processing.
-
 Added `--transparent` flag to `generate.sh` image skill. Gemini can't output transparent PNGs natively, so the pipeline:
 
 1. Appends "solid white background" to prompt

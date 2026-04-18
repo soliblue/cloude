@@ -1,8 +1,14 @@
-# Equatable PageIndicator {gauge.with.dots.needle.bottom.50percent}
-<!-- priority: 10 -->
-<!-- tags: ui, performance -->
-> Extract PageIndicator as equatable view, reducing renders from 14 to 3 per stream.
+---
+title: "Equatable PageIndicator"
+description: "Extract PageIndicator as equatable view, reducing renders from 14 to 3 per stream."
+created_at: 2026-04-01
+tags: ["ui", "performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 122
+---
 
+
+# Equatable PageIndicator {gauge.with.dots.needle.bottom.50percent}
 ## Changes
 
 - Extracted page indicator from inline ViewBuilder function to separate PageIndicatorView struct

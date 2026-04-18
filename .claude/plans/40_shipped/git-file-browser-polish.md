@@ -1,10 +1,14 @@
+---
+title: "Git & File Browser Polish"
+description: "Shrunk git tab fonts/badges and added rich file type icons to file browser."
+created_at: 2026-03-15
+tags: ["ui", "git", "file-preview"]
+icon: paintbrush
+build: 86
+---
+
+
 # Git & File Browser Polish {paintbrush}
-<!-- priority: 10 -->
-<!-- tags: ui, git, file-preview -->
-<!-- build: 86 -->
-
-> Shrunk git tab fonts/badges and added rich file type icons to file browser.
-
 Two UI tweaks to the window header tabs.
 
 ## Git Tab

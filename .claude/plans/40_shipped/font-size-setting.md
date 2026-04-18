@@ -1,10 +1,14 @@
+---
+title: "Font Size Setting"
+description: "Add a font size control in settings with + and - buttons, 4 steps total."
+created_at: 2026-03-29
+tags: ["settings", "ui"]
+icon: textformat.size
+build: 120
+---
+
+
 # Font Size Setting {textformat.size}
-<!-- priority: 5 -->
-<!-- build: 120 -->
-<!-- tags: settings, ui -->
-
-> Add a font size control in settings with + and - buttons, 4 steps total.
-
 ## Problem
 There is no way to adjust the font size in the app. Users with different preferences or accessibility needs have no control over text size.
 

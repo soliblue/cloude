@@ -1,8 +1,14 @@
-# Git Log / Recent Commits {clock.arrow.circlepath}
-<!-- priority: 8 -->
-<!-- tags: git, ui, agent, relay -->
-> Show recent commits in the git tab when the working tree is clean.
+---
+title: "Git Log / Recent Commits"
+description: "Show recent commits in the git tab when the working tree is clean."
+created_at: 2026-04-02
+tags: ["git", "ui", "agent", "relay"]
+icon: clock.arrow.circlepath
+build: 122
+---
 
+
+# Git Log / Recent Commits {clock.arrow.circlepath}
 ## Changes
 
 - `GitCommit` model in CloudeShared

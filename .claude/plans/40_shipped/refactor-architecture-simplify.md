@@ -1,9 +1,14 @@
+---
+title: "Refactor: Simplify Architecture + File Layout"
+description: "Simplified iOS app architecture and file layout for easier navigation and maintenance."
+created_at: 2026-02-14
+tags: ["refactor"]
+icon: folder.badge.gearshape
+build: 71
+---
+
+
 # Refactor: Simplify Architecture + File Layout {folder.badge.gearshape}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-
-> Simplified iOS app architecture and file layout for easier navigation and maintenance.
-
 ## Goal
 Make the Cloude iOS app easier to navigate and maintain without losing features.
 
@@ -50,4 +55,3 @@ Make the Cloude iOS app easier to navigate and maintain without losing features.
 ## Verification
 - Run:
   - `xcodebuild -project Cloude/Cloude.xcodeproj -scheme Cloude -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO`
-

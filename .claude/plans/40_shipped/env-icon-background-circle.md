@@ -1,9 +1,14 @@
+---
+title: "Environment Icon Background Circle"
+description: "Added subtle circular background behind environment icon in window header."
+created_at: 2026-03-10
+tags: ["ui", "header", "env"]
+icon: circle.dashed
+build: 82
+---
+
+
 # Environment Icon Background Circle {circle.dashed}
-<!-- priority: 10 -->
-<!-- tags: ui, header, env -->
-
-> Added subtle circular background behind environment icon in window header.
-
 Add a subtle circular background behind the environment icon in the window header for better visual distinction.
 
 ## Changes

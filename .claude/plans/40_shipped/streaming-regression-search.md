@@ -1,3 +1,13 @@
+---
+title: "Streaming Regression Search"
+description: "Search commit history to isolate when the major streaming regression appeared and separate it from older known bugs."
+created_at: 2026-04-03
+tags: ["streaming", "git"]
+icon: magnifyingglass
+build: 125
+---
+
+
 # Streaming Regression Search
 
 ## Bugs

@@ -1,9 +1,14 @@
+---
+title: "Preserve scroll position when switching tabs"
+description: "Keep files and git tab scroll positions stable across tab switches."
+created_at: 2026-03-16
+tags: ["ui", "tabs"]
+icon: scroll
+build: 86
+---
+
+
 # Preserve scroll position when switching tabs {scroll}
-<!-- priority: 10 -->
-<!-- tags: ui, tabs -->
-
-> Keep files and git tab scroll positions stable across tab switches.
-
 ## Problem
 Conditional rendering (`if window.tab == .files`) destroyed and recreated views on each tab switch, losing scroll position.
 

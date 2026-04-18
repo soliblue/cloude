@@ -1,9 +1,14 @@
+---
+title: "Theme Reorder & New Themes"
+description: "Added Bauder, Mahfouz, and Tawfik themes, reordered by color family, and renamed ocean* properties to theme*."
+created_at: 2026-03-15
+tags: ["theme", "ui"]
+icon: swatchpalette.fill
+build: 86
+---
+
+
 # Theme Reorder & New Themes {swatchpalette.fill}
-<!-- priority: 10 -->
-<!-- tags: theme, ui -->
-
-> Added Bauder, Mahfouz, and Tawfik themes, reordered by color family, and renamed ocean* properties to theme*.
-
 ## Changes
 - Added Bauder theme (dark steel-blue, named after Christopher Bauder)
 - Added Mahfouz theme (bicolor: warm amber bg + cool blue-gray surfaces)

@@ -1,8 +1,14 @@
-# FPS Degradation Fix {gauge.with.dots.needle.bottom.50percent}
-<!-- priority: 10 -->
-<!-- tags: performance, streaming -->
-> Fix FPS degradation during long markdown streaming by making frozen blocks layout-free and stableSplitPoint incremental.
+---
+title: "FPS Degradation Fix"
+description: "Fix FPS degradation during long markdown streaming by making frozen blocks layout-free and stableSplitPoint incremental."
+created_at: 2026-03-31
+tags: ["performance", "streaming"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 122
+---
 
+
+# FPS Degradation Fix {gauge.with.dots.needle.bottom.50percent}
 ## Changes
 
 ### 1. Equatable FrozenBlocksSection

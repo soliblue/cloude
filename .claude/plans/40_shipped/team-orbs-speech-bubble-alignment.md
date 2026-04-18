@@ -1,10 +1,14 @@
+---
+title: "Team Orbs Speech Bubble Alignment"
+description: "Orbs shift left when a teammate sends a message — speech bubble expands the HStack instead of growing leftward from a right-aligned anchor."
+created_at: 2026-02-08
+tags: ["messages", "teams", "ui"]
+icon: bubble.right
+build: 55
+---
+
+
 # Team Orbs Speech Bubble Alignment {bubble.right}
-<!-- priority: 3 -->
-<!-- tags: messages, teams, ui -->
-<!-- build: 56 -->
-
-> Orbs shift left when a teammate sends a message — speech bubble expands the HStack instead of growing leftward from a right-aligned anchor.
-
 ## Problem
 When a teammate's speech bubble appears, the orb circles shift left to accommodate the bubble width. The orbs should stay pinned to the right edge and the speech bubble should grow leftward.
 

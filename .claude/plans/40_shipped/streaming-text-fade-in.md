@@ -1,9 +1,14 @@
+---
+title: "Streaming Text Fade-In"
+description: "Added smooth character fade-in animation during streaming using contentTransition interpolate."
+created_at: 2026-03-01
+tags: ["streaming", "ui"]
+icon: text.append
+build: 82
+---
+
+
 # Streaming Text Fade-In {text.append}
-<!-- priority: 10 -->
-<!-- tags: streaming, ui -->
-
-> Added smooth character fade-in animation during streaming using contentTransition interpolate.
-
 **Status**: Testing
 **Created**: 2026-03-01
 

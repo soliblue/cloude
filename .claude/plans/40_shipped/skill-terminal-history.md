@@ -1,9 +1,14 @@
+---
+title: "Skill: Terminal History"
+description: "Built terminal history skill for searching and analyzing shell command history."
+created_at: 2026-02-14
+tags: ["skills"]
+icon: terminal
+build: 71
+---
+
+
 # Skill: Terminal History {terminal}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Built terminal history skill for searching and analyzing shell command history.
-
 ## What
 Search and analyze shell command history from zsh/bash.
 

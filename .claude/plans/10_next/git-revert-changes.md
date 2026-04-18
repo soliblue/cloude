@@ -1,9 +1,14 @@
+---
+title: "Git Revert Changes"
+description: "Add `Unstage All` and `Discard All` actions to the git tab section headers."
+created_at: 2026-03-19
+tags: ["git", "ui", "agent", "relay"]
+icon: arrow.uturn.backward
+build: 96
+---
+
+
 # Git Revert Changes {arrow.uturn.backward}
-<!-- priority: 5 -->
-<!-- tags: git, ui, agent, relay -->
-
-> Add `Unstage All` and `Discard All` actions to the git tab section headers.
-
 ## Goal
 
 Make bulk revert actions available directly in the git view without extra prompts.

@@ -1,10 +1,14 @@
+---
+title: "Tool Shimmer Animation"
+description: "Added shimmer gradient animation on tool pills during execution that fades when the tool result arrives."
+created_at: 2026-02-06
+tags: ["tool-pill", "ui"]
+icon: sparkle
+build: 33
+---
+
+
 # Tool Shimmer Animation {sparkle}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 56 -->
-
-> Added shimmer gradient animation on tool pills during execution that fades when the tool result arrives.
-
 ## Done
 
 Phase 1 of rich tool rendering — shimmer animation on tool pills during execution.

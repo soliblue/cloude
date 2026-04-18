@@ -1,10 +1,14 @@
+---
+title: "Refactor R2: Extract BashCommandParser.chainedCommands helper"
+description: "Extracted shared chained command parsing logic into a reusable BashCommandParser helper."
+created_at: 2026-02-07
+tags: ["refactor", "tool-pill"]
+icon: terminal
+build: 43
+---
+
+
 # Refactor R2: Extract BashCommandParser.chainedCommands helper {terminal}
-<!-- priority: 10 -->
-<!-- tags: refactor, tool-pill -->
-<!-- build: 56 -->
-
-> Extracted shared chained command parsing logic into a reusable BashCommandParser helper.
-
 ## Status: Active
 
 ## Problem

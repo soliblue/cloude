@@ -1,9 +1,14 @@
+---
+title: "UI Polish - Button States and Animations"
+description: "Added button disable states, rotation/checkmark animations, line numbers in file preview, and empty state env selector."
+created_at: 2026-03-10
+tags: ["ui"]
+icon: wand.and.stars
+build: 82
+---
+
+
 # UI Polish - Button States and Animations {wand.and.stars}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-
-> Added button disable states, rotation/checkmark animations, line numbers in file preview, and empty state env selector.
-
 ## Changes
 - Disable refresh button when environment is not connected
 - Disable terminal send button when environment is not connected

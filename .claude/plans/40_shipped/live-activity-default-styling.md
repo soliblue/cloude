@@ -1,10 +1,14 @@
+---
+title: "Live Activity Default Styling"
+description: "Removed custom accent and forced backgrounds from Live Activity, using system defaults."
+created_at: 2026-02-08
+tags: ["ui", "theme"]
+icon: livephoto
+build: 66
+---
+
+
 # Live Activity Default Styling {livephoto}
-<!-- priority: 10 -->
-<!-- tags: ui, theme -->
-<!-- build: 67 -->
-
-> Removed custom accent and forced backgrounds from Live Activity, using system defaults.
-
 ## Changes
 - Removed `Color.cloudeAccent` custom color
 - Removed `.activityBackgroundTint(.white)` from lock screen

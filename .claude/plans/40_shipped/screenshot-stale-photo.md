@@ -1,9 +1,14 @@
+---
+title: "Screenshot Attaches Stale Photo"
+description: "Fixed screenshot attaching wrong photo by adding a delay before fetching from the photo library."
+created_at: 2026-02-07
+tags: ["ui"]
+icon: camera.badge.ellipsis
+build: 43
+---
+
+
 # Screenshot Attaches Stale Photo {camera.badge.ellipsis}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-
-> Fixed screenshot attaching wrong photo by adding a delay before fetching from the photo library.
-
 ## Problem
 When taking a screenshot on iOS, the `userDidTakeScreenshotNotification` fires before the screenshot is saved to the photo library. `loadLatestPhoto()` then fetches the previous latest photo instead of the one just taken.
 

@@ -1,6 +1,11 @@
-# HTML Rendered Viewer {safari}
-<!-- priority: 10 -->
-<!-- tags: file-preview -->
-<!-- build: 56 -->
+---
+title: "HTML Rendered Viewer"
+description: "Added rendered HTML preview for .html/.htm files using WKWebView with source toggle."
+created_at: 2026-02-07
+tags: ["file-preview"]
+icon: safari
+build: 43
+---
 
-> Added rendered HTML preview for .html/.htm files using WKWebView with source toggle.
+
+# HTML Rendered Viewer {safari}

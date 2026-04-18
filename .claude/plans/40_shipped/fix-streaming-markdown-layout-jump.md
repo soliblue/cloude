@@ -1,10 +1,14 @@
+---
+title: "Fix Streaming Markdown Layout Jump"
+description: "Fixed three streaming markdown layout jump issues across block spacing, animation, and paragraph splitting."
+created_at: 2026-03-19
+tags: ["streaming", "markdown"]
+icon: text.justify.leading
+build: 103
+---
+
+
 # Fix Streaming Markdown Layout Jump {text.justify.leading}
-<!-- priority: 10 -->
-<!-- tags: streaming, markdown -->
-<!-- build: 100 -->
-
-> Fixed three streaming markdown layout jump issues across block spacing, animation, and paragraph splitting.
-
 Three fixes across two builds for streaming markdown layout jumps:
 
 **Fix 1** (build 99): Removed `.animation(.easeOut(duration: 0.6), value: text)` from the `StreamingMarkdownView` VStack. The FPS isolation fix made this animation play through fully, causing content to slide up when new blocks appeared.

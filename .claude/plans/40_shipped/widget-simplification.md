@@ -1,10 +1,14 @@
+---
+title: "Widget Code Simplification"
+description: "Extracted shared components from 18 widget files into reusable WidgetContainer, WidgetHeader, and WidgetButton, removing 413 lines."
+created_at: 2026-03-04
+tags: ["widget", "refactor"]
+icon: square.stack.3d.up
+build: 82
+---
+
+
 # Widget Code Simplification {square.stack.3d.up}
-<!-- priority: 10 -->
-<!-- tags: widget, refactor -->
-<!-- build: 82 -->
-
-> Extracted shared components from 18 widget files into reusable WidgetContainer, WidgetHeader, and WidgetButton, removing 413 lines.
-
 ## Summary
 Extracted shared components from 18 widget files to eliminate repetition.
 

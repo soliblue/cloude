@@ -1,9 +1,14 @@
+---
+title: "Sora Marketing Experiments"
+description: "Daily video generation experiments using 100 free Sora credits. Goal: build a library of marketing assets for Twitter, explore what works, push Sora's limits, learn fast."
+created_at: 2026-02-10
+tags: ["skills"]
+icon: video.fill
+build: 70
+---
+
+
 # Sora Marketing Experiments {video.fill}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Daily video generation experiments using 100 free Sora credits. Goal: build a library of marketing assets for Twitter, explore what works, push Sora's limits, learn fast.
-
 ## Strategy
 
 **Volume over perfection.** Generate ~50-100 videos per day across different directions. Each batch teaches something. Track what looks good and double down.

@@ -1,9 +1,14 @@
+---
+title: "Email Skill"
+description: "Built email skill for reading, composing, and searching emails via himalaya CLI."
+created_at: 2026-02-14
+tags: ["skill", "integration", "communication"]
+icon: envelope
+build: 71
+---
+
+
 # Email Skill {envelope}
-<!-- priority: 8 -->
-<!-- tags: skill, integration, communication -->
-
-> Built email skill for reading, composing, and searching emails via himalaya CLI.
-
 ## Approach
 Two options (decide during implementation):
 1. **himalaya CLI** — Rust-based email client, install via brew, supports IMAP/SMTP with app passwords. Zero code needed, just shell wrappers.

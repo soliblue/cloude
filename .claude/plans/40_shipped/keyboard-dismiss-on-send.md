@@ -1,10 +1,14 @@
+---
+title: "Keyboard dismiss + input clear on send"
+description: "Fixed keyboard dismiss and input clearing on send to prevent laggy ghost state."
+created_at: 2026-03-19
+tags: ["input", "ui"]
+icon: keyboard.chevron.compact.down
+build: 96
+---
+
+
 # Keyboard dismiss + input clear on send {keyboard.chevron.compact.down}
-<!-- priority: 10 -->
-<!-- tags: input, ui -->
-<!-- build: 97 -->
-
-> Fixed keyboard dismiss and input clearing on send to prevent laggy ghost state.
-
 Added `dismissKeyboard()` call in `sendMessage()`. Updated to dismiss keyboard first, then clear text/attachments on next run loop to prevent laggy multi-row ghost (TextField height not collapsing immediately when cleared while keyboard is still up). Also unified all clearing into one place - slash command early returns no longer clear `inputText` separately.
 
 ## Desired Outcome

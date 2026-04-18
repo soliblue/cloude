@@ -1,10 +1,14 @@
+---
+title: "Header Compact Layout"
+description: "Fix header truncation by removing branch text and reducing tab padding."
+created_at: 2026-02-06
+tags: ["ui", "windows"]
+icon: rectangle.compress.vertical
+build: 34
+---
+
+
 # Header Compact Layout {rectangle.compress.vertical}
-<!-- priority: 10 -->
-<!-- tags: ui, windows -->
-<!-- build: 56 -->
-
-> Fix header truncation by removing branch text and reducing tab padding.
-
 Reduce header cramping when cost info is shown. Right side content (conversation name, folder, cost) was getting truncated.
 
 ## Changes

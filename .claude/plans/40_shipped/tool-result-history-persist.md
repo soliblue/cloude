@@ -1,9 +1,14 @@
+---
+title: "Persist Tool Results Through History Reload"
+description: "Made tool result content persist through history reload by parsing tool_result from JSONL on both Mac agent and Linux relay."
+created_at: 2026-03-16
+tags: ["tool-pill", "agent", "relay"]
+icon: externaldrive.fill
+build: 86
+---
+
+
 # Persist Tool Results Through History Reload {externaldrive.fill}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, agent, relay -->
-
-> Made tool result content persist through history reload by parsing tool_result from JSONL on both Mac agent and Linux relay.
-
 ## What Changed
 - `StoredToolCall` now carries `resultContent: String?`
 - Mac agent `HistoryService` parses `tool_result` entries from user messages in JSONL

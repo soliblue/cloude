@@ -1,3 +1,13 @@
+---
+title: "Fix Ghost Bubble on Foreground Resume"
+description: "Keep reconnecting streams attached to their existing live bubble so foreground resume does not create an empty duplicate bubble."
+created_at: 2026-04-03
+tags: ["streaming", "connection"]
+icon: arrow.clockwise
+build: 133
+---
+
+
 # Fix Ghost Bubble on Foreground Resume
 
 Tags: bugfix, streaming

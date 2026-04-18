@@ -1,9 +1,14 @@
+---
+title: "Apple Contacts Skill"
+description: "Built Apple Contacts skill for searching and reading contacts via AppleScript."
+created_at: 2026-02-14
+tags: ["skill", "integration", "apple"]
+icon: person.crop.rectangle.stack
+build: 71
+---
+
+
 # Apple Contacts Skill {person.crop.rectangle.stack}
-<!-- priority: 5 -->
-<!-- tags: skill, integration, apple -->
-
-> Built Apple Contacts skill for searching and reading contacts via AppleScript.
-
 ## Approach
 AppleScript via `osascript`. Read-heavy — creating/editing contacts less common.
 

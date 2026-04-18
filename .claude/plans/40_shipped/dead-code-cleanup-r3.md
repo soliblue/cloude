@@ -1,9 +1,14 @@
+---
+title: "Dead Code Cleanup Round 3"
+description: "Removed unused views, methods, and parameters across MessageBubble, ConversationView, ToolCallLabel, and UsageStatsSheet."
+created_at: 2026-03-15
+tags: ["refactor"]
+icon: trash
+build: 86
+---
+
+
 # Dead Code Cleanup Round 3 {trash}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-
-> Removed unused views, methods, and parameters across MessageBubble, ConversationView, ToolCallLabel, and UsageStatsSheet.
-
 Removed unused code across multiple UI files:
 
 - MessageBubble: removed unused CopiedToast view, InterleavedMessageContent wrapper (was just forwarding to StreamingMarkdownView), unused isMarkdown param from TextSelectionSheet

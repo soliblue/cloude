@@ -1,6 +1,14 @@
-# Tool Pill Tappability + Sheet Hoist
+---
+title: "Tool Pill Tappability + Sheet Hoist"
+description: "Fix untappable tool pills near the input bar, stabilize streaming tool block IDs, and hoist the tool detail sheet out of the lazy stack."
+created_at: 2026-04-01
+tags: ["performance", "bug-fix", "streaming"]
+icon: hand.tap
+build: 122
+---
 
-tags: performance, bug-fix, streaming
+
+# Tool Pill Tappability + Sheet Hoist
 
 ## Problem
 

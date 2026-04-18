@@ -1,9 +1,14 @@
+---
+title: "Streaming Text Fade-In Animation"
+description: "Add a smoother reveal to streaming text so new characters do not appear at full opacity instantly."
+created_at: 2026-03-24
+tags: ["ui", "markdown"]
+icon: text.badge.star
+build: 103
+---
+
+
 # Streaming Text Fade-In Animation {text.badge.star}
-<!-- priority: 10 -->
-<!-- tags: ui, markdown -->
-
-> Add a smoother reveal to streaming text so new characters do not appear at full opacity instantly.
-
 ## Problem
 
 The drip rate is correct, but each new chunk appears fully opaque. The result feels abrupt instead of fluid.

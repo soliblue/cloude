@@ -1,10 +1,14 @@
+---
+title: "Reconnect Mid-Stream Detection"
+description: "When closing the app mid-stream and reconnecting, the agent now resumes the streaming indicator automatically instead of requiring manual refreshes."
+created_at: 2026-03-29
+tags: ["streaming", "agent"]
+icon: arrow.triangle.2.circlepath
+build: 120
+---
+
+
 # Reconnect Mid-Stream Detection {arrow.triangle.2.circlepath}
-<!-- priority: 9 -->
-<!-- tags: streaming, agent -->
-<!-- build: 120 -->
-
-> When closing the app mid-stream and reconnecting, the agent now resumes the streaming indicator automatically instead of requiring manual refreshes.
-
 ## Problem
 If the app is closed or the connection drops while Claude is actively streaming a response, reconnecting shows the partial content as a completed message. The user had to manually tap "refresh" repeatedly to get more content as Claude continued generating.
 

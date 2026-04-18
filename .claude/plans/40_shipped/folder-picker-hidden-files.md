@@ -1,10 +1,14 @@
+---
+title: "Folder Picker: Hidden Files Toggle"
+description: "Dotfiles should sort to the bottom with a show/hide toggle in the path row."
+created_at: 2026-03-29
+tags: ["ui", "files"]
+icon: eye.slash
+build: 120
+---
+
+
 # Folder Picker: Hidden Files Toggle {eye.slash}
-<!-- build: 120 -->
-<!-- priority: 5 -->
-<!-- tags: ui, files -->
-
-> Dotfiles should sort to the bottom with a show/hide toggle in the path row.
-
 ## Problem
 Hidden files (dotfiles) appear mixed in with regular files in the folder picker, adding noise when navigating to common project folders.
 

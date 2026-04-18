@@ -1,10 +1,14 @@
+---
+title: "Heartbeat Slash Icon When Not Scheduled"
+description: "Show a slash through the heart icon when heartbeat is not scheduled."
+created_at: 2026-02-07
+tags: ["heartbeat", "ui"]
+icon: heart.slash
+build: 43
+---
+
+
 # Heartbeat Slash Icon When Not Scheduled {heart.slash}
-<!-- priority: 10 -->
-<!-- tags: heartbeat, ui -->
-<!-- build: 56 -->
-
-> Show a slash through the heart icon when heartbeat is not scheduled.
-
 ## Summary
 Show a slash through the heart icon in the window switcher when heartbeat is not scheduled.
 

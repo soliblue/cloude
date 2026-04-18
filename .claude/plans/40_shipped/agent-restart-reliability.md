@@ -1,9 +1,14 @@
+---
+title: "Agent Restart Reliability"
+description: "Fix Mac agent restart so it works reliably even when an Xcode debug instance was running."
+created_at: 2026-02-07
+tags: ["agent"]
+icon: arrow.triangle.2.circlepath
+build: 43
+---
+
+
 # Agent Restart Reliability {arrow.triangle.2.circlepath}
-<!-- priority: 4 -->
-<!-- tags: agent -->
-
-> Fix Mac agent restart so it works reliably even when an Xcode debug instance was running.
-
 ## Problem
 
 When the agent is running from Xcode (debug build) and we rebuild via `fastlane mac build_agent`, the iOS app can't connect afterward. Works fine when no Xcode instance was running first.

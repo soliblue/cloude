@@ -1,9 +1,14 @@
+---
+title: "README Human-Facing Refresh"
+description: "Replace the internal agent-oriented README with a concise human-facing project overview."
+created_at: 2026-03-29
+tags: ["docs"]
+icon: doc.text
+build: 120
+---
+
+
 # README Human-Facing Refresh {doc.text}
-<!-- priority: 5 -->
-<!-- tags: docs -->
-
-> Replace the internal agent-oriented README with a concise human-facing project overview.
-
 ## Problem
 The README was written like an internal agent instruction file instead of a document for people visiting the repository. It duplicated internal workflow rules and stale project details.
 

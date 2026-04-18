@@ -1,10 +1,14 @@
+---
+title: "Codex Skill"
+description: "Created /codex skill to get second opinions from OpenAI's Codex CLI in read-only sandbox mode."
+created_at: 2026-02-07
+tags: ["skills"]
+icon: terminal
+build: 43
+---
+
+
 # Codex Skill {terminal}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-<!-- build: 56 -->
-
-> Created /codex skill to get second opinions from OpenAI's Codex CLI in read-only sandbox mode.
-
 ## Summary
 Add a `/codex` skill to get second opinions from OpenAI's Codex CLI on code questions.
 

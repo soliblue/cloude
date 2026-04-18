@@ -1,10 +1,14 @@
+---
+title: "Tool Pill Glass Background"
+description: "Add a liquid glass background to tool pills for a more polished, native iOS feel."
+created_at: 2026-02-08
+tags: ["ui", "tool-pills"]
+icon: pill.circle.fill
+build: 64
+---
+
+
 # Tool Pill Glass Background {pill.circle.fill}
-<!-- build: 65 -->
-<!-- priority: 3 -->
-<!-- tags: ui, tool-pills -->
-
-> Add a liquid glass background to tool pills for a more polished, native iOS feel.
-
 ## Problem
 
 Tool pills currently have no background fill — they float as plain text with an icon. Adding a subtle glass material background would make them feel more like native UI elements and improve visual hierarchy in the chat feed.

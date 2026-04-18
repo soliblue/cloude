@@ -1,9 +1,14 @@
+---
+title: "Simplify: Remove Heartbeat & Relocate Search"
+description: "Remove the heartbeat feature entirely and move search to the empty chat state."
+created_at: 2026-03-24
+tags: ["agent", "ui", "cleanup"]
+icon: minus.circle
+build: 103
+---
+
+
 # Simplify: Remove Heartbeat & Relocate Search {minus.circle}
-<!-- priority: 10 -->
-<!-- tags: agent, ui, cleanup -->
-
-> Remove the heartbeat feature entirely and move search to the empty chat state.
-
 ## What
 1. Remove the entire heartbeat feature (iOS app, Mac agent, shared messages, Linux relay)
 2. Remove the search magnifying glass icon from the bottom page indicator bar

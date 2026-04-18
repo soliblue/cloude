@@ -1,9 +1,14 @@
+---
+title: "berlin.soli.blue - Berlin Open Data Visualization"
+description: "Built interactive Berlin open data visualization site with tree map, clustering, and three themes on Cloudflare Pages."
+created_at: 2026-03-15
+tags: ["ui"]
+icon: map.fill
+build: 86
+---
+
+
 # berlin.soli.blue - Berlin Open Data Visualization {map.fill}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-
-> Built interactive Berlin open data visualization site with tree map, clustering, and three themes on Cloudflare Pages.
-
 Minimalistic, visually stunning data visualization site for Berlin's open data. Hosted on Cloudflare Pages. Project lives at `/Users/soli/Desktop/CODING/berlin/`.
 
 ## Goals

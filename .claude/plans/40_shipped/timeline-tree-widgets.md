@@ -1,9 +1,14 @@
+---
+title: "Timeline & Tree Display Widgets"
+description: "Added timeline and tree MCP widget tools with SwiftUI views for event sequences and hierarchical data."
+created_at: 2026-03-04
+tags: ["widget"]
+icon: list.bullet.indent
+build: 82
+---
+
+
 # Timeline & Tree Display Widgets {list.bullet.indent}
-<!-- priority: 10 -->
-<!-- tags: widget -->
-
-> Added timeline and tree MCP widget tools with SwiftUI views for event sequences and hierarchical data.
-
 ## Problem
 No display-only informational widgets — only charts and exercises. Missing timeline (events) and tree (hierarchy) visualizations.
 

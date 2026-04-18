@@ -1,9 +1,14 @@
+---
+title: "Streaming + Tool Input Dedup"
+description: "Unified duplicate content-block handling and extracted shared tool input parsing into CloudeShared."
+created_at: 2026-02-07
+tags: ["streaming", "refactor"]
+icon: arrow.triangle.merge
+build: 43
+---
+
+
 # Streaming + Tool Input Dedup {arrow.triangle.merge}
-<!-- priority: 10 -->
-<!-- tags: streaming, refactor -->
-
-> Unified duplicate content-block handling and extracted shared tool input parsing into CloudeShared.
-
 ## Status: active
 
 ## Tasks

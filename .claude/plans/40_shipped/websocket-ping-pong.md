@@ -1,6 +1,11 @@
-# WebSocket Ping/Pong {arrow.up.arrow.down}
-<!-- priority: 10 -->
-<!-- tags: connection -->
-<!-- build: 56 -->
+---
+title: "WebSocket Ping/Pong"
+description: "Added WebSocket ping frame handling with automatic pong responses for connection keepalive."
+created_at: 2026-02-05
+tags: ["connection"]
+icon: arrow.up.arrow.down
+build: 31
+---
 
-> Added WebSocket ping frame handling with automatic pong responses for connection keepalive.
+
+# WebSocket Ping/Pong {arrow.up.arrow.down}

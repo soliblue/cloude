@@ -1,9 +1,14 @@
+---
+title: "Git Tab Timeout Fix"
+description: "Added 10-second timeout on git status requests to prevent infinite loading on stale state."
+created_at: 2026-03-13
+tags: ["git", "connection"]
+icon: clock.badge.exclamationmark
+build: 86
+---
+
+
 # Git Tab Timeout Fix {clock.badge.exclamationmark}
-<!-- priority: 10 -->
-<!-- tags: git, connection -->
-
-> Added 10-second timeout on git status requests to prevent infinite loading on stale state.
-
 ## Problem
 Git tab intermittently fails to load - stays on loading spinner forever. Root cause: the git status request queue has no timeout, so if a response never arrives (server busy, connection hiccup), `gitStatusInFlightPath` stays set and blocks all future requests.
 

@@ -1,8 +1,14 @@
-# Equatable WindowTabBar {gauge.with.dots.needle.bottom.50percent}
-<!-- priority: 10 -->
-<!-- tags: ui, performance -->
-> Make WindowTabBar equatable, reducing renders from 22 to 2 per stream.
+---
+title: "Equatable WindowTabBar"
+description: "Make WindowTabBar equatable, reducing renders from 22 to 2 per stream."
+created_at: 2026-04-01
+tags: ["ui", "performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 122
+---
 
+
+# Equatable WindowTabBar {gauge.with.dots.needle.bottom.50percent}
 ## Changes
 
 - Added Equatable conformance to WindowTabBar comparing display properties only

@@ -1,10 +1,14 @@
+---
+title: "Team UI Polish"
+description: "Three improvements to team dashboard: compact orb info in toolbar row, show team lead, and inline messages per teammate."
+created_at: 2026-02-08
+tags: ["ui", "teams"]
+icon: person.3.sequence.fill
+build: 56
+---
+
+
 # Team UI Polish {person.3.sequence.fill}
-<!-- priority: 2 -->
-<!-- tags: ui, teams -->
-<!-- build: 56 -->
-
-> Three improvements to team dashboard: compact orb info in toolbar row, show team lead, and inline messages per teammate.
-
 ## 1. Compact Orb Info — Status in Toolbar Row
 
 Currently the orb shows a pulsing circle (working), half-opacity (idle), and status text separately in the detail sheet. This info could be shown inline next to the teammate name in the orb row itself, saving vertical space and making status visible at a glance.

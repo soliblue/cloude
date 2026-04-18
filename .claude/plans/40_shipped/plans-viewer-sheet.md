@@ -1,10 +1,14 @@
+---
+title: "Plans Viewer Sheet"
+description: "Built a purpose-built plans browser accessible from the toolbar on iOS."
+created_at: 2026-02-07
+tags: ["plans", "ui"]
+icon: doc.text.magnifyingglass
+build: 43
+---
+
+
 # Plans Viewer Sheet {doc.text.magnifyingglass}
-<!-- priority: 10 -->
-<!-- tags: plans, ui -->
-<!-- build: 56 -->
-
-> Built a purpose-built plans browser accessible from the toolbar on iOS.
-
 ## Background
 Plans live on the Mac filesystem under `plans/`. Currently the only way to browse them is via the file browser or asking Claude. Need a purpose-built UI to view plans from the phone — a button in the top-left toolbar next to the brain (memories) icon.
 

@@ -1,9 +1,14 @@
+---
+title: "Whiteboard v2"
+description: "Evolve the whiteboard from basic shapes into a real thinking medium with sketchy rendering, groups, export, and layout."
+created_at: 2026-03-23
+tags: ["widget", "ui", "agent", "relay"]
+icon: hand.draw
+build: 103
+---
+
+
 # Whiteboard v2 {hand.draw}
-<!-- priority: 8 -->
-<!-- tags: widget, ui, agent, relay -->
-
-> Evolve the whiteboard from basic shapes into a real thinking medium with sketchy rendering, groups, export, and layout.
-
 Current implementation: ~2,400 lines across 20 files.
 
 ## File Budget (150-line rule)

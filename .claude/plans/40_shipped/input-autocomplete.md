@@ -1,10 +1,14 @@
+---
+title: "Input Autocomplete (Haiku Ghost Text)"
+description: "Added inline ghost text autocomplete powered by Haiku with swipe-right to accept."
+created_at: 2026-02-07
+tags: ["input", "ui"]
+icon: text.cursor
+build: 43
+---
+
+
 # Input Autocomplete (Haiku Ghost Text) {text.cursor}
-<!-- priority: 10 -->
-<!-- tags: input, ui -->
-<!-- build: 56 -->
-
-> Added inline ghost text autocomplete powered by Haiku with swipe-right to accept.
-
 ## Summary
 Add inline autocomplete suggestions to the input bar. As the user types, Haiku generates a completion that appears as ghost text (dimmed) after the cursor. Swiping right on the input bar accepts the suggestion.
 

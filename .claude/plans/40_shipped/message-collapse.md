@@ -1,9 +1,14 @@
+---
+title: "Message Collapse"
+description: "Added long-press collapse/expand for assistant messages with persistent state."
+created_at: 2026-02-10
+tags: ["ui", "streaming"]
+icon: rectangle.compress.vertical
+build: 70
+---
+
+
 # Message Collapse {rectangle.compress.vertical}
-<!-- priority: 10 -->
-<!-- tags: ui, streaming -->
-
-> Added long-press collapse/expand for assistant messages with persistent state.
-
 ## Implementation
 - `isCollapsed: Bool` on `ChatMessage` model (Codable, defaults to `false`)
 - Context menu: "Collapse" / "Expand" toggle for assistant messages

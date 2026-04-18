@@ -1,6 +1,14 @@
-# Cleanup: Remove Team UI, Demo Widgets, and Unused Skills
-<!-- build: 113 -->
+---
+title: "Cleanup: Remove Team UI, Demo Widgets, and Unused Skills"
+description: "Remove unused team UI, demo widgets, and dormant skills to shrink the codebase and reduce context load."
+created_at: 2026-03-26
+tags: ["cleanup", "widget", "skills"]
+icon: scissors
+build: 114
+---
 
+
+# Cleanup: Remove Team UI, Demo Widgets, and Unused Skills
 Removed unused features to reduce complexity and context load.
 
 ## Team UI (20 files, ~1500 lines)

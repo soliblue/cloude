@@ -1,10 +1,14 @@
+---
+title: "Rich Tool Rendering — Phase 3: Live Subagent Tool Feed"
+description: "Task/Explore pills auto-expand during execution showing child tools in a live feed."
+created_at: 2026-02-06
+tags: ["tool-pill", "ui"]
+icon: rectangle.stack
+build: 33
+---
+
+
 # Rich Tool Rendering — Phase 3: Live Subagent Tool Feed {rectangle.stack}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 56 -->
-
-> Task/Explore pills auto-expand during execution showing child tools in a live feed.
-
 Phases 1 (shimmer) and 2 (result previews) are done.
 
 ## Goal

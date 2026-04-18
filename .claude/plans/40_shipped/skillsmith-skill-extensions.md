@@ -1,9 +1,14 @@
+---
+title: "Skillsmith-Driven Skill Extensions"
+description: "Extended push, deploy, test, and status skills with testing gates, flags, and plan tracking based on skillsmith analysis."
+created_at: 2026-02-07
+tags: ["skills"]
+icon: wrench.and.screwdriver
+build: 43
+---
+
+
 # Skillsmith-Driven Skill Extensions {wrench.and.screwdriver}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Extended push, deploy, test, and status skills with testing gates, flags, and plan tracking based on skillsmith analysis.
-
 ## What
 Extended 4 skills and resolved 1 cleanup item based on /skillsmith analysis:
 

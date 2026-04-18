@@ -1,9 +1,14 @@
+---
+title: "Skill Documentation Audit & Fixes"
+description: "Audited all skills for hard-coded paths, missing frontmatter, stale references, and inconsistent documentation."
+created_at: 2026-02-11
+tags: ["skills"]
+icon: doc.text.magnifyingglass
+build: 71
+---
+
+
 # Skill Documentation Audit & Fixes {doc.text.magnifyingglass}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Audited all skills for hard-coded paths, missing frontmatter, stale references, and inconsistent documentation.
-
 Comprehensive audit revealed multiple issues with skill implementation and documentation.
 
 ## High Priority Issues

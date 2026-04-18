@@ -1,9 +1,14 @@
+---
+title: "Header Button Spacing Fix"
+description: "Removed extra spacing between right-side header buttons to match the left-side tab buttons."
+created_at: 2026-03-10
+tags: ["ui", "header"]
+icon: arrow.left.and.right
+build: 82
+---
+
+
 # Header Button Spacing Fix {arrow.left.and.right}
-<!-- priority: 10 -->
-<!-- tags: ui, header -->
-
-> Removed extra spacing between right-side header buttons to match the left-side tab buttons.
-
 ## Problem
 
 Left-side tabs (chat, files, git) use `spacing: 0` with thin dividers - tight and clean.

@@ -1,10 +1,14 @@
+---
+title: "Teammate Orbs → Chat Heads Redesign"
+description: "Redesigned floating teammate orbs into chat heads with speech bubbles, message history, and unread badges."
+created_at: 2026-02-07
+tags: ["teams", "ui"]
+icon: bubble.left.and.bubble.right.fill
+build: 43
+---
+
+
 # Teammate Orbs → Chat Heads Redesign {bubble.left.and.bubble.right.fill}
-<!-- priority: 10 -->
-<!-- tags: teams, ui -->
-<!-- build: 56 -->
-
-> Redesigned floating teammate orbs into chat heads with speech bubbles, message history, and unread badges.
-
 ## Context
 The floating teammate orbs are status indicators only — you can't see what teammates are saying without opening a sheet. Messages are invisible in the main flow. This redesign turns orbs into mini chat heads: each orb shows the teammate's name, floats a speech bubble when a message arrives, and tapping opens a full message timeline.
 

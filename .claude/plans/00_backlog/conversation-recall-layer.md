@@ -1,9 +1,14 @@
+---
+title: "Conversation Recall Layer"
+description: "Make conversations easier to recover later through summaries, name history, and surfaced outputs."
+created_at: 2026-03-28
+tags: ["memory", "ui"]
+icon: text.magnifyingglass
+build: 120
+---
+
+
 # Conversation Recall Layer {text.magnifyingglass}
-<!-- priority: 4 -->
-<!-- tags: memory, ui -->
-
-> Make conversations easier to recover later through summaries, name history, and surfaced outputs.
-
 ## Problem
 
 Conversations are hard to recover once they drift out of view. Names change, large generated outputs get buried in scroll, and older conversations lose their shape.

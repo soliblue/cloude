@@ -1,10 +1,14 @@
+---
+title: "Unread Window Notification Indicator"
+description: "Added accent-colored dot on window switcher dots to indicate unread messages in other windows."
+created_at: 2026-02-08
+tags: ["ui"]
+icon: circle.badge.fill
+build: 58
+---
+
+
 # Unread Window Notification Indicator {circle.badge.fill}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 60 -->
-
-> Added accent-colored dot on window switcher dots to indicate unread messages in other windows.
-
 ## Problem
 When a window has unread messages (including streaming content with unread parts), there's no visual indicator on the window dot in the switcher. Users miss new information in other windows.
 

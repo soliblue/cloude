@@ -1,9 +1,14 @@
+---
+title: "Smaller Glass Tool Pills"
+description: "Reduced tool pill size by 20% and switched to liquid glass material."
+created_at: 2026-03-01
+tags: ["tool-pill", "ui"]
+icon: rectangle.compress.vertical
+build: 82
+---
+
+
 # Smaller Glass Tool Pills {rectangle.compress.vertical}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-
-> Reduced tool pill size by 20% and switched to liquid glass material.
-
 ## Summary
 Made tool call pills 20% smaller and switched to liquid glass.
 

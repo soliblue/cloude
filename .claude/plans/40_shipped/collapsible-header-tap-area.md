@@ -1,10 +1,14 @@
+---
+title: "Collapsible Header Tap Area"
+description: "Made entire heading row tappable for collapse/expand instead of just the small chevron arrow."
+created_at: 2026-02-07
+tags: ["ui", "windows"]
+icon: hand.tap
+build: 47
+---
+
+
 # Collapsible Header Tap Area {hand.tap}
-<!-- priority: 10 -->
-<!-- tags: ui, windows -->
-<!-- build: 56 -->
-
-> Made entire heading row tappable for collapse/expand instead of just the small chevron arrow.
-
 ## Problem
 Collapsible section headers only collapsed when tapping the small chevron arrow — too small a hit target.
 

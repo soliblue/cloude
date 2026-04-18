@@ -1,8 +1,14 @@
-# App Folder Structure Round Three {square.grid.3x3.topleft.filled}
-<!-- priority: 10 -->
-<!-- tags: refactor, ui -->
-> Move the iOS app from intermediate layer buckets to a feature-first structure with a tiny App root and strict Shared boundaries.
+---
+title: "App Folder Structure Round Three"
+description: "Move the iOS app from intermediate layer buckets to a feature-first structure with a tiny App root and strict Shared boundaries."
+created_at: 2026-04-01
+tags: ["refactor", "ui"]
+icon: square.grid.3x3.topleft.filled
+build: 122
+---
 
+
+# App Folder Structure Round Three {square.grid.3x3.topleft.filled}
 ## Goal
 
 Replace the current top-level `Views / Stores / Parsing / Utilities` emphasis with a cleaner product-oriented structure that matches how work actually happens in the app.

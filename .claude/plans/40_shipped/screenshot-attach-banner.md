@@ -1,10 +1,14 @@
+---
+title: "Screenshot Attach Banner"
+description: "Added auto-detecting banner to attach screenshots to chat with 5-second auto-dismiss."
+created_at: 2026-02-07
+tags: ["input", "ui"]
+icon: camera.viewfinder
+build: 43
+---
+
+
 # Screenshot Attach Banner {camera.viewfinder}
-<!-- priority: 10 -->
-<!-- tags: input, ui -->
-<!-- build: 56 -->
-
-> Added auto-detecting banner to attach screenshots to chat with 5-second auto-dismiss.
-
 ## Context
 When the user takes a screenshot on their iPhone, there's no way to quickly attach it to the current chat. The goal is to detect the screenshot, show a brief banner above the input bar with an "attach" action, and auto-dismiss after 5 seconds.
 

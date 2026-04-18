@@ -1,10 +1,14 @@
+---
+title: "Fix Tool Pill Active State"
+description: "Tool pills no longer stay in shimmer/executing state after the stream moves past them."
+created_at: 2026-03-28
+tags: ["tools", "ui", "reliability"]
+icon: wrench.and.screwdriver
+build: 120
+---
+
+
 # Fix Tool Pill Active State {wrench.and.screwdriver}
-<!-- build: 120 -->
-<!-- priority: 5 -->
-<!-- tags: tools, ui, reliability -->
-
-> Tool pills no longer stay in shimmer/executing state after the stream moves past them.
-
 ## Problem
 Tool pills (InlineToolPill) only transitioned from `.executing` to `.complete` when an explicit `.toolResult` message arrived. If the result was missing or delayed, the pill stayed in shimmer state even after subsequent text or tool calls proved it was done.
 

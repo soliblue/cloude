@@ -1,9 +1,14 @@
+---
+title: "Single Smart Reply"
+description: "Show only one smart reply suggestion instead of two — cleaner, less noisy, more opinionated."
+created_at: 2026-02-08
+tags: ["input", "ui"]
+icon: text.bubble
+build: 53
+---
+
+
 # Single Smart Reply {text.bubble}
-<!-- priority: 10 -->
-<!-- tags: input, ui -->
-
-> Show only one smart reply suggestion instead of two — cleaner, less noisy, more opinionated.
-
 ## Problem
 Two suggestions take up vertical space and add decision fatigue. A single confident recommendation feels more like a smart assistant and less like a menu.
 

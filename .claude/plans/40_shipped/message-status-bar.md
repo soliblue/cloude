@@ -1,10 +1,14 @@
+---
+title: "Message Status Bar"
+description: "Restore the compact status line shown after each assistant message with duration, model, and cost."
+created_at: 2026-03-29
+tags: ["ui"]
+icon: info.circle
+build: 120
+---
+
+
 # Message Status Bar {info.circle}
-<!-- build: 120 -->
-<!-- priority: 8 -->
-<!-- tags: ui -->
-
-> Restore the compact status line shown after each assistant message with duration, model, and cost.
-
 ## Problem
 The status bar that used to appear below each assistant message is missing. It showed key stats at a glance without needing to open the info sheet.
 

@@ -1,8 +1,14 @@
-# Frozen Block Split for Tool Calls {gauge.with.dots.needle.bottom.50percent}
-<!-- priority: 10 -->
-<!-- tags: streaming, performance -->
-> Enable frozen/tail block split for tool-call streaming responses, eliminating FPS degradation from 60 to 20 on long responses.
+---
+title: "Frozen Block Split for Tool Calls"
+description: "Enable frozen/tail block split for tool-call streaming responses, eliminating FPS degradation from 60 to 20 on long responses."
+created_at: 2026-04-01
+tags: ["streaming", "performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 122
+---
 
+
+# Frozen Block Split for Tool Calls {gauge.with.dots.needle.bottom.50percent}
 ## Changes
 
 - StreamingMarkdownView: tool-call responses now use frozen/tail split with position-adjusted tool calls instead of putting everything in tail

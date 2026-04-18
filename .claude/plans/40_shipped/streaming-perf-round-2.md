@@ -1,7 +1,14 @@
-# Streaming Perf Round 2
+---
+title: "Streaming Perf Round 2"
+description: "Reduce parent and container re-renders around the streaming path without changing the streaming logic."
+created_at: 2026-04-03
+tags: ["performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 133
+---
 
-tags: performance
-status: accepted
+
+# Streaming Perf Round 2
 
 ## Goal
 Reduce parent/container churn without touching streaming logic.

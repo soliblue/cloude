@@ -1,10 +1,14 @@
+---
+title: "Plans Sheet Glass Redesign"
+description: "Replaced opaque plan card backgrounds with translucent glass material matching the app aesthetic."
+created_at: 2026-02-08
+tags: ["plans", "ui", "theme"]
+icon: rectangle.on.rectangle.angled
+build: 60
+---
+
+
 # Plans Sheet Glass Redesign {rectangle.on.rectangle.angled}
-<!-- priority: 10 -->
-<!-- tags: plans, ui, theme -->
-<!-- build: 61 -->
-
-> Replaced opaque plan card backgrounds with translucent glass material matching the app aesthetic.
-
 ## Problem
 Plans sheet uses solid white/opaque backgrounds (`Color(.secondarySystemGroupedBackground)`) for the stage picker and plan cards. Looks heavy, too much white, poor design compared to the rest of the app's glass aesthetic.
 

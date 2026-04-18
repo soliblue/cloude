@@ -1,10 +1,14 @@
+---
+title: "Queued Send Indicator"
+description: "Send button visually changes to signal when a message will be queued instead of sent immediately."
+created_at: 2026-02-06
+tags: ["input"]
+icon: tray.and.arrow.up
+build: 33
+---
+
+
 # Queued Send Indicator {tray.and.arrow.up}
-<!-- priority: 10 -->
-<!-- tags: input -->
-<!-- build: 56 -->
-
-> Send button visually changes to signal when a message will be queued instead of sent immediately.
-
 Send button visually signals when a message will be queued instead of sent immediately.
 
 ## Implementation

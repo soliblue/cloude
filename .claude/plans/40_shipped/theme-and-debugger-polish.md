@@ -1,9 +1,14 @@
+---
+title: "Theme and Debugger Polish"
+description: "Tighten a few UI inconsistencies and route VS Code run output into the debug console."
+created_at: 2026-03-29
+tags: ["ui", "tooling"]
+icon: paintbrush
+build: 120
+---
+
+
 # Theme and Debugger Polish {paintbrush}
-<!-- priority: 6 -->
-<!-- tags: ui, tooling -->
-
-> Tighten a few UI inconsistencies and route VS Code run output into the debug console.
-
 ## Problem
 A few interface surfaces were still bypassing existing design tokens and theme helpers, conversation labels needed stronger hierarchy, message bubbles did not reliably rerender when font size changed, and VS Code launches were using the integrated terminal instead of the debug console.
 

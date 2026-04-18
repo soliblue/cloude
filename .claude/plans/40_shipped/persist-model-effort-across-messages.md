@@ -1,10 +1,14 @@
+---
+title: "Persist Model & Effort Across Messages"
+description: "Made model and effort selections persist across messages and conversation switches."
+created_at: 2026-02-08
+tags: ["input", "messages", "ui"]
+icon: slider.horizontal.3
+build: 55
+---
+
+
 # Persist Model & Effort Across Messages {slider.horizontal.3}
-<!-- priority: 10 -->
-<!-- tags: input, messages, ui -->
-<!-- build: 56 -->
-
-> Made model and effort selections persist across messages and conversation switches.
-
 **Problem**: When you change model/effort in the send button menu, the selection doesn't persist:
 - Selections reset after sending a message
 - Selections don't restore when switching conversations/windows

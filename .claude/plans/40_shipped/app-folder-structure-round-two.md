@@ -1,8 +1,14 @@
-# App Folder Structure Round Two {folder.badge.gearshape}
-<!-- priority: 9 -->
-<!-- tags: refactor, ui -->
-> Reorganize the iOS app into clear app, view, store, model, service, parsing, and utility boundaries.
+---
+title: "App Folder Structure Round Two"
+description: "Reorganize the iOS app into clear app, view, store, model, service, parsing, and utility boundaries."
+created_at: 2026-04-01
+tags: ["refactor", "ui"]
+icon: folder.badge.gearshape
+build: 122
+---
 
+
+# App Folder Structure Round Two {folder.badge.gearshape}
 ## Goal
 
 Finish the naming cleanup by giving the iOS target a folder structure that is easy for future agents to classify correctly on first read.

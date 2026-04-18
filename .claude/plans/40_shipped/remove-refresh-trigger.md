@@ -1,8 +1,14 @@
-# Remove RefreshTrigger Mechanism {arrow.counterclockwise}
-<!-- priority: 10 -->
-<!-- tags: refactor, workspace -->
-> Remove the refreshActiveChatView notification and refreshTrigger toggle, now obsolete with per-window state.
+---
+title: "Remove RefreshTrigger Mechanism"
+description: "Remove the refreshActiveChatView notification and refreshTrigger toggle, now obsolete with per-window state."
+created_at: 2026-04-01
+tags: ["refactor", "workspace"]
+icon: arrow.counterclockwise
+build: 122
+---
 
+
+# Remove RefreshTrigger Mechanism {arrow.counterclockwise}
 ## What Changed
 
 - Removed `refreshTrigger` property from WorkspaceStore and WorkspaceView+State

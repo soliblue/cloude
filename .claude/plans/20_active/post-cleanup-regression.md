@@ -1,3 +1,13 @@
+---
+title: "Round: Run existing scenarios to catch any regressions from recent app cleanup"
+description: "Run the existing simulator scenarios after the cleanup pass to catch regressions in streaming, markdown rendering, stop-run, and deep-link navigation."
+created_at: 2026-04-18
+tags: ["streaming", "reliability"]
+icon: checklist
+build: 155
+---
+
+
 # Round: Run existing scenarios to catch any regressions from recent app cleanup
 
 ## Plan

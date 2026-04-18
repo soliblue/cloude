@@ -1,10 +1,14 @@
+---
+title: "Plan Description Field"
+description: "Show a 2-3 line description on plan cards without opening them."
+created_at: 2026-02-08
+tags: ["ui"]
+icon: text.below.photo
+build: 53
+---
+
+
 # Plan Description Field {text.below.photo}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 56 -->
-
-> Show a 2-3 line description on plan cards without opening them.
-
 ## Problem
 Plan cards in PlansSheet only show the title. You have to tap into a plan to know what it's about. A short description preview would make scanning plans much faster.
 

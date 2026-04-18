@@ -1,10 +1,14 @@
+---
+title: "Consistent Dismiss Button Placement"
+description: "Moved all sheet dismiss buttons to trailing (top-right) position for consistency across the app."
+created_at: 2026-03-03
+tags: ["ui"]
+icon: xmark.circle
+build: 82
+---
+
+
 # Consistent Dismiss Button Placement {xmark.circle}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 82 -->
-
-> Moved all sheet dismiss buttons to trailing (top-right) position for consistency across the app.
-
 Moved all sheet dismiss buttons to trailing (top-right) position for consistency across the app.
 
 ## Sheets fixed

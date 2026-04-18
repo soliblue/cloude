@@ -1,9 +1,14 @@
+---
+title: "Refactor Phase 3: Parent+Feature Naming & FilePreview Merge"
+description: "Phase 3 refactor: standardized Parent+Feature naming, merged FilePreview files, removed dead code."
+created_at: 2026-02-14
+tags: ["refactor"]
+icon: arrow.triangle.branch
+build: 71
+---
+
+
 # Refactor Phase 3: Parent+Feature Naming & FilePreview Merge {arrow.triangle.branch}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-
-> Phase 3 refactor: standardized Parent+Feature naming, merged FilePreview files, removed dead code.
-
 ## Status: Testing
 
 ## Changes

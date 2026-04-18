@@ -1,6 +1,14 @@
-# Native Context Menu for Messages
-<!-- build: 110 -->
+---
+title: "Native Context Menu for Messages"
+description: "Replace the custom long-press overlay on messages with the native iOS context menu for copy, text selection, and collapse actions."
+created_at: 2026-03-26
+tags: ["ui", "messages"]
+icon: hand.tap
+build: 113
+---
 
+
+# Native Context Menu for Messages
 Replaced the custom long-press overlay (glass morphism horizontal menu with manual positioning) with native iOS `.contextMenu`. Actions: Copy, Select Text, Collapse/Expand.
 
 ## Test

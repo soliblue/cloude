@@ -1,9 +1,14 @@
+---
+title: "Scroll to bottom timing fix"
+description: "Fixed scroll-to-bottom to reliably include newly sent message by triggering on message ID instead of count."
+created_at: 2026-03-19
+tags: ["ui", "streaming"]
+icon: arrow.down.circle
+build: 96
+---
+
+
 # Scroll to bottom timing fix {arrow.down.circle}
-<!-- priority: 10 -->
-<!-- tags: ui, streaming -->
-
-> Fixed scroll-to-bottom to reliably include newly sent message by triggering on message ID instead of count.
-
 Changed scroll trigger from `messages.count` to `messages.last?.id` and added `await Task.yield()` so the scroll fires after SwiftUI has laid out the new message row.
 
 ## Desired Outcome

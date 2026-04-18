@@ -1,9 +1,14 @@
+---
+title: "File-Based Conversation Storage"
+description: "Moved conversation storage from UserDefaults to individual JSON files to avoid 4MB limit."
+created_at: 2026-02-09
+tags: ["ui"]
+icon: doc.on.doc
+build: 69
+---
+
+
 # File-Based Conversation Storage {doc.on.doc}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-
-> Moved conversation storage from UserDefaults to individual JSON files to avoid 4MB limit.
-
 ## Problem
 iOS UserDefaults has a ~4MB limit. All conversations (with messages, base64 images, tool outputs) were serialized into a single UserDefaults key, exceeding this limit and causing `CFPreferences` errors.
 

@@ -1,6 +1,11 @@
-# Agent Logger Infrastructure {doc.text}
-<!-- priority: 10 -->
-<!-- tags: agent -->
-<!-- build: 56 -->
+---
+title: "Agent Logger Infrastructure"
+description: "Built `Logger.swift` with `Log.info()`, `Log.error()`, `Log.debug()` methods for file logging across 10+ agent service files."
+created_at: 2026-02-05
+tags: ["agent"]
+icon: doc.text
+build: 31
+---
 
-> Built `Logger.swift` with `Log.info()`, `Log.error()`, `Log.debug()` methods for file logging across 10+ agent service files.
+
+# Agent Logger Infrastructure {doc.text}

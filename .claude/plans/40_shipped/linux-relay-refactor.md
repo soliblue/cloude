@@ -1,9 +1,14 @@
+---
+title: "Linux Relay Modular Refactor"
+description: "Split monolithic handlers.js into domain-specific modules for maintainability."
+created_at: 2026-03-10
+tags: ["refactor", "relay"]
+icon: wrench.and.screwdriver
+build: 82
+---
+
+
 # Linux Relay Modular Refactor {wrench.and.screwdriver}
-<!-- priority: 10 -->
-<!-- tags: refactor, relay -->
-
-> Split monolithic handlers.js into domain-specific modules for maintainability.
-
 ## Changes
 
 - Deleted dead `agent-linux/` directory

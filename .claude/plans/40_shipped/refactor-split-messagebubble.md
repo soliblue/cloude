@@ -1,10 +1,14 @@
+---
+title: "Split ChatView+MessageBubble.swift"
+description: "Split 505-line MessageBubble into separate files for message bubbles and tool pills."
+created_at: 2026-02-06
+tags: ["messages", "refactor", "tool-pill"]
+icon: scissors
+build: 36
+---
+
+
 # Split ChatView+MessageBubble.swift {scissors}
-<!-- priority: 10 -->
-<!-- tags: messages, refactor, tool-pill -->
-<!-- build: 56 -->
-
-> Split 505-line MessageBubble into separate files for message bubbles and tool pills.
-
 ## Changes
 505 lines → 2 files:
 - `ChatView+MessageBubble.swift` (200 lines) - message bubbles

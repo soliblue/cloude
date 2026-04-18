@@ -1,10 +1,14 @@
+---
+title: "Message Deduplication Plan"
+description: "Fixed duplicate messages appearing after app restart."
+created_at: 2026-02-04
+tags: ["streaming"]
+icon: doc.on.doc
+build: 31
+---
+
+
 # Message Deduplication Plan {doc.on.doc}
-<!-- priority: 10 -->
-<!-- tags: streaming -->
-<!-- build: 56 -->
-
-> Fixed duplicate messages appearing after app restart.
-
 ## Problem
 
 When restarting the iOS app, sometimes the same message appears twice. This happens because:

@@ -1,8 +1,14 @@
-# Guard toolCalls + Display Link Rate {gauge.with.dots.needle.33percent}
-<!-- priority: 10 -->
-<!-- tags: streaming -->
-> Prevent unnecessary @Published firings on toolCalls and reduce display link to 30fps.
+---
+title: "Guard toolCalls + Display Link Rate"
+description: "Prevent unnecessary @Published firings on toolCalls and reduce display link to 30fps."
+created_at: 2026-04-01
+tags: ["streaming"]
+icon: gauge.with.dots.needle.33percent
+build: 122
+---
 
+
+# Guard toolCalls + Display Link Rate {gauge.with.dots.needle.33percent}
 ## Changes
 - `completeTopLevelExecutingTools()` and `completeExecutingTools()` now early-return when no executing tools exist
 - Display link frame rate reduced from 60fps to 30fps for text draining

@@ -1,10 +1,14 @@
+---
+title: "Agent Teams Support"
+description: "Surface Claude Code's agent teams in Cloude with floating orbs, team dashboard, and inter-agent message tracking."
+created_at: 2026-02-07
+tags: ["agent", "teams", "tools", "ui"]
+icon: person.3.fill
+build: 43
+---
+
+
 # Agent Teams Support {person.3.fill}
-<!-- priority: 10 -->
-<!-- tags: agent, teams, tools, ui -->
-<!-- build: 56 -->
-
-> Surface Claude Code's agent teams in Cloude with floating orbs, team dashboard, and inter-agent message tracking.
-
 Surface Claude Code's agent teams in Cloude — spawn teams, watch teammates work as floating orbs, read their messages, track costs. All from your phone.
 
 ## The Vision

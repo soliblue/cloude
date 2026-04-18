@@ -1,10 +1,14 @@
+---
+title: "Refactor Skill: Pass Context to Codex"
+description: "Improved refactor skill by passing context to Codex and enforcing sequential execution."
+created_at: 2026-02-07
+tags: ["refactor", "skills"]
+icon: doc.text.magnifyingglass
+build: 43
+---
+
+
 # Refactor Skill: Pass Context to Codex {doc.text.magnifyingglass}
-<!-- priority: 10 -->
-<!-- tags: refactor, skills -->
-<!-- build: 56 -->
-
-> Improved refactor skill by passing context to Codex and enforcing sequential execution.
-
 ## Summary
 Improved the refactor skill's Codex integration in two ways:
 1. Pass the skill.md path to Codex so it reads the analysis criteria and philosophy

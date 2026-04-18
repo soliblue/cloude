@@ -1,10 +1,14 @@
+---
+title: "Remove Switcher Dots"
+description: "Removed dot indicators and unread tracking from the page indicator switcher."
+created_at: 2026-03-15
+tags: ["ui"]
+icon: circle.slash
+build: 86
+---
+
+
 # Remove Switcher Dots {circle.slash}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 86 -->
-
-> Removed dot indicators and unread tracking from the page indicator switcher.
-
 Removed the dot indicators below tab icons in the page indicator/switcher. They didn't work well, took unnecessary space, and didn't look good.
 
 ## Changes

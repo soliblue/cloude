@@ -1,10 +1,14 @@
+---
+title: "UI Component Extraction Refactor"
+description: "Deduplicated conversation headers, extracted subviews from ChatMessageList, and simplified StreamingMarkdownParser."
+created_at: 2026-02-07
+tags: ["ui", "refactor"]
+icon: square.on.square.squareshape.controlhandles
+build: 43
+---
+
+
 # UI Component Extraction Refactor {square.on.square.squareshape.controlhandles}
-<!-- priority: 10 -->
-<!-- tags: ui, refactor -->
-<!-- build: 56 -->
-
-> Deduplicated conversation headers, extracted subviews from ChatMessageList, and simplified StreamingMarkdownParser.
-
 ## Status: Active
 
 ## Tasks

@@ -1,8 +1,14 @@
-# Observation Chain Optimization {gauge.with.dots.needle.bottom.50percent}
-<!-- priority: 10 -->
-<!-- tags: performance -->
-> Eliminate ConversationView double-subscription and reduce ConversationStore publish frequency during finalization.
+---
+title: "Observation Chain Optimization"
+description: "Eliminate ConversationView double-subscription and reduce ConversationStore publish frequency during finalization."
+created_at: 2026-03-31
+tags: ["performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 122
+---
 
+
+# Observation Chain Optimization {gauge.with.dots.needle.bottom.50percent}
 ## Changes
 
 ### 1. ConversationView observation removal
@@ -27,4 +33,3 @@ Test:
 4. Verify tool calls render and complete
 5. Send another prompt and tap stop to abort
 6. Verify conversation returns to idle cleanly
-

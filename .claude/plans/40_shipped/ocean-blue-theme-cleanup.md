@@ -1,9 +1,14 @@
+---
+title: "Ocean Blue Theme Cleanup"
+description: "Made the dark theme more bluish (Material Ocean style) and removed white backgrounds from pixel art characters."
+created_at: 2026-02-08
+tags: ["theme", "ui"]
+icon: paintpalette
+build: 65
+---
+
+
 # Ocean Blue Theme Cleanup {paintpalette}
-<!-- priority: 10 -->
-<!-- tags: theme, ui -->
-
-> Made the dark theme more bluish (Material Ocean style) and removed white backgrounds from pixel art characters.
-
 ## Status: Testing
 
 ## Summary

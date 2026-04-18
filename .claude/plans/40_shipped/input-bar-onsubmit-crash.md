@@ -1,10 +1,14 @@
+---
+title: "Input Bar onSubmit Crash"
+description: "The app can crash in the chat composer render path when the input field uses `.onSubmit`."
+created_at: 2026-03-29
+tags: ["ui", "crash", "swiftui"]
+icon: exclamationmark.triangle
+build: 120
+---
+
+
 # Input Bar onSubmit Crash {exclamationmark.triangle}
-<!-- build: 120 -->
-<!-- priority: 8 -->
-<!-- tags: ui, crash, swiftui -->
-
-> The app can crash in the chat composer render path when the input field uses `.onSubmit`.
-
 ## Problem
 After the recent UI test cleanup, the app started crashing during normal message testing. The crash happens in the chat composer path, not in networking or message send logic.
 

@@ -1,10 +1,14 @@
+---
+title: "Clean Up Themes"
+description: "Remove 17 unused themes and 3 redundant palette slots."
+created_at: 2026-03-24
+tags: ["ui", "cleanup"]
+icon: paintpalette
+build: 103
+---
+
+
 # Clean Up Themes {paintpalette}
-<!-- build: 104 -->
-<!-- priority: 5 -->
-<!-- tags: ui, cleanup -->
-
-> Remove 17 unused themes and 3 redundant palette slots.
-
 ## Changes
 
 ### 1. Remove 17 themes

@@ -1,9 +1,14 @@
+---
+title: "Streaming Reliability"
+description: "Umbrella plan for streaming correctness, persistence, running state, and recovery across app lifecycle events."
+created_at: 2026-03-28
+tags: ["streaming", "reliability", "messages"]
+icon: waveform.path.ecg
+build: 120
+---
+
+
 # Streaming Reliability {waveform.path.ecg}
-<!-- priority: 5 -->
-<!-- tags: streaming, reliability, messages -->
-
-> Umbrella plan for streaming correctness, persistence, running state, and recovery across app lifecycle events.
-
 Track and fix streaming issues systematically. Keep concrete shipped fixes in `30_testing/`, and keep unresolved cross-cutting work here.
 
 ## Data Flow

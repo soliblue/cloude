@@ -1,8 +1,14 @@
-# Search Sheet Debounce {gauge.with.dots.needle.bottom.50percent}
-<!-- priority: 20 -->
-<!-- tags: ui, performance -->
-> Debounce conversation search to avoid expensive per-keystroke filtering through all message text.
+---
+title: "Search Sheet Debounce"
+description: "Debounce conversation search to avoid expensive per-keystroke filtering through all message text."
+created_at: 2026-04-01
+tags: ["ui", "performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 122
+---
 
+
+# Search Sheet Debounce {gauge.with.dots.needle.bottom.50percent}
 ## Changes
 
 - ConversationSearchSheet: 200ms debounce on search query, immediate clear on empty query

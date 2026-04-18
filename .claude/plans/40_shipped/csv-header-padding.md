@@ -1,10 +1,14 @@
+---
+title: "CSV Header Padding Fix"
+description: "Removed extra vertical padding between breadcrumb header and CSV table content in file preview."
+created_at: 2026-02-08
+tags: ["ui", "file-preview"]
+icon: rectangle.arrowtriangle.2.inward
+build: 63
+---
+
+
 # CSV Header Padding Fix {rectangle.arrowtriangle.2.inward}
-<!-- priority: 10 -->
-<!-- tags: ui, file-preview -->
-<!-- build: 64 -->
-
-> Removed extra vertical padding between breadcrumb header and CSV table content in file preview.
-
 ## What
 Remove extra vertical padding between the breadcrumb header and CSV table content in the file preview.
 

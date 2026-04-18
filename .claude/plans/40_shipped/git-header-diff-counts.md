@@ -1,10 +1,14 @@
+---
+title: "Git Tab Header: Inline Diff Counts"
+description: "Git icon in the window header should show +N -N when there are changes."
+created_at: 2026-03-29
+tags: ["git", "ui"]
+icon: plusminus
+build: 120
+---
+
+
 # Git Tab Header: Inline Diff Counts {plusminus}
-<!-- build: 120 -->
-<!-- priority: 6 -->
-<!-- tags: git, ui -->
-
-> Git icon in the window header should show +N -N when there are changes.
-
 ## Problem
 The window header always shows a plain git icon for the git tab, even when there are staged or unstaged changes. The diff counts are only visible after tapping into the git tab itself.
 

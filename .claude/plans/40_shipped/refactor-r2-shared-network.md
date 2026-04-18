@@ -1,10 +1,14 @@
+---
+title: "Refactor R2: Move NetworkHelper to CloudeShared"
+description: "Moved duplicated NetworkHelper into the CloudeShared package for both targets to use."
+created_at: 2026-02-07
+tags: ["refactor"]
+icon: network
+build: 43
+---
+
+
 # Refactor R2: Move NetworkHelper to CloudeShared {network}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-<!-- build: 56 -->
-
-> Moved duplicated NetworkHelper into the CloudeShared package for both targets to use.
-
 ## Status: Active
 
 ## Problem

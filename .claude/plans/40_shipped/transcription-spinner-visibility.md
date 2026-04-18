@@ -1,10 +1,14 @@
+---
+title: "Transcription Spinner Not Visible During Processing"
+description: "Fixed transcription loading spinner not showing after voice recording by forwarding isTranscribing state changes to ConnectionManager."
+created_at: 2026-03-14
+tags: ["ui", "input"]
+icon: progress.indicator
+build: 86
+---
+
+
 # Transcription Spinner Not Visible During Processing {progress.indicator}
-<!-- priority: 10 -->
-<!-- tags: ui, input -->
-<!-- build: 86 -->
-
-> Fixed transcription loading spinner not showing after voice recording by forwarding isTranscribing state changes to ConnectionManager.
-
 ## Problem
 After stopping a voice recording, the transcription loading spinner wasn't showing. The audio waveform overlay disappeared and the input bar returned, with a gap of a few seconds before the transcription result appeared.
 

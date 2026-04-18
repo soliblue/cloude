@@ -1,10 +1,14 @@
+---
+title: "Better Markdown Table Rendering"
+description: "Added proper table styling with inner dividers and clean visual structure."
+created_at: 2026-02-07
+tags: ["markdown", "ui"]
+icon: tablecells
+build: 43
+---
+
+
 # Better Markdown Table Rendering {tablecells}
-<!-- priority: 10 -->
-<!-- tags: markdown, ui -->
-<!-- build: 56 -->
-
-> Added proper table styling with inner dividers and clean visual structure.
-
 Tables in markdown currently render with default styling — no visual structure. They should look like real tables with inner dividers and clean styling.
 
 ## Goals

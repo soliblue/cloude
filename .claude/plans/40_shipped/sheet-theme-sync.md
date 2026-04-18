@@ -1,9 +1,14 @@
+---
+title: "Sheet Theme Sync Fix"
+description: "Fixed sheets not updating colors when switching themes by adding preferredColorScheme to each sheet."
+created_at: 2026-03-01
+tags: ["theme", "ui"]
+icon: paintbrush
+build: 82
+---
+
+
 # Sheet Theme Sync Fix {paintbrush}
-<!-- priority: 10 -->
-<!-- tags: theme, ui -->
-
-> Fixed sheets not updating colors when switching themes by adding preferredColorScheme to each sheet.
-
 ## Summary
 Sheets (Settings, Theme Picker) didn't update colors when switching themes because `.preferredColorScheme` was only on the root CloudeApp view. Sheets are separate presentation contexts.
 

@@ -1,9 +1,14 @@
+---
+title: "Speak Skill Aliases"
+description: "Added narrate alias for speak skill and planned transcribe skill for speech-to-text."
+created_at: 2026-02-11
+tags: ["skills"]
+icon: speaker.wave.2
+build: 71
+---
+
+
 # Speak Skill Aliases {speaker.wave.2}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Added narrate alias for speak skill and planned transcribe skill for speech-to-text.
-
 ## Problem
 The `/speak` skill name is fine for TTS, but users might think of it as "narrate" (for voiceovers) or want a "transcribe" command (speech-to-text, opposite direction). These are related but different:
 

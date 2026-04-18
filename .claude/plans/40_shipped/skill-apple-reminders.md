@@ -1,9 +1,14 @@
+---
+title: "Apple Reminders Skill"
+description: "Built Apple Reminders skill with CRUD operations and search via AppleScript."
+created_at: 2026-02-14
+tags: ["skill", "integration", "apple"]
+icon: checklist
+build: 71
+---
+
+
 # Apple Reminders Skill {checklist}
-<!-- priority: 7 -->
-<!-- tags: skill, integration, apple -->
-
-> Built Apple Reminders skill with CRUD operations and search via AppleScript.
-
 ## Approach
 Shell scripts wrapping `osascript` — same as calendar skill. No dependencies.
 

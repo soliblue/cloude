@@ -1,9 +1,14 @@
+---
+title: "Environment Card Connect Toggle"
+description: "Replaced text connect/disconnect button with power icon toggle on environment cards."
+created_at: 2026-03-12
+tags: ["ui", "settings", "env"]
+icon: power
+build: 86
+---
+
+
 # Environment Card Connect Toggle {power}
-<!-- priority: 10 -->
-<!-- tags: ui, settings, env -->
-
-> Replaced text connect/disconnect button with power icon toggle on environment cards.
-
 ## Problem
 Settings environment card had a text-based Connect/Disconnect button, inconsistent with the toolbar power button.
 

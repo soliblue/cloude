@@ -1,10 +1,14 @@
+---
+title: "Refactor: Deduplicate Streaming Completion, Send/Queue, and Cleanup"
+description: "Eliminated ~100 lines of duplicated streaming completion, send/queue, and replay logic."
+created_at: 2026-02-07
+tags: ["heartbeat", "refactor", "ui"]
+icon: arrow.triangle.merge
+build: 43
+---
+
+
 # Refactor: Deduplicate Streaming Completion, Send/Queue, and Cleanup {arrow.triangle.merge}
-<!-- priority: 10 -->
-<!-- tags: heartbeat, refactor, ui -->
-<!-- build: 56 -->
-
-> Eliminated ~100 lines of duplicated streaming completion, send/queue, and replay logic.
-
 ## Status: Active
 
 ## Summary

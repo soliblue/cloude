@@ -1,10 +1,14 @@
+---
+title: "Clickable URL Pills"
+description: "HTTPS/HTTP URLs in chat messages now render as tappable blue pills that open in Safari."
+created_at: 2026-03-01
+tags: ["ui", "markdown"]
+icon: link
+build: 74
+---
+
+
 # Clickable URL Pills {link}
-<!-- priority: 10 -->
-<!-- tags: ui, markdown -->
-<!-- build: 77 -->
-
-> HTTPS/HTTP URLs in chat messages now render as tappable blue pills that open in Safari.
-
 HTTPS/HTTP URLs in chat messages now render as tappable blue pills (like file path pills) that open in Safari.
 
 ## Changes

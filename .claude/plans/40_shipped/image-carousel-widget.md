@@ -1,9 +1,14 @@
+---
+title: "Image Carousel Widget"
+description: "Added inline image carousel widget with swipeable images and tap-to-preview."
+created_at: 2026-03-06
+tags: ["widget", "ui"]
+icon: photo.on.rectangle
+build: 82
+---
+
+
 # Image Carousel Widget {photo.on.rectangle}
-<!-- priority: 10 -->
-<!-- tags: widget, ui -->
-
-> Added inline image carousel widget with swipeable images and tap-to-preview.
-
 ## Changes
 - `CloudeApp.swift`: Added `.environmentObject(connection)` so widgets can access ConnectionManager
 - `widgets-mcp/server.js`: Added `image_carousel` tool (accepts `images` array with `path`/`url` + optional `caption`)

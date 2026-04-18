@@ -1,10 +1,14 @@
+---
+title: "Usage Stats Sheet (`/usage`)"
+description: "Built native iOS usage stats sheet showing Claude Code statistics from stats-cache.json, triggered by /usage slash command."
+created_at: 2026-02-10
+tags: ["ui", "settings"]
+icon: chart.bar.fill
+build: 70
+---
+
+
 # Usage Stats Sheet (`/usage`) {chart.bar.fill}
-<!-- priority: 10 -->
-<!-- tags: ui, settings -->
-<!-- build: 70 -->
-
-> Built native iOS usage stats sheet showing Claude Code statistics from stats-cache.json, triggered by /usage slash command.
-
 ## Summary
 Native iOS sheet showing Claude Code usage statistics from `~/.claude/stats-cache.json`. Triggered by `/usage` slash command — intercepts before reaching CLI and opens a native SwiftUI sheet.
 

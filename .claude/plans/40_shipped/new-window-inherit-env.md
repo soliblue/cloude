@@ -1,9 +1,14 @@
+---
+title: "New Window Should Inherit Environment"
+description: "Fixed new windows not inheriting the environmentId from the active window."
+created_at: 2026-03-10
+tags: ["ui", "env"]
+icon: plus.rectangle.on.rectangle
+build: 82
+---
+
+
 # New Window Should Inherit Environment {plus.rectangle.on.rectangle}
-<!-- priority: 10 -->
-<!-- tags: ui, env -->
-
-> Fixed new windows not inheriting the environmentId from the active window.
-
 ## Problem
 When tapping the plus icon to create a new window, the new conversation inherits the **working directory** from the active window but NOT the **environmentId**. This means the new window isn't linked to the correct Mac agent until the user sends a message.
 

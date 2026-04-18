@@ -1,10 +1,14 @@
+---
+title: "Split MainChatView.swift"
+description: "Split 795-line MainChatView into 5 focused files for body, heartbeat, page indicator, and more."
+created_at: 2026-02-06
+tags: ["refactor", "ui"]
+icon: scissors
+build: 36
+---
+
+
 # Split MainChatView.swift {scissors}
-<!-- priority: 10 -->
-<!-- tags: refactor, ui -->
-<!-- build: 56 -->
-
-> Split 795-line MainChatView into 5 focused files for body, heartbeat, page indicator, and more.
-
 ## Changes
 795 lines → 5 files:
 - `MainChatView.swift` (407 lines) - body, headers, modifiers

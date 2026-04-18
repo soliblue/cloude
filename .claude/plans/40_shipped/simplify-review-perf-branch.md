@@ -1,3 +1,13 @@
+---
+title: "Simplify Review of Perf Branch"
+description: "Consolidate the safe fixes and dead code cleanup from the streaming performance branch review into one actionable plan."
+created_at: 2026-04-03
+tags: ["performance", "refactor"]
+icon: magnifyingglass
+build: 133
+---
+
+
 # Simplify Review of Perf Branch
 
 Tags: performance, review

@@ -1,7 +1,14 @@
-# Streaming Perf Round 5
+---
+title: "Streaming Perf Round 5"
+description: "Automate the reviewer regression scenarios so streaming perf checks run from one command."
+created_at: 2026-04-03
+tags: ["performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 133
+---
 
-tags: performance
-status: accepted
+
+# Streaming Perf Round 5
 
 ## Goal
 Automate reviewer regression coverage so the canonical mixed stream and the round-specific edge case run from one command instead of a manual multi-step checklist.

@@ -1,9 +1,14 @@
+---
+title: "Code Folding in File Preview"
+description: "Collapse deeply nested code blocks in file preview so large files are easier to scan."
+created_at: 2026-03-03
+tags: ["files", "ui"]
+icon: chevron.down.square
+build: 82
+---
+
+
 # Code Folding in File Preview {chevron.down.square}
-<!-- priority: 5 -->
-<!-- tags: files, ui -->
-
-> Collapse deeply nested code blocks in file preview so large files are easier to scan.
-
 Auto-collapse leaf nodes in code files viewed in FilePreviewView. Show high-level structure first — functions visible, innermost blocks (if/else inside loops inside functions) collapsed.
 
 ## Key Insight

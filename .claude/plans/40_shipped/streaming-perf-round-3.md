@@ -1,7 +1,14 @@
-# Streaming Perf Round 3
+---
+title: "Streaming Perf Round 3"
+description: "Freeze inactive windows so hidden conversations stop re-rendering during the canonical streaming scenario."
+created_at: 2026-04-03
+tags: ["performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 133
+---
 
-tags: performance
-status: accepted
+
+# Streaming Perf Round 3
 
 ## Goal
 Reduce hidden inactive-window rerenders during the canonical mixed streaming scenario.

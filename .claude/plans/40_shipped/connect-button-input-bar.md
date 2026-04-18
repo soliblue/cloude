@@ -1,9 +1,14 @@
+---
+title: "Connect Button in Input Bar"
+description: "Added orange power button in input bar when environment is disconnected, replacing send button for quick reconnection."
+created_at: 2026-03-13
+tags: ["ui", "input", "connection"]
+icon: power
+build: 86
+---
+
+
 # Connect Button in Input Bar {power}
-<!-- priority: 10 -->
-<!-- tags: ui, input, connection -->
-
-> Added orange power button in input bar when environment is disconnected, replacing send button for quick reconnection.
-
 ## Problem
 When opening a chat whose environment is disconnected, the only way to reconnect was through settings. Too many taps for a common action.
 

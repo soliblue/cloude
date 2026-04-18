@@ -1,10 +1,14 @@
+---
+title: "Refactor Tier 1: Quick Cleanup"
+description: "Low-risk cleanup tasks reducing noise and improving organization."
+created_at: 2026-02-07
+tags: ["refactor", "ui"]
+icon: broom
+build: 43
+---
+
+
 # Refactor Tier 1: Quick Cleanup {broom}
-<!-- priority: 10 -->
-<!-- tags: refactor, ui -->
-<!-- build: 56 -->
-
-> Low-risk cleanup tasks reducing noise and improving organization.
-
 ## Status: Active
 
 ## Scope

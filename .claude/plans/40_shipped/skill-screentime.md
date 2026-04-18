@@ -1,9 +1,14 @@
+---
+title: "Skill: Screen Time / App Usage"
+description: "Built screen time skill for querying macOS app usage data from knowledgeC.db."
+created_at: 2026-02-14
+tags: ["skills"]
+icon: clock.badge.checkmark
+build: 71
+---
+
+
 # Skill: Screen Time / App Usage {clock.badge.checkmark}
-<!-- priority: 10 -->
-<!-- tags: skills -->
-
-> Built screen time skill for querying macOS app usage data from knowledgeC.db.
-
 ## What
 App usage tracking from macOS Knowledge Store (knowledgeC.db). Shows time spent per app.
 

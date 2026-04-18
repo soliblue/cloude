@@ -1,10 +1,14 @@
+---
+title: "Refactor R2: Extract ensureAuthenticated() helper"
+description: "Extracted repeated authentication guard pattern into a shared ensureAuthenticated() helper."
+created_at: 2026-02-07
+tags: ["refactor", "connection"]
+icon: lock.shield
+build: 43
+---
+
+
 # Refactor R2: Extract ensureAuthenticated() helper {lock.shield}
-<!-- priority: 10 -->
-<!-- tags: refactor, connection -->
-<!-- build: 56 -->
-
-> Extracted repeated authentication guard pattern into a shared ensureAuthenticated() helper.
-
 ## Status: Active
 
 ## Problem

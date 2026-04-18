@@ -1,10 +1,14 @@
+---
+title: "Dead Code Removal"
+description: "Removed unused methods and exposed internal properties to simplify the codebase."
+created_at: 2026-02-06
+tags: ["refactor"]
+icon: trash
+build: 36
+---
+
+
 # Dead Code Removal {trash}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-<!-- build: 56 -->
-
-> Removed unused methods and exposed internal properties to simplify the codebase.
-
 ## Changes
 - Removed `GlobalInputBar.configureEffort(from:)` - unused method
 - Removed `QuestionJSON.AnyCodable.~=` operator - unused pattern matching

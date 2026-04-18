@@ -1,9 +1,14 @@
+---
+title: "Smart Conversation Naming"
+description: "Auto-name conversations via a background Sonnet call on first message, appearing in ~1-2s instead of ~5-10s."
+created_at: 2026-02-07
+tags: ["conversations"]
+icon: character.cursor.ibeam
+build: 43
+---
+
+
 # Smart Conversation Naming {character.cursor.ibeam}
-<!-- priority: 10 -->
-<!-- tags: conversations -->
-
-> Auto-name conversations via a background Sonnet call on first message, appearing in ~1-2s instead of ~5-10s.
-
 ## Summary
 When a user sends their first message in a new conversation, fire a separate background CLI call (Sonnet) to generate a conversation name + SF Symbol. This runs in parallel with the actual agent — the name appears almost immediately instead of waiting for the agent to call `cloude rename`.
 

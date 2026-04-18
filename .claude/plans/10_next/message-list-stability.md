@@ -1,7 +1,12 @@
 ---
-title: Message list structural instability
-priority: critical
+title: "Message list structural instability"
+description: "Rework the chat message list so keyboard, streaming, and other state changes stop causing disappearing rows, jumps, and cut-off content."
+created_at: 2026-04-07
+tags: ["ui", "messages"]
+icon: list.bullet
+build: 143
 ---
+
 
 # Message list structural instability
 

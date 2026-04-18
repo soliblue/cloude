@@ -1,6 +1,14 @@
-# DS Token Cleanup - Tree Widget & Recording Dot
-<!-- build: 116 -->
+---
+title: "DS Token Cleanup - Tree Widget & Recording Dot"
+description: "Simplify tree widget styling, resize the recording dot with design tokens, and delete the unused connection status view."
+created_at: 2026-03-27
+tags: ["widget", "cleanup"]
+icon: tablecells
+build: 115
+---
 
+
+# DS Token Cleanup - Tree Widget & Recording Dot
 ## Changes
 - Tree widget: removed connector lines (vertical + horizontal), removed icon frame, removed icon top padding
 - Recording overlay dot: changed from DS.Size.xs to DS.Icon.s

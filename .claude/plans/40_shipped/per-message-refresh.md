@@ -1,9 +1,14 @@
+---
+title: "Per-Message Refresh"
+description: "Add a refresh button on assistant response bubbles to re-generate individual messages."
+created_at: 2026-02-08
+tags: ["ui", "chat", "ux"]
+icon: arrow.clockwise.circle
+build: 65
+---
+
+
 # Per-Message Refresh {arrow.clockwise.circle}
-<!-- priority: 10 -->
-<!-- tags: ui, chat, ux -->
-
-> Add a refresh button on assistant response bubbles to re-generate individual messages.
-
 ## Problem
 
 The only way to refresh is the header button which refreshes the entire conversation. No way to surgically say "this one response was bad, redo it."

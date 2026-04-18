@@ -1,10 +1,14 @@
+---
+title: "Persist Model + Effort Per Conversation"
+description: "Fixed model and effort selections resetting after app restart by wiring up existing persistence infrastructure."
+created_at: 2026-03-19
+tags: ["input", "settings"]
+icon: square.and.arrow.down
+build: 96
+---
+
+
 # Persist Model + Effort Per Conversation {square.and.arrow.down}
-<!-- priority: 10 -->
-<!-- tags: input, settings -->
-<!-- build: 96 -->
-
-> Fixed model and effort selections resetting after app restart by wiring up existing persistence infrastructure.
-
 Model and effort selections reset after app restart or window close. The entire infrastructure already exists -- it just isn't being called.
 
 ## What already exists

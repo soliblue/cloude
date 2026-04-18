@@ -1,9 +1,14 @@
+---
+title: "Fix Theme Persistence Across App Restarts"
+description: "Fixed theme resetting to default on app restart by storing raw string in AppStorage instead of enum."
+created_at: 2026-03-01
+tags: ["theme", "settings"]
+icon: paintbrush.fill
+build: 82
+---
+
+
 # Fix Theme Persistence Across App Restarts {paintbrush.fill}
-<!-- priority: 10 -->
-<!-- tags: theme, settings -->
-
-> Fixed theme resetting to default on app restart by storing raw string in AppStorage instead of enum.
-
 ## Problem
 Selected theme resets to Ocean Dark after restarting the app.
 

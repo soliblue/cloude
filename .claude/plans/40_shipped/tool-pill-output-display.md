@@ -1,10 +1,14 @@
+---
+title: "Tool Pill Sheet - Rich Output Display"
+description: "Added syntax-highlighted code block rendering for Read tool output in the tool detail sheet."
+created_at: 2026-03-14
+tags: ["tool-pill", "ui"]
+icon: doc.richtext
+build: 86
+---
+
+
 # Tool Pill Sheet - Rich Output Display {doc.richtext}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 86 -->
-
-> Added syntax-highlighted code block rendering for Read tool output in the tool detail sheet.
-
 ## Phase 1: Rich Read output (current)
 
 Strip line number prefixes from Read resultOutput, detect language from file extension, render as `CodeBlock` instead of plain monospace text. No agent-side changes needed.

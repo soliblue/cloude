@@ -1,9 +1,14 @@
+---
+title: "Artist Themes"
+description: "Added four artist-inspired dark themes (Gaudi, Hundertwasser, Rothko, Klimt) each with unique color territory."
+created_at: 2026-03-06
+tags: ["theme", "ui"]
+icon: paintpalette.fill
+build: 82
+---
+
+
 # Artist Themes {paintpalette.fill}
-<!-- priority: 10 -->
-<!-- tags: theme, ui -->
-
-> Added four artist-inspired dark themes (Gaudi, Hundertwasser, Rothko, Klimt) each with unique color territory.
-
 Four new dark themes inspired by artists/architects, each occupying a unique color territory.
 
 ## Themes

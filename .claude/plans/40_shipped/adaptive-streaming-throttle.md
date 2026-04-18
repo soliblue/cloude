@@ -1,8 +1,14 @@
-# Adaptive Streaming Throttle {gauge.with.dots.needle.bottom.50percent}
-<!-- priority: 10 -->
-<!-- tags: streaming, performance -->
-> Adaptive throttle reduces LiveBubble renders by 31% and eliminates late-stage FPS degradation during long streams.
+---
+title: "Adaptive Streaming Throttle"
+description: "Adaptive throttle reduces LiveBubble renders by 31% and eliminates late-stage FPS degradation during long streams."
+created_at: 2026-04-01
+tags: ["streaming", "performance"]
+icon: gauge.with.dots.needle.bottom.50percent
+build: 122
+---
 
+
+# Adaptive Streaming Throttle {gauge.with.dots.needle.bottom.50percent}
 ## Changes
 
 - ObservedMessageBubble: adaptive text update throttle (20Hz when text > 3000 chars, 60Hz otherwise)

@@ -1,10 +1,14 @@
+---
+title: "Glass Tool Pills"
+description: "Restyled tool call pills with glass effect and reduced size by ~20%."
+created_at: 2026-03-01
+tags: ["ui", "tool-pill"]
+icon: capsule
+build: 82
+---
+
+
 # Glass Tool Pills {capsule}
-<!-- priority: 10 -->
-<!-- tags: ui, tool-pill -->
-<!-- build: 82 -->
-
-> Restyled tool call pills with glass effect and reduced size by ~20%.
-
 **Status**: Done
 **Created**: 2026-03-01
 

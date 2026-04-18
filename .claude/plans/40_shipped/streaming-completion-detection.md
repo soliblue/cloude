@@ -1,9 +1,14 @@
+---
+title: "Streaming Completion Detection"
+description: "Superseded by `10_next/unified-streaming.md`. Root cause #5 (view-dependent completion) and the duplicate message bug are directly solved by moving completion handling to the app level via `.streamingStarted` event. Remaining root causes (#1-4) are independent and can be addressed separately if still observed."
+created_at: 2026-02-14
+tags: ["streaming", "relay", "connection"]
+icon: checkmark.circle.trianglebadge.exclamationmark
+build: 71
+---
+
+
 # Streaming Completion Detection {checkmark.circle.trianglebadge.exclamationmark}
-<!-- priority: 7 -->
-<!-- tags: streaming, relay, connection -->
-
-> Superseded by `10_next/unified-streaming.md`. Root cause #5 (view-dependent completion) and the duplicate message bug are directly solved by moving completion handling to the app level via `.streamingStarted` event. Remaining root causes (#1-4) are independent and can be addressed separately if still observed.
-
 Long responses sometimes leave the iOS app in a "running" state even after the CLI has finished. The user has to manually hit stop.
 
 ## Root Causes (ranked by likelihood)

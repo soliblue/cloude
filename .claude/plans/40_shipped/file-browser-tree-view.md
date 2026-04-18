@@ -1,8 +1,14 @@
-# File Browser Tree View {folder.badge.gearshape}
-<!-- priority: 10 -->
-<!-- tags: ui, files -->
-> VS Code-style expandable tree view for the main files tab, replacing navigate-into-folder behavior.
+---
+title: "File Browser Tree View"
+description: "VS Code-style expandable tree view for the main files tab, replacing navigate-into-folder behavior."
+created_at: 2026-04-01
+tags: ["ui", "files"]
+icon: folder.badge.gearshape
+build: 122
+---
 
+
+# File Browser Tree View {folder.badge.gearshape}
 ## Behavior
 
 - Root shows contents of the window's working directory (no path bar)

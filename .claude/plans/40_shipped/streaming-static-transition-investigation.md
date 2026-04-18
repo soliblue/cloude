@@ -1,3 +1,13 @@
+---
+title: "Streaming-to-static transition investigation"
+description: "Investigate why assistant messages briefly disappear when streaming finalizes and the live row hands off to the static bubble."
+created_at: 2026-03-28
+tags: ["streaming", "ui"]
+icon: doc.text.magnifyingglass
+build: 120
+---
+
+
 ## Streaming-to-static transition investigation
 
 Date: 2026-03-28

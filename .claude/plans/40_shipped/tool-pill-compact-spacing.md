@@ -1,10 +1,14 @@
+---
+title: "Tool Pill Compact Spacing"
+description: "Tightened tool pill internal padding and inter-pill spacing for a more compact layout."
+created_at: 2026-02-08
+tags: ["tool-pill", "ui"]
+icon: arrow.down.right.and.arrow.up.left
+build: 63
+---
+
+
 # Tool Pill Compact Spacing {arrow.down.right.and.arrow.up.left}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 64 -->
-
-> Tightened tool pill internal padding and inter-pill spacing for a more compact layout.
-
 ## What
 Tighten tool pill spacing now that borders are removed — less internal padding and less gap between pills.
 

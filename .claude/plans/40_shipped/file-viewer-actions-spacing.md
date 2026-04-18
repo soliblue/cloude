@@ -1,10 +1,14 @@
+---
+title: "File Viewer Actions Spacing"
+description: "Added padding and dividers to file viewer action icons in the preview header."
+created_at: 2026-02-07
+tags: ["ui", "file-preview"]
+icon: arrow.left.and.right
+build: 40
+---
+
+
 # File Viewer Actions Spacing {arrow.left.and.right}
-<!-- priority: 10 -->
-<!-- tags: ui, file-preview -->
-<!-- build: 56 -->
-
-> Added padding and dividers to file viewer action icons in the preview header.
-
 Add horizontal padding and dividers to FileViewerActions icons (share, copy, code) in the file preview header.
 
 ## Changes

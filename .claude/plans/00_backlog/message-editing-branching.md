@@ -1,9 +1,14 @@
+---
+title: "Message Editing & Conversation Branching"
+description: "Allow sent messages to be edited and conversations to branch from the edited point."
+created_at: 2026-03-01
+tags: ["ui"]
+icon: arrow.triangle.branch
+build: 74
+---
+
+
 # Message Editing & Conversation Branching {arrow.triangle.branch}
-<!-- priority: 7 -->
-<!-- tags: ui -->
-
-> Allow sent messages to be edited and conversations to branch from the edited point.
-
 ## Goal
 Edit sent messages and branch conversations — like ChatGPT's edit feature with `< 1/2 >` navigation.
 

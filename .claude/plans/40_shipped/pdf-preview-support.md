@@ -1,9 +1,14 @@
+---
+title: "PDF Preview Support"
+description: "Added native PDF viewing in file previews using PDFKit."
+created_at: 2026-02-13
+tags: ["file-preview", "ui"]
+icon: doc.richtext
+build: 71
+---
+
+
 # PDF Preview Support {doc.richtext}
-<!-- priority: 10 -->
-<!-- tags: file-preview, ui -->
-
-> Added native PDF viewing in file previews using PDFKit.
-
 Add native PDF viewing in file previews using PDFKit.
 
 ## Changes

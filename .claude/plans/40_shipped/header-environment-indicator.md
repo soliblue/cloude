@@ -1,9 +1,14 @@
+---
+title: "Header Environment Indicator"
+description: "Added environment icon centered in the window header between tab buttons and action buttons."
+created_at: 2026-03-08
+tags: ["ui", "header", "env"]
+icon: server.rack
+build: 82
+---
+
+
 # Header Environment Indicator {server.rack}
-<!-- priority: 10 -->
-<!-- tags: ui, header, env -->
-
-> Added environment icon centered in the window header between tab buttons and action buttons.
-
 ## Why
 When multi-environment support lands, users need to know which environment they're talking to at a glance. Even before that, it grounds the UI - you're talking to a specific machine.
 

@@ -1,10 +1,14 @@
+---
+title: "Copy Button on Assistant Messages"
+description: "Added inline copy button to assistant message bubble footer next to the refresh button."
+created_at: 2026-02-08
+tags: ["ui"]
+icon: doc.on.doc
+build: 67
+---
+
+
 # Copy Button on Assistant Messages {doc.on.doc}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 67 -->
-
-> Added inline copy button to assistant message bubble footer next to the refresh button.
-
 **Status**: Testing
 **Created**: 2026-02-08
 

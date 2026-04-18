@@ -1,9 +1,14 @@
+---
+title: "Chart Widgets"
+description: "Added bar, pie, scatter, and line chart widgets using Swift Charts for education/math use cases."
+created_at: 2026-03-04
+tags: ["widget", "ui"]
+icon: chart.bar.fill
+build: 82
+---
+
+
 # Chart Widgets {chart.bar.fill}
-<!-- priority: 10 -->
-<!-- tags: widget, ui -->
-
-> Added bar, pie, scatter, and line chart widgets using Swift Charts for education/math use cases.
-
 Added 4 chart widget types for education/math use cases.
 
 ## Widgets Added

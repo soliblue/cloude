@@ -1,10 +1,14 @@
+---
+title: "Plan Icons — SF Symbols for Plan Titles"
+description: "SF Symbol icons in plan headings, displayed on plan cards — same `{icon}` pattern as memory sections."
+created_at: 2026-02-08
+tags: ["plans", "ui"]
+icon: doc.badge.gearshape
+build: 52
+---
+
+
 # Plan Icons — SF Symbols for Plan Titles {doc.badge.gearshape}
-<!-- priority: 10 -->
-<!-- tags: plans, ui -->
-<!-- build: 56 -->
-
-> SF Symbol icons in plan headings, displayed on plan cards — same `{icon}` pattern as memory sections.
-
 Add SF Symbol icon support to plan files, matching the memory section `{icon}` pattern.
 
 ## Format

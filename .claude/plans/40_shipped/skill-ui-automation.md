@@ -1,9 +1,14 @@
+---
+title: "Mac UI Automation Skill"
+description: "Built Mac UI automation skill using Accessibility API for screenshots, clicking, typing, and navigating any app."
+created_at: 2026-02-14
+tags: ["skill", "automation", "accessibility"]
+icon: hand.tap
+build: 71
+---
+
+
 # Mac UI Automation Skill {hand.tap}
-<!-- priority: 9 -->
-<!-- tags: skill, automation, accessibility -->
-
-> Built Mac UI automation skill using Accessibility API for screenshots, clicking, typing, and navigating any app.
-
 ## Approach
 Small Swift CLI (~200 lines) using:
 - `CGWindowListCreateImage` for screenshots (already built into macOS)

@@ -1,10 +1,14 @@
+---
+title: "Rich Tool Rendering — Phase 2: Result Previews"
+description: "Added brief result summaries as second lines on completed tool pills."
+created_at: 2026-02-06
+tags: ["tool-pill", "ui"]
+icon: text.below.photo
+build: 38
+---
+
+
 # Rich Tool Rendering — Phase 2: Result Previews {text.below.photo}
-<!-- priority: 10 -->
-<!-- tags: tool-pill, ui -->
-<!-- build: 56 -->
-
-> Added brief result summaries as second lines on completed tool pills.
-
 Show brief result summary as a second line on completed tool pills:
 - `↳ 241 lines` for Read
 - `↳ Build Succeeded` for xcodebuild

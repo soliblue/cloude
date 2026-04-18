@@ -1,3 +1,13 @@
+---
+title: "Cross-Window Render Pollution"
+description: "Stop hidden conversation updates from re-rendering the visible window tree and wasting idle work."
+created_at: 2026-04-03
+tags: ["performance", "windows"]
+icon: arrow.left.and.right
+build: 133
+---
+
+
 # Cross-Window Render Pollution
 
 Tags: performance

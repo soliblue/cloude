@@ -1,9 +1,14 @@
+---
+title: "Claude Code Release Notes Skill"
+description: "Add a skill that reads Claude Code release notes and flags compatibility changes that matter to Cloude."
+created_at: 2026-03-21
+tags: ["skills"]
+icon: newspaper.fill
+build: 103
+---
+
+
 # Claude Code Release Notes Skill {newspaper.fill}
-<!-- priority: 8 -->
-<!-- tags: skills -->
-
-> Add a skill that reads Claude Code release notes and flags compatibility changes that matter to Cloude.
-
 Create a skill that retrieves Claude Code release notes from Anthropic, parses CLI changes, and automatically updates the Cloude app to fix compatibility issues.
 
 ## Desired Outcome

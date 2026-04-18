@@ -1,10 +1,14 @@
+---
+title: "Compact Question Options"
+description: "Significantly reduced sizing of cloude ask question option buttons to take less vertical space in chat."
+created_at: 2026-02-07
+tags: ["ui"]
+icon: rectangle.compress.vertical
+build: 43
+---
+
+
 # Compact Question Options {rectangle.compress.vertical}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 56 -->
-
-> Significantly reduced sizing of cloude ask question option buttons to take less vertical space in chat.
-
 ## Status: Testing
 
 ## Summary

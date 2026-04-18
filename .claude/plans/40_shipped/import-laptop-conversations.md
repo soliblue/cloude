@@ -1,10 +1,14 @@
+---
+title: "Import Laptop Conversations"
+description: "Added \"From Laptop\" section in conversation picker to import laptop Claude Code sessions."
+created_at: 2026-02-06
+tags: ["conversations"]
+icon: square.and.arrow.down
+build: 34
+---
+
+
 # Import Laptop Conversations {square.and.arrow.down}
-<!-- priority: 10 -->
-<!-- tags: conversations -->
-<!-- build: 56 -->
-
-> Added "From Laptop" section in conversation picker to import laptop Claude Code sessions.
-
 ## Files
 - Cloude/Cloude/UI/ (conversation picker)
 

@@ -1,10 +1,14 @@
+---
+title: "Refactor Tier 2: Deduplication"
+description: "Reduced repeated patterns across stores and models."
+created_at: 2026-02-07
+tags: ["refactor"]
+icon: arrow.triangle.merge
+build: 43
+---
+
+
 # Refactor Tier 2: Deduplication {arrow.triangle.merge}
-<!-- priority: 10 -->
-<!-- tags: refactor -->
-<!-- build: 56 -->
-
-> Reduced repeated patterns across stores and models.
-
 ## Status: Active
 
 ## Scope

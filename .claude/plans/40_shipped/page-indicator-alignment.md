@@ -1,10 +1,14 @@
+---
+title: "Page Indicator Vertical Alignment Fix"
+description: "Fixed misaligned icons in the bottom switcher bar with unified vertical structure."
+created_at: 2026-02-08
+tags: ["ui"]
+icon: arrow.up.and.down
+build: 66
+---
+
+
 # Page Indicator Vertical Alignment Fix {arrow.up.and.down}
-<!-- priority: 10 -->
-<!-- tags: ui -->
-<!-- build: 66 -->
-
-> Fixed misaligned icons in the bottom switcher bar with unified vertical structure.
-
 Fixed misaligned icons in the bottom switcher bar. Heart, window SF symbols, dots, plus button now all share the same vertical structure (22pt icon frame + 5pt unread dot space).
 
 ## What broke
