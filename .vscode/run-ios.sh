@@ -104,10 +104,14 @@ run_on_simulator() {
   fi
 
   open -a Simulator
+  echo "Booting simulator $simulator_id"
   xcrun simctl boot "$simulator_id" >/dev/null 2>&1 || true
   xcrun simctl bootstatus "$simulator_id" -b
+  echo "Building Cloude for simulator"
   xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME_NAME" -configuration Debug -destination "id=$simulator_id" -derivedDataPath "$SIMULATOR_DERIVED_DATA_PATH" build
+  echo "Installing app on simulator"
   xcrun simctl install "$simulator_id" "$SIMULATOR_DERIVED_DATA_PATH/Build/Products/Debug-iphonesimulator/Cloude.app"
+  echo "Launching app on simulator"
   xcrun simctl launch --console --terminate-running-process "$simulator_id" "$BUNDLE_IDENTIFIER"
 }
 
@@ -128,8 +132,11 @@ run_on_device() {
     exit 1
   fi
 
+  echo "Building Cloude for connected device"
   xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME_NAME" -configuration Debug -destination "id=$xcode_device_id" -derivedDataPath "$DEVICE_DERIVED_DATA_PATH" build
+  echo "Installing app on connected device"
   xcrun devicectl device install app --device "$devicectl_device_id" "$DEVICE_DERIVED_DATA_PATH/Build/Products/Debug-iphoneos/Cloude.app"
+  echo "Launching app on connected device"
   xcrun devicectl device process launch --console --terminate-existing --device "$devicectl_device_id" "$BUNDLE_IDENTIFIER"
 }
 

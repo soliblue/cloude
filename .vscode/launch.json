@@ -11,7 +11,8 @@
         "simulator"
       ],
       "cwd": "${workspaceFolder}",
-      "console": "internalConsole"
+      "console": "internalConsole",
+      "outputCapture": "std"
     },
     {
       "name": "Connected iPhone",
@@ -23,7 +24,8 @@
         "device"
       ],
       "cwd": "${workspaceFolder}",
-      "console": "internalConsole"
+      "console": "internalConsole",
+      "outputCapture": "std"
     }
   ]
 }
