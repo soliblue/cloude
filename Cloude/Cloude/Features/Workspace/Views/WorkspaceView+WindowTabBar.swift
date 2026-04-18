@@ -25,30 +25,36 @@ struct WindowTabBar: View, Equatable {
     @State private var gitBranch: String = ""
 
     var body: some View {
-        HStack(spacing: 0) {
-            #if DEBUG
-            let _ = DebugMetrics.log("WindowTabBar", "render | tab=\(activeTab) envConn=\(envConnected)")
-            #endif
-            ForEach(Array(WindowTab.allCases.enumerated()), id: \.element) { index, tab in
-                let enabled = tab == .chat || envConnected
-                if index > 0 {
-                    Divider()
-                        .frame(height: DS.Icon.m)
+        VStack(spacing: 0) {
+            Divider()
+
+            HStack(spacing: 0) {
+                #if DEBUG
+                let _ = DebugMetrics.log("WindowTabBar", "render | tab=\(activeTab) envConn=\(envConnected)")
+                #endif
+                ForEach(Array(WindowTab.allCases.enumerated()), id: \.element) { index, tab in
+                    let enabled = tab == .chat || envConnected
+                    if index > 0 {
+                        Divider()
+                            .frame(height: DS.Icon.m)
+                    }
+                    Button(action: {
+                        if enabled { onSelectTab(tab) }
+                    }) {
+                        tabLabel(for: tab, enabled: enabled)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, DS.Spacing.m)
+                            .contentShape(Rectangle())
+                    }
+                    .agenticID("window_tab_\(tab.rawValue)")
+                    .buttonStyle(.plain)
                 }
-                Button(action: {
-                    if enabled { onSelectTab(tab) }
-                }) {
-                    tabLabel(for: tab, enabled: enabled)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, DS.Spacing.m)
-                        .contentShape(Rectangle())
-                }
-                .agenticID("window_tab_\(tab.rawValue)")
-                .buttonStyle(.plain)
             }
+            .background(Color.themeBackground)
+
+            Divider()
         }
         .padding(0)
-        .background(Color.themeSecondary)
         .agenticID("window_tab_bar")
         .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { event in
             if case let .gitStatus(path, status, envId) = event,
