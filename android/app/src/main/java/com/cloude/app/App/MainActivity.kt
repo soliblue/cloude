@@ -37,7 +37,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,10 +71,8 @@ import com.cloude.app.UI.debug.DebugOverlay
 import com.cloude.app.UI.chat.MainScreen
 import com.cloude.app.UI.chat.RenameDialog
 import com.cloude.app.UI.chat.SkillsSheet
-import com.cloude.app.UI.deploy.DeploySheet
 import com.cloude.app.UI.settings.SettingsScreen
 import com.cloude.app.UI.whiteboard.WhiteboardSheet
-import com.cloude.app.Models.MemorySection
 import com.cloude.app.UI.theme.CloudeTheme
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.AppTheme
@@ -135,7 +132,6 @@ class MainActivity : ComponentActivity() {
         }
 
         val showSettingsState = mutableStateOf(false)
-        val showDeployState = mutableStateOf(false)
         val showConversationsState = mutableStateOf(false)
 
         deepLinkRouter = DeepLinkRouter(
@@ -145,11 +141,9 @@ class MainActivity : ComponentActivity() {
             environmentStore = environmentStore,
             uiActions = object : DeepLinkRouter.UIActions {
                 override fun showSettings() { showSettingsState.value = true }
-                override fun showDeploy() { showDeployState.value = true }
                 override fun showConversations() { showConversationsState.value = true }
                 override fun dismissAll() {
                     showSettingsState.value = false
-                    showDeployState.value = false
                     showConversationsState.value = false
                 }
             }
@@ -168,7 +162,6 @@ class MainActivity : ComponentActivity() {
             }
             var showSettings by showSettingsState
             var showConversations by showConversationsState
-            var showDeploy by showDeployState
             var showRename by remember { mutableStateOf(false) }
             var showIconPicker by remember { mutableStateOf(false) }
             var debugOverlayEnabled by remember {
@@ -290,13 +283,6 @@ class MainActivity : ComponentActivity() {
                             },
                             actions = {
                                 if (!showSettings) {
-                                    IconButton(onClick = { showDeploy = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.RocketLaunch,
-                                            contentDescription = "Deploy",
-                                            tint = Accent
-                                        )
-                                    }
                                     IconButton(onClick = { showConversations = true }) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.List,
@@ -340,15 +326,6 @@ class MainActivity : ComponentActivity() {
                             environmentId = envId,
                             workingDirectory = defaultDir,
                             modifier = Modifier.padding(innerPadding)
-                        )
-                    }
-
-                    if (showDeploy) {
-                        DeploySheet(
-                            connectionManager = connectionManager,
-                            environmentId = envId,
-                            workingDirectory = defaultDir,
-                            onDismiss = { showDeploy = false }
                         )
                     }
 

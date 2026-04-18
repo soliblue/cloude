@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
 import com.cloude.app.Models.AgentState
-import com.cloude.app.Models.MemorySection
 import com.cloude.app.Models.AttachedFilePayload
 import com.cloude.app.Models.ChatMessage
 import com.cloude.app.Models.ClientMessage
@@ -15,7 +14,6 @@ import com.cloude.app.Models.EnvironmentStore
 import com.cloude.app.Models.ServerMessage
 import com.cloude.app.Models.ToolCall
 import com.cloude.app.Models.ToolCallState
-import com.cloude.app.Models.UsageStats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -57,15 +55,6 @@ class ChatViewModel(
     private val _pendingTranscription = MutableStateFlow<String?>(null)
     val pendingTranscription: StateFlow<String?> = _pendingTranscription
 
-    private val _usageStats = MutableStateFlow<UsageStats?>(null)
-    val usageStats: StateFlow<UsageStats?> = _usageStats
-
-    private val _plans = MutableStateFlow<Map<String, List<com.cloude.app.Models.PlanItem>>?>(null)
-    val plans: StateFlow<Map<String, List<com.cloude.app.Models.PlanItem>>?> = _plans
-
-    private val _memorySections = MutableStateFlow<List<MemorySection>?>(null)
-    val memorySections: StateFlow<List<MemorySection>?> = _memorySections
-
     private val _showSkills = MutableStateFlow(false)
     val showSkills: StateFlow<Boolean> = _showSkills
 
@@ -83,8 +72,6 @@ class ChatViewModel(
     private val _fileSearchResults = MutableStateFlow<List<String>>(emptyList())
     val fileSearchResults: StateFlow<List<String>> = _fileSearchResults
     private var pendingFileSearchQuery: String? = null
-
-    private var awaitingUsageStats = false
 
     private val activeEnvId: String?
         get() = _conversation.value.environmentId ?: environmentStore.activeEnvironmentId.value
@@ -261,48 +248,6 @@ class ChatViewModel(
     fun setWorkingDirectory(path: String) {
         _conversation.value = _conversation.value.copy(workingDirectory = path)
         persistConversation()
-    }
-
-    fun requestUsageStats() {
-        val envId = activeEnvId ?: return
-        awaitingUsageStats = true
-        connectionManager.send(ClientMessage.GetUsageStats, envId)
-    }
-
-    fun dismissUsageStats() {
-        _usageStats.value = null
-    }
-
-    fun requestPlans() {
-        val envId = activeEnvId ?: return
-        val workingDir = _conversation.value.workingDirectory
-            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value ?: return
-        connectionManager.send(ClientMessage.GetPlans(workingDir), envId)
-    }
-
-    fun deletePlan(stage: String, filename: String) {
-        val envId = activeEnvId ?: return
-        val workingDir = _conversation.value.workingDirectory
-            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value ?: return
-        connectionManager.send(ClientMessage.DeletePlan(stage, filename, workingDir), envId)
-        val current = _plans.value?.toMutableMap() ?: return
-        current[stage] = current[stage]?.filter { it.filename != filename } ?: emptyList()
-        _plans.value = current
-    }
-
-    fun dismissPlans() {
-        _plans.value = null
-    }
-
-    fun requestMemories() {
-        val envId = activeEnvId ?: return
-        val workingDir = _conversation.value.workingDirectory
-            ?: connectionManager.connection(envId)?.defaultWorkingDirectory?.value ?: return
-        connectionManager.send(ClientMessage.GetMemories(workingDir), envId)
-    }
-
-    fun dismissMemories() {
-        _memorySections.value = null
     }
 
     fun showSkills() {
@@ -760,27 +705,6 @@ class ChatViewModel(
             is ServerMessage.Transcription -> {
                 _pendingTranscription.value = message.text
                 _isTranscribing.value = false
-            }
-
-            is ServerMessage.UsageStatsMsg -> {
-                if (awaitingUsageStats) {
-                    awaitingUsageStats = false
-                    _usageStats.value = message.stats
-                }
-            }
-
-            is ServerMessage.Plans -> {
-                _plans.value = message.stages
-            }
-
-            is ServerMessage.Memories -> {
-                _memorySections.value = message.sections
-            }
-
-            is ServerMessage.PlanDeleted -> {
-                val current = _plans.value?.toMutableMap() ?: return
-                current[message.stage] = current[message.stage]?.filter { it.filename != message.filename } ?: emptyList()
-                _plans.value = current
             }
 
             is ServerMessage.NameSuggestion -> {

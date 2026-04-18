@@ -36,7 +36,6 @@ sealed class ServerMessage {
     data class GitLogResult(val path: String, val commits: List<GitCommit>) : ServerMessage()
     data class Transcription(val text: String) : ServerMessage()
     data class WhisperReady(val ready: Boolean) : ServerMessage()
-    data class Memories(val sections: List<MemorySection>) : ServerMessage()
     data class ProcessList(val processes: List<AgentProcessInfo>) : ServerMessage()
     data class DefaultWorkingDirectory(val path: String) : ServerMessage()
     data class Skills(val skills: List<Skill>) : ServerMessage()
@@ -48,10 +47,6 @@ sealed class ServerMessage {
     data class RemoteSessionList(val sessions: List<RemoteSession>) : ServerMessage()
     data class MessageUUID(val uuid: String, val conversationId: String? = null) : ServerMessage()
     data class NameSuggestion(val name: String, val symbol: String? = null, val conversationId: String) : ServerMessage()
-    data class Plans(val stages: Map<String, List<PlanItem>>) : ServerMessage()
-    data class PlanDeleted(val stage: String, val filename: String) : ServerMessage()
-    data class UsageStatsMsg(val stats: UsageStats) : ServerMessage()
-    data class TerminalOutput(val output: String, val exitCode: Int? = null, val isError: Boolean = false, val terminalId: String? = null) : ServerMessage()
 
     companion object {
         private val json = Json { ignoreUnknownKeys = true; isLenient = true }
@@ -159,9 +154,6 @@ sealed class ServerMessage {
                 )
                 "transcription" -> Transcription(text = obj.str("text") ?: "")
                 "whisper_ready" -> WhisperReady(ready = obj["ready"]?.jsonPrimitive?.boolean ?: false)
-                "memories" -> Memories(
-                    sections = obj["sections"]?.jsonArray?.map { json.decodeFromJsonElement(MemorySection.serializer(), it) } ?: emptyList()
-                )
                 "process_list" -> ProcessList(
                     processes = obj["processes"]?.jsonArray?.map { json.decodeFromJsonElement(AgentProcessInfo.serializer(), it) } ?: emptyList()
                 )
@@ -201,24 +193,6 @@ sealed class ServerMessage {
                     name = obj.str("name") ?: "",
                     symbol = obj.strOrNull("symbol"),
                     conversationId = obj.str("conversationId") ?: ""
-                )
-                "plans" -> Plans(
-                    stages = obj["stages"]?.jsonObject?.mapValues { (_, v) ->
-                        v.jsonArray.map { json.decodeFromJsonElement(PlanItem.serializer(), it) }
-                    } ?: emptyMap()
-                )
-                "plan_deleted" -> PlanDeleted(
-                    stage = obj.str("stage") ?: "",
-                    filename = obj.str("filename") ?: ""
-                )
-                "usage_stats" -> UsageStatsMsg(
-                    stats = json.decodeFromJsonElement(com.cloude.app.Models.UsageStats.serializer(), obj["stats"]?.jsonObject ?: return null)
-                )
-                "terminal_output" -> TerminalOutput(
-                    output = obj.str("output") ?: "",
-                    exitCode = obj["exitCode"]?.jsonPrimitive?.intOrNull,
-                    isError = obj["isError"]?.jsonPrimitive?.booleanOrNull ?: false,
-                    terminalId = obj.strOrNull("terminalId")
                 )
                 "team_created", "teammate_spawned", "teammate_update", "team_deleted" -> null
                 else -> null

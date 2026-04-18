@@ -17,7 +17,6 @@ class DeepLinkRouter(
 ) {
     interface UIActions {
         fun showSettings()
-        fun showDeploy()
         fun showConversations()
         fun dismissAll()
     }
@@ -49,11 +48,6 @@ class DeepLinkRouter(
             "send" -> {
                 uiActions.dismissAll()
                 uri.getQueryParameter("text")?.let { chatViewModel.sendMessage(it) }
-            }
-
-            "usage" -> {
-                uiActions.dismissAll()
-                chatViewModel.requestUsageStats()
             }
 
             "search" -> {
@@ -119,21 +113,6 @@ class DeepLinkRouter(
             "settings" -> {
                 uiActions.dismissAll()
                 uiActions.showSettings()
-            }
-
-            "memory", "memories" -> {
-                uiActions.dismissAll()
-                chatViewModel.requestMemories()
-            }
-
-            "plans" -> {
-                uiActions.dismissAll()
-                chatViewModel.requestPlans()
-            }
-
-            "deploy" -> {
-                uiActions.dismissAll()
-                uiActions.showDeploy()
             }
         }
     }

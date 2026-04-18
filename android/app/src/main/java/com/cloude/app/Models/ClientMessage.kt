@@ -1,6 +1,5 @@
 package com.cloude.app.Models
 
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
@@ -32,7 +31,6 @@ sealed class ClientMessage {
     data class GitCommit(val path: String, val message: String, val files: List<String>) : ClientMessage()
     data class GitLog(val path: String, val count: Int = 10) : ClientMessage()
     data class Transcribe(val audioBase64: String) : ClientMessage()
-    data class GetMemories(val workingDirectory: String) : ClientMessage()
     data object GetProcesses : ClientMessage()
     data class KillProcess(val pid: Int) : ClientMessage()
     data object KillAllProcesses : ClientMessage()
@@ -40,11 +38,6 @@ sealed class ClientMessage {
     data class SearchFiles(val query: String, val workingDirectory: String) : ClientMessage()
     data class ListRemoteSessions(val workingDirectory: String) : ClientMessage()
     data class SuggestName(val text: String, val context: List<String> = emptyList(), val conversationId: String) : ClientMessage()
-    data class GetPlans(val workingDirectory: String) : ClientMessage()
-    data class DeletePlan(val stage: String, val filename: String, val workingDirectory: String) : ClientMessage()
-    data object GetUsageStats : ClientMessage()
-    data class TerminalExec(val command: String, val workingDirectory: String, val terminalId: String? = null) : ClientMessage()
-    data class TerminalInput(val text: String, val terminalId: String? = null) : ClientMessage()
 
     fun toJson(): String = buildJsonObject {
         when (val msg = this@ClientMessage) {
@@ -122,10 +115,6 @@ sealed class ClientMessage {
                 put("type", "transcribe")
                 put("audioBase64", msg.audioBase64)
             }
-            is GetMemories -> {
-                put("type", "get_memories")
-                put("workingDirectory", msg.workingDirectory)
-            }
             is GetProcesses -> put("type", "get_processes")
             is KillProcess -> {
                 put("type", "kill_process")
@@ -151,28 +140,6 @@ sealed class ClientMessage {
                 put("text", msg.text)
                 put("context", buildJsonArray { msg.context.forEach { add(JsonPrimitive(it)) } })
                 put("conversationId", msg.conversationId)
-            }
-            is GetPlans -> {
-                put("type", "get_plans")
-                put("workingDirectory", msg.workingDirectory)
-            }
-            is DeletePlan -> {
-                put("type", "delete_plan")
-                put("stage", msg.stage)
-                put("filename", msg.filename)
-                put("workingDirectory", msg.workingDirectory)
-            }
-            is GetUsageStats -> put("type", "get_usage_stats")
-            is TerminalExec -> {
-                put("type", "terminal_exec")
-                put("command", msg.command)
-                put("workingDirectory", msg.workingDirectory)
-                msg.terminalId?.let { put("terminalId", it) }
-            }
-            is TerminalInput -> {
-                put("type", "terminal_input")
-                put("text", msg.text)
-                msg.terminalId?.let { put("terminalId", it) }
             }
         }
     }.toString()

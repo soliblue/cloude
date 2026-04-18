@@ -305,8 +305,6 @@ fun ChatScreen(
             onDraftChange = onDraftChange,
             onSend = { text, images, files ->
                 when {
-                    text.trim().equals("/usage", ignoreCase = true) -> viewModel.requestUsageStats()
-                    text.trim().equals("/plans", ignoreCase = true) -> viewModel.requestPlans()
                     text.trim().equals("/skills", ignoreCase = true) -> viewModel.showSkills()
                     text.trim().equals("/test-widgets", ignoreCase = true) -> viewModel.injectTestWidgets()
                     text.trim().equals("/whiteboard", ignoreCase = true) -> viewModel.handleWhiteboardAction("open", null)

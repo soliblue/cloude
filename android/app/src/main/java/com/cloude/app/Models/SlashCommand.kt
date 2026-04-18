@@ -11,8 +11,7 @@ data class SlashCommand(
         val builtIn = listOf(
             SlashCommand("compact", "Compact conversation context", false),
             SlashCommand("context", "Show context window usage", false),
-            SlashCommand("cost", "Show session cost", false),
-            SlashCommand("usage", "Show token usage stats", false)
+            SlashCommand("cost", "Show session cost", false)
         )
 
         fun fromSkills(skills: List<Skill>): List<SlashCommand> {

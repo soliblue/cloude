@@ -60,12 +60,6 @@ data class GitCommit(
 )
 
 @Serializable
-data class MemorySection(
-    val title: String,
-    val content: String
-)
-
-@Serializable
 data class AgentProcessInfo(
     val pid: Int,
     val command: String,
@@ -104,51 +98,6 @@ data class RemoteSession(
     val id: String,
     val workingDirectory: String? = null,
     val startedAt: Double? = null
-)
-
-@Serializable
-data class PlanItem(
-    val filename: String,
-    val title: String,
-    val icon: String? = null,
-    val description: String? = null,
-    val priority: Int = 10,
-    val tags: List<String> = emptyList(),
-    val content: String? = null,
-    val path: String? = null
-)
-
-@Serializable
-data class UsageStats(
-    val totalSessions: Int = 0,
-    val totalMessages: Int = 0,
-    val firstSessionDate: String? = null,
-    val dailyActivity: List<DailyActivity> = emptyList(),
-    val modelUsage: Map<String, ModelTokenUsage> = emptyMap(),
-    val hourCounts: Map<String, Int> = emptyMap(),
-    val longestSession: LongestSession? = null
-)
-
-@Serializable
-data class DailyActivity(
-    val date: String,
-    val messageCount: Int = 0,
-    val sessionCount: Int = 0,
-    val toolCallCount: Int = 0
-)
-
-@Serializable
-data class ModelTokenUsage(
-    val inputTokens: Long = 0,
-    val outputTokens: Long = 0,
-    val cacheReadInputTokens: Long = 0,
-    val cacheCreationInputTokens: Long = 0
-)
-
-@Serializable
-data class LongestSession(
-    val messageCount: Int = 0,
-    val duration: Int = 0
 )
 
 @Serializable

@@ -82,7 +82,7 @@ class WindowManager(context: Context) {
             val obj = json.getJSONObject(i)
             ChatWindow(
                 id = obj.getString("id"),
-                type = WindowType.valueOf(obj.getString("type")),
+                type = WindowType.entries.firstOrNull { it.name == obj.getString("type") } ?: WindowType.Chat,
                 conversationId = if (obj.isNull("conversationId")) null else obj.getString("conversationId")
             )
         }

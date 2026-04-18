@@ -255,10 +255,8 @@ fun InputBar(
         "Ask anything...",
         "Try /compact to save context",
         "Attach images with the gallery button",
-        "Use /plans to view your roadmap",
         "Try /skills to browse available skills",
         "Take a photo with the camera button",
-        "Use /usage to check token stats",
         "Attach files with the paperclip",
         "Long-press messages to copy or fork",
         "Swipe between windows with tabs"

@@ -2,7 +2,7 @@ package com.cloude.app.Models
 
 import java.util.UUID
 
-enum class WindowType { Chat, Files, GitChanges, Memories, Plans }
+enum class WindowType { Chat, Files, GitChanges }
 
 data class ChatWindow(
     val id: String = UUID.randomUUID().toString(),

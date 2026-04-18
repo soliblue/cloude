@@ -29,8 +29,6 @@ import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.Services.WindowManager
 import com.cloude.app.UI.files.FileBrowserScreen
 import com.cloude.app.UI.git.GitScreen
-import com.cloude.app.UI.memories.MemoriesScreen
-import com.cloude.app.UI.chat.PlansScreen
 
 @Composable
 fun MainScreen(
@@ -133,36 +131,7 @@ fun MainScreen(
                             .zIndex(if (window.type == WindowType.GitChanges) 1f else 0f)
                     )
                 }
-                if (WindowType.Memories in visited) {
-                    val memorySections by viewModel.memorySections.collectAsState()
-                    LaunchedEffect(Unit) { viewModel.requestMemories() }
-                    MemoriesScreen(
-                        sections = memorySections,
-                        modifier = Modifier.fillMaxSize()
-                            .alpha(if (window.type == WindowType.Memories) 1f else 0f)
-                            .zIndex(if (window.type == WindowType.Memories) 1f else 0f)
-                    )
-                }
-                if (WindowType.Plans in visited) {
-                    val plans by viewModel.plans.collectAsState()
-                    LaunchedEffect(Unit) { viewModel.requestPlans() }
-                    PlansScreen(
-                        stages = plans,
-                        onDelete = { stage, filename -> viewModel.deletePlan(stage, filename) },
-                        modifier = Modifier.fillMaxSize()
-                            .alpha(if (window.type == WindowType.Plans) 1f else 0f)
-                            .zIndex(if (window.type == WindowType.Plans) 1f else 0f)
-                    )
-                }
             }
         }
-    }
-
-    val usageStats by viewModel.usageStats.collectAsState()
-    if (usageStats != null) {
-        UsageStatsSheet(
-            stats = usageStats!!,
-            onDismiss = { viewModel.dismissUsageStats() }
-        )
     }
 }

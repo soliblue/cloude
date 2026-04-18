@@ -83,7 +83,6 @@ private fun slashCommandIcon(name: String): String = when (name) {
     "compact" -> "\u21BB"
     "context" -> "\u25CF"
     "cost" -> "$"
-    "usage" -> "\u2261"
     "clear" -> "\u2715"
     else -> "\u2726"
 }
