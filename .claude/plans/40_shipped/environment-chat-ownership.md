@@ -7,7 +7,6 @@ icon: lock.laptopcomputer
 build: 82
 ---
 
-
 # Environment Chat Ownership {lock.laptopcomputer}
 conversations should track which environment they belong to, preventing users from sending messages when connected to a different environment.
 
@@ -30,10 +29,3 @@ conversations should track which environment they belong to, preventing users fr
 
 ### 4. Set environmentId on chat
 - `ConnectionManager+MessageHandler.swift` or wherever conversations get created/first-messaged: stamp `environmentStore.activeEnvironmentId` onto the conversation if it doesn't have one yet
-
----
-meta:
-  created: 2026-03-08
-  status: next
-  scope: ios
-  icon: lock.laptopcomputer

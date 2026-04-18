@@ -33,16 +33,32 @@ Plans are markdown tickets under `.claude/plans/`. Stages:
 - `30_testing`: implemented, waiting for user verification
 - `40_shipped`: pushed and out the door
 
-Filename: `kebab-case-description.md`. Header:
+Filename: `kebab-case-description.md`.
+
+Every plan uses YAML frontmatter in this shape:
 
 ```markdown
-# Feature Name {sf.symbol.name}
-<!-- priority: 10 -->
-<!-- tags: ui, agent -->
-> One sentence description.
+---
+title: "Feature Name"
+description: "One sentence summary."
+created_at: 2026-04-18
+tags: ["ui"]
+icon: sparkles
+build: 155
+---
+
+# Feature Name {sparkles}
 ```
 
-Optional `<!-- build: N -->` once in testing/shipped.
+Rules:
+- `title`, `description`, `created_at`, `tags`, and `icon` are required.
+- `build` is optional. Add it when the ticket is tied to a concrete app build, typically in `30_testing` or `40_shipped`.
+- `created_at` is the calendar day the ticket was first created. Preserve it when moving stages.
+- `tags` must be a YAML array, usually 1 or 2 items.
+- `icon` is an SF Symbol name.
+- Keep metadata in YAML frontmatter using the fields above.
+- Keep the first H1 aligned with `title`. Append `{icon}` in the H1 when the ticket uses an icon.
+- Store the one-sentence summary in frontmatter `description`.
 
 Before moving a ticket to `30_testing`, include a `## Verify` section: desired outcome and a simple test another agent can execute. The `sim` skill picks up `30_testing` tickets and runs QA against this section.
 

@@ -7,7 +7,6 @@ icon: point.3.connected.trianglepath.dotted
 build: 82
 ---
 
-
 # Parallel Environment Connections {point.3.connected.trianglepath.dotted}
 ## Why
 Multi-agent support already exists (add/switch servers). But switching disconnects from the previous one. With Medina + Mac both running, you should be able to chat on both at the same time across different windows.
@@ -64,10 +63,3 @@ Medium-high. Biggest refactor is ConnectionManager from singleton to multi-insta
 ### Remaining
 - Switcher dots colored by environment (cosmetic, nice-to-have)
 - Build and test with multiple simultaneous connections
-
----
-meta:
-  created: 2026-03-08
-  status: active
-  scope: ios, architecture
-  icon: point.3.connected.trianglepath.dotted

@@ -7,8 +7,6 @@ icon: magnifyingglass
 build: 120
 ---
 # Android Conversation Search {magnifyingglass}
-<!-- status: done -->
-
 
 ## Implementation
 

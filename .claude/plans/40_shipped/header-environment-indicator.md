@@ -7,7 +7,6 @@ icon: server.rack
 build: 82
 ---
 
-
 # Header Environment Indicator {server.rack}
 ## Why
 When multi-environment support lands, users need to know which environment they're talking to at a glance. Even before that, it grounds the UI - you're talking to a specific machine.
@@ -27,10 +26,3 @@ When multi-environment support lands, users need to know which environment they'
 ## Dependencies
 - None for the static version
 - Multi-agent-support for dynamic switching
-
----
-meta:
-  created: 2026-03-08
-  status: next
-  scope: ios, ui
-  icon: building.2

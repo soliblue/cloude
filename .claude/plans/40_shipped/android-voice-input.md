@@ -3,12 +3,10 @@ title: "Android Voice Input & Transcription"
 description: "Record audio, send to agent for Whisper transcription, insert into chat."
 created_at: 2026-04-02
 tags: ["android", "audio"]
-build: 120
 icon: mic
+build: 120
 ---
 # Android Voice Input & Transcription {mic}
-<!-- status: blocked -->
-
 
 ## Status
 

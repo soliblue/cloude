@@ -7,8 +7,6 @@ icon: paperclip
 build: 120
 ---
 # Android File Attachments {paperclip}
-<!-- status: done -->
-
 
 ## Implementation
 
