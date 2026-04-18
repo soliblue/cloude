@@ -18,7 +18,7 @@ You own the evidence plan. Measurement happens elsewhere; you define what should
 
 | # | Action |
 |---|---|
-| 1 | Read relevant done plans under `.claude/plans/40_done/` if the goal echoes a prior round |
+| 1 | Read relevant done plans under `.claude/plans/40_shipped/` if the goal echoes a prior round |
 | 2 | Pick scenario(s) from `.claude/agents/tester/scenarios/`; only extend if the set misses the bug shape |
 | 3 | Decide whether instrumentation is needed; if yes, add logging-only edits |
 

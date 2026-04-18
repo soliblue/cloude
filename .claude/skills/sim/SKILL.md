@@ -12,7 +12,7 @@ argument-hint: "[goal or problem]"
 
 Runs one complete round of behavioral investigation on Cloude in Simulator: plan, measure, hypothesize, fix, verify, judge. Produces a measured fix with a pass/fail verdict.
 
-The skill owns `.claude/plans/20_active/<slug>.md` and opens with `# Round: <goal>`. Binary artifacts land in `.claude/agents/tester/output/`; the round doc references them by path. On `approved`, move the file from `20_active/<slug>.md` to `40_done/<slug>.md`. On `rejected`, report the reason and ask the user to re-enter at planner (more evidence) or solver (different fix).
+The skill owns `.claude/plans/20_active/<slug>.md` and opens with `# Round: <goal>`. Binary artifacts land in `.claude/agents/tester/output/`; the round doc references them by path. On `approved`, move the file from `20_active/<slug>.md` to `40_shipped/<slug>.md`. On `rejected`, report the reason and ask the user to re-enter at planner (more evidence) or solver (different fix).
 
 Prefer observation over inference: code that appears logically sound is not verified.
 
