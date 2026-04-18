@@ -144,7 +144,7 @@ extension EnvironmentConnection {
         }
     }
 
-    func handleNoMissedResponse(_ mgr: ConnectionManager, sessionId: String) {
+    func handleNoMissedResponse(_ _: ConnectionManager, sessionId: String) {
         if pendingMissedResponseTargets.removeValue(forKey: sessionId) != nil {
             return
         }

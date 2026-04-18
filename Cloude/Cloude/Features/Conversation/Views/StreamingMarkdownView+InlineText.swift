@@ -61,23 +61,3 @@ struct InlineTextView: View {
         return result
     }
 }
-
-private func fileIconChar(for filename: String) -> String {
-    let ext = filename.pathExtension.lowercased()
-    switch ext {
-    case "swift": return "◆"
-    case "py": return "◇"
-    case "js", "jsx", "ts", "tsx": return "◈"
-    case "json", "yaml", "yml", "toml": return "{ }"
-    case "md", "txt": return "¶"
-    case "html", "xml", "plist": return "◁"
-    case "css", "scss", "sass": return "◀"
-    case "sh", "bash", "zsh": return "▶"
-    case "png", "jpg", "jpeg", "gif", "webp", "heic", "svg": return "□"
-    case "pdf": return "▣"
-    case "mp4", "mov", "avi", "mkv": return "▷"
-    case "mp3", "wav", "m4a", "flac": return "♪"
-    case "zip", "tar", "gz", "rar": return "▤"
-    default: return "○"
-    }
-}

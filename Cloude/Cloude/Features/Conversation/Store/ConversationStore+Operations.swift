@@ -28,11 +28,6 @@ extension ConversationStore {
         mutate(conversation.id) { $0.environmentId = environmentId }
     }
 
-    func addConversation(_ conversation: Conversation) {
-        conversations.insert(conversation, at: 0)
-        saveConversation(conversation)
-    }
-
     func updateSessionId(_ conversation: Conversation, sessionId: String, workingDirectory: String?) {
         guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return }
         guard conversations[idx].sessionId != sessionId || conversations[idx].workingDirectory != workingDirectory else { return }

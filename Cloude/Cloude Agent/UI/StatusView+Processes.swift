@@ -1,5 +1,4 @@
 import SwiftUI
-import CloudeShared
 
 extension StatusView {
     var processesSection: some View {

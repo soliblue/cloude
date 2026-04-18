@@ -8,7 +8,7 @@ extension ConnectionManager {
         return anyAuthenticatedConnection()
     }
 
-    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imagesBase64: [String]? = nil, filesBase64: [AttachedFilePayload]? = nil, conversationName: String? = nil, conversationSymbol: String? = nil, forkSession: Bool = false, effort: String? = nil, model: String? = nil, environmentId: UUID? = nil) {
+    func sendChat(_ message: String, workingDirectory: String? = nil, sessionId: String? = nil, isNewSession: Bool = true, conversationId: UUID? = nil, imagesBase64: [String]? = nil, filesBase64: [AttachedFilePayload]? = nil, conversationName: String? = nil, forkSession: Bool = false, effort: String? = nil, model: String? = nil, environmentId: UUID? = nil) {
         guard let conn = connectionForSend(environmentId: environmentId, conversationId: conversationId) else { return }
         if let convId = conversationId {
             AppLogger.beginInterval("chat.firstToken", key: convId.uuidString, details: "chars=\(message.count)")
@@ -59,9 +59,5 @@ extension ConnectionManager {
 
     func requestNameSuggestion(text: String, context: [String], conversationId: UUID) {
         connectionForSend(conversationId: conversationId)?.send(.suggestName(text: text, context: context, conversationId: conversationId.uuidString))
-    }
-
-    func send(_ message: ClientMessage, environmentId: UUID? = nil) {
-        connectionForSend(environmentId: environmentId)?.send(message)
     }
 }

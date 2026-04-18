@@ -29,11 +29,6 @@ extension StreamingMarkdownParser {
         return result
     }
 
-    static func parseInlineElements(_ text: String) -> AttributedString {
-        let segments = parseLineToSegments(text, font: nil)
-        return segmentsToAttributedString(segments)
-    }
-
     static func looksLikeFilePath(_ text: String) -> Bool {
         guard text.hasPrefix("/") else { return false }
         let imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".heic", ".svg", ".pdf"]

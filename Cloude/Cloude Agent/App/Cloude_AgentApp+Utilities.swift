@@ -22,30 +22,6 @@ extension AppDelegate {
         signal(SIGINT, signalCallback)
     }
 
-    static func codeSigningIdentity() -> String {
-        let pipe = Pipe()
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
-        process.arguments = ["-dvv", Bundle.main.bundlePath]
-        process.standardOutput = FileHandle.nullDevice
-        process.standardError = pipe
-        do {
-            try process.run()
-            process.waitUntilExit()
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8) ?? ""
-            let authority = output.components(separatedBy: "\n")
-                .first { $0.hasPrefix("Authority=") }?
-                .replacingOccurrences(of: "Authority=", with: "") ?? "unknown"
-            let teamId = output.components(separatedBy: "\n")
-                .first { $0.hasPrefix("TeamIdentifier=") }?
-                .replacingOccurrences(of: "TeamIdentifier=", with: "") ?? "unknown"
-            return "\(authority) (Team: \(teamId))"
-        } catch {
-            return "failed to read: \(error.localizedDescription)"
-        }
-    }
-
     func handleTranscribe(_ audioBase64: String, connection: NWConnection) {
         Log.info("Transcribe: received \(audioBase64.count) chars")
         Task {

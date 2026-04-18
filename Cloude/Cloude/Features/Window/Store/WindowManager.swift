@@ -81,12 +81,6 @@ class WindowManager: ObservableObject {
         save()
     }
 
-    func setActive(_ id: UUID) {
-        guard windows.contains(where: { $0.id == id }) else { return }
-        activeWindowId = id
-        save()
-    }
-
     func updateWindow(_ id: UUID, conversationId: UUID?) {
         guard let index = windows.firstIndex(where: { $0.id == id }) else { return }
         windows[index].conversationId = conversationId
@@ -95,12 +89,6 @@ class WindowManager: ObservableObject {
 
     func linkToCurrentConversation(_ windowId: UUID, conversation: Conversation?) {
         updateWindow(windowId, conversationId: conversation?.id)
-    }
-
-    func unlinkConversation(_ windowId: UUID) {
-        guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
-        windows[index].conversationId = nil
-        save()
     }
 
     func setWindowTab(_ windowId: UUID, tab: WindowTab) {
@@ -144,17 +132,4 @@ class WindowManager: ObservableObject {
         activeWindowId = windows[index].id
         save()
     }
-
-    func navigateLeft() {
-        guard let currentIndex = activeWindowId.flatMap({ windowIndex(for: $0) }),
-              currentIndex > 0 else { return }
-        navigateToWindow(at: currentIndex - 1)
-    }
-
-    func navigateRight() {
-        guard let currentIndex = activeWindowId.flatMap({ windowIndex(for: $0) }),
-              currentIndex < windows.count - 1 else { return }
-        navigateToWindow(at: currentIndex + 1)
-    }
-
 }

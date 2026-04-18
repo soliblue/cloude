@@ -1,5 +1,4 @@
 import SwiftUI
-import CloudeShared
 
 extension WorkspaceView {
     func editWindowSheet(_ window: Window) -> some View {

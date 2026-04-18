@@ -127,9 +127,4 @@ extension WorkspaceView {
         get { store.refreshingSessionIds }
         nonmutating set { store.refreshingSessionIds = newValue }
     }
-
-    var exportCopied: Bool {
-        get { store.exportCopied }
-        nonmutating set { store.exportCopied = newValue }
-    }
 }

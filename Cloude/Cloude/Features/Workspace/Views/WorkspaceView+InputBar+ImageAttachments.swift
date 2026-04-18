@@ -1,5 +1,4 @@
 import SwiftUI
-import CloudeShared
 
 struct AttachedImage: Identifiable {
     let id = UUID()

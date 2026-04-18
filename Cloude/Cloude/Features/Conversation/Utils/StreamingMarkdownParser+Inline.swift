@@ -2,11 +2,6 @@ import Foundation
 import SwiftUI
 
 extension StreamingMarkdownParser {
-    static func parseInlineMarkdown(_ text: String) -> AttributedString {
-        let segments = parseToSegments(text)
-        return segmentsToAttributedString(segments)
-    }
-
     static func parseToSegments(_ text: String) -> [InlineSegment] {
         var result: [InlineSegment] = []
         let lines = text.components(separatedBy: "\n")

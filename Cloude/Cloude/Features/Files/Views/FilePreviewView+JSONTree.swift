@@ -3,7 +3,6 @@ import SwiftUI
 struct JSONTreeView: View {
     let value: Any
     let label: String
-    @State private var expanded = true
 
     var body: some View {
         JSONNodeView(key: label, value: value, depth: 0, startExpanded: true)

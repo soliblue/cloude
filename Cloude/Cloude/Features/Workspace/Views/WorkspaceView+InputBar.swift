@@ -57,7 +57,6 @@ struct WorkspaceInputBar: View {
         static let stopButtonDelay: TimeInterval = 3.0
         static let fileSearchDebounce: Duration = .milliseconds(150)
         static let maxImageAttachments = 5
-        static let placeholderRotationInterval: TimeInterval = 8
     }
 
     static let placeholders = [

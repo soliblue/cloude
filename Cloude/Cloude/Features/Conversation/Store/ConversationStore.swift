@@ -24,23 +24,6 @@ class ConversationStore: ObservableObject {
         conversations.first { $0.id == id }
     }
 
-    var conversationsByDirectory: [(directory: String, conversations: [Conversation])] {
-        let grouped = Dictionary(grouping: listableConversations) { conv in
-            conv.workingDirectory ?? ""
-        }
-        return grouped.map { dir, convs in
-            (directory: dir, conversations: convs.sorted { $0.lastMessageAt > $1.lastMessageAt })
-        }.sorted { lhs, rhs in
-            let lhsDate = lhs.conversations.first?.lastMessageAt ?? .distantPast
-            let rhsDate = rhs.conversations.first?.lastMessageAt ?? .distantPast
-            return lhsDate > rhsDate
-        }
-    }
-
-    var uniqueWorkingDirectories: [String] {
-        Array(Set(listableConversations.compactMap { $0.workingDirectory })).filter { !$0.isEmpty }
-    }
-
     init() {
         load()
     }

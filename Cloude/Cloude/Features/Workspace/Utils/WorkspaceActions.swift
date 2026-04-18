@@ -148,7 +148,6 @@ extension App {
             isNewSession: isNewSession,
             conversationId: updatedConv.id,
             conversationName: updatedConv.name,
-            conversationSymbol: updatedConv.symbol,
             forkSession: isFork,
             effort: effortValue,
             model: modelValue,

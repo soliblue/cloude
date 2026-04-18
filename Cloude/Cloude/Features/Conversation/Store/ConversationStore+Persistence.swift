@@ -2,12 +2,6 @@ import Foundation
 import CloudeShared
 
 extension ConversationStore {
-    func save() {
-        for conversation in conversations {
-            saveConversation(conversation)
-        }
-    }
-
     func saveConversation(_ conversation: Conversation) {
         if let data = try? JSONEncoder().encode(conversation) {
             try? data.write(to: fileURL(for: conversation.id))

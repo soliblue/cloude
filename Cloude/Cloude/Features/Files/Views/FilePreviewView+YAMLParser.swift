@@ -3,11 +3,11 @@ import Foundation
 enum YAMLParser {
     static func parse(_ text: String) -> Any? {
         let lines = text.components(separatedBy: "\n")
-        let (result, _) = parseBlock(lines: lines, startIndex: 0, minIndent: 0)
+        let (result, _) = parseBlock(lines: lines, startIndex: 0)
         return result
     }
 
-    private static func parseBlock(lines: [String], startIndex: Int, minIndent: Int) -> (Any?, Int) {
+    private static func parseBlock(lines: [String], startIndex: Int) -> (Any?, Int) {
         var index = startIndex
 
         while index < lines.count {
@@ -59,7 +59,7 @@ enum YAMLParser {
                     let nextTrimmed = nextLine.trimmingCharacters(in: .whitespaces)
                     let nextIndent = indent(of: nextLine)
                     if !nextTrimmed.isEmpty && nextIndent > minIndent {
-                        let (child, newIndex) = parseBlock(lines: lines, startIndex: index, minIndent: nextIndent)
+                        let (child, newIndex) = parseBlock(lines: lines, startIndex: index)
                         dict[key] = child ?? ""
                         index = newIndex
                     } else {

@@ -47,12 +47,6 @@ class AuthManager {
         }
     }
 
-    func regenerateToken() -> String {
-        let newToken = generateToken()
-        saveToKeychain(newToken)
-        return newToken
-    }
-
     private func generateToken() -> String {
         var bytes = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)

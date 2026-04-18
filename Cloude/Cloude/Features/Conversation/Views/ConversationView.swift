@@ -35,10 +35,6 @@ struct ConversationView: View {
         return connection.output(for: convId)
     }
 
-    private var isThisConversationRunning: Bool {
-        convOutput?.isRunning ?? false
-    }
-
     var body: some View {
         let _ = NSLog("[STABILITY] ConversationView.body | msgs=\(messages.count) hasOutput=\(convOutput != nil) convId=\(effectiveConversation?.id.uuidString.prefix(6) ?? "nil")")
         content(output: convOutput)

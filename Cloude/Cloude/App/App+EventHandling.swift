@@ -45,9 +45,6 @@ extension App {
         case .liveSnapshot(let convId):
             handleLiveSnapshot(conversationId: convId)
 
-        case .question:
-            break
-
         case .screenshot(let convId):
             handleScreenshot(conversationId: convId)
 

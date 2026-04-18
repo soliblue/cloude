@@ -127,7 +127,6 @@ extension WorkspaceStore {
                 imagesBase64: imagesBase64,
                 filesBase64: filesBase64,
                 conversationName: updatedConv.name,
-                conversationSymbol: updatedConv.symbol,
                 forkSession: isFork,
                 effort: effortValue,
                 model: modelValue,
@@ -146,27 +145,6 @@ extension WorkspaceStore {
                 conversationStore.clearPendingFork(updatedConv)
             }
         }
-    }
-
-    func exportConversation(_ conversation: Conversation, conversationStore: ConversationStore) {
-        var lines: [String] = []
-        let messages = conversationStore.messages(for: conversation)
-        for message in messages {
-            if message.isUser {
-                lines.append("**User**: \(message.text)")
-            } else {
-                var parts: [String] = []
-                let text = message.text.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !text.isEmpty {
-                    parts.append(text)
-                }
-                for tool in message.toolCalls {
-                    parts.append("> **\(tool.name)**: \(tool.input ?? "")")
-                }
-                lines.append(parts.joined(separator: "\n\n"))
-            }
-        }
-        UIPasteboard.general.string = lines.joined(separator: "\n\n---\n\n")
     }
 
     func refreshConversation(for window: Window, connection: ConnectionManager, conversationStore: ConversationStore) {

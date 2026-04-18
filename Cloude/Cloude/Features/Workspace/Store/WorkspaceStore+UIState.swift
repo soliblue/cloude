@@ -17,12 +17,6 @@ extension WorkspaceStore {
         editingWindow = windowManager.windows.first { $0.id == windowId }
     }
 
-    func beginEditingWindow(at index: Int, windowManager: WindowManager) {
-        if index < windowManager.windows.count {
-            editingWindow = windowManager.windows[index]
-        }
-    }
-
     func dismissEditingWindow() {
         editingWindow = nil
     }

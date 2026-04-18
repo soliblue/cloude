@@ -21,7 +21,6 @@ final class WorkspaceStore: ObservableObject {
     @Published var currentModel: ModelSelection?
     @Published var showConversationSearch = false
     @Published var refreshingSessionIds: Set<String> = []
-    @Published var exportCopied = false
 
     func currentConversation(windowManager: WindowManager, conversationStore: ConversationStore) -> Conversation? {
         windowManager.activeWindow?.conversation(in: conversationStore)

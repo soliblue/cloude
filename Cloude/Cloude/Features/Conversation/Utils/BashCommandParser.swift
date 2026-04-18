@@ -19,12 +19,6 @@ struct BashCommandParser {
     let allArgs: [String]
     private let flags: [String: String]
 
-    static func chainedCommands(for input: String) -> [String] {
-        guard !isScript(input) else { return [] }
-        let commands = splitChainedCommands(input)
-        return commands.count > 1 ? commands : []
-    }
-
     static func chainedCommandsWithOperators(for input: String) -> [ChainedCommand] {
         guard !isScript(input) else { return [] }
         let result = splitChainedWithOperators(input)
@@ -49,10 +43,6 @@ struct BashCommandParser {
             }
         }
         return false
-    }
-
-    static func splitChainedCommands(_ input: String) -> [String] {
-        splitChainedWithOperators(input).map(\.command)
     }
 
     static func parse(_ input: String) -> BashCommandParser {

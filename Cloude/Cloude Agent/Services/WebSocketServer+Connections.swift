@@ -79,20 +79,4 @@ extension WebSocketServer {
             conn.send(content: frame, completion: .contentProcessed { _ in })
         }
     }
-
-    func sendMessage(_ message: ServerMessage, to connection: NWConnection, completion: @escaping () -> Void) {
-        guard let frame = WebSocketFrame.encode(message) else {
-            completion()
-            return
-        }
-
-        connection.send(content: frame, completion: .contentProcessed { error in
-            if let error = error {
-                Log.error("[WebSocket] Send error: \(error)")
-            }
-            DispatchQueue.main.async {
-                completion()
-            }
-        })
-    }
 }

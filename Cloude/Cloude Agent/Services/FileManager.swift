@@ -76,52 +76,6 @@ class FileService {
         return chunks
     }
 
-    private let imageExtensions = Set(["jpg", "jpeg", "png", "heic", "heif", "tiff", "tif", "gif", "bmp"])
-    private let thumbnailMaxSize = 200 * 1024
-
-    func isImage(at path: String) -> Bool {
-        let ext = path.pathExtension.lowercased()
-        return imageExtensions.contains(ext)
-    }
-
-    func needsThumbnail(at path: String) -> Bool {
-        guard isImage(at: path) else { return false }
-        guard let attrs = try? fileManager.attributesOfItem(atPath: path),
-              let size = attrs[.size] as? Int64 else { return false }
-        return size > Int64(chunkSize)
-    }
-
-    func generateThumbnail(for path: String) -> Data? {
-        let tempDir = FileManager.default.temporaryDirectory
-        let thumbPath = tempDir.appendingPathComponent("thumb_\(UUID().uuidString).jpg").path
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/sips")
-        process.arguments = [
-            "-Z", "800",
-            "-s", "format", "jpeg",
-            "-s", "formatOptions", "low",
-            path,
-            "--out", thumbPath
-        ]
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-
-            if process.terminationStatus == 0 {
-                let data = try Data(contentsOf: URL(fileURLWithPath: thumbPath))
-                try? FileManager.default.removeItem(atPath: thumbPath)
-                return data
-            }
-        } catch {
-            Log.error("[Thumbnail] Failed: \(error)")
-        }
-
-        try? FileManager.default.removeItem(atPath: thumbPath)
-        return nil
-    }
-
     enum FileError: LocalizedError {
         case fileTooLarge(size: Int64, max: Int64)
 

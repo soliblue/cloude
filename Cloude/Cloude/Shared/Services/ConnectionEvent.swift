@@ -36,7 +36,6 @@ case lastAssistantMessageCostUpdate(conversationId: UUID, costUsd: Double)
     case clipboard(String)
     case openURL(String)
     case haptic(String)
-    case question(questions: [Question], conversationId: UUID?)
     case screenshot(conversationId: UUID?)
     case whiteboard(action: String, json: [String: Any], conversationId: UUID?)
 }

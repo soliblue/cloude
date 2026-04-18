@@ -53,7 +53,6 @@ enum DS {
     }
 
     enum Delay {
-        static let s: Double = 0.1
         static let m: Double = 0.3
         static let l: Double = 0.5
         static let xl: Double = 1.5

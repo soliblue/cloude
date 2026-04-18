@@ -12,23 +12,10 @@ class ConnectionManager: ObservableObject {
     var conversationOutputs: [UUID: ConversationOutput] = [:]
     var conversationEnvironments: [UUID: UUID] = [:]
     private var backgroundTaskId: UIBackgroundTaskIdentifier = .invalid
-
-    var isConnected: Bool { connections.values.contains { $0.isConnected } }
     var isAuthenticated: Bool { connections.values.contains { $0.isAuthenticated } }
-
-    var agentState: AgentState {
-        let states = connections.values.map(\.agentState)
-        if states.contains(.running) { return .running }
-        if states.contains(.compacting) { return .compacting }
-        return .idle
-    }
 
     var isAnyRunning: Bool {
         conversationOutputs.values.contains { $0.isRunning }
-    }
-
-    var lastError: String? {
-        connections.values.compactMap(\.lastError).first
     }
 
     var processes: [AgentProcessInfo] {
@@ -38,22 +25,6 @@ class ConnectionManager: ObservableObject {
     var skills: [Skill] {
         var seen = Set<String>()
         return connections.values.flatMap(\.skills).filter { seen.insert($0.name).inserted }
-    }
-
-    var isWhisperReady: Bool {
-        connections.values.contains { $0.isWhisperReady }
-    }
-
-    var isTranscribing: Bool {
-        connections.values.contains { $0.isTranscribing }
-    }
-
-    var defaultWorkingDirectory: String? {
-        connections.values.compactMap(\.defaultWorkingDirectory).first
-    }
-
-    var latencyMs: Double? {
-        connections.values.compactMap(\.latencyMs).min()
     }
 
     var chunkProgress: EnvironmentConnection.ChunkProgress? {

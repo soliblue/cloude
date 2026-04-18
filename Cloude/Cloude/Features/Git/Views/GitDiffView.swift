@@ -79,10 +79,6 @@ struct GitDiffView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var fileName: String {
-        file.path.lastPathComponent
-    }
-
     private var statusIcon: String {
         switch file.status {
         case "M": return "pencil.circle.fill"

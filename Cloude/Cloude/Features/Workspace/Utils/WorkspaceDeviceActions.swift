@@ -30,8 +30,7 @@ extension App {
                             isNewSession: false,
                             conversationId: targetConvId,
                             imagesBase64: [base64],
-                            conversationName: conv.name,
-                            conversationSymbol: conv.symbol
+                            conversationName: conv.name
                         )
                         self.connection.output(for: targetConvId).liveMessageId = self.conversationStore.insertLiveMessage(into: conv)
                     }

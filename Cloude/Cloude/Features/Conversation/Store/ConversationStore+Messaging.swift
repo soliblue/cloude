@@ -103,7 +103,6 @@ extension ConversationStore {
             isNewSession: false,
             conversationId: updatedConv.id,
             conversationName: updatedConv.name,
-            conversationSymbol: updatedConv.symbol,
             effort: updatedConv.defaultEffort?.rawValue,
             model: updatedConv.defaultModel?.rawValue,
             environmentId: updatedConv.environmentId

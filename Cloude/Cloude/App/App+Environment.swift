@@ -45,10 +45,4 @@ extension App {
             settingsStore.isPresented = true
         }
     }
-
-    func connectAllConfiguredEnvironments() {
-        for env in environmentStore.environments where !env.host.isEmpty && !env.token.isEmpty {
-            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
-        }
-    }
 }

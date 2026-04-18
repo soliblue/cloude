@@ -48,20 +48,6 @@ extension WhiteboardStore {
         selectedElementIds.removeAll()
     }
 
-    func moveGroup(dx: Double, dy: Double) {
-        let ids = selectedIds
-        for i in state.elements.indices {
-            if ids.contains(state.elements[i].id) {
-                if state.elements[i].type == .path {
-                    state.elements[i].points = state.elements[i].points?.map { [$0[0] + dx, $0[1] + dy] }
-                } else {
-                    state.elements[i].x += dx
-                    state.elements[i].y += dy
-                }
-            }
-        }
-    }
-
     func hasGroup(in ids: Set<String>) -> Bool {
         ids.compactMap { id in state.elements.first(where: { $0.id == id })?.groupId }.first != nil
     }

@@ -56,12 +56,6 @@ struct TreeWidget: View {
         }
     }
 
-    private func collapseAll(_ node: TreeNode?) {
-        guard let node else { return }
-        if !node.children.isEmpty { collapsed.insert(node.id) }
-        node.children.forEach { collapseAll($0) }
-    }
-
     private func parseNode(_ dict: [String: Any]?, path: String = "") -> TreeNode? {
         guard let dict, let label = dict["label"] as? String else { return nil }
         let nodePath = path.isEmpty ? label : "\(path)/\(label)"

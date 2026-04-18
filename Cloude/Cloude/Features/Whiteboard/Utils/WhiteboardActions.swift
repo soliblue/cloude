@@ -86,8 +86,7 @@ extension App {
                         sessionId: conv.sessionId,
                         isNewSession: false,
                         conversationId: targetConvId,
-                        conversationName: conv.name,
-                        conversationSymbol: conv.symbol
+                        conversationName: conv.name
                     )
                     connection.output(for: targetConvId).liveMessageId = conversationStore.insertLiveMessage(into: conv)
                 }
@@ -109,8 +108,7 @@ extension App {
                         isNewSession: false,
                         conversationId: targetConvId,
                         imagesBase64: [base64],
-                        conversationName: conv.name,
-                        conversationSymbol: conv.symbol
+                        conversationName: conv.name
                     )
                     connection.output(for: targetConvId).liveMessageId = conversationStore.insertLiveMessage(into: conv)
                 }

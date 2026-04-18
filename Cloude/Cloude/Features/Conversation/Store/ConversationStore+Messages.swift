@@ -32,31 +32,8 @@ extension ConversationStore {
         mutate(conversation.id) { $0.pendingMessages.append(message) }
     }
 
-    func popPendingMessages(from conversation: Conversation) -> [ChatMessage] {
-        guard let idx = conversations.firstIndex(where: { $0.id == conversation.id }) else { return [] }
-        let pending = conversations[idx].pendingMessages
-        mutate(conversation.id) { $0.pendingMessages = [] }
-        return pending
-    }
-
-    func pendingMessageCount(in conversation: Conversation) -> Int {
-        conversations.first(where: { $0.id == conversation.id })?.pendingMessages.count ?? 0
-    }
-
     func removePendingMessage(_ messageId: UUID, from conversation: Conversation) {
         mutate(conversation.id) { $0.pendingMessages.removeAll { $0.id == messageId } }
-    }
-
-    func getQueuedMessages(in conversation: Conversation) -> [ChatMessage] {
-        conversations.first(where: { $0.id == conversation.id })?.messages.filter { $0.isQueued } ?? []
-    }
-
-    func clearQueuedFlags(in conversation: Conversation) {
-        mutate(conversation.id) {
-            for i in $0.messages.indices where $0.messages[i].isQueued {
-                $0.messages[i].isQueued = false
-            }
-        }
     }
 
     func replaceMessages(_ conversation: Conversation, with messages: [ChatMessage]) {

@@ -46,17 +46,6 @@ struct GitFileRow: View {
         .buttonStyle(.plain)
     }
 
-    private var statusIcon: String {
-        switch file.status {
-        case "M": return "square.and.pencil"
-        case "A": return "plus"
-        case "D": return "trash"
-        case "R", "C": return "arrow.right"
-        case "??": return "plus"
-        default: return "circle"
-        }
-    }
-
     private var statusColor: Color {
         AppColor.gitStatus(file.status)
     }
