@@ -15,7 +15,7 @@ Workflow:
 2. Review the diff against CLAUDE.md (style, architecture, naming). Flag violations before proceeding.
 3. Split into focused commits only when the grouping is obvious; do not over-engineer.
 4. Every code change maps to a plan. Move the matching plan from `20_active/` or `30_testing/` to `40_shipped/`, or create one there.
-5. Stage, commit with a conventional prefix, push.
+5. Stage, commit with a conventional prefix, push. Any plan ticket you create, move, or edit as part of this commit must be staged in the same commit as the code it describes, not a follow-up commit.
 
 Never push force. Never push secrets.
 
