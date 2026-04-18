@@ -86,7 +86,7 @@ extension FilePreviewView {
     private func renderedView(text: String, data: Data) -> (some View)? {
         switch contentType {
         case .markdown:
-            scrollingContent { StreamingMarkdownView(text: text) }
+            scrollingContent { FilePreviewMarkdownView(text: text) }
         case .yaml:
             if let jsonValue = YAMLParser.parse(text) {
                 scrollingContent { JSONTreeView(value: jsonValue, label: fileName) }
