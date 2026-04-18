@@ -102,12 +102,12 @@ private struct WindowSwitcherView: View, Equatable {
 
         if useSymbols {
             Image(systemName: item.symbol)
-                .font(.system(size: DS.Icon.m, weight: isActive ? .semibold : .regular))
+                .font(.system(size: DS.Icon.l, weight: isActive ? .semibold : .regular))
                 .foregroundStyle(color)
                 .modifier(StreamingPulseModifier(isStreaming: item.isStreaming))
         } else {
             Text(item.name)
-                .font(.system(size: DS.Text.m, weight: isActive ? .semibold : .regular))
+                .font(.system(size: DS.Text.l, weight: isActive ? .semibold : .regular))
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .truncationMode(.middle)

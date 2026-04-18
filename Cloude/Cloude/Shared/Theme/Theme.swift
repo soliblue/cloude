@@ -3,6 +3,7 @@ import SwiftUI
 enum DS {
     enum Text {
         static var step: CGFloat = CGFloat(UserDefaults.standard.integer(forKey: "fontSizeStep"))
+        static var l: CGFloat { 16 + step }
         static var m: CGFloat { 13.5 + step }
         static var s: CGFloat { 10.5 + step }
     }
