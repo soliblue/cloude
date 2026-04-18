@@ -6,6 +6,7 @@ struct WindowTabBar: View, Equatable {
     let activeTab: WindowTab
     let envConnected: Bool
     var connection: ConnectionManager? = nil
+    let appTheme: AppTheme
     var repoPath: String? = nil
     var environmentId: UUID? = nil
     var folderName: String? = nil
@@ -18,7 +19,8 @@ struct WindowTabBar: View, Equatable {
         lhs.totalCost == rhs.totalCost &&
         lhs.folderName == rhs.folderName &&
         lhs.repoPath == rhs.repoPath &&
-        lhs.environmentId == rhs.environmentId
+        lhs.environmentId == rhs.environmentId &&
+        lhs.appTheme == rhs.appTheme
     }
     @State private var gitAdditions: Int = 0
     @State private var gitDeletions: Int = 0
@@ -50,7 +52,7 @@ struct WindowTabBar: View, Equatable {
                     .buttonStyle(.plain)
                 }
             }
-            .background(Color.themeBackground)
+            .background(Color.themeBackground(appTheme))
 
             Divider()
         }

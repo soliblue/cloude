@@ -7,6 +7,7 @@ struct GitDiffView: View {
     let file: GitFileStatus
     var environmentId: UUID?
 
+    @Environment(\.appTheme) private var appTheme
     @Environment(\.dismiss) private var dismiss
     @State private var diff: String?
     @State private var isLoading = false
@@ -19,6 +20,7 @@ struct GitDiffView: View {
                 Divider()
                 diffContent
             }
+            .background(Color.themeBackground(appTheme))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -63,7 +65,7 @@ struct GitDiffView: View {
                 .lineLimit(1)
         }
         .padding()
-        .background(Color.themeSecondary)
+        .background(Color.themeSecondary(appTheme))
     }
 
     private var diffContent: some View {

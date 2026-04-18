@@ -15,6 +15,7 @@ extension WorkspaceView {
         WindowSwitcherView(
             items: items,
             activeId: windowManager.activeWindowId,
+            appTheme: appTheme,
             onSelect: { id in
                 windowManager.activeWindowId = id
             },
@@ -55,11 +56,12 @@ private struct WindowSwitcherView: View, Equatable {
 
     let items: [WindowItem]
     let activeId: UUID?
+    let appTheme: AppTheme
     let onSelect: (UUID) -> Void
     let onLongPress: (UUID) -> Void
 
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.items == rhs.items && lhs.activeId == rhs.activeId
+        lhs.items == rhs.items && lhs.activeId == rhs.activeId && lhs.appTheme == rhs.appTheme
     }
 
     var body: some View {
@@ -93,7 +95,7 @@ private struct WindowSwitcherView: View, Equatable {
         }
         .padding(.horizontal, DS.Spacing.m)
         .frame(maxWidth: .infinity)
-        .background(Color.themeBackground)
+        .background(Color.themeBackground(appTheme))
     }
 
     @ViewBuilder

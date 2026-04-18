@@ -10,6 +10,7 @@ extension WorkspaceView {
                 activeTab: window.tab,
                 envConnected: (conversation?.environmentId).flatMap({ connection.connection(for: $0)?.isConnected }) ?? false,
                 connection: connection,
+                appTheme: appTheme,
                 repoPath: window.gitRepoRootPath ?? conversation?.workingDirectory,
                 environmentId: conversation?.environmentId,
                 folderName: conversation?.workingDirectory.flatMap { $0.isEmpty ? nil : URL(fileURLWithPath: $0).lastPathComponent },

@@ -9,6 +9,7 @@ struct WorkspaceView: View {
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var environmentStore: EnvironmentStore
+    @Environment(\.appTheme) var appTheme
     var onShowSettings: (() -> Void)?
     var onShowWhiteboard: (() -> Void)?
 

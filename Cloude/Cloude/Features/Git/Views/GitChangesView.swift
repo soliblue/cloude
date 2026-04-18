@@ -6,6 +6,7 @@ struct GitChangesView: View {
     var rootPath: String?
     var environmentId: UUID?
     @ObservedObject var state: GitChangesState
+    @Environment(\.appTheme) private var appTheme
 
     @State private var selectedFile: GitFileStatus?
     @State private var pendingRepoPath: String?
@@ -38,6 +39,7 @@ struct GitChangesView: View {
                 ContentUnavailableView("No Repository", systemImage: "folder.badge.questionmark", description: Text("Not a git repository"))
             }
         }
+        .background(Color.themeBackground(appTheme))
         .sheet(item: $selectedFile) { file in
             GitDiffView(connection: connection, repoPath: repoPath, file: file, environmentId: environmentId)
         }
@@ -152,7 +154,7 @@ struct GitChangesView: View {
         .foregroundColor(.secondary)
         .padding(.horizontal, DS.Spacing.l)
         .padding(.vertical, DS.Spacing.m)
-        .background(Color.themeSecondary)
+        .background(Color.themeSecondary(appTheme))
     }
 
     private var commitsList: some View {
@@ -164,7 +166,7 @@ struct GitChangesView: View {
                     Section {
                         ForEach(state.recentCommits) { commit in
                             GitCommitRow(commit: commit)
-                                .listRowBackground(Color.themeBackground)
+                                .listRowBackground(Color.themeBackground(appTheme))
                         }
                     } header: {
                         Text("Recent Commits")
@@ -174,7 +176,7 @@ struct GitChangesView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .background(Color.themeBackground)
+                .background(Color.themeBackground(appTheme))
                 .contentMargins(.top, 0, for: .scrollContent)
             }
         }
@@ -188,7 +190,7 @@ struct GitChangesView: View {
                 Section {
                     ForEach(staged) { file in
                         GitFileRow(file: file) { selectedFile = file }
-                            .listRowBackground(Color.themeBackground)
+                            .listRowBackground(Color.themeBackground(appTheme))
                     }
                 } header: {
                     Text("Staged")
@@ -200,7 +202,7 @@ struct GitChangesView: View {
                 Section {
                     ForEach(unstaged) { file in
                         GitFileRow(file: file) { selectedFile = file }
-                            .listRowBackground(Color.themeBackground)
+                            .listRowBackground(Color.themeBackground(appTheme))
                     }
                 } header: {
                     Text("Changes")
@@ -211,7 +213,7 @@ struct GitChangesView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .background(Color.themeBackground)
+        .background(Color.themeBackground(appTheme))
         .contentMargins(.top, 0, for: .scrollContent)
     }
 }
