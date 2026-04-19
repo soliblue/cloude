@@ -18,8 +18,8 @@ struct EnvironmentFolderPicker: View {
     }
 
     private var isEnvConnected: Bool {
-        guard let envId = conversation.environmentId ?? environmentStore.activeEnvironmentId else { return false }
-        return connection.connection(for: envId)?.isConnected ?? false
+        let envId = conversation.environmentId ?? environmentStore.activeEnvironmentId
+        return (connection.connection(for: envId)?.phase ?? .disconnected) != .disconnected
     }
 
     private var folderDisplayName: String {
@@ -42,7 +42,7 @@ struct EnvironmentFolderPicker: View {
                     Button(action: {
                         conversationStore.setEnvironmentId(conversation, environmentId: env.id)
                         environmentStore.setActive(env.id)
-                        if connection.connection(for: env.id)?.isConnected ?? false {
+                        if (connection.connection(for: env.id)?.phase ?? .disconnected) != .disconnected {
                             DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
                                 showFolderPicker = true
                             }
@@ -120,7 +120,7 @@ struct EnvironmentFolderPicker: View {
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
         .onReceive(connection.events) { event in
             if case .authenticated = event, let envId = pendingConnectionEnvId {
-                if connection.connection(for: envId)?.isConnected ?? false {
+                if (connection.connection(for: envId)?.phase ?? .disconnected) != .disconnected {
                     pendingConnectionEnvId = nil
                     showFolderPicker = true
                 }

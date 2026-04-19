@@ -7,8 +7,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     let environmentId: UUID
     var symbol: String = "laptopcomputer"
 
-    @Published var isConnected = false
-    @Published var isAuthenticated = false
+    @Published var phase: ConnectionPhase = .disconnected { didSet { if phase != oldValue { manager?.objectWillChange.send() } } }
     @Published var isWhisperReady = false
     @Published var isTranscribing = false { didSet { if isTranscribing != oldValue { manager?.objectWillChange.send() } } }
     @Published var agentState: AgentState = .idle
@@ -30,8 +29,8 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     var gitStatusInFlightPath: String?
     var gitStatusTimeoutTask: Task<Void, Never>?
     var fileCache = FileCache()
-    var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
-    var interruptedSessions: [String: (conversationId: UUID, messageId: UUID?)] = [:]
+    var pendingChunks: [String: PendingChunk] = [:]
+    var interruptedSessions: [String: InterruptedSession] = [:]
 
     var webSocket: URLSessionWebSocketTask?
     var session: URLSession?
@@ -48,5 +47,14 @@ class EnvironmentConnection: ObservableObject, Identifiable {
 
     var hasCredentials: Bool {
         !savedHost.isEmpty && !savedToken.isEmpty
+    }
+
+    func resetServerState() {
+        phase = .disconnected
+        isWhisperReady = false
+        isTranscribing = false
+        agentState = .idle
+        gitStatusQueue.removeAll()
+        gitStatusInFlightPath = nil
     }
 }

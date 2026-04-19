@@ -7,7 +7,6 @@ struct WindowEditSheet: View {
     @ObservedObject var connection: ConnectionManager
     @ObservedObject var environmentStore: EnvironmentStore
     let onSelectConversation: (Conversation) -> Void
-    let onNewConversation: () -> Void
     let onDismiss: () -> Void
     var onRefresh: (() async -> Void)?
     var onDuplicate: ((Conversation) -> Void)?

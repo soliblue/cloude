@@ -20,7 +20,7 @@ extension WorkspaceStore {
         connection: ConnectionManager? = nil
     ) {
         if let oldId = oldId {
-            drafts[oldId] = (inputText, attachedImages, currentEffort, currentModel)
+            drafts[oldId] = Draft(text: inputText, images: attachedImages, effort: currentEffort, model: currentModel)
             cleanupEmptyConversation(for: oldId, conversationStore: conversationStore, windowManager: windowManager)
         }
         if let newId = newId, let draft = drafts[newId] {

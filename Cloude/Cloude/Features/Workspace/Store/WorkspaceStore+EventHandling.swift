@@ -63,7 +63,7 @@ extension WorkspaceStore {
 
     func replayQueuedMessagesIfNeeded(connection: ConnectionManager, conversationStore: ConversationStore) {
         for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
-            if !connection.output(for: conv.id).isRunning,
+            if connection.output(for: conv.id).phase == .idle,
                conv.messages.last?.isRecoverableLiveMessage != true {
                 conversationStore.replayQueuedMessages(conversation: conv, connection: connection)
             }
@@ -78,7 +78,7 @@ extension WorkspaceStore {
                !sessionId.isEmpty,
                let environmentConnection = connection.connection(for: conv.environmentId),
                environmentConnection.interruptedSessions[sessionId] == nil {
-                environmentConnection.interruptedSessions[sessionId] = (conv.id, lastMessage.id)
+                environmentConnection.interruptedSessions[sessionId] = InterruptedSession(conversationId: conv.id, messageId: lastMessage.id)
                 environmentConnection.send(.resumeFrom(sessionId: sessionId, lastSeq: 0))
             }
         }

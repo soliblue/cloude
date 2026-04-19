@@ -8,7 +8,7 @@ extension WorkspaceView {
                 inputText: inputTextBinding,
                 attachedImages: attachedImagesBinding,
                 attachedFiles: attachedFilesBinding,
-                isConnected: activeEnvConnection?.isAuthenticated ?? false,
+                isConnected: activeEnvConnection?.phase == .authenticated,
                 isWhisperReady: activeEnvConnection?.isWhisperReady ?? false,
                 isTranscribing: activeEnvConnection?.isTranscribing ?? false,
                 isRunning: activeConversationIsRunning,
@@ -16,7 +16,7 @@ extension WorkspaceView {
                 fileSearchResults: fileSearchResults,
                 conversationDefaultEffort: currentConversation?.defaultEffort,
                 environmentMismatch: hasEnvironmentMismatch,
-                isEnvironmentDisconnected: activeEnvConnection?.isAuthenticated != true,
+                isEnvironmentDisconnected: activeEnvConnection?.phase != .authenticated,
                 onSend: {
                     dismissKeyboard()
                     store.sendMessage(

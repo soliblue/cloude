@@ -14,7 +14,7 @@ extension EnvironmentConnection {
         chunkProgress = ChunkProgress(path: path, current: chunkIndex, total: totalChunks)
         mgr.events.send(.fileChunk(path: path, chunkIndex: chunkIndex, totalChunks: totalChunks, data: data, mimeType: mimeType, size: size))
         if pendingChunks[path] == nil {
-            pendingChunks[path] = (chunks: [:], totalChunks: totalChunks, mimeType: mimeType, size: size)
+            pendingChunks[path] = PendingChunk(chunks: [:], totalChunks: totalChunks, mimeType: mimeType, size: size)
         }
         pendingChunks[path]?.chunks[chunkIndex] = data
         if let pending = pendingChunks[path], (0..<pending.totalChunks).allSatisfy({ pending.chunks[$0] != nil }) {

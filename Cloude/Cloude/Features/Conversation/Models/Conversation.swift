@@ -7,7 +7,6 @@ struct Conversation: Codable, Identifiable {
     var symbol: String?
     var sessionId: String?
     var workingDirectory: String?
-    let createdAt: Date
     var lastMessageAt: Date
     var messages: [ChatMessage]
     var pendingMessages: [ChatMessage]
@@ -48,7 +47,6 @@ struct Conversation: Codable, Identifiable {
         self.id = id
         self.sessionId = sessionId
         self.workingDirectory = workingDirectory
-        self.createdAt = Date()
         self.lastMessageAt = Date()
         self.messages = []
         self.pendingMessages = []
@@ -67,7 +65,6 @@ struct Conversation: Codable, Identifiable {
         symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
         sessionId = try container.decodeIfPresent(String.self, forKey: .sessionId)
         workingDirectory = try container.decodeIfPresent(String.self, forKey: .workingDirectory)
-        createdAt = try container.decode(Date.self, forKey: .createdAt)
         lastMessageAt = try container.decode(Date.self, forKey: .lastMessageAt)
         messages = try container.decode([ChatMessage].self, forKey: .messages)
         pendingMessages = try container.decodeIfPresent([ChatMessage].self, forKey: .pendingMessages) ?? []
@@ -79,6 +76,6 @@ struct Conversation: Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, symbol, sessionId, workingDirectory, createdAt, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel, environmentId, savedTotalCost
+        case id, name, symbol, sessionId, workingDirectory, lastMessageAt, messages, pendingMessages, pendingFork, defaultEffort, defaultModel, environmentId, savedTotalCost
     }
 }

@@ -29,7 +29,7 @@ extension EnvironmentConnection {
             }
             handleError(mgr, msg)
         case .toolCall(let n, let i, let t, let p, let c, let pos, let ei, let seq): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos, editInfo: ei, seq: seq)
-        case .toolResult(let id, let sum, let out, let c, let seq):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c, seq: seq)
+        case .toolResult(let id, _, let out, let c, let seq):  handleToolResult(mgr, toolId: id, output: out, conversationId: c, seq: seq)
         case .runStats(let ms, let cost, let m, let c, let seq):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c, seq: seq)
         case .resumeFromResponse(let sid, let events, let historyOnly): handleResumeFromResponse(mgr, sessionId: sid, events: events, historyOnly: historyOnly)
         case .sessionId(let id, let c):                   handleSessionId(mgr, id, conversationId: c)
@@ -75,8 +75,8 @@ extension EnvironmentConnection {
                 handleOutput(mgr, text: text, conversationId: conversationId, seq: seq)
             case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition, let editInfo, let seq):
                 handleToolCall(mgr, name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo, seq: seq)
-            case .toolResult(let toolId, let summary, let output, let conversationId, let seq):
-                handleToolResult(mgr, toolId: toolId, summary: summary, output: output, conversationId: conversationId, seq: seq)
+            case .toolResult(let toolId, _, let output, let conversationId, let seq):
+                handleToolResult(mgr, toolId: toolId, output: output, conversationId: conversationId, seq: seq)
             case .runStats(let durationMs, let costUsd, let model, let conversationId, let seq):
                 handleRunStats(mgr, durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId, seq: seq)
             }
@@ -96,15 +96,9 @@ extension EnvironmentConnection {
             snapshot.newSessionId = output.newSessionId
             snapshot.liveMessageId = output.liveMessageId
             mgr.events.send(.disconnect(conversationId: convId, output: snapshot))
-            output.isRunning = false
+            output.phase = .idle
         }
-        isConnected = false
-        isAuthenticated = false
-        isWhisperReady = false
-        isTranscribing = false
-        agentState = .idle
-        gitStatusQueue.removeAll()
-        gitStatusInFlightPath = nil
+        resetServerState()
         mgr.endBackgroundStreaming()
         mgr.objectWillChange.send()
     }
@@ -114,7 +108,7 @@ extension EnvironmentConnection {
     }
 
     func sendNextGitStatusIfNeeded() {
-        guard isAuthenticated, gitStatusInFlightPath == nil, !gitStatusQueue.isEmpty else { return }
+        guard phase == .authenticated, gitStatusInFlightPath == nil, !gitStatusQueue.isEmpty else { return }
         let next = gitStatusQueue.removeFirst()
         gitStatusInFlightPath = next
         send(.gitStatus(path: next))

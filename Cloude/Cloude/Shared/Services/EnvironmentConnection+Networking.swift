@@ -31,15 +31,14 @@ extension EnvironmentConnection {
         webSocket = session?.webSocketTask(with: url)
         webSocket?.resume()
 
-        isConnected = true
+        phase = .connected
         lastError = nil
-        manager?.objectWillChange.send()
 
         receiveMessage(token: connectionToken)
     }
 
     func reconnectIfNeeded() {
-        guard hasCredentials, !isAuthenticated, !isConnected else { return }
+        guard hasCredentials, phase == .disconnected else { return }
         reconnect()
     }
 
@@ -52,13 +51,7 @@ extension EnvironmentConnection {
         if let manager, !manager.runningOutputs(for: environmentId).isEmpty {
             handleDisconnect()
         } else {
-            gitStatusQueue.removeAll()
-            gitStatusInFlightPath = nil
-            isConnected = false
-            isAuthenticated = false
-            isWhisperReady = false
-            isTranscribing = false
-            agentState = .idle
+            resetServerState()
         }
 
         if clearCredentials {

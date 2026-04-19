@@ -11,7 +11,6 @@ extension Notification.Name {
 @MainActor
 class AudioRecorder: ObservableObject {
     @Published var isRecording = false
-    @Published var isTranscribing = false
     @Published var hasPendingAudio = false
     var audioLevel: Float = 0
 

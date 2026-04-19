@@ -16,7 +16,6 @@ struct BubbleInteractionModifier: ViewModifier {
     let isLive: Bool
     let message: ChatMessage
     let effectiveText: String
-    let hasInteractiveWidgets: Bool
     @Binding var showCopiedToast: Bool
     @Binding var showTextSelection: Bool
     var onRefresh: (() -> Void)?

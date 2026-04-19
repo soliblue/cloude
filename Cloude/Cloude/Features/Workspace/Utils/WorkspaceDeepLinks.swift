@@ -46,7 +46,7 @@ extension App {
 
     func openFileDeepLink(_ url: URL) {
         let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-        if connection.connection(for: envId)?.isAuthenticated == true {
+        if connection.connection(for: envId)?.phase == .authenticated {
             filePreviewEnvironmentId = envId
             filePathToPreview = url.path.removingPercentEncoding ?? url.path
         }

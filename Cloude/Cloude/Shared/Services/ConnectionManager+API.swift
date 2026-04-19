@@ -15,7 +15,7 @@ extension ConnectionManager {
             AppLogger.beginInterval("chat.complete", key: convId.uuidString, details: "chars=\(message.count)")
             registerConversation(convId, environmentId: conn.environmentId)
             output(for: convId).reset()
-            output(for: convId).isRunning = true
+            output(for: convId).phase = .running
         }
         let effectiveWorkingDir = workingDirectory ?? conn.defaultWorkingDirectory
         conn.send(.chat(message: message, workingDirectory: effectiveWorkingDir, sessionId: sessionId, isNewSession: isNewSession, imagesBase64: imagesBase64, filesBase64: filesBase64, conversationId: conversationId?.uuidString, conversationName: conversationName, forkSession: forkSession, effort: effort, model: model))

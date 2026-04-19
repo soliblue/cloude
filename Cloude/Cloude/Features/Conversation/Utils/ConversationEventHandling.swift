@@ -14,21 +14,21 @@ extension App {
                 conversationStore.updateMessage(liveId, in: conversation) { message in
                     message.text = trimmedText
                     message.toolCalls = output.toolCalls
-                    message.wasInterrupted = true
+                    message.kind = .assistant(wasInterrupted: true)
                 }
                 interruptedMessageId = liveId
             } else {
                 conversationStore.removeMessage(liveId, from: conversation)
             }
         } else if hasContent, let conversation = conversationStore.findConversation(withId: conversationId) {
-            let message = ChatMessage(isUser: false, text: trimmedText, toolCalls: output.toolCalls, wasInterrupted: true)
+            let message = ChatMessage(kind: .assistant(wasInterrupted: true), text: trimmedText, toolCalls: output.toolCalls)
             conversationStore.addMessage(message, to: conversation)
             interruptedMessageId = message.id
         }
 
         if let sessionId = output.newSessionId,
            let environmentConnection = connection.connectionForConversation(conversationId) {
-            environmentConnection.interruptedSessions[sessionId] = (conversationId, interruptedMessageId)
+            environmentConnection.interruptedSessions[sessionId] = InterruptedSession(conversationId: conversationId, messageId: interruptedMessageId)
         }
     }
 
@@ -54,7 +54,7 @@ extension App {
         if let conversation = conversationStore.findConversation(withSessionId: sessionId) {
             let newMessages = historyMessages.map {
                 ChatMessage(
-                    isUser: $0.isUser,
+                    kind: $0.isUser ? .user() : .assistant(),
                     text: $0.text,
                     timestamp: $0.timestamp,
                     toolCalls: $0.toolCalls.map { ToolCall(from: $0) },
@@ -72,11 +72,11 @@ extension App {
                         if message.model == nil { message.model = metadata.model }
                     }
                     let output = connection.output(for: conversation.id)
-                    if !output.isRunning {
+                    if output.phase == .idle {
                         output.reset()
                     }
                 }
-                if !connection.output(for: conversation.id).isRunning {
+                if connection.output(for: conversation.id).phase == .idle {
                     conversationStore.replayQueuedMessages(conversation: updatedConversation, connection: connection)
                 }
             }
@@ -85,7 +85,7 @@ extension App {
 
     func handleTurnCompleted(conversationId: UUID) {
         let output = connection.output(for: conversationId)
-        if output.isRunning { return }
+        if output.phase != .idle { return }
         let needsHistorySync = output.needsHistorySync
 
         if UIApplication.shared.applicationState != .active && !output.text.isEmpty {
@@ -175,7 +175,7 @@ extension App {
     func handleResumeBegin(conversationId: UUID, messageId: UUID) {
         guard let conversation = conversationStore.findConversation(withId: conversationId) else { return }
         conversationStore.updateMessage(messageId, in: conversation) { message in
-            message.wasInterrupted = false
+            message.kind = .assistant(wasInterrupted: false)
         }
     }
 

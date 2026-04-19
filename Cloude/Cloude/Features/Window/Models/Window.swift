@@ -12,14 +12,6 @@ enum WindowTab: String, CaseIterable, Codable {
         case .gitChanges: return "point.3.connected.trianglepath.dotted"
         }
     }
-
-    var label: String {
-        switch self {
-        case .chat: return "Chat"
-        case .files: return "Files"
-        case .gitChanges: return "Changes"
-        }
-    }
 }
 
 struct Window: Identifiable, Codable {

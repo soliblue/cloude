@@ -20,7 +20,7 @@ extension App {
                     if let targetConvId,
                        let conv = self.conversationStore.findConversation(withId: targetConvId) {
 
-                        let userMessage = ChatMessage(isUser: true, text: "[screenshot]", imageBase64: base64)
+                        let userMessage = ChatMessage(kind: .user(), text: "[screenshot]", imageBase64: base64)
                         self.conversationStore.addMessage(userMessage, to: conv)
 
                         self.connection.sendChat(

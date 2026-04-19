@@ -46,7 +46,7 @@ struct SettingsView: View {
                let index = environmentStore.environments.firstIndex(where: { $0.id == activeId }) {
                 selectedEnvironmentPage = index
             }
-            if connection.isAuthenticated {
+            if connection.isAnyAuthenticated {
                 connection.getProcesses()
             }
         }

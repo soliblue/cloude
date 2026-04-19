@@ -12,10 +12,10 @@ class ConnectionManager: ObservableObject {
     var conversationOutputs: [UUID: ConversationOutput] = [:]
     var conversationEnvironments: [UUID: UUID] = [:]
     private var backgroundTaskId: UIBackgroundTaskIdentifier = .invalid
-    var isAuthenticated: Bool { connections.values.contains { $0.isAuthenticated } }
+    var isAnyAuthenticated: Bool { connections.values.contains { $0.phase == .authenticated } }
 
     var isAnyRunning: Bool {
-        conversationOutputs.values.contains { $0.isRunning }
+        conversationOutputs.values.contains { $0.phase != .idle }
     }
 
     var processes: [AgentProcessInfo] {
@@ -54,7 +54,7 @@ class ConnectionManager: ObservableObject {
     }
 
     func anyAuthenticatedConnection() -> EnvironmentConnection? {
-        connections.values.first { $0.isAuthenticated }
+        connections.values.first { $0.phase == .authenticated }
     }
 
     func connectEnvironment(_ envId: UUID, host: String, port: UInt16, token: String, symbol: String = "laptopcomputer") {
@@ -82,7 +82,7 @@ class ConnectionManager: ObservableObject {
 
     func runningOutputs(for environmentId: UUID) -> [(conversationId: UUID, output: ConversationOutput)] {
         conversationOutputs.compactMap { (convId, output) in
-            output.isRunning && conversationEnvironments[convId] == environmentId ? (convId, output) : nil
+            output.phase != .idle && conversationEnvironments[convId] == environmentId ? (convId, output) : nil
         }
     }
 

@@ -57,11 +57,11 @@ extension App {
             WhiteboardSheet(
                 store: whiteboardStore,
                 onSendSnapshot: {
-                    handleWhiteboardAction(action: "snapshot", json: [:], conversationId: nil)
+                    handleWhiteboardAction(action: .snapshot, json: [:], conversationId: nil)
                 },
                 isConnected: {
                     let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-                    return connection.connection(for: envId)?.isAuthenticated ?? false
+                    return connection.connection(for: envId)?.phase == .authenticated
                 }()
             )
             .agenticID("whiteboard_sheet")

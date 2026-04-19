@@ -2,17 +2,17 @@ import SwiftUI
 import CloudeShared
 
 extension App {
-    func handleWhiteboardAction(action: String, json: [String: Any], conversationId: UUID?) {
+    func handleWhiteboardAction(action: WhiteboardAction, json: [String: Any], conversationId: UUID?) {
         let convId = conversationId ?? windowManager.activeWindow?.conversation(in: conversationStore)?.id
         if !whiteboardStore.isPresented {
             whiteboardStore.load(conversationId: convId)
         }
 
         switch action {
-        case "open":
+        case .open:
             whiteboardStore.isPresented = true
 
-        case "add":
+        case .add:
             if let elements = json["elements"] as? [[String: Any]] {
                 var decoded = elements.compactMap { el -> WhiteboardElement? in
                     if let data = try? JSONSerialization.data(withJSONObject: el) {
@@ -31,12 +31,12 @@ extension App {
                 whiteboardStore.addElements(decoded)
             }
 
-        case "remove":
+        case .remove:
             if let ids = json["ids"] as? [String] {
                 whiteboardStore.removeElements(ids: ids)
             }
 
-        case "update":
+        case .update:
             if let id = json["id"] as? String {
                 whiteboardStore.updateElement(
                     id: id,
@@ -61,15 +61,15 @@ extension App {
                 )
             }
 
-        case "clear":
+        case .clear:
             whiteboardStore.clear()
 
-        case "viewport":
+        case .viewport:
             if let x = json["x"] as? Double { whiteboardStore.state.viewport.x = x }
             if let y = json["y"] as? Double { whiteboardStore.state.viewport.y = y }
             if let zoom = json["zoom"] as? Double { whiteboardStore.state.viewport.zoom = min(5.0, max(0.3, zoom)) }
 
-        case "snapshot":
+        case .snapshot:
             if let data = try? JSONEncoder().encode(whiteboardStore.state),
                let jsonString = String(data: data, encoding: .utf8) {
 
@@ -77,7 +77,7 @@ extension App {
                 if let targetConvId,
                    let conv = conversationStore.findConversation(withId: targetConvId) {
 
-                    let userMessage = ChatMessage(isUser: true, text: "[whiteboard snapshot]\n\(jsonString)")
+                    let userMessage = ChatMessage(kind: .user(), text: "[whiteboard snapshot]\n\(jsonString)")
                     conversationStore.addMessage(userMessage, to: conv)
 
                     connection.sendChat(
@@ -92,14 +92,14 @@ extension App {
                 }
             }
 
-        case "export":
+        case .export:
             if let uiImage = WhiteboardSheet.renderToImage(store: whiteboardStore),
                let jpegData = uiImage.jpegData(compressionQuality: 0.8) {
                 let base64 = jpegData.base64EncodedString()
                 let targetConvId = conversationId ?? windowManager.activeWindow?.conversation(in: conversationStore)?.id
                 if let targetConvId,
                    let conv = conversationStore.findConversation(withId: targetConvId) {
-                    let userMessage = ChatMessage(isUser: true, text: "[whiteboard export]", imageBase64: base64)
+                    let userMessage = ChatMessage(kind: .user(), text: "[whiteboard export]", imageBase64: base64)
                     conversationStore.addMessage(userMessage, to: conv)
                     connection.sendChat(
                         "[whiteboard export]",
@@ -113,9 +113,6 @@ extension App {
                     connection.output(for: targetConvId).liveMessageId = conversationStore.insertLiveMessage(into: conv)
                 }
             }
-
-        default:
-            break
         }
     }
 }

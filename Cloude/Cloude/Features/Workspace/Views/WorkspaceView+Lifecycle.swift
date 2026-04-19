@@ -15,13 +15,6 @@ extension WorkspaceView {
                     windowManager: windowManager
                 )
             },
-            onNewConversation: {
-                store.createConversationForEditing(
-                    conversationStore: conversationStore,
-                    windowManager: windowManager,
-                    environmentStore: environmentStore
-                )
-            },
             onDismiss: { store.dismissEditingWindow() },
             onRefresh: {
                 await store.refreshEditingWindowConversation(connection: connection, conversationStore: conversationStore)

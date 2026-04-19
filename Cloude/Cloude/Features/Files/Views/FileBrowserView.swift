@@ -97,7 +97,7 @@ struct FileBrowserView: View {
         }
         guard currentPath != "~" else {
             pendingLoadPath = nil
-            isLoading = connection.connection(for: environmentId)?.isAuthenticated != true
+            isLoading = connection.connection(for: environmentId)?.phase != .authenticated
             entries = []
             return
         }

@@ -6,7 +6,7 @@ extension WorkspaceView {
         let items = windowManager.windows.map { window -> WindowSwitcherView.WindowItem in
             let convId = window.conversationId
             let conv = window.conversation(in: conversationStore)
-            let isStreaming = convId.map { connection.output(for: $0).isRunning } ?? false
+            let isStreaming = convId.map { connection.output(for: $0).phase != .idle } ?? false
             let name = conv?.name ?? "New"
             let symbol = conv?.symbol ?? "bubble.left"
             return WindowSwitcherView.WindowItem(id: window.id, name: name, symbol: symbol, isStreaming: isStreaming)

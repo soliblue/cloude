@@ -52,8 +52,8 @@ struct WorkspaceView: View {
             store.currentEffort = currentConversation?.defaultEffort
             store.currentModel = currentConversation?.defaultModel
         }
-        .task(id: connection.isAuthenticated) {
-            guard connection.isAuthenticated else { return }
+        .task(id: connection.isAnyAuthenticated) {
+            guard connection.isAnyAuthenticated else { return }
             try? await Task.sleep(for: .seconds(4))
             store.checkGitForAllDirectories(conversationStore: conversationStore)
             store.checkNextGitDirectory(connection: connection)

@@ -11,21 +11,14 @@ struct FilePreviewView: View {
     @Environment(\.colorScheme) var colorScheme
     let fileEntry: FileEntry?
 
-    @State var isLoading = true
+    @State var loadPhase: FileLoadPhase = .loading
+    @State var viewMode: FileViewMode = .rendered
+    @State var diff: DiffState = .hidden
     @State var fileData: Data?
-    @State var errorMessage: String?
     @State var isTruncated = false
     @State var loadProgress: (current: Int, total: Int)?
     @State var cancellables = Set<AnyCancellable>()
-    @State var isThumbnail = false
-    @State var fullSize: Int64 = 0
-    @State var isLoadingFullQuality = false
-    @State var showDiff = false
-    @State var diffText: String?
-    @State var isDiffLoading = false
     @State var highlightedCode: AttributedString?
-    @State var directoryEntries: [FileEntry]?
-    @State var showSource = false
     @AppStorage("wrapCodeLines") var wrapCodeLines = true
     @State var chunkProgress: (current: Int, total: Int)?
 
@@ -61,8 +54,8 @@ struct FilePreviewView: View {
                     HStack(spacing: DS.Spacing.m) {
                         if contentType.isTextBased, let _ = fileData {
                             Button(action: { toggleDiff() }) {
-                                Image(systemName: showDiff ? "doc.text" : "chevron.left.forwardslash.chevron.right")
-                                    .foregroundStyle(showDiff ? .accent : .primary)
+                                Image(systemName: diff != .hidden ? "doc.text" : "chevron.left.forwardslash.chevron.right")
+                                    .foregroundStyle(diff != .hidden ? .accent : .primary)
                             }
                             .agenticID("file_preview_toggle_diff_button")
                             Divider()
@@ -75,8 +68,8 @@ struct FilePreviewView: View {
                         if contentType.hasRenderedView && fileData != nil {
                             Divider()
                                 .frame(height: DS.Icon.m)
-                            Button(action: { showSource.toggle() }) {
-                                Image(systemName: showSource ? "doc.richtext" : "curlybraces")
+                            Button(action: { viewMode = (viewMode == .source) ? .rendered : .source }) {
+                                Image(systemName: viewMode == .source ? "doc.richtext" : "curlybraces")
                             }
                             .agenticID("file_preview_toggle_source_button")
                         }
@@ -96,19 +89,20 @@ struct FilePreviewView: View {
         .agenticID("file_preview_view")
         .onAppear { loadFile() }
         .onReceive(connection.events) { event in
-            if case let .gitDiff(_, text) = event, isDiffLoading {
-                diffText = text
-                isDiffLoading = false
+            if case let .gitDiff(_, text) = event, case .loading = diff {
+                diff = .loaded(text)
             }
         }
     }
 
     func toggleDiff() {
-        showDiff.toggle()
-        if showDiff && diffText == nil {
-            isDiffLoading = true
+        switch diff {
+        case .hidden:
+            diff = .loading
             let workDir = connection.connection(for: environmentId)?.defaultWorkingDirectory ?? path.deletingLastPathComponent
             connection.gitDiff(path: workDir, file: path, environmentId: environmentId)
+        case .loading, .loaded:
+            diff = .hidden
         }
     }
 }

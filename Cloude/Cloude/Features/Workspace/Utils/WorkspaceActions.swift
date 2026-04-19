@@ -123,18 +123,18 @@ extension App {
         }
         let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv
         let targetEnvironmentId = updatedConv.environmentId ?? environmentStore.activeEnvironmentId
-        let isRunning = connection.output(for: updatedConv.id).isRunning
-        let isAuthenticated = connection.connection(for: targetEnvironmentId)?.isAuthenticated ?? connection.isAuthenticated
+        let isRunning = connection.output(for: updatedConv.id).phase != .idle
+        let isAuthenticated = connection.connection(for: targetEnvironmentId).map { $0.phase == .authenticated } ?? connection.isAnyAuthenticated
 
         if isRunning || !isAuthenticated {
             AppLogger.connectionInfo("debug send queue convId=\(updatedConv.id.uuidString) chars=\(trimmedText.count) running=\(isRunning) authenticated=\(isAuthenticated)")
-            let queuedMessage = ChatMessage(isUser: true, text: trimmedText, isQueued: true)
+            let queuedMessage = ChatMessage(kind: .user(isQueued: true), text: trimmedText)
             conversationStore.queueMessage(queuedMessage, to: updatedConv)
             return
         }
 
         AppLogger.connectionInfo("debug send send convId=\(updatedConv.id.uuidString) chars=\(trimmedText.count)")
-        let userMessage = ChatMessage(isUser: true, text: trimmedText)
+        let userMessage = ChatMessage(kind: .user(), text: trimmedText)
         conversationStore.addMessage(userMessage, to: updatedConv)
 
         let isFork = updatedConv.pendingFork

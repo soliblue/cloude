@@ -9,11 +9,9 @@ final class ConversationOutput: ObservableObject {
 
     @Published var text: String = "" { didSet { if oldValue.isEmpty != text.isEmpty { parent?.objectWillChange.send() } } }
     @Published var toolCalls: [ToolCall] = []
-    @Published var runStats: (durationMs: Int, costUsd: Double, model: String?)?
-    @Published var isRunning: Bool = false { didSet { if isRunning != oldValue { parent?.objectWillChange.send() } } }
-    @Published var isCompacting: Bool = false { didSet { if isCompacting != oldValue { parent?.objectWillChange.send() } } }
+    @Published var runStats: RunStats?
+    @Published var phase: StreamPhase = .idle { didSet { if phase != oldValue { parent?.objectWillChange.send() } } }
     @Published var newSessionId: String? { didSet { if newSessionId != oldValue { parent?.objectWillChange.send() } } }
-    @Published var skipped: Bool = false { didSet { if skipped != oldValue { parent?.objectWillChange.send() } } }
     var messageUUID: String?
     @Published var liveMessageId: UUID?
     var needsHistorySync = false
@@ -87,10 +85,10 @@ final class ConversationOutput: ObservableObject {
         }
     }
 
-    func completeExecutingTools() {
-        guard toolCalls.contains(where: { $0.state == .executing }) else { return }
+    func completeExecutingTools(topLevelOnly: Bool = false) {
+        guard toolCalls.contains(where: { $0.state == .executing && (!topLevelOnly || $0.parentToolId == nil) }) else { return }
         toolCalls = toolCalls.map { tool in
-            if tool.state == .executing {
+            if tool.state == .executing && (!topLevelOnly || tool.parentToolId == nil) {
                 var updated = tool
                 updated.state = .complete
                 return updated
@@ -100,15 +98,7 @@ final class ConversationOutput: ObservableObject {
     }
 
     func completeTopLevelExecutingTools() {
-        guard toolCalls.contains(where: { $0.state == .executing && $0.parentToolId == nil }) else { return }
-        toolCalls = toolCalls.map { tool in
-            if tool.state == .executing && tool.parentToolId == nil {
-                var updated = tool
-                updated.state = .complete
-                return updated
-            }
-            return tool
-        }
+        completeExecutingTools(topLevelOnly: true)
     }
 
     func resetAfterLiveMessageHandoff() {
@@ -117,14 +107,14 @@ final class ConversationOutput: ObservableObject {
             "Stream",
             "handoff start liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
             "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
-            "isRunning=\(isRunning)"
+            "phase=\(phase)"
         )
         #endif
         liveMessageId = nil
         transientStateGeneration += 1
         let generation = transientStateGeneration
         DispatchQueue.main.async { [weak self] in
-            if let self, self.transientStateGeneration == generation, !self.isRunning, self.liveMessageId == nil {
+            if let self, self.transientStateGeneration == generation, self.phase == .idle, self.liveMessageId == nil {
                 self.clearTransientState()
             }
         }
@@ -136,7 +126,7 @@ final class ConversationOutput: ObservableObject {
             "Stream",
             "reset start liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
             "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
-            "isRunning=\(isRunning)"
+            "phase=\(phase)"
         )
         #endif
         transientStateGeneration += 1
@@ -147,7 +137,7 @@ final class ConversationOutput: ObservableObject {
             "Stream",
             "reset end liveId=\(liveMessageId?.uuidString.prefix(6) ?? "nil") " +
             "text=\(text.count)ch full=\(fullText.count)ch tools=\(toolCalls.count) " +
-            "isRunning=\(isRunning)"
+            "phase=\(phase)"
         )
         #endif
     }
@@ -162,45 +152,5 @@ final class ConversationOutput: ObservableObject {
         newSessionId = nil
         messageUUID = nil
         needsHistorySync = false
-        isCompacting = false
-        skipped = false
-    }
-}
-
-struct FileCache {
-    private var entries: [String: Data] = [:]
-    private var accessOrder: [String] = []
-    private let maxEntries = 15
-
-    mutating func get(_ path: String) -> Data? {
-        guard let data = entries[path] else { return nil }
-        accessOrder.removeAll { $0 == path }
-        accessOrder.append(path)
-        return data
-    }
-
-    mutating func set(_ path: String, data: Data) {
-        if entries[path] != nil {
-            accessOrder.removeAll { $0 == path }
-        } else if entries.count >= maxEntries {
-            if let oldest = accessOrder.first {
-                entries.removeValue(forKey: oldest)
-                accessOrder.removeFirst()
-            }
-        }
-        entries[path] = data
-        accessOrder.append(path)
-    }
-}
-
-@MainActor
-struct AggregateFileCache {
-    let connections: [UUID: EnvironmentConnection]
-
-    func get(_ path: String) -> Data? {
-        for conn in connections.values {
-            if let data = conn.fileCache.get(path) { return data }
-        }
-        return nil
     }
 }

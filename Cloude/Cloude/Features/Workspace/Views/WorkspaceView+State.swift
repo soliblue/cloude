@@ -58,49 +58,9 @@ extension WorkspaceView {
         Binding(get: { store.currentModel }, set: { store.currentModel = $0 })
     }
 
-    var editingWindow: Window? {
-        get { store.editingWindow }
-        nonmutating set { store.editingWindow = newValue }
-    }
-
     var isKeyboardVisible: Bool {
         get { store.isKeyboardVisible }
         nonmutating set { store.isKeyboardVisible = newValue }
-    }
-
-    var inputText: String {
-        get { store.inputText }
-        nonmutating set { store.inputText = newValue }
-    }
-
-    var attachedImages: [AttachedImage] {
-        get { store.attachedImages }
-        nonmutating set { store.attachedImages = newValue }
-    }
-
-    var attachedFiles: [AttachedFile] {
-        get { store.attachedFiles }
-        nonmutating set { store.attachedFiles = newValue }
-    }
-
-    var drafts: [UUID: (text: String, images: [AttachedImage], effort: EffortLevel?, model: ModelSelection?)] {
-        get { store.drafts }
-        nonmutating set { store.drafts = newValue }
-    }
-
-    var gitBranches: [String: String] {
-        get { store.gitBranches }
-        nonmutating set { store.gitBranches = newValue }
-    }
-
-    var gitStats: [String: (additions: Int, deletions: Int)] {
-        get { store.gitStats }
-        nonmutating set { store.gitStats = newValue }
-    }
-
-    var pendingGitChecks: [(path: String, environmentId: UUID?)] {
-        get { store.pendingGitChecks }
-        nonmutating set { store.pendingGitChecks = newValue }
     }
 
     var fileSearchResults: [String] {
@@ -116,15 +76,5 @@ extension WorkspaceView {
     var currentModel: ModelSelection? {
         get { store.currentModel }
         nonmutating set { store.currentModel = newValue }
-    }
-
-    var showConversationSearch: Bool {
-        get { store.showConversationSearch }
-        nonmutating set { store.showConversationSearch = newValue }
-    }
-
-    var refreshingSessionIds: Set<String> {
-        get { store.refreshingSessionIds }
-        nonmutating set { store.refreshingSessionIds = newValue }
     }
 }

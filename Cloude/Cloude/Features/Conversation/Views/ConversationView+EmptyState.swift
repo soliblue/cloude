@@ -17,7 +17,6 @@ struct EmptyConversationView: View {
     var environmentStore: EnvironmentStore?
     var conversation: Conversation?
     var windowManager: WindowManager?
-    var window: Window?
     var onSelectConversation: ((Conversation) -> Void)?
     var onSeeAll: (() -> Void)?
 
@@ -29,7 +28,6 @@ struct EmptyConversationView: View {
         environmentStore: EnvironmentStore? = nil,
         conversation: Conversation? = nil,
         windowManager: WindowManager? = nil,
-        window: Window? = nil,
         onSelectConversation: ((Conversation) -> Void)? = nil,
         onSeeAll: (() -> Void)? = nil
     ) {
@@ -38,7 +36,6 @@ struct EmptyConversationView: View {
         self.environmentStore = environmentStore
         self.conversation = conversation
         self.windowManager = windowManager
-        self.window = window
         self.onSelectConversation = onSelectConversation
         self.onSeeAll = onSeeAll
         _character = State(initialValue: Self.characters.randomElement()!)

@@ -104,14 +104,15 @@ extension WorkspaceStore {
         }
         let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv
 
-        let isRunning = connection.output(for: updatedConv.id).isRunning
-        if isRunning || !connection.isAuthenticated {
-            AppLogger.connectionInfo("queue user message convId=\(updatedConv.id.uuidString) chars=\(text.count) running=\(isRunning) authenticated=\(connection.isAuthenticated)")
-            let userMessage = ChatMessage(isUser: true, text: text, isQueued: true, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
+        let isRunning = connection.output(for: updatedConv.id).phase != .idle
+        let isAuthenticated = connection.connection(for: updatedConv.environmentId)?.phase == .authenticated
+        if isRunning || !isAuthenticated {
+            AppLogger.connectionInfo("queue user message convId=\(updatedConv.id.uuidString) chars=\(text.count) running=\(isRunning) authenticated=\(isAuthenticated)")
+            let userMessage = ChatMessage(kind: .user(isQueued: true), text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.queueMessage(userMessage, to: updatedConv)
         } else {
             AppLogger.connectionInfo("send user message convId=\(updatedConv.id.uuidString) chars=\(text.count) images=\(imagesBase64?.count ?? 0) files=\(filesBase64?.count ?? 0)")
-            let userMessage = ChatMessage(isUser: true, text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
+            let userMessage = ChatMessage(kind: .user(), text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
             conversationStore.addMessage(userMessage, to: updatedConv)
 
             let isFork = updatedConv.pendingFork

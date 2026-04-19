@@ -8,7 +8,7 @@ extension WorkspaceView {
         VStack(spacing: 0) {
             WindowTabBar(
                 activeTab: window.tab,
-                envConnected: (conversation?.environmentId).flatMap({ connection.connection(for: $0)?.isConnected }) ?? false,
+                envConnected: ((conversation?.environmentId).flatMap { connection.connection(for: $0)?.phase } ?? .disconnected) != .disconnected,
                 connection: connection,
                 appTheme: appTheme,
                 repoPath: window.gitRepoRootPath ?? conversation?.workingDirectory,
@@ -27,7 +27,6 @@ extension WorkspaceView {
                     conversation: conversation,
                     window: window,
                     windowManager: windowManager,
-                    onSelectConversation: nil,
                     onInteraction: { dismissKeyboard() },
                     onSelectRecentConversation: { conv in
                         windowManager.linkToCurrentConversation(window.id, conversation: conv)

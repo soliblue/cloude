@@ -29,10 +29,6 @@ struct MessageBubble: View {
         return message.toolCalls
     }
 
-    private var hasInteractiveWidgets: Bool {
-        effectiveToolCalls.contains { WidgetRegistry.isWidget($0.name) }
-    }
-
     private var hasToolCalls: Bool {
         effectiveToolCalls.contains { $0.parentToolId == nil }
     }
@@ -48,11 +44,12 @@ struct MessageBubble: View {
     }
 
     private var backgroundColor: Color {
-        if message.wasInterrupted {
+        switch message.kind {
+        case .assistant(let wasInterrupted) where wasInterrupted:
             return AppColor.orange.opacity(DS.Opacity.s)
-        } else if message.isUser {
+        case .user:
             return Color(hex: appTheme.palette.tertiary)
-        } else {
+        default:
             return .clear
         }
     }
@@ -67,7 +64,7 @@ struct MessageBubble: View {
         )
         #endif
         messageContent
-            .opacity(message.isQueued ? DS.Opacity.l : 1.0)
+            .opacity(message.kind == .user(isQueued: true) ? DS.Opacity.l : 1.0)
         .onChange(of: isLive) { old, new in
             #if DEBUG
             DebugMetrics.log(
@@ -85,7 +82,6 @@ struct MessageBubble: View {
             isLive: isLive,
             message: message,
             effectiveText: effectiveText,
-            hasInteractiveWidgets: hasInteractiveWidgets,
             showCopiedToast: $showCopiedToast,
             showTextSelection: $showTextSelection,
             onRefresh: onRefresh,
@@ -107,7 +103,7 @@ struct MessageBubble: View {
                         Text(message.text)
                         .font(.system(size: DS.Text.m))
                     }
-                } else if isLive && (liveOutput?.isCompacting ?? false) {
+                } else if isLive && liveOutput?.phase == .compacting {
                     CompactingIndicator()
                 } else if hasToolCalls {
                     StreamingMarkdownView(text: effectiveText, toolCalls: effectiveToolCalls) { tool, children in

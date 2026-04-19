@@ -2,7 +2,6 @@ import SwiftUI
 
 struct EnvironmentCard: View {
     @State var env: ServerEnvironment
-    let isActive: Bool
     let isConnected: Bool
     let isConnecting: Bool
     let onConnect: () -> Void

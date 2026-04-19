@@ -1,11 +1,6 @@
 import Foundation
 import CloudeShared
 
-enum ToolCallState: String, Codable {
-    case executing
-    case complete
-}
-
 struct ToolCall: Codable, Equatable {
     let name: String
     let input: String?
@@ -13,7 +8,6 @@ struct ToolCall: Codable, Equatable {
     let parentToolId: String?
     var textPosition: Int?
     var state: ToolCallState
-    var resultSummary: String?
     var resultOutput: String?
     var editInfo: EditInfo?
 
@@ -24,7 +18,6 @@ struct ToolCall: Codable, Equatable {
         self.parentToolId = parentToolId
         self.textPosition = textPosition
         self.state = state
-        self.resultSummary = nil
         self.resultOutput = nil
         self.editInfo = editInfo
     }
@@ -42,18 +35,12 @@ struct ToolCall: Codable, Equatable {
         parentToolId = try container.decodeIfPresent(String.self, forKey: .parentToolId)
         textPosition = try container.decodeIfPresent(Int.self, forKey: .textPosition)
         state = try container.decodeIfPresent(ToolCallState.self, forKey: .state) ?? .complete
-        resultSummary = try container.decodeIfPresent(String.self, forKey: .resultSummary)
         resultOutput = try container.decodeIfPresent(String.self, forKey: .resultOutput)
         editInfo = try container.decodeIfPresent(EditInfo.self, forKey: .editInfo)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case name, input, toolId, parentToolId, textPosition, state, resultSummary, resultOutput, editInfo
-    }
-
-    var isScript: Bool {
-        guard name == "Bash", let input else { return false }
-        return BashCommandParser.isScript(input)
+        case name, input, toolId, parentToolId, textPosition, state, resultOutput, editInfo
     }
 
     var filePath: String? {

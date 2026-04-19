@@ -38,7 +38,7 @@ extension ConversationStore {
                         conv.messages[msgIdx].costUsd = runStats?.costUsd
                         conv.messages[msgIdx].serverUUID = messageUUID
                         conv.messages[msgIdx].model = runStats?.model
-                        conv.messages[msgIdx].wasInterrupted = false
+                        conv.messages[msgIdx].kind = .assistant(wasInterrupted: false)
                     }
                     if let cost = runStats?.costUsd, cost > 0 {
                         let computed = conv.messages.compactMap(\.costUsd).reduce(0, +)
@@ -57,7 +57,7 @@ extension ConversationStore {
             if !isDuplicate {
                 AppLogger.connectionInfo("finalize assistant message add convId=\(conversation.id.uuidString) chars=\(trimmedText.count) tools=\(adjustedToolCalls.count)")
                 let message = ChatMessage(
-                    isUser: false,
+                    kind: .assistant(),
                     text: trimmedText,
                     toolCalls: adjustedToolCalls,
                     durationMs: output.runStats?.durationMs,
@@ -79,7 +79,7 @@ extension ConversationStore {
     }
 
     func replayQueuedMessages(conversation: Conversation, connection: ConnectionManager) {
-        guard connection.isAuthenticated else { return }
+        guard connection.connection(for: conversation.environmentId)?.phase == .authenticated else { return }
 
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
         guard let queuedMessage = freshConv.pendingMessages.first else { return }
@@ -92,7 +92,7 @@ extension ConversationStore {
         }
 
         var replayedMessage = queuedMessage
-        replayedMessage.isQueued = false
+        replayedMessage.kind = .user(isQueued: false)
         addMessage(replayedMessage, to: freshConv)
 
         let updatedConv = self.conversation(withId: conversation.id) ?? freshConv

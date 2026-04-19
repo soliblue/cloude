@@ -9,7 +9,6 @@ enum ConnectionEvent {
     case fileSearchResults(files: [String])
     case fileError(String)
 
-    case missedResponse(sessionId: String, text: String, completedAt: Date, toolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?, interruptedConversationId: UUID?, interruptedMessageId: UUID?)
     case gitStatus(path: String, status: GitStatusInfo, environmentId: UUID?)
     case gitStatusError(path: String, message: String, environmentId: UUID?)
     case gitLog(path: String, commits: [GitCommit], environmentId: UUID?)
@@ -38,5 +37,5 @@ enum ConnectionEvent {
     case openURL(String)
     case haptic(String)
     case screenshot(conversationId: UUID?)
-    case whiteboard(action: String, json: [String: Any], conversationId: UUID?)
+    case whiteboard(action: WhiteboardAction, json: [String: Any], conversationId: UUID?)
 }

@@ -4,7 +4,7 @@ import CloudeShared
 
 extension EnvironmentConnection {
     private func ensureRunning(_ out: ConversationOutput) {
-        if !out.isRunning { out.isRunning = true }
+        if out.phase == .idle { out.phase = .running }
     }
 
     func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?, seq: Int? = nil) {
@@ -33,27 +33,23 @@ extension EnvironmentConnection {
                 mgr.events.send(.lastAssistantMessageCostUpdate(conversationId: convId, costUsd: stats.costUsd))
             }
         }
-        let wasRunning = out.isRunning
-        out.isRunning = (state == .running || state == .compacting)
-        out.isCompacting = (state == .compacting)
-        if state == .running || state == .compacting {
-            if !wasRunning {
-                mgr.events.send(.reconnectRunning(conversationId: convId))
-            }
+        let oldPhase = out.phase
+        out.phase = (state == .running) ? .running : (state == .compacting ? .compacting : .idle)
+        if oldPhase == .idle && out.phase != .idle {
+            mgr.events.send(.reconnectRunning(conversationId: convId))
         }
         if state == .idle {
-            if wasRunning { mgr.events.send(.turnCompleted(conversationId: convId)) }
+            if oldPhase != .idle { mgr.events.send(.turnCompleted(conversationId: convId)) }
             if !mgr.isAnyRunning { mgr.endBackgroundStreaming() }
         }
     }
 
     func handleAuthResult(_ mgr: ConnectionManager, success: Bool, errorMessage: String?) {
-        isAuthenticated = success
+        phase = success ? .authenticated : .connected
         if success {
             checkForMissedResponse()
             sendNextGitStatusIfNeeded()
             mgr.events.send(.authenticated)
-            mgr.objectWillChange.send()
         } else {
             lastError = errorMessage ?? "Authentication failed"
         }
@@ -87,9 +83,9 @@ extension EnvironmentConnection {
         }
     }
 
-    func handleToolResult(_ mgr: ConnectionManager, toolId: String, summary: String?, output: String?, conversationId: String?, seq: Int? = nil) {
+    func handleToolResult(_ mgr: ConnectionManager, toolId: String, output: String?, conversationId: String?, seq: Int? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
-        AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) summaryChars=\(summary?.count ?? 0) outputChars=\(output?.count ?? 0) seq=\(seq.map(String.init) ?? "nil")")
+        AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) outputChars=\(output?.count ?? 0) seq=\(seq.map(String.init) ?? "nil")")
         let out = mgr.output(for: convId)
         if !out.toolCalls.contains(where: { $0.toolId == toolId }) {
             AppLogger.connectionInfo("heuristic_counter=needsHistorySync_flip reason=tool_result_without_call convId=\(convId.uuidString) toolId=\(toolId)")
@@ -99,7 +95,6 @@ extension EnvironmentConnection {
             if tool.toolId == toolId {
                 var updated = tool
                 updated.state = .complete
-                updated.resultSummary = summary
                 updated.resultOutput = output
                 return updated
             }
@@ -113,7 +108,7 @@ extension EnvironmentConnection {
         AppLogger.connectionInfo("run stats convId=\(convId.uuidString) durationMs=\(durationMs) costUsd=\(costUsd) seq=\(seq.map(String.init) ?? "nil")")
         AppLogger.endInterval("chat.complete", key: convId.uuidString, details: "serverDurationMs=\(durationMs) costUsd=\(costUsd)")
         let out = mgr.output(for: convId)
-        out.runStats = (durationMs, costUsd, model)
+        out.runStats = RunStats(durationMs: durationMs, costUsd: costUsd, model: model)
         if let seq { out.lastSeenSeq = max(out.lastSeenSeq, seq) }
     }
 

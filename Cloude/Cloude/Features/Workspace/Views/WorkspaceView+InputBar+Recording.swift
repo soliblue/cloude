@@ -8,20 +8,20 @@ extension WorkspaceInputBar {
                 let horizontalDrag = -value.translation.width
 
                 if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
-                    isSwipingToRecord = true
+                    phase = .swiping
                     swipeOffset = verticalDrag
                     horizontalSwipeOffset = 0
                 } else if horizontalDrag > abs(verticalDrag) && !inputText.isEmpty {
                     horizontalSwipeOffset = horizontalDrag
                     swipeOffset = 0
-                    isSwipingToRecord = false
+                    phase = .idle
                 }
             }
             .onEnded { value in
                 let verticalDrag = -value.translation.height
                 let horizontalDrag = -value.translation.width
 
-                if verticalDrag >= Constants.swipeThreshold && canRecord && isSwipingToRecord {
+                if verticalDrag >= Constants.swipeThreshold && canRecord && phase == .swiping {
                     startRecording()
                 } else if horizontalDrag >= Constants.swipeThreshold && !inputText.isEmpty {
                     withAnimation(.easeOut(duration: DS.Duration.s)) {
@@ -29,18 +29,23 @@ extension WorkspaceInputBar {
                         attachedImages = []
                         attachedFiles = []
                     }
-                }
-
-                withAnimation(.easeOut(duration: DS.Duration.s)) {
-                    swipeOffset = 0
-                    horizontalSwipeOffset = 0
-                    isSwipingToRecord = false
+                    withAnimation(.easeOut(duration: DS.Duration.s)) {
+                        swipeOffset = 0
+                        horizontalSwipeOffset = 0
+                        phase = .idle
+                    }
+                } else {
+                    withAnimation(.easeOut(duration: DS.Duration.s)) {
+                        swipeOffset = 0
+                        horizontalSwipeOffset = 0
+                        if phase == .swiping { phase = .idle }
+                    }
                 }
             }
     }
 
     var canRecord: Bool {
-        isConnected && isWhisperReady && !audioRecorder.isTranscribing
+        isConnected && isWhisperReady && !isTranscribing
     }
 
     func startRecording() {
@@ -48,13 +53,10 @@ extension WorkspaceInputBar {
             if granted {
                 UIApplication.shared.isIdleTimerDisabled = true
                 withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-                    showInputBar = false
+                    phase = .recording
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
                     audioRecorder.startRecording()
-                    withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-                        showRecordingOverlay = true
-                    }
                 }
             }
         }
@@ -64,12 +66,9 @@ extension WorkspaceInputBar {
         UIApplication.shared.isIdleTimerDisabled = false
         let data = audioRecorder.stopRecording()
         withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-            showRecordingOverlay = false
+            phase = .idle
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
-            withAnimation(.easeOut(duration: Constants.transitionDuration)) {
-                showInputBar = true
-            }
             if let data = data {
                 onTranscribe?(data)
             }

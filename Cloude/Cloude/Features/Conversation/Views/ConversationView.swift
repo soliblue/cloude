@@ -10,7 +10,6 @@ struct ConversationView: View {
     let conversation: Conversation?
     var window: Window?
     var windowManager: WindowManager?
-    var onSelectConversation: (() -> Void)?
     var onInteraction: (() -> Void)?
     var onSelectRecentConversation: ((Conversation) -> Void)?
     var onSeeAllConversations: (() -> Void)?
@@ -49,7 +48,6 @@ struct ConversationView: View {
             messages: messages,
             queuedMessages: queuedMessages,
             conversationId: effectiveConversation?.id,
-            onRefresh: refreshMissedResponse,
             onInteraction: onInteraction,
             onDeleteQueued: { messageId in
                 if let conv = effectiveConversation {
@@ -66,14 +64,6 @@ struct ConversationView: View {
             environmentStore: environmentStore,
             conversationOutput: output
         )
-    }
-
-    private func refreshMissedResponse() async {
-        guard let conv = effectiveConversation,
-              let sessionId = conv.sessionId,
-              let workingDir = conv.workingDirectory, !workingDir.isEmpty else { return }
-        connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
-        try? await Task.sleep(for: .seconds(1))
     }
 
     private func persistLiveTextStartIfNeeded() {

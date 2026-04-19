@@ -8,9 +8,8 @@ extension SettingsView {
                     ForEach(Array(environmentStore.environments.enumerated()), id: \.element.id) { index, env in
                         EnvironmentCard(
                             env: env,
-                            isActive: env.id == environmentStore.activeEnvironmentId,
-                            isConnected: connection.connection(for: env.id)?.isAuthenticated ?? false,
-                            isConnecting: (connection.connection(for: env.id)?.isConnected ?? false) && !(connection.connection(for: env.id)?.isAuthenticated ?? false),
+                            isConnected: connection.connection(for: env.id)?.phase == .authenticated,
+                            isConnecting: connection.connection(for: env.id)?.phase == .connected,
                             onConnect: { connectEnvironment(env) },
                             onDisconnect: { connection.disconnectEnvironment(env.id, clearCredentials: false) },
                             onUpdate: { environmentStore.update($0); syncIfActive($0) },
@@ -56,7 +55,7 @@ extension SettingsView {
     }
 
     private func syncIfActive(_ env: ServerEnvironment) {
-        if let conn = connection.connection(for: env.id), conn.isAuthenticated {
+        if let conn = connection.connection(for: env.id), conn.phase == .authenticated {
             conn.disconnect(clearCredentials: false)
         }
     }

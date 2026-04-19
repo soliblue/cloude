@@ -42,11 +42,11 @@ extension WorkspaceInputBar {
         return String(afterAt)
     }
 
-    var showFileSuggestions: Bool {
+    var isShowingFileSuggestions: Bool {
         atMentionQuery != nil && !fileSearchResults.isEmpty
     }
 
-    var showCommandSuggestions: Bool {
+    var isShowingCommandSuggestions: Bool {
         if filteredCommands.isEmpty { return false }
         if inputText.isEmpty && !isInputFocused { return false }
         if inputText.isEmpty && !isRunning { return false }
@@ -54,7 +54,7 @@ extension WorkspaceInputBar {
     }
 
     var historySuggestions: [HistoryEntry] {
-        guard !showFileSuggestions, !showCommandSuggestions else { return [] }
+        guard !isShowingFileSuggestions, !isShowingCommandSuggestions else { return [] }
         return MessageHistory.suggestions(for: inputText)
     }
 }

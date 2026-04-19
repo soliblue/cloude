@@ -5,18 +5,18 @@ extension WorkspaceInputBar {
         isRunning && canSend
     }
 
-    var shouldShowStopButton: Bool {
-        isRunning && !isInputFocused && (showStopButton || !canSend)
+    var canShowStopButton: Bool {
+        isRunning && !isInputFocused && (isShowingStopButton || !canSend)
     }
 
-    var shouldShowRefreshButton: Bool {
+    var canShowRefreshButton: Bool {
         !isEnvironmentDisconnected && !isRunning && !canSend && onRefresh != nil
     }
 
     var actionButtonIcon: String {
         if isEnvironmentDisconnected { return "power" }
-        if shouldShowStopButton { return "stop.fill" }
-        if shouldShowRefreshButton { return "arrow.clockwise" }
+        if canShowStopButton { return "stop.fill" }
+        if canShowRefreshButton { return "arrow.clockwise" }
         if willQueue { return "clock.fill" }
         return "paperplane.fill"
     }
@@ -27,7 +27,7 @@ extension WorkspaceInputBar {
             Button(action: { onConnect?() }) {
                 actionButtonLabel
             }
-        } else if shouldShowRefreshButton {
+        } else if canShowRefreshButton {
             Menu {
                 attachmentAndOptionsMenu
             } label: {
@@ -36,7 +36,7 @@ extension WorkspaceInputBar {
                 refreshRotateTrigger += 1
                 onRefresh?()
             }
-        } else if shouldShowStopButton {
+        } else if canShowStopButton {
             Button(action: { onStop?() }) {
                 actionButtonLabel
             }
@@ -57,11 +57,11 @@ extension WorkspaceInputBar {
 
     @ViewBuilder
     var attachmentAndOptionsMenu: some View {
-        Button(action: { showPhotoPicker = true }) {
+        Button(action: { isShowingPhotoPicker = true }) {
             Label("Photo", systemImage: "photo")
         }
         .agenticID("chat_add_photo_button")
-        Button(action: { showFilePicker = true }) {
+        Button(action: { isShowingFilePicker = true }) {
             Label("File", systemImage: "doc")
         }
         .agenticID("chat_add_file_button")
@@ -113,10 +113,10 @@ extension WorkspaceInputBar {
             .symbolEffect(.rotate, value: refreshRotateTrigger)
             .symbolEffect(.bounce, value: sendBounceTrigger)
             .font(.system(size: DS.Icon.m, weight: .semibold))
-            .foregroundColor(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? .white : .secondary.opacity(DS.Opacity.m))
+            .foregroundColor(isEnvironmentDisconnected || canSend || canShowStopButton || canShowRefreshButton ? .white : .secondary.opacity(DS.Opacity.m))
             .frame(width: DS.Size.l)
             .frame(maxHeight: .infinity)
-            .background(isEnvironmentDisconnected || canSend || shouldShowStopButton || shouldShowRefreshButton ? Color.accentColor : Color.themeSecondary.opacity(DS.Opacity.m))
+            .background(isEnvironmentDisconnected || canSend || canShowStopButton || canShowRefreshButton ? Color.accentColor : Color.themeSecondary.opacity(DS.Opacity.m))
             .contentShape(Rectangle())
             .animation(.quickTransition, value: actionButtonIcon)
             .animation(.quickTransition, value: canSend)

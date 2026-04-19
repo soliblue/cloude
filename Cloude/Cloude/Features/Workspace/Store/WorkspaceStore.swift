@@ -12,7 +12,7 @@ final class WorkspaceStore: ObservableObject {
     @Published var inputText = ""
     @Published var attachedImages: [AttachedImage] = []
     @Published var attachedFiles: [AttachedFile] = []
-    @Published var drafts: [UUID: (text: String, images: [AttachedImage], effort: EffortLevel?, model: ModelSelection?)] = [:]
+    @Published var drafts: [UUID: Draft] = [:]
     @Published var gitBranches: [String: String] = [:]
     @Published var gitStats: [String: (additions: Int, deletions: Int)] = [:]
     @Published var pendingGitChecks: [(path: String, environmentId: UUID?)] = []
@@ -42,7 +42,7 @@ final class WorkspaceStore: ObservableObject {
         conversationStore: ConversationStore
     ) -> Bool {
         if let envId = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId {
-            return !(connection.connection(for: envId)?.isAuthenticated ?? false)
+            return connection.connection(for: envId)?.phase != .authenticated
         }
         return false
     }
@@ -50,7 +50,7 @@ final class WorkspaceStore: ObservableObject {
     func activeConversationIsRunning(connection: ConnectionManager, windowManager: WindowManager) -> Bool {
         if let activeWindow = windowManager.activeWindow,
            let convId = activeWindow.conversationId {
-            return connection.output(for: convId).isRunning
+            return connection.output(for: convId).phase != .idle
         }
         return false
     }

@@ -23,7 +23,7 @@ extension ConversationStore {
     }
 
     func insertLiveMessage(into conversation: Conversation) -> UUID {
-        let message = ChatMessage(isUser: false, text: "")
+        let message = ChatMessage(kind: .assistant(), text: "")
         addMessage(message, to: conversation)
         return message.id
     }

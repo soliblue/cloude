@@ -2,13 +2,6 @@ import Foundation
 import QuartzCore
 import Combine
 
-struct DebugEntry: Identifiable {
-    let id = UUID()
-    let time: Date
-    let source: String
-    let message: String
-}
-
 @MainActor
 final class DebugMetrics: ObservableObject {
     static let shared = DebugMetrics()
@@ -156,18 +149,4 @@ final class DebugMetrics: ObservableObject {
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return formatter
     }()
-}
-
-private class FPSTarget {
-    weak var metrics: DebugMetrics?
-
-    init(metrics: DebugMetrics) {
-        self.metrics = metrics
-    }
-
-    @objc func tick() {
-        MainActor.assumeIsolated {
-            metrics?.recordFrame()
-        }
-    }
 }

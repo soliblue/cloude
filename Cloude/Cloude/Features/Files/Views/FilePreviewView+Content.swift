@@ -7,7 +7,8 @@ import HighlightSwift
 extension FilePreviewView {
     @ViewBuilder
     var content: some View {
-        if isLoading {
+        switch loadPhase {
+        case .loading:
             VStack(spacing: DS.Spacing.l) {
                 if let progress = currentProgress {
                     VStack(spacing: DS.Spacing.s) {
@@ -27,30 +28,35 @@ extension FilePreviewView {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if directoryEntries != nil {
+        case .directory:
             FileBrowserView(connection: connection, rootPath: path, environmentId: environmentId)
-        } else if let error = errorMessage {
-            ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
-        } else if showDiff {
-            diffContent
-        } else if let data = fileData {
-            fileContent(data)
+        case .error(let message):
+            ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(message))
+        case .loaded, .thumbnail:
+            if diff != .hidden {
+                diffContent
+            } else if let data = fileData {
+                fileContent(data)
+            }
         }
     }
 
     @ViewBuilder
     var diffContent: some View {
-        if isDiffLoading {
+        switch diff {
+        case .loading:
             ProgressView()
-        } else if let diff = diffText, !diff.isEmpty {
-            DiffScrollView(diff: diff, fileName: fileName)
+        case .loaded(let text) where !text.isEmpty:
+            DiffScrollView(diff: text, fileName: fileName)
                 .background(Color.themeBackground)
-        } else {
+        case .loaded:
             ContentUnavailableView(
                 "No Changes",
                 systemImage: "checkmark.circle",
                 description: Text("No unstaged changes for this file")
             )
+        case .hidden:
+            EmptyView()
         }
     }
 
@@ -61,8 +67,8 @@ extension FilePreviewView {
         } else if case .image = contentType, let image = UIImage(data: data) {
             VStack {
                 ImagePreview(image: image)
-                if isThumbnail {
-                    thumbnailBanner
+                if case .thumbnail(let fullSize, let isLoadingFull) = loadPhase {
+                    thumbnailBanner(fullSize: fullSize, isLoadingFull: isLoadingFull)
                 }
             }
         } else if case .video = contentType {
@@ -72,7 +78,7 @@ extension FilePreviewView {
         } else if case .pdf = contentType {
             PDFPreview(data: data)
         } else if contentType.isTextBased, let text = String(data: data, encoding: .utf8) {
-            if contentType.hasRenderedView && !showSource, let rendered = renderedView(text: text, data: data) {
+            if contentType.hasRenderedView && viewMode == .rendered, let rendered = renderedView(text: text, data: data) {
                 rendered
             } else {
                 sourceTextView(text)

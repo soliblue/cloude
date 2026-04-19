@@ -34,19 +34,17 @@ struct WorkspaceInputBar: View {
     @Binding var currentModel: ModelSelection?
 
     @State private var selectedItem: PhotosPickerItem?
-    @State var showPhotoPicker = false
-    @State var showFilePicker = false
+    @State var isShowingPhotoPicker = false
+    @State var isShowingFilePicker = false
     @FocusState var isInputFocused: Bool
     @StateObject var audioRecorder = AudioRecorder()
     @State var placeholderIndex = 0
 
     @State var swipeOffset: CGFloat = 0
     @State var horizontalSwipeOffset: CGFloat = 0
-    @State var isSwipingToRecord = false
-    @State var showInputBar = true
-    @State var showRecordingOverlay = false
+    @State var phase: InputBarPhase = .idle
     @State private var idleTime: Date = Date()
-    @State var showStopButton = false
+    @State var isShowingStopButton = false
     @State var refreshRotateTrigger = 0
     @State var sendBounceTrigger = 0
     @State var fileSearchDebounce: Task<Void, Never>?
@@ -74,11 +72,11 @@ struct WorkspaceInputBar: View {
 
     var body: some View {
         #if DEBUG
-        let _ = DebugMetrics.log("InputBar", "render | focused=\(isInputFocused) running=\(isRunning) recording=\(showRecordingOverlay) swiping=\(isSwipingToRecord) transcribing=\(isTranscribing) showInput=\(showInputBar) cmds=\(showCommandSuggestions) files=\(showFileSuggestions)")
+        let _ = DebugMetrics.log("InputBar", "render | focused=\(isInputFocused) running=\(isRunning) phase=\(phase) transcribing=\(isTranscribing) cmds=\(isShowingCommandSuggestions) files=\(isShowingFileSuggestions)")
         #endif
         contentStack
             .gesture(inputBarDragGesture)
-            .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
+            .photosPicker(isPresented: $isShowingPhotoPicker, selection: $selectedItem, matching: .images)
             .onChange(of: selectedItem) { _, newItem in
                 guard let newItem else { return }
                 Task {
@@ -91,7 +89,7 @@ struct WorkspaceInputBar: View {
                     selectedItem = nil
                 }
             }
-            .fileImporter(isPresented: $showFilePicker, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
+            .fileImporter(isPresented: $isShowingFilePicker, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
                 if let urls = try? result.get() {
                     for url in urls {
                         guard url.startAccessingSecurityScopedResource() else { continue }
@@ -106,7 +104,7 @@ struct WorkspaceInputBar: View {
             }
             .onChange(of: inputText) { old, new in
                 idleTime = Date()
-                showStopButton = false
+                isShowingStopButton = false
                 if let query = atMentionQuery {
                     fileSearchDebounce?.cancel()
                     fileSearchDebounce = Task {
@@ -119,14 +117,14 @@ struct WorkspaceInputBar: View {
             }
             .onChange(of: isInputFocused) { _, focused in
                 if focused {
-                    showStopButton = false
+                    isShowingStopButton = false
                 } else {
                     idleTime = Date()
                 }
             }
             .task(id: isRunning) {
                 guard isRunning else {
-                    showStopButton = false
+                    isShowingStopButton = false
                     return
                 }
                 idleTime = Date()
@@ -134,7 +132,7 @@ struct WorkspaceInputBar: View {
                     try? await Task.sleep(for: .seconds(1))
                     if !Task.isCancelled && isRunning && !isInputFocused && Date().timeIntervalSince(idleTime) >= Constants.stopButtonDelay {
                         withAnimation(.quickTransition) {
-                            showStopButton = true
+                            isShowingStopButton = true
                         }
                     }
                 }

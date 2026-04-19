@@ -2,21 +2,21 @@ import SwiftUI
 
 extension WorkspaceInputBar {
     var inputBarOpacity: Double {
-        if !showInputBar || isTranscribing {
+        if phase == .recording || isTranscribing {
             return 0
         }
         return clampedSwipeProgress.map { 1.0 - $0 * DS.Opacity.l } ?? 1
     }
 
     var recordingOverlayOpacity: Double {
-        if showRecordingOverlay || isTranscribing {
+        if phase == .recording || isTranscribing {
             return 1
         }
         return clampedSwipeProgress ?? 0
     }
 
     var recordingOverlayOffset: CGFloat {
-        if showRecordingOverlay || isTranscribing {
+        if phase == .recording || isTranscribing {
             return 0
         }
         return max(0, Constants.swipeThreshold - sanitizedSwipeOffset)
@@ -59,10 +59,10 @@ extension WorkspaceInputBar {
             ZStack(alignment: .bottom) {
                 inputRow
                     .opacity(inputBarOpacity)
-                    .animation(.easeOut(duration: Constants.transitionDuration), value: showInputBar)
+                    .animation(.easeOut(duration: Constants.transitionDuration), value: phase)
                     .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
 
-                if showRecordingOverlay || isSwipingToRecord || isTranscribing {
+                if phase != .idle || isTranscribing {
                     RecordingOverlayView(
                         audioRecorder: audioRecorder,
                         isTranscribing: isTranscribing,
@@ -70,7 +70,7 @@ extension WorkspaceInputBar {
                     )
                     .offset(y: recordingOverlayOffset)
                     .opacity(recordingOverlayOpacity)
-                    .animation(.easeOut(duration: Constants.transitionDuration), value: showRecordingOverlay)
+                    .animation(.easeOut(duration: Constants.transitionDuration), value: phase)
                     .animation(.easeOut(duration: Constants.transitionDuration), value: isTranscribing)
                 }
             }
@@ -87,7 +87,7 @@ extension WorkspaceInputBar {
 
     @ViewBuilder
     private var suggestionsOverlay: some View {
-        if showFileSuggestions {
+        if isShowingFileSuggestions {
             suggestionBackdrop {
                 FileSuggestionsList(
                     files: fileSearchResults,
@@ -95,7 +95,7 @@ extension WorkspaceInputBar {
                 )
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
-        } else if showCommandSuggestions {
+        } else if isShowingCommandSuggestions {
             suggestionBackdrop {
                 SlashCommandSuggestions(
                     commands: filteredCommands,

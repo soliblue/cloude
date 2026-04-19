@@ -14,12 +14,12 @@ extension FilePreviewView {
         return nil
     }
 
-    var thumbnailBanner: some View {
+    func thumbnailBanner(fullSize: Int64, isLoadingFull: Bool) -> some View {
         Button {
-            loadFullQuality()
+            loadFullQuality(fullSize: fullSize)
         } label: {
             VStack(spacing: DS.Spacing.s) {
-                if isLoadingFullQuality {
+                if isLoadingFull {
                     if let progress = currentProgress {
                         ProgressView(value: Double(progress.current + 1), total: Double(progress.total))
                             .progressViewStyle(.linear)
@@ -46,13 +46,13 @@ extension FilePreviewView {
             .background(.ultraThinMaterial)
             .cornerRadius(DS.Radius.l)
         }
-        .disabled(isLoadingFullQuality)
+        .disabled(isLoadingFull)
         .padding(.bottom, DS.Spacing.l)
     }
 
-    func loadFullQuality() {
+    func loadFullQuality(fullSize: Int64) {
         AppLogger.beginInterval("file.fullQuality", key: path)
-        isLoadingFullQuality = true
+        loadPhase = .thumbnail(fullSize: fullSize, isLoadingFull: true)
         loadProgress = nil
         connection.getFileFullQuality(path: path, environmentId: environmentId)
     }
@@ -64,13 +64,13 @@ extension FilePreviewView {
             if contentType.highlightLanguage != nil, let text = String(data: cached, encoding: .utf8) {
                 highlightCode(text)
             } else {
-                isLoading = false
+                loadPhase = .loaded
             }
             return
         }
 
         AppLogger.beginInterval("file.load", key: path)
-        isLoading = true
+        loadPhase = .loading
         loadProgress = nil
         connection.getFile(path: path, environmentId: environmentId)
 
@@ -87,9 +87,7 @@ extension FilePreviewView {
                     }
                 case .fileContent(let p, let data, _, _, let truncated):
                     guard p == filePath else { return }
-                    isLoadingFullQuality = false
                     isTruncated = truncated
-                    isThumbnail = false
                     AppLogger.endInterval("file.load", key: filePath, details: "kind=content truncated=\(truncated)")
                     AppLogger.endInterval("file.fullQuality", key: filePath, details: "kind=content truncated=\(truncated)")
                     if let decoded = Data(base64Encoded: data) {
@@ -97,31 +95,26 @@ extension FilePreviewView {
                         if contentType.highlightLanguage != nil, let text = String(data: decoded, encoding: .utf8) {
                             highlightCode(text)
                         } else {
-                            isLoading = false
+                            loadPhase = .loaded
                         }
                     } else {
-                        errorMessage = "Failed to decode file"
-                        isLoading = false
+                        loadPhase = .error("Failed to decode file")
                     }
                 case .fileThumbnail(let p, let data, let size):
                     guard p == filePath else { return }
-                    isLoading = false
-                    isThumbnail = true
-                    fullSize = size
                     AppLogger.endInterval("file.load", key: filePath, details: "kind=thumbnail bytes=\(size)")
                     if let decoded = Data(base64Encoded: data) {
                         fileData = decoded
+                        loadPhase = .thumbnail(fullSize: size, isLoadingFull: false)
                     } else {
-                        errorMessage = "Failed to decode thumbnail"
+                        loadPhase = .error("Failed to decode thumbnail")
                     }
                 case .directoryListing(let p, let entries, _):
                     guard p == filePath else { return }
-                    directoryEntries = entries
-                    isLoading = false
+                    loadPhase = .directory(entries)
                     AppLogger.endInterval("file.load", key: filePath, details: "kind=directory entries=\(entries.count)")
                 case .fileError(let message):
-                    errorMessage = message
-                    isLoading = false
+                    loadPhase = .error(message)
                     AppLogger.cancelInterval("file.load", key: filePath, reason: message)
                     AppLogger.cancelInterval("file.fullQuality", key: filePath, reason: message)
                 default:
@@ -144,11 +137,11 @@ extension FilePreviewView {
                 }
                 await MainActor.run {
                     highlightedCode = result
-                    isLoading = false
+                    loadPhase = .loaded
                 }
             } catch {
                 await MainActor.run {
-                    isLoading = false
+                    loadPhase = .loaded
                 }
             }
         }

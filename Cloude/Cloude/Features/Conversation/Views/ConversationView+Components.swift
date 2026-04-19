@@ -7,7 +7,6 @@ struct ChatMessageList: View {
     let messages: [ChatMessage]
     var queuedMessages: [ChatMessage] = []
     let conversationId: UUID?
-    var onRefresh: (() async -> Void)?
     var onInteraction: (() -> Void)?
     var onDeleteQueued: ((UUID) -> Void)?
     var conversation: Conversation?
@@ -29,7 +28,7 @@ struct ChatMessageList: View {
     }
 
     private var isStreaming: Bool {
-        conversationOutput?.isRunning ?? false
+        (conversationOutput?.phase ?? .idle) != .idle
     }
 
     private var showLoadingIndicator: Bool {
@@ -64,7 +63,6 @@ struct ChatMessageList: View {
                         environmentStore: environmentStore,
                         conversation: conversation,
                         windowManager: windowManager,
-                        window: window,
                         onSelectConversation: onSelectConversation,
                         onSeeAll: onSeeAllConversations
                     )
