@@ -144,6 +144,7 @@ extension App {
              output.runStats != nil &&
              output.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
              output.toolCalls.isEmpty)
+        AppLogger.connectionInfo("heuristic_counter=shouldSyncBeforeFinalize_eval convId=\(conversationId.uuidString) value=\(shouldSyncBeforeFinalize) needsHistorySync=\(needsHistorySync)")
 
         if shouldSyncBeforeFinalize,
            output.liveMessageId != nil,
@@ -161,6 +162,7 @@ extension App {
                     }
                 }
             }
+            AppLogger.connectionInfo("heuristic_counter=pendingHistorySyncMetadata_write phase=pre_sync convId=\(conversation.id.uuidString)")
             conversationStore.pendingHistorySyncMetadata[conversation.id] = (
                 durationMs: output.runStats?.durationMs,
                 costUsd: output.runStats?.costUsd,
@@ -192,6 +194,7 @@ extension App {
            let sessionId = updatedConversation.sessionId,
            let workingDirectory,
            !workingDirectory.isEmpty {
+            AppLogger.connectionInfo("heuristic_counter=pendingHistorySyncMetadata_write phase=post_finalize convId=\(updatedConversation.id.uuidString)")
             conversationStore.pendingHistorySyncMetadata[updatedConversation.id] = (
                 durationMs: output.runStats?.durationMs,
                 costUsd: output.runStats?.costUsd,
@@ -220,6 +223,7 @@ extension App {
             let wasInterrupted = lastMsg.wasInterrupted
             AppLogger.connectionInfo("reconnect running recover convId=\(conversationId.uuidString) msgId=\(lastMsg.id.uuidString) wasInterrupted=\(wasInterrupted) chars=\(lastMsg.text.count) tools=\(lastMsg.toolCalls.count)")
             output.liveMessageId = lastMsg.id
+            AppLogger.connectionInfo("heuristic_counter=seedForReconnect reason=reconnect_running convId=\(conversationId.uuidString)")
             output.seedForReconnect(lastMsg.text, toolCalls: lastMsg.toolCalls)
             if wasInterrupted {
                 output.needsHistorySync = true

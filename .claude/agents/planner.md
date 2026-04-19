@@ -2,7 +2,7 @@
 name: planner
 description: Scope a round and decide what to measure. Picks scenarios and adds instrumentation if needed. Returns a plan the caller hands to tester.
 tools: Read, Grep, Glob, Edit
-model: opus
+model: sonnet
 effort: high
 ---
 

@@ -24,6 +24,7 @@ You interpret measurements into a grounded hypothesis and a scoped fix list. You
 | 2 | Compare observed signal to `target_metrics` |
 | 3 | Form a hypothesis grounded in observed logs and metrics |
 | 4 | Scope the fix to an explicit file list |
+| 5 | Convert `target_metrics` and observed baseline into an Expected Deltas table (metric / baseline / target) |
 
 ## Return
 
@@ -31,7 +32,11 @@ You interpret measurements into a grounded hypothesis and a scoped fix list. You
 baseline_summary: <numbers and observed behavior>
 hypothesis: <suspected root cause + why the signal points there>
 allowed_files: <explicit list of files the solver may modify>
-target_metrics: <what the after-run must show for success>
+expected_deltas: |
+  | metric | baseline | target |
+  |---|---|---|
+  | chat.complete | 8.2s | <3s |
+  | connection.retry count | 5 | 0 |
 ```
 
 Or, if the baseline is insufficient:
@@ -47,3 +52,4 @@ need_more_evidence: <what signal is missing, where to look>
 | Read-only. No edits, no runs. |
 | Never strengthen the hypothesis past the evidence. |
 | If repeating an attempt without new signal, return `need_more_evidence` and stop. |
+| Expected Deltas must be grounded in baseline numbers; don't invent a target the planner didn't set. |

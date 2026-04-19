@@ -23,10 +23,10 @@ Prefer observation over inference: code that appears logically sound is not veri
 | 1 | `planner` | `goal` | scope, reproduction, scenarios, target_metrics, instrumentation | `## Plan` | / |
 | 2 | `launcher` | optional `count` (1-3) | one or more `ready: sim=<udid> app=<bundle> log=<path> build=<commit>` lines | / | / |
 | 3 | `tester` | `scenarios, app_ref` | per scenario: invocation, build, metrics, assertions, notable_logs, artifacts, run_notes | `## Baseline` | / |
-| 4 | `analyst` | `baseline_reports, target_metrics, scope` | hypothesis, allowed_files | `## Hypothesis` | `need_more_evidence`: add instrumentation and re-run, or abandon |
+| 4 | `analyst` | `baseline_reports, target_metrics, scope` | hypothesis, allowed_files, expected_deltas | `## Hypothesis` | `need_more_evidence`: add instrumentation and re-run, or abandon |
 | 5 | `solver` | `hypothesis, allowed_files` | `applied: N files, M lines` | `## Implementation` | `scope_escalation`: expand `allowed_files` or abandon; `scope_too_large`: reframe |
 | 6 | `launcher` | / | ready (rebuilt with fix) | / | / |
 | 7 | `tester` | `scenarios, app_ref` | per scenario: invocation, build, metrics, assertions, notable_logs, artifacts, run_notes | `## After` | / |
-| 8 | `reviewer` | `hypothesis, allowed_files, target_metrics, implementation_summary, baseline, after` | `approved + lesson` | `## Verdict` | `rejected`: ask user for more evidence or different fix |
+| 8 | `reviewer` | `hypothesis, allowed_files, expected_deltas, implementation_summary, after_reports` | `approved + lesson` | `## Verdict` | `rejected`: ask user for more evidence or different fix |
 
 When planner selects two or more scenarios, pass `count` to the launcher so tester can dispatch them in parallel across sims (cap: 3). A single scenario doesn't benefit from parallelism — use `count=1`. Prefer a superset scenario over running subsets individually; `streaming-lifecycle-stress` already covers normal streaming, reconnect, and relaunch in one run.

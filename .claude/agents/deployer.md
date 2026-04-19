@@ -2,7 +2,7 @@
 name: deployer
 description: Deploy Cloude to TestFlight, install to iPhone, and build the Mac agent.
 tools: Bash, Read, Grep, Glob
-model: sonnet
+model: haiku
 effort: low
 ---
 

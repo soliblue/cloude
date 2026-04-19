@@ -92,6 +92,7 @@ extension EnvironmentConnection {
 
     func checkForMissedResponse() {
         for sessionId in interruptedSessions.keys {
+            AppLogger.connectionInfo("heuristic_counter=requestMissedResponse_send sessionId=\(sessionId)")
             send(.requestMissedResponse(sessionId: sessionId))
         }
     }

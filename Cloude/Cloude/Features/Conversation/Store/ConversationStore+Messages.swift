@@ -58,7 +58,10 @@ extension ConversationStore {
                     if merged[i].durationMs == nil { merged[i].durationMs = existing.durationMs }
                     if merged[i].costUsd == nil { merged[i].costUsd = existing.costUsd }
                     if merged[i].model == nil { merged[i].model = existing.model }
-                    if merged[i].toolCalls.count < existing.toolCalls.count { merged[i].toolCalls = existing.toolCalls }
+                    if merged[i].toolCalls.count < existing.toolCalls.count {
+                        AppLogger.connectionInfo("heuristic_counter=jsonl_lag_merge convId=\(conversation.id.uuidString) jsonl_tools=\(merged[i].toolCalls.count) client_tools=\(existing.toolCalls.count)")
+                        merged[i].toolCalls = existing.toolCalls
+                    }
                     if merged[i].imageBase64 == nil { merged[i].imageBase64 = existing.imageBase64 }
                     if merged[i].imageThumbnails == nil { merged[i].imageThumbnails = existing.imageThumbnails }
                 }

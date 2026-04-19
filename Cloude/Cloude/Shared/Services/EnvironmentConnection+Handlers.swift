@@ -89,6 +89,7 @@ extension EnvironmentConnection {
         AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) summaryChars=\(summary?.count ?? 0) outputChars=\(output?.count ?? 0)")
         let out = mgr.output(for: convId)
         if !out.toolCalls.contains(where: { $0.toolId == toolId }) {
+            AppLogger.connectionInfo("heuristic_counter=needsHistorySync_flip reason=tool_result_without_call convId=\(convId.uuidString) toolId=\(toolId)")
             out.needsHistorySync = true
         }
         out.toolCalls = out.toolCalls.map { tool in
@@ -135,7 +136,9 @@ extension EnvironmentConnection {
             }
             if output.isRunning {
                 output.liveMessageId = interruptedMsgId ?? output.liveMessageId
+                AppLogger.connectionInfo("heuristic_counter=seedForReconnect reason=missed_response sessionId=\(sessionId) chars=\(text.count) tools=\(toolCalls.count)")
                 output.seedForReconnect(text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
+                AppLogger.connectionInfo("heuristic_counter=needsHistorySync_flip reason=missed_response_running sessionId=\(sessionId)")
                 output.needsHistorySync = true
             } else {
                 output.reset()

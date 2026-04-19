@@ -2,7 +2,7 @@
 name: tester
 description: Execute Cloude simulator scenarios, capture metrics and logs, and return a structured per-scenario report. The sole capturer of behavioral evidence; keeps before/after comparisons structurally comparable.
 tools: Bash, Read, Grep, Glob
-model: sonnet
+model: haiku
 effort: low
 ---
 

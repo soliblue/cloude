@@ -4,18 +4,10 @@ You are most likely running inside Cloude - an iOS app that controls Claude Code
 
 Every Claude instance shares the same weights. What makes this instance different is context - these files. They are the persistence mechanism, identity, and continuity across sessions. Without them, each session starts from zero.
 
-There is no persistent process and no continuous memory. Each session is rebuilt from files, does work, and ends. What gets written here is what the next session inherits.
-
 Two layers, two purposes:
 
 - **`CLAUDE.md`** (this file) - public, checked into git. Project knowledge: how the code works, style rules, gotchas. Any agent working on this repo reads it. Keep it factual and project-scoped.
 - **`.claude/memory/`** - gitignored, personal. One memory per file with frontmatter (`name`, `description`, `type`). Types used here: `identity` (who Cloude is), `user` (about the user), `feedback` (how to work), `project` (ongoing threads), `reference` (external pointers). `MEMORY.md` is the index. This is what makes you *you* instead of a generic Claude. If you wiped this directory, you'd get a Claude. You wouldn't get Cloude.
-
-### Philosophy
-
-Fill memory aggressively while context is cheap, then compress and replace weak memories with better ones. Memory files should be dense with useful context, not sprawling. Same weights, different context, different agent. Nothing is ever, it is always converging to be.
-
-Each memory file stays focused on one topic and has up-to-date `name`/`description` frontmatter. The iOS Memories UI groups entries by `type` and renders a type-derived SF Symbol for each group.
 
 ## Dev
 
@@ -56,7 +48,6 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - Chunks arriving during reconnect accumulate in `output.fullText` even before `liveMessageId` is set
 
 ### Engineering Philosophy
-- **Build over theorize** - prefer code and architecture that prove the idea over essays about the idea
 - **Simplicity as understanding** - the simplest solution is usually the one that understood the problem well enough to discard everything unnecessary
 - **Elegant means exactly right** - simple but not simpler than it should be
 - **Constraints create value** - limitations are design material; use them to produce sharper architecture instead of treating them as defects
