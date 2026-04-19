@@ -38,6 +38,7 @@ extension ConversationStore {
                         conv.messages[msgIdx].costUsd = runStats?.costUsd
                         conv.messages[msgIdx].serverUUID = messageUUID
                         conv.messages[msgIdx].model = runStats?.model
+                        conv.messages[msgIdx].wasInterrupted = false
                     }
                     if let cost = runStats?.costUsd, cost > 0 {
                         let computed = conv.messages.compactMap(\.costUsd).reduce(0, +)

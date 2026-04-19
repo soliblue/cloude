@@ -41,6 +41,9 @@ extension App {
         case .liveSnapshot(let convId):
             handleLiveSnapshot(conversationId: convId)
 
+        case .resumeBegin(let convId, let messageId):
+            handleResumeBegin(conversationId: convId, messageId: messageId)
+
         case .screenshot(let convId):
             handleScreenshot(conversationId: convId)
 

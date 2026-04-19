@@ -172,6 +172,13 @@ extension App {
         }
     }
 
+    func handleResumeBegin(conversationId: UUID, messageId: UUID) {
+        guard let conversation = conversationStore.findConversation(withId: conversationId) else { return }
+        conversationStore.updateMessage(messageId, in: conversation) { message in
+            message.wasInterrupted = false
+        }
+    }
+
     func handleLiveSnapshot(conversationId: UUID) {
         let output = connection.output(for: conversationId)
         guard let liveId = output.liveMessageId,

@@ -66,6 +66,9 @@ extension EnvironmentConnection {
             }
             return
         }
+        if let target = interruptedSessions[sessionId], let messageId = target.messageId {
+            mgr.events.send(.resumeBegin(conversationId: target.conversationId, messageId: messageId))
+        }
         for event in events {
             switch event {
             case .output(let text, let conversationId, let seq):
@@ -93,7 +96,6 @@ extension EnvironmentConnection {
             snapshot.newSessionId = output.newSessionId
             snapshot.liveMessageId = output.liveMessageId
             mgr.events.send(.disconnect(conversationId: convId, output: snapshot))
-            output.reset()
             output.isRunning = false
         }
         isConnected = false

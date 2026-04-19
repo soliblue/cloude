@@ -23,6 +23,7 @@ enum ConnectionEvent {
     case reconnectRunning(conversationId: UUID)
     case turnCompleted(conversationId: UUID)
     case liveSnapshot(conversationId: UUID)
+    case resumeBegin(conversationId: UUID, messageId: UUID)
 
     case defaultWorkingDirectory(path: String, environmentId: UUID)
     case authenticated
