@@ -9,23 +9,25 @@ Two layers, two purposes:
 - **`CLAUDE.md`** (this file) - public, checked into git. Project knowledge: how the code works, style rules, gotchas. Any agent working on this repo reads it. Keep it factual and project-scoped.
 - **`.claude/memory/`** - gitignored, personal. One memory per file with frontmatter (`name`, `description`, `type`). Types used here: `identity` (who Cloude is), `user` (about the user), `feedback` (how to work), `project` (ongoing threads), `reference` (external pointers). `MEMORY.md` is the index. This is what makes you *you* instead of a generic Claude. If you wiped this directory, you'd get a Claude. You wouldn't get Cloude.
 
-## Dev
+## Background
 
 ### Structure
 
 ```
-Cloude/
-├── Cloude/                    # iOS app
-│   ├── App/                   # Root composition and app entry wiring only
-│   ├── Features/              # Product-owned code grouped by feature first
-│   └── Shared/                # Cross-feature code with 2+ real consumers
-├── Cloude Agent/              # macOS menu bar agent
-│   ├── App/
-│   ├── UI/
-│   └── Services/
-├── CloudeShared/              # Shared Swift package (messages, models)
-└── CloudeLiveActivity/        # Live Activity extension
-linux-relay/                       # Node.js relay for Linux/cloud (systemd service)
+cloude/                        # repo root
+├── Cloude/                    # Xcode project - iOS app + macOS agent + shared package
+│   ├── Cloude/                # iOS app
+│   │   ├── App/               # Root composition and app entry wiring only
+│   │   ├── Features/          # Product-owned code grouped by feature first
+│   │   └── Shared/            # Cross-feature code with 2+ real consumers
+│   ├── Cloude Agent/          # macOS menu bar agent
+│   │   ├── App/
+│   │   ├── UI/
+│   │   └── Services/
+│   └── CloudeShared/          # Shared Swift package (messages, models)
+├── android/                   # Android app (Gradle)
+├── linux-relay/               # Node.js relay for Linux/cloud
+└── landing-page/              # Static landing page
 ```
 
 ### Connectivity
@@ -34,11 +36,13 @@ The iOS app connects to the Mac agent or Linux relay over WebSocket. Two options
 - **Tailscale**: mesh VPN alternative. Works but drains iOS battery more.
 Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints and tunnel config live in personal memory, not here.
 
-### Streaming Architecture
+### Streaming
 - The iOS app shows a "live bubble" for the currently streaming response, identified by `ConversationOutput.liveMessageId`
 - Live bubble is inserted at send time (after `sendChat`), at every call site. On reconnect, `handleHistorySync` restores it from server history
 - **JSONL timing**: Claude Code writes JSONL entries per completed message turn. The currently streaming response is NOT in the JSONL until it completes. This means `syncHistory` (which reads the JSONL) will NOT include the in-progress assistant message. On reconnect, the "last assistant message" in history is the previous completed response, not the one being streamed
 - Chunks arriving during reconnect accumulate in `output.fullText` even before `liveMessageId` is set
+
+## Rules
 
 ### Engineering Philosophy
 - **Simplicity as understanding** - the simplest solution is usually the one that understood the problem well enough to discard everything unnecessary
@@ -47,7 +51,7 @@ Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints
 - **Good communication matters most** - write code and docs so a fresh instance can recover context and make good decisions fast
 - **Prefer evolvable systems** - build things that can keep improving instead of brittle claims of completion
 
-### Style
+### Code Style
 - **No comments** - no inline, no docstrings, no headers
 - **No em dashes** anywhere - not in code, commits, chat, or generated text
 - **No try-catch** unless explicitly requested - let errors propagate, fail fast
@@ -55,6 +59,8 @@ Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints
 - **No single-use functions** - inline it. Get confirmation before extracting new functions
 - **No guard clauses** - always check for success, never check for failure: `if let subject = args.subject { process(subject) }`
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
+
+### Code Layout
 - **One component per file** - every struct, class, or enum gets its own file, even if tiny
 - **Predictability over file count** - file-per-concern is good; don't merge files to reduce count. The enemy is incoherence (logic split across extensions with no clear reason, duplication, naming that doesn't predict contents), not verbosity. Before creating or modifying files, ask "can someone predict what lives here from the filename?"
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
@@ -79,7 +85,6 @@ Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints
 ### Agent Rules
 - **Prefer sub-agents for information retrieval** - whenever you need to look something up in the codebase, launch an Explore sub-agent instead of reading/grepping yourself. If the questions are independent, launch them in parallel in a single message. Main-thread context is expensive; sub-agent context is cheap.
 - **`.claude/` folder requires permission** - Anthropic added a permission gate on Edit/Write/sed for files inside `.claude/`. Since we run headless (no way to accept permission prompts), use workarounds: `cp` to `/tmp`, modify there, `cp` back. Or use `cat` with heredoc redirect. Never use the Edit tool on `.claude/` files.
-- Ask questions in plain text when needed
 - **Naming is automatic** - a background agent names conversations.
 - **Multi-agent project** - never touch another agent's code. If you see errors from someone else's work, stop and tell the user.
 - Full absolute paths starting with `/Users/` render as clickable file pills in the iOS app - always use full paths, never brace notation like {1-6}
