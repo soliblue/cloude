@@ -49,6 +49,11 @@ extension ServerMessage {
             try container.encode("pong", forKey: .type)
             try container.encode(sentAt, forKey: .sentAt)
             try container.encode(serverAt, forKey: .serverAt)
+        case .resumeFromResponse(let sessionId, let events, let historyOnly):
+            try container.encode("resume_from_response", forKey: .type)
+            try container.encode(sessionId, forKey: .sessionId)
+            try container.encode(events, forKey: .events)
+            try container.encode(historyOnly, forKey: .historyOnly)
         default:
             break
         }

@@ -47,6 +47,11 @@ extension ServerMessage {
             let symbol = try container.decodeIfPresent(String.self, forKey: .symbol)
             let conversationId = try container.decode(String.self, forKey: .conversationId)
             return .nameSuggestion(name: name, symbol: symbol, conversationId: conversationId)
+        case "resume_from_response":
+            let sessionId = try container.decode(String.self, forKey: .sessionId)
+            let events = try container.decode([ReplayedEvent].self, forKey: .events)
+            let historyOnly = try container.decode(Bool.self, forKey: .historyOnly)
+            return .resumeFromResponse(sessionId: sessionId, events: events, historyOnly: historyOnly)
         default:
             return nil
         }

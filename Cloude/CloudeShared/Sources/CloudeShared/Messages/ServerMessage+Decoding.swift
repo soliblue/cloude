@@ -19,7 +19,8 @@ extension ServerMessage {
         case "output":
             let text = try container.decode(String.self, forKey: .text)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            return .output(text: text, conversationId: conversationId)
+            let seq = try container.decodeIfPresent(Int.self, forKey: .seq)
+            return .output(text: text, conversationId: conversationId, seq: seq)
         case "status":
             let state = try container.decode(AgentState.self, forKey: .state)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
@@ -68,19 +69,22 @@ extension ServerMessage {
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             let textPosition = try container.decodeIfPresent(Int.self, forKey: .textPosition)
             let editInfo = try container.decodeIfPresent(EditInfo.self, forKey: .editInfo)
-            return .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo)
+            let seq = try container.decodeIfPresent(Int.self, forKey: .seq)
+            return .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo, seq: seq)
         case "tool_result":
             let toolId = try container.decode(String.self, forKey: .toolId)
             let summary = try container.decodeIfPresent(String.self, forKey: .summary)
             let output = try container.decodeIfPresent(String.self, forKey: .output)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            return .toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId)
+            let seq = try container.decodeIfPresent(Int.self, forKey: .seq)
+            return .toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId, seq: seq)
         case "run_stats":
             let durationMs = try container.decode(Int.self, forKey: .durationMs)
             let costUsd = try container.decode(Double.self, forKey: .costUsd)
             let model = try container.decodeIfPresent(String.self, forKey: .model)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
-            return .runStats(durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId)
+            let seq = try container.decodeIfPresent(Int.self, forKey: .seq)
+            return .runStats(durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId, seq: seq)
         case "git_status_result":
             let status = try container.decode(GitStatusInfo.self, forKey: .status)
             return .gitStatusResult(status: status)

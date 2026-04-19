@@ -4,10 +4,11 @@ extension ServerMessage {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .output(let text, let conversationId):
+        case .output(let text, let conversationId, let seq):
             try container.encode("output", forKey: .type)
             try container.encode(text, forKey: .text)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
+            try container.encodeIfPresent(seq, forKey: .seq)
         case .status(let state, let conversationId):
             try container.encode("status", forKey: .type)
             try container.encode(state, forKey: .state)
@@ -48,7 +49,7 @@ extension ServerMessage {
         case .noMissedResponse(let sessionId):
             try container.encode("no_missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
-        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition, let editInfo):
+        case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition, let editInfo, let seq):
             try container.encode("tool_call", forKey: .type)
             try container.encode(name, forKey: .name)
             try container.encodeIfPresent(input, forKey: .input)
@@ -57,18 +58,21 @@ extension ServerMessage {
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
             try container.encodeIfPresent(textPosition, forKey: .textPosition)
             try container.encodeIfPresent(editInfo, forKey: .editInfo)
-        case .toolResult(let toolId, let summary, let output, let conversationId):
+            try container.encodeIfPresent(seq, forKey: .seq)
+        case .toolResult(let toolId, let summary, let output, let conversationId, let seq):
             try container.encode("tool_result", forKey: .type)
             try container.encode(toolId, forKey: .toolId)
             try container.encodeIfPresent(summary, forKey: .summary)
             try container.encodeIfPresent(output, forKey: .output)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .runStats(let durationMs, let costUsd, let model, let conversationId):
+            try container.encodeIfPresent(seq, forKey: .seq)
+        case .runStats(let durationMs, let costUsd, let model, let conversationId, let seq):
             try container.encode("run_stats", forKey: .type)
             try container.encode(durationMs, forKey: .durationMs)
             try container.encode(costUsd, forKey: .costUsd)
             try container.encodeIfPresent(model, forKey: .model)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
+            try container.encodeIfPresent(seq, forKey: .seq)
         case .gitStatusResult(let status):
             try container.encode("git_status_result", forKey: .type)
             try container.encode(status, forKey: .status)
@@ -92,7 +96,7 @@ extension ServerMessage {
             try container.encode(ready, forKey: .ready)
         case .processList, .defaultWorkingDirectory, .skills, .historySync, .historySyncError,
              .fileChunk, .fileThumbnail, .fileSearchResults, .messageUUID,
-             .nameSuggestion, .pong:
+             .nameSuggestion, .pong, .resumeFromResponse:
             try encodeExtendedCases(&container)
         }
     }

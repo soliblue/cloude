@@ -40,6 +40,10 @@ extension ClientMessage {
         case "request_missed_response":
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             self = .requestMissedResponse(sessionId: sessionId)
+        case "resume_from":
+            let sessionId = try container.decode(String.self, forKey: .sessionId)
+            let lastSeq = try container.decode(Int.self, forKey: .lastSeq)
+            self = .resumeFrom(sessionId: sessionId, lastSeq: lastSeq)
         case "git_status":
             let path = try container.decode(String.self, forKey: .path)
             self = .gitStatus(path: path)

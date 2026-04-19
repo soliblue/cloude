@@ -35,6 +35,10 @@ extension ClientMessage {
         case .requestMissedResponse(let sessionId):
             try container.encode("request_missed_response", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)
+        case .resumeFrom(let sessionId, let lastSeq):
+            try container.encode("resume_from", forKey: .type)
+            try container.encode(sessionId, forKey: .sessionId)
+            try container.encode(lastSeq, forKey: .lastSeq)
         case .gitStatus(let path):
             try container.encode("git_status", forKey: .type)
             try container.encode(path, forKey: .path)
