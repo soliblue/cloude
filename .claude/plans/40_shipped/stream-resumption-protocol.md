@@ -317,3 +317,89 @@ All three scenario messages must log exactly one `finalize live message update` 
 ### Note on the original plan
 
 The full `seq` + `resumeFrom` + server ring-buffer redesign described in the original plan ticket is still a valid follow-up. Once this narrower fix lands and reconnect finalizes deterministically on the Mac path, the protocol primitive can be added to make replay gap-free rather than best-effort. But the immediate blocker in the observed baseline is the unreachable seeding branch, not the missing `seq` field.
+
+## Hypothesis (revised — scope A+B+C of the original design)
+
+After discussion with the user, this round pursues the original plan's design direction rather than the narrower fix option C above. The user's preference is to land the design pattern that makes ordering of chunks a first-class protocol primitive, since "every chunk has an ordering token, server replays from any point" is a smaller surface area long-term than "5 state booleans + 4 heuristic paths."
+
+The round is scoped to slices A+B+C of the original plan, which together prove the design end-to-end:
+
+### Slice A (protocol)
+Add `seq: Int` to the four streaming server messages (`.output`, `.toolCall`, `.toolResult`, `.runStats`) and introduce `.resumeFrom(sessionId, lastSeq)` on the client with a matching `.resumeFromResponse(sessionId, events, historyOnly)` on the server. Keep `requestMissedResponse`/`missedResponse` wired in parallel for this round so no callers break; they become dead weight after slice D.
+
+### Slice B (Mac agent server buffer)
+Per-session in-memory ring buffer on `RunnerManager` (last 200 events or 60 seconds, whichever rolls first). Stamp every outgoing event with a monotonic per-session `seq` as it is produced. Handle `resumeFrom(sessionId, lastSeq)` by returning a batch of buffered events with `seq > lastSeq`, an empty batch if fully caught up, or `historyOnly=true` if the buffer rolled past `lastSeq`.
+
+### Slice C (iOS minimum-viable consumer)
+Track `lastSeenSeq` per session on `ConversationOutput`; update it in each streaming handler. On reconnect and on cold-boot auth, send `resumeFrom(sessionId, lastSeenSeq)` instead of `requestMissedResponse`. Consume the replay batch by feeding each event through the existing streaming handlers — reuse the handler path rather than carving a parallel one.
+
+### Out of scope (follow-up rounds)
+- Slice D: collapse `ConversationOutput` booleans into `StreamState` enum. Refactor-only; does not change behavior.
+- Slice E: port buffer + `resumeFrom` to Linux relay; delete Mac `ResponseStore`.
+- Removing the now-dead `requestMissedResponse` path and the six client heuristics (`needsHistorySync`, `seedForReconnect` guards, `pendingHistorySyncMetadata`, the `jsonl_lag_merge` branch, etc.). They remain as belt-and-suspenders during this round and get deleted once replay is proven.
+
+### Why this fixes the baseline
+The baseline showed the live bubble is stuck on reconnect because `handleMissedResponse`'s `if output.isRunning` seeding branch is unreachable after `handleDisconnect` clears `isRunning`. With replay, the client no longer relies on that branch: the server-returned batch of buffered events flows through the same handlers that built the live bubble originally, and the bubble is rehydrated deterministically regardless of `isRunning`. The old heuristic counters (1, 2, 4, 5, 6) will continue to read 0 in the after-run — not because they fire cleanly, but because the replay pre-empts them entirely.
+
+### Allowed files (solver scope)
+
+CloudeShared (3):
+- `/Users/soli/Desktop/CODING/cloude/Cloude/CloudeShared/Sources/CloudeShared/Messages/ClientMessage.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/CloudeShared/Sources/CloudeShared/Messages/ServerMessage.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/CloudeShared/Sources/CloudeShared/Messages/ServerMessage+EncodingExt.swift`
+
+Mac agent (4, plus the message-handler file the solver locates):
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude Agent/Services/RunnerManager.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude Agent/Services/RunnerManager+Callbacks.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude Agent/Services/ClaudeCodeRunner+EventHandling.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude Agent/Services/ClaudeCodeRunner+Lifecycle.swift`
+- Plus: the Mac agent's WebSocket message router that dispatches `.resumeFrom` (solver may read the codebase to find it; authorized to edit).
+
+iOS client (4):
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Shared/Services/ConnectionManager+ConversationOutput.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Shared/Services/EnvironmentConnection+Handlers.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Shared/Services/EnvironmentConnection+Networking.swift`
+- `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude/Shared/Services/EnvironmentConnection+MessageHandler.swift`
+
+Explicit non-targets for this round: `Cloude Agent/Services/ResponseStore.swift` (keep in place), `linux-relay/*` (do not touch), `Cloude/Features/Conversation/Utils/ConversationEventHandling.swift` and `Cloude/Features/Conversation/Store/ConversationStore+Messaging.swift` (keep as-is; state enum collapse is deferred).
+
+### Expected deltas (after-run assertions)
+
+| metric | baseline (msg2 / msg3) | target (msg2 / msg3) |
+|---|---|---|
+| `heuristic_counter=seedForReconnect_call_count` | 0 / 0 | 0 / 0 (path pre-empted by replay) |
+| `heuristic_counter=needsHistorySync_flip_count` | 0 / 0 | 0 / 0 |
+| `heuristic_counter=requestMissedResponse_send_count` | 1 / 0 | 0 / 0 (replaced by resumeFrom) |
+| `resumeFrom_request_count` (new) | - | 1 / 1 |
+| `finalize live message update` per reconnected turn | 0 / 0 | 1 / 1 |
+| `state=idle` reached after reconnect/relaunch | no / no | yes / yes |
+| duplicated markdown or tool groups after replay | n/a | none |
+
+## Verdict
+
+**Result: approved**
+
+### Message 2 replay path works end-to-end
+`resumeFrom_send` fired once with `lastSeq=67`, `resumeFromResponse_receive` delivered 42 events (seq 68-109), old heuristic counters 1/3/4/5/6 all 0 as designed, finalize logged, `state=idle` reached. Every expected delta for msg2 passes.
+
+### Message 3 cold-boot is acceptable coexistence, not a side-effect fix
+`interruptedSessions` is in-memory only, so no `resumeFrom` fires on cold boot - as the hypothesis predicted. The Mac agent's proactive `.missedResponse` push (chars=1108, tools=6) routes through the still-alive old heuristic path (`seedForReconnect`, `needsHistorySync_flip`, `shouldSyncBeforeFinalize=true`, `pendingHistorySyncMetadata_write=pre_sync`), and the bubble finalizes. This is genuine coexistence: `resumeFrom` for warm reconnect, heuristics for cold relaunch.
+
+Flag for slice D/E follow-up: persist `{sessionId, lastSeenSeq}` so cold boot can also use `resumeFrom`, otherwise the old path lives forever.
+
+### No regressions
+Sequence numbers present on every streamed event, no duplicated content, no extra latency; msg1 clean turn unchanged. Tester's summary showed a small self-contradiction (claims msg3 `seedForReconnect=0` but the log shows it firing at 10:57:36.875) - logging is accurate, the tally isn't. Not a code bug.
+
+### Scope drift is minor
+New `ReplayBuffer.swift` and sibling encoding/decoding files (`ClientMessage+Decoding.swift`, `ServerMessage+DecodingExt.swift`, etc.) were edited beyond the explicit 3 CloudeShared + 4 Mac + 4 iOS list, but are mechanical consequences of adding enum cases and extracting the buffer off `RunnerManager`. Accept.
+
+### Lesson
+
+When a plan's target diagnosis (five heuristics "firing") contradicts baseline measurement (all five at 0 because an `isRunning` guard is unreachable), a solver can either land a narrow patch for the observed bug or the original design pattern. Picking the pattern costs one round but replaces the surface area permanently; picking the patch ships fast but leaves a workaround in a file someone has to re-understand later. Design-over-patch is worth it when (a) the pattern is short enough to slice into sim-sized rounds, and (b) the old path can coexist as belt-and-suspenders during migration. Slice A+B+C here was small enough to land in one round; slices D+E were correctly deferred so two migrations never collide.
+
+### Follow-ups for fresh rounds
+
+1. Persist `{sessionId, lastSeenSeq}` across app launches so cold-boot relaunch also uses `resumeFrom` (closes the Message 3 path, retires the Mac agent's proactive `missedResponse` push).
+2. Slice D: collapse `ConversationOutput` lifecycle booleans (`isRunning`, `isCompacting`, `needsHistorySync`, `skipped`, `liveMessageId: UUID?`) into a single `StreamState` enum.
+3. Slice E: port the ring buffer + `resumeFrom` handler to the Linux relay (`linux-relay/runner.js`, `handlers.js`, `server.js`); delete `ResponseStore.swift` once both servers are uniform.
+4. Remove now-dead heuristic paths (`needsHistorySync` setter + consumers, `pendingHistorySyncMetadata` two-phase finalize, `jsonl_lag_merge` branch, `seedForReconnect` callers, the `heuristic_counter=` logs) once 1-3 all land and the old path is structurally unreachable.
