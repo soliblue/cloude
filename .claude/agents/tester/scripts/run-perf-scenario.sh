@@ -8,6 +8,7 @@ SCENARIO_NAME="mixed-markdown-multi-tool.txt"
 WAIT_SECONDS=30
 MODEL="haiku"
 START_SIMULATOR=1
+SKIP_RELAUNCH=0
 PRINT_SUMMARY=1
 
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-start)
       START_SIMULATOR=0
+      shift
+      ;;
+    --no-relaunch)
+      SKIP_RELAUNCH=1
       shift
       ;;
     --no-summary)
@@ -50,11 +55,15 @@ if [[ "$START_SIMULATOR" -eq 1 ]]; then
   "$REPO_ROOT/.claude/agents/launcher/start-local-simulator.sh"
 fi
 
-xcrun simctl spawn "$UDID" defaults write soli.Cloude debugOverlayEnabled -bool true
-xcrun simctl terminate "$UDID" soli.Cloude >/dev/null 2>&1 || true
-sleep 1
-xcrun simctl launch "$UDID" soli.Cloude >/dev/null
-sleep 2
+if [[ "$SKIP_RELAUNCH" -eq 0 ]]; then
+  xcrun simctl spawn "$UDID" defaults write soli.Cloude debugOverlayEnabled -bool true
+  xcrun simctl terminate "$UDID" soli.Cloude >/dev/null 2>&1 || true
+  sleep 1
+  SIMCTL_CHILD_CLOUDE_SKIP_PROMPTS=1 xcrun simctl launch "$UDID" soli.Cloude >/dev/null
+  sleep 2
+fi
+
+DISMISS_SCRIPT="$REPO_ROOT/.claude/agents/launcher/dismiss-sim-alerts.sh"
 
 APP_CONTAINER="$(xcrun simctl get_app_container "$UDID" soli.Cloude data)"
 ENVIRONMENTS_FILE="$APP_CONTAINER/Documents/environments.json"
@@ -66,17 +75,15 @@ fi
 
 ENVIRONMENT_ID="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))[0]["id"])' "$ENVIRONMENTS_FILE")"
 
-xcrun simctl openurl "$UDID" "cloude://environment/select?id=$ENVIRONMENT_ID"
-sleep 1
-xcrun simctl openurl "$UDID" "cloude://environment/connect?id=$ENVIRONMENT_ID"
-sleep 2
-
 "$ROOT/scripts/open-repo-conversation.sh" "$REPO_ROOT"
 sleep 2
 xcrun simctl openurl "$UDID" "cloude://conversation/environment?id=$ENVIRONMENT_ID"
 sleep 1
 xcrun simctl openurl "$UDID" "cloude://conversation/model?value=$MODEL"
-sleep 1
+sleep 2
+if [[ -x "$DISMISS_SCRIPT" ]]; then
+  "$DISMISS_SCRIPT" 5 >/dev/null 2>&1 || true
+fi
 
 DEBUG_LOG="$APP_CONTAINER/Documents/debug-metrics.log"
 APP_LOG="$APP_CONTAINER/Documents/app-debug.log"
@@ -89,10 +96,21 @@ SCENARIO_TEXT="$(cat "$SCENARIO_PATH")"
 
 echo "Prompt: $SCENARIO_NAME"
 echo "Model: $MODEL"
-echo "Wait: ${WAIT_SECONDS}s"
+echo "Timeout: ${WAIT_SECONDS}s"
 echo "Logs: $DEBUG_LOG"
 
-sleep "$WAIT_SECONDS"
+WAIT_START=$(date +%s)
+while true; do
+  if grep -q "finish name=chat.complete" "$APP_LOG" 2>/dev/null; then
+    echo "Completed after $(( $(date +%s) - WAIT_START ))s"
+    break
+  fi
+  if (( $(date +%s) - WAIT_START >= WAIT_SECONDS )); then
+    echo "Timeout after ${WAIT_SECONDS}s without chat.complete"
+    break
+  fi
+  sleep 1
+done
 
 if [[ "$PRINT_SUMMARY" -eq 1 ]]; then
   "$ROOT/scripts/summarize-render-logs.sh"

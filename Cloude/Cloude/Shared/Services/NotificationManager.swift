@@ -3,6 +3,9 @@ import UserNotifications
 
 struct NotificationManager {
     static func requestPermission() {
+        if ProcessInfo.processInfo.environment["CLOUDE_SKIP_PROMPTS"] == "1" {
+            return
+        }
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
     }
 
