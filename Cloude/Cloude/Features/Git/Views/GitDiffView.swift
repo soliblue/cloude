@@ -18,11 +18,11 @@ struct GitDiffView: View {
     }
 
     private var currentDiff: String? {
-        connection?.gitDiffText(repoPath: repoPath, file: file.path, staged: file.staged)
+        connection?.git.diffText(repoPath: repoPath, file: file.path, staged: file.staged)
     }
 
     private var currentDiffError: String? {
-        connection?.gitDiffError(repoPath: repoPath, file: file.path, staged: file.staged)
+        connection?.git.diffError(repoPath: repoPath, file: file.path, staged: file.staged)
     }
 
     var body: some View {
@@ -119,7 +119,7 @@ struct GitDiffView: View {
         AppLogger.beginInterval("git.diff", key: pendingDiffKey)
         isLoading = true
         diff = nil
-        connection?.gitDiff(path: repoPath, file: file.path, staged: file.staged)
+        connection?.git.diff(path: repoPath, file: file.path, staged: file.staged)
     }
 
     private func syncDiff() {

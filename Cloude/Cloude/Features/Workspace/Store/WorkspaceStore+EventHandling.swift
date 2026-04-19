@@ -27,7 +27,7 @@ extension WorkspaceStore {
             if let conv = conversationStore.conversation(withId: convId),
                let dir = conv.workingDirectory,
                !dir.isEmpty {
-                environmentStore.connection(for: conv.environmentId)?.gitStatus.enqueue(dir)
+                environmentStore.connection(for: conv.environmentId)?.git.requestStatus(dir)
             }
         case .lastAssistantMessageCostUpdate(let convId, let costUsd):
             if let conversation = conversationStore.conversation(withId: convId),

@@ -10,6 +10,12 @@ class FileTreeState: ObservableObject {
     @Published var loadingPaths: Set<String> = []
     @Published var isInitialLoad = true
 
+    var visibleNodes: [FileTreeNode] {
+        var nodes: [FileTreeNode] = []
+        appendVisibleNodes(from: rootEntries, depth: 0, into: &nodes)
+        return nodes
+    }
+
     func applyListing(path: String, entries: [FileEntry], rootPath: String) {
         if path == rootPath && rootEntries.isEmpty && isInitialLoad {
             rootEntries = entries
@@ -41,11 +47,33 @@ class FileTreeState: ObservableObject {
         }
     }
 
+    func syncListings(_ listings: [String: [FileEntry]], rootPath: String) {
+        if let entries = listings[rootPath] {
+            applyListing(path: rootPath, entries: entries, rootPath: rootPath)
+        }
+        for path in expandedPaths {
+            if let entries = listings[path] {
+                applyListing(path: path, entries: entries, rootPath: rootPath)
+            }
+        }
+    }
+
     func reset() {
         rootEntries = []
         childEntries = [:]
         expandedPaths = []
         loadingPaths = []
         isInitialLoad = true
+    }
+
+    private func appendVisibleNodes(from entries: [FileEntry], depth: Int, into nodes: inout [FileTreeNode]) {
+        for entry in entries {
+            let isExpanded = expandedPaths.contains(entry.path)
+            let isLoading = loadingPaths.contains(entry.path)
+            nodes.append(FileTreeNode(entry: entry, depth: depth, isExpanded: isExpanded, isLoading: isLoading))
+            if entry.isDirectory && isExpanded, let children = childEntries[entry.path] {
+                appendVisibleNodes(from: children, depth: depth + 1, into: &nodes)
+            }
+        }
     }
 }

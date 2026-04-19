@@ -42,27 +42,27 @@ struct FilePreviewView: View {
     }
 
     var currentFileResponse: LoadedFileState? {
-        connection?.fileResponse(for: path)
+        connection?.files.fileResponse(for: path)
     }
 
     var currentDirectoryListing: [FileEntry]? {
-        connection?.directoryListing(for: path)
+        connection?.files.directoryListing(for: path)
     }
 
     var currentPathError: String? {
-        connection?.pathError(for: path)
+        connection?.files.pathError(for: path)
     }
 
     var currentDiffText: String? {
         if let diffRequest {
-            return connection?.gitDiffText(repoPath: diffRequest.repoPath, file: diffRequest.filePath, staged: diffRequest.staged)
+            return connection?.git.diffText(repoPath: diffRequest.repoPath, file: diffRequest.filePath, staged: diffRequest.staged)
         }
         return nil
     }
 
     var currentDiffError: String? {
         if let diffRequest {
-            return connection?.gitDiffError(repoPath: diffRequest.repoPath, file: diffRequest.filePath, staged: diffRequest.staged)
+            return connection?.git.diffError(repoPath: diffRequest.repoPath, file: diffRequest.filePath, staged: diffRequest.staged)
         }
         return nil
     }
@@ -140,7 +140,7 @@ struct FilePreviewView: View {
             diff = .loading
             let workDir = connection?.defaultWorkingDirectory ?? path.deletingLastPathComponent
             diffRequest = GitDiffCacheKey(repoPath: workDir, filePath: path, staged: false)
-            connection?.gitDiff(path: workDir, file: path)
+            connection?.git.diff(path: workDir, file: path)
         case .loading, .loaded:
             diff = .hidden
             diffRequest = nil

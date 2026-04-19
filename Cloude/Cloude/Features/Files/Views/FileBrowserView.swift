@@ -18,24 +18,24 @@ struct FileBrowserView: View {
         _currentPath = State(initialValue: rootPath ?? "~")
     }
 
-    private var defaultWorkingDirectory: String? {
+    var defaultWorkingDirectory: String? {
         connection?.defaultWorkingDirectory?.nilIfEmpty
     }
 
-    private var resolvedRootPath: String? {
+    var resolvedRootPath: String? {
         rootPath?.nilIfEmpty ?? defaultWorkingDirectory
     }
 
-    private var connection: EnvironmentConnection? {
+    var connection: EnvironmentConnection? {
         environmentStore.connection(for: environmentId)
     }
 
-    private var currentDirectoryListing: [FileEntry]? {
-        connection?.directoryListing(for: currentPath)
+    var currentDirectoryListing: [FileEntry]? {
+        connection?.files.directoryListing(for: currentPath)
     }
 
-    private var currentPathError: String? {
-        connection?.pathError(for: currentPath)
+    var currentPathError: String? {
+        connection?.files.pathError(for: currentPath)
     }
 
     var body: some View {
@@ -116,36 +116,5 @@ struct FileBrowserView: View {
     func navigateTo(_ path: String) {
         currentPath = path
         loadDirectory()
-    }
-
-    private func loadDirectory() {
-        if currentPath == "~", let resolvedRootPath {
-            currentPath = resolvedRootPath
-        }
-        guard currentPath != "~" else {
-            pendingLoadPath = nil
-            isLoading = connection?.isReady != true
-            entries = []
-            return
-        }
-        pendingLoadPath = currentPath
-        AppLogger.beginInterval("files.directory", key: currentPath)
-        isLoading = true
-        entries = []
-        connection?.listDirectory(path: currentPath)
-    }
-
-    private func syncListing() {
-        if let currentDirectoryListing {
-            entries = currentDirectoryListing
-            isLoading = false
-            AppLogger.endInterval("files.directory", key: pendingLoadPath ?? currentPath, details: "entries=\(currentDirectoryListing.count)")
-            pendingLoadPath = nil
-        } else if let currentPathError {
-            entries = []
-            isLoading = false
-            AppLogger.cancelInterval("files.directory", key: pendingLoadPath ?? currentPath, reason: currentPathError)
-            pendingLoadPath = nil
-        }
     }
 }

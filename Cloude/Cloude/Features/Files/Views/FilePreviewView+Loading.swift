@@ -7,7 +7,7 @@ extension FilePreviewView {
         if let progress = chunkProgress {
             return (progress.current, progress.total)
         }
-        if let progress = connection?.chunkProgress, progress.path == path {
+        if let progress = connection?.files.chunkProgress, progress.path == path {
             return (Int(progress.current), Int(progress.total))
         }
         return nil
@@ -52,11 +52,11 @@ extension FilePreviewView {
     func loadFullQuality(fullSize: Int64) {
         AppLogger.beginInterval("file.fullQuality", key: path)
         loadPhase = .thumbnail(fullSize: fullSize, isLoadingFull: true)
-        connection?.getFileFullQuality(path: path)
+        connection?.files.getFileFullQuality(path: path)
     }
 
     func loadFile() {
-        if let cached = connection?.fileCache.get(path) {
+        if let cached = connection?.files.cachedData(for: path) {
             AppLogger.performanceInfo("file cache hit path=\(path)")
             fileData = cached
             if contentType.highlightLanguage != nil, let text = String(data: cached, encoding: .utf8) {
@@ -69,11 +69,11 @@ extension FilePreviewView {
 
         AppLogger.beginInterval("file.load", key: path)
         loadPhase = .loading
-        connection?.getFile(path: path)
+        connection?.files.getFile(path: path)
     }
 
     func syncLoadedPath() {
-        if let progress = connection?.chunkProgress, progress.path == path {
+        if let progress = connection?.files.chunkProgress, progress.path == path {
             withAnimation {
                 chunkProgress = (Int(progress.current), Int(progress.total))
             }
@@ -85,7 +85,7 @@ extension FilePreviewView {
             return
         }
         if let currentFileResponse {
-            if let cached = connection?.fileCache.get(path) {
+            if let cached = connection?.files.cachedData(for: path) {
                 fileData = cached
                 switch currentFileResponse {
                 case .content(_, _, let truncated):
