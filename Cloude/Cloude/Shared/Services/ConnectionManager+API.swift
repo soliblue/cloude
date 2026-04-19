@@ -35,10 +35,7 @@ extension ConnectionManager {
     func getFileFullQuality(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFileFullQuality(path: path)) }
 
     func gitStatus(path: String, environmentId: UUID? = nil) {
-        if let conn = connectionForSend(environmentId: environmentId) {
-            conn.gitStatusQueue.append(path)
-            conn.sendNextGitStatusIfNeeded()
-        }
+        connectionForSend(environmentId: environmentId)?.gitStatus.enqueue(path)
     }
 
     func gitLog(path: String, count: Int = 10, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.gitLog(path: path, count: count)) }

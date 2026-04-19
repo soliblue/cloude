@@ -48,7 +48,7 @@ extension EnvironmentConnection {
         phase = success ? .authenticated : .connected
         if success {
             checkForMissedResponse()
-            sendNextGitStatusIfNeeded()
+            gitStatus.sendNextIfReady()
             mgr.events.send(.authenticated)
         } else {
             lastError = errorMessage ?? "Authentication failed"

@@ -89,12 +89,7 @@ struct GitChangesView: View {
             return
         }
 
-        if let conn = connection.connection(for: environmentId) {
-            if conn.gitStatusInFlightPath != nil {
-                conn.gitStatusTimeoutTask?.cancel()
-                conn.gitStatusInFlightPath = nil
-            }
-        }
+        connection.connection(for: environmentId)?.gitStatus.cancelInFlight()
         pendingRepoPath = repoPath
         AppLogger.beginInterval("git.status", key: repoPath)
         connection.gitStatus(path: repoPath, environmentId: environmentId)

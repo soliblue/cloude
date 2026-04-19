@@ -21,11 +21,8 @@ extension EnvironmentConnection {
             handleAuthResult(mgr, success: success, errorMessage: msg)
         case .error(let msg):
             AppLogger.connectionError("server error envId=\(environmentId.uuidString) message=\(msg)")
-            if let path = gitStatusInFlightPath {
-                gitStatusTimeoutTask?.cancel()
-                gitStatusInFlightPath = nil
+            if let path = gitStatus.completeInFlight() {
                 mgr.events.send(.gitStatusError(path: path, message: msg, environmentId: environmentId))
-                sendNextGitStatusIfNeeded()
             }
             handleError(mgr, msg)
         case .toolCall(let n, let i, let t, let p, let c, let pos, let ei, let seq): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos, editInfo: ei, seq: seq)
@@ -103,18 +100,4 @@ extension EnvironmentConnection {
         mgr.objectWillChange.send()
     }
 
-    func sendNextGitStatusIfNeeded() {
-        guard phase == .authenticated, gitStatusInFlightPath == nil, !gitStatusQueue.isEmpty else { return }
-        let next = gitStatusQueue.removeFirst()
-        gitStatusInFlightPath = next
-        send(.gitStatus(path: next))
-
-        gitStatusTimeoutTask?.cancel()
-        gitStatusTimeoutTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(10))
-            guard !Task.isCancelled, let self, self.gitStatusInFlightPath == next else { return }
-            self.gitStatusInFlightPath = nil
-            self.sendNextGitStatusIfNeeded()
-        }
-    }
 }

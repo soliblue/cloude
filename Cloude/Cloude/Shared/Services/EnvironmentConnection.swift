@@ -25,9 +25,7 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     }
 
     var id: UUID { environmentId }
-    var gitStatusQueue: [String] = []
-    var gitStatusInFlightPath: String?
-    var gitStatusTimeoutTask: Task<Void, Never>?
+    let gitStatus = GitStatusService()
     var fileCache = FileCache()
     var pendingChunks: [String: PendingChunk] = [:]
     var interruptedSessions: [String: InterruptedSession] = [:]
@@ -43,6 +41,12 @@ class EnvironmentConnection: ObservableObject, Identifiable {
 
     init(environmentId: UUID) {
         self.environmentId = environmentId
+        gitStatus.send = { [weak self] path in
+            self?.send(.gitStatus(path: path))
+        }
+        gitStatus.canSend = { [weak self] in
+            self?.phase == .authenticated
+        }
     }
 
     var hasCredentials: Bool {
@@ -54,7 +58,6 @@ class EnvironmentConnection: ObservableObject, Identifiable {
         isWhisperReady = false
         isTranscribing = false
         agentState = .idle
-        gitStatusQueue.removeAll()
-        gitStatusInFlightPath = nil
+        gitStatus.reset()
     }
 }
