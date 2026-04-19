@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Skill: Safari Browser {safari}
+# Skill: Safari Browser
 ## What
 Access Safari tabs, history, bookmarks, and reading list via AppleScript + SQLite.
 

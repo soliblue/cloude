@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Message Status Bar {info.circle}
+# Message Status Bar
 ## Problem
 The status bar that used to appear below each assistant message is missing. It showed key stats at a glance without needing to open the info sheet.
 

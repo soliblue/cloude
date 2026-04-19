@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Guard toolCalls + Display Link Rate {gauge.with.dots.needle.33percent}
+# Guard toolCalls + Display Link Rate
 ## Changes
 - `completeTopLevelExecutingTools()` and `completeExecutingTools()` now early-return when no executing tools exist
 - Display link frame rate reduced from 60fps to 30fps for text draining

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Glass Tool Pills {capsule}
+# Glass Tool Pills
 **Status**: Done
 **Created**: 2026-03-01
 

@@ -6,7 +6,7 @@ tags: ["android", "security"]
 icon: faceid
 build: 120
 ---
-# Android Biometric Auth {faceid}
+# Android Biometric Auth
 
 
 ## Desired Outcome

@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Whiteboard v2 {hand.draw}
+# Whiteboard v2
 Current implementation: ~2,400 lines across 20 files.
 
 ## File Budget (150-line rule)

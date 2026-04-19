@@ -8,7 +8,7 @@ build: 36
 ---
 
 
-# Dead Code Removal {trash}
+# Dead Code Removal
 ## Changes
 - Removed `GlobalInputBar.configureEffort(from:)` - unused method
 - Removed `QuestionJSON.AnyCodable.~=` operator - unused pattern matching

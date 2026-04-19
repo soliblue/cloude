@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Fix Line Wrap Toggle in File Preview {text.word.spacing}
+# Fix Line Wrap Toggle in File Preview
 ## Done
 - [x] Replaced nested ScrollViews with single ScrollView with conditional axes
 - [x] Hide line numbers when wrapping (they misalign with wrapped lines)

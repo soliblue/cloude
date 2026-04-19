@@ -8,5 +8,5 @@ build: 69
 ---
 
 
-# Video & Audio File Pills {play.rectangle.fill}
+# Video & Audio File Pills
 **Files:** `StreamingMarkdownParser+Inline.swift`

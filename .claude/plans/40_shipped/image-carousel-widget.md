@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Image Carousel Widget {photo.on.rectangle}
+# Image Carousel Widget
 ## Changes
 - `CloudeApp.swift`: Added `.environmentObject(connection)` so widgets can access ConnectionManager
 - `widgets-mcp/server.js`: Added `image_carousel` tool (accepts `images` array with `path`/`url` + optional `caption`)

@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Git Tab Header: Inline Diff Counts {plusminus}
+# Git Tab Header: Inline Diff Counts
 ## Problem
 The window header always shows a plain git icon for the git tab, even when there are staged or unstaged changes. The diff counts are only visible after tapping into the git tab itself.
 

@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Tool Pill Live Updates {arrow.triangle.2.circlepath}
+# Tool Pill Live Updates
 ## Goal
 Show live tool execution info without expanding the pill inline. Keep the pill compact, put the detail in the sheet.
 

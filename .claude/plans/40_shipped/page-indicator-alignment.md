@@ -8,7 +8,7 @@ build: 66
 ---
 
 
-# Page Indicator Vertical Alignment Fix {arrow.up.and.down}
+# Page Indicator Vertical Alignment Fix
 Fixed misaligned icons in the bottom switcher bar. Heart, window SF symbols, dots, plus button now all share the same vertical structure (22pt icon frame + 5pt unread dot space).
 
 ## What broke

@@ -8,7 +8,7 @@ build: 70
 ---
 
 
-# Message Collapse {rectangle.compress.vertical}
+# Message Collapse
 ## Implementation
 - `isCollapsed: Bool` on `ChatMessage` model (Codable, defaults to `false`)
 - Context menu: "Collapse" / "Expand" toggle for assistant messages

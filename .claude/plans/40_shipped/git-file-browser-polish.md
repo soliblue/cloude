@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Git & File Browser Polish {paintbrush}
+# Git & File Browser Polish
 Two UI tweaks to the window header tabs.
 
 ## Git Tab

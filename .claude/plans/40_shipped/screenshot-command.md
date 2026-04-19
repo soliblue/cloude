@@ -8,7 +8,7 @@ build: 41
 ---
 
 
-# Screenshot Command {camera.viewfinder}
+# Screenshot Command
 Add `cloude screenshot` command that captures the iOS screen and sends it back to the conversation as an image.
 
 ## Flow

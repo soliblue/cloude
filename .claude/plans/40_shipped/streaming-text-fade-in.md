@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Streaming Text Fade-In {text.append}
+# Streaming Text Fade-In
 **Status**: Testing
 **Created**: 2026-03-01
 

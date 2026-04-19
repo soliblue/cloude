@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# WSS + Cloudflare Tunnel Support {lock.shield}
+# WSS + Cloudflare Tunnel Support
 ## Test
 - Connect to `cloude-medina.soli.blue` port 443 (should use wss://, connect successfully)
 - Connect to `cloude-home.soli.blue` port 443 (should use wss://, connect to Mac agent)

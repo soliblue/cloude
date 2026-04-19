@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# GIF Preview Support {play.rectangle}
+# GIF Preview Support
 Add animated GIF playback in FilePreviewView. Currently GIFs render as static images.
 
 ## Approach

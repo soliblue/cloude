@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Dead Code Cleanup Round 3 {trash}
+# Dead Code Cleanup Round 3
 Removed unused code across multiple UI files:
 
 - MessageBubble: removed unused CopiedToast view, InterleavedMessageContent wrapper (was just forwarding to StreamingMarkdownView), unused isMarkdown param from TextSelectionSheet

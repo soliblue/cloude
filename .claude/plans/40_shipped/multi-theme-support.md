@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Multi-Theme Support {paintpalette.fill}
+# Multi-Theme Support
 ## Summary
 Add 9 distinct color themes (up from 2 effective themes). Each theme has its own color palette for backgrounds, surfaces, and fills.
 

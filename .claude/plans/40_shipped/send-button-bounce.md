@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Send Button Bounce Animation {paperplane.fill}
+# Send Button Bounce Animation
 Add `.symbolEffect(.bounce)` to the send button (paperplane.fill) on tap.
 
 ## Tasks

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# File Reference Fix (@mention) {at}
+# File Reference Fix (@mention)
 Fixed two issues preventing file references from working in the input bar:
 
 1. **`selectFile`** inserted only the filename (`CLAUDE.md`) instead of the full path - Claude Code needs the full path to reference files

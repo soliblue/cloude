@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Fork Button in Window Header {arrow.triangle.branch}
+# Fork Button in Window Header
 **Stage**: Testing
 **Build**: 56
 

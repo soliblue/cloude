@@ -8,7 +8,7 @@ build: 31
 ---
 
 
-# Conversation Architecture Refactor {arrow.triangle.merge}
+# Conversation Architecture Refactor
 ## Background
 
 ### The Problem

@@ -6,7 +6,7 @@ tags: ["android", "connection"]
 build: 125
 icon: wifi
 ---
-# Android Auto-Connect {wifi}
+# Android Auto-Connect
 
 
 ## Desired Outcome

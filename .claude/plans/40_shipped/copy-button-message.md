@@ -8,7 +8,7 @@ build: 67
 ---
 
 
-# Copy Button on Assistant Messages {doc.on.doc}
+# Copy Button on Assistant Messages
 **Status**: Testing
 **Created**: 2026-02-08
 

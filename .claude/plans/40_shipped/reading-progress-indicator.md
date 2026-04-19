@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Reading Progress Indicator {circle.dotted.circle}
+# Reading Progress Indicator
 ## What
 Vertical dot indicator on the right edge of long assistant messages showing scroll position within the message.
 

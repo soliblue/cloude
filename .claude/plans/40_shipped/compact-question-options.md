@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Compact Question Options {rectangle.compress.vertical}
+# Compact Question Options
 ## Status: Testing
 
 ## Summary

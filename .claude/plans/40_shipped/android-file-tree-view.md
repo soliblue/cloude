@@ -6,7 +6,7 @@ tags: ["android", "files", "ux"]
 icon: folder.fill
 build: 125
 ---
-# Android File Tree View {folder.fill}
+# Android File Tree View
 
 
 ## Desired Outcome

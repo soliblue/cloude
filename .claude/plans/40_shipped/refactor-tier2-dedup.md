@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor Tier 2: Deduplication {arrow.triangle.merge}
+# Refactor Tier 2: Deduplication
 ## Status: Active
 
 ## Scope

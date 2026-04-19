@@ -6,7 +6,7 @@ tags: ["android", "input"]
 icon: command
 build: 120
 ---
-# Android Slash Commands {command}
+# Android Slash Commands
 
 
 ## Implementation

@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Disable Auto-Scroll on Streaming Response {arrow.down.to.line}
+# Disable Auto-Scroll on Streaming Response
 Auto-scroll during streaming output was annoying - content kept jumping while trying to read.
 
 ## Change

@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# App Folder Structure Round Three {square.grid.3x3.topleft.filled}
+# App Folder Structure Round Three
 ## Goal
 
 Replace the current top-level `Views / Stores / Parsing / Utilities` emphasis with a cleaner product-oriented structure that matches how work actually happens in the app.

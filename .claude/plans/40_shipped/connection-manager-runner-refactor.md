@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# ConnectionManager + RunnerManager Refactor {arrow.triangle.2.circlepath}
+# ConnectionManager + RunnerManager Refactor
 ## Status: Testing
 
 ## Tasks

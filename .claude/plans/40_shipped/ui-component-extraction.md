@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# UI Component Extraction Refactor {square.on.square.squareshape.controlhandles}
+# UI Component Extraction Refactor
 ## Status: Active
 
 ## Tasks

@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Async GIF Decoding on Startup {hare}
+# Async GIF Decoding on Startup
 ## Changes
 - AnimatedGIFView now decodes GIF frames asynchronously on first load
 - Decoded frames cached statically for instant reuse on view recreation

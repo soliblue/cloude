@@ -8,7 +8,7 @@ build: 60
 ---
 
 
-# Toolbar Button Reorder {arrow.left.arrow.right}
+# Toolbar Button Reorder
 **Before**: Plans | Memories | Settings ... [Logo] ... Power
 **After**: Settings | Memories | Plans ... [Logo] ... Power
 

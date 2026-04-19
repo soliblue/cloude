@@ -6,7 +6,7 @@ tags: ["android", "input"]
 icon: dial.low
 build: 120
 ---
-# Android Effort & Model Picker {dial.low}
+# Android Effort & Model Picker
 
 
 ## Desired Outcome

@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor Tier 1: Quick Cleanup {broom}
+# Refactor Tier 1: Quick Cleanup
 ## Status: Active
 
 ## Scope

@@ -6,7 +6,7 @@ tags: ["android", "conversations", "ux"]
 icon: trash
 build: 125
 ---
-# Android Swipe-to-Delete Conversations {trash}
+# Android Swipe-to-Delete Conversations
 
 
 ## Desired Outcome

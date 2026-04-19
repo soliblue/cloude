@@ -8,7 +8,7 @@ build: 93
 ---
 
 
-# Markdown XML Tag Handling {chevron.left.slash.chevron.right}
+# Markdown XML Tag Handling
 ## Goals
 - XML blocks outside code fences render as styled inline blocks (like code blocks but for XML)
 - Tag name shown as a small label (like the language label on code blocks)

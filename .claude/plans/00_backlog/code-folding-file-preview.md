@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Code Folding in File Preview {chevron.down.square}
+# Code Folding in File Preview
 Auto-collapse leaf nodes in code files viewed in FilePreviewView. Show high-level structure first — functions visible, innermost blocks (if/else inside loops inside functions) collapsed.
 
 ## Key Insight

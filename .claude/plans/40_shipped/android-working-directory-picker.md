@@ -6,7 +6,7 @@ tags: ["android", "chat", "input"]
 build: 120
 icon: folder.badge.gearshape
 ---
-# Android Working Directory Picker {folder.badge.gearshape}
+# Android Working Directory Picker
 
 
 ## Desired Outcome

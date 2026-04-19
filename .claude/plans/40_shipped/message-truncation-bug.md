@@ -8,7 +8,7 @@ build: 81
 ---
 
 
-# Message Truncation Bug {exclamationmark.bubble}
+# Message Truncation Bug
 ## Problem
 Assistant messages get cut off — user doesn't see the full response. Happens intermittently. User reported multiple instances in a single conversation where the end of messages was missing.
 

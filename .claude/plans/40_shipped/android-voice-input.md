@@ -6,7 +6,7 @@ tags: ["android", "audio"]
 icon: mic
 build: 120
 ---
-# Android Voice Input & Transcription {mic}
+# Android Voice Input & Transcription
 
 ## Status
 

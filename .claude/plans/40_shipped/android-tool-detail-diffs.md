@@ -6,7 +6,7 @@ tags: ["android", "tools", "ui"]
 build: 125
 icon: chevron.left.forwardslash.chevron.right
 ---
-# Android Tool Detail Diff View {chevron.left.forwardslash.chevron.right}
+# Android Tool Detail Diff View
 
 
 ## Context

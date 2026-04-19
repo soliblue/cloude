@@ -8,4 +8,4 @@ build: 43
 ---
 
 
-# HTML Rendered Viewer {safari}
+# HTML Rendered Viewer

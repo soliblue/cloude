@@ -8,7 +8,7 @@ build: 62
 ---
 
 
-# Remove Streaming Message Background {minus.circle}
+# Remove Streaming Message Background
 ## What
 Remove the pulsing accent-color background that appeared behind messages while streaming.
 

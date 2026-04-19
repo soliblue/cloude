@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Fix: Linux relay auto-naming always timing out {clock.badge.exclamationmark}
+# Fix: Linux relay auto-naming always timing out
 ## Problem
 The `handleSuggestName` handler spawned `claude --model sonnet -p ...` via `spawn('bash', ...)` without closing stdin. The Claude CLI hung waiting for stdin input, causing every naming request to hit the 15s timeout.
 

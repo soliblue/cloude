@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Preserve scroll position when switching tabs {scroll}
+# Preserve scroll position when switching tabs
 ## Problem
 Conditional rendering (`if window.tab == .files`) destroyed and recreated views on each tab switch, losing scroll position.
 

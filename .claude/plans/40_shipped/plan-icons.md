@@ -7,7 +7,7 @@ icon: doc.badge.gearshape
 build: 52
 ---
 
-# Plan Icons — SF Symbols for Plan Titles {doc.badge.gearshape}
+# Plan Icons — SF Symbols for Plan Titles
 Add SF Symbol icon support to plan files, matching the memory section `{icon}` pattern.
 
 ## Format

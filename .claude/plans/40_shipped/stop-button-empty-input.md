@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Stop Button Shows Immediately When Input Empty {stop.fill}
+# Stop Button Shows Immediately When Input Empty
 ## Problem
 When streaming with empty input (not focused), a disabled send button showed for ~3 seconds before the stop button appeared. Confusing UX.
 

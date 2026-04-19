@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Remove RefreshTrigger Mechanism {arrow.counterclockwise}
+# Remove RefreshTrigger Mechanism
 ## What Changed
 
 - Removed `refreshTrigger` property from WorkspaceStore and WorkspaceView+State

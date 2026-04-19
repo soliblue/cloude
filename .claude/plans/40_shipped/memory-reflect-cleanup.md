@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Memory Reflect Cleanup {brain}
+# Memory Reflect Cleanup
 ## Summary
 Ran /reflect skill to analyze and reorganize CLAUDE.md and CLAUDE.local.md. Used Sonnet worker + Codex second opinion.
 

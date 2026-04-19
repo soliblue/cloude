@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Remove Switcher Dots {circle.slash}
+# Remove Switcher Dots
 Removed the dot indicators below tab icons in the page indicator/switcher. They didn't work well, took unnecessary space, and didn't look good.
 
 ## Changes

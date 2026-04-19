@@ -8,4 +8,4 @@ build: 31
 ---
 
 
-# Agent Logger Infrastructure {doc.text}
+# Agent Logger Infrastructure

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Artist Themes {paintpalette.fill}
+# Artist Themes
 Four new dark themes inspired by artists/architects, each occupying a unique color territory.
 
 ## Themes

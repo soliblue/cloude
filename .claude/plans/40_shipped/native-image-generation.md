@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Native Image Generation {photo.badge.plus}
+# Native Image Generation
 Teach Claude to use image models (primarily Nano Banana Pro / Gemini image gen) as a native capability — knowing when and how to generate images without being explicitly told to.
 
 ## Background

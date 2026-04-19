@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Goodreads Skill {book}
+# Goodreads Skill
 ## Summary
 Skill to access Soli's Goodreads reading history via RSS feed. Fetches book data into a local CSV for search, analysis, and context about his intellectual journey.
 

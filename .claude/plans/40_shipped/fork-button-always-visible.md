@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Fork Button Always Visible {arrow.triangle.branch}
+# Fork Button Always Visible
 ## Problem
 The fork/branch button in the top right header is completely hidden when the chat is empty. It should always be visible but disabled when there's nothing to fork.
 

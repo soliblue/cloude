@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Mac UI Automation Skill {hand.tap}
+# Mac UI Automation Skill
 ## Approach
 Small Swift CLI (~200 lines) using:
 - `CGWindowListCreateImage` for screenshots (already built into macOS)

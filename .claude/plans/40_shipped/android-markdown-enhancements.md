@@ -6,7 +6,7 @@ tags: ["android", "markdown", "ui"]
 build: 120
 icon: text.badge.checkmark
 ---
-# Android Markdown Enhancements {text.badge.checkmark}
+# Android Markdown Enhancements
 
 
 ## Desired Outcome

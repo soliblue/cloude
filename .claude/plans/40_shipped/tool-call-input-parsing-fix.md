@@ -8,5 +8,5 @@ build: 31
 ---
 
 
-# Tool Call Input Parsing Fix {wrench.and.screwdriver}
+# Tool Call Input Parsing Fix
 **Files:** `ConnectionManager+API.swift`

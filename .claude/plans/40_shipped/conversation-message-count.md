@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Message Count in Conversation Picker {number}
+# Message Count in Conversation Picker
 Show message count next to relative time in the recent conversations list on the window edit form.
 
 ## Files

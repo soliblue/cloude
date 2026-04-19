@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Refactor Phase 3: Parent+Feature Naming & FilePreview Merge {arrow.triangle.branch}
+# Refactor Phase 3: Parent+Feature Naming & FilePreview Merge
 ## Status: Testing
 
 ## Changes

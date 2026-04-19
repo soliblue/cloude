@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Apple Photos Skill {photo.on.rectangle}
+# Apple Photos Skill
 ## Permissions Needed
 - Automation → Photos.app (prompted on first use)
 

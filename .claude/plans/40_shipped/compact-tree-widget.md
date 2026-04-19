@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Compact Tree Widget {list.bullet.indent}
+# Compact Tree Widget
 Removed header, smaller font/icons, added icon-label spacing, tighter indentation. More compact overall.
 
 ## Changes

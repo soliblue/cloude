@@ -6,7 +6,7 @@ tags: ["android", "ui", "polish"]
 build: 125
 icon: hand.tap
 ---
-# Android Long-Press Visual Polish {hand.tap}
+# Android Long-Press Visual Polish
 
 
 ## Current State

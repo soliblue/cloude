@@ -6,7 +6,7 @@ tags: ["android", "files", "ui"]
 icon: doc.richtext
 build: 120
 ---
-# Android File Preview Enhancements {doc.richtext}
+# Android File Preview Enhancements
 
 
 ## Completed

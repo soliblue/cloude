@@ -6,7 +6,7 @@ tags: ["android", "files", "ui"]
 build: 125
 icon: doc.richtext
 ---
-# Android PDF Preview {doc.richtext}
+# Android PDF Preview
 
 
 ## Context

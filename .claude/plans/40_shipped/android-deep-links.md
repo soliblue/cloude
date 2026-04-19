@@ -6,7 +6,7 @@ tags: ["android", "architecture", "deep-links"]
 icon: link
 build: 120
 ---
-# Android Deep Links {link}
+# Android Deep Links
 
 
 ## Context

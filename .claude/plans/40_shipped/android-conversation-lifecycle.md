@@ -6,7 +6,7 @@ tags: ["android", "conversations"]
 build: 120
 icon: arrow.triangle.2.circlepath
 ---
-# Android Conversation Lifecycle {arrow.triangle.2.circlepath}
+# Android Conversation Lifecycle
 
 
 ## Context

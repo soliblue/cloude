@@ -8,7 +8,7 @@ build: 45
 ---
 
 
-# Smart Reply Bubbles {text.bubble}
+# Smart Reply Bubbles
 Replace inline ghost-text autocomplete with contextual suggestion bubbles.
 
 ## What Changes

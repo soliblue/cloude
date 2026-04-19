@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor Skill: Pass Context to Codex {doc.text.magnifyingglass}
+# Refactor Skill: Pass Context to Codex
 ## Summary
 Improved the refactor skill's Codex integration in two ways:
 1. Pass the skill.md path to Codex so it reads the analysis criteria and philosophy

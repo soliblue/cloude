@@ -8,7 +8,7 @@ build: 44
 ---
 
 
-# Fix Table Column Alignment {tablecells}
+# Fix Table Column Alignment
 Columns in markdown tables weren't aligned across rows — each row sized independently.
 
 ## Fix

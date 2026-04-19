@@ -8,6 +8,6 @@ build: 67
 ---
 
 
-# Reduce Header Horizontal Padding {arrow.right.and.line.vertical.and.arrow.left}
+# Reduce Header Horizontal Padding
 ## Changes
 - `MainChatView.swift`: `.padding(.horizontal, 11)` → `.padding(.horizontal, 7)`

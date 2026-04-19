@@ -8,7 +8,7 @@ build: 62
 ---
 
 
-# Remove Tool Pill Border {capsule}
+# Remove Tool Pill Border
 ## What
 Remove the colored stroke border from tool pills — they now render with no border, just the shimmer overlay when executing.
 

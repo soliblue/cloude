@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Claude Code Release Notes Skill {newspaper.fill}
+# Claude Code Release Notes Skill
 Create a skill that retrieves Claude Code release notes from Anthropic, parses CLI changes, and automatically updates the Cloude app to fix compatibility issues.
 
 ## Desired Outcome

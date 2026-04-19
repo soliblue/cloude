@@ -8,7 +8,7 @@ build: 34
 ---
 
 
-# WebSocket Server Retry on Port Conflict {arrow.clockwise.circle}
+# WebSocket Server Retry on Port Conflict
 ## Files
 - `Cloude/Cloude Agent/Services/WebSocketServer.swift` - retry logic in `start()` + `retryStartIfNeeded()`
 - `fastlane/Fastfile` - `pkill -9` and `sleep 3`

@@ -6,7 +6,7 @@ tags: ["android", "ui", "polish"]
 build: 125
 icon: figure.walk
 ---
-# Android Loading Animation {figure.walk}
+# Android Loading Animation
 
 
 ## Context

@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Queued Send Indicator {tray.and.arrow.up}
+# Queued Send Indicator
 Send button visually signals when a message will be queued instead of sent immediately.
 
 ## Implementation

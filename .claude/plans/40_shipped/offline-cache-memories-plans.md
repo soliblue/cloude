@@ -8,7 +8,7 @@ build: 74
 ---
 
 
-# Offline Cache for Memories & Plans {arrow.down.circle}
+# Offline Cache for Memories & Plans
 ## Problem
 
 Every time you tap the brain/clipboard icon, the iOS app sends a WebSocket request to the Mac agent. If offline, you see nothing. Even when online, there's a loading delay every time.

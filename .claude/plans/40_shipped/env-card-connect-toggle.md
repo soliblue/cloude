@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Environment Card Connect Toggle {power}
+# Environment Card Connect Toggle
 ## Problem
 Settings environment card had a text-based Connect/Disconnect button, inconsistent with the toolbar power button.
 

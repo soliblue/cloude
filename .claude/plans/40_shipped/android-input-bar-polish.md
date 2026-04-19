@@ -6,7 +6,7 @@ tags: ["android", "input", "ux"]
 build: 125
 icon: text.cursor
 ---
-# Android Input Bar Polish {text.cursor}
+# Android Input Bar Polish
 
 
 ## Desired Outcome

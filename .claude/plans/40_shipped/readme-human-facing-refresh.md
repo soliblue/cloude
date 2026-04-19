@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# README Human-Facing Refresh {doc.text}
+# README Human-Facing Refresh
 ## Problem
 The README was written like an internal agent instruction file instead of a document for people visiting the repository. It duplicated internal workflow rules and stale project details.
 

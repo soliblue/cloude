@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Git Refresh on Tab Switch & History Auto-Send {arrow.triangle.2.circlepath}
+# Git Refresh on Tab Switch & History Auto-Send
 ## Changes
 
 - `WorkspaceStore+Lifecycle`: trigger `gitStatus` on active window change so the git tab is fresh

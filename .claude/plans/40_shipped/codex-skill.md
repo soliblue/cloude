@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Codex Skill {terminal}
+# Codex Skill
 ## Summary
 Add a `/codex` skill to get second opinions from OpenAI's Codex CLI on code questions.
 

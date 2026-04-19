@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Observation Chain Optimization {gauge.with.dots.needle.bottom.50percent}
+# Observation Chain Optimization
 ## Changes
 
 ### 1. ConversationView observation removal

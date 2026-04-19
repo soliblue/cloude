@@ -6,7 +6,7 @@ tags: ["android", "ui", "markdown"]
 icon: text.quote
 build: 120
 ---
-# Android Streaming Markdown Renderer {text.quote}
+# Android Streaming Markdown Renderer
 
 
 ## Desired Outcome

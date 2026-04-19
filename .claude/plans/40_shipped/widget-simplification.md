@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Widget Code Simplification {square.stack.3d.up}
+# Widget Code Simplification
 ## Summary
 Extracted shared components from 18 widget files to eliminate repetition.
 

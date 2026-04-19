@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Remove runningConversationId {arrow.triangle.branch}
+# Remove runningConversationId
 ## Problem
 
 `EnvironmentConnection.runningConversationId` tracks a single running conversation per environment. The relay always sends `conversationId` with every event, so the single-ID tracker is dead weight. Worse, `handleDisconnect` only flushes one conversation's output, orphaning others if multiple are streaming.

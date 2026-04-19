@@ -6,7 +6,7 @@ tags: ["agent", "streaming"]
 icon: trash
 ---
 
-# Drop dead protocol cases across all layers {trash}
+# Drop dead protocol cases across all layers
 
 Removed unused message types and fields that had no live callers:
 

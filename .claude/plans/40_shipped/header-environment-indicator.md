@@ -7,7 +7,7 @@ icon: server.rack
 build: 82
 ---
 
-# Header Environment Indicator {server.rack}
+# Header Environment Indicator
 ## Why
 When multi-environment support lands, users need to know which environment they're talking to at a glance. Even before that, it grounds the UI - you're talking to a specific machine.
 

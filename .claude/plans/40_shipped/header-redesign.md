@@ -8,7 +8,7 @@ build: 74
 ---
 
 
-# Header Redesign {rectangle.topthird.inset.filled}
+# Header Redesign
 ## Problem
 Cloude logo in navigation bar was not centered — 3 buttons on the left and 1 on the right made iOS push the `.principal` item off-center.
 

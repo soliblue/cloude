@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Simplify: Remove Heartbeat & Relocate Search {minus.circle}
+# Simplify: Remove Heartbeat & Relocate Search
 ## What
 1. Remove the entire heartbeat feature (iOS app, Mac agent, shared messages, Linux relay)
 2. Remove the search magnifying glass icon from the bottom page indicator bar

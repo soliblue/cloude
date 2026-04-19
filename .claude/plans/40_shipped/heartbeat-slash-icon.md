@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Heartbeat Slash Icon When Not Scheduled {heart.slash}
+# Heartbeat Slash Icon When Not Scheduled
 ## Summary
 Show a slash through the heart icon in the window switcher when heartbeat is not scheduled.
 

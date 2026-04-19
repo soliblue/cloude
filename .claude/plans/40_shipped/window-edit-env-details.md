@@ -7,6 +7,6 @@ icon: rectangle.and.pencil.and.ellipsis
 build: 82
 ---
 
-# Window Edit Sheet - Environment Details {rectangle.and.pencil.and.ellipsis}
+# Window Edit Sheet - Environment Details
 ## Changes
 - Updated env row in `WindowEditSheet+Form.swift` to show icon + host + :port instead of just icon + name

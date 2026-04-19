@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Agent Tool Output as Markdown {text.document}
+# Agent Tool Output as Markdown
 Agent tool results in ToolDetailSheet now render via `StreamingMarkdownView` instead of monospaced `Text`.
 
 ## Changes

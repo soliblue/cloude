@@ -6,7 +6,7 @@ tags: ["android", "ui", "windows"]
 icon: rectangle.on.rectangle
 build: 120
 ---
-# Android Multi-Window System {rectangle.on.rectangle}
+# Android Multi-Window System
 
 
 ## Background

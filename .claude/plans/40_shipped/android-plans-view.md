@@ -6,7 +6,7 @@ tags: ["android", "plans"]
 build: 120
 icon: list.bullet.clipboard
 ---
-# Android Plans View {list.bullet.clipboard}
+# Android Plans View
 
 
 ## Desired Outcome

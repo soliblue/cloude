@@ -8,4 +8,4 @@ build: 31
 ---
 
 
-# Voice Message Resilience {mic.badge.plus}
+# Voice Message Resilience

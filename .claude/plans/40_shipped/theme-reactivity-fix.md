@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Theme Reactivity Fix {paintbrush.pointed.fill}
+# Theme Reactivity Fix
 ## Problem
 When switching themes, some UI elements kept the old theme colors:
 1. Theme picker cards had stale backgrounds

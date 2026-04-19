@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Fix: Queued messages invisible when sent offline {eye.slash}
+# Fix: Queued messages invisible when sent offline
 **Status:** testing
 **Created:** 2026-02-12
 

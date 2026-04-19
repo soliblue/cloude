@@ -6,7 +6,7 @@ tags: ["android", "git", "ui"]
 build: 125
 icon: arrow.triangle.branch
 ---
-# Android Git Branch Display {arrow.triangle.branch}
+# Android Git Branch Display
 
 
 ## Desired Outcome

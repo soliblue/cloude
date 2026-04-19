@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Stop Button Fix {stop.fill}
+# Stop Button Fix
 When iOS sends `abort` but the process has already exited, the relay now sends back `status: idle` instead of silently doing nothing. This unsticks the iOS app from the "running" state.
 
 ## Changes

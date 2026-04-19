@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Turing Machine Website {function}
+# Turing Machine Website
 ## Done
 - [x] Created project at `/Users/soli/Desktop/CODING/turing/`
 - [x] Build script generates single self-contained `dist/index.html`

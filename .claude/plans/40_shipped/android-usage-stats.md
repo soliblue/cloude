@@ -6,7 +6,7 @@ tags: ["android", "stats"]
 build: 120
 icon: chart.bar
 ---
-# Android Usage Stats {chart.bar}
+# Android Usage Stats
 
 
 ## Desired Outcome

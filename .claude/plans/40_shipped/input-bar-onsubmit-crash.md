@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Input Bar onSubmit Crash {exclamationmark.triangle}
+# Input Bar onSubmit Crash
 ## Problem
 After the recent UI test cleanup, the app started crashing during normal message testing. The crash happens in the chat composer path, not in networking or message send logic.
 

@@ -6,7 +6,7 @@ tags: ["android", "storage"]
 icon: externaldrive
 build: 120
 ---
-# Android Conversation Persistence {externaldrive}
+# Android Conversation Persistence
 
 
 ## Desired Outcome

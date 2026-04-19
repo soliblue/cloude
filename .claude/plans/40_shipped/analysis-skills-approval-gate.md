@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Analysis Skills: Approval Gate + Plan Tickets {checkmark.shield}
+# Analysis Skills: Approval Gate + Plan Tickets
 ## What
 Updated /refactor, /reflect, and /skillsmith to require Soli's approval before implementing any suggestions. When approved, a plan ticket must be created in plans/active/ or plans/testing/ before starting work.
 

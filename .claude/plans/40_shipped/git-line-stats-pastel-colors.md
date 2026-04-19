@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Git Line Stats + Pastel Colors {plus.forwardslash.minus}
+# Git Line Stats + Pastel Colors
 ## What changed
 - Git tab shows +N/-N lines added/removed per file row
 - Total +N/-N in the status header bar

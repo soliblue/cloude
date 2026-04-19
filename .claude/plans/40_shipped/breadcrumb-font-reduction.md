@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Reduce Path Breadcrumb Font Size {textformat.size.smaller}
+# Reduce Path Breadcrumb Font Size
 Reduced path breadcrumb font from `.caption` to `.caption2` across file viewers and folder browser.
 
 ## Changes

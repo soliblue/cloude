@@ -6,7 +6,7 @@ tags: ["android", "windows", "ux"]
 build: 125
 icon: square.grid.2x2
 ---
-# Android Window Icon Picker {square.grid.2x2}
+# Android Window Icon Picker
 
 
 ## Desired Outcome

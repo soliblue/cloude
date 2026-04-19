@@ -8,7 +8,7 @@ build: 70
 ---
 
 
-# Local Music Generation Skill {music.note}
+# Local Music Generation Skill
 ## Summary
 `/music` skill using Meta's MusicGen small (300M params) to generate background music locally. Same auto-setup pattern as `/speak` — venv + model download on first run.
 

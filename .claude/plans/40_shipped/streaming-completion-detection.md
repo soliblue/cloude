@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Streaming Completion Detection {checkmark.circle.trianglebadge.exclamationmark}
+# Streaming Completion Detection
 Long responses sometimes leave the iOS app in a "running" state even after the CLI has finished. The user has to manually hit stop.
 
 ## Root Causes (ranked by likelihood)

@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# Chunk Progress for File Path Preview {arrow.down.circle}
+# Chunk Progress for File Path Preview
 `FilePathPreviewView` (chat file pill path) doesn't show chunk download progress for large files. It uses `connection.onFileContent` callback which only fires when all chunks are assembled.
 
 `FilePreviewView` (FileBrowser path) already works — it subscribes to `connection.events` and listens for `.fileChunk` events to show a progress bar.

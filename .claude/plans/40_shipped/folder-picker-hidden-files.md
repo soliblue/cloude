@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Folder Picker: Hidden Files Toggle {eye.slash}
+# Folder Picker: Hidden Files Toggle
 ## Problem
 Hidden files (dotfiles) appear mixed in with regular files in the folder picker, adding noise when navigating to common project folders.
 

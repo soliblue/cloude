@@ -8,7 +8,7 @@ build: 67
 ---
 
 
-# Heartbeat Icon Alignment Fix {heart}
+# Heartbeat Icon Alignment Fix
 ## Problem
 Heart icon in the page indicator sat lower than other icons because the notification badge's ZStack affected layout height.
 

@@ -8,7 +8,7 @@ build: 55
 ---
 
 
-# Persist Model & Effort Across Messages {slider.horizontal.3}
+# Persist Model & Effort Across Messages
 **Problem**: When you change model/effort in the send button menu, the selection doesn't persist:
 - Selections reset after sending a message
 - Selections don't restore when switching conversations/windows

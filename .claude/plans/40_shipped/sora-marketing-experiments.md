@@ -8,7 +8,7 @@ build: 70
 ---
 
 
-# Sora Marketing Experiments {video.fill}
+# Sora Marketing Experiments
 ## Strategy
 
 **Volume over perfection.** Generate ~50-100 videos per day across different directions. Each batch teaches something. Track what looks good and double down.

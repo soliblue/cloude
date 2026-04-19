@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Model Selection Persistence + Deploy Script {arrow.clockwise}
+# Model Selection Persistence + Deploy Script
 ## Changes
 
 ### 1. Model selection persists across window switches

@@ -8,7 +8,7 @@ build: 36
 ---
 
 
-# Split ChatView+MessageBubble.swift {scissors}
+# Split ChatView+MessageBubble.swift
 ## Changes
 505 lines → 2 files:
 - `ChatView+MessageBubble.swift` (200 lines) - message bubbles

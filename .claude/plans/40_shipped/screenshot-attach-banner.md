@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Screenshot Attach Banner {camera.viewfinder}
+# Screenshot Attach Banner
 ## Context
 When the user takes a screenshot on their iPhone, there's no way to quickly attach it to the current chat. The goal is to detect the screenshot, show a brief banner above the input bar with an "attach" action, and auto-dismiss after 5 seconds.
 

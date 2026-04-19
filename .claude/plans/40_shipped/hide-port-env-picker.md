@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Hide Port from Environment Picker {network}
+# Hide Port from Environment Picker
 ## Changes
 - `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude/UI/ConversationView+EmptyState.swift`: Removed port from empty state picker
 - `/Users/soli/Desktop/CODING/cloude/Cloude/Cloude/UI/WindowEditSheet+Form.swift`: Removed port from window edit sheet picker, menu items, and read-only environment row

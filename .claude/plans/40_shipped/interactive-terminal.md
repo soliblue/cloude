@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Interactive Terminal (PTY + stdin support) {terminal}
+# Interactive Terminal (PTY + stdin support)
 ## Problem
 The terminal tab runs commands via `spawn('bash', ['-c', cmd])` with no stdin pipe. Interactive CLIs like `codex --login`, `npm init`, `ssh` fail because they can't read user input. Also, all terminal windows shared one PTY session and always routed to the same environment.
 

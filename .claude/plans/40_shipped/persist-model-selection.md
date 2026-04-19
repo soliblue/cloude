@@ -8,7 +8,7 @@ build: 96
 ---
 
 
-# Persist Model + Effort Per Conversation {square.and.arrow.down}
+# Persist Model + Effort Per Conversation
 Model and effort selections reset after app restart or window close. The entire infrastructure already exists -- it just isn't being called.
 
 ## What already exists

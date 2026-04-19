@@ -8,4 +8,4 @@ build: 31
 ---
 
 
-# Audio Session Setup {mic.fill}
+# Audio Session Setup

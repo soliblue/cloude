@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Remove Terminal Exit Line {terminal}
+# Remove Terminal Exit Line
 Removed the `[exit CODE]` line that appeared after each command result in the terminal view. Unnecessary visual noise.
 
 **Files:** `TerminalView.swift`

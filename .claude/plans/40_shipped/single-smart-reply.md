@@ -8,7 +8,7 @@ build: 53
 ---
 
 
-# Single Smart Reply {text.bubble}
+# Single Smart Reply
 ## Problem
 Two suggestions take up vertical space and add decision fatigue. A single confident recommendation feels more like a smart assistant and less like a menu.
 

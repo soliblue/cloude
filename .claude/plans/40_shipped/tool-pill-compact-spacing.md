@@ -8,7 +8,7 @@ build: 63
 ---
 
 
-# Tool Pill Compact Spacing {arrow.down.right.and.arrow.up.left}
+# Tool Pill Compact Spacing
 ## What
 Tighten tool pill spacing now that borders are removed — less internal padding and less gap between pills.
 

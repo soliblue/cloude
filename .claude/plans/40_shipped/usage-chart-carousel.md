@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Usage Chart Carousel {chart.bar.xaxis}
+# Usage Chart Carousel
 ## Goals
 - Swipeable carousel of bar charts: Messages, Sessions, Tool Calls
 - Shared time range picker (7d, 14d, 30d, All) applies to all charts

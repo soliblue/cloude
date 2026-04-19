@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Smart Conversation Naming {character.cursor.ibeam}
+# Smart Conversation Naming
 ## Summary
 When a user sends their first message in a new conversation, fire a separate background CLI call (Sonnet) to generate a conversation name + SF Symbol. This runs in parallel with the actual agent — the name appears almost immediately instead of waiting for the agent to call `cloude rename`.
 

@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Better Markdown Table Rendering {tablecells}
+# Better Markdown Table Rendering
 Tables in markdown currently render with default styling — no visual structure. They should look like real tables with inner dividers and clean styling.
 
 ## Goals

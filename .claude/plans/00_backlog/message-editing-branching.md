@@ -8,7 +8,7 @@ build: 74
 ---
 
 
-# Message Editing & Conversation Branching {arrow.triangle.branch}
+# Message Editing & Conversation Branching
 ## Goal
 Edit sent messages and branch conversations — like ChatGPT's edit feature with `< 1/2 >` navigation.
 

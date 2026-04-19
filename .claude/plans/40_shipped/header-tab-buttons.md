@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Header Tab Buttons {rectangle.3.group}
+# Header Tab Buttons
 ## Changes
 - CloudeApp.swift: Added `.principal` toolbar item with conversation name/folder/cost (no SF symbol)
 - MainChatView+Windows.swift: Replaced title pill with 3 tab icon buttons (WindowType.allCases)

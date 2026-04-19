@@ -8,7 +8,7 @@ build: 65
 ---
 
 
-# Ocean Blue Theme Cleanup {paintpalette}
+# Ocean Blue Theme Cleanup
 ## Status: Testing
 
 ## Summary

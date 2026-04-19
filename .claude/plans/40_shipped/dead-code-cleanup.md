@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Dead Code and Unused Imports Cleanup {trash}
+# Dead Code and Unused Imports Cleanup
 **Status**: Active
 **Agent**: Cleanup agent
 

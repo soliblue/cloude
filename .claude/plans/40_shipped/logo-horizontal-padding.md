@@ -8,4 +8,4 @@ build: 82
 ---
 
 
-# Logo Horizontal Padding {arrow.left.and.right}
+# Logo Horizontal Padding

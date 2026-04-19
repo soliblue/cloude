@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Code Style Rules Parity {text.alignleft}
+# Code Style Rules Parity
 **Status**: Testing
 **Build**: 56
 

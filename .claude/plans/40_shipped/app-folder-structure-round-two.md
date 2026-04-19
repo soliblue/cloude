@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# App Folder Structure Round Two {folder.badge.gearshape}
+# App Folder Structure Round Two
 ## Goal
 
 Finish the naming cleanup by giving the iOS target a folder structure that is easy for future agents to classify correctly on first read.

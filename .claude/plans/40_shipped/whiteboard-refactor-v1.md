@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Whiteboard Refactor v1 {pencil.and.ruler}
+# Whiteboard Refactor v1
 ## Changes
 
 ### Architecture

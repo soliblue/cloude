@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Frozen Block Split for Tool Calls {gauge.with.dots.needle.bottom.50percent}
+# Frozen Block Split for Tool Calls
 ## Changes
 
 - StreamingMarkdownView: tool-call responses now use frozen/tail split with position-adjusted tool calls instead of putting everything in tail

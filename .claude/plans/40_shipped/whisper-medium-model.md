@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Whisper Medium Model Upgrade {waveform}
+# Whisper Medium Model Upgrade
 ## Changes
 - `WhisperService.swift`: Changed `modelVariant` from `"base"` to `"medium"`
 

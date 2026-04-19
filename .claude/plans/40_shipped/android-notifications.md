@@ -6,7 +6,7 @@ tags: ["android", "notifications"]
 build: 120
 icon: bell
 ---
-# Android Notifications {bell}
+# Android Notifications
 
 
 ## Desired Outcome

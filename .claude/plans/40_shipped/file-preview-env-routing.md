@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# File Preview Environment Routing {doc.viewfinder}
+# File Preview Environment Routing
 ## Problem
 
 After the multi-env refactor, tapping a file path pill in chat sends the `get_file` request to whichever relay authenticated first (`anyAuthenticatedConnection`), not the relay where the file exists. This causes ENOENT errors when connected to both Mac and Linux relays.

@@ -8,7 +8,7 @@ build: 55
 ---
 
 
-# Team Orbs Speech Bubble Alignment {bubble.right}
+# Team Orbs Speech Bubble Alignment
 ## Problem
 When a teammate's speech bubble appears, the orb circles shift left to accommodate the bubble width. The orbs should stay pinned to the right edge and the speech bubble should grow leftward.
 

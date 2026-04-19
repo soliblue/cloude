@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor Tier 3: Structural Improvements {building.columns}
+# Refactor Tier 3: Structural Improvements
 ## Status: Active
 
 ## Scope

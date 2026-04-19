@@ -8,7 +8,7 @@ build: 145
 ---
 
 
-# Consolidate MCP Tools {wrench.and.screwdriver}
+# Consolidate MCP Tools
 ## Problem
 
 Three issues with the current MCP setup:

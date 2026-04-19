@@ -6,7 +6,7 @@ tags: ["android", "input", "voice"]
 build: 125
 icon: mic.fill
 ---
-# Android Voice Input Gesture {mic.fill}
+# Android Voice Input Gesture
 
 
 ## Desired Outcome

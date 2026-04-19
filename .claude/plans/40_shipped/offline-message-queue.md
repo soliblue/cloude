@@ -8,7 +8,7 @@ build: 44
 ---
 
 
-# Offline Message Queue {tray.and.arrow.down}
+# Offline Message Queue
 Queue outgoing prompts while disconnected, send automatically when connection is restored. Reuses the existing `pendingMessages` queue — no new persistence or retry logic needed.
 
 ## Implementation

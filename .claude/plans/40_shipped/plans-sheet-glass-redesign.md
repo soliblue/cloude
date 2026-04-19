@@ -8,7 +8,7 @@ build: 60
 ---
 
 
-# Plans Sheet Glass Redesign {rectangle.on.rectangle.angled}
+# Plans Sheet Glass Redesign
 ## Problem
 Plans sheet uses solid white/opaque backgrounds (`Color(.secondarySystemGroupedBackground)`) for the stage picker and plan cards. Looks heavy, too much white, poor design compared to the rest of the app's glass aesthetic.
 

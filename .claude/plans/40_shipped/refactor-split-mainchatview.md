@@ -8,7 +8,7 @@ build: 36
 ---
 
 
-# Split MainChatView.swift {scissors}
+# Split MainChatView.swift
 ## Changes
 795 lines → 5 files:
 - `MainChatView.swift` (407 lines) - body, headers, modifiers

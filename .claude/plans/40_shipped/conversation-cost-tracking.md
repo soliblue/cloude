@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Conversation Cost Tracking {dollarsign.circle}
+# Conversation Cost Tracking
 Show running cost per conversation. We already get `costUsd` per message from Claude CLI — just need to sum and display it.
 
 ## Goals

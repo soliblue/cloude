@@ -8,4 +8,4 @@ build: 43
 ---
 
 
-# YAML Tree Viewer {list.bullet.rectangle}
+# YAML Tree Viewer

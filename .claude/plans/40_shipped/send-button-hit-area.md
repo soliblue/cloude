@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Send Button Hit Area + Pill Style {circle.fill}
+# Send Button Hit Area + Pill Style
 Redesigned the send/action button as a prominent pill:
 - **Filled circle** with accent background + white icon when active (can send or stop)
 - **Transparent** with dimmed accent icon when inactive (nothing to send)

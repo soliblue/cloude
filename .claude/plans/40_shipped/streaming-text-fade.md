@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Streaming Text Fade-In Animation {text.badge.star}
+# Streaming Text Fade-In Animation
 ## Problem
 
 The drip rate is correct, but each new chunk appears fully opaque. The result feels abrupt instead of fluid.

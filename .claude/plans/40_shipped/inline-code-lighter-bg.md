@@ -8,6 +8,6 @@ build: 45
 ---
 
 
-# Lighter Inline Code Background {chevron.left.forwardslash.chevron.right}
+# Lighter Inline Code Background
 ## Changes
 - `StreamingMarkdownParser+Inline.swift`: `.secondary.opacity(0.2)` → `.secondary.opacity(0.1)`

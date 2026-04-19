@@ -8,7 +8,7 @@ build: 67
 ---
 
 
-# Skill Icon in Slash Command Bubbles {command}
+# Skill Icon in Slash Command Bubbles
 Skill slash commands (e.g. `/deploy`, `/image`) showed a generic `command` SF Symbol when rendered as bubbles in chat, even though the autocomplete suggestions showed the correct custom icon.
 
 ## Changes

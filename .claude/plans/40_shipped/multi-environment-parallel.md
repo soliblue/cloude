@@ -7,7 +7,7 @@ icon: point.3.connected.trianglepath.dotted
 build: 82
 ---
 
-# Parallel Environment Connections {point.3.connected.trianglepath.dotted}
+# Parallel Environment Connections
 ## Why
 Multi-agent support already exists (add/switch servers). But switching disconnects from the previous one. With Medina + Mac both running, you should be able to chat on both at the same time across different windows.
 

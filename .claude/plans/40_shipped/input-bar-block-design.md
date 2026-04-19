@@ -8,4 +8,4 @@ build: 82
 ---
 
 
-# Input Bar Block Design {rectangle.split.2x1}
+# Input Bar Block Design

@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Empty Window Recent Conversations {clock.arrow.circlepath}
+# Empty Window Recent Conversations
 - Empty window state now shows the 3 most recent conversations below the pixel art character
 - Each row: conversation SF symbol + name on the left, environment icon on the right
 - Tapping a conversation links it to the current window

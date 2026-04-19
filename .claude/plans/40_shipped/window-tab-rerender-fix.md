@@ -8,7 +8,7 @@ build: 115
 ---
 
 
-# Window Tab Re-render Fix {bolt}
+# Window Tab Re-render Fix
 ## What Changed
 - Extracted `WindowTabBar` as standalone struct (was extension method on MainChatView). Takes only primitive values (WindowType, Bool, closure) so SwiftUI skips re-renders when values unchanged.
 - Removed `toolCalls` and `runStats` propagation from ConversationOutput to ConnectionManager. These fired on every tool call (~50+ per turn) but only ObservedMessageBubble needs them (observes ConversationOutput directly).

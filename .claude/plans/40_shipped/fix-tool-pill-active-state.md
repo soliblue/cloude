@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Fix Tool Pill Active State {wrench.and.screwdriver}
+# Fix Tool Pill Active State
 ## Problem
 Tool pills (InlineToolPill) only transitioned from `.executing` to `.complete` when an explicit `.toolResult` message arrived. If the result was missing or delayed, the pill stayed in shimmer state even after subsequent text or tool calls proved it was done.
 

@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Reconnect Mid-Stream Detection {arrow.triangle.2.circlepath}
+# Reconnect Mid-Stream Detection
 ## Problem
 If the app is closed or the connection drops while Claude is actively streaming a response, reconnecting shows the partial content as a completed message. The user had to manually tap "refresh" repeatedly to get more content as Claude continued generating.
 

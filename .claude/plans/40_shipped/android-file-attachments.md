@@ -6,7 +6,7 @@ tags: ["android", "input"]
 icon: paperclip
 build: 120
 ---
-# Android File Attachments {paperclip}
+# Android File Attachments
 
 ## Implementation
 

@@ -6,7 +6,7 @@ tags: ["android", "images", "input"]
 build: 120
 icon: camera
 ---
-# Android Image Display & Camera {camera}
+# Android Image Display & Camera
 
 
 ## Context

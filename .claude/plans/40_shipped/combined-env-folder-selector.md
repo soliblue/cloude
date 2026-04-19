@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Combined Environment + Folder Selector {rectangle.on.rectangle}
+# Combined Environment + Folder Selector
 - Environment and folder pickers grouped into a single rounded card
 - Environment row on top, folder row below, separated by a divider
 - Both rows stretch full width with chevrons aligned right

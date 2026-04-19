@@ -6,7 +6,7 @@ tags: ["android", "input", "files"]
 build: 125
 icon: doc.text.magnifyingglass
 ---
-# Android @file Search Suggestions {doc.text.magnifyingglass}
+# Android @file Search Suggestions
 
 
 ## Desired Outcome

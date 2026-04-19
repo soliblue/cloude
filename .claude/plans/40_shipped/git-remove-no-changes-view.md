@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Remove "No Changes" Empty State from Git View {xmark.circle}
+# Remove "No Changes" Empty State from Git View
 Removed the ContentUnavailableView("No Changes") from GitChangesView. The branch header already shows 0 file count, which is sufficient.
 
 ## Test

@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Breadcrumb Overflow - Collapse to Last 2 {rectangle.compress.vertical}
+# Breadcrumb Overflow - Collapse to Last 2
 Show only root + `…` + last 2 parent components instead of 3 when path has 4+ segments. Keeps breadcrumb from overflowing screen width.
 
 **File**: `Cloude/Cloude/UI/FileViewerBreadcrumb.swift`

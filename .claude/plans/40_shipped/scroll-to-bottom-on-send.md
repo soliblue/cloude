@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Scroll to Bottom on Message Send {arrow.down.to.line}
+# Scroll to Bottom on Message Send
 ## Problem
 When the user sends a message, the conversation view does not automatically scroll to show the new message and incoming response. The user has to manually scroll down.
 

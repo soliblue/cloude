@@ -47,7 +47,7 @@ icon: sparkles
 build: 155
 ---
 
-# Feature Name {sparkles}
+# Feature Name
 ```
 
 Rules:
@@ -55,15 +55,15 @@ Rules:
 - `build` is optional. Add it when the ticket is tied to a concrete app build, typically in `30_testing` or `40_shipped`.
 - `created_at` is the calendar day the ticket was first created. Preserve it when moving stages.
 - `tags` must be a YAML array, usually 1 or 2 items.
-- `icon` is an SF Symbol name.
+- `icon` is an SF Symbol name. It lives only in frontmatter. Do not append `{icon}` to the H1.
 - Keep metadata in YAML frontmatter using the fields above.
-- Keep the first H1 aligned with `title`. Append `{icon}` in the H1 when the ticket uses an icon.
+- Keep the first H1 aligned with `title`, with no trailing symbol or decoration.
 - Store the one-sentence summary in frontmatter `description`.
 
 Before moving a ticket to `30_testing`, include a `## Verify` section: desired outcome and a simple test another agent can execute. The `sim` skill picks up `30_testing` tickets and runs QA against this section.
 
 Use 1 or 2 tags per plan. Core vocab: `ui`, `agent`, `skills`, `memory`, `git`, `files`, `settings`, `streaming`. Add a new tag only when existing ones cannot express a distinct recurring kind of work; update this file when you do.
 
-Backlog items stay short. Detail grows as the plan moves forward. Use SF Symbol icons in titles. Prefer clarity over exhaustiveness.
+Backlog items stay short. Detail grows as the plan moves forward. Prefer clarity over exhaustiveness.
 
 Stop and ask when intent or scope is genuinely ambiguous.

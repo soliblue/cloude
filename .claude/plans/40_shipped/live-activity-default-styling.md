@@ -8,7 +8,7 @@ build: 66
 ---
 
 
-# Live Activity Default Styling {livephoto}
+# Live Activity Default Styling
 ## Changes
 - Removed `Color.cloudeAccent` custom color
 - Removed `.activityBackgroundTint(.white)` from lock screen

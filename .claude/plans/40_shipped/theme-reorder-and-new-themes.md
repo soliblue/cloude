@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Theme Reorder & New Themes {swatchpalette.fill}
+# Theme Reorder & New Themes
 ## Changes
 - Added Bauder theme (dark steel-blue, named after Christopher Bauder)
 - Added Mahfouz theme (bicolor: warm amber bg + cool blue-gray surfaces)

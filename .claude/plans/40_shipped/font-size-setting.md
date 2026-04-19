@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Font Size Setting {textformat.size}
+# Font Size Setting
 ## Problem
 There is no way to adjust the font size in the app. Users with different preferences or accessibility needs have no control over text size.
 

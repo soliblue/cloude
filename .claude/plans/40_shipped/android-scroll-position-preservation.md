@@ -6,7 +6,7 @@ tags: ["android", "ux", "polish"]
 build: 125
 icon: arrow.up.and.down
 ---
-# Android Scroll Position Preservation {arrow.up.and.down}
+# Android Scroll Position Preservation
 
 
 ## Desired Outcome

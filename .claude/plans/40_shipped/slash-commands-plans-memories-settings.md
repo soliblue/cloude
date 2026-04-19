@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Slash Commands for Plans, Memories, Settings {slash.circle}
+# Slash Commands for Plans, Memories, Settings
 Added `/plans`, `/memories`, and `/settings` as built-in slash commands:
 - `/plans` opens the plans sheet (removed clipboard button from toolbar)
 - `/memories` opens the memories sheet (brain button still in toolbar)

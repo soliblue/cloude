@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# iMessage Skill {message.fill}
+# iMessage Skill
 ## Architecture
 - **Read**: Python script reads `~/Library/Messages/chat.db` directly, decodes both `text` and `attributedBody` formats
 - **Send**: AppleScript via `osascript` to Messages.app

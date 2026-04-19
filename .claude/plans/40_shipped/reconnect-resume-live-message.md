@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Reconnect Resume Live Message {arrow.triangle.2.circlepath}
+# Reconnect Resume Live Message
 ## Problem
 
 When the app disconnects mid-stream (background, network drop) and reconnects while the server is still running, the partial message was saved as interrupted and a new empty live message was created below it. This split one assistant turn into two bubbles with a status bar between them.

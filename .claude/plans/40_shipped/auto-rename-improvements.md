@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Auto-Rename Improvements {pencil.line}
+# Auto-Rename Improvements
 ## Problem
 - Auto-naming only fired on the 1st user message, then every 5th assistant message
 - First rename had no conversation context (empty array), so names were often vague

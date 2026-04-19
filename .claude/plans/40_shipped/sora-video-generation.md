@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# Sora Video Generation Skill {film}
+# Sora Video Generation Skill
 Give Claude the ability to generate videos using Sora via Soli's ChatGPT Pro subscription ($200/mo, Sora included).
 
 ## Status: `/video` skill LIVE

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Fix file preview environment routing {arrow.triangle.swap}
+# Fix file preview environment routing
 ## Problem
 File preview was routing to the wrong environment (e.g. "medine" instead of "work") when multiple environments are connected. Only reproducible with 2+ environments.
 

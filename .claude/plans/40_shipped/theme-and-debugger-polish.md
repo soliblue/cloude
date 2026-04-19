@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Theme and Debugger Polish {paintbrush}
+# Theme and Debugger Polish
 ## Problem
 A few interface surfaces were still bypassing existing design tokens and theme helpers, conversation labels needed stronger hierarchy, message bubbles did not reliably rerender when font size changed, and VS Code launches were using the integrated terminal instead of the debug console.
 

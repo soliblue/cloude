@@ -6,7 +6,7 @@ tags: ["android", "files"]
 icon: folder
 build: 120
 ---
-# Android File Browser {folder}
+# Android File Browser
 
 
 ## Desired Outcome

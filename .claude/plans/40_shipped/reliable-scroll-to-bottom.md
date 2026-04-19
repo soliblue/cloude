@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Reliable Scroll-to-Bottom {arrow.down.to.line}
+# Reliable Scroll-to-Bottom
 ## Status
 Streaming auto-scroll is solved. Two remaining gaps for full scroll reliability.
 

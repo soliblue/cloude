@@ -8,7 +8,7 @@ build: 65
 ---
 
 
-# Memory Glass Fill Background {drop.fill}
+# Memory Glass Fill Background
 ## Changes
 - Removed `MemoryUsageIndicator` view (capsule progress bar)
 - Added `LinearGradient` background that fills from bottom based on `usagePercent`

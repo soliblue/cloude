@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Skillsmith-Driven Skill Extensions {wrench.and.screwdriver}
+# Skillsmith-Driven Skill Extensions
 ## What
 Extended 4 skills and resolved 1 cleanup item based on /skillsmith analysis:
 

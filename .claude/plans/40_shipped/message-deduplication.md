@@ -8,7 +8,7 @@ build: 31
 ---
 
 
-# Message Deduplication Plan {doc.on.doc}
+# Message Deduplication Plan
 ## Problem
 
 When restarting the iOS app, sometimes the same message appears twice. This happens because:

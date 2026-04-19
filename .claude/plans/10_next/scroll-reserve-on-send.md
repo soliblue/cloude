@@ -8,7 +8,7 @@ build: 145
 ---
 
 
-# Scroll Reserve on Send {arrow.up.to.line}
+# Scroll Reserve on Send
 ## Problem
 
 Currently when a message is sent, it appends to the bottom of the list and the streaming response grows the last bubble downward. The user message stays near the bottom with the response pushing content up via auto-scroll. This means constant scrolling as the response streams, and the user message quickly disappears off the top.

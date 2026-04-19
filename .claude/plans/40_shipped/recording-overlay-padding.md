@@ -8,4 +8,4 @@ build: 82
 ---
 
 
-# Recording Overlay Bar Padding {waveform.badge.minus}
+# Recording Overlay Bar Padding

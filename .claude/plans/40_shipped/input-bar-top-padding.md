@@ -8,5 +8,5 @@ build: 82
 ---
 
 
-# Remove Extra Top Padding on Input Bar {arrow.up.and.down}
+# Remove Extra Top Padding on Input Bar
 **File:** `GlobalInputBar.swift` line 229

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Linux Relay Modular Refactor {wrench.and.screwdriver}
+# Linux Relay Modular Refactor
 ## Changes
 
 - Deleted dead `agent-linux/` directory

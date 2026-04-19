@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Conversation Recall Layer {text.magnifyingglass}
+# Conversation Recall Layer
 ## Problem
 
 Conversations are hard to recover once they drift out of view. Names change, large generated outputs get buried in scroll, and older conversations lose their shape.

@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Tool Pill Sheet - Rich Output Display {doc.richtext}
+# Tool Pill Sheet - Rich Output Display
 ## Phase 1: Rich Read output (current)
 
 Strip line number prefixes from Read resultOutput, detect language from file extension, render as `CodeBlock` instead of plain monospace text. No agent-side changes needed.

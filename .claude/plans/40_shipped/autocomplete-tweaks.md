@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Autocomplete tweaks {text.cursor}
+# Autocomplete tweaks
 ## Changes
 - Max input length for autocomplete trigger: 30 → 90 characters
 - Ghost text overlay no longer expands the input bar — uses `fixedSize(horizontal: false, vertical: false)` to stay within the TextField's bounds, truncates with `...` if too long

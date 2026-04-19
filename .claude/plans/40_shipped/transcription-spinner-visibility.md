@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Transcription Spinner Not Visible During Processing {progress.indicator}
+# Transcription Spinner Not Visible During Processing
 ## Problem
 After stopping a voice recording, the transcription loading spinner wasn't showing. The audio waveform overlay disappeared and the input bar returned, with a gap of a few seconds before the transcription result appeared.
 

@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Auto-Rename Every N Messages {arrow.triangle.2.circlepath}
+# Auto-Rename Every N Messages
 ## Summary
 Periodically re-run the background Sonnet naming call as conversations progress. The first message triggers naming, then every ~5 assistant messages, fire another name suggestion to keep the header accurate as topics shift.
 

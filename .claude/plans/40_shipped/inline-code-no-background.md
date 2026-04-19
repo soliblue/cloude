@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Inline Code: Remove Background Color {chevron.left.forwardslash.chevron.right}
+# Inline Code: Remove Background Color
 **Files:** `StreamingMarkdownView+InlineText.swift`
 
 ## Test

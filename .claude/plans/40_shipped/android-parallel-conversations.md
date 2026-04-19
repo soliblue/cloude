@@ -6,7 +6,7 @@ tags: ["android", "conversations", "architecture"]
 build: 125
 icon: bubble.left.and.bubble.right
 ---
-# Parallel Conversation Streaming (Android) {bubble.left.and.bubble.right}
+# Parallel Conversation Streaming (Android)
 
 
 ## Problem

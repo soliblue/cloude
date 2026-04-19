@@ -8,7 +8,7 @@ build: 47
 ---
 
 
-# Collapsible Header Tap Area {hand.tap}
+# Collapsible Header Tap Area
 ## Problem
 Collapsible section headers only collapsed when tapping the small chevron arrow — too small a hit target.
 

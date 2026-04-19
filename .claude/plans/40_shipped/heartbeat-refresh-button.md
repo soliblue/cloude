@@ -8,7 +8,7 @@ build: 48
 ---
 
 
-# Heartbeat Refresh Button {arrow.clockwise}
+# Heartbeat Refresh Button
 ## Problem
 No way to manually refresh/sync heartbeat messages if something was missed.
 

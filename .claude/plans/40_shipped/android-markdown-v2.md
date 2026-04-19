@@ -6,7 +6,7 @@ tags: ["android", "markdown", "ui"]
 build: 125
 icon: text.badge.star
 ---
-# Android Markdown Enhancements v2 {text.badge.star}
+# Android Markdown Enhancements v2
 
 
 ## Context

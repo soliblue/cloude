@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Color Palette Widget Cleanup {paintpalette}
+# Color Palette Widget Cleanup
 ## Changes
 - Removed WidgetHeader (no icon/title bar)
 - Removed WidgetContainer background card

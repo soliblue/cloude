@@ -6,7 +6,7 @@ tags: ["android", "search"]
 icon: magnifyingglass
 build: 120
 ---
-# Android Conversation Search {magnifyingglass}
+# Android Conversation Search
 
 ## Implementation
 

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Reduce Border Radius ~25% {square}
+# Reduce Border Radius ~25%
 ## Summary
 Reduced all cornerRadius values across the app by ~25% for a tighter, more angular look. Also converted circular buttons (send, scroll-to-bottom, connection status) to rounded rectangles for consistency.
 

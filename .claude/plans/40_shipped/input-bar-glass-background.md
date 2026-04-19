@@ -8,7 +8,7 @@ build: 65
 ---
 
 
-# Input Bar Glass Background {textfield}
+# Input Bar Glass Background
 ## Problem
 
 The bottom bar (input field + page indicator) uses `.ultraThinMaterial` on three layers — the container VStack, the text field capsule, and suggestion pills. When the keyboard opens and the bar flies to the top, the background is too opaque — you can't see chat text behind it. Feels heavy, not minimal.

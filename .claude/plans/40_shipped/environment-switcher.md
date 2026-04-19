@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Environment Switcher {arrow.triangle.2.circlepath}
+# Environment Switcher
 Swipeable card carousel in Settings to save and switch between multiple Mac agent connections (e.g., work machine + personal machine). Each environment gets a claude-on-clouds character avatar.
 
 Step 1 only — credential switching. No conversation tagging or filtering yet.

@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Team UI Polish {person.3.sequence.fill}
+# Team UI Polish
 ## 1. Compact Orb Info — Status in Toolbar Row
 
 Currently the orb shows a pulsing circle (working), half-opacity (idle), and status text separately in the detail sheet. This info could be shown inline next to the teammate name in the orb row itself, saving vertical space and making status visible at a glance.

@@ -8,7 +8,7 @@ build: 96
 ---
 
 
-# Scroll to bottom timing fix {arrow.down.circle}
+# Scroll to bottom timing fix
 Changed scroll trigger from `messages.count` to `messages.last?.id` and added `await Task.yield()` so the scroll fires after SwiftUI has laid out the new message row.
 
 ## Desired Outcome

@@ -8,7 +8,7 @@ build: 96
 ---
 
 
-# Git Revert Changes {arrow.uturn.backward}
+# Git Revert Changes
 ## Goal
 
 Make bulk revert actions available directly in the git view without extra prompts.

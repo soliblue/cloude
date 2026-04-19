@@ -6,7 +6,7 @@ tags: ["android", "offline"]
 build: 125
 icon: arrow.down.circle
 ---
-# Android Offline Cache {arrow.down.circle}
+# Android Offline Cache
 
 
 ## Desired Outcome

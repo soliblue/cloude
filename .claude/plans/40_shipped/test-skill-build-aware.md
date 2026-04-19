@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Test Skill: Build-Aware Testing {hammer.fill}
+# Test Skill: Build-Aware Testing
 **Feature**: Test skill automatically filters testable features based on build number comparison.
 
 **What changed**:

@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Dismiss keyboard on auto-send slash commands {keyboard.chevron.compact.down}
+# Dismiss keyboard on auto-send slash commands
 ## Problem
 When selecting a slash command that auto-sends (no parameters), the keyboard stayed visible instead of dismissing.
 

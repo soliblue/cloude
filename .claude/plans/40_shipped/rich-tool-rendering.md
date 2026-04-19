@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Rich Tool Rendering — Phase 3: Live Subagent Tool Feed {rectangle.stack}
+# Rich Tool Rendering — Phase 3: Live Subagent Tool Feed
 Phases 1 (shimmer) and 2 (result previews) are done.
 
 ## Goal

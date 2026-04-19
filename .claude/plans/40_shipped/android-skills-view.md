@@ -6,7 +6,7 @@ tags: ["android", "skills"]
 build: 125
 icon: sparkles
 ---
-# Android Skills View {sparkles}
+# Android Skills View
 
 
 ## Desired Outcome

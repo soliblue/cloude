@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Adaptive Thinking Support {brain.head.profile}
+# Adaptive Thinking Support
 Expose Claude Opus 4.6's adaptive thinking effort levels in Cloude, letting users control how hard Claude thinks per request.
 
 ## Background

@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Clean Up Themes {paintpalette}
+# Clean Up Themes
 ## Changes
 
 ### 1. Remove 17 themes

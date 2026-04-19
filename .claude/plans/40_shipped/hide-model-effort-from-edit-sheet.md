@@ -8,6 +8,6 @@ build: 43
 ---
 
 
-# Hide Model/Effort from Edit Sheet {eye.slash}
+# Hide Model/Effort from Edit Sheet
 ## Changes
 - `WindowEditSheet.swift`: Removed effort level Menu and model selector Menu from toolbar

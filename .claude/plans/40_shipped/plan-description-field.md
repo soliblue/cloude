@@ -7,7 +7,7 @@ icon: text.below.photo
 build: 53
 ---
 
-# Plan Description Field {text.below.photo}
+# Plan Description Field
 ## Problem
 Plan cards in PlansSheet only show the title. You have to tap into a plan to know what it's about. A short description preview would make scanning plans much faster.
 
@@ -23,7 +23,7 @@ tags: ["ui"]
 icon: text.below.photo
 ---
 
-# My Plan {text.below.photo}
+# My Plan
 ```
 
 ## Changes

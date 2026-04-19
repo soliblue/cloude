@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Local Vector Memory (Long-Term Memory Layer) {cylinder.split.1x2}
+# Local Vector Memory (Long-Term Memory Layer)
 ## Summary
 Add a local vector database (sqlite-vec or similar) as a cold storage memory layer alongside the always-on CLAUDE.local.md. Enables semantic search over previous conversations, documents, and archived memories.
 

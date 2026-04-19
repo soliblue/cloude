@@ -8,7 +8,7 @@ build: 36
 ---
 
 
-# Split Cloude_AgentApp.swift {scissors}
+# Split Cloude_AgentApp.swift
 ## Changes
 526 lines → 3 files (+ existing Handlers):
 - `Cloude_AgentApp.swift` (194 lines) - app entry, setup

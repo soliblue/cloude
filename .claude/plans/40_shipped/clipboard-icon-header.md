@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Clipboard Icon in Window Header {doc.on.doc}
+# Clipboard Icon in Window Header
 Changed the export/share button SF Symbol from `square.and.arrow.up` to `doc.on.doc` (clipboard icon) in the window header.
 
 **Files:** `MainChatView+Windows.swift`

@@ -8,7 +8,7 @@ build: 67
 ---
 
 
-# Dark Mode Default {moon.fill}
+# Dark Mode Default
 Default the app theme to dark mode instead of system. Users can still override to system or light in Settings.
 
 ## Changes

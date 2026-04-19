@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Tweets Skill {bird}
+# Tweets Skill
 ## Summary
 Create a `/tweets` skill that provides access to Soli's Twitter archive for context, analysis, and conversation. The tweet data should be available locally but never pushed to git.
 

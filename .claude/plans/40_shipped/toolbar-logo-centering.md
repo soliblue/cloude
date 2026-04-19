@@ -8,7 +8,7 @@ build: 64
 ---
 
 
-# Center Toolbar Logo {person.crop.circle}
+# Center Toolbar Logo
 ## Change
 - Removed `.padding(.horizontal, 14)` from the leading toolbar HStack in `CloudeApp.swift`
 - The `.principal` placement now centers the `ConnectionStatusLogo` naturally between leading and trailing items

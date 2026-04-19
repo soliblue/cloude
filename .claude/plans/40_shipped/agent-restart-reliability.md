@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Agent Restart Reliability {arrow.triangle.2.circlepath}
+# Agent Restart Reliability
 ## Problem
 
 When the agent is running from Xcode (debug build) and we rebuild via `fastlane mac build_agent`, the iOS app can't connect afterward. Works fine when no Xcode instance was running first.

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Wrap Code Lines Toggle {arrow.turn.down.right}
+# Wrap Code Lines Toggle
 ## Changes
 - `FilePreviewView.swift`: Added `@AppStorage("wrapCodeLines")` + toolbar toggle button
 - `FilePreviewView+Content.swift`: `sourceTextView` respects wrap preference (horizontal scroll when off)

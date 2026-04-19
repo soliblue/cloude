@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Animated Title Transitions {textformat.abc}
+# Animated Title Transitions
 Animate conversation name and symbol changes in the header pill instead of instant swap.
 
 ## Changes

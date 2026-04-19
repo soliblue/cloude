@@ -8,7 +8,7 @@ build: 64
 ---
 
 
-# Tool Pill Glass Background {pill.circle.fill}
+# Tool Pill Glass Background
 ## Problem
 
 Tool pills currently have no background fill — they float as plain text with an icon. Adding a subtle glass material background would make them feel more like native UI elements and improve visual hierarchy in the chat feed.

@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Equatable WindowTabBar {gauge.with.dots.needle.bottom.50percent}
+# Equatable WindowTabBar
 ## Changes
 
 - Added Equatable conformance to WindowTabBar comparing display properties only

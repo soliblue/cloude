@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Input Bar Autocomplete History {clock.arrow.circlepath}
+# Input Bar Autocomplete History
 - Autocomplete suggestions based on previously sent messages
 - Local/on-device storage via UserDefaults for instant speed
 - Only saves messages under 50 chars, skips slash commands

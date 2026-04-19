@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# File Browser Tree View {folder.badge.gearshape}
+# File Browser Tree View
 ## Behavior
 
 - Root shows contents of the window's working directory (no path bar)

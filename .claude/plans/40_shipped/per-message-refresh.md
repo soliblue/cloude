@@ -8,7 +8,7 @@ build: 65
 ---
 
 
-# Per-Message Refresh {arrow.clockwise.circle}
+# Per-Message Refresh
 ## Problem
 
 The only way to refresh is the header button which refreshes the entire conversation. No way to surgically say "this one response was bad, redo it."

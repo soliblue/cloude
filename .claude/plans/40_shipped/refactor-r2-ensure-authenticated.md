@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor R2: Extract ensureAuthenticated() helper {lock.shield}
+# Refactor R2: Extract ensureAuthenticated() helper
 ## Status: Active
 
 ## Problem

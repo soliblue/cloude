@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Sisyphus Timer Leak Fix {timer}
+# Sisyphus Timer Leak Fix
 ## What
 Loading animation ran 2x speed on the 2nd message because `Timer.scheduledTimer` was never invalidated — each `onAppear` stacked a new timer.
 

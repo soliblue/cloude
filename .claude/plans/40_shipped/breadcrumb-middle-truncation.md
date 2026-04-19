@@ -8,7 +8,7 @@ build: 58
 ---
 
 
-# Breadcrumb - Middle Truncation for Filenames {ellipsis.rectangle}
+# Breadcrumb - Middle Truncation for Filenames
 Filename in breadcrumb now uses middle truncation to preserve the file extension. e.g. `AutocompleteS….swift` instead of `AutocompleteS…`.
 
 **File**: `Cloude/Cloude/UI/FileViewerBreadcrumb.swift`

@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Custom Context Menu (No Zoom) {hand.tap}
+# Custom Context Menu (No Zoom)
 ## Problem
 - iOS `.contextMenu` causes a zoom-out/shrink preview animation on long-press
 - This conflicts with chart widget drag gestures inside message bubbles

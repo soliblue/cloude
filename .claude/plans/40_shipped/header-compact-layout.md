@@ -8,7 +8,7 @@ build: 34
 ---
 
 
-# Header Compact Layout {rectangle.compress.vertical}
+# Header Compact Layout
 Reduce header cramping when cost info is shown. Right side content (conversation name, folder, cost) was getting truncated.
 
 ## Changes

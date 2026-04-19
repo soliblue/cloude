@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Refresh Button in Send Area {arrow.clockwise}
+# Refresh Button in Send Area
 - When input is empty, env is connected, and not streaming: show refresh (arrow.clockwise) instead of send
 - Tapping refreshes/syncs the conversation history
 - Send button still shows power icon when disconnected

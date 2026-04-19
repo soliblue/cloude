@@ -6,7 +6,7 @@ tags: ["android", "ui", "bug"]
 build: 120
 icon: arrow.down.to.line
 ---
-# Fix Chat Auto-Scroll Direction {arrow.down.to.line}
+# Fix Chat Auto-Scroll Direction
 
 
 ## Problem

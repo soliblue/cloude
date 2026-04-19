@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# berlin.soli.blue - Berlin Open Data Visualization {map.fill}
+# berlin.soli.blue - Berlin Open Data Visualization
 Minimalistic, visually stunning data visualization site for Berlin's open data. Hosted on Cloudflare Pages. Project lives at `/Users/soli/Desktop/CODING/berlin/`.
 
 ## Goals

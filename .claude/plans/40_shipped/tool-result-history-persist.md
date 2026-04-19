@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Persist Tool Results Through History Reload {externaldrive.fill}
+# Persist Tool Results Through History Reload
 ## What Changed
 - `StoredToolCall` now carries `resultContent: String?`
 - Mac agent `HistoryService` parses `tool_result` entries from user messages in JSONL

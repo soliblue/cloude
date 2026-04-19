@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Skill Pill Sizing {textformat.size}
+# Skill Pill Sizing
 Match SlashCommandBubble dimensions to InlineToolPill so skill pills in messages look the same size as tool pills.
 
 ## Changes

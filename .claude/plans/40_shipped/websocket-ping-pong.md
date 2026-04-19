@@ -8,4 +8,4 @@ build: 31
 ---
 
 
-# WebSocket Ping/Pong {arrow.up.arrow.down}
+# WebSocket Ping/Pong

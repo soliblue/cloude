@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Transparent Image Generation (--transparent flag) {photo.artframe}
+# Transparent Image Generation (--transparent flag)
 Added `--transparent` flag to `generate.sh` image skill. Gemini can't output transparent PNGs natively, so the pipeline:
 
 1. Appends "solid white background" to prompt

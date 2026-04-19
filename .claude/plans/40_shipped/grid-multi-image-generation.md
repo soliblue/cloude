@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Grid Multi-Image Generation {square.grid.2x2}
+# Grid Multi-Image Generation
 Generate 4 or 9 image variations in a single Gemini API call using a grid template approach.
 
 ## Implementation

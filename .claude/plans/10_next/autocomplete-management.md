@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Smart Autocomplete {text.badge.star}
+# Smart Autocomplete
 ## How It Works
 
 ### The file

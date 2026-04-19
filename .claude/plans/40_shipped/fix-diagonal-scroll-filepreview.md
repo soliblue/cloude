@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Fix Diagonal Scrolling in File Preview {arrow.up.and.down.and.arrow.left.and.right}
+# Fix Diagonal Scrolling in File Preview
 ## Problem
 Text-based file previews (code, markdown source, etc.) allowed diagonal scrolling when both axes were enabled via `ScrollView([.vertical, .horizontal])`. This is confusing - you should scroll one axis at a time.
 

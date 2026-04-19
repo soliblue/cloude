@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Tool Pill List Unresponsive During Streaming {wrench.and.screwdriver}
+# Tool Pill List Unresponsive During Streaming
 ## Problem
 When multiple tool calls arrive consecutively with no text between them, they render as a horizontal scrollable row. While any tool in that row is still loading:
 - Tapping a pill highlights it but the detail sheet does not open

@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Refactor: March 2026 Cleanup {wrench.and.screwdriver}
+# Refactor: March 2026 Cleanup
 ## HIGH Priority
 - [x] ProcessMonitor: Extract shared `findProcesses(matching:excludingSelf:)` to deduplicate 95% identical code
 - [x] ClaudeCodeRunner+Streaming: Split `processStreamLines` into typed handlers

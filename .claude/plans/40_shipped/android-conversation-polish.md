@@ -6,7 +6,7 @@ tags: ["android", "conversations", "ux"]
 build: 125
 icon: sparkles
 ---
-# Android Conversation Polish {sparkles}
+# Android Conversation Polish
 
 
 ## Desired Outcome

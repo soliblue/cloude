@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Edit Tool Diff View {arrow.left.arrow.right}
+# Edit Tool Diff View
 ## Problem
 When tapping an Edit tool pill, the detail sheet only shows the file path and a "updated successfully" confirmation. The CLI has `old_string` and `new_string` in the tool_use input, but `ToolInputExtractor` discards them, keeping only `file_path`.
 

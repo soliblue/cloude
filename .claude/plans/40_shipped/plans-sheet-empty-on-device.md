@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Plans Sheet Empty on Device {doc.text.magnifyingglass}
+# Plans Sheet Empty on Device
 ## Problem
 Opening the plans sheet on a physical iPhone shows no plans, while the same build in Simulator displays them correctly. This is a device-specific bug — the data exists but is not loading or rendering on real hardware.
 

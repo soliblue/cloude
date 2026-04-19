@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Tool Shimmer Animation {sparkle}
+# Tool Shimmer Animation
 ## Done
 
 Phase 1 of rich tool rendering — shimmer animation on tool pills during execution.

@@ -8,7 +8,7 @@ build: 76
 ---
 
 
-# Logo Transparent Background Fix {photo}
+# Logo Transparent Background Fix
 ## Changes
 - Added `.renderingMode(.original)` to the logo `Image` in `CloudeApp+StatusLogo.swift`
 - This tells iOS to render the image as-is instead of treating it as a template image

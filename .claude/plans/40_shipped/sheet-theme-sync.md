@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Sheet Theme Sync Fix {paintbrush}
+# Sheet Theme Sync Fix
 ## Summary
 Sheets (Settings, Theme Picker) didn't update colors when switching themes because `.preferredColorScheme` was only on the root CloudeApp view. Sheets are separate presentation contexts.
 

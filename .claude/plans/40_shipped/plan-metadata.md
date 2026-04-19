@@ -8,7 +8,7 @@ build: 54
 ---
 
 
-# Plan Metadata {tag.fill}
+# Plan Metadata
 ## Format
 
 YAML front matter in plan files for machine-readable metadata:
@@ -23,7 +23,7 @@ icon: sparkles
 build: 54
 ---
 
-# My Plan {sparkles}
+# My Plan
 ```
 
 ## Features

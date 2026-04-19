@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Image Skill Animation Docs Update {doc.text}
+# Image Skill Animation Docs Update
 - Full proven pipeline: magenta canvas, Veo 3.1, frame extraction, hybrid bg removal, union bbox crop, GIF assembly
 - Hybrid color key approach for pixel art (Apple Vision mask + color key + fringe replacement)
 - Background color comparison table (magenta wins)

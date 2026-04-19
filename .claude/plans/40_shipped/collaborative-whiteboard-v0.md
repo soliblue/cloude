@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Collaborative Whiteboard v0 {pencil.and.scribble}
+# Collaborative Whiteboard v0
 Shared canvas where Soli draws by touch and Claude adds/draws elements via MCP tools. `/whiteboard` slash command opens as fullScreenCover.
 
 ## Shipped

@@ -8,7 +8,7 @@ build: 70
 ---
 
 
-# Pipe & Shell Operator Support in Tool Pills {arrow.right.arrow.left}
+# Pipe & Shell Operator Support in Tool Pills
 ## Status: Testing
 
 ## Summary

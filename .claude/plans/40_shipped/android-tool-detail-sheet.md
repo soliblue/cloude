@@ -6,7 +6,7 @@ tags: ["android", "ui"]
 icon: wrench
 build: 120
 ---
-# Android Tool Detail Sheet {wrench}
+# Android Tool Detail Sheet
 
 
 ## Desired Outcome

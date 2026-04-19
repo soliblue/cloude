@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Codex Integration in Skills {arrow.triangle.branch}
+# Codex Integration in Skills
 ## Summary
 Added Codex second opinion step to refactor, reflect, and skillsmith skills.
 

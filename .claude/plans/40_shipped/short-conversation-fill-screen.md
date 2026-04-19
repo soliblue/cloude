@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Short conversations fill screen properly {rectangle.expand.vertical}
+# Short conversations fill screen properly
 ## Problem
 When a conversation had few short messages, the messages floated at the bottom of the screen with empty space above (due to `.defaultScrollAnchor(.bottom)`).
 

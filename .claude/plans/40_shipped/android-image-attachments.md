@@ -6,7 +6,7 @@ tags: ["android", "input"]
 icon: photo
 build: 120
 ---
-# Android Image Attachments {photo}
+# Android Image Attachments
 
 
 ## Desired Outcome

@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Apple Reminders Skill {checklist}
+# Apple Reminders Skill
 ## Approach
 Shell scripts wrapping `osascript` — same as calendar skill. No dependencies.
 

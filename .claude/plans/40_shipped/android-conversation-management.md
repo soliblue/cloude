@@ -6,7 +6,7 @@ tags: ["android", "conversations"]
 icon: bubble.left.and.bubble.right
 build: 120
 ---
-# Android Conversation Management {bubble.left.and.bubble.right}
+# Android Conversation Management
 
 
 ## Desired Outcome

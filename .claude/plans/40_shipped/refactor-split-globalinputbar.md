@@ -8,7 +8,7 @@ build: 36
 ---
 
 
-# Split GlobalInputBar.swift {scissors}
+# Split GlobalInputBar.swift
 ## Changes
 635 lines → 3 files:
 - `GlobalInputBar.swift` (408 lines) - main input bar

@@ -8,7 +8,7 @@ build: 81
 ---
 
 
-# Text Selection & Partial Copy {text.cursor}
+# Text Selection & Partial Copy
 ## Changes
 1. Long press on any message (user or assistant) opens `TextSelectionSheet`
 2. Sheet has selectable `UITextView` with link detection + copy-all button

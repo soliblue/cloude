@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Environment Icon Background Circle {circle.dashed}
+# Environment Icon Background Circle
 Add a subtle circular background behind the environment icon in the window header for better visual distinction.
 
 ## Changes

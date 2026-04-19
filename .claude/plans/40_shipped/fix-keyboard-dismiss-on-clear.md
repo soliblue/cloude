@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Fix Keyboard Dismissing When Clearing Input Bar {keyboard}
+# Fix Keyboard Dismissing When Clearing Input Bar
 Clearing all text in the global input bar dismissed the keyboard, forcing users to tap the field again to keep typing.
 
 ## Root Cause

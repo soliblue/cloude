@@ -6,7 +6,7 @@ tags: ["android", "windows", "ux"]
 build: 125
 icon: pencil.circle
 ---
-# Android Window Edit Polish {pencil.circle}
+# Android Window Edit Polish
 
 
 ## Context

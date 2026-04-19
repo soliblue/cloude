@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Suggestions Settings Toggle {switch.2}
+# Suggestions Settings Toggle
 **Status**: Testing
 
 Added a toggle in Settings > Features to enable/disable smart reply suggestions. Default is off.

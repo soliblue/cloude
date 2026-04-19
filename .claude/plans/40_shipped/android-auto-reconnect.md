@@ -6,7 +6,7 @@ tags: ["android", "reliability"]
 icon: wifi.exclamationmark
 build: 120
 ---
-# Android Auto-Reconnect {wifi.exclamationmark}
+# Android Auto-Reconnect
 
 
 ## Desired Outcome

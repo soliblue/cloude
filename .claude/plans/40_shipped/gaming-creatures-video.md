@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Gaming Creatures Video Recipe {gamecontroller.fill}
+# Gaming Creatures Video Recipe
 The third compilation video (`03-gaming-creatures.mp4`) came out incredible. This documents the exact pipeline so we can reproduce and extend it.
 
 ## Result

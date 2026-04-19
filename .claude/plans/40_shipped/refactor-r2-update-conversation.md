@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor R2: Extract updateConversation() helper {arrow.triangle.2.circlepath}
+# Refactor R2: Extract updateConversation() helper
 ## Status: Active
 
 ## Problem

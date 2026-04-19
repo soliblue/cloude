@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# File Preview Smaller Text {textformat.size.smaller}
+# File Preview Smaller Text
 Reduced font size in all text-based file previews from 12-13pt to 10pt for denser code viewing on mobile.
 
 - Source code view: 12pt to 10pt (line numbers + highlighted/plain text)

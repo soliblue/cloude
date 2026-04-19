@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Interactive Chart Component {chart.bar.xaxis}
+# Interactive Chart Component
 ## What
 Refactored the activity chart in UsageStatsSheet into a reusable `InteractiveBarChart` component.
 

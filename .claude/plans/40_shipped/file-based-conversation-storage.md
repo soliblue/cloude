@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# File-Based Conversation Storage {doc.on.doc}
+# File-Based Conversation Storage
 ## Problem
 iOS UserDefaults has a ~4MB limit. All conversations (with messages, base64 images, tool outputs) were serialized into a single UserDefaults key, exceeding this limit and causing `CFPreferences` errors.
 

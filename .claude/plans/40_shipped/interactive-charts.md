@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Interactive Chart Widgets {hand.tap}
+# Interactive Chart Widgets
 ## Summary
 Add tap/drag interactivity to all four chart widgets so users can inspect data points.
 

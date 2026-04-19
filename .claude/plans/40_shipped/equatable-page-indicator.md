@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Equatable PageIndicator {gauge.with.dots.needle.bottom.50percent}
+# Equatable PageIndicator
 ## Changes
 
 - Extracted page indicator from inline ViewBuilder function to separate PageIndicatorView struct

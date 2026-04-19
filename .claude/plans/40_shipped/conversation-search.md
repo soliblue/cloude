@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# Conversation Search {magnifyingglass}
+# Conversation Search
 ## What
 - Search icon in bottom switcher bar now opens a conversation search sheet
 - Search across conversation names, working directories, and message content

@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Shared Environment + Folder Picker Component {folder.badge.gearshape}
+# Shared Environment + Folder Picker Component
 The empty state and window edit sheet both have environment pickers and folder pickers but with different UI/UX and duplicated code. Unify into one reusable component.
 
 ## Goals

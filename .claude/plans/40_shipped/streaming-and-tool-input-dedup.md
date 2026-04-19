@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Streaming + Tool Input Dedup {arrow.triangle.merge}
+# Streaming + Tool Input Dedup
 ## Status: active
 
 ## Tasks

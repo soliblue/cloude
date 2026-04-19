@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Unified Streaming {bubble.left.and.text.bubble.right}
+# Unified Streaming
 ## Problem
 
 Two separate rendering paths do the same thing:

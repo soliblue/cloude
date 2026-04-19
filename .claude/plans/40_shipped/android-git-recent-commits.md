@@ -6,7 +6,7 @@ tags: ["android", "git"]
 build: 125
 icon: clock.arrow.circlepath
 ---
-# Android Git Recent Commits {clock.arrow.circlepath}
+# Android Git Recent Commits
 
 
 ## Desired Outcome

@@ -8,7 +8,7 @@ build: 34
 ---
 
 
-# Word Wrap in File Preview {text.word.spacing}
+# Word Wrap in File Preview
 Enable word wrapping for code/text files in the file preview, like most IDEs default to.
 
 ## Change

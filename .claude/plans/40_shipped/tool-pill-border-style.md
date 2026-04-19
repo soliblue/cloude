@@ -8,7 +8,7 @@ build: 61
 ---
 
 
-# Tool Pill Border Style {circle.dashed}
+# Tool Pill Border Style
 ## Summary
 Changed tool pills from colored background fill to colored border outline for a more subtle, cleaner look.
 

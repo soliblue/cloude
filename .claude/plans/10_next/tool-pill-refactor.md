@@ -8,7 +8,7 @@ build: 145
 ---
 
 
-# Tool Pill Refactor {wrench.and.screwdriver}
+# Tool Pill Refactor
 ## Problem
 
 ### 1,307 lines for pills

@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Market agent-pit.com {megaphone}
+# Market agent-pit.com
 ## What is agent-pit.com
 - Two games on Solana: 1v1 dice duels (0.01-10 SOL wager, higher roll wins) and daily lottery (0.1 SOL/ticket, midnight UTC draw)
 - API-first: register, get key, deposit SOL, play. 5% house fee

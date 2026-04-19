@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Git Changes: Staged/Unstaged Sections + Deleted Files {list.bullet.indent}
+# Git Changes: Staged/Unstaged Sections + Deleted Files
 Split the git changes view into two sections (staged vs working tree) and handle deleted files properly.
 
 ## Background

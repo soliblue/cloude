@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# Dark Theme Background & Ocean Palette Consistency {paintpalette.fill}
+# Dark Theme Background & Ocean Palette Consistency
 **Status**: Testing
 **Changed**: Colors.swift, ConversationView+Components.swift, SettingsView.swift, ConversationSearchSheet.swift, WindowEditForm.swift
 

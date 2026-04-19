@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Slower Shimmer Animation {speedometer}
+# Slower Shimmer Animation
 Reduced tool pill shimmer animation speed from 1.5s to 2s duration for a smoother, less frantic feel.
 
 ## Changes

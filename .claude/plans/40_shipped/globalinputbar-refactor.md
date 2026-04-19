@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# GlobalInputBar Refactor {arrow.triangle.2.circlepath}
+# GlobalInputBar Refactor
 ## Status: Active
 
 ## Tasks

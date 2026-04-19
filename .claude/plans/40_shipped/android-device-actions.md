@@ -6,7 +6,7 @@ tags: ["android", "device", "features"]
 build: 125
 icon: iphone.radiowaves.left.and.right
 ---
-# Android Device Actions {iphone.radiowaves.left.and.right}
+# Android Device Actions
 
 
 ## Context

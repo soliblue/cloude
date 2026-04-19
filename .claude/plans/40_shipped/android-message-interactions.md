@@ -6,7 +6,7 @@ tags: ["android", "chat", "ux"]
 icon: hand.tap
 build: 120
 ---
-# Android Message Interactions {hand.tap}
+# Android Message Interactions
 
 
 ## Desired Outcome

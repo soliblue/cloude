@@ -6,7 +6,7 @@ tags: ["android", "messages", "ux"]
 build: 125
 icon: info.circle
 ---
-# Android Message Info Sheet {info.circle}
+# Android Message Info Sheet
 
 
 ## Desired Outcome

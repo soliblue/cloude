@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor R2: Move NetworkHelper to CloudeShared {network}
+# Refactor R2: Move NetworkHelper to CloudeShared
 ## Status: Active
 
 ## Problem

@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor: Deduplicate Streaming Completion, Send/Queue, and Cleanup {arrow.triangle.merge}
+# Refactor: Deduplicate Streaming Completion, Send/Queue, and Cleanup
 ## Status: Active
 
 ## Summary

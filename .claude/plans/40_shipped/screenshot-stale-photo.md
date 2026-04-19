@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Screenshot Attaches Stale Photo {camera.badge.ellipsis}
+# Screenshot Attaches Stale Photo
 ## Problem
 When taking a screenshot on iOS, the `userDidTakeScreenshotNotification` fires before the screenshot is saved to the photo library. `loadLatestPhoto()` then fetches the previous latest photo instead of the one just taken.
 

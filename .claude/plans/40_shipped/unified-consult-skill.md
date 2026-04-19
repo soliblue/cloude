@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Unified Consult Skill {brain.head.profile}
+# Unified Consult Skill
 ## Changes
 - Created `.claude/skills/consult/SKILL.md` with routing logic
 - Removed `.claude/skills/codex/` (absorbed into consult)

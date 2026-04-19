@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Environment Icon Connect/Disconnect Toggle {power}
+# Environment Icon Connect/Disconnect Toggle
 - Top-level env icons (above conversation name in CloudeApp) are now tappable
 - Connected/connecting envs disconnect on tap
 - Disconnected envs connect on tap

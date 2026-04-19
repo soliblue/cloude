@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# File Preview Toolbar Cleanup {wrench}
+# File Preview Toolbar Cleanup
 - Share button alone on the left
 - Git diff, wrap lines, source toggle centered in principal placement
 - Dismiss (xmark) on the right

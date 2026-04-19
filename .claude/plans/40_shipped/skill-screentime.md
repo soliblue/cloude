@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Skill: Screen Time / App Usage {clock.badge.checkmark}
+# Skill: Screen Time / App Usage
 ## What
 App usage tracking from macOS Knowledge Store (knowledgeC.db). Shows time spent per app.
 

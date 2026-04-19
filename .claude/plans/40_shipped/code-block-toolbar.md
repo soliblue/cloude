@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Code Block Toolbar Enhancements {wrench.fill}
+# Code Block Toolbar Enhancements
 ## Summary
 Enhance `CodeBlock` in chat with a proper toolbar: always show copy button (even without language), add word wrap toggle and line numbers toggle. Global defaults in Settings, per-snippet overrides via toolbar buttons.
 

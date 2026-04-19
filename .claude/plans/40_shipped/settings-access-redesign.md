@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Settings Access Redesign {gearshape}
+# Settings Access Redesign
 ## Summary
 Move settings access out of the top-left header area. Make it accessible via long-press on the connection status button (top-right) and press on the Cloude logo.
 

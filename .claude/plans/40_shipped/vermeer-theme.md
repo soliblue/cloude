@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Vermeer Theme - Dimmed Light Theme {sun.dust.fill}
+# Vermeer Theme - Dimmed Light Theme
 ## Desired Outcome
 A light theme that doesn't blind you in the dark. All colors match Monet, just the white backgrounds are slightly dimmed.
 

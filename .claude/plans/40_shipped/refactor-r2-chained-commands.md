@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Refactor R2: Extract BashCommandParser.chainedCommands helper {terminal}
+# Refactor R2: Extract BashCommandParser.chainedCommands helper
 ## Status: Active
 
 ## Problem

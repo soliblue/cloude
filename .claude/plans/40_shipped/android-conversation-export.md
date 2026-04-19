@@ -6,7 +6,7 @@ tags: ["android", "conversations"]
 build: 125
 icon: square.and.arrow.up
 ---
-# Android Conversation Export {square.and.arrow.up}
+# Android Conversation Export
 
 
 ## Context

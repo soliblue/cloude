@@ -8,7 +8,7 @@ build: 40
 ---
 
 
-# Window Edit Sheet Overhaul {window.shade.open}
+# Window Edit Sheet Overhaul
 ## Changes (Build 39-40)
 
 - Content pinned to top with ScrollView (was vertically centered)

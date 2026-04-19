@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# FlowLayout Overflow Fix {rectangle.compress.vertical}
+# FlowLayout Overflow Fix
 ## Problem
 FlowLayout measured subviews with `.unspecified` (no width constraint), so long text segments in widgets like Error Correction overflowed the screen width.
 

@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# FPS Drop on First Launch {gauge.medium}
+# FPS Drop on First Launch
 ## Problem
 When opening the app from a cold start, there is a visible drop in frame rate during the initial render. The app feels janky for a brief moment before stabilizing.
 

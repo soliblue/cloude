@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Sticky Tasks Above Input Bar {checklist}
+# Sticky Tasks Above Input Bar
 When Claude is working and has active tasks (TodoWrite with incomplete items), there's no persistent visibility into progress. You have to scroll up or tap a tool pill to see what's being worked on. During streaming this is especially annoying since new messages push the task list out of view.
 
 ## Desired Outcome

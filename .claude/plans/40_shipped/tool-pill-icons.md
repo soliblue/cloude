@@ -8,5 +8,5 @@ build: 31
 ---
 
 
-# Tool Pill Icons {square.grid.2x2}
+# Tool Pill Icons
 **Files:** `ChatView+MessageBubble.swift` (InlineToolPill)

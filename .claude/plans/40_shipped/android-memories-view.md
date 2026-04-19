@@ -6,7 +6,7 @@ tags: ["android", "memories"]
 build: 125
 icon: brain
 ---
-# Android Memories View {brain}
+# Android Memories View
 
 
 ## Desired Outcome

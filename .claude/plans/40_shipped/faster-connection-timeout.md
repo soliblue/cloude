@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Faster Connection Timeout {bolt}
+# Faster Connection Timeout
 ## Problem
 Unreachable environments show "Connecting..." for ~60 seconds (iOS default TCP timeout) before failing.
 

@@ -7,7 +7,7 @@ icon: lock.laptopcomputer
 build: 82
 ---
 
-# Environment Chat Ownership {lock.laptopcomputer}
+# Environment Chat Ownership
 conversations should track which environment they belong to, preventing users from sending messages when connected to a different environment.
 
 ## Changes

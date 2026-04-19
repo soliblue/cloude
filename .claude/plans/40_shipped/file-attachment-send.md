@@ -8,7 +8,7 @@ build: 67
 ---
 
 
-# File Attachment via Send Button {paperclip}
+# File Attachment via Send Button
 ## Changes
 - **GlobalInputBar**: Added "File" option to send button menu, `.fileImporter` for document picker, `AttachedFile` model
 - **GlobalInputBar+Components**: `FileAttachmentStrip` + `FileAttachmentPill` — cyan pills with filename + icon + remove button

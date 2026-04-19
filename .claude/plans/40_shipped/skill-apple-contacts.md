@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Apple Contacts Skill {person.crop.rectangle.stack}
+# Apple Contacts Skill
 ## Approach
 AppleScript via `osascript`. Read-heavy — creating/editing contacts less common.
 

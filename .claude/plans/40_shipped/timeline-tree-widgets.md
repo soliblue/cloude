@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Timeline & Tree Display Widgets {list.bullet.indent}
+# Timeline & Tree Display Widgets
 ## Problem
 No display-only informational widgets — only charts and exercises. Missing timeline (events) and tree (hierarchy) visualizations.
 

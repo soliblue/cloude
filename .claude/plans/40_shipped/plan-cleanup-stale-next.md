@@ -8,4 +8,4 @@ build: 122
 ---
 
 
-# Plan Cleanup: Stale Next Tickets {archivebox}
+# Plan Cleanup: Stale Next Tickets

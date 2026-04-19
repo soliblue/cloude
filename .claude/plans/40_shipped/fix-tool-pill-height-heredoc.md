@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Fix Tool Pill Height and Heredoc Parsing {capsule}
+# Fix Tool Pill Height and Heredoc Parsing
 Two fixes for InlineToolPill display bugs.
 
 ## Changes

@@ -6,7 +6,7 @@ tags: ["android", "ui", "widgets"]
 build: 125
 icon: chart.pie
 ---
-# Android Widget Views {chart.pie}
+# Android Widget Views
 
 
 ## Desired Outcome

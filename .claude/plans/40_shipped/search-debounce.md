@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Search Sheet Debounce {gauge.with.dots.needle.bottom.50percent}
+# Search Sheet Debounce
 ## Changes
 
 - ConversationSearchSheet: 200ms debounce on search query, immediate clear on empty query

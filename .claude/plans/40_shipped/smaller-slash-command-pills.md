@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Smaller Slash Command Pills {textformat.size.smaller}
+# Smaller Slash Command Pills
 Reduced the size of `/command` suggestion pills above the input bar by ~20%.
 
 ## Changes

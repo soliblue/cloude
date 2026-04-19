@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Whisper Bracket Filter {waveform.slash}
+# Whisper Bracket Filter
 ## Summary
 Filter out all `[...]` bracket annotations from Whisper transcription output, not just `[BLANK_AUDIO]` and `[silence]`.
 

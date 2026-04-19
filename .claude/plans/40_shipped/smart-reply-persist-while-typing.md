@@ -8,7 +8,7 @@ build: 52
 ---
 
 
-# Smart Reply: Persist While Typing {text.bubble.fill}
+# Smart Reply: Persist While Typing
 Keep smart reply suggestion bubbles visible while user types up to 10 characters.
 Previously they disappeared on the first keystroke.
 

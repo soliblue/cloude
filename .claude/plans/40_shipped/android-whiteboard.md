@@ -6,7 +6,7 @@ tags: ["android", "whiteboard"]
 build: 125
 icon: pencil.and.scribble
 ---
-# Android Whiteboard {pencil.and.scribble}
+# Android Whiteboard
 
 
 ## Desired Outcome

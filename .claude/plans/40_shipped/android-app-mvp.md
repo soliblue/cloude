@@ -6,7 +6,7 @@ tags: ["android", "kotlin", "mvp"]
 icon: android
 build: 120
 ---
-# Android App MVP {android}
+# Android App MVP
 
 
 ## Background

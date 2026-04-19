@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# FPS Degradation Fix {gauge.with.dots.needle.bottom.50percent}
+# FPS Degradation Fix
 ## Changes
 
 ### 1. Equatable FrozenBlocksSection

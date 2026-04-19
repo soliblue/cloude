@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# UI Polish - Button States and Animations {wand.and.stars}
+# UI Polish - Button States and Animations
 ## Changes
 - Disable refresh button when environment is not connected
 - Disable terminal send button when environment is not connected

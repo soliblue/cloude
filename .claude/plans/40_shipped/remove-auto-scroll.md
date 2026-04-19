@@ -8,7 +8,7 @@ build: 120
 ---
 
 
-# Remove Auto-Scroll on Send {arrow.down.to.line}
+# Remove Auto-Scroll on Send
 Removed the `.onChange(of: messages.last?.id)` block in `ConversationView+MessageScroll.swift` that called `scrollPos.scrollTo(edge: .bottom)` on every new message. `.defaultScrollAnchor(.bottom)` still anchors new conversations at the bottom.
 
 **Files:** `Cloude/Cloude/UI/ConversationView+MessageScroll.swift`

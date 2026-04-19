@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Apple Calendar Skill {calendar}
+# Apple Calendar Skill
 ## Approach
 Shell scripts wrapping `osascript` AppleScript commands — same pattern as OpenClaw. No API keys, no dependencies. Runs on the Mac agent.
 

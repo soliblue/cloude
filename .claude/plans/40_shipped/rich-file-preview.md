@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Rich File Preview {doc.text.image}
+# Rich File Preview
 When opening a file from chat (via path pill tap), show a full file viewer with contextual actions instead of a bare preview.
 
 ## Problem

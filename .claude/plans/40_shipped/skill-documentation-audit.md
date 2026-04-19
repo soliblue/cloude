@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Skill Documentation Audit & Fixes {doc.text.magnifyingglass}
+# Skill Documentation Audit & Fixes
 Comprehensive audit revealed multiple issues with skill implementation and documentation.
 
 ## High Priority Issues

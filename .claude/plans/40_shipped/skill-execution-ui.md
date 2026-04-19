@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Skill Execution UI {gearshape.fill}
+# Skill Execution UI
 Show more information when a skill is executed, instead of the generic "Skill" pill with a gear icon.
 
 ## Problem

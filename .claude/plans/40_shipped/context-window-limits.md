@@ -8,7 +8,7 @@ build: 33
 ---
 
 
-# Context Window Limits {exclamationmark.triangle}
+# Context Window Limits
 Opus 4.6 supports up to 1M tokens. Without guardrails, a single long conversation could burn through significant API costs before Claude CLI's internal compaction kicks in. We need control over context usage.
 
 ## Goals

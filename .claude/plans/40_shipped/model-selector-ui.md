@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Model Selector (like Effort Selector) {cpu}
+# Model Selector (like Effort Selector)
 ## Problem
 Model is currently hardcoded per-context (heartbeat uses Sonnet, conversations use nil/default). Users should be able to select the model the same way they select thinking effort — per-conversation default with per-message override.
 

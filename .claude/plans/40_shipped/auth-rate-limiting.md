@@ -8,4 +8,4 @@ build: 31
 ---
 
 
-# Auth Rate Limiting {lock.shield}
+# Auth Rate Limiting

@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Team Banner Layout Tweak {person.3.fill}
+# Team Banner Layout Tweak
 ## Changes
 - Circles: 8px → 12px (bigger)
 - Spacing: -4 → -2 (tighter overlap)

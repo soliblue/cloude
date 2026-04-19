@@ -6,7 +6,7 @@ tags: ["android", "ui", "theme"]
 icon: paintpalette
 build: 120
 ---
-# Android Theme System {paintpalette}
+# Android Theme System
 
 
 ## Desired Outcome

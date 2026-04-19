@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Adaptive Streaming Throttle {gauge.with.dots.needle.bottom.50percent}
+# Adaptive Streaming Throttle
 ## Changes
 
 - ObservedMessageBubble: adaptive text update throttle (20Hz when text > 3000 chars, 60Hz otherwise)

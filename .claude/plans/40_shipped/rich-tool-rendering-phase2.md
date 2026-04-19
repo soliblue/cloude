@@ -8,7 +8,7 @@ build: 38
 ---
 
 
-# Rich Tool Rendering — Phase 2: Result Previews {text.below.photo}
+# Rich Tool Rendering — Phase 2: Result Previews
 Show brief result summary as a second line on completed tool pills:
 - `↳ 241 lines` for Read
 - `↳ Build Succeeded` for xcodebuild

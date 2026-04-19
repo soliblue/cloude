@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# File Path Pill: Remove Background Color {textformat}
+# File Path Pill: Remove Background Color
 File path references in messages had a colored background that made them visually larger than surrounding text. Removed the background - now just uses colored font, matching the subtlety of inline code.
 
 ## Changes

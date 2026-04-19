@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# Streaming Child Tool Calls Bug {arrow.triangle.branch}
+# Streaming Child Tool Calls Bug
 ## Problem
 Nested/child tool calls (e.g., Explorer spawning multiple sub-tool-calls) render correctly when loading a saved conversation but NOT during real-time streaming.
 

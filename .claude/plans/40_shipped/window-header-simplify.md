@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Window Header Simplify {rectangle.topthird.inset.filled}
+# Window Header Simplify
 ## Status: Testing
 
 ## Summary

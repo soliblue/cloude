@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Header Button Spacing Fix {arrow.left.and.right}
+# Header Button Spacing Fix
 ## Problem
 
 Left-side tabs (chat, files, git) use `spacing: 0` with thin dividers - tight and clean.

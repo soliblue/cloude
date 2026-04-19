@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Skill: Terminal History {terminal}
+# Skill: Terminal History
 ## What
 Search and analyze shell command history from zsh/bash.
 

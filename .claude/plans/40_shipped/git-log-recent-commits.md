@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Git Log / Recent Commits {clock.arrow.circlepath}
+# Git Log / Recent Commits
 ## Changes
 
 - `GitCommit` model in CloudeShared

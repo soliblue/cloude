@@ -8,7 +8,7 @@ build: 122
 ---
 
 
-# Fix Streaming Re-renders {gauge.with.dots.needle.bottom.50percent}
+# Fix Streaming Re-renders
 ## Problem
 During streaming, ALL message bubbles observed `ConversationOutput` via `@ObservedObject`, causing every bubble to re-render ~60x/sec when only the live message needs updates.
 

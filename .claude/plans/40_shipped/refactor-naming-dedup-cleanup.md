@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Refactor: Naming, Deduplication & File Size Cleanup {pencil.and.list.clipboard}
+# Refactor: Naming, Deduplication & File Size Cleanup
 **Status**: 20_active
 **Agent**: Cloude (Opus)
 

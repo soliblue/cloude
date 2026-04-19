@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Branch-per-Conversation via Git Worktrees {arrow.triangle.branch}
+# Branch-per-Conversation via Git Worktrees
 ## Problem
 
 All conversations share one working directory. If one conversation changes branches, every other conversation sees the same switch.

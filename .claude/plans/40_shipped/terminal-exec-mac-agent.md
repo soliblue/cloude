@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Terminal Exec - Mac Agent {terminal.fill}
+# Terminal Exec - Mac Agent
 ## Changes
 - `AppDelegate+MessageHandling.swift`: Added `terminalExec` case routing to handler
 - `Cloude_AgentApp+Handlers.swift`: Implemented `handleTerminalExec` - spawns bash process, captures stdout/stderr, returns `terminalOutput` response

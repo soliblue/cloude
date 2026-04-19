@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Smaller Glass Tool Pills {rectangle.compress.vertical}
+# Smaller Glass Tool Pills
 ## Summary
 Made tool call pills 20% smaller and switched to liquid glass.
 

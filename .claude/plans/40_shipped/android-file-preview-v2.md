@@ -6,7 +6,7 @@ tags: ["android", "files", "ui"]
 build: 125
 icon: doc.viewfinder
 ---
-# Android File Preview v2 {doc.viewfinder}
+# Android File Preview v2
 
 
 ## Context

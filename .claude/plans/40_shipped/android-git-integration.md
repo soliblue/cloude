@@ -6,7 +6,7 @@ tags: ["android", "git"]
 icon: arrow.triangle.branch
 build: 120
 ---
-# Android Git Integration {arrow.triangle.branch}
+# Android Git Integration
 
 
 ## Desired Outcome

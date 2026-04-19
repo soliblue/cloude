@@ -8,7 +8,7 @@ build: 63
 ---
 
 
-# CSV Header Padding Fix {rectangle.arrowtriangle.2.inward}
+# CSV Header Padding Fix
 ## What
 Remove extra vertical padding between the breadcrumb header and CSV table content in the file preview.
 

@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Fix: Tool call positions offset after message save / reconnect {mappin.and.ellipse}
+# Fix: Tool call positions offset after message save / reconnect
 ## Problem
 Tool pills appear at wrong positions (off by ~2 chars, cutting into words) in two scenarios:
 1. After a streaming message is saved — positions shift because leading whitespace is trimmed

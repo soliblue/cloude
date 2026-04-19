@@ -6,7 +6,7 @@ tags: ["android", "debug"]
 build: 125
 icon: ant
 ---
-# Android Debug Overlay {ant}
+# Android Debug Overlay
 
 
 ## Desired Outcome

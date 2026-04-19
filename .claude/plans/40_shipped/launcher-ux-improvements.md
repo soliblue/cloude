@@ -8,7 +8,7 @@ build: 103
 ---
 
 
-# Launcher UX Improvements {sparkles}
+# Launcher UX Improvements
 ## Changes
 - **Full-width page indicator**: Icons spread across full screen width with equal spacing and large tap targets (44pt)
 - **Plus button hidden at max**: Hide add button when all 5 window slots are used

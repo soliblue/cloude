@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Agent Teams Support {person.3.fill}
+# Agent Teams Support
 Surface Claude Code's agent teams in Cloude — spawn teams, watch teammates work as floating orbs, read their messages, track costs. All from your phone.
 
 ## The Vision

@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Screenshot Stale Image Fix {camera.badge.clock}
+# Screenshot Stale Image Fix
 Race condition where screenshot attachment could grab a stale photo from the library instead of the actual screenshot.
 
 ## Problem

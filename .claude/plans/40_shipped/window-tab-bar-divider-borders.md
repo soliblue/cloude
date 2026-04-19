@@ -7,4 +7,4 @@ icon: rectangle.bottomthird.inset.filled
 build: 155
 ---
 
-# Window Tab Bar Divider Borders {rectangle.bottomthird.inset.filled}
+# Window Tab Bar Divider Borders

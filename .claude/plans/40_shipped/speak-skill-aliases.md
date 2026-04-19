@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Speak Skill Aliases {speaker.wave.2}
+# Speak Skill Aliases
 ## Problem
 The `/speak` skill name is fine for TTS, but users might think of it as "narrate" (for voiceovers) or want a "transcribe" command (speech-to-text, opposite direction). These are related but different:
 

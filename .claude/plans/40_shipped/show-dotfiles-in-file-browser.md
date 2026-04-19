@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Show Dotfiles in File Browser {eye}
+# Show Dotfiles in File Browser
 ## Change
 Removed `.skipsHiddenFiles` option from `FileService.listDirectory` so dotfiles (`.env`, `.claude`, `.gitignore`, etc.) appear in the file browser tab.
 

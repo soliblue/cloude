@@ -8,7 +8,7 @@ build: 56
 ---
 
 
-# Connection Toggle Toolbar Button {power}
+# Connection Toggle Toolbar Button
 **Stage**: testing
 **Created**: 2026-02-08
 

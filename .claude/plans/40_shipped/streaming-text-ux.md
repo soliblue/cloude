@@ -8,7 +8,7 @@ build: 31
 ---
 
 
-# Streaming Text UX Plan {text.word.spacing}
+# Streaming Text UX Plan
 ## The Problem (How It Feels Today)
 
 Using Cloude right now, streaming text feels like watching someone paste chunks into a text field. Words appear in irregular bursts — three words, pause, eight words, pause, one word. The rhythm is dictated by network timing, not human reading. It feels mechanical and anxious, like watching a loading bar that keeps stuttering.

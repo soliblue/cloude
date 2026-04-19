@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Email Skill {envelope}
+# Email Skill
 ## Approach
 Two options (decide during implementation):
 1. **himalaya CLI** — Rust-based email client, install via brew, supports IMAP/SMTP with app passwords. Zero code needed, just shell wrappers.

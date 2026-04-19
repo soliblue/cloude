@@ -6,7 +6,7 @@ tags: ["android", "chat", "bug"]
 icon: arrow.triangle.turn.up.right.diamond
 build: 120
 ---
-# Android Session Continuity {arrow.triangle.turn.up.right.diamond}
+# Android Session Continuity
 
 
 ## Root Cause

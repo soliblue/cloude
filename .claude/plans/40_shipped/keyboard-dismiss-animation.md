@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Keyboard Dismiss Animation {keyboard.chevron.compact.down}
+# Keyboard Dismiss Animation
 ## Changes
 - `MainChatView.swift`: Wrap `isKeyboardVisible` state changes in `withAnimation` using the keyboard notification's duration/curve
 - Added `keyboardAnimation(from:)` helper that extracts iOS keyboard animation parameters

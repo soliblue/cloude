@@ -6,7 +6,7 @@ tags: ["ios", "conversations", "architecture"]
 icon: bubble.left.and.bubble.right
 build: 120
 ---
-# Parallel Conversation Streaming (iOS) {bubble.left.and.bubble.right}
+# Parallel Conversation Streaming (iOS)
 
 
 ## Problem

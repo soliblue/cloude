@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Skill: Apple Music {music.note}
+# Skill: Apple Music
 ## What
 Control Apple Music — now playing, search library, playback control, playlists.
 

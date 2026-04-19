@@ -7,7 +7,7 @@ build: 156
 icon: trash
 ---
 
-# Android Feature Removal {trash}
+# Android Feature Removal
 
 > Remove non-functional or retired Android features to reduce dead code.
 

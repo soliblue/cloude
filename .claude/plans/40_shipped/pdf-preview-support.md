@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# PDF Preview Support {doc.richtext}
+# PDF Preview Support
 Add native PDF viewing in file previews using PDFKit.
 
 ## Changes

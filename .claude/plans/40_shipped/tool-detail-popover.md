@@ -8,5 +8,5 @@ build: 31
 ---
 
 
-# Tool Detail Popover {doc.text.magnifyingglass}
+# Tool Detail Popover
 **Files:** `ChatView+MessageBubble.swift`, new `ToolDetailSheet.swift`

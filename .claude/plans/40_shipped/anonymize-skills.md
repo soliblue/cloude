@@ -8,7 +8,7 @@ build: 71
 ---
 
 
-# Anonymize Skills for Public Repo {eye.slash}
+# Anonymize Skills for Public Repo
 ## Goal
 Make all skills generic so anyone cloning the repo can use them without editing hardcoded personal references.
 

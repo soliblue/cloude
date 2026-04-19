@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Floating Image Attachment Pills {photo.badge.plus}
+# Floating Image Attachment Pills
 ## Problem
 When attaching an image, it currently renders as a 36x36 thumbnail **inside** the text field area (GlobalInputBar.swift:162-176), shrinking the available typing space. Only one image can be attached at a time (`selectedImageData: Data?` is singular). Screenshots require an extra tap on the banner to attach — they should auto-attach.
 

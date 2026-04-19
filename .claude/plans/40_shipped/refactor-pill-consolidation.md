@@ -8,7 +8,7 @@ build: 36
 ---
 
 
-# Pill Style Consolidation {capsule}
+# Pill Style Consolidation
 ## Changes
 - Created `PillStyles.swift` with shared `skillGradient`, `builtInGradient`, `SkillPillBackground`
 - `SkillPill` and `SlashCommandBubble` now use shared styles (were copy-pasted)

@@ -8,7 +8,7 @@ build: 86
 ---
 
 
-# Connect Button in Input Bar {power}
+# Connect Button in Input Bar
 ## Problem
 When opening a chat whose environment is disconnected, the only way to reconnect was through settings. Too many taps for a common action.
 

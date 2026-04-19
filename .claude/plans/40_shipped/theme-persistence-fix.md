@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Fix Theme Persistence Across App Restarts {paintbrush.fill}
+# Fix Theme Persistence Across App Restarts
 ## Problem
 Selected theme resets to Ocean Dark after restarting the app.
 

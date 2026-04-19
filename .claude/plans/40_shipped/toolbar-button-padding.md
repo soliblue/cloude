@@ -8,6 +8,6 @@ build: 45
 ---
 
 
-# Toolbar Button Padding {rectangle.leadinghalf.inset.filled}
+# Toolbar Button Padding
 **File**: `CloudeApp.swift` line 71
 **Change**: `.padding(.horizontal, 8)` → `.padding(.horizontal, 14)`

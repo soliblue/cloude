@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# Video Player in File Preview {play.fill}
+# Video Player in File Preview
 ## Desired Outcome
 
 Tapping an .mp4 file path (file pill) opens a video player with play/pause, scrubbing, and fullscreen. Same UX pattern as image preview but with AVPlayer.

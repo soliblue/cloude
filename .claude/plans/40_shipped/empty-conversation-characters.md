@@ -8,7 +8,7 @@ build: 41
 ---
 
 
-# Empty Conversation Characters {person.crop.artframe}
+# Empty Conversation Characters
 ## Changes
 - Replaced WindowEditForm empty state with random pixel art Claude character
 - 7 characters: baby, chef, grandpa, cowboy, wizard, ninja, artist

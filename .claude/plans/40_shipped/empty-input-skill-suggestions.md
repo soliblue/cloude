@@ -8,7 +8,7 @@ build: 69
 ---
 
 
-# Show Skill Suggestions on Empty Input {lightbulb}
+# Show Skill Suggestions on Empty Input
 ## Problem
 Skills are only discoverable when typing `/` — new users or casual use misses them entirely. The input bar shows rotating placeholder text when empty, but could also surface skill pills as a discovery mechanism.
 

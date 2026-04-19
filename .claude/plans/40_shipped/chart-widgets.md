@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Chart Widgets {chart.bar.fill}
+# Chart Widgets
 Added 4 chart widget types for education/math use cases.
 
 ## Widgets Added

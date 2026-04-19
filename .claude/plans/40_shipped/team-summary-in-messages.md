@@ -8,7 +8,7 @@ build: 43
 ---
 
 
-# Team Summary in Saved Messages {person.3.fill}
+# Team Summary in Saved Messages
 ## Problem
 When a team finishes, the banner and orbs disappear and there's no trace that the response was team-built. Scrolling back through history, you can't tell which messages had a team behind them.
 

@@ -8,7 +8,7 @@ build: 36
 ---
 
 
-# Split ChatView+ToolCalls.swift {scissors}
+# Split ChatView+ToolCalls.swift
 ## Changes
 856 lines → 4 files:
 - `FileIconUtilities.swift` (113 lines) - file icon mappings

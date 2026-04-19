@@ -8,7 +8,7 @@ build: 82
 ---
 
 
-# Majorelle Theme {paintpalette}
+# Majorelle Theme
 ## Palette
 - Deep indigo-black base (`#0C0F1F`) - more purple than Ocean Dark's navy
 - Rich ultramarine surfaces (`#1E2750`) - evoking the cobalt blue garden walls
