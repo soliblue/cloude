@@ -1,8 +1,6 @@
 import Foundation
 
 extension WhiteboardStore {
-    var selectedIds: Set<String> { selectedElementIds }
-
     func selectGroup(of elementId: String) {
         if let element = state.elements.first(where: { $0.id == elementId }),
            let groupId = element.groupId {
@@ -23,7 +21,7 @@ extension WhiteboardStore {
     }
 
     func groupSelected() {
-        let ids = selectedIds
+        let ids = selectedElementIds
         if ids.count < 2 { return }
         pushUndoSnapshot()
         let groupId = UUID().uuidString.prefix(8).lowercased()
@@ -35,7 +33,7 @@ extension WhiteboardStore {
     }
 
     func ungroupSelected() {
-        let ids = selectedIds
+        let ids = selectedElementIds
         if ids.isEmpty { return }
         let groupIds = Set(ids.compactMap { id in state.elements.first(where: { $0.id == id })?.groupId })
         if groupIds.isEmpty { return }

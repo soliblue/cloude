@@ -97,10 +97,6 @@ final class ConversationOutput: ObservableObject {
         }
     }
 
-    func completeTopLevelExecutingTools() {
-        completeExecutingTools(topLevelOnly: true)
-    }
-
     func resetAfterLiveMessageHandoff() {
         #if DEBUG
         DebugMetrics.log(

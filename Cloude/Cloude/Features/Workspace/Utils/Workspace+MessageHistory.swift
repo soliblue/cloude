@@ -7,7 +7,6 @@ struct HistoryEntry: Codable {
 
 struct MessageHistory {
     private static let key = "messageHistory_v2"
-    private static let legacyKey = "messageHistory_v1"
     private static let maxEntries = 500
     private static let maxLength = 100
 
@@ -29,13 +28,6 @@ struct MessageHistory {
         if let data = UserDefaults.standard.data(forKey: key),
            let entries = try? JSONDecoder().decode([HistoryEntry].self, from: data) {
             return entries
-        }
-        if let legacy = UserDefaults.standard.stringArray(forKey: legacyKey) {
-            let migrated = legacy.map { HistoryEntry(text: $0, symbol: nil) }
-            if let data = try? JSONEncoder().encode(migrated) {
-                UserDefaults.standard.set(data, forKey: key)
-            }
-            return migrated
         }
         return []
     }

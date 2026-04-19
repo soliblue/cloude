@@ -31,6 +31,6 @@ public enum ClientMessage: Codable {
     case ping(sentAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, stage, filename, content, staged, sentAt, count, lastSeq
+        case type, message, workingDirectory, token, path, sessionId, isNewSession, file, files, imageBase64, imagesBase64, filesBase64, audioBase64, conversationId, conversationName, pid, forkSession, query, effort, model, text, context, staged, sentAt, count, lastSeq
     }
 }

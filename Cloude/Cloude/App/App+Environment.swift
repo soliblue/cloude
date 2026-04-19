@@ -1,6 +1,5 @@
 import SwiftUI
 import CloudeShared
-import OSLog
 
 extension App {
     func loadAndConnect() {

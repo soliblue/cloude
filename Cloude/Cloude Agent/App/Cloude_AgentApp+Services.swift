@@ -46,8 +46,5 @@ extension AppDelegate {
         runnerManager.onMessageUUID = { [weak self] uuid, conversationId in
             self?.server.broadcast(.messageUUID(uuid: uuid, conversationId: conversationId))
         }
-
-        runnerManager.onComplete = { _, _ in
-        }
     }
 }

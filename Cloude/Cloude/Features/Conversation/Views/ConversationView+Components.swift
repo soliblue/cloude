@@ -48,7 +48,6 @@ struct ChatMessageList: View {
     }
 
     var body: some View {
-        let _ = NSLog("[STABILITY] ChatMessageList.body | msgs=\(messages.count) queued=\(queuedMessages.count) loading=\(showLoadingIndicator) empty=\(showEmptyState) deps=\(hasRequiredDependencies) initialLoad=\(isInitialLoad) outputEmpty=\(isOutputEmpty) streaming=\(isStreaming) convId=\(conversationId?.uuidString.prefix(6) ?? "nil")")
         ZStack(alignment: .bottomTrailing) {
             if showLoadingIndicator {
                 ProgressView()

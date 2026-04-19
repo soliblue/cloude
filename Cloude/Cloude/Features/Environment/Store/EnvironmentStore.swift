@@ -29,22 +29,6 @@ class EnvironmentStore: ObservableObject {
             if activeEnvironment == nil, let first = environments.first {
                 setActive(first.id)
             }
-            return
-        }
-
-        migrateFromLegacy()
-    }
-
-    private func migrateFromLegacy() {
-        let host = UserDefaults.standard.string(forKey: "serverHost") ?? ""
-        let port = UInt16(UserDefaults.standard.string(forKey: "serverPort") ?? "8765") ?? 8765
-        let token = KeychainHelper.get(key: "authToken") ?? ""
-
-        if !host.isEmpty || !token.isEmpty {
-            let env = ServerEnvironment(host: host, port: port, token: token)
-            environments = [env]
-            setActive(env.id)
-            save()
         }
     }
 

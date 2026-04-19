@@ -70,7 +70,7 @@ struct WorkspaceView: View {
         .sheet(item: editingWindowBinding) { window in editWindowSheet(window) }
         .sheet(isPresented: showConversationSearchBinding) { conversationSearchSheetContent() }
         .onReceive(NotificationCenter.default.publisher(for: .editActiveWindow)) { _ in
-            store.beginEditingActiveWindow(windowManager: windowManager)
+            if let window = windowManager.activeWindow { store.editingWindow = window }
         }
         .onReceive(NotificationCenter.default.publisher(for: .openConversationSearch)) { _ in
             store.openConversationSearch()
@@ -82,10 +82,10 @@ struct WorkspaceView: View {
             store.handleConnectionEvent(event, connection: connection, conversationStore: conversationStore)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-            store.setKeyboardVisible(true)
+            store.isKeyboardVisible = true
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            store.setKeyboardVisible(false)
+            store.isKeyboardVisible = false
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
             store.fetchLatestScreenshot()

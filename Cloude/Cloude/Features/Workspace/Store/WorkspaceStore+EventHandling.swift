@@ -6,7 +6,6 @@ extension WorkspaceStore {
         switch event {
         case .historySync(let sessionId, _), .historySyncError(let sessionId, _):
             AppLogger.endInterval("conversation.refresh", key: conversationStore.findConversation(withSessionId: sessionId)?.id.uuidString, details: "sessionId=\(sessionId)")
-            refreshingSessionIds.remove(sessionId)
         case .authenticated:
             recoverInterruptedMessagesIfNeeded(connection: connection, conversationStore: conversationStore)
             replayQueuedMessagesIfNeeded(connection: connection, conversationStore: conversationStore)
@@ -30,9 +29,6 @@ extension WorkspaceStore {
             if gitBranches[path] == nil, !status.branch.isEmpty {
                 gitBranches[path] = status.branch
             }
-            let adds = status.files.compactMap(\.additions).reduce(0, +)
-            let dels = status.files.compactMap(\.deletions).reduce(0, +)
-            gitStats[path] = (adds, dels)
             if let idx = pendingGitChecks.firstIndex(where: { $0.path == path }) {
                 pendingGitChecks.remove(at: idx)
             }

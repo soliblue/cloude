@@ -13,14 +13,12 @@ final class WorkspaceStore: ObservableObject {
     @Published var attachedImages: [AttachedImage] = []
     @Published var attachedFiles: [AttachedFile] = []
     @Published var drafts: [UUID: Draft] = [:]
-    @Published var gitBranches: [String: String] = [:]
-    @Published var gitStats: [String: (additions: Int, deletions: Int)] = [:]
+    var gitBranches: [String: String] = [:]
     @Published var pendingGitChecks: [(path: String, environmentId: UUID?)] = []
     @Published var fileSearchResults: [String] = []
     @Published var currentEffort: EffortLevel?
     @Published var currentModel: ModelSelection?
     @Published var showConversationSearch = false
-    @Published var refreshingSessionIds: Set<String> = []
 
     func currentConversation(windowManager: WindowManager, conversationStore: ConversationStore) -> Conversation? {
         windowManager.activeWindow?.conversation(in: conversationStore)

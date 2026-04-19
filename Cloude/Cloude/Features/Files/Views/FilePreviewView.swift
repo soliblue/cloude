@@ -15,8 +15,6 @@ struct FilePreviewView: View {
     @State var viewMode: FileViewMode = .rendered
     @State var diff: DiffState = .hidden
     @State var fileData: Data?
-    @State var isTruncated = false
-    @State var loadProgress: (current: Int, total: Int)?
     @State var cancellables = Set<AnyCancellable>()
     @State var highlightedCode: AttributedString?
     @AppStorage("wrapCodeLines") var wrapCodeLines = true

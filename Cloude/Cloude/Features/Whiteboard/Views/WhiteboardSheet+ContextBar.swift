@@ -45,13 +45,13 @@ extension WhiteboardSheet {
             ForEach(Self.paletteColors, id: \.self) { hex in
                 let currentColor = selectedElement?.fill ?? selectedElement?.stroke
                 Button(action: {
-                    if store.selectedIds.count > 1 {
-                        store.recolorMany(ids: store.selectedIds, hex: hex)
+                    if store.selectedElementIds.count > 1 {
+                        store.recolorMany(ids: store.selectedElementIds, hex: hex)
                     } else if let id = store.selectedElementId, let el = selectedElement {
                         if el.type == .path || el.type == .text {
-                            store.recolor(id: id, fill: nil, stroke: hex)
+                            store.mutateElement(id: id) { $0.stroke = hex }
                         } else {
-                            store.recolor(id: id, fill: hex, stroke: nil)
+                            store.mutateElement(id: id) { $0.fill = hex }
                         }
                     }
                 }) {
@@ -132,7 +132,7 @@ extension WhiteboardSheet {
 
     @ViewBuilder
     var multiSelectActionRow: some View {
-        Text("\(store.selectedIds.count)")
+        Text("\(store.selectedElementIds.count)")
             .font(.system(size: DS.Text.m, weight: .bold, design: .monospaced))
             .foregroundColor(.accentColor)
             .frame(width: DS.Size.m)
@@ -140,19 +140,19 @@ extension WhiteboardSheet {
         Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
         contextAction(icon: "square.3.layers.3d.down.backward") {
-            store.moveBackwardMany(ids: store.selectedIds)
+            store.moveBackwardMany(ids: store.selectedElementIds)
         }
         contextAction(icon: "square.3.layers.3d.top.filled") {
-            store.moveForwardMany(ids: store.selectedIds)
+            store.moveForwardMany(ids: store.selectedElementIds)
         }
 
         Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
-        contextAction(icon: "square.2.layers.3d", disabled: store.selectedIds.count < 2) {
+        contextAction(icon: "square.2.layers.3d", disabled: store.selectedElementIds.count < 2) {
             store.groupSelected()
         }
 
-        if store.hasGroup(in: store.selectedIds) {
+        if store.hasGroup(in: store.selectedElementIds) {
             contextAction(icon: "square.2.layers.3d.bottom.filled") {
                 store.ungroupSelected()
             }
@@ -160,8 +160,8 @@ extension WhiteboardSheet {
 
         Divider().frame(height: DS.Icon.m).opacity(DS.Opacity.m)
 
-        contextAction(icon: "trash", tint: AppColor.red.opacity(DS.Opacity.l), disabled: store.selectedIds.isEmpty) {
-            store.removeElements(ids: Array(store.selectedIds))
+        contextAction(icon: "trash", tint: AppColor.red.opacity(DS.Opacity.l), disabled: store.selectedElementIds.isEmpty) {
+            store.removeElements(ids: Array(store.selectedElementIds))
             store.clearSelection()
         }
     }
@@ -210,7 +210,7 @@ extension WhiteboardSheet {
             if editingTextValue.isEmpty {
                 store.removeElement(id: id)
             } else {
-                store.updateLabel(id: id, label: editingTextValue)
+                store.mutateElement(id: id) { $0.label = editingTextValue }
             }
         }
         editingTextId = nil

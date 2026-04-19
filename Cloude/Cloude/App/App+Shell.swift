@@ -59,10 +59,7 @@ extension App {
                 onSendSnapshot: {
                     handleWhiteboardAction(action: .snapshot, json: [:], conversationId: nil)
                 },
-                isConnected: {
-                    let envId = windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-                    return connection.connection(for: envId)?.phase == .authenticated
-                }()
+                isConnected: connection.connection(for: windowManager.activeWindow?.conversation(in: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId)?.phase == .authenticated
             )
             .agenticID("whiteboard_sheet")
         }
@@ -86,8 +83,6 @@ extension App {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 wasBackgrounded = true
-                lastActiveSessionId = windowManager.activeWindow?.conversation(in: conversationStore)?.sessionId
-
                 connection.beginBackgroundStreamingIfNeeded()
             } else if newPhase == .active {
                 connection.endBackgroundStreaming()

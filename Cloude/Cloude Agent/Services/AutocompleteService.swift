@@ -2,21 +2,6 @@ import Foundation
 
 @MainActor
 class AutocompleteService {
-    private var claudePath: String {
-        let paths = [
-            "/usr/local/bin/claude",
-            "/opt/homebrew/bin/claude",
-            "\(FileManager.default.homeDirectoryForCurrentUser.path)/.local/bin/claude",
-            "\(FileManager.default.homeDirectoryForCurrentUser.path)/.npm-global/bin/claude"
-        ]
-        for path in paths {
-            if FileManager.default.fileExists(atPath: path) {
-                return path
-            }
-        }
-        return "claude"
-    }
-
     private static let availableSymbols = [
         "message", "message.fill", "bubble.left", "bubble.left.fill", "bubble.right", "bubble.right.fill", "bubble.left.and.bubble.right", "bubble.left.and.bubble.right.fill", "phone", "phone.fill", "video", "video.fill", "envelope", "envelope.fill", "paperplane", "paperplane.fill", "bell", "bell.fill", "megaphone", "megaphone.fill",
         "sun.max", "sun.max.fill", "moon", "moon.fill", "moon.stars", "moon.stars.fill", "cloud", "cloud.fill", "cloud.sun", "cloud.sun.fill", "cloud.moon", "cloud.moon.fill", "cloud.bolt", "cloud.bolt.fill", "cloud.rain", "cloud.rain.fill", "cloud.snow", "cloud.snow.fill", "snowflake", "thermometer.sun", "thermometer.snowflake",
@@ -64,7 +49,7 @@ class AutocompleteService {
         let process = Process()
         let outputPipe = Pipe()
 
-        let command = "\(claudePath) --model sonnet -p \(shellEscape(prompt)) --max-turns 1 --output-format text"
+        let command = "\(ClaudePaths.resolve()) --model sonnet -p \(ClaudePaths.shellEscape(prompt)) --max-turns 1 --output-format text"
 
         process.executableURL = URL(fileURLWithPath: "/bin/zsh")
         process.arguments = ["-l", "-c", command]
@@ -111,8 +96,4 @@ class AutocompleteService {
         }
     }
 
-    private func shellEscape(_ string: String) -> String {
-        let escaped = string.replacingOccurrences(of: "'", with: "'\\''")
-        return "'\(escaped)'"
-    }
 }

@@ -53,7 +53,6 @@ extension FilePreviewView {
     func loadFullQuality(fullSize: Int64) {
         AppLogger.beginInterval("file.fullQuality", key: path)
         loadPhase = .thumbnail(fullSize: fullSize, isLoadingFull: true)
-        loadProgress = nil
         connection.getFileFullQuality(path: path, environmentId: environmentId)
     }
 
@@ -71,7 +70,6 @@ extension FilePreviewView {
 
         AppLogger.beginInterval("file.load", key: path)
         loadPhase = .loading
-        loadProgress = nil
         connection.getFile(path: path, environmentId: environmentId)
 
         let filePath = path
@@ -83,11 +81,9 @@ extension FilePreviewView {
                     guard p == filePath else { return }
                     withAnimation {
                         chunkProgress = (chunkIndex, totalChunks)
-                        loadProgress = (chunkIndex, totalChunks)
                     }
                 case .fileContent(let p, let data, _, _, let truncated):
                     guard p == filePath else { return }
-                    isTruncated = truncated
                     AppLogger.endInterval("file.load", key: filePath, details: "kind=content truncated=\(truncated)")
                     AppLogger.endInterval("file.fullQuality", key: filePath, details: "kind=content truncated=\(truncated)")
                     if let decoded = Data(base64Encoded: data) {

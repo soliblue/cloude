@@ -75,7 +75,7 @@ extension WhiteboardSheet {
                     store.beginTransaction()
                     if element.groupId != nil {
                         store.selectGroup(of: element.id)
-                        dragIntent = .movingGroup(startPositions: store.selectedIds.compactMap { id in
+                        dragIntent = .movingGroup(startPositions: store.selectedElementIds.compactMap { id in
                             store.state.elements.first(where: { $0.id == id }).map { (id, $0.x, $0.y, $0.points) }
                         })
                     } else if element.type == .path {
@@ -161,7 +161,7 @@ extension WhiteboardSheet {
         case .began:
             store.beginTransaction()
         case .changed:
-            if let selectedId = store.selectedElementId, store.selectedIds.count == 1,
+            if let selectedId = store.selectedElementId, store.selectedElementIds.count == 1,
                let index = store.state.elements.firstIndex(where: { $0.id == selectedId }) {
                 let el = store.state.elements[index]
                 let centerX = el.x + el.w / 2

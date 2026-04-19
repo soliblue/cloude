@@ -71,21 +71,15 @@ struct GitChangesView: View {
     private func loadIfNeeded() {
         if state.isInitialLoad {
             loadStatus()
-        } else {
-            refreshInBackground()
+        } else if let repoPath = resolvedRepoPath {
+            pendingRepoPath = repoPath
+            connection.gitStatus(path: repoPath, environmentId: environmentId)
         }
     }
 
     private func resetAndLoad() {
         state.reset()
         loadStatus()
-    }
-
-    private func refreshInBackground() {
-        guard let repoPath = resolvedRepoPath else { return }
-        state.beginLoading()
-        pendingRepoPath = repoPath
-        connection.gitStatus(path: repoPath, environmentId: environmentId)
     }
 
     private func loadStatus() {
@@ -101,7 +95,6 @@ struct GitChangesView: View {
                 conn.gitStatusInFlightPath = nil
             }
         }
-        state.beginLoading()
         pendingRepoPath = repoPath
         AppLogger.beginInterval("git.status", key: repoPath)
         connection.gitStatus(path: repoPath, environmentId: environmentId)

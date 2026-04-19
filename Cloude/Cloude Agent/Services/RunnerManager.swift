@@ -22,9 +22,7 @@ class RunnerManager: ObservableObject {
     var onToolCall: ((String, String?, String, String?, String, Int?, EditInfo?, Int?) -> Void)?
     var onToolResult: ((String, String?, String?, String, Int?) -> Void)?
     var onRunStats: ((Int, Double, String?, String, Int?) -> Void)?
-    var onComplete: ((String, String?) -> Void)?
     var onStatusChange: ((AgentState, String) -> Void)?
-    var onCloudeCommand: ((String, String, String) -> Void)?
     var onMessageUUID: ((String, String) -> Void)?
     var isAnyRunning: Bool {
         activeRunners.values.contains { $0.runner.isRunning }

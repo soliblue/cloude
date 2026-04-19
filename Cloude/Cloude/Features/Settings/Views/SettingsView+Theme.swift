@@ -16,7 +16,7 @@ struct ThemePickerView: View {
             ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: columns, spacing: DS.Spacing.m) {
                     ForEach(AppTheme.allCases, id: \.self) { theme in
-                        ThemeCard(theme: theme, isSelected: appTheme == theme, currentTheme: appTheme)
+                        ThemeCard(theme: theme, isSelected: appTheme == theme)
                             .onTapGesture { appThemeRaw = theme.rawValue }
                     }
                 }
@@ -42,7 +42,6 @@ struct ThemePickerView: View {
 struct ThemeCard: View {
     let theme: AppTheme
     let isSelected: Bool
-    let currentTheme: AppTheme
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,7 +63,7 @@ struct ThemeCard: View {
                 .foregroundColor(isSelected ? .primary : .secondary)
                 .padding(.bottom, DS.Spacing.s)
         }
-        .background(Color.themeSecondary(currentTheme))
+        .background(Color.themeSecondary(theme))
         .cornerRadius(DS.Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.m)

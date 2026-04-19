@@ -10,9 +10,9 @@ extension SettingsView {
                             env: env,
                             isConnected: connection.connection(for: env.id)?.phase == .authenticated,
                             isConnecting: connection.connection(for: env.id)?.phase == .connected,
-                            onConnect: { connectEnvironment(env) },
+                            onConnect: { environmentStore.setActive(env.id); connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol) },
                             onDisconnect: { connection.disconnectEnvironment(env.id, clearCredentials: false) },
-                            onUpdate: { environmentStore.update($0); syncIfActive($0) },
+                            onUpdate: { environmentStore.update($0); if let conn = connection.connection(for: $0.id), conn.phase == .authenticated { conn.disconnect(clearCredentials: false) } },
                             onDelete: environmentStore.environments.count > 1 ? { environmentStore.delete(env.id) } : nil
                         )
                         .tag(index)
@@ -49,14 +49,4 @@ extension SettingsView {
         .frame(maxWidth: .infinity)
     }
 
-    private func connectEnvironment(_ env: ServerEnvironment) {
-        environmentStore.setActive(env.id)
-        connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
-    }
-
-    private func syncIfActive(_ env: ServerEnvironment) {
-        if let conn = connection.connection(for: env.id), conn.phase == .authenticated {
-            conn.disconnect(clearCredentials: false)
-        }
-    }
 }

@@ -62,7 +62,7 @@ extension WhiteboardSheet {
     @ViewBuilder
     var floatingToolbar: some View {
         VStack(spacing: DS.Spacing.s) {
-            if store.activeTool == .multiSelect || (!store.selectedIds.isEmpty && store.activeTool == .hand) {
+            if store.activeTool == .multiSelect || (!store.selectedElementIds.isEmpty && store.activeTool == .hand) {
                 contextBar
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -75,7 +75,6 @@ extension WhiteboardSheet {
             toolBar
         }
         .animation(.quickTransition, value: store.activeTool)
-        .animation(.quickTransition, value: !store.selectedIds.isEmpty)
         .animation(.quickTransition, value: store.selectedElementIds.count)
     }
 

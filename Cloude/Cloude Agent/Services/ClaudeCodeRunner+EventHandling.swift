@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 import CloudeShared
 
 extension ClaudeCodeRunner {
@@ -47,12 +46,10 @@ extension ClaudeCodeRunner {
                 if activeModel == nil, let model = json["model"] as? String {
                     activeModel = model
                 }
-                events.send(.sessionId(sessionId))
                 onSessionId?(sessionId)
             }
             if subtype == "status", let status = json["status"] as? String {
                 if status == "compacting" {
-                    events.send(.status(.compacting))
                     onStatus?(.compacting)
                 }
             }
@@ -86,7 +83,6 @@ extension ClaudeCodeRunner {
                     let input = ToolInputExtractor.extract(name: toolName, input: inputDict)
                     let editInfo = toolName == "Edit" ? ToolInputExtractor.extractEditInfo(input: inputDict) : nil
                     let textPosition = accumulatedOutput.count
-                    events.send(.toolCall(name: toolName, input: input, toolId: toolId, parentToolId: parentToolId))
                     onToolCall?(toolName, input, toolId, parentToolId, textPosition, editInfo)
                 }
             }
@@ -101,7 +97,6 @@ extension ClaudeCodeRunner {
                     let end = content.index(content.endIndex, offsetBy: -"</local-command-stdout>".count)
                     let extracted = String(content[start..<end])
                     accumulatedOutput += extracted
-                    events.send(.output(extracted))
                     onOutput?(extracted)
                 }
             } else if let contentBlocks = message["content"] as? [[String: Any]] {
@@ -109,7 +104,6 @@ extension ClaudeCodeRunner {
                     if block["type"] as? String == "tool_result",
                        let toolUseId = block["tool_use_id"] as? String {
                         let (summary, output) = extractResultInfo(from: block)
-                        events.send(.toolResult(toolId: toolUseId, summary: summary, output: output))
                         onToolResult?(toolUseId, summary, output)
                     }
                 }
@@ -157,7 +151,6 @@ extension ClaudeCodeRunner {
 
     private func handleResultEvent(_ json: [String: Any]) {
         if let sessionId = json["session_id"] as? String {
-            events.send(.sessionId(sessionId))
             onSessionId?(sessionId)
         }
         if let durationMs = json["duration_ms"] as? Int,
@@ -166,7 +159,6 @@ extension ClaudeCodeRunner {
             pendingRunStats = (durationMs, costUsd, model)
         }
         if let result = json["result"] as? String, accumulatedOutput.isEmpty {
-            events.send(.output(result))
             onOutput?(result)
         }
     }

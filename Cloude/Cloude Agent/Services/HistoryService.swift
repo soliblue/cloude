@@ -83,7 +83,7 @@ struct HistoryService {
                                   let name = item["name"] as? String,
                                   let toolId = item["id"] as? String {
                             let inputDict = item["input"] as? [String: Any]
-                            let inputStr = Self.extractToolInput(name: name, input: inputDict)
+                            let inputStr = ToolInputExtractor.extract(name: name, input: inputDict)
                             let editInfo = name == "Edit" ? ToolInputExtractor.extractEditInfo(input: inputDict) : nil
                             contentItem = ContentItem(type: "tool_use", text: nil, toolName: name, toolId: toolId, toolInput: inputStr, editInfo: editInfo)
                         } else {

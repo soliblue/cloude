@@ -30,9 +30,6 @@ public struct GitFileStatus: Codable, Identifiable {
         }
     }
 
-    public var isDeleted: Bool {
-        status == "D"
-    }
 }
 
 public struct GitStatusInfo: Codable {

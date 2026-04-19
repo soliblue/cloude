@@ -69,10 +69,6 @@ extension RunnerManager {
             self.onRunStats?(durationMs, costUsd, model, conversationId, seq)
         }
 
-        runner.onCloudeCommand = { [weak self] action, value in
-            self?.onCloudeCommand?(action, value, conversationId)
-        }
-
         runner.onStatus = { [weak self] state in
             self?.onStatusChange?(state, conversationId)
         }
@@ -84,13 +80,10 @@ extension RunnerManager {
         runner.onComplete = { [weak self] in
             guard let self else { return }
             let convRunner = self.activeRunners[conversationId]
-            let response = convRunner?.accumulatedResponse ?? ""
-            let toolCalls = convRunner?.accumulatedToolCalls ?? []
             let sessionId = convRunner?.sessionId
 
-            Log.info("Runner for \(conversationId.prefix(8)) complete, response length=\(response.count), toolCalls=\(toolCalls.count)")
+            Log.info("Runner for \(conversationId.prefix(8)) complete")
 
-            self.onComplete?(conversationId, sessionId)
             self.onStatusChange?(.idle, conversationId)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 300) { [weak self] in

@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 import CloudeShared
 
 extension ClaudeCodeRunner {
@@ -28,12 +27,10 @@ extension ClaudeCodeRunner {
         lineBuffer = ""
 
         if let stats = pendingRunStats {
-            events.send(.runStats(durationMs: stats.durationMs, costUsd: stats.costUsd))
             onRunStats?(stats.durationMs, stats.costUsd, stats.model)
             pendingRunStats = nil
         }
 
-        events.send(.complete)
         onComplete?()
     }
 
@@ -81,7 +78,6 @@ extension ClaudeCodeRunner {
                let deltaText = delta["text"] as? String {
                 accumulatedOutput += deltaText
                 deltaTextCount += deltaText.count
-                events.send(.output(deltaText))
                 onOutput?(deltaText)
             }
         }

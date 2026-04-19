@@ -7,18 +7,8 @@ extension WorkspaceStore {
         showConversationSearch = false
     }
 
-    func beginEditingActiveWindow(windowManager: WindowManager) {
-        if let window = windowManager.activeWindow {
-            editingWindow = window
-        }
-    }
-
     func beginEditingWindow(_ windowId: UUID, windowManager: WindowManager) {
         editingWindow = windowManager.windows.first { $0.id == windowId }
-    }
-
-    func dismissEditingWindow() {
-        editingWindow = nil
     }
 
     func selectConversationForEditing(_ conversation: Conversation, conversationStore: ConversationStore, windowManager: WindowManager) {
@@ -80,7 +70,4 @@ extension WorkspaceStore {
         }
     }
 
-    func setKeyboardVisible(_ visible: Bool) {
-        isKeyboardVisible = visible
-    }
 }

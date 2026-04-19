@@ -1,7 +1,5 @@
 import SwiftUI
-import Combine
 import CloudeShared
-import UIKit
 
 extension String: @retroactive Identifiable {
     public var id: String { self }
@@ -16,7 +14,6 @@ struct App: SwiftUI.App {
     @StateObject var settingsStore = SettingsStore()
     @StateObject var whiteboardStore = WhiteboardStore()
     @State var wasBackgrounded = false
-    @State var lastActiveSessionId: String? = nil
     @State var filePathToPreview: String? = nil
     @State var filePreviewEnvironmentId: UUID? = nil
     @State var gitDiffRequest: GitDiffRequest?

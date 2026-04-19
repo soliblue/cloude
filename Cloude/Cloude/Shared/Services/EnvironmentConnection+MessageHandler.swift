@@ -103,10 +103,6 @@ extension EnvironmentConnection {
         mgr.objectWillChange.send()
     }
 
-    func targetConversationId(from conversationId: String?) -> UUID? {
-        conversationId.flatMap { UUID(uuidString: $0) }
-    }
-
     func sendNextGitStatusIfNeeded() {
         guard phase == .authenticated, gitStatusInFlightPath == nil, !gitStatusQueue.isEmpty else { return }
         let next = gitStatusQueue.removeFirst()

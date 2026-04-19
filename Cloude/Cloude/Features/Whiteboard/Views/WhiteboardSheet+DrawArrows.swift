@@ -5,7 +5,7 @@ extension WhiteboardSheet {
         if let fromId = element.from, let toId = element.to,
            let fromEl = elementDict[fromId],
            let toEl = elementDict[toId] {
-            let isSelected = store.selectedIds.contains(element.id)
+            let isSelected = store.selectedElementIds.contains(element.id)
             let strokeColor = isSelected ? Color.accentColor : Self.sketchStrokeColor
             let fromCenter = CGPoint(x: fromEl.x + fromEl.w / 2, y: fromEl.y + fromEl.h / 2)
             let toCenter = CGPoint(x: toEl.x + toEl.w / 2, y: toEl.y + toEl.h / 2)

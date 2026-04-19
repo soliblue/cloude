@@ -72,14 +72,14 @@ extension WorkspaceInputBar {
         .disabled(!canRecord)
         Divider()
         Menu {
-            Button(action: { setEffort(nil) }) {
+            Button(action: { currentEffort = nil }) {
                 Label(
                     conversationDefaultEffort?.displayName ?? "Default",
                     systemImage: currentEffort == nil ? "checkmark" : ""
                 )
             }
             ForEach(EffortLevel.allCases, id: \.self) { level in
-                Button(action: { setEffort(level) }) {
+                Button(action: { currentEffort = level }) {
                     Label(
                         level.displayName,
                         systemImage: currentEffort == level ? "checkmark" : ""
@@ -91,11 +91,11 @@ extension WorkspaceInputBar {
         }
         .agenticID("chat_effort_picker")
         Menu {
-            Button(action: { setModel(nil) }) {
+            Button(action: { currentModel = nil }) {
                 Label("Auto", systemImage: currentModel == nil ? "checkmark" : "")
             }
             ForEach(ModelSelection.allCases, id: \.self) { model in
-                Button(action: { setModel(model) }) {
+                Button(action: { currentModel = model }) {
                     Label(
                         model.displayName,
                         systemImage: currentModel == model ? "checkmark" : ""
@@ -122,11 +122,4 @@ extension WorkspaceInputBar {
             .animation(.quickTransition, value: canSend)
     }
 
-    func setEffort(_ level: EffortLevel?) {
-        currentEffort = level
-    }
-
-    func setModel(_ model: ModelSelection?) {
-        currentModel = model
-    }
 }

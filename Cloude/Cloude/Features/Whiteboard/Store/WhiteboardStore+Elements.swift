@@ -57,17 +57,6 @@ extension WhiteboardStore {
         }
     }
 
-    func updateLabel(id: String, label: String?) {
-        mutateElement(id: id) { $0.label = label }
-    }
-
-    func recolor(id: String, fill: String?, stroke: String?) {
-        mutateElement(id: id) { el in
-            if let fill { el.fill = fill }
-            if let stroke { el.stroke = stroke }
-        }
-    }
-
     func recolorMany(ids: Set<String>, hex: String) {
         if ids.isEmpty { return }
         pushUndoSnapshot()

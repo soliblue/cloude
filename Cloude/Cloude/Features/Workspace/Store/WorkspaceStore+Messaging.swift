@@ -154,7 +154,6 @@ extension WorkspaceStore {
            let sessionId = conv.sessionId,
            let workingDir = conv.workingDirectory,
            !workingDir.isEmpty {
-            refreshingSessionIds.insert(sessionId)
             let messages = conversationStore.messages(for: conv)
             if let lastUserIndex = messages.lastIndex(where: { $0.isUser }) {
                 conversationStore.truncateMessages(for: conv, from: lastUserIndex + 1)

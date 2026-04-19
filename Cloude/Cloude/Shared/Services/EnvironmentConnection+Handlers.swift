@@ -13,7 +13,7 @@ extension EnvironmentConnection {
         AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count) seq=\(seq.map(String.init) ?? "nil")")
         AppLogger.endInterval("chat.firstToken", key: convId.uuidString)
         let out = mgr.output(for: convId)
-        out.completeTopLevelExecutingTools()
+        out.completeExecutingTools(topLevelOnly: true)
         out.appendText(text)
         ensureRunning(out)
         if let seq { out.lastSeenSeq = max(out.lastSeenSeq, seq) }
@@ -21,7 +21,7 @@ extension EnvironmentConnection {
 
     func handleStatus(_ mgr: ConnectionManager, state: AgentState, conversationId: String?) {
         if agentState != state { agentState = state }
-        guard let convId = targetConversationId(from: conversationId) else { return }
+        guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
         AppLogger.connectionInfo("status convId=\(convId.uuidString) state=\(state.rawValue)")
         let out = mgr.output(for: convId)
         if state == .idle {
@@ -65,12 +65,12 @@ extension EnvironmentConnection {
     }
 
     func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil, seq: Int? = nil) {
-        guard let convId = targetConversationId(from: conversationId) else { return }
+        guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
         AppLogger.connectionInfo("tool call convId=\(convId.uuidString) toolId=\(toolId) name=\(name) seq=\(seq.map(String.init) ?? "nil")")
         let out = mgr.output(for: convId)
         ensureRunning(out)
         if parentToolId == nil {
-            out.completeTopLevelExecutingTools()
+            out.completeExecutingTools(topLevelOnly: true)
         }
         let currentTextLength = out.fullText.count
         let position = min(textPosition ?? currentTextLength, currentTextLength)
@@ -84,7 +84,7 @@ extension EnvironmentConnection {
     }
 
     func handleToolResult(_ mgr: ConnectionManager, toolId: String, output: String?, conversationId: String?, seq: Int? = nil) {
-        guard let convId = targetConversationId(from: conversationId) else { return }
+        guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
         AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) outputChars=\(output?.count ?? 0) seq=\(seq.map(String.init) ?? "nil")")
         let out = mgr.output(for: convId)
         if !out.toolCalls.contains(where: { $0.toolId == toolId }) {
@@ -104,7 +104,7 @@ extension EnvironmentConnection {
     }
 
     func handleRunStats(_ mgr: ConnectionManager, durationMs: Int, costUsd: Double, model: String?, conversationId: String?, seq: Int? = nil) {
-        guard let convId = targetConversationId(from: conversationId) else { return }
+        guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
         AppLogger.connectionInfo("run stats convId=\(convId.uuidString) durationMs=\(durationMs) costUsd=\(costUsd) seq=\(seq.map(String.init) ?? "nil")")
         AppLogger.endInterval("chat.complete", key: convId.uuidString, details: "serverDurationMs=\(durationMs) costUsd=\(costUsd)")
         let out = mgr.output(for: convId)
@@ -113,14 +113,14 @@ extension EnvironmentConnection {
     }
 
     func handleSessionId(_ mgr: ConnectionManager, _ id: String, conversationId: String?) {
-        guard let convId = targetConversationId(from: conversationId) else { return }
+        guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
         AppLogger.connectionInfo("session id convId=\(convId.uuidString) sessionId=\(id)")
         mgr.output(for: convId).newSessionId = id
         mgr.events.send(.sessionIdReceived(conversationId: convId, sessionId: id))
     }
 
     func handleMessageUUID(_ mgr: ConnectionManager, _ uuid: String, conversationId: String?) {
-        guard let convId = targetConversationId(from: conversationId) else { return }
+        guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
         AppLogger.connectionInfo("message uuid convId=\(convId.uuidString) uuid=\(uuid)")
         mgr.output(for: convId).messageUUID = uuid
     }

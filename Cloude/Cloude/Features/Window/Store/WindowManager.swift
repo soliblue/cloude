@@ -43,7 +43,7 @@ class WindowManager: ObservableObject {
         windows.first { $0.id == activeWindowId }
     }
 
-    var canAddWindow: Bool {
+    private var canAddWindow: Bool {
         windows.count < 5
     }
 
@@ -81,14 +81,10 @@ class WindowManager: ObservableObject {
         save()
     }
 
-    func updateWindow(_ id: UUID, conversationId: UUID?) {
-        guard let index = windows.firstIndex(where: { $0.id == id }) else { return }
-        windows[index].conversationId = conversationId
-        save()
-    }
-
     func linkToCurrentConversation(_ windowId: UUID, conversation: Conversation?) {
-        updateWindow(windowId, conversationId: conversation?.id)
+        guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
+        windows[index].conversationId = conversation?.id
+        save()
     }
 
     func setWindowTab(_ windowId: UUID, tab: WindowTab) {

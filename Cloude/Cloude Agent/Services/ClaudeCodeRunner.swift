@@ -7,8 +7,6 @@ class ClaudeCodeRunner: ObservableObject {
     @Published var isRunning = false
     @Published var currentDirectory: String = FileManager.default.homeDirectoryForCurrentUser.path
 
-    let events = PassthroughSubject<RunnerEvent, Never>()
-
     var process: Process?
     var outputPipe: Pipe?
     var errorPipe: Pipe?
@@ -19,7 +17,6 @@ class ClaudeCodeRunner: ObservableObject {
     var onComplete: (() -> Void)?
     var onSessionId: ((String) -> Void)?
     var onRunStats: ((Int, Double, String?) -> Void)?
-    var onCloudeCommand: ((String, String) -> Void)?
     var onStatus: ((AgentState) -> Void)?
     var onMessageUUID: ((String) -> Void)?
     var pendingRunStats: (durationMs: Int, costUsd: Double, model: String?)?
@@ -28,22 +25,8 @@ class ClaudeCodeRunner: ObservableObject {
     var deltaTextCount = 0
     var lineBuffer = ""
 
-    var claudePath: String {
-        let paths = [
-            "/usr/local/bin/claude",
-            "/opt/homebrew/bin/claude",
-            "\(FileManager.default.homeDirectoryForCurrentUser.path)/.local/bin/claude",
-            "\(FileManager.default.homeDirectoryForCurrentUser.path)/.npm-global/bin/claude"
-        ]
-
-        for path in paths {
-            if FileManager.default.fileExists(atPath: path) {
-                return path
-            }
-        }
-
-        return "claude"
-    }
+    var claudePath: String { ClaudePaths.resolve() }
+    func shellEscape(_ string: String) -> String { ClaudePaths.shellEscape(string) }
 
     var tempImagePaths: [String] = []
     var tempFilePaths: [String] = []
@@ -58,10 +41,5 @@ class ClaudeCodeRunner: ObservableObject {
                 self?.process?.terminate()
             }
         }
-    }
-
-    func shellEscape(_ string: String) -> String {
-        let escaped = string.replacingOccurrences(of: "'", with: "'\\''")
-        return "'\(escaped)'"
     }
 }

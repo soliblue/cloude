@@ -38,7 +38,7 @@ struct WhiteboardSheet: View {
                         }
                     )
 
-                    ForEach(store.state.elements.filter { store.selectedIds.contains($0.id) && $0.type != .arrow }) { element in
+                    ForEach(store.state.elements.filter { store.selectedElementIds.contains($0.id) && $0.type != .arrow }) { element in
                         selectionOverlay(for: element)
                     }
 

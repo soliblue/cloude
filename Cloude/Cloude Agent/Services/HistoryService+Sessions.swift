@@ -11,10 +11,6 @@ extension HistoryService {
         let editInfo: EditInfo?
     }
 
-    static func extractToolInput(name: String, input: [String: Any]?) -> String? {
-        ToolInputExtractor.extract(name: name, input: input)
-    }
-
     static func buildAndMergeMessages(
         userMessages: [(uuid: String, timestamp: Date, text: String)],
         assistantMessages: [String: (timestamp: Date, model: String?, items: [ContentItem])],

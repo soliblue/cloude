@@ -113,6 +113,6 @@ public enum ServerMessage: Codable {
     case pong(sentAt: Double, serverAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, completedAt, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, textPosition, symbol, processes, skills, messages, error, toolCalls, chunkIndex, totalChunks, fullSize, uuid, summary, output, stages, stage, filename, editInfo, sentAt, serverAt, commits, seq, events, historyOnly
+        case type, text, path, diff, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, textPosition, symbol, processes, skills, messages, error, chunkIndex, totalChunks, fullSize, uuid, summary, output, filename, editInfo, sentAt, serverAt, commits, seq, events, historyOnly
     }
 }
