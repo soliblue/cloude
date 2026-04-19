@@ -91,9 +91,10 @@ extension EnvironmentConnection {
     }
 
     func checkForMissedResponse() {
-        for sessionId in interruptedSessions.keys {
-            AppLogger.connectionInfo("heuristic_counter=requestMissedResponse_send sessionId=\(sessionId)")
-            send(.requestMissedResponse(sessionId: sessionId))
+        for (sessionId, target) in interruptedSessions {
+            let lastSeenSeq = manager?.output(for: target.conversationId).lastSeenSeq ?? 0
+            AppLogger.connectionInfo("heuristic_counter=resumeFrom_send sessionId=\(sessionId) lastSeq=\(lastSeenSeq)")
+            send(.resumeFrom(sessionId: sessionId, lastSeq: lastSeenSeq))
         }
     }
 

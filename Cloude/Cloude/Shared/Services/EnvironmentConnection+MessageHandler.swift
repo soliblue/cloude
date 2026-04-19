@@ -10,7 +10,7 @@ extension EnvironmentConnection {
               let mgr = manager else { return }
 
         switch message {
-        case .output(let text, let conversationId):       handleOutput(mgr, text: text, conversationId: conversationId)
+        case .output(let text, let conversationId, let seq): handleOutput(mgr, text: text, conversationId: conversationId, seq: seq)
         case .status(let state, let conversationId):      handleStatus(mgr, state: state, conversationId: conversationId)
         case .authRequired:
             AppLogger.connectionInfo("auth required envId=\(environmentId.uuidString)")
@@ -28,9 +28,10 @@ extension EnvironmentConnection {
                 sendNextGitStatusIfNeeded()
             }
             handleError(mgr, msg)
-        case .toolCall(let n, let i, let t, let p, let c, let pos, let ei): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos, editInfo: ei)
-        case .toolResult(let id, let sum, let out, let c):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c)
-        case .runStats(let ms, let cost, let m, let c):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c)
+        case .toolCall(let n, let i, let t, let p, let c, let pos, let ei, let seq): handleToolCall(mgr, name: n, input: i, toolId: t, parentToolId: p, conversationId: c, textPosition: pos, editInfo: ei, seq: seq)
+        case .toolResult(let id, let sum, let out, let c, let seq):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c, seq: seq)
+        case .runStats(let ms, let cost, let m, let c, let seq):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c, seq: seq)
+        case .resumeFromResponse(let sid, let events, let historyOnly): handleResumeFromResponse(mgr, sessionId: sid, events: events, historyOnly: historyOnly)
         case .missedResponse(let sid, let t, _, let tc, let durationMs, let costUsd, let model):  handleMissedResponse(mgr, sessionId: sid, text: t, storedToolCalls: tc, durationMs: durationMs, costUsd: costUsd, model: model)
         case .noMissedResponse(let sid):                  handleNoMissedResponse(mgr, sessionId: sid)
         case .sessionId(let id, let c):                   handleSessionId(mgr, id, conversationId: c)
@@ -55,6 +56,29 @@ extension EnvironmentConnection {
         case .nameSuggestion(let name, let sym, let c):   handleNameSuggestion(mgr, name: name, symbol: sym, conversationId: c)
         case .pong(let sentAt, _):                        latencyMs = (Date().timeIntervalSince1970 - sentAt) * 1000
         case .gitCommitResult:                            break
+        }
+    }
+
+    func handleResumeFromResponse(_ mgr: ConnectionManager, sessionId: String, events: [ReplayedEvent], historyOnly: Bool) {
+        AppLogger.connectionInfo("heuristic_counter=resumeFromResponse_receive sessionId=\(sessionId) events=\(events.count) historyOnly=\(historyOnly)")
+        if historyOnly {
+            if let target = interruptedSessions[sessionId] {
+                let out = mgr.output(for: target.conversationId)
+                out.needsHistorySync = true
+            }
+            return
+        }
+        for event in events {
+            switch event {
+            case .output(let text, let conversationId, let seq):
+                handleOutput(mgr, text: text, conversationId: conversationId, seq: seq)
+            case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition, let editInfo, let seq):
+                handleToolCall(mgr, name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo, seq: seq)
+            case .toolResult(let toolId, let summary, let output, let conversationId, let seq):
+                handleToolResult(mgr, toolId: toolId, summary: summary, output: output, conversationId: conversationId, seq: seq)
+            case .runStats(let durationMs, let costUsd, let model, let conversationId, let seq):
+                handleRunStats(mgr, durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId, seq: seq)
+            }
         }
     }
 

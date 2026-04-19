@@ -17,6 +17,7 @@ final class ConversationOutput: ObservableObject {
     var messageUUID: String?
     @Published var liveMessageId: UUID?
     var needsHistorySync = false
+    var lastSeenSeq: Int = 0
 
     var fullText: String = ""
     private var displayIndex: String.Index?

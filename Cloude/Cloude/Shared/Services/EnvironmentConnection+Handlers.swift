@@ -7,14 +7,15 @@ extension EnvironmentConnection {
         if !out.isRunning { out.isRunning = true }
     }
 
-    func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?) {
+    func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?, seq: Int? = nil) {
         guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
-        AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count)")
+        AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count) seq=\(seq.map(String.init) ?? "nil")")
         AppLogger.endInterval("chat.firstToken", key: convId.uuidString)
         let out = mgr.output(for: convId)
         out.completeTopLevelExecutingTools()
         out.appendText(text)
         ensureRunning(out)
+        if let seq { out.lastSeenSeq = max(out.lastSeenSeq, seq) }
     }
 
     func handleStatus(_ mgr: ConnectionManager, state: AgentState, conversationId: String?) {
@@ -66,9 +67,9 @@ extension EnvironmentConnection {
         }
     }
 
-    func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil) {
+    func handleToolCall(_ mgr: ConnectionManager, name: String, input: String?, toolId: String, parentToolId: String?, conversationId: String?, textPosition: Int?, editInfo: EditInfo? = nil, seq: Int? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
-        AppLogger.connectionInfo("tool call convId=\(convId.uuidString) toolId=\(toolId) name=\(name)")
+        AppLogger.connectionInfo("tool call convId=\(convId.uuidString) toolId=\(toolId) name=\(name) seq=\(seq.map(String.init) ?? "nil")")
         let out = mgr.output(for: convId)
         ensureRunning(out)
         if parentToolId == nil {
@@ -78,15 +79,16 @@ extension EnvironmentConnection {
         let position = min(textPosition ?? currentTextLength, currentTextLength)
         out.toolCalls.append(ToolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, textPosition: position, state: .executing, editInfo: editInfo))
         mgr.events.send(.liveSnapshot(conversationId: convId))
+        if let seq { out.lastSeenSeq = max(out.lastSeenSeq, seq) }
         if name.hasPrefix("mcp__ios__") {
             handleIOSToolCall(mgr, name: name, input: input, conversationId: conversationId)
             return
         }
     }
 
-    func handleToolResult(_ mgr: ConnectionManager, toolId: String, summary: String?, output: String?, conversationId: String?) {
+    func handleToolResult(_ mgr: ConnectionManager, toolId: String, summary: String?, output: String?, conversationId: String?, seq: Int? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
-        AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) summaryChars=\(summary?.count ?? 0) outputChars=\(output?.count ?? 0)")
+        AppLogger.connectionInfo("tool result convId=\(convId.uuidString) toolId=\(toolId) summaryChars=\(summary?.count ?? 0) outputChars=\(output?.count ?? 0) seq=\(seq.map(String.init) ?? "nil")")
         let out = mgr.output(for: convId)
         if !out.toolCalls.contains(where: { $0.toolId == toolId }) {
             AppLogger.connectionInfo("heuristic_counter=needsHistorySync_flip reason=tool_result_without_call convId=\(convId.uuidString) toolId=\(toolId)")
@@ -102,13 +104,16 @@ extension EnvironmentConnection {
             }
             return tool
         }
+        if let seq { out.lastSeenSeq = max(out.lastSeenSeq, seq) }
     }
 
-    func handleRunStats(_ mgr: ConnectionManager, durationMs: Int, costUsd: Double, model: String?, conversationId: String?) {
+    func handleRunStats(_ mgr: ConnectionManager, durationMs: Int, costUsd: Double, model: String?, conversationId: String?, seq: Int? = nil) {
         guard let convId = targetConversationId(from: conversationId) else { return }
-        AppLogger.connectionInfo("run stats convId=\(convId.uuidString) durationMs=\(durationMs) costUsd=\(costUsd)")
+        AppLogger.connectionInfo("run stats convId=\(convId.uuidString) durationMs=\(durationMs) costUsd=\(costUsd) seq=\(seq.map(String.init) ?? "nil")")
         AppLogger.endInterval("chat.complete", key: convId.uuidString, details: "serverDurationMs=\(durationMs) costUsd=\(costUsd)")
-        mgr.output(for: convId).runStats = (durationMs, costUsd, model)
+        let out = mgr.output(for: convId)
+        out.runStats = (durationMs, costUsd, model)
+        if let seq { out.lastSeenSeq = max(out.lastSeenSeq, seq) }
     }
 
     func handleMissedResponse(_ mgr: ConnectionManager, sessionId: String, text: String, storedToolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?) {
