@@ -2,8 +2,9 @@ import SwiftUI
 
 extension WorkspaceView {
     func editWindowSheet(_ window: Window) -> some View {
-        WindowEditSheet(
-            window: window,
+        let currentWindow = windowManager.windows.first(where: { $0.id == window.id }) ?? window
+        return WindowEditSheet(
+            window: currentWindow,
             conversationStore: conversationStore,
             windowManager: windowManager,
             environmentStore: environmentStore,
@@ -16,7 +17,11 @@ extension WorkspaceView {
             },
             onDismiss: { store.editingWindow = nil },
             onRefresh: {
-                await store.refreshEditingWindowConversation(environmentStore: environmentStore, conversationStore: conversationStore)
+                await store.refreshEditingWindowConversation(
+                    environmentStore: environmentStore,
+                    conversationStore: conversationStore,
+                    windowManager: windowManager
+                )
             },
             onDuplicate: { newConv in
                 store.duplicateEditingConversation(newConv, windowManager: windowManager)

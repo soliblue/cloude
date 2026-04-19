@@ -6,10 +6,10 @@ struct FolderPickerView: View {
     var environmentId: UUID?
     let onSelect: (String) -> Void
 
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss) var dismiss
     @State var currentPath: String = "~"
-    @State private var entries: [FileEntry] = []
-    @State private var isLoading = false
+    @State var entries: [FileEntry] = []
+    @State var isLoading = false
     @State var showHidden = false
 
     private var folders: [FileEntry] {
@@ -19,16 +19,20 @@ struct FolderPickerView: View {
         return showHidden ? visible + hidden : visible
     }
 
-    private var connection: EnvironmentConnection? {
+    var defaultWorkingDirectory: String? {
+        connection?.defaultWorkingDirectory?.nilIfEmpty
+    }
+
+    var connection: EnvironmentConnection? {
         environmentStore.connection(for: environmentId)
     }
 
-    private var currentDirectoryListing: [FileEntry]? {
-        connection?.directoryListing(for: currentPath)
+    var currentDirectoryListing: [FileEntry]? {
+        connection?.files.directoryListing(for: currentPath)
     }
 
-    private var currentPathError: String? {
-        connection?.pathError(for: currentPath)
+    var currentPathError: String? {
+        connection?.files.pathError(for: currentPath)
     }
 
     var body: some View {
@@ -66,6 +70,12 @@ struct FolderPickerView: View {
         }
         .presentationBackground(Color.themeBackground)
         .onAppear { loadDirectory(); syncListing() }
+        .onChange(of: defaultWorkingDirectory) { _, newValue in
+            if currentPath == "~", let newValue {
+                currentPath = newValue
+                loadDirectory()
+            }
+        }
         .onChange(of: currentDirectoryListing) { _, _ in syncListing() }
         .onChange(of: currentPathError) { _, _ in syncListing() }
     }
@@ -100,35 +110,5 @@ struct FolderPickerView: View {
         }
         .buttonStyle(.borderedProminent)
         .padding()
-    }
-
-    private var currentFolderName: String {
-        currentPath.lastPathComponent
-    }
-
-    private func selectCurrentFolder() {
-        onSelect(currentPath)
-        dismiss()
-    }
-
-    func navigateTo(_ path: String) {
-        currentPath = path
-        loadDirectory()
-    }
-
-    private func loadDirectory() {
-        isLoading = true
-        entries = []
-        connection?.listDirectory(path: currentPath)
-    }
-
-    private func syncListing() {
-        if let currentDirectoryListing {
-            entries = currentDirectoryListing
-            isLoading = false
-        } else if currentPathError != nil {
-            entries = []
-            isLoading = false
-        }
     }
 }

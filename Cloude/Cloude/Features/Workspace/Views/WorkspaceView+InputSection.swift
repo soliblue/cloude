@@ -38,7 +38,7 @@ extension WorkspaceView {
             attachedFilesBinding: attachedFilesBinding,
             currentEffortBinding: currentEffortBinding,
             currentModelBinding: currentModelBinding,
-            fileSearchResults: activeEnvConnection?.fileSearchResults ?? [],
+            fileSearchResults: activeEnvConnection?.files.searchResults ?? [],
             onSend: {
                 dismissKeyboard()
                 store.sendMessage(
@@ -52,9 +52,15 @@ extension WorkspaceView {
                 store.stopActiveConversation(environmentStore: environmentStore, windowManager: windowManager, conversationStore: conversationStore)
             },
             onConnect: {
-                let envId = currentConversation?.environmentId ?? environmentStore.activeEnvironmentId
-                if let envId, let env = environmentStore.environments.first(where: { $0.id == envId }) {
+                let runtime = store.activeRuntimeContext(
+                    environmentStore: environmentStore,
+                    windowManager: windowManager,
+                    conversationStore: conversationStore
+                )
+                if let env = runtime.environment {
                     environmentStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                } else {
+                    onShowSettings?()
                 }
             },
             onRefresh: {
@@ -77,10 +83,13 @@ extension WorkspaceView {
     }
 
     private var activeInputOutput: ConversationOutput? {
-        if let activeWindow = windowManager.activeWindow,
-           let convId = activeWindow.conversationId,
-           let conv = conversationStore.conversation(withId: convId) {
-            return environmentStore.connection(for: conv.environmentId)?.output(for: convId)
+        let runtime = store.activeRuntimeContext(
+            environmentStore: environmentStore,
+            windowManager: windowManager,
+            conversationStore: conversationStore
+        )
+        if let convId = runtime.conversation?.id {
+            return runtime.connection?.output(for: convId)
         }
         return nil
     }

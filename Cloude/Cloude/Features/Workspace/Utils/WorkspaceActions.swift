@@ -11,24 +11,21 @@ extension App {
             AppLogger.bootstrapInfo("select conversation failed convId=\(id.uuidString)")
             return
         }
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
-        }
-        guard let activeWindow = windowManager.activeWindow else { return }
+        guard let activeWindow = windowManager.ensureActiveWindow() else { return }
         windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         AppLogger.bootstrapInfo("selected conversation convId=\(id.uuidString) windowId=\(activeWindow.id.uuidString)")
     }
 
     func createNewConversation(path: String? = nil) {
         let current = activeConversation()
-        let environmentId = current?.environmentId.flatMap {
+        let environmentId = windowManager.activeWindow?.runtimeEnvironmentId(
+            conversationStore: conversationStore,
+            environmentStore: environmentStore
+        ).flatMap {
             environmentStore.connection(for: $0) == nil ? nil : $0
-        } ?? environmentStore.activeEnvironmentId
-
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
         }
-        guard let activeWindow = windowManager.activeWindow else { return }
+
+        guard let activeWindow = windowManager.ensureActiveWindow() else { return }
 
         let conversation = conversationStore.newConversation(
             workingDirectory: path?.nilIfEmpty ?? current?.workingDirectory,
@@ -59,7 +56,7 @@ extension App {
             return
         }
         let workingDirectory = conversation.workingDirectory
-            ?? environmentStore.connection(for: conversation.environmentId ?? environmentStore.activeEnvironmentId)?.defaultWorkingDirectory
+            ?? environmentStore.connection(for: conversation.environmentId)?.defaultWorkingDirectory
         guard let workingDirectory, !workingDirectory.isEmpty else {
             AppLogger.bootstrapInfo("refresh conversation ignored missing working directory convId=\(conversation.id.uuidString)")
             return
@@ -99,10 +96,7 @@ extension App {
             return
         }
 
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
-        }
-        guard let activeWindow = windowManager.activeWindow else {
+        guard let activeWindow = windowManager.ensureActiveWindow() else {
             AppLogger.bootstrapInfo("debug send failed missing active window")
             return
         }
@@ -118,7 +112,7 @@ extension App {
             return
         }
 
-        if conv.environmentId == nil || environmentStore.connection(for: conv.environmentId) == nil {
+        if conv.environmentId == nil && activeWindow.conversationId == nil {
             conversationStore.setEnvironmentId(conv, environmentId: environmentStore.activeEnvironmentId)
         }
         let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv

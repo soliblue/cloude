@@ -40,6 +40,10 @@ extension App {
     }
 
     func createWindow(tab: WindowTab? = nil) {
+        guard windowManager.canAddWindow else {
+            AppLogger.bootstrapInfo("create window ignored max windows")
+            return
+        }
         let newWindowId = windowManager.addWindow()
         if let tab {
             windowManager.setWindowTab(newWindowId, tab: tab)
@@ -48,10 +52,7 @@ extension App {
     }
 
     func setActiveWindowTab(_ tab: WindowTab) {
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
-        }
-        guard let activeWindow = windowManager.activeWindow else { return }
+        guard let activeWindow = windowManager.ensureActiveWindow() else { return }
         windowManager.setWindowTab(activeWindow.id, tab: tab)
         AppLogger.bootstrapInfo("set active window tab windowId=\(activeWindow.id.uuidString) tab=\(tab.rawValue)")
     }

@@ -4,7 +4,8 @@ extension WorkspaceView {
     @ViewBuilder
     func pagedWindowContent(for window: Window) -> some View {
         let conversation = window.conversation(in: conversationStore)
-        let connection = conversation?.environmentId.flatMap { environmentStore.connection(for: $0) }
+        let environmentId = window.runtimeEnvironmentId(conversationStore: conversationStore, environmentStore: environmentStore)
+        let connection = environmentStore.connection(for: environmentId)
 
         VStack(spacing: 0) {
             if let connection {
@@ -38,7 +39,7 @@ extension WorkspaceView {
                 FileTreeView(
                     environmentStore: environmentStore,
                     rootPath: window.fileBrowserRootPath ?? conversation?.workingDirectory,
-                    environmentId: conversation?.environmentId,
+                    environmentId: environmentId,
                     isVisible: window.tab == .files,
                     state: windowManager.fileTreeState(for: window.id)
                 )
@@ -49,7 +50,7 @@ extension WorkspaceView {
                 GitChangesView(
                     environmentStore: environmentStore,
                     rootPath: window.gitRepoRootPath ?? conversation?.workingDirectory,
-                    environmentId: conversation?.environmentId,
+                    environmentId: environmentId,
                     state: windowManager.gitChangesState(for: window.id)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -65,7 +66,7 @@ extension WorkspaceView {
             envConnected: (connection?.phase ?? .disconnected) != .disconnected,
             appTheme: appTheme,
             gitStatus: (window.gitRepoRootPath ?? conversation?.workingDirectory).flatMap {
-                connection?.gitStatusInfo(for: $0)
+                connection?.git.statusInfo(for: $0)
             },
             folderName: conversation?.workingDirectory.flatMap { $0.isEmpty ? nil : URL(fileURLWithPath: $0).lastPathComponent },
             totalCost: conversation?.totalCost ?? 0,

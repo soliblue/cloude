@@ -85,5 +85,11 @@ struct WindowEditForm: View {
             name = conversation?.name ?? ""
             symbol = conversation?.symbol ?? ""
         }
+        .onChange(of: conversation?.name) { _, newValue in
+            name = newValue ?? ""
+        }
+        .onChange(of: conversation?.symbol) { _, newValue in
+            symbol = newValue ?? ""
+        }
     }
 }

@@ -1,6 +1,4 @@
 import Foundation
-import SwiftUI
-import Photos
 import CloudeShared
 
 extension WorkspaceStore {
@@ -49,7 +47,8 @@ extension WorkspaceStore {
         let conv = window?.conversation(in: conversationStore)
         if let dir = window?.gitRepoRootPath ?? conv?.workingDirectory,
            !dir.isEmpty {
-            environmentStore.connection(for: conv?.environmentId ?? environmentStore.activeEnvironmentId)?.gitStatus.enqueue(dir)
+            let envId = window?.runtimeEnvironmentId(conversationStore: conversationStore, environmentStore: environmentStore)
+            environmentStore.connection(for: envId)?.git.requestStatus(dir)
         }
     }
 
@@ -72,12 +71,18 @@ extension WorkspaceStore {
         windowManager: WindowManager,
         environmentStore: EnvironmentStore
     ) {
-        let dir = activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore)
-        let envId = activeWindowEnvironmentId(windowManager: windowManager, conversationStore: conversationStore, environmentStore: environmentStore)
+        if !windowManager.canAddWindow {
+            return
+        }
+        let runtime = activeRuntimeContext(
+            environmentStore: environmentStore,
+            windowManager: windowManager,
+            conversationStore: conversationStore
+        )
         let newWindowId = windowManager.addWindow()
         let newConv = conversationStore.newConversation(
-            workingDirectory: dir,
-            environmentId: envId
+            workingDirectory: runtime.workingDirectory,
+            environmentId: runtime.environmentId
         )
         windowManager.linkToCurrentConversation(newWindowId, conversation: newConv)
     }
@@ -89,77 +94,6 @@ extension WorkspaceStore {
            conversation.isEmpty {
             conversationStore.deleteConversation(conversation)
             windowManager.removeWindow(windowId)
-        }
-    }
-
-    func searchFiles(
-        _ query: String,
-        environmentStore: EnvironmentStore,
-        conversationStore: ConversationStore,
-        windowManager: WindowManager
-    ) {
-        let envId = activeWindowEnvironmentId(
-            windowManager: windowManager,
-            conversationStore: conversationStore,
-            environmentStore: environmentStore
-        )
-        if let workingDir = activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore),
-           !workingDir.isEmpty {
-            environmentStore.connection(for: envId)?.searchFiles(query: query, workingDirectory: workingDir)
-        } else {
-            environmentStore.connection(for: envId)?.clearFileSearchResults()
-        }
-    }
-
-    func fetchLatestScreenshot() {
-        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        if status == .authorized || status == .limited {
-            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.l) {
-                self.loadLatestPhoto()
-            }
-        } else {
-            PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
-                if newStatus == .authorized || newStatus == .limited {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.l) {
-                        self.loadLatestPhoto()
-                    }
-                }
-            }
-        }
-    }
-
-    private func loadLatestPhoto(attempt: Int = 0) {
-        let options = PHFetchOptions()
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        options.fetchLimit = 1
-        let cutoff = Date().addingTimeInterval(-3)
-        options.predicate = NSPredicate(format: "mediaType == %d AND creationDate > %@", PHAssetMediaType.image.rawValue, cutoff as NSDate)
-
-        let result = PHAsset.fetchAssets(with: options)
-        if result.firstObject == nil, attempt < 5 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
-                self.loadLatestPhoto(attempt: attempt + 1)
-            }
-            return
-        }
-        if let asset = result.firstObject {
-            let imageOptions = PHImageRequestOptions()
-            imageOptions.isSynchronous = false
-            imageOptions.deliveryMode = .highQualityFormat
-            imageOptions.resizeMode = .exact
-
-            let targetSize = CGSize(width: DS.Size.xxl * 3, height: DS.Size.xxl * 3)
-            PHImageManager.default().requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFit, options: imageOptions) { image, _ in
-                if let image = image, let data = image.jpegData(compressionQuality: 0.8) {
-                    DispatchQueue.main.async {
-                        if self.attachedImages.count < 5 {
-                            withAnimation(.easeOut(duration: DS.Duration.s)) {
-                                self.attachedImages.append(AttachedImage(data: data, isScreenshot: true))
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }

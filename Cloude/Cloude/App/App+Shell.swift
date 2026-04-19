@@ -26,11 +26,8 @@ extension App {
                     ToolbarItem(placement: .principal) {
                         WindowTitlePill(
                             symbol: windowManager.activeWindow?
-                                .conversation(in: conversationStore)?
-                                .environmentId
-                                .flatMap { envId in
-                                    environmentStore.environments.first { $0.id == envId }?.symbol
-                                }
+                                .runtimeContext(conversationStore: conversationStore, environmentStore: environmentStore)
+                                .symbol
                         )
                             .agenticID("toolbar_title")
                     }

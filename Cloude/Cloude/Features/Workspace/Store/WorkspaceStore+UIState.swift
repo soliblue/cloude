@@ -12,33 +12,23 @@ extension WorkspaceStore {
     }
 
     func selectConversationForEditing(_ conversation: Conversation, conversationStore: ConversationStore, windowManager: WindowManager) {
-        if let oldConvId = editingWindow?.conversationId,
+        if let windowId = editingWindow?.id,
+           let currentWindow = windowManager.windows.first(where: { $0.id == windowId }),
+           let oldConvId = currentWindow.conversationId,
            let oldConv = conversationStore.conversation(withId: oldConvId),
            oldConv.isEmpty, oldConv.id != conversation.id {
             conversationStore.deleteConversation(oldConv)
         }
-        if let window = editingWindow {
-            windowManager.linkToCurrentConversation(window.id, conversation: conversation)
+        if let windowId = editingWindow?.id {
+            windowManager.linkToCurrentConversation(windowId, conversation: conversation)
         }
         editingWindow = nil
     }
 
-    func createConversationForEditing(conversationStore: ConversationStore, windowManager: WindowManager, environmentStore: EnvironmentStore) {
-        if let oldConvId = editingWindow?.conversationId,
-           let oldConv = conversationStore.conversation(withId: oldConvId),
-           oldConv.isEmpty {
-            conversationStore.deleteConversation(oldConv)
-        }
-        let workingDirectory = activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore)
-        let conversation = conversationStore.newConversation(workingDirectory: workingDirectory, environmentId: environmentStore.activeEnvironmentId)
-        if let window = editingWindow {
-            windowManager.linkToCurrentConversation(window.id, conversation: conversation)
-        }
-        editingWindow = nil
-    }
-
-    func refreshEditingWindowConversation(environmentStore: EnvironmentStore, conversationStore: ConversationStore) async {
-        if let convId = editingWindow?.conversationId,
+    func refreshEditingWindowConversation(environmentStore: EnvironmentStore, conversationStore: ConversationStore, windowManager: WindowManager) async {
+        if let windowId = editingWindow?.id,
+           let currentWindow = windowManager.windows.first(where: { $0.id == windowId }),
+           let convId = currentWindow.conversationId,
            let conversation = conversationStore.conversation(withId: convId),
            let sessionId = conversation.sessionId,
            let workingDirectory = conversation.workingDirectory, !workingDirectory.isEmpty {
@@ -48,8 +38,8 @@ extension WorkspaceStore {
     }
 
     func duplicateEditingConversation(_ conversation: Conversation, windowManager: WindowManager) {
-        if let window = editingWindow {
-            windowManager.linkToCurrentConversation(window.id, conversation: conversation)
+        if let windowId = editingWindow?.id {
+            windowManager.linkToCurrentConversation(windowId, conversation: conversation)
         }
         editingWindow = nil
     }

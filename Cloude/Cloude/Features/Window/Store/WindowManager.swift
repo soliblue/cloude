@@ -10,8 +10,8 @@ class WindowManager: ObservableObject {
     var fileTreeStates: [UUID: FileTreeState] = [:]
     var gitChangesStates: [UUID: GitChangesState] = [:]
 
-    private let windowsKey = "windowManager_windows"
-    private let activeKey = "windowManager_activeWindowId"
+    let windowsKey = "windowManager_windows"
+    let activeKey = "windowManager_activeWindowId"
 
     init() {
         load()
@@ -23,27 +23,11 @@ class WindowManager: ObservableObject {
         }
     }
 
-    private func save() {
-        UserDefaults.standard.setCodable(windows, forKey: windowsKey)
-        if let activeId = activeWindowId {
-            UserDefaults.standard.set(activeId.uuidString, forKey: activeKey)
-        }
-    }
-
-    private func load() {
-        windows = UserDefaults.standard.codable([Window].self, forKey: windowsKey, default: [])
-        if let idString = UserDefaults.standard.string(forKey: activeKey),
-           let id = UUID(uuidString: idString),
-           windows.contains(where: { $0.id == id }) {
-            activeWindowId = id
-        }
-    }
-
     var activeWindow: Window? {
         windows.first { $0.id == activeWindowId }
     }
 
-    private var canAddWindow: Bool {
+    var canAddWindow: Bool {
         windows.count < 5
     }
 
@@ -61,12 +45,33 @@ class WindowManager: ObservableObject {
 
     @discardableResult
     func addWindow() -> UUID {
+        if canAddWindow {
+            let window = Window()
+            windows.append(window)
+            activeWindowId = window.id
+            save()
+            return window.id
+        }
+        if let activeWindowId {
+            return activeWindowId
+        }
+        if let firstWindow = windows.first {
+            activeWindowId = firstWindow.id
+            return firstWindow.id
+        }
         let window = Window()
-        guard canAddWindow else { return window.id }
-        windows.append(window)
+        windows = [window]
         activeWindowId = window.id
         save()
         return window.id
+    }
+
+    func ensureActiveWindow() -> Window? {
+        if let activeWindow {
+            return activeWindow
+        }
+        let windowId = addWindow()
+        return windows.first { $0.id == windowId }
     }
 
     func removeWindow(_ id: UUID) {

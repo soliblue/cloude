@@ -57,21 +57,21 @@ struct FileViewerBreadcrumb: View {
         path.deletingLastPathComponent
     }
 
-    private var components: [PathComponent] {
-        var result: [PathComponent] = []
+    private var components: [DirectoryPathComponent] {
+        var result: [DirectoryPathComponent] = []
         var current = parentPath
 
         while current != "/" && !current.isEmpty {
             let name = current.lastPathComponent.truncatedBreadcrumb
-            result.insert(PathComponent(name: name, path: current), at: 0)
+            result.insert(DirectoryPathComponent(name: name, path: current), at: 0)
             current = current.deletingLastPathComponent
         }
-        result.insert(PathComponent(name: "/", path: "/"), at: 0)
+        result.insert(DirectoryPathComponent(name: "/", path: "/"), at: 0)
 
         if result.count > 4 {
             let first = Array(result.prefix(1))
             let last2 = Array(result.suffix(2))
-            return first + [PathComponent(name: "…", path: "")] + last2
+            return first + [DirectoryPathComponent(name: "…", path: "")] + last2
         }
 
         return result

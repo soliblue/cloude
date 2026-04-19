@@ -47,8 +47,12 @@ extension WorkspaceStore {
         windowManager: WindowManager,
         environmentStore: EnvironmentStore
     ) {
-        let envId = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-        environmentStore.connection(for: envId)?.transcribe(audioBase64: audioData.base64EncodedString())
+        let runtime = activeRuntimeContext(
+            environmentStore: environmentStore,
+            windowManager: windowManager,
+            conversationStore: conversationStore
+        )
+        runtime.connection?.transcribe(audioBase64: audioData.base64EncodedString())
     }
 
     func stopActiveConversation(environmentStore: EnvironmentStore, windowManager: WindowManager, conversationStore: ConversationStore) {
@@ -69,16 +73,18 @@ extension WorkspaceStore {
         windowManager: WindowManager,
         environmentStore: EnvironmentStore
     ) {
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
-        }
-        guard let activeWindow = windowManager.activeWindow else { return }
+        guard let activeWindow = windowManager.ensureActiveWindow() else { return }
+        let runtime = activeRuntimeContext(
+            environmentStore: environmentStore,
+            windowManager: windowManager,
+            conversationStore: conversationStore
+        )
 
         var conversation = activeWindow.conversation(in: conversationStore)
         if conversation == nil {
             conversation = conversationStore.newConversation(
-                workingDirectory: activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore),
-                environmentId: activeWindowEnvironmentId(windowManager: windowManager, conversationStore: conversationStore, environmentStore: environmentStore)
+                workingDirectory: runtime.workingDirectory,
+                environmentId: runtime.environmentId
             )
             windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
         }
@@ -87,11 +93,7 @@ extension WorkspaceStore {
         if conv.environmentId == nil || environmentStore.connection(for: conv.environmentId) == nil {
             conversationStore.setEnvironmentId(
                 conv,
-                environmentId: activeWindowEnvironmentId(
-                    windowManager: windowManager,
-                    conversationStore: conversationStore,
-                    environmentStore: environmentStore
-                )
+                environmentId: runtime.environmentId
             )
         }
         let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv

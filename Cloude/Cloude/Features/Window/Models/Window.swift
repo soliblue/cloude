@@ -64,4 +64,11 @@ struct Window: Identifiable, Codable {
     func conversation(in store: ConversationStore) -> Conversation? {
         conversationId.flatMap { store.conversation(withId: $0) }
     }
+
+    func runtimeEnvironmentId(conversationStore: ConversationStore, environmentStore: EnvironmentStore) -> UUID? {
+        if conversationId != nil {
+            return conversation(in: conversationStore)?.environmentId
+        }
+        return environmentStore.activeEnvironmentId
+    }
 }

@@ -10,19 +10,20 @@ struct EnvironmentFolderPicker: View {
     @State private var pendingConnectionEnvId: UUID?
 
     private var isConnecting: Bool { pendingConnectionEnvId != nil }
+    var currentConversation: Conversation {
+        conversationStore.conversation(withId: conversation.id) ?? conversation
+    }
 
-    private var selectedEnv: ServerEnvironment? {
-        let envId = conversation.environmentId ?? environmentStore.activeEnvironmentId
-        return environmentStore.environments.first { $0.id == envId }
+    var selectedEnv: ServerEnvironment? {
+        environmentStore.environments.first { $0.id == currentConversation.environmentId }
     }
 
     private var isEnvAuthenticated: Bool {
-        let envId = conversation.environmentId ?? environmentStore.activeEnvironmentId
-        return environmentStore.connection(for: envId)?.isReady == true
+        environmentStore.connection(for: currentConversation.environmentId)?.isReady == true
     }
 
     private var folderDisplayName: String {
-        if let dir = conversation.workingDirectory, !dir.isEmpty { return dir }
+        if let dir = currentConversation.workingDirectory, !dir.isEmpty { return dir }
         return "Select folder"
     }
 
@@ -39,7 +40,10 @@ struct EnvironmentFolderPicker: View {
             Menu {
                 ForEach(environmentStore.environments) { env in
                     Button(action: {
-                        conversationStore.setEnvironmentId(conversation, environmentId: env.id)
+                        if currentConversation.environmentId != env.id {
+                            conversationStore.setWorkingDirectory(currentConversation, path: nil)
+                        }
+                        conversationStore.setEnvironmentId(currentConversation, environmentId: env.id)
                         if environmentStore.connection(for: env.id)?.isReady == true {
                             DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
                                 showFolderPicker = true
@@ -127,40 +131,11 @@ struct EnvironmentFolderPicker: View {
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(
                 environmentStore: environmentStore,
-                environmentId: conversation.environmentId ?? environmentStore.activeEnvironmentId
+                environmentId: currentConversation.environmentId
             ) { path in
-                conversationStore.setWorkingDirectory(conversation, path: path)
-                if conversation.isEmpty, conversation.environmentId == nil {
-                    conversationStore.setEnvironmentId(conversation, environmentId: environmentStore.activeEnvironmentId)
-                }
+                conversationStore.setWorkingDirectory(currentConversation, path: path)
                 showFolderPicker = false
             }
         }
-    }
-
-    private var readOnlyContent: some View {
-        HStack(spacing: DS.Spacing.s) {
-            Image.safeSymbol(selectedEnv?.symbol ?? "server.rack")
-                .font(.system(size: DS.Text.m))
-                .foregroundColor(.accentColor)
-            Text(selectedEnv?.host ?? "")
-                .font(.system(size: DS.Text.m, design: .monospaced))
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-            if let dir = conversation.workingDirectory, !dir.isEmpty {
-                Spacer()
-                Text(dir)
-                    .font(.system(size: DS.Text.m, design: .monospaced))
-                    .foregroundColor(.secondary.opacity(DS.Opacity.l))
-                    .lineLimit(1)
-                    .truncationMode(.head)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, DS.Spacing.l)
-        .padding(.vertical, DS.Spacing.m)
-        .background(Color.themeSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
     }
 }

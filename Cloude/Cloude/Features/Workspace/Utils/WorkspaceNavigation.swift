@@ -37,10 +37,7 @@ extension App {
             return
         }
 
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
-        }
-        if let activeWindow = windowManager.activeWindow {
+        if let activeWindow = windowManager.ensureActiveWindow() {
             windowManager.linkToCurrentConversation(activeWindow.id, conversation: conversation)
             AppLogger.bootstrapInfo("conversation search selected convId=\(conversation.id.uuidString) query=\(trimmedQuery)")
         }
@@ -52,32 +49,29 @@ extension App {
     }
 
     func openFilesTab(path: String?) {
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
-        }
-        guard let activeWindow = windowManager.activeWindow else { return }
+        guard let activeWindow = windowManager.ensureActiveWindow() else { return }
         windowManager.setFileBrowserRootPath(activeWindow.id, path: path?.nilIfEmpty)
         windowManager.setWindowTab(activeWindow.id, tab: .files)
         AppLogger.bootstrapInfo("open files tab windowId=\(activeWindow.id.uuidString) path=\(path ?? "-")")
     }
 
     func openGitTab(path: String?) {
-        if windowManager.activeWindow == nil {
-            windowManager.addWindow()
-        }
-        guard let activeWindow = windowManager.activeWindow else { return }
+        guard let activeWindow = windowManager.ensureActiveWindow() else { return }
         windowManager.setGitRepoRootPath(activeWindow.id, path: path?.nilIfEmpty)
         windowManager.setWindowTab(activeWindow.id, tab: .gitChanges)
         AppLogger.bootstrapInfo("open git tab windowId=\(activeWindow.id.uuidString) path=\(path ?? "-")")
     }
 
     func openGitDiff(repoPath: String?, filePath: String, staged: Bool) {
-        let environmentId = activeConversation()?.environmentId ?? environmentStore.activeEnvironmentId
-        let resolvedRepoPath = repoPath ?? activeConversation()?.workingDirectory ?? environmentStore.connection(for: environmentId)?.defaultWorkingDirectory ?? "~"
+        let runtime = windowManager.activeWindow?.runtimeContext(
+            conversationStore: conversationStore,
+            environmentStore: environmentStore
+        )
+        let resolvedRepoPath = repoPath ?? runtime?.workingDirectory ?? "~"
         gitDiffRequest = GitDiffRequest(
             repoPath: resolvedRepoPath,
             file: GitFileStatus(status: "M", path: filePath, staged: staged, additions: nil, deletions: nil),
-            environmentId: environmentId
+            environmentId: runtime?.environmentId
         )
         AppLogger.bootstrapInfo("open git diff repo=\(resolvedRepoPath) file=\(filePath) staged=\(staged)")
     }

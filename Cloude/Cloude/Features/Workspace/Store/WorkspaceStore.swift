@@ -21,13 +21,36 @@ final class WorkspaceStore: ObservableObject {
         windowManager.activeWindow?.conversation(in: conversationStore)
     }
 
+    func activeRuntimeContext(
+        environmentStore: EnvironmentStore,
+        windowManager: WindowManager,
+        conversationStore: ConversationStore
+    ) -> WindowRuntimeContext {
+        if let activeWindow = windowManager.activeWindow {
+            return activeWindow.runtimeContext(conversationStore: conversationStore, environmentStore: environmentStore)
+        }
+        let environmentId = environmentStore.activeEnvironmentId
+        let environment = environmentStore.environments.first { $0.id == environmentId }
+        let connection = environmentStore.connection(for: environmentId)
+        return WindowRuntimeContext(
+            conversation: nil,
+            environmentId: environmentId,
+            environment: environment,
+            connection: connection,
+            workingDirectory: connection?.defaultWorkingDirectory?.nilIfEmpty
+        )
+    }
+
     func activeEnvConnection(
         environmentStore: EnvironmentStore,
         windowManager: WindowManager,
         conversationStore: ConversationStore
     ) -> EnvironmentConnection? {
-        let envId = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-        return environmentStore.connection(for: envId)
+        activeRuntimeContext(
+            environmentStore: environmentStore,
+            windowManager: windowManager,
+            conversationStore: conversationStore
+        ).connection
     }
 
     func hasEnvironmentMismatch(
@@ -35,31 +58,14 @@ final class WorkspaceStore: ObservableObject {
         windowManager: WindowManager,
         conversationStore: ConversationStore
     ) -> Bool {
-        if let envId = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId {
-            return environmentStore.connection(for: envId)?.isReady != true
+        let runtime = activeRuntimeContext(
+            environmentStore: environmentStore,
+            windowManager: windowManager,
+            conversationStore: conversationStore
+        )
+        if runtime.conversation?.environmentId != nil {
+            return runtime.connection?.isReady != true
         }
         return false
-    }
-
-    func activeWindowWorkingDirectory(windowManager: WindowManager, conversationStore: ConversationStore) -> String? {
-        if let activeWindow = windowManager.activeWindow,
-           let convId = activeWindow.conversationId,
-           let conv = conversationStore.conversation(withId: convId) {
-            return conv.workingDirectory
-        }
-        return nil
-    }
-
-    func activeWindowEnvironmentId(
-        windowManager: WindowManager,
-        conversationStore: ConversationStore,
-        environmentStore: EnvironmentStore
-    ) -> UUID? {
-        if let activeWindow = windowManager.activeWindow,
-           let convId = activeWindow.conversationId,
-           let conv = conversationStore.conversation(withId: convId) {
-            return conv.environmentId ?? environmentStore.activeEnvironmentId
-        }
-        return environmentStore.activeEnvironmentId
     }
 }

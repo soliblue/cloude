@@ -37,18 +37,8 @@ extension FolderPickerView {
         .background(Color.themeSecondary)
     }
 
-    var pathComponents: [PathComponent] {
-        var components: [PathComponent] = []
-        var path = currentPath
-
-        while path != "/" && !path.isEmpty {
-            let name = path.lastPathComponent
-            components.insert(PathComponent(name: name, path: path), at: 0)
-            path = path.deletingLastPathComponent
-        }
-        components.insert(PathComponent(name: "/", path: "/"), at: 0)
-
-        return components
+    var pathComponents: [DirectoryPathComponent] {
+        currentPath.directoryPathComponents
     }
 }
 

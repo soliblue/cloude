@@ -47,7 +47,7 @@ extension ConversationStore {
         mutate(conversation.id) { $0.symbol = symbol }
     }
 
-    func setWorkingDirectory(_ conversation: Conversation, path: String) {
+    func setWorkingDirectory(_ conversation: Conversation, path: String?) {
         mutate(conversation.id) { $0.workingDirectory = path }
     }
 
