@@ -19,24 +19,24 @@ extension AppDelegate {
             }
         }
 
-        runnerManager.onOutput = { [weak self] text, conversationId in
-            self?.server.broadcast(.output(text: text, conversationId: conversationId))
+        runnerManager.onOutput = { [weak self] text, conversationId, seq in
+            self?.server.broadcast(.output(text: text, conversationId: conversationId, seq: seq))
         }
 
         runnerManager.onSessionId = { [weak self] sessionId, conversationId in
             self?.server.broadcast(.sessionId(id: sessionId, conversationId: conversationId))
         }
 
-        runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId, textPosition, editInfo in
-            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo))
+        runnerManager.onToolCall = { [weak self] name, input, toolId, parentToolId, conversationId, textPosition, editInfo, seq in
+            self?.server.broadcast(.toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo, seq: seq))
         }
 
-        runnerManager.onToolResult = { [weak self] toolId, summary, output, conversationId in
-            self?.server.broadcast(.toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId))
+        runnerManager.onToolResult = { [weak self] toolId, summary, output, conversationId, seq in
+            self?.server.broadcast(.toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId, seq: seq))
         }
 
-        runnerManager.onRunStats = { [weak self] durationMs, costUsd, model, conversationId in
-            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId))
+        runnerManager.onRunStats = { [weak self] durationMs, costUsd, model, conversationId, seq in
+            self?.server.broadcast(.runStats(durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId, seq: seq))
         }
 
         runnerManager.onStatusChange = { [weak self] state, conversationId in

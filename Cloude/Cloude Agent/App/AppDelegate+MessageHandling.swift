@@ -44,6 +44,11 @@ extension AppDelegate {
                 server.sendMessage(.noMissedResponse(sessionId: sessionId), to: connection)
             }
 
+        case .resumeFrom(let sessionId, let lastSeq):
+            let result = runnerManager.replayBuffer.replayFrom(sessionId: sessionId, lastSeq: lastSeq)
+            Log.info("resumeFrom sessionId=\(sessionId.prefix(8)) lastSeq=\(lastSeq) events=\(result.events.count) historyOnly=\(result.historyOnly)")
+            server.sendMessage(.resumeFromResponse(sessionId: sessionId, events: result.events, historyOnly: result.historyOnly), to: connection)
+
         case .gitStatus(let path):
             handleGitStatus(path, connection: connection)
 

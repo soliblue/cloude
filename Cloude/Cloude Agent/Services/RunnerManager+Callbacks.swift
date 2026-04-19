@@ -9,7 +9,13 @@ extension RunnerManager {
                 convRunner.accumulatedResponse += text
                 self.activeRunners[conversationId] = convRunner
             }
-            self.onOutput?(text, conversationId)
+            let sessionId = self.activeRunners[conversationId]?.sessionId
+            let seq: Int? = sessionId.map { sid in
+                self.replayBuffer.stamp(sessionId: sid) { s in
+                    .output(text: text, conversationId: conversationId, seq: s)
+                }
+            }
+            self.onOutput?(text, conversationId, seq)
         }
 
         runner.onSessionId = { [weak self] sessionId in
@@ -28,19 +34,39 @@ extension RunnerManager {
                 convRunner.accumulatedToolCalls.append(storedCall)
                 self.activeRunners[conversationId] = convRunner
             }
-            self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition, editInfo)
+            let sessionId = self.activeRunners[conversationId]?.sessionId
+            let seq: Int? = sessionId.map { sid in
+                self.replayBuffer.stamp(sessionId: sid) { s in
+                    .toolCall(name: name, input: input, toolId: toolId, parentToolId: parentToolId, conversationId: conversationId, textPosition: textPosition, editInfo: editInfo, seq: s)
+                }
+            }
+            self.onToolCall?(name, input, toolId, parentToolId, conversationId, textPosition, editInfo, seq)
         }
 
         runner.onToolResult = { [weak self] toolId, summary, output in
-            self?.onToolResult?(toolId, summary, output, conversationId)
+            guard let self else { return }
+            let sessionId = self.activeRunners[conversationId]?.sessionId
+            let seq: Int? = sessionId.map { sid in
+                self.replayBuffer.stamp(sessionId: sid) { s in
+                    .toolResult(toolId: toolId, summary: summary, output: output, conversationId: conversationId, seq: s)
+                }
+            }
+            self.onToolResult?(toolId, summary, output, conversationId, seq)
         }
 
         runner.onRunStats = { [weak self] durationMs, costUsd, model in
-            if var convRunner = self?.activeRunners[conversationId] {
+            guard let self else { return }
+            if var convRunner = self.activeRunners[conversationId] {
                 convRunner.runStats = (durationMs, costUsd, model)
-                self?.activeRunners[conversationId] = convRunner
+                self.activeRunners[conversationId] = convRunner
             }
-            self?.onRunStats?(durationMs, costUsd, model, conversationId)
+            let sessionId = self.activeRunners[conversationId]?.sessionId
+            let seq: Int? = sessionId.map { sid in
+                self.replayBuffer.stamp(sessionId: sid) { s in
+                    .runStats(durationMs: durationMs, costUsd: costUsd, model: model, conversationId: conversationId, seq: s)
+                }
+            }
+            self.onRunStats?(durationMs, costUsd, model, conversationId, seq)
         }
 
         runner.onCloudeCommand = { [weak self] action, value in
@@ -74,6 +100,9 @@ extension RunnerManager {
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 300) { [weak self] in
                 if let runner = self?.activeRunners[conversationId], !runner.runner.isRunning {
+                    if let sid = runner.sessionId {
+                        self?.replayBuffer.release(sessionId: sid)
+                    }
                     self?.activeRunners.removeValue(forKey: conversationId)
                     Log.info("Cleaned up runner for \(conversationId.prefix(8))")
                 }
