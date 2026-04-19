@@ -8,19 +8,14 @@ extension WorkspaceView {
 
     var activeEnvConnection: EnvironmentConnection? {
         store.activeEnvConnection(
-            connection: connection,
+            environmentStore: environmentStore,
             windowManager: windowManager,
-            conversationStore: conversationStore,
-            environmentStore: environmentStore
+            conversationStore: conversationStore
         )
     }
 
     var hasEnvironmentMismatch: Bool {
-        store.hasEnvironmentMismatch(connection: connection, windowManager: windowManager, conversationStore: conversationStore)
-    }
-
-    var activeConversationIsRunning: Bool {
-        store.activeConversationIsRunning(connection: connection, windowManager: windowManager)
+        store.hasEnvironmentMismatch(environmentStore: environmentStore, windowManager: windowManager, conversationStore: conversationStore)
     }
 
     var activeWindowIdBinding: Binding<UUID?> {
@@ -61,11 +56,6 @@ extension WorkspaceView {
     var isKeyboardVisible: Bool {
         get { store.isKeyboardVisible }
         nonmutating set { store.isKeyboardVisible = newValue }
-    }
-
-    var fileSearchResults: [String] {
-        get { store.fileSearchResults }
-        nonmutating set { store.fileSearchResults = newValue }
     }
 
     var currentEffort: EffortLevel? {

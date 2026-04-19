@@ -5,13 +5,11 @@ import CloudeShared
 
 struct WorkspaceView: View {
     @StateObject var store = WorkspaceStore()
-    @ObservedObject var connection: ConnectionManager
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
     @ObservedObject var environmentStore: EnvironmentStore
     @Environment(\.appTheme) var appTheme
     var onShowSettings: (() -> Void)?
-    var onShowWhiteboard: (() -> Void)?
 
     var body: some View {
         #if DEBUG
@@ -51,15 +49,12 @@ struct WorkspaceView: View {
             store.initializeFirstWindow(conversationStore: conversationStore, windowManager: windowManager)
             store.currentEffort = currentConversation?.defaultEffort
             store.currentModel = currentConversation?.defaultModel
-        }
-        .task(id: connection.isAnyAuthenticated) {
-            guard connection.isAnyAuthenticated else { return }
-            try? await Task.sleep(for: .seconds(4))
-            store.checkGitForAllDirectories(conversationStore: conversationStore)
-            store.checkNextGitDirectory(connection: connection)
+            if let activeId = windowManager.activeWindowId {
+                store.checkGitForActiveWindow(windowId: activeId, conversationStore: conversationStore, windowManager: windowManager, environmentStore: environmentStore)
+            }
         }
         .onChange(of: windowManager.activeWindowId) { oldValue, newValue in
-            store.handleActiveWindowChange(oldId: oldValue, newId: newValue, conversationStore: conversationStore, windowManager: windowManager, connection: connection)
+            store.handleActiveWindowChange(oldId: oldValue, newId: newValue, conversationStore: conversationStore, windowManager: windowManager, environmentStore: environmentStore)
         }
         .onChange(of: currentModel) { _, newValue in
             store.handleModelChange(newValue, conversationStore: conversationStore, windowManager: windowManager)
@@ -78,8 +73,8 @@ struct WorkspaceView: View {
         .onReceive(NotificationCenter.default.publisher(for: .dismissWorkspaceTransientUI)) { _ in
             store.dismissTransientUI()
         }
-        .onReceive(connection.events) { event in
-            store.handleConnectionEvent(event, connection: connection, conversationStore: conversationStore)
+        .onReceive(environmentStore.events) { event in
+            store.handleConnectionEvent(event, environmentStore: environmentStore, conversationStore: conversationStore)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             store.isKeyboardVisible = true

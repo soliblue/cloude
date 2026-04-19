@@ -18,23 +18,4 @@ enum AppColor {
     static let rust = Color(hex: 0xDE7630)
     static let success = Color(hex: 0x7AB87A)
     static let danger = Color(hex: 0xB54E5E)
-
-    static func named(_ name: String?, default defaultColor: Color = AppColor.blue) -> Color {
-        switch name?.lowercased() {
-        case "blue": return blue
-        case "green": return green
-        case "red": return red
-        case "purple": return purple
-        case "orange": return orange
-        case "cyan": return cyan
-        case "magenta", "pink": return pink
-        case "yellow": return yellow
-        case "teal": return teal
-        case "indigo": return indigo
-        case "mint": return mint
-        case "brown": return brown
-        case "gray", "grey": return gray
-        default: return defaultColor
-        }
-    }
 }

@@ -31,8 +31,6 @@ sealed class ClientMessage {
     data class GitCommit(val path: String, val message: String, val files: List<String>) : ClientMessage()
     data class GitLog(val path: String, val count: Int = 10) : ClientMessage()
     data class Transcribe(val audioBase64: String) : ClientMessage()
-    data object GetProcesses : ClientMessage()
-    data class KillProcess(val pid: Int) : ClientMessage()
     data class SyncHistory(val sessionId: String, val workingDirectory: String) : ClientMessage()
     data class SearchFiles(val query: String, val workingDirectory: String) : ClientMessage()
     data class SuggestName(val text: String, val context: List<String> = emptyList(), val conversationId: String) : ClientMessage()
@@ -112,11 +110,6 @@ sealed class ClientMessage {
             is Transcribe -> {
                 put("type", "transcribe")
                 put("audioBase64", msg.audioBase64)
-            }
-            is GetProcesses -> put("type", "get_processes")
-            is KillProcess -> {
-                put("type", "kill_process")
-                put("pid", msg.pid)
             }
             is SyncHistory -> {
                 put("type", "sync_history")

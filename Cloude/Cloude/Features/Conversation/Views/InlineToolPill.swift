@@ -1,10 +1,6 @@
 import SwiftUI
 import CloudeShared
 
-extension Notification.Name {
-    static let openWhiteboard = Notification.Name("openWhiteboard")
-}
-
 struct InlineToolPill: View {
     let toolCall: ToolCall
     var children: [ToolCall] = []
@@ -17,9 +13,6 @@ struct InlineToolPill: View {
     var body: some View {
         if meta.isIOSControl || meta.isInert {
             pillContent
-        } else if meta.isWhiteboardTool {
-            Button { NotificationCenter.default.post(name: .openWhiteboard, object: nil) } label: { pillContent }
-                .buttonStyle(.plain)
         } else {
             Button { onTap?() } label: { pillContent }
                 .buttonStyle(.plain)

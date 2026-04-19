@@ -242,24 +242,14 @@ fun ChatScreen(
                                 .padding(start = DS.Spacing.xs, end = DS.Spacing.xxl)
                         ) {
                             if (streamingTools.isNotEmpty()) {
-                                val regularTools = streamingTools.filter { !isWidget(it.name) }
-                                val widgetTools = streamingTools.filter { isWidget(it.name) }
-
-                                if (regularTools.isNotEmpty()) {
-                                    FlowRow(
-                                        modifier = Modifier.padding(bottom = DS.Spacing.xs),
-                                        horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
-                                        verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
-                                    ) {
-                                        regularTools.forEach { toolCall ->
-                                            ToolCallLabel(toolCall = toolCall)
-                                        }
+                                FlowRow(
+                                    modifier = Modifier.padding(bottom = DS.Spacing.xs),
+                                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                                    verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+                                ) {
+                                    streamingTools.forEach { toolCall ->
+                                        ToolCallLabel(toolCall = toolCall)
                                     }
-                                }
-
-                                widgetTools.forEach { toolCall ->
-                                    WidgetView(toolName = toolCall.name, inputJson = toolCall.input)
-                                    Spacer(modifier = Modifier.height(DS.Spacing.xs))
                                 }
                             }
                             if (streamingText.isNotEmpty()) {
@@ -306,8 +296,6 @@ fun ChatScreen(
             onSend = { text, images, files ->
                 when {
                     text.trim().equals("/skills", ignoreCase = true) -> viewModel.showSkills()
-                    text.trim().equals("/test-widgets", ignoreCase = true) -> viewModel.injectTestWidgets()
-                    text.trim().equals("/whiteboard", ignoreCase = true) -> viewModel.handleWhiteboardAction("open", null)
                     text.trim().equals("/export", ignoreCase = true) -> {
                         val markdown = viewModel.exportConversation()
                         val intent = Intent(Intent.ACTION_SEND).apply {

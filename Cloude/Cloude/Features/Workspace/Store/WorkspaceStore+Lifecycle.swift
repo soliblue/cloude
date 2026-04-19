@@ -17,7 +17,7 @@ extension WorkspaceStore {
         newId: UUID?,
         conversationStore: ConversationStore,
         windowManager: WindowManager,
-        connection: ConnectionManager? = nil
+        environmentStore: EnvironmentStore? = nil
     ) {
         if let oldId = oldId {
             drafts[oldId] = Draft(text: inputText, images: attachedImages, effort: currentEffort, model: currentModel)
@@ -34,13 +34,22 @@ extension WorkspaceStore {
             currentEffort = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.defaultEffort
             currentModel = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.defaultModel
         }
-        if let newId, let connection {
-            let window = windowManager.windows.first(where: { $0.id == newId })
-            let conv = window?.conversation(in: conversationStore)
-            let dir = window?.gitRepoRootPath ?? conv?.workingDirectory
-            if let dir, !dir.isEmpty {
-                connection.gitStatus(path: dir, environmentId: conv?.environmentId)
-            }
+        if let newId, let environmentStore {
+            checkGitForActiveWindow(windowId: newId, conversationStore: conversationStore, windowManager: windowManager, environmentStore: environmentStore)
+        }
+    }
+
+    func checkGitForActiveWindow(
+        windowId: UUID,
+        conversationStore: ConversationStore,
+        windowManager: WindowManager,
+        environmentStore: EnvironmentStore
+    ) {
+        let window = windowManager.windows.first(where: { $0.id == windowId })
+        let conv = window?.conversation(in: conversationStore)
+        if let dir = window?.gitRepoRootPath ?? conv?.workingDirectory,
+           !dir.isEmpty {
+            environmentStore.connection(for: conv?.environmentId ?? environmentStore.activeEnvironmentId)?.gitStatus.enqueue(dir)
         }
     }
 
@@ -83,39 +92,22 @@ extension WorkspaceStore {
         }
     }
 
-    func checkGitForAllDirectories(conversationStore: ConversationStore) {
-        var seen = Set<String>()
-        pendingGitChecks = conversationStore.listableConversations.compactMap { conv in
-            if let dir = conv.workingDirectory,
-               !dir.isEmpty,
-               gitBranches[dir] == nil {
-                let key = "\(dir)|\(conv.environmentId?.uuidString ?? "")"
-                if !seen.contains(key) {
-                    seen.insert(key)
-                    return (dir, conv.environmentId)
-                }
-            }
-            return nil
-        }
-    }
-
-    func checkNextGitDirectory(connection: ConnectionManager) {
-        if let check = pendingGitChecks.first {
-            connection.gitStatus(path: check.path, environmentId: check.environmentId)
-        }
-    }
-
     func searchFiles(
         _ query: String,
-        connection: ConnectionManager,
+        environmentStore: EnvironmentStore,
         conversationStore: ConversationStore,
         windowManager: WindowManager
     ) {
+        let envId = activeWindowEnvironmentId(
+            windowManager: windowManager,
+            conversationStore: conversationStore,
+            environmentStore: environmentStore
+        )
         if let workingDir = activeWindowWorkingDirectory(windowManager: windowManager, conversationStore: conversationStore),
            !workingDir.isEmpty {
-            connection.searchFiles(query: query, workingDirectory: workingDir)
+            environmentStore.connection(for: envId)?.searchFiles(query: query, workingDirectory: workingDir)
         } else {
-            fileSearchResults = []
+            environmentStore.connection(for: envId)?.clearFileSearchResults()
         }
     }
 

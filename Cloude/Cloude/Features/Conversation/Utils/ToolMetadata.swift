@@ -5,9 +5,7 @@ struct ToolMetadata {
     let name: String
     let input: String?
 
-    var isWidget: Bool { WidgetRegistry.isWidget(name) }
-    var isWhiteboardTool: Bool { name.hasPrefix("mcp__ios__whiteboard_") }
-    var isIOSControl: Bool { name.hasPrefix("mcp__ios__") && !isWidget && !isWhiteboardTool }
+    var isIOSControl: Bool { name.hasPrefix("mcp__ios__") }
     var isInert: Bool { name == "ToolSearch" }
 
     var isScript: Bool {
@@ -21,8 +19,6 @@ struct ToolMetadata {
 
     var displayName: String {
         if let action = iosAction { return action.capitalized }
-        if isWhiteboardTool { return String(name.dropFirst("mcp__ios__whiteboard_".count)).capitalized }
-        if isWidget { return WidgetRegistry.displayName(name) }
         switch name {
         case "TodoWrite": return "Tasks"
         case "TeamCreate": return "Team"
@@ -54,8 +50,6 @@ struct ToolMetadata {
 
     var icon: String {
         if let action = iosAction { return Self.iosIcons[action] ?? "iphone" }
-        if isWhiteboardTool { return "rectangle.on.rectangle.angled" }
-        if isWidget { return WidgetRegistry.iconName(name) }
         switch name {
         case "Bash": return isScript ? "scroll" : bashIcon(input ?? "")
         case "Read": return "doc.text"
@@ -79,7 +73,6 @@ struct ToolMetadata {
 
     var color: Color {
         if isIOSControl { return AppColor.mint }
-        if isWidget { return .secondary }
         if name == "Bash" {
             if isScript { return AppColor.teal }
             if let input { return bashColor(input) }
@@ -94,8 +87,6 @@ struct ToolMetadata {
         case "Agent": return "Agent"
         default:
             if isIOSControl { return "iOS" }
-            if isWhiteboardTool { return "Whiteboard" }
-            if isWidget { return "Widget" }
             return name
         }
     }
@@ -115,10 +106,7 @@ struct ToolMetadata {
     private func iosDetail(_ action: String, json raw: String) -> String? {
         let json = raw.data(using: .utf8).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
         switch action {
-        case "rename": return (json["name"] as? String)?.truncated(limit: 12)
-        case "symbol": return json["symbol"] as? String
         case "notify": return (json["message"] as? String)?.truncated(limit: 12)
-        case "clipboard": return (json["text"] as? String)?.truncated(limit: 12)
         case "open": return (json["url"] as? String)?.truncatedURL(limit: 12)
         case "haptic": return json["style"] as? String
         default: return nil
@@ -134,9 +122,9 @@ struct ToolMetadata {
     }
 
     private static let iosIcons: [String: String] = [
-        "rename": "character.cursor.ibeam", "symbol": "star.square", "notify": "bell.fill",
-        "clipboard": "doc.on.clipboard", "open": "safari", "haptic": "iphone.radiowaves.left.and.right",
-        "switch": "arrow.left.arrow.right", "delete": "trash", "skip": "forward.fill", "screenshot": "camera.viewfinder"
+        "notify": "bell.fill",
+        "open": "safari", "haptic": "iphone.radiowaves.left.and.right",
+        "switch": "arrow.left.arrow.right", "delete": "trash", "skip": "forward.fill"
     ]
 
     private static let agentIcons = [

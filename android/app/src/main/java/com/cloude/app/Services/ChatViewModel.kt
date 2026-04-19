@@ -24,14 +24,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 
 sealed class DeviceAction {
     data class Haptic(val style: String) : DeviceAction()
     data class Notify(val message: String) : DeviceAction()
-    data class Screenshot(val conversationId: String?) : DeviceAction()
 }
 
 class ChatViewModel(
@@ -58,12 +56,6 @@ class ChatViewModel(
     private val _showSkills = MutableStateFlow(false)
     val showSkills: StateFlow<Boolean> = _showSkills
 
-    private val _whiteboardState = MutableStateFlow(com.cloude.app.UI.whiteboard.WhiteboardCanvasState())
-    val whiteboardState: StateFlow<com.cloude.app.UI.whiteboard.WhiteboardCanvasState> = _whiteboardState
-
-    private val _showWhiteboard = MutableStateFlow(false)
-    val showWhiteboard: StateFlow<Boolean> = _showWhiteboard
-
     private val _deviceActions = MutableSharedFlow<DeviceAction>(extraBufferCapacity = 8)
     val deviceActions: SharedFlow<DeviceAction> = _deviceActions
 
@@ -83,19 +75,16 @@ class ChatViewModel(
                 handleMessage(message)
             }
         }
-        loadWhiteboard(_conversation.value.id)
     }
 
     fun loadConversation(id: String) {
         conversationStore.conversation(id)?.let { _conversation.value = it }
-        loadWhiteboard(id)
     }
 
     fun newConversation() {
         _conversation.value = Conversation(
             environmentId = environmentStore.activeEnvironmentId.value
         )
-        _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState()
     }
 
     fun startSession() {
@@ -254,134 +243,6 @@ class ChatViewModel(
         _showSkills.value = true
     }
 
-    fun updateWhiteboardState(state: com.cloude.app.UI.whiteboard.WhiteboardCanvasState) {
-        _whiteboardState.value = state
-        persistWhiteboard()
-    }
-
-    fun dismissWhiteboard() {
-        _showWhiteboard.value = false
-    }
-
-    private fun whiteboardDir(): File =
-        File(conversationStore.imagesDir.parentFile, "whiteboards").also { it.mkdirs() }
-
-    private fun persistWhiteboard() {
-        val convId = _conversation.value.id
-        val state = _whiteboardState.value
-        val file = File(whiteboardDir(), "$convId.json")
-        if (state.elements.isEmpty()) {
-            scope.launch(Dispatchers.IO) { file.delete() }
-            return
-        }
-        scope.launch(Dispatchers.IO) {
-            val persist = com.cloude.app.UI.whiteboard.WhiteboardPersistState(
-                viewport = state.viewport,
-                elements = state.elements
-            )
-            file.writeText(deviceJson.encodeToString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), persist))
-        }
-    }
-
-    private fun loadWhiteboard(conversationId: String) {
-        val file = File(whiteboardDir(), "$conversationId.json")
-        if (!file.exists()) {
-            _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState()
-            return
-        }
-        val persist = try {
-            deviceJson.decodeFromString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), file.readText())
-        } catch (_: Exception) {
-            _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState()
-            return
-        }
-        _whiteboardState.value = com.cloude.app.UI.whiteboard.WhiteboardCanvasState(
-            elements = persist.elements,
-            viewport = persist.viewport
-        )
-    }
-
-    fun handleWhiteboardAction(action: String, json: kotlinx.serialization.json.JsonObject?) {
-        val state = _whiteboardState.value
-        when (action) {
-            "open" -> _showWhiteboard.value = true
-            "clear" -> {
-                _whiteboardState.value = state.copy(elements = emptyList())
-                persistWhiteboard()
-            }
-            "add" -> {
-                val elements = json?.get("elements")?.let {
-                    deviceJson.decodeFromJsonElement(
-                        kotlinx.serialization.builtins.ListSerializer(com.cloude.app.UI.whiteboard.WhiteboardElement.serializer()),
-                        it
-                    )
-                } ?: emptyList()
-                _whiteboardState.value = state.copy(elements = state.elements + elements)
-                _showWhiteboard.value = true
-                persistWhiteboard()
-            }
-            "remove" -> {
-                val ids = json?.get("ids")?.jsonArray?.mapNotNull { it.jsonPrimitive.content }?.toSet() ?: emptySet()
-                _whiteboardState.value = state.copy(elements = state.elements.filter { it.id !in ids })
-                persistWhiteboard()
-            }
-            "update" -> {
-                val id = json?.get("id")?.jsonPrimitive?.content ?: return
-                _whiteboardState.value = state.copy(elements = state.elements.map { el ->
-                    if (el.id == id) el.copy(
-                        x = json["x"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.x,
-                        y = json["y"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.y,
-                        w = json["w"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.w,
-                        h = json["h"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: el.h,
-                        label = json["label"]?.jsonPrimitive?.content ?: el.label,
-                        fill = json["fill"]?.jsonPrimitive?.content ?: el.fill,
-                        stroke = json["stroke"]?.jsonPrimitive?.content ?: el.stroke
-                    ) else el
-                })
-                persistWhiteboard()
-            }
-            "viewport" -> {
-                val vp = state.viewport
-                _whiteboardState.value = state.copy(viewport = vp.copy(
-                    x = json?.get("x")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.x,
-                    y = json?.get("y")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.y,
-                    zoom = json?.get("zoom")?.jsonPrimitive?.content?.toDoubleOrNull() ?: vp.zoom
-                ))
-                persistWhiteboard()
-            }
-        }
-    }
-
-    private fun handleWhiteboardActionForConversation(convId: String, action: String, json: kotlinx.serialization.json.JsonObject?) {
-        scope.launch(Dispatchers.IO) {
-            val file = File(whiteboardDir(), "$convId.json")
-            val existing = if (file.exists()) {
-                try { deviceJson.decodeFromString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), file.readText()) }
-                catch (_: Exception) { com.cloude.app.UI.whiteboard.WhiteboardPersistState() }
-            } else com.cloude.app.UI.whiteboard.WhiteboardPersistState()
-
-            val updated = when (action) {
-                "clear" -> existing.copy(elements = emptyList())
-                "add" -> {
-                    val elements = json?.get("elements")?.let {
-                        deviceJson.decodeFromJsonElement(
-                            kotlinx.serialization.builtins.ListSerializer(com.cloude.app.UI.whiteboard.WhiteboardElement.serializer()),
-                            it
-                        )
-                    } ?: emptyList()
-                    existing.copy(elements = existing.elements + elements)
-                }
-                "remove" -> {
-                    val ids = json?.get("ids")?.jsonArray?.mapNotNull { it.jsonPrimitive.content }?.toSet() ?: emptySet()
-                    existing.copy(elements = existing.elements.filter { it.id !in ids })
-                }
-                else -> existing
-            }
-            if (updated.elements.isEmpty()) file.delete()
-            else file.writeText(deviceJson.encodeToString(com.cloude.app.UI.whiteboard.WhiteboardPersistState.serializer(), updated))
-        }
-    }
-
     fun dismissSkills() {
         _showSkills.value = false
     }
@@ -517,35 +378,6 @@ class ChatViewModel(
         _conversation.value = forked
     }
 
-    fun injectTestWidgets() {
-        val conv = _conversation.value
-        val widgetMessage = ChatMessage(
-            isUser = false,
-            text = "Here are test widgets:",
-            toolCalls = mutableListOf(
-                ToolCall(
-                    name = "mcp__widgets__pie_chart",
-                    input = """{"title":"Language Usage","slices":[{"label":"Kotlin","value":45},{"label":"Swift","value":30},{"label":"TypeScript","value":15},{"label":"Go","value":10}]}"""
-                ),
-                ToolCall(
-                    name = "mcp__widgets__timeline",
-                    input = """{"title":"Release History","events":[{"date":"Mar 2026","title":"v1.0 Launch","description":"Initial iOS release","color":"blue"},{"date":"Mar 2026","title":"v1.1 Android","description":"Android app ported","color":"green"},{"date":"Apr 2026","title":"v1.2 Widgets","description":"Widget views added","color":"purple"}]}"""
-                ),
-                ToolCall(
-                    name = "mcp__widgets__tree",
-                    input = """{"root":{"label":"cloude","children":[{"label":"android","children":[{"label":"app","children":[{"label":"build.gradle.kts"},{"label":"src"}]},{"label":"gradle"}]},{"label":"Cloude","children":[{"label":"App"},{"label":"Features"},{"label":"Shared"}]},{"label":"linux-relay","children":[{"label":"index.js"},{"label":"handlers.js"}]}]}}"""
-                ),
-                ToolCall(
-                    name = "mcp__widgets__color_palette",
-                    input = """{"title":"Cloude Theme","colors":[{"hex":"#CC7257","label":"Accent"},{"hex":"#7AB87A","label":"PastelGreen"},{"hex":"#B54E5E","label":"PastelRed"},{"hex":"#64B5F6","label":"LinkBlue"},{"hex":"#FFD54F","label":"FolderYellow"}]}"""
-                )
-            )
-        )
-        val newMessages = conv.messages.toMutableList().apply { add(widgetMessage) }
-        _conversation.value = conv.copy(messages = newMessages, lastMessageAt = System.currentTimeMillis())
-        persistConversation()
-    }
-
     fun searchFiles(query: String) {
         val envId = activeEnvId ?: return
         val workingDir = _conversation.value.workingDirectory
@@ -588,7 +420,7 @@ class ChatViewModel(
         }
     }
 
-    private fun handleDeviceToolCall(name: String, input: String?, conversationId: String?) {
+    private fun handleDeviceToolCall(name: String, input: String?) {
         val action = name.removePrefix("mcp__ios__")
         val params = input?.let {
             try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
@@ -600,7 +432,6 @@ class ChatViewModel(
             "notify" -> params?.get("message")?.jsonPrimitive?.content?.let {
                 _deviceActions.tryEmit(DeviceAction.Notify(it))
             }
-            "screenshot" -> _deviceActions.tryEmit(DeviceAction.Screenshot(conversationId))
         }
     }
 
@@ -646,18 +477,7 @@ class ChatViewModel(
 
             is ServerMessage.ToolCall -> {
                 if (message.name.startsWith("mcp__ios__")) {
-                    handleDeviceToolCall(message.name, message.input, message.conversationId)
-                } else if (message.name.startsWith("mcp__whiteboard__")) {
-                    val convId = resolveConversationId(message.conversationId)
-                    val action = message.name.removePrefix("mcp__whiteboard__")
-                    val json = message.input?.let {
-                        try { deviceJson.parseToJsonElement(it).jsonObject } catch (_: Exception) { null }
-                    }
-                    if (convId == _conversation.value.id) {
-                        handleWhiteboardAction(action, json)
-                    } else if (convId != null) {
-                        handleWhiteboardActionForConversation(convId, action, json)
-                    }
+                    handleDeviceToolCall(message.name, message.input)
                 } else {
                     val convId = resolveConversationId(message.conversationId) ?: return
                     connectionManager.output(convId).addToolCall(

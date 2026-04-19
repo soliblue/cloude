@@ -33,5 +33,4 @@ let builtInCommands: [SlashCommand] = [
     SlashCommand(name: "context", icon: "chart.pie"),
     SlashCommand(name: "cost", icon: "dollarsign.circle"),
     SlashCommand(name: "settings", icon: "gearshape"),
-    SlashCommand(name: "whiteboard", icon: "pencil.and.outline"),
 ]

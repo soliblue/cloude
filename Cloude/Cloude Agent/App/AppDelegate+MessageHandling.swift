@@ -54,16 +54,6 @@ extension AppDelegate {
         case .transcribe(let audioBase64):
             handleTranscribe(audioBase64, connection: connection)
 
-        case .getProcesses:
-            let procs = runnerManager.getProcessInfo()
-            server.sendMessage(.processList(processes: procs), to: connection)
-
-        case .killProcess(let pid):
-            Log.info("Killing process \(pid)")
-            _ = ProcessMonitor.killProcess(pid)
-            let procs = runnerManager.getProcessInfo()
-            server.broadcast(.processList(processes: procs))
-
         case .searchFiles(let query, let workingDirectory):
             Log.info("Searching files for '\(query)' in \(workingDirectory)")
             let files = FileSearchService.search(query: query, in: workingDirectory)

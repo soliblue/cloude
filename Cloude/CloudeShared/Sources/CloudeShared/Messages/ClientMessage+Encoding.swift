@@ -56,11 +56,6 @@ extension ClientMessage {
         case .transcribe(let audioBase64):
             try container.encode("transcribe", forKey: .type)
             try container.encode(audioBase64, forKey: .audioBase64)
-        case .getProcesses:
-            try container.encode("get_processes", forKey: .type)
-        case .killProcess(let pid):
-            try container.encode("kill_process", forKey: .type)
-            try container.encode(pid, forKey: .pid)
         case .syncHistory(let sessionId, let workingDirectory):
             try container.encode("sync_history", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)

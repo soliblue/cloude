@@ -7,12 +7,10 @@ extension String: @retroactive Identifiable {
 
 @main
 struct App: SwiftUI.App {
-    @StateObject var connection = ConnectionManager()
     @StateObject var conversationStore = ConversationStore()
     @StateObject var windowManager = WindowManager()
     @StateObject var environmentStore = EnvironmentStore()
     @StateObject var settingsStore = SettingsStore()
-    @StateObject var whiteboardStore = WhiteboardStore()
     @State var wasBackgrounded = false
     @State var filePathToPreview: String? = nil
     @State var filePreviewEnvironmentId: UUID? = nil
@@ -27,13 +25,12 @@ struct App: SwiftUI.App {
     var body: some Scene {
         WindowGroup {
             shell
-            .overlay { FullscreenColorOverlay() }
             .overlay {
                 if debugOverlayEnabled {
                     AppDebugOverlay()
                 }
             }
-            .environmentObject(connection)
+            .environmentObject(environmentStore)
             .environment(\.appTheme, appTheme)
             .preferredColorScheme(appTheme.colorScheme)
         }

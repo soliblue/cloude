@@ -21,7 +21,7 @@ extension App {
             #if DEBUG
             DebugMetrics.log("Bootstrap", "launch env host=\(host):\(port) envId=\(environment.id.uuidString.prefix(6))")
             #endif
-            connection.connectEnvironment(environment.id, host: environment.host, port: environment.port, token: environment.token, symbol: environment.symbol)
+            environmentStore.connectEnvironment(environment.id, host: environment.host, port: environment.port, token: environment.token, symbol: environment.symbol)
             return
         }
 
@@ -32,7 +32,7 @@ extension App {
             #if DEBUG
             DebugMetrics.log("Bootstrap", "saved env host=\(environment.host):\(environment.port) envId=\(environment.id.uuidString.prefix(6))")
             #endif
-            connection.connectEnvironment(environment.id, host: environment.host, port: environment.port, token: environment.token, symbol: environment.symbol)
+            environmentStore.connectEnvironment(environment.id, host: environment.host, port: environment.port, token: environment.token, symbol: environment.symbol)
             return
         }
 

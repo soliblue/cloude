@@ -100,7 +100,6 @@ public enum ServerMessage: Codable {
     case gitLogResult(path: String, commits: [GitCommit])
     case transcription(text: String)
     case whisperReady(ready: Bool)
-    case processList(processes: [AgentProcessInfo])
     case defaultWorkingDirectory(path: String)
     case skills([Skill])
     case historySync(sessionId: String, messages: [HistoryMessage])
@@ -113,6 +112,6 @@ public enum ServerMessage: Codable {
     case pong(sentAt: Double, serverAt: Double)
 
     enum CodingKeys: String, CodingKey {
-        case type, text, path, diff, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, textPosition, symbol, processes, skills, messages, error, chunkIndex, totalChunks, fullSize, uuid, summary, output, filename, editInfo, sentAt, serverAt, commits, seq, events, historyOnly
+        case type, text, path, diff, state, success, message, entries, data, mimeType, size, truncated, id, sessionId, name, input, status, files, durationMs, costUsd, model, toolId, parentToolId, ready, conversationId, textPosition, symbol, skills, messages, error, chunkIndex, totalChunks, fullSize, uuid, summary, output, filename, editInfo, sentAt, serverAt, commits, seq, events, historyOnly
     }
 }

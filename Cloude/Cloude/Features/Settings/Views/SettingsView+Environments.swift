@@ -6,16 +6,8 @@ extension SettingsView {
             VStack(spacing: 0) {
                 TabView(selection: $selectedEnvironmentPage) {
                     ForEach(Array(environmentStore.environments.enumerated()), id: \.element.id) { index, env in
-                        EnvironmentCard(
-                            env: env,
-                            isConnected: connection.connection(for: env.id)?.phase == .authenticated,
-                            isConnecting: connection.connection(for: env.id)?.phase == .connected,
-                            onConnect: { environmentStore.setActive(env.id); connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol) },
-                            onDisconnect: { connection.disconnectEnvironment(env.id, clearCredentials: false) },
-                            onUpdate: { environmentStore.update($0); if let conn = connection.connection(for: $0.id), conn.phase == .authenticated { conn.disconnect(clearCredentials: false) } },
-                            onDelete: environmentStore.environments.count > 1 ? { environmentStore.delete(env.id) } : nil
-                        )
-                        .tag(index)
+                        environmentCard(env: env)
+                            .tag(index)
                     }
 
                     AddEnvironmentCard { env in
@@ -33,6 +25,29 @@ extension SettingsView {
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: -8, leading: 0, bottom: 0, trailing: 0))
         .listSectionSpacing(0)
+    }
+
+    @ViewBuilder
+    private func environmentCard(env: ServerEnvironment) -> some View {
+        if let connection = environmentStore.connection(for: env.id) {
+            EnvironmentConnectionObserver(connection: connection) { connection in
+                card(env: env, isConnected: connection.isReady, isConnecting: connection.isConnecting)
+            }
+        } else {
+            card(env: env, isConnected: false, isConnecting: false)
+        }
+    }
+
+    private func card(env: ServerEnvironment, isConnected: Bool, isConnecting: Bool) -> some View {
+        EnvironmentCard(
+            env: env,
+            isConnected: isConnected,
+            isConnecting: isConnecting,
+            onConnect: { environmentStore.setActive(env.id); environmentStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol) },
+            onDisconnect: { environmentStore.disconnectEnvironment(env.id, clearCredentials: false) },
+            onUpdate: { environmentStore.update($0); if let conn = environmentStore.connection(for: $0.id), conn.isReady { conn.disconnect(clearCredentials: false) } },
+            onDelete: environmentStore.environments.count > 1 ? { environmentStore.delete(env.id) } : nil
+        )
     }
 
     private var environmentPageIndicators: some View {

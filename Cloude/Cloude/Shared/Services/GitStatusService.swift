@@ -10,7 +10,9 @@ final class GitStatusService {
     private var timeoutTask: Task<Void, Never>?
 
     func enqueue(_ path: String) {
-        queue.append(path)
+        if inFlightPath != path && !queue.contains(path) {
+            queue.append(path)
+        }
         sendNextIfReady()
     }
 

@@ -29,7 +29,7 @@ extension FilePreviewView {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .directory:
-            FileBrowserView(connection: connection, rootPath: path, environmentId: environmentId)
+            FileBrowserView(environmentStore: environmentStore, rootPath: path, environmentId: environmentId)
         case .error(let message):
             ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(message))
         case .loaded, .thumbnail:

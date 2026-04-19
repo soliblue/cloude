@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct FileTreeView: View {
-    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     var rootPath: String?
     var environmentId: UUID?
     var isVisible: Bool
@@ -10,11 +10,19 @@ struct FileTreeView: View {
     @State var selectedFile: FileEntry?
 
     private var defaultWorkingDirectory: String? {
-        connection.connection(for: environmentId)?.defaultWorkingDirectory?.nilIfEmpty
+        connection?.defaultWorkingDirectory?.nilIfEmpty
     }
 
     private var resolvedRootPath: String? {
         rootPath?.nilIfEmpty ?? defaultWorkingDirectory
+    }
+
+    private var connection: EnvironmentConnection? {
+        environmentStore.connection(for: environmentId)
+    }
+
+    private var currentDirectoryListings: [String: [FileEntry]] {
+        connection?.directoryListings ?? [:]
     }
 
     private var visibleNodes: [FileTreeNode] {
@@ -24,6 +32,18 @@ struct FileTreeView: View {
     }
 
     var body: some View {
+        Group {
+            if let connection {
+                EnvironmentConnectionObserver(connection: connection) { _ in
+                    content
+                }
+            } else {
+                content
+            }
+        }
+    }
+
+    private var content: some View {
         Group {
             if state.isInitialLoad {
                 ProgressView()
@@ -47,28 +67,33 @@ struct FileTreeView: View {
             }
         }
         .sheet(item: $selectedFile) { file in
-            FilePreviewView(file: file, connection: connection, environmentId: environmentId)
+            FilePreviewView(file: file, environmentStore: environmentStore, environmentId: environmentId)
+        }
+        .onAppear {
+            if isVisible {
+                loadRootIfNeeded()
+                syncListings()
+            }
         }
         .onChange(of: resolvedRootPath) { oldValue, newValue in
             if oldValue != newValue { resetAndLoad() }
         }
-        .onChange(of: isVisible) { _, visible in
-            if visible { loadRootIfNeeded() }
+        .onChange(of: environmentId) { oldValue, newValue in
+            if oldValue != newValue { resetAndLoad() }
         }
-        .onReceive(connection.events) { event in
-            if case let .directoryListing(path, entries, envId) = event, envId == environmentId {
-                guard let resolved = resolvedRootPath else { return }
-                withAnimation(.easeOut(duration: DS.Duration.s)) {
-                    state.applyListing(path: path, entries: entries, rootPath: resolved)
-                }
+        .onChange(of: isVisible) { _, visible in
+            if visible {
+                loadRootIfNeeded()
+                syncListings()
             }
         }
+        .onChange(of: currentDirectoryListings) { _, _ in syncListings() }
     }
 
     private func loadRootIfNeeded() {
         guard let path = resolvedRootPath else { return }
         if state.isInitialLoad {
-            connection.listDirectory(path: path, environmentId: environmentId)
+            connection?.listDirectory(path: path)
         } else {
             refreshExpanded()
         }
@@ -80,20 +105,35 @@ struct FileTreeView: View {
             return
         }
         state.reset()
-        connection.listDirectory(path: path, environmentId: environmentId)
+        connection?.listDirectory(path: path)
     }
 
     private func refreshExpanded() {
         guard let path = resolvedRootPath else { return }
         state.refresh(rootPath: path) { dirPath in
-            connection.listDirectory(path: dirPath, environmentId: environmentId)
+            connection?.listDirectory(path: dirPath)
         }
     }
 
     private func toggleFolder(_ path: String) {
         withAnimation(.easeOut(duration: DS.Duration.s)) {
             state.toggleFolder(path) {
-                connection.listDirectory(path: path, environmentId: environmentId)
+                connection?.listDirectory(path: path)
+            }
+        }
+    }
+
+    private func syncListings() {
+        if let resolvedRootPath {
+            withAnimation(.easeOut(duration: DS.Duration.s)) {
+                if let entries = currentDirectoryListings[resolvedRootPath] {
+                    state.applyListing(path: resolvedRootPath, entries: entries, rootPath: resolvedRootPath)
+                }
+                for path in state.expandedPaths {
+                    if let entries = currentDirectoryListings[path] {
+                        state.applyListing(path: path, entries: entries, rootPath: resolvedRootPath)
+                    }
+                }
             }
         }
     }

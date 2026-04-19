@@ -8,21 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,20 +40,15 @@ import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
-import com.cloude.app.Models.AgentProcessInfo
-import com.cloude.app.Models.ClientMessage
-import com.cloude.app.Models.ServerMessage
 import com.cloude.app.Services.ConnectionManager
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.DS
 import com.cloude.app.Utilities.PastelGreen
 import com.cloude.app.Utilities.PastelRed
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filterIsInstance
 
 @Composable
 fun DebugOverlay(
@@ -77,7 +66,6 @@ fun DebugOverlay(
     val agentState by connectionManager.agentState.collectAsState()
     val conn = connectionManager.connection(environmentId)
     val lastError by conn?.lastError?.collectAsState() ?: remember { mutableStateOf(null) }
-    var processes by remember { mutableStateOf<List<AgentProcessInfo>>(emptyList()) }
     var uptime by remember { mutableLongStateOf(0L) }
     var parentWidth by remember { mutableFloatStateOf(0f) }
     var parentHeight by remember { mutableFloatStateOf(0f) }
@@ -89,12 +77,6 @@ fun DebugOverlay(
             delay(1000)
             uptime++
         }
-    }
-
-    LaunchedEffect(Unit) {
-        connectionManager.events
-            .filterIsInstance<ServerMessage.ProcessList>()
-            .collect { processes = it.processes }
     }
 
     Box(
@@ -182,29 +164,17 @@ fun DebugOverlay(
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Row {
-                        IconButton(
-                            onClick = {
-                                if (environmentId.isNotEmpty()) {
-                                    connectionManager.send(ClientMessage.GetProcesses, environmentId)
-                                }
-                            },
-                            modifier = Modifier.size(DS.Size.m)
-                        ) {
-                            Icon(Icons.Default.Refresh, null, tint = Accent, modifier = Modifier.size(DS.Icon.s))
-                        }
-                        IconButton(
-                            onClick = {
-                                expanded = false
-                                val savedX = prefs.getFloat("debugX", -1f)
-                                val savedY = prefs.getFloat("debugY", -1f)
-                                offsetX = if (savedX >= 0f) savedX else with(density) { DS.Spacing.m.toPx() }
-                                offsetY = if (savedY >= 0f) savedY else parentHeight - with(density) { 120.dp.toPx() }
-                            },
-                            modifier = Modifier.size(DS.Size.m)
-                        ) {
-                            Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(DS.Icon.s))
-                        }
+                    IconButton(
+                        onClick = {
+                            expanded = false
+                            val savedX = prefs.getFloat("debugX", -1f)
+                            val savedY = prefs.getFloat("debugY", -1f)
+                            offsetX = if (savedX >= 0f) savedX else with(density) { DS.Spacing.m.toPx() }
+                            offsetY = if (savedY >= 0f) savedY else parentHeight - with(density) { 120.dp.toPx() }
+                        },
+                        modifier = Modifier.size(DS.Size.m)
+                    ) {
+                        Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(DS.Icon.s))
                     }
                 }
 
@@ -218,27 +188,6 @@ fun DebugOverlay(
                 MetricRow("Agent", agentState.name)
                 MetricRow("Uptime", formatUptime(uptime))
                 lastError?.let { MetricRow("Last Error", it, color = PastelRed) }
-
-                if (processes.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(DS.Spacing.s))
-                    Text(
-                        text = "Processes (${processes.size})",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Accent,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(DS.Spacing.xs))
-                    LazyColumn(modifier = Modifier.height((processes.size * 40).coerceAtMost(200).dp)) {
-                        items(processes, key = { it.pid }) { process ->
-                            ProcessRow(process) {
-                                if (environmentId.isNotEmpty()) {
-                                    connectionManager.send(ClientMessage.KillProcess(process.pid), environmentId)
-                                    connectionManager.send(ClientMessage.GetProcesses, environmentId)
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -261,38 +210,6 @@ private fun MetricRow(label: String, value: String, color: androidx.compose.ui.g
             text = value,
             style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
             color = color ?: MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-private fun ProcessRow(process: AgentProcessInfo, onKill: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = process.conversationName ?: process.command.take(30),
-                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "PID ${process.pid}",
-                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = DS.Opacity.m)
-            )
-        }
-        Text(
-            text = "kill",
-            style = MaterialTheme.typography.labelSmall,
-            color = PastelRed,
-            modifier = Modifier
-                .clip(RoundedCornerShape(DS.Radius.s))
-                .clickable { onKill() }
-                .padding(horizontal = DS.Spacing.s, vertical = DS.Spacing.xs)
         )
     }
 }

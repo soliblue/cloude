@@ -20,19 +20,13 @@ extension App {
                     if let targetConvId,
                        let conv = self.conversationStore.findConversation(withId: targetConvId) {
 
-                        let userMessage = ChatMessage(kind: .user(), text: "[screenshot]", imageBase64: base64)
-                        self.conversationStore.addMessage(userMessage, to: conv)
-
-                        self.connection.sendChat(
-                            "[screenshot]",
-                            workingDirectory: conv.workingDirectory,
-                            sessionId: conv.sessionId,
-                            isNewSession: false,
-                            conversationId: targetConvId,
+                        self.conversationStore.dispatchUserTurn(
+                            ChatMessage(kind: .user(), text: "[screenshot]", imageBase64: base64),
+                            to: conv,
+                            environmentStore: self.environmentStore,
                             imagesBase64: [base64],
-                            conversationName: conv.name
+                            source: "screenshot send"
                         )
-                        self.connection.output(for: targetConvId).liveMessageId = self.conversationStore.insertLiveMessage(into: conv)
                     }
                 }
             }

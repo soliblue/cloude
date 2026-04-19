@@ -1,6 +1,5 @@
 import SwiftUI
 import CloudeShared
-import Combine
 import HighlightSwift
 
 extension FilePreviewView {
@@ -8,7 +7,7 @@ extension FilePreviewView {
         if let progress = chunkProgress {
             return (progress.current, progress.total)
         }
-        if let progress = connection.chunkProgress, progress.path == path {
+        if let progress = connection?.chunkProgress, progress.path == path {
             return (Int(progress.current), Int(progress.total))
         }
         return nil
@@ -53,11 +52,11 @@ extension FilePreviewView {
     func loadFullQuality(fullSize: Int64) {
         AppLogger.beginInterval("file.fullQuality", key: path)
         loadPhase = .thumbnail(fullSize: fullSize, isLoadingFull: true)
-        connection.getFileFullQuality(path: path, environmentId: environmentId)
+        connection?.getFileFullQuality(path: path)
     }
 
     func loadFile() {
-        if let cached = connection.fileCache.get(path) {
+        if let cached = connection?.fileCache.get(path) {
             AppLogger.performanceInfo("file cache hit path=\(path)")
             fileData = cached
             if contentType.highlightLanguage != nil, let text = String(data: cached, encoding: .utf8) {
@@ -70,54 +69,64 @@ extension FilePreviewView {
 
         AppLogger.beginInterval("file.load", key: path)
         loadPhase = .loading
-        connection.getFile(path: path, environmentId: environmentId)
+        connection?.getFile(path: path)
+    }
 
-        let filePath = path
-        connection.events
-            .receive(on: DispatchQueue.main)
-            .sink { event in
-                switch event {
-                case .fileChunk(let p, let chunkIndex, let totalChunks, _, _, _):
-                    guard p == filePath else { return }
-                    withAnimation {
-                        chunkProgress = (chunkIndex, totalChunks)
-                    }
-                case .fileContent(let p, let data, _, _, let truncated):
-                    guard p == filePath else { return }
-                    AppLogger.endInterval("file.load", key: filePath, details: "kind=content truncated=\(truncated)")
-                    AppLogger.endInterval("file.fullQuality", key: filePath, details: "kind=content truncated=\(truncated)")
-                    if let decoded = Data(base64Encoded: data) {
-                        fileData = decoded
-                        if contentType.highlightLanguage != nil, let text = String(data: decoded, encoding: .utf8) {
-                            highlightCode(text)
-                        } else {
-                            loadPhase = .loaded
-                        }
-                    } else {
-                        loadPhase = .error("Failed to decode file")
-                    }
-                case .fileThumbnail(let p, let data, let size):
-                    guard p == filePath else { return }
-                    AppLogger.endInterval("file.load", key: filePath, details: "kind=thumbnail bytes=\(size)")
-                    if let decoded = Data(base64Encoded: data) {
-                        fileData = decoded
-                        loadPhase = .thumbnail(fullSize: size, isLoadingFull: false)
-                    } else {
-                        loadPhase = .error("Failed to decode thumbnail")
-                    }
-                case .directoryListing(let p, let entries, _):
-                    guard p == filePath else { return }
-                    loadPhase = .directory(entries)
-                    AppLogger.endInterval("file.load", key: filePath, details: "kind=directory entries=\(entries.count)")
-                case .fileError(let message):
-                    loadPhase = .error(message)
-                    AppLogger.cancelInterval("file.load", key: filePath, reason: message)
-                    AppLogger.cancelInterval("file.fullQuality", key: filePath, reason: message)
-                default:
-                    break
-                }
+    func syncLoadedPath() {
+        if let progress = connection?.chunkProgress, progress.path == path {
+            withAnimation {
+                chunkProgress = (Int(progress.current), Int(progress.total))
             }
-            .store(in: &cancellables)
+        }
+        if let currentDirectoryListing {
+            loadPhase = .directory(currentDirectoryListing)
+            chunkProgress = nil
+            AppLogger.endInterval("file.load", key: path, details: "kind=directory entries=\(currentDirectoryListing.count)")
+            return
+        }
+        if let currentFileResponse {
+            if let cached = connection?.fileCache.get(path) {
+                fileData = cached
+                switch currentFileResponse {
+                case .content(_, _, let truncated):
+                    chunkProgress = nil
+                    AppLogger.endInterval("file.load", key: path, details: "kind=content truncated=\(truncated)")
+                    AppLogger.endInterval("file.fullQuality", key: path, details: "kind=content truncated=\(truncated)")
+                    if contentType.highlightLanguage != nil, let text = String(data: cached, encoding: .utf8) {
+                        highlightCode(text)
+                    } else {
+                        loadPhase = .loaded
+                    }
+                case .thumbnail(let fullSize):
+                    AppLogger.endInterval("file.load", key: path, details: "kind=thumbnail bytes=\(fullSize)")
+                    let isLoadingFull: Bool
+                    if case .thumbnail(_, let value) = loadPhase {
+                        isLoadingFull = value
+                    } else {
+                        isLoadingFull = false
+                    }
+                    loadPhase = .thumbnail(fullSize: fullSize, isLoadingFull: isLoadingFull)
+                }
+            } else {
+                loadPhase = .error("Failed to decode file")
+            }
+            return
+        }
+        if let currentPathError {
+            chunkProgress = nil
+            loadPhase = .error(currentPathError)
+            AppLogger.cancelInterval("file.load", key: path, reason: currentPathError)
+            AppLogger.cancelInterval("file.fullQuality", key: path, reason: currentPathError)
+        }
+    }
+
+    func syncDiff() {
+        if let currentDiffText, case .loading = diff {
+            diff = .loaded(currentDiffText)
+        } else if currentDiffError != nil, case .loading = diff {
+            diff = .hidden
+            diffRequest = nil
+        }
     }
 
     func highlightCode(_ code: String) {

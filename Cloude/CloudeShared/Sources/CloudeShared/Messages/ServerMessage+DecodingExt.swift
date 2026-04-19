@@ -3,9 +3,6 @@ import Foundation
 extension ServerMessage {
     static func decodeExtendedTypes(type: String, container: KeyedDecodingContainer<CodingKeys>) throws -> Self? {
         switch type {
-        case "process_list":
-            let processes = try container.decode([AgentProcessInfo].self, forKey: .processes)
-            return .processList(processes: processes)
         case "default_working_directory":
             let path = try container.decode(String.self, forKey: .path)
             return .defaultWorkingDirectory(path: path)

@@ -22,7 +22,7 @@ extension App {
     func createNewConversation(path: String? = nil) {
         let current = activeConversation()
         let environmentId = current?.environmentId.flatMap {
-            connection.connection(for: $0) == nil ? nil : $0
+            environmentStore.connection(for: $0) == nil ? nil : $0
         } ?? environmentStore.activeEnvironmentId
 
         if windowManager.activeWindow == nil {
@@ -59,13 +59,13 @@ extension App {
             return
         }
         let workingDirectory = conversation.workingDirectory
-            ?? connection.connection(for: conversation.environmentId ?? environmentStore.activeEnvironmentId)?.defaultWorkingDirectory
+            ?? environmentStore.connection(for: conversation.environmentId ?? environmentStore.activeEnvironmentId)?.defaultWorkingDirectory
         guard let workingDirectory, !workingDirectory.isEmpty else {
             AppLogger.bootstrapInfo("refresh conversation ignored missing working directory convId=\(conversation.id.uuidString)")
             return
         }
         AppLogger.beginInterval("conversation.refresh", key: conversation.id.uuidString, details: "sessionId=\(sessionId)")
-        connection.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory, environmentId: conversation.environmentId)
+        environmentStore.connection(for: conversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
         AppLogger.bootstrapInfo("refresh conversation convId=\(conversation.id.uuidString)")
     }
 
@@ -74,7 +74,7 @@ extension App {
             AppLogger.bootstrapInfo("stop run ignored no active conversation")
             return
         }
-        connection.abort(conversationId: conversation.id)
+        environmentStore.connection(for: conversation.environmentId)?.abort(conversationId: conversation.id)
         AppLogger.bootstrapInfo("stop run convId=\(conversation.id.uuidString)")
     }
 
@@ -118,52 +118,17 @@ extension App {
             return
         }
 
-        if conv.environmentId == nil || connection.connection(for: conv.environmentId) == nil {
+        if conv.environmentId == nil || environmentStore.connection(for: conv.environmentId) == nil {
             conversationStore.setEnvironmentId(conv, environmentId: environmentStore.activeEnvironmentId)
         }
         let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv
-        let targetEnvironmentId = updatedConv.environmentId ?? environmentStore.activeEnvironmentId
-        let isRunning = connection.output(for: updatedConv.id).phase != .idle
-        let isAuthenticated = connection.connection(for: targetEnvironmentId).map { $0.phase == .authenticated } ?? connection.isAnyAuthenticated
-
-        if isRunning || !isAuthenticated {
-            AppLogger.connectionInfo("debug send queue convId=\(updatedConv.id.uuidString) chars=\(trimmedText.count) running=\(isRunning) authenticated=\(isAuthenticated)")
-            let queuedMessage = ChatMessage(kind: .user(isQueued: true), text: trimmedText)
-            conversationStore.queueMessage(queuedMessage, to: updatedConv)
-            return
-        }
-
-        AppLogger.connectionInfo("debug send send convId=\(updatedConv.id.uuidString) chars=\(trimmedText.count)")
-        let userMessage = ChatMessage(kind: .user(), text: trimmedText)
-        conversationStore.addMessage(userMessage, to: updatedConv)
-
-        let isFork = updatedConv.pendingFork
-        let isNewSession = updatedConv.sessionId == nil && !isFork
-        let effortValue = updatedConv.defaultEffort?.rawValue
-        let modelValue = updatedConv.defaultModel?.rawValue
-        connection.sendChat(
-            trimmedText,
-            workingDirectory: updatedConv.workingDirectory,
-            sessionId: updatedConv.sessionId,
-            isNewSession: isNewSession,
-            conversationId: updatedConv.id,
-            conversationName: updatedConv.name,
-            forkSession: isFork,
-            effort: effortValue,
-            model: modelValue,
-            environmentId: updatedConv.environmentId
+        conversationStore.dispatchUserTurn(
+            ChatMessage(kind: .user(), text: trimmedText),
+            to: updatedConv,
+            environmentStore: environmentStore,
+            effort: updatedConv.defaultEffort?.rawValue,
+            model: updatedConv.defaultModel?.rawValue,
+            source: "debug send"
         )
-
-        connection.output(for: updatedConv.id).liveMessageId = conversationStore.insertLiveMessage(into: updatedConv)
-
-        if isNewSession {
-            AppLogger.connectionInfo("debug send request name suggestion convId=\(updatedConv.id.uuidString)")
-            connection.requestNameSuggestion(text: trimmedText, context: [], conversationId: updatedConv.id)
-        }
-
-        if isFork {
-            AppLogger.connectionInfo("debug send clear pending fork convId=\(updatedConv.id.uuidString)")
-            conversationStore.clearPendingFork(updatedConv)
-        }
     }
 }

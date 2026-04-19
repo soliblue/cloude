@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct GitChangesView: View {
-    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     var rootPath: String?
     var environmentId: UUID?
     @ObservedObject var state: GitChangesState
@@ -12,7 +12,7 @@ struct GitChangesView: View {
     @State private var pendingRepoPath: String?
 
     private var defaultWorkingDirectory: String? {
-        connection.connection(for: environmentId)?.defaultWorkingDirectory?.nilIfEmpty
+        connection?.defaultWorkingDirectory?.nilIfEmpty
     }
 
     private var resolvedRepoPath: String? {
@@ -23,7 +23,35 @@ struct GitChangesView: View {
         resolvedRepoPath ?? "~"
     }
 
+    private var connection: EnvironmentConnection? {
+        environmentStore.connection(for: environmentId)
+    }
+
+    private var currentStatus: GitStatusInfo? {
+        resolvedRepoPath.flatMap { connection?.gitStatusInfo(for: $0) }
+    }
+
+    private var currentStatusError: String? {
+        resolvedRepoPath.flatMap { connection?.gitStatusError(for: $0) }
+    }
+
+    private var currentCommits: [GitCommit]? {
+        resolvedRepoPath.flatMap { connection?.gitLogEntries(for: $0) }
+    }
+
     var body: some View {
+        Group {
+            if let connection {
+                EnvironmentConnectionObserver(connection: connection) { _ in
+                    content
+                }
+            } else {
+                content
+            }
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             if state.isInitialLoad && state.gitStatus == nil {
                 ProgressView()
@@ -41,31 +69,23 @@ struct GitChangesView: View {
         }
         .background(Color.themeBackground(appTheme))
         .sheet(item: $selectedFile) { file in
-            GitDiffView(connection: connection, repoPath: repoPath, file: file, environmentId: environmentId)
+            GitDiffView(environmentStore: environmentStore, repoPath: repoPath, file: file, environmentId: environmentId)
         }
-        .onAppear { loadIfNeeded() }
+        .onAppear { loadIfNeeded(); syncStatus(); syncCommits() }
         .onChange(of: resolvedRepoPath) { oldValue, newValue in
             if oldValue != newValue {
                 resetAndLoad()
             }
         }
-        .refreshable { loadStatus() }
-        .onReceive(connection.events) { event in
-            if case let .gitStatus(path, status, envId) = event, path == repoPath, envId == environmentId {
-                state.applyStatus(status)
-                AppLogger.endInterval("git.status", key: pendingRepoPath ?? path, details: "files=\(status.files.count)")
-                pendingRepoPath = nil
-                if !status.hasChanges {
-                    connection.gitLog(path: path, environmentId: environmentId)
-                }
-            } else if case let .gitStatusError(path, _, envId) = event, path == repoPath, envId == environmentId {
-                state.applyError()
-                AppLogger.cancelInterval("git.status", key: pendingRepoPath ?? path, reason: "error")
-                pendingRepoPath = nil
-            } else if case let .gitLog(path, commits, envId) = event, path == repoPath, envId == environmentId {
-                state.applyCommits(commits)
+        .onChange(of: environmentId) { oldValue, newValue in
+            if oldValue != newValue {
+                resetAndLoad()
             }
         }
+        .refreshable { loadStatus() }
+        .onChange(of: currentStatus) { _, _ in syncStatus() }
+        .onChange(of: currentStatusError) { _, _ in syncStatus() }
+        .onChange(of: currentCommits) { _, _ in syncCommits() }
     }
 
     private func loadIfNeeded() {
@@ -73,7 +93,7 @@ struct GitChangesView: View {
             loadStatus()
         } else if let repoPath = resolvedRepoPath {
             pendingRepoPath = repoPath
-            connection.gitStatus(path: repoPath, environmentId: environmentId)
+            connection?.gitStatus.enqueue(repoPath)
         }
     }
 
@@ -89,10 +109,31 @@ struct GitChangesView: View {
             return
         }
 
-        connection.connection(for: environmentId)?.gitStatus.cancelInFlight()
+        connection?.gitStatus.cancelInFlight()
         pendingRepoPath = repoPath
         AppLogger.beginInterval("git.status", key: repoPath)
-        connection.gitStatus(path: repoPath, environmentId: environmentId)
+        connection?.gitStatus.enqueue(repoPath)
+    }
+
+    private func syncStatus() {
+        if let currentStatus {
+            state.applyStatus(currentStatus)
+            AppLogger.endInterval("git.status", key: pendingRepoPath ?? repoPath, details: "files=\(currentStatus.files.count)")
+            pendingRepoPath = nil
+            if !currentStatus.hasChanges, currentCommits == nil {
+                connection?.gitLog(path: repoPath)
+            }
+        } else if let currentStatusError {
+            state.applyError()
+            AppLogger.cancelInterval("git.status", key: pendingRepoPath ?? repoPath, reason: currentStatusError)
+            pendingRepoPath = nil
+        }
+    }
+
+    private func syncCommits() {
+        if let currentCommits {
+            state.applyCommits(currentCommits)
+        }
     }
 
     private func statusHeader(_ status: GitStatusInfo) -> some View {

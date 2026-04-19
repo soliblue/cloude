@@ -37,12 +37,12 @@ extension WorkspaceStore {
         editingWindow = nil
     }
 
-    func refreshEditingWindowConversation(connection: ConnectionManager, conversationStore: ConversationStore) async {
+    func refreshEditingWindowConversation(environmentStore: EnvironmentStore, conversationStore: ConversationStore) async {
         if let convId = editingWindow?.conversationId,
            let conversation = conversationStore.conversation(withId: convId),
            let sessionId = conversation.sessionId,
            let workingDirectory = conversation.workingDirectory, !workingDirectory.isEmpty {
-            connection.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
+            environmentStore.connection(for: conversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
             try? await Task.sleep(for: .seconds(1))
         }
     }

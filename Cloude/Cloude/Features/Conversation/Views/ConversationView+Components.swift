@@ -11,7 +11,6 @@ struct ChatMessageList: View {
     var onDeleteQueued: ((UUID) -> Void)?
     var conversation: Conversation?
     var conversationStore: ConversationStore?
-    var connection: ConnectionManager?
     var window: Window?
     var windowManager: WindowManager?
     var onSelectConversation: ((Conversation) -> Void)?
@@ -40,7 +39,7 @@ struct ChatMessageList: View {
     }
 
     private var hasRequiredDependencies: Bool {
-        window != nil && conversationStore != nil && windowManager != nil && connection != nil
+        window != nil && conversationStore != nil && windowManager != nil && environmentStore != nil
     }
 
     private var hideMessageList: Bool {
@@ -48,6 +47,17 @@ struct ChatMessageList: View {
     }
 
     var body: some View {
+        if let output = conversationOutput {
+            ChatMessageListObservedBody(output: output) {
+                content
+            }
+        } else {
+            content
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         ZStack(alignment: .bottomTrailing) {
             if showLoadingIndicator {
                 ProgressView()
@@ -57,7 +67,6 @@ struct ChatMessageList: View {
             } else if showEmptyState {
                 ScrollView(showsIndicators: false) {
                     EmptyConversationView(
-                        connection: connection,
                         conversationStore: conversationStore,
                         environmentStore: environmentStore,
                         conversation: conversation,
@@ -78,5 +87,14 @@ struct ChatMessageList: View {
         .onChange(of: conversationId) { _, _ in
             isInitialLoad = messages.isEmpty
         }
+    }
+}
+
+private struct ChatMessageListObservedBody<Content: View>: View {
+    @ObservedObject var output: ConversationOutput
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        content()
     }
 }

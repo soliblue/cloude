@@ -4,12 +4,10 @@ import CloudeShared
 
 extension WorkspaceStore {
     func sendMessage(
-        connection: ConnectionManager,
         conversationStore: ConversationStore,
         windowManager: WindowManager,
         environmentStore: EnvironmentStore,
-        onShowSettings: (() -> Void)?,
-        onShowWhiteboard: (() -> Void)?
+        onShowSettings: (() -> Void)?
     ) {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         let allImagesBase64 = WorkspaceImageEncoder.encodeFullImages(attachedImages)
@@ -31,17 +29,12 @@ extension WorkspaceStore {
             onShowSettings?()
             return
         }
-        if trimmedLower == "/whiteboard" {
-            onShowWhiteboard?()
-            return
-        }
 
         sendConversationMessage(
             text: text,
             imagesBase64: allImagesBase64,
             filesBase64: allFilesBase64,
             thumbnails: thumbnails,
-            connection: connection,
             conversationStore: conversationStore,
             windowManager: windowManager,
             environmentStore: environmentStore
@@ -50,20 +43,20 @@ extension WorkspaceStore {
 
     func transcribeAudio(
         _ audioData: Data,
-        connection: ConnectionManager,
         conversationStore: ConversationStore,
         windowManager: WindowManager,
         environmentStore: EnvironmentStore
     ) {
         let envId = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-        connection.transcribe(audioBase64: audioData.base64EncodedString(), environmentId: envId)
+        environmentStore.connection(for: envId)?.transcribe(audioBase64: audioData.base64EncodedString())
     }
 
-    func stopActiveConversation(connection: ConnectionManager, windowManager: WindowManager) {
+    func stopActiveConversation(environmentStore: EnvironmentStore, windowManager: WindowManager, conversationStore: ConversationStore) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         if let activeWindow = windowManager.activeWindow,
-           let convId = activeWindow.conversationId {
-            connection.abort(conversationId: convId)
+           let convId = activeWindow.conversationId,
+           let conv = conversationStore.conversation(withId: convId) {
+            environmentStore.connection(for: conv.environmentId)?.abort(conversationId: convId)
         }
     }
 
@@ -72,7 +65,6 @@ extension WorkspaceStore {
         imagesBase64: [String]?,
         filesBase64: [AttachedFilePayload]?,
         thumbnails: [String]?,
-        connection: ConnectionManager,
         conversationStore: ConversationStore,
         windowManager: WindowManager,
         environmentStore: EnvironmentStore
@@ -92,7 +84,7 @@ extension WorkspaceStore {
         }
         guard let conv = conversation else { return }
 
-        if conv.environmentId == nil || connection.connection(for: conv.environmentId) == nil {
+        if conv.environmentId == nil || environmentStore.connection(for: conv.environmentId) == nil {
             conversationStore.setEnvironmentId(
                 conv,
                 environmentId: activeWindowEnvironmentId(
@@ -104,51 +96,20 @@ extension WorkspaceStore {
         }
         let updatedConv = conversationStore.conversation(withId: conv.id) ?? conv
 
-        let isRunning = connection.output(for: updatedConv.id).phase != .idle
-        let isAuthenticated = connection.connection(for: updatedConv.environmentId)?.phase == .authenticated
-        if isRunning || !isAuthenticated {
-            AppLogger.connectionInfo("queue user message convId=\(updatedConv.id.uuidString) chars=\(text.count) running=\(isRunning) authenticated=\(isAuthenticated)")
-            let userMessage = ChatMessage(kind: .user(isQueued: true), text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
-            conversationStore.queueMessage(userMessage, to: updatedConv)
-        } else {
-            AppLogger.connectionInfo("send user message convId=\(updatedConv.id.uuidString) chars=\(text.count) images=\(imagesBase64?.count ?? 0) files=\(filesBase64?.count ?? 0)")
-            let userMessage = ChatMessage(kind: .user(), text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
-            conversationStore.addMessage(userMessage, to: updatedConv)
-
-            let isFork = updatedConv.pendingFork
-            let isNewSession = updatedConv.sessionId == nil && !isFork
-            let effortValue = (currentEffort ?? updatedConv.defaultEffort)?.rawValue
-            let modelValue = (currentModel ?? updatedConv.defaultModel)?.rawValue
-            connection.sendChat(
-                text,
-                workingDirectory: updatedConv.workingDirectory,
-                sessionId: updatedConv.sessionId,
-                isNewSession: isNewSession,
-                conversationId: updatedConv.id,
-                imagesBase64: imagesBase64,
-                filesBase64: filesBase64,
-                conversationName: updatedConv.name,
-                forkSession: isFork,
-                effort: effortValue,
-                model: modelValue,
-                environmentId: updatedConv.environmentId
-            )
-
-            connection.output(for: updatedConv.id).liveMessageId = conversationStore.insertLiveMessage(into: updatedConv)
-
-            if isNewSession {
-                AppLogger.connectionInfo("request name suggestion convId=\(updatedConv.id.uuidString)")
-                connection.requestNameSuggestion(text: text, context: [], conversationId: updatedConv.id)
-            }
-
-            if isFork {
-                AppLogger.connectionInfo("clear pending fork convId=\(updatedConv.id.uuidString)")
-                conversationStore.clearPendingFork(updatedConv)
-            }
-        }
+        let userMessage = ChatMessage(kind: .user(), text: text, imageBase64: thumbnails?.first, imageThumbnails: thumbnails)
+        conversationStore.dispatchUserTurn(
+            userMessage,
+            to: updatedConv,
+            environmentStore: environmentStore,
+            imagesBase64: imagesBase64,
+            filesBase64: filesBase64,
+            effort: (currentEffort ?? updatedConv.defaultEffort)?.rawValue,
+            model: (currentModel ?? updatedConv.defaultModel)?.rawValue,
+            source: "user message"
+        )
     }
 
-    func refreshConversation(for window: Window, connection: ConnectionManager, conversationStore: ConversationStore) {
+    func refreshConversation(for window: Window, environmentStore: EnvironmentStore, conversationStore: ConversationStore) {
         if let convId = window.conversationId,
            let conv = conversationStore.conversation(withId: convId),
            let sessionId = conv.sessionId,
@@ -158,7 +119,7 @@ extension WorkspaceStore {
             if let lastUserIndex = messages.lastIndex(where: { $0.isUser }) {
                 conversationStore.truncateMessages(for: conv, from: lastUserIndex + 1)
             }
-            connection.syncHistory(sessionId: sessionId, workingDirectory: workingDir, environmentId: conv.environmentId)
+            environmentStore.connection(for: conv.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
         }
     }
 

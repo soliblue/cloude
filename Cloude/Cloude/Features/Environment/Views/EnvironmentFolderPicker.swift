@@ -2,7 +2,6 @@ import SwiftUI
 
 struct EnvironmentFolderPicker: View {
     let environmentStore: EnvironmentStore
-    let connection: ConnectionManager
     let conversationStore: ConversationStore
     let conversation: Conversation
     var editable: Bool = true
@@ -17,9 +16,9 @@ struct EnvironmentFolderPicker: View {
         return environmentStore.environments.first { $0.id == envId }
     }
 
-    private var isEnvConnected: Bool {
+    private var isEnvAuthenticated: Bool {
         let envId = conversation.environmentId ?? environmentStore.activeEnvironmentId
-        return (connection.connection(for: envId)?.phase ?? .disconnected) != .disconnected
+        return environmentStore.connection(for: envId)?.isReady == true
     }
 
     private var folderDisplayName: String {
@@ -41,14 +40,13 @@ struct EnvironmentFolderPicker: View {
                 ForEach(environmentStore.environments) { env in
                     Button(action: {
                         conversationStore.setEnvironmentId(conversation, environmentId: env.id)
-                        environmentStore.setActive(env.id)
-                        if (connection.connection(for: env.id)?.phase ?? .disconnected) != .disconnected {
+                        if environmentStore.connection(for: env.id)?.isReady == true {
                             DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
                                 showFolderPicker = true
                             }
                         } else {
                             pendingConnectionEnvId = env.id
-                            connection.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                            environmentStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
                             DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.xxl) {
                                 if pendingConnectionEnvId == env.id {
                                     pendingConnectionEnvId = nil
@@ -86,7 +84,7 @@ struct EnvironmentFolderPicker: View {
             Divider()
                 .padding(.horizontal, DS.Spacing.l)
 
-            Button(action: { if isEnvConnected { showFolderPicker = true } }) {
+            Button(action: { if isEnvAuthenticated { showFolderPicker = true } }) {
                 HStack(spacing: DS.Spacing.s) {
                     if isConnecting {
                         ProgressView()
@@ -114,21 +112,21 @@ struct EnvironmentFolderPicker: View {
             }
             .buttonStyle(.plain)
             .disabled(isConnecting)
-            .opacity(isEnvConnected || isConnecting ? 1 : DS.Opacity.m)
+            .opacity(isEnvAuthenticated || isConnecting ? 1 : DS.Opacity.m)
         }
         .background(Color.themeSecondary)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
-        .onReceive(connection.events) { event in
-            if case .authenticated = event, let envId = pendingConnectionEnvId {
-                if (connection.connection(for: envId)?.phase ?? .disconnected) != .disconnected {
-                    pendingConnectionEnvId = nil
-                    showFolderPicker = true
-                }
+        .onReceive(environmentStore.events) { event in
+            if case .authenticated(let envId) = event,
+               envId == pendingConnectionEnvId,
+               environmentStore.connection(for: envId)?.isReady == true {
+                pendingConnectionEnvId = nil
+                showFolderPicker = true
             }
         }
         .sheet(isPresented: $showFolderPicker) {
             FolderPickerView(
-                connection: connection,
+                environmentStore: environmentStore,
                 environmentId: conversation.environmentId ?? environmentStore.activeEnvironmentId
             ) { path in
                 conversationStore.setWorkingDirectory(conversation, path: path)

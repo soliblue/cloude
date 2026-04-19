@@ -67,6 +67,8 @@ extension WorkspaceInputBar {
         let data = audioRecorder.stopRecording()
         withAnimation(.easeOut(duration: Constants.transitionDuration)) {
             phase = .idle
+            swipeOffset = 0
+            horizontalSwipeOffset = 0
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
             if let data = data {

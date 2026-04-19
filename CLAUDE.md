@@ -64,6 +64,7 @@ Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints
 - **One component per file** - every struct, class, or enum gets its own file, even if tiny
 - **Predictability over file count** - file-per-concern is good; don't merge files to reduce count. The enemy is incoherence (logic split across extensions with no clear reason, duplication, naming that doesn't predict contents), not verbosity. Before creating or modifying files, ask "can someone predict what lives here from the filename?"
 - Files >150 lines: split with `ParentView+Feature.swift` extensions
+- **Member ordering within a type** - variables before functions, computed before methods. Inside every type body: (1) type-level statics, (2) identity (let id, stable refs), (3) @Published reactive state, (4) other stored state, (5) computed properties, (6) init, (7) public/internal methods, (8) private methods at the bottom.
 - Struct-first design, explicit imports, lean composable views
 - `App/` contains only app entry, composition, and app-owned overlays or routing entry points
 - `Features/` contains product-specific code

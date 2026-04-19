@@ -1,5 +1,9 @@
 import SwiftUI
 
+extension Animation {
+    static let quickTransition = Animation.easeInOut(duration: DS.Duration.s)
+}
+
 enum DS {
     enum Text {
         static var step: CGFloat = CGFloat(UserDefaults.standard.integer(forKey: "fontSizeStep"))

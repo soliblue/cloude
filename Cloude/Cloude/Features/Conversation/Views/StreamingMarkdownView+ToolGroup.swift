@@ -62,28 +62,19 @@ struct ToolGroupView: View {
 
     var body: some View {
         let hierarchy = toolHierarchy
-        let widgets = hierarchy.filter { WidgetRegistry.isWidget($0.parent.name) }
-        let nonWidgets = hierarchy.filter { !WidgetRegistry.isWidget($0.parent.name) }
-
-        VStack(alignment: .leading, spacing: DS.Spacing.s) {
-            ForEach(widgets, id: \.parent.toolId) { item in
-                WidgetRegistry.view(for: item.parent.name, input: item.parent.input)
-            }
-
-            if !nonWidgets.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: DS.Spacing.s) {
-                        ForEach(nonWidgets, id: \.parent.toolId) { item in
-                            InlineToolPill(toolCall: item.parent, children: item.children) {
-                                onSelectTool?(item.parent, item.children)
-                            }
+        if !hierarchy.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: DS.Spacing.s) {
+                    ForEach(hierarchy, id: \.parent.toolId) { item in
+                        InlineToolPill(toolCall: item.parent, children: item.children) {
+                            onSelectTool?(item.parent, item.children)
                         }
                     }
-                    .padding(.horizontal, DS.Spacing.l)
                 }
-                .padding(.horizontal, -DS.Spacing.l)
-                .scrollClipDisabled()
+                .padding(.horizontal, DS.Spacing.l)
             }
+            .padding(.horizontal, -DS.Spacing.l)
+            .scrollClipDisabled()
         }
     }
 }

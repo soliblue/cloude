@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct FileBrowserView: View {
-    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     var rootPath: String?
     var environmentId: UUID?
     @State var currentPath: String = "~"
@@ -11,32 +11,57 @@ struct FileBrowserView: View {
     @State var isLoading = false
     @State var pendingLoadPath: String?
 
-    init(connection: ConnectionManager, rootPath: String? = nil, environmentId: UUID? = nil) {
-        self.connection = connection
+    init(environmentStore: EnvironmentStore, rootPath: String? = nil, environmentId: UUID? = nil) {
+        self.environmentStore = environmentStore
         self.rootPath = rootPath
         self.environmentId = environmentId
         _currentPath = State(initialValue: rootPath ?? "~")
     }
 
     private var defaultWorkingDirectory: String? {
-        connection.connection(for: environmentId)?.defaultWorkingDirectory?.nilIfEmpty
+        connection?.defaultWorkingDirectory?.nilIfEmpty
     }
 
     private var resolvedRootPath: String? {
         rootPath?.nilIfEmpty ?? defaultWorkingDirectory
     }
 
+    private var connection: EnvironmentConnection? {
+        environmentStore.connection(for: environmentId)
+    }
+
+    private var currentDirectoryListing: [FileEntry]? {
+        connection?.directoryListing(for: currentPath)
+    }
+
+    private var currentPathError: String? {
+        connection?.pathError(for: currentPath)
+    }
+
     var body: some View {
+        Group {
+            if let connection {
+                EnvironmentConnectionObserver(connection: connection) { _ in
+                    content
+                }
+            } else {
+                content
+            }
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             pathBar
             Divider()
             fileList
         }
         .sheet(item: $selectedFile) { file in
-            FilePreviewView(file: file, connection: connection, environmentId: environmentId)
+            FilePreviewView(file: file, environmentStore: environmentStore, environmentId: environmentId)
         }
         .onAppear {
             loadDirectory()
+            syncListing()
         }
         .onChange(of: rootPath) { _, newValue in
             let nextPath = newValue ?? defaultWorkingDirectory ?? "~"
@@ -44,21 +69,23 @@ struct FileBrowserView: View {
             currentPath = nextPath
             loadDirectory()
         }
+        .onChange(of: environmentId) { oldValue, newValue in
+            if oldValue != newValue {
+                let nextPath = resolvedRootPath ?? currentPath
+                if !nextPath.isEmpty {
+                    currentPath = nextPath
+                }
+                loadDirectory()
+            }
+        }
         .onChange(of: defaultWorkingDirectory) { _, newValue in
             guard rootPath == nil, let newValue, !newValue.isEmpty else { return }
             guard currentPath == "~" || pendingLoadPath == "~" else { return }
             currentPath = newValue
             loadDirectory()
         }
-        .onReceive(connection.events) { event in
-            if case let .directoryListing(path, newEntries, envId) = event, envId == environmentId {
-                currentPath = path
-                entries = newEntries
-                isLoading = false
-                AppLogger.endInterval("files.directory", key: pendingLoadPath ?? path, details: "entries=\(newEntries.count)")
-                pendingLoadPath = nil
-            }
-        }
+        .onChange(of: currentDirectoryListing) { _, _ in syncListing() }
+        .onChange(of: currentPathError) { _, _ in syncListing() }
     }
 
     private var fileList: some View {
@@ -97,7 +124,7 @@ struct FileBrowserView: View {
         }
         guard currentPath != "~" else {
             pendingLoadPath = nil
-            isLoading = connection.connection(for: environmentId)?.phase != .authenticated
+            isLoading = connection?.isReady != true
             entries = []
             return
         }
@@ -105,6 +132,20 @@ struct FileBrowserView: View {
         AppLogger.beginInterval("files.directory", key: currentPath)
         isLoading = true
         entries = []
-        connection.listDirectory(path: currentPath, environmentId: environmentId)
+        connection?.listDirectory(path: currentPath)
+    }
+
+    private func syncListing() {
+        if let currentDirectoryListing {
+            entries = currentDirectoryListing
+            isLoading = false
+            AppLogger.endInterval("files.directory", key: pendingLoadPath ?? currentPath, details: "entries=\(currentDirectoryListing.count)")
+            pendingLoadPath = nil
+        } else if let currentPathError {
+            entries = []
+            isLoading = false
+            AppLogger.cancelInterval("files.directory", key: pendingLoadPath ?? currentPath, reason: currentPathError)
+            pendingLoadPath = nil
+        }
     }
 }

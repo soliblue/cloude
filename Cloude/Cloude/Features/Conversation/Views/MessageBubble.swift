@@ -96,8 +96,6 @@ struct MessageBubble: View {
             Group {
                 if isSlashCommand, let info = slashCommandInfo {
                     SlashCommandBubble(command: "/\(info.name)", args: info.args, icon: info.icon, isSkill: !info.isBuiltIn)
-                } else if message.isUser, message.text.hasPrefix("[whiteboard snapshot]") {
-                    WhiteboardSnapshotPill(text: message.text)
                 } else if message.isUser {
                     if !message.text.isEmpty {
                         Text(message.text)

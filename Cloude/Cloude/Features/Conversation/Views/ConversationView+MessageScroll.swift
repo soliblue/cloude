@@ -29,7 +29,7 @@ extension ChatMessageList {
                 isInitialLoad = false
             }
         }
-        .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
+        .onReceive(environmentStore?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
             if case .historySync = event { refreshingMessageId = nil }
             if case .historySyncError = event { refreshingMessageId = nil }
         }
@@ -40,13 +40,18 @@ extension ChatMessageList {
         }
     }
 
+    private var conversationSkills: [Skill] {
+        guard let conversation else { return [] }
+        return environmentStore?.connection(for: conversation.environmentId)?.skills ?? []
+    }
+
     var messageListSection: some View {
         ForEach(messages) { message in
             if let output = conversationOutput {
                 ObservedMessageBubble(
                     message: message,
                     output: output,
-                    skills: connection?.skills ?? [],
+                    skills: conversationSkills,
                     onRefresh: message.isUser ? nil : { refreshMessage(message) },
                     isRefreshing: refreshingMessageId == message.id,
                     onSelectToolDetail: { selectedToolDetail = $0 }
@@ -56,7 +61,7 @@ extension ChatMessageList {
             } else {
                 MessageBubble(
                     message: message,
-                    skills: connection?.skills ?? [],
+                    skills: conversationSkills,
                     onRefresh: message.isUser ? nil : { refreshMessage(message) },
                     isRefreshing: refreshingMessageId == message.id,
                     onSelectToolDetail: { selectedToolDetail = $0 }
@@ -70,12 +75,12 @@ extension ChatMessageList {
         guard let conversation, let sessionId = conversation.sessionId,
               let workingDir = conversation.workingDirectory, !workingDir.isEmpty else { return }
         refreshingMessageId = message.id
-        connection?.syncHistory(sessionId: sessionId, workingDirectory: workingDir, environmentId: conversation.environmentId)
+        environmentStore?.connection(for: conversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
     }
 
     var queuedMessagesSection: some View {
         ForEach(queuedMessages) { message in
-            QueuedBubble(message: message, skills: connection?.skills ?? []) {
+            QueuedBubble(message: message, skills: conversationSkills) {
                 onDeleteQueued?(message.id)
             }
             .id("\(message.id.uuidString)-queued-\(fontSizeStep)")

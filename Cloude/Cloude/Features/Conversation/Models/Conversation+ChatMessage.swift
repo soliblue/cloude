@@ -1,4 +1,5 @@
 import Foundation
+import CloudeShared
 
 struct ChatMessage: Codable, Identifiable, Equatable {
     var id: UUID
@@ -10,6 +11,8 @@ struct ChatMessage: Codable, Identifiable, Equatable {
     var costUsd: Double?
     var imageBase64: String?
     var imageThumbnails: [String]?
+    var pendingImagesBase64: [String]?
+    var pendingFilesBase64: [AttachedFilePayload]?
     var serverUUID: String?
     var model: String?
 
@@ -22,6 +25,8 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         costUsd: Double? = nil,
         imageBase64: String? = nil,
         imageThumbnails: [String]? = nil,
+        pendingImagesBase64: [String]? = nil,
+        pendingFilesBase64: [AttachedFilePayload]? = nil,
         serverUUID: String? = nil,
         model: String? = nil
     ) {
@@ -34,6 +39,8 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         self.costUsd = costUsd
         self.imageBase64 = imageBase64
         self.imageThumbnails = imageThumbnails
+        self.pendingImagesBase64 = pendingImagesBase64
+        self.pendingFilesBase64 = pendingFilesBase64
         self.serverUUID = serverUUID
         self.model = model
     }
@@ -62,6 +69,8 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         costUsd = try container.decodeIfPresent(Double.self, forKey: .costUsd)
         imageBase64 = try container.decodeIfPresent(String.self, forKey: .imageBase64)
         imageThumbnails = try container.decodeIfPresent([String].self, forKey: .imageThumbnails)
+        pendingImagesBase64 = try container.decodeIfPresent([String].self, forKey: .pendingImagesBase64)
+        pendingFilesBase64 = try container.decodeIfPresent([AttachedFilePayload].self, forKey: .pendingFilesBase64)
         serverUUID = try container.decodeIfPresent(String.self, forKey: .serverUUID)
         model = try container.decodeIfPresent(String.self, forKey: .model)
     }
@@ -76,6 +85,8 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         try container.encodeIfPresent(costUsd, forKey: .costUsd)
         try container.encodeIfPresent(imageBase64, forKey: .imageBase64)
         try container.encodeIfPresent(imageThumbnails, forKey: .imageThumbnails)
+        try container.encodeIfPresent(pendingImagesBase64, forKey: .pendingImagesBase64)
+        try container.encodeIfPresent(pendingFilesBase64, forKey: .pendingFilesBase64)
         try container.encodeIfPresent(serverUUID, forKey: .serverUUID)
         try container.encodeIfPresent(model, forKey: .model)
         switch kind {
@@ -91,6 +102,6 @@ struct ChatMessage: Codable, Identifiable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, serverUUID, model
+        case id, isUser, text, timestamp, toolCalls, durationMs, costUsd, isQueued, wasInterrupted, imageBase64, imageThumbnails, pendingImagesBase64, pendingFilesBase64, serverUUID, model
     }
 }

@@ -4,12 +4,12 @@ import CloudeShared
 extension Notification.Name {
     static let openConversationSearch = Notification.Name("openConversationSearch")
     static let dismissWorkspaceTransientUI = Notification.Name("dismissWorkspaceTransientUI")
+    static let editActiveWindow = Notification.Name("editActiveWindow")
 }
 
 extension App {
     func dismissTransientUI() {
         settingsStore.isPresented = false
-        whiteboardStore.isPresented = false
         filePathToPreview = nil
         gitDiffRequest = nil
         NotificationCenter.default.post(name: .dismissWorkspaceTransientUI, object: nil)
@@ -73,7 +73,7 @@ extension App {
 
     func openGitDiff(repoPath: String?, filePath: String, staged: Bool) {
         let environmentId = activeConversation()?.environmentId ?? environmentStore.activeEnvironmentId
-        let resolvedRepoPath = repoPath ?? activeConversation()?.workingDirectory ?? connection.connection(for: environmentId)?.defaultWorkingDirectory ?? "~"
+        let resolvedRepoPath = repoPath ?? activeConversation()?.workingDirectory ?? environmentStore.connection(for: environmentId)?.defaultWorkingDirectory ?? "~"
         gitDiffRequest = GitDiffRequest(
             repoPath: resolvedRepoPath,
             file: GitFileStatus(status: "M", path: filePath, staged: staged, additions: nil, deletions: nil),

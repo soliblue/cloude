@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var connection: ConnectionManager
     @ObservedObject var environmentStore: EnvironmentStore
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.majorelle.rawValue
     private var appTheme: AppTheme { AppTheme(rawValue: appThemeRaw) ?? .majorelle }
@@ -10,7 +9,6 @@ struct SettingsView: View {
     @AppStorage("wrapCodeLines") private var wrapCodeLines = true
     @AppStorage("fontSizeStep") private var fontSizeStep = 0
     @State var selectedEnvironmentPage: Int = 0
-    @State var refreshRotation: Double = 0
 
     @Environment(\.dismiss) private var dismiss
 
@@ -20,7 +18,6 @@ struct SettingsView: View {
                 environmentsCarousel
                     .listSectionSeparator(.hidden)
                 preferencesSection
-                processesSection
                 aboutSection
             }
             .contentMargins(.top, DS.Spacing.s, for: .scrollContent)
@@ -45,9 +42,6 @@ struct SettingsView: View {
             if let activeId = environmentStore.activeEnvironmentId,
                let index = environmentStore.environments.firstIndex(where: { $0.id == activeId }) {
                 selectedEnvironmentPage = index
-            }
-            if connection.isAnyAuthenticated {
-                connection.getProcesses()
             }
         }
     }
@@ -126,5 +120,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(connection: ConnectionManager(), environmentStore: EnvironmentStore())
+    SettingsView(environmentStore: EnvironmentStore())
 }

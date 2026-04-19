@@ -57,15 +57,6 @@ export function handleMessage(msg, ws, ctx) {
       handleGitLog(msg.path, msg.count || 10, ws, sendTo)
       break
 
-    case 'get_processes':
-      sendTo(ws, { type: 'process_list', processes: manager.getProcessInfo() })
-      break
-
-    case 'kill_process':
-      try { process.kill(msg.pid, 'SIGTERM') } catch {}
-      sendTo(ws, { type: 'process_list', processes: manager.getProcessInfo() })
-      break
-
     case 'search_files':
       handleSearchFiles(msg.query, msg.workingDirectory, ws, sendTo)
       break

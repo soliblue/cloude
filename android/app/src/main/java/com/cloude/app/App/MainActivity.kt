@@ -4,14 +4,11 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.util.Base64
-import android.view.PixelCopy
 import androidx.lifecycle.lifecycleScope
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -72,7 +69,6 @@ import com.cloude.app.UI.chat.MainScreen
 import com.cloude.app.UI.chat.RenameDialog
 import com.cloude.app.UI.chat.SkillsSheet
 import com.cloude.app.UI.settings.SettingsScreen
-import com.cloude.app.UI.whiteboard.WhiteboardSheet
 import com.cloude.app.UI.theme.CloudeTheme
 import com.cloude.app.Utilities.Accent
 import com.cloude.app.Utilities.AppTheme
@@ -108,7 +104,6 @@ class MainActivity : ComponentActivity() {
                 when (action) {
                     is DeviceAction.Haptic -> triggerHaptic(action.style)
                     is DeviceAction.Notify -> CloudeNotificationManager.notifyAgentComplete(applicationContext, action.message)
-                    is DeviceAction.Screenshot -> captureScreenshot(action.conversationId)
                 }
             }
         }
@@ -369,16 +364,6 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    val showWhiteboard by chatViewModel.showWhiteboard.collectAsState()
-                    if (showWhiteboard) {
-                        val wbState by chatViewModel.whiteboardState.collectAsState()
-                        WhiteboardSheet(
-                            state = wbState,
-                            onStateChange = { chatViewModel.updateWhiteboardState(it) },
-                            onDismiss = { chatViewModel.dismissWhiteboard() }
-                        )
-                    }
-
                     if (debugOverlayEnabled) {
                         Box(modifier = Modifier.fillMaxSize()) {
                             DebugOverlay(
@@ -414,29 +399,4 @@ class MainActivity : ComponentActivity() {
         vibrator.vibrate(effect)
     }
 
-    private fun captureScreenshot(conversationId: String?) {
-        val rootView = window.decorView.rootView
-        rootView.post {
-            val bitmap = Bitmap.createBitmap(rootView.width, rootView.height, Bitmap.Config.ARGB_8888)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                PixelCopy.request(window, bitmap, { result ->
-                    if (result == PixelCopy.SUCCESS) sendScreenshot(bitmap, conversationId)
-                }, android.os.Handler(mainLooper))
-            } else {
-                @Suppress("DEPRECATION")
-                rootView.isDrawingCacheEnabled = true
-                @Suppress("DEPRECATION")
-                rootView.drawingCache?.let { sendScreenshot(it, conversationId) }
-                @Suppress("DEPRECATION")
-                rootView.isDrawingCacheEnabled = false
-            }
-        }
-    }
-
-    private fun sendScreenshot(bitmap: Bitmap, conversationId: String?) {
-        val stream = java.io.ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream)
-        val base64 = Base64.encodeToString(stream.toByteArray(), Base64.NO_WRAP)
-        chatViewModel.sendMessage("[screenshot]", imagesBase64 = listOf(base64))
-    }
 }

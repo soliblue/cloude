@@ -21,10 +21,7 @@ extension App {
             handleDeleteConversation(conversationId: convId)
 
         case .notify(let title, let body):
-            NotificationManager.showCustomNotification(title: title, body: body)
-
-        case .clipboard(let text):
-            UIPasteboard.general.string = text
+            NotificationManager.showNotification(title: title, body: body)
 
         case .openURL(let urlString):
             if let url = URL(string: urlString) {
@@ -42,12 +39,6 @@ extension App {
 
         case .resumeBegin(let convId, let messageId):
             handleResumeBegin(conversationId: convId, messageId: messageId)
-
-        case .screenshot(let convId):
-            handleScreenshot(conversationId: convId)
-
-        case .whiteboard(let action, let json, let convId):
-            handleWhiteboardAction(action: action, json: json, conversationId: convId)
 
         default:
             break

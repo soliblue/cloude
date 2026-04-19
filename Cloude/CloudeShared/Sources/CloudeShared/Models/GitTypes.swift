@@ -1,6 +1,6 @@
 import Foundation
 
-public struct GitFileStatus: Codable, Identifiable {
+public struct GitFileStatus: Codable, Identifiable, Equatable {
     public var id: String { path + (staged ? "-staged" : "-unstaged") }
     public let status: String
     public let path: String
@@ -32,7 +32,7 @@ public struct GitFileStatus: Codable, Identifiable {
 
 }
 
-public struct GitStatusInfo: Codable {
+public struct GitStatusInfo: Codable, Equatable {
     public let branch: String
     public let ahead: Int
     public let behind: Int

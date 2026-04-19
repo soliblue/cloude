@@ -1,6 +1,6 @@
 import Foundation
 
-public struct GitCommit: Codable, Identifiable {
+public struct GitCommit: Codable, Identifiable, Equatable {
     public var id: String { hash }
     public let hash: String
     public let message: String

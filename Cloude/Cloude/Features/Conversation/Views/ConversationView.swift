@@ -3,9 +3,8 @@ import Combine
 import CloudeShared
 
 struct ConversationView: View {
-    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     let store: ConversationStore
-    var environmentStore: EnvironmentStore?
 
     let conversation: Conversation?
     var window: Window?
@@ -30,16 +29,24 @@ struct ConversationView: View {
     }
 
     private var convOutput: ConversationOutput? {
-        guard let convId = effectiveConversation?.id else { return nil }
-        return connection.output(for: convId)
+        guard let conv = effectiveConversation else { return nil }
+        return environmentStore.connection(for: conv.environmentId)?.output(for: conv.id)
     }
 
     var body: some View {
         let _ = NSLog("[STABILITY] ConversationView.body | msgs=\(messages.count) hasOutput=\(convOutput != nil) convId=\(effectiveConversation?.id.uuidString.prefix(6) ?? "nil")")
-        content(output: convOutput)
-            .onReceive(convOutput?.$text.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { _ in
-                persistLiveTextStartIfNeeded()
+        Group {
+            if let connection = effectiveConversation.flatMap({ environmentStore.connection(for: $0.environmentId) }) {
+                EnvironmentConnectionObserver(connection: connection) { _ in
+                    content(output: convOutput)
+                }
+            } else {
+                content(output: convOutput)
             }
+        }
+        .onReceive(convOutput?.$text.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { _ in
+            persistLiveTextStartIfNeeded()
+        }
     }
 
     @ViewBuilder
@@ -56,7 +63,6 @@ struct ConversationView: View {
             },
             conversation: effectiveConversation,
             conversationStore: store,
-            connection: connection,
             window: window,
             windowManager: windowManager,
             onSelectConversation: onSelectRecentConversation,

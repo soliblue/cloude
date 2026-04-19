@@ -3,9 +3,6 @@ import Foundation
 extension ServerMessage {
     func encodeExtendedCases(_ container: inout KeyedEncodingContainer<CodingKeys>) throws {
         switch self {
-        case .processList(let processes):
-            try container.encode("process_list", forKey: .type)
-            try container.encode(processes, forKey: .processes)
         case .defaultWorkingDirectory(let path):
             try container.encode("default_working_directory", forKey: .type)
             try container.encode(path, forKey: .path)

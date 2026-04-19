@@ -13,9 +13,6 @@ final class WorkspaceStore: ObservableObject {
     @Published var attachedImages: [AttachedImage] = []
     @Published var attachedFiles: [AttachedFile] = []
     @Published var drafts: [UUID: Draft] = [:]
-    var gitBranches: [String: String] = [:]
-    @Published var pendingGitChecks: [(path: String, environmentId: UUID?)] = []
-    @Published var fileSearchResults: [String] = []
     @Published var currentEffort: EffortLevel?
     @Published var currentModel: ModelSelection?
     @Published var showConversationSearch = false
@@ -25,30 +22,21 @@ final class WorkspaceStore: ObservableObject {
     }
 
     func activeEnvConnection(
-        connection: ConnectionManager,
+        environmentStore: EnvironmentStore,
         windowManager: WindowManager,
-        conversationStore: ConversationStore,
-        environmentStore: EnvironmentStore
+        conversationStore: ConversationStore
     ) -> EnvironmentConnection? {
         let envId = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId ?? environmentStore.activeEnvironmentId
-        return connection.connection(for: envId)
+        return environmentStore.connection(for: envId)
     }
 
     func hasEnvironmentMismatch(
-        connection: ConnectionManager,
+        environmentStore: EnvironmentStore,
         windowManager: WindowManager,
         conversationStore: ConversationStore
     ) -> Bool {
         if let envId = currentConversation(windowManager: windowManager, conversationStore: conversationStore)?.environmentId {
-            return connection.connection(for: envId)?.phase != .authenticated
-        }
-        return false
-    }
-
-    func activeConversationIsRunning(connection: ConnectionManager, windowManager: WindowManager) -> Bool {
-        if let activeWindow = windowManager.activeWindow,
-           let convId = activeWindow.conversationId {
-            return connection.output(for: convId).phase != .idle
+            return environmentStore.connection(for: envId)?.isReady != true
         }
         return false
     }

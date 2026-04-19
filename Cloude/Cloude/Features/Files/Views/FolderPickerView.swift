@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct FolderPickerView: View {
-    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     var environmentId: UUID?
     let onSelect: (String) -> Void
 
@@ -19,7 +19,31 @@ struct FolderPickerView: View {
         return showHidden ? visible + hidden : visible
     }
 
+    private var connection: EnvironmentConnection? {
+        environmentStore.connection(for: environmentId)
+    }
+
+    private var currentDirectoryListing: [FileEntry]? {
+        connection?.directoryListing(for: currentPath)
+    }
+
+    private var currentPathError: String? {
+        connection?.pathError(for: currentPath)
+    }
+
     var body: some View {
+        Group {
+            if let connection {
+                EnvironmentConnectionObserver(connection: connection) { _ in
+                    content
+                }
+            } else {
+                content
+            }
+        }
+    }
+
+    private var content: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 pathBar
@@ -41,14 +65,9 @@ struct FolderPickerView: View {
             }
         }
         .presentationBackground(Color.themeBackground)
-        .onAppear { loadDirectory() }
-        .onReceive(connection.events) { event in
-            if case let .directoryListing(path, newEntries, envId) = event, envId == environmentId {
-                currentPath = path
-                entries = newEntries
-                isLoading = false
-            }
-        }
+        .onAppear { loadDirectory(); syncListing() }
+        .onChange(of: currentDirectoryListing) { _, _ in syncListing() }
+        .onChange(of: currentPathError) { _, _ in syncListing() }
     }
 
     private var folderList: some View {
@@ -100,6 +119,16 @@ struct FolderPickerView: View {
     private func loadDirectory() {
         isLoading = true
         entries = []
-        connection.listDirectory(path: currentPath, environmentId: environmentId)
+        connection?.listDirectory(path: currentPath)
+    }
+
+    private func syncListing() {
+        if let currentDirectoryListing {
+            entries = currentDirectoryListing
+            isLoading = false
+        } else if currentPathError != nil {
+            entries = []
+            isLoading = false
+        }
     }
 }

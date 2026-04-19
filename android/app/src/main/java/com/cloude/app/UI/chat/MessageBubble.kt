@@ -121,27 +121,14 @@ fun MessageBubble(
             )
     ) {
         if (message.toolCalls.isNotEmpty()) {
-            val regularTools = message.toolCalls.filter { !isWidget(it.name) }
-            val widgetTools = message.toolCalls.filter { isWidget(it.name) }
-
-            if (regularTools.isNotEmpty()) {
-                FlowRow(
-                    modifier = Modifier.padding(bottom = DS.Spacing.xs),
-                    horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
-                    verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
-                ) {
-                    regularTools.forEach { toolCall ->
-                        ToolCallLabel(toolCall = toolCall)
-                    }
+            FlowRow(
+                modifier = Modifier.padding(bottom = DS.Spacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(DS.Spacing.xs),
+                verticalArrangement = Arrangement.spacedBy(DS.Spacing.xs)
+            ) {
+                message.toolCalls.forEach { toolCall ->
+                    ToolCallLabel(toolCall = toolCall)
                 }
-            }
-
-            widgetTools.forEach { toolCall ->
-                WidgetView(
-                    toolName = toolCall.name,
-                    inputJson = toolCall.input
-                )
-                Spacer(modifier = Modifier.height(DS.Spacing.xs))
             }
         }
 

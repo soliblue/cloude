@@ -5,76 +5,27 @@ import UIKit
 import CloudeShared
 
 final class ConversationOutput: ObservableObject {
-    weak var parent: ConnectionManager?
-
-    @Published var text: String = "" { didSet { if oldValue.isEmpty != text.isEmpty { parent?.objectWillChange.send() } } }
+    @Published var text: String = ""
     @Published var toolCalls: [ToolCall] = []
     @Published var runStats: RunStats?
-    @Published var phase: StreamPhase = .idle { didSet { if phase != oldValue { parent?.objectWillChange.send() } } }
-    @Published var newSessionId: String? { didSet { if newSessionId != oldValue { parent?.objectWillChange.send() } } }
-    var messageUUID: String?
+    @Published var phase: StreamPhase = .idle
+    @Published var newSessionId: String?
     @Published var liveMessageId: UUID?
-    var needsHistorySync = false
-    var lastSeenSeq: Int = 0
 
+    var messageUUID: String?
+    var requiresHistoryResync = false
+    var lastSeenSeq: Int = 0
     var fullText: String = ""
-    private var displayIndex: String.Index?
-    private var displayLink: CADisplayLink?
-    private var lastDrainTime: CFTimeInterval = 0
-    private let charsPerSecond: Double = 300
+
+    let charsPerSecond: Double = 300
+    var displayIndex: String.Index?
+    var displayLink: CADisplayLink?
+    var lastDrainTime: CFTimeInterval = 0
     private var transientStateGeneration = 0
 
     func appendText(_ chunk: String) {
         fullText += chunk
         startDraining()
-    }
-
-    private func startDraining() {
-        guard displayLink == nil else { return }
-        if displayIndex == nil {
-            displayIndex = fullText.startIndex
-        }
-        lastDrainTime = CACurrentMediaTime()
-        let link = CADisplayLink(target: self, selector: #selector(drainTick))
-        link.add(to: .main, forMode: .common)
-        displayLink = link
-    }
-
-    @objc private func drainTick() {
-        guard let idx = displayIndex, idx < fullText.endIndex else {
-            stopDraining()
-            return
-        }
-
-        let now = CACurrentMediaTime()
-        let elapsed = now - lastDrainTime
-        lastDrainTime = now
-
-        let buffered = fullText.distance(from: idx, to: fullText.endIndex)
-        let rate: Double
-        if buffered > 800 {
-            rate = charsPerSecond * 4
-        } else if buffered > 400 {
-            rate = charsPerSecond * 2
-        } else {
-            rate = charsPerSecond
-        }
-
-        var charsToShow = max(1, Int(rate * elapsed))
-
-        var newIdx = idx
-        while charsToShow > 0 && newIdx < fullText.endIndex {
-            newIdx = fullText.index(after: newIdx)
-            charsToShow -= 1
-        }
-
-        displayIndex = newIdx
-        text = String(fullText[fullText.startIndex..<newIdx])
-    }
-
-    private func stopDraining() {
-        displayLink?.invalidate()
-        displayLink = nil
     }
 
     func flushBuffer() {
@@ -110,7 +61,7 @@ final class ConversationOutput: ObservableObject {
         transientStateGeneration += 1
         let generation = transientStateGeneration
         DispatchQueue.main.async { [weak self] in
-            if let self, self.transientStateGeneration == generation, self.phase == .idle, self.liveMessageId == nil {
+            if let self, self.transientStateGeneration == generation {
                 self.clearTransientState()
             }
         }
@@ -138,7 +89,7 @@ final class ConversationOutput: ObservableObject {
         #endif
     }
 
-    private func clearTransientState() {
+    func clearTransientState() {
         stopDraining()
         fullText = ""
         displayIndex = nil
@@ -147,6 +98,6 @@ final class ConversationOutput: ObservableObject {
         runStats = nil
         newSessionId = nil
         messageUUID = nil
-        needsHistorySync = false
+        requiresHistoryResync = false
     }
 }

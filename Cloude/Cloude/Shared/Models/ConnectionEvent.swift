@@ -2,17 +2,6 @@ import Foundation
 import CloudeShared
 
 enum ConnectionEvent {
-    case directoryListing(path: String, entries: [FileEntry], environmentId: UUID?)
-    case fileContent(path: String, data: String, mimeType: String, size: Int64, truncated: Bool)
-    case fileChunk(path: String, chunkIndex: Int, totalChunks: Int, data: String, mimeType: String, size: Int64)
-    case fileThumbnail(path: String, data: String, fullSize: Int64)
-    case fileSearchResults(files: [String])
-    case fileError(String)
-
-    case gitStatus(path: String, status: GitStatusInfo, environmentId: UUID?)
-    case gitStatusError(path: String, message: String, environmentId: UUID?)
-    case gitLog(path: String, commits: [GitCommit], environmentId: UUID?)
-    case gitDiff(path: String, diff: String)
     case disconnect(conversationId: UUID, output: ConversationOutput)
     case transcription(String)
     case skills([Skill])
@@ -25,7 +14,7 @@ enum ConnectionEvent {
     case resumeBegin(conversationId: UUID, messageId: UUID)
 
     case defaultWorkingDirectory(path: String, environmentId: UUID)
-    case authenticated
+    case authenticated(environmentId: UUID)
     case renameConversation(conversationId: UUID, name: String)
     case setConversationSymbol(conversationId: UUID, symbol: String?)
     case sessionIdReceived(conversationId: UUID, sessionId: String)
@@ -33,9 +22,6 @@ enum ConnectionEvent {
     case deleteConversation(conversationId: UUID)
     case switchConversation(conversationId: UUID)
     case notify(title: String?, body: String)
-    case clipboard(String)
     case openURL(String)
     case haptic(String)
-    case screenshot(conversationId: UUID?)
-    case whiteboard(action: WhiteboardAction, json: [String: Any], conversationId: UUID?)
 }

@@ -9,7 +9,7 @@ const server = new Server(
 );
 
 const tools = (await Promise.all(
-  ["actions", "widgets", "whiteboard"].map(async (file) =>
+  [].map(async (file) =>
     JSON.parse(await fs.readFile(new URL(`tools/${file}.json`, import.meta.url), "utf8")).tools
   )
 )).flat();

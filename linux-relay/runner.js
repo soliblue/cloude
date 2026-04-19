@@ -270,20 +270,4 @@ export class RunnerManager {
   getSessionId(conversationId) {
     return this.runners.get(conversationId)?.runner?.sessionId || this.runners.get(conversationId)?.sessionId
   }
-
-  getProcessInfo() {
-    const procs = []
-    for (const [convId, entry] of this.runners) {
-      if (entry.runner.process && !entry.runner.process.killed) {
-        procs.push({
-          pid: entry.runner.process.pid,
-          command: 'claude',
-          startTime: null,
-          conversationId: convId,
-          conversationName: null
-        })
-      }
-    }
-    return procs
-  }
 }

@@ -32,23 +32,6 @@ class RunnerManager: ObservableObject {
         activeRunners.values.filter { $0.runner.isRunning }.count
     }
 
-    func getProcessInfo() -> [AgentProcessInfo] {
-        let systemProcs = ProcessMonitor.findClaudeProcesses()
-        return systemProcs.map { proc in
-            let matchingRunner = activeRunners.values.first { runner in
-                runner.runner.process?.processIdentifier == proc.id
-            }
-            return AgentProcessInfo(
-                pid: proc.id,
-                command: proc.command,
-                startTime: proc.startTime,
-                conversationId: matchingRunner?.conversationId,
-                conversationName: matchingRunner?.conversationName,
-                parentPid: proc.parentPid
-            )
-        }
-    }
-
     func run(prompt: String, workingDirectory: String?, sessionId: String?, isNewSession: Bool, imagesBase64: [String]?, filesBase64: [AttachedFilePayload]? = nil, conversationId: String, conversationName: String? = nil, useFixedSessionId: Bool = false, forkSession: Bool = false, model: String? = nil, effort: String? = nil) {
         if let existing = activeRunners[conversationId], existing.runner.isRunning {
             Log.info("Runner for \(conversationId.prefix(8)) already running, aborting old one")

@@ -2,7 +2,7 @@ import SwiftUI
 import CloudeShared
 
 struct GitDiffView: View {
-    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     let repoPath: String
     let file: GitFileStatus
     var environmentId: UUID?
@@ -13,7 +13,31 @@ struct GitDiffView: View {
     @State private var isLoading = false
     @State private var pendingDiffKey: String?
 
+    private var connection: EnvironmentConnection? {
+        environmentStore.connection(for: environmentId)
+    }
+
+    private var currentDiff: String? {
+        connection?.gitDiffText(repoPath: repoPath, file: file.path, staged: file.staged)
+    }
+
+    private var currentDiffError: String? {
+        connection?.gitDiffError(repoPath: repoPath, file: file.path, staged: file.staged)
+    }
+
     var body: some View {
+        Group {
+            if let connection {
+                EnvironmentConnectionObserver(connection: connection) { _ in
+                    content
+                }
+            } else {
+                content
+            }
+        }
+    }
+
+    private var content: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 fileHeader
@@ -31,17 +55,11 @@ struct GitDiffView: View {
                     .agenticID("git_diff_close_button")
                 }
             }
-            .onAppear { loadDiff() }
+            .onAppear { loadDiff(); syncDiff() }
         }
         .agenticID("git_diff_view")
-        .onReceive(connection.events) { event in
-            if case let .gitDiff(_, diffText) = event {
-                diff = diffText
-                isLoading = false
-                AppLogger.endInterval("git.diff", key: pendingDiffKey ?? file.path, details: "chars=\(diffText.count)")
-                pendingDiffKey = nil
-            }
-        }
+        .onChange(of: currentDiff) { _, _ in syncDiff() }
+        .onChange(of: currentDiffError) { _, _ in syncDiff() }
     }
 
     private var fileHeader: some View {
@@ -101,6 +119,20 @@ struct GitDiffView: View {
         AppLogger.beginInterval("git.diff", key: pendingDiffKey)
         isLoading = true
         diff = nil
-        connection.gitDiff(path: repoPath, file: file.path, staged: file.staged, environmentId: environmentId)
+        connection?.gitDiff(path: repoPath, file: file.path, staged: file.staged)
+    }
+
+    private func syncDiff() {
+        if let currentDiff {
+            diff = currentDiff
+            isLoading = false
+            AppLogger.endInterval("git.diff", key: pendingDiffKey ?? file.path, details: "chars=\(currentDiff.count)")
+            pendingDiffKey = nil
+        } else if let currentDiffError {
+            diff = nil
+            isLoading = false
+            AppLogger.cancelInterval("git.diff", key: pendingDiffKey ?? file.path, reason: currentDiffError)
+            pendingDiffKey = nil
+        }
     }
 }

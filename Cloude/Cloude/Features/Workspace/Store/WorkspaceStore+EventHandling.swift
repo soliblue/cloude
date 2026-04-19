@@ -2,13 +2,13 @@ import Foundation
 import CloudeShared
 
 extension WorkspaceStore {
-    func handleConnectionEvent(_ event: ConnectionEvent, connection: ConnectionManager, conversationStore: ConversationStore) {
+    func handleConnectionEvent(_ event: ConnectionEvent, environmentStore: EnvironmentStore, conversationStore: ConversationStore) {
         switch event {
         case .historySync(let sessionId, _), .historySyncError(let sessionId, _):
             AppLogger.endInterval("conversation.refresh", key: conversationStore.findConversation(withSessionId: sessionId)?.id.uuidString, details: "sessionId=\(sessionId)")
-        case .authenticated:
-            recoverInterruptedMessagesIfNeeded(connection: connection, conversationStore: conversationStore)
-            replayQueuedMessagesIfNeeded(connection: connection, conversationStore: conversationStore)
+        case .authenticated(let environmentId):
+            recoverInterruptedMessagesIfNeeded(environmentId: environmentId, environmentStore: environmentStore, conversationStore: conversationStore)
+            replayQueuedMessagesIfNeeded(environmentId: environmentId, environmentStore: environmentStore, conversationStore: conversationStore)
         case .transcription(let text):
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let isBlank = trimmed.isEmpty ||
@@ -23,21 +23,11 @@ extension WorkspaceStore {
                 inputText = inputText.isEmpty ? text : inputText + " " + text
             }
             AudioRecorder.clearPendingAudioFile()
-        case .fileSearchResults(let files):
-            fileSearchResults = files
-        case .gitStatus(let path, let status, _):
-            if gitBranches[path] == nil, !status.branch.isEmpty {
-                gitBranches[path] = status.branch
-            }
-            if let idx = pendingGitChecks.firstIndex(where: { $0.path == path }) {
-                pendingGitChecks.remove(at: idx)
-            }
-            checkNextGitDirectory(connection: connection)
         case .turnCompleted(let convId):
             if let conv = conversationStore.conversation(withId: convId),
                let dir = conv.workingDirectory,
                !dir.isEmpty {
-                connection.gitStatus(path: dir, environmentId: conv.environmentId)
+                environmentStore.connection(for: conv.environmentId)?.gitStatus.enqueue(dir)
             }
         case .lastAssistantMessageCostUpdate(let convId, let costUsd):
             if let conversation = conversationStore.conversation(withId: convId),
@@ -57,22 +47,24 @@ extension WorkspaceStore {
         }
     }
 
-    func replayQueuedMessagesIfNeeded(connection: ConnectionManager, conversationStore: ConversationStore) {
+    func replayQueuedMessagesIfNeeded(environmentId: UUID, environmentStore: EnvironmentStore, conversationStore: ConversationStore) {
         for conv in conversationStore.conversations where !conv.pendingMessages.isEmpty {
-            if connection.output(for: conv.id).phase == .idle,
+            if conv.environmentId == environmentId,
+               !environmentStore.isStreaming(for: conv),
                conv.messages.last?.isRecoverableLiveMessage != true {
-                conversationStore.replayQueuedMessages(conversation: conv, connection: connection)
+                conversationStore.replayQueuedMessages(conversation: conv, environmentStore: environmentStore)
             }
         }
     }
 
-    func recoverInterruptedMessagesIfNeeded(connection: ConnectionManager, conversationStore: ConversationStore) {
+    func recoverInterruptedMessagesIfNeeded(environmentId: UUID, environmentStore: EnvironmentStore, conversationStore: ConversationStore) {
         for conv in conversationStore.conversations {
             if let lastMessage = conv.messages.last,
+               conv.environmentId == environmentId,
                lastMessage.isRecoverableLiveMessage,
                let sessionId = conv.sessionId,
                !sessionId.isEmpty,
-               let environmentConnection = connection.connection(for: conv.environmentId),
+               let environmentConnection = environmentStore.connection(for: conv.environmentId),
                environmentConnection.interruptedSessions[sessionId] == nil {
                 environmentConnection.interruptedSessions[sessionId] = InterruptedSession(conversationId: conv.id, messageId: lastMessage.id)
                 environmentConnection.send(.resumeFrom(sessionId: sessionId, lastSeq: 0))

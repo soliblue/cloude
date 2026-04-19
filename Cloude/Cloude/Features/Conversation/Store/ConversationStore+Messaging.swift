@@ -2,6 +2,68 @@ import Foundation
 import CloudeShared
 
 extension ConversationStore {
+    func dispatchUserTurn(
+        _ displayMessage: ChatMessage,
+        to conversation: Conversation,
+        environmentStore: EnvironmentStore,
+        imagesBase64: [String]? = nil,
+        filesBase64: [AttachedFilePayload]? = nil,
+        effort: String? = nil,
+        model: String? = nil,
+        queueIfUnavailable: Bool = true,
+        source: String
+    ) {
+        let freshConv = self.conversation(withId: conversation.id) ?? conversation
+        let isRunning = environmentStore.isStreaming(for: freshConv)
+        let isReady = environmentStore.connection(for: freshConv.environmentId)?.isReady == true
+
+        if queueIfUnavailable, isRunning || !isReady {
+            AppLogger.connectionInfo("\(source) queue convId=\(freshConv.id.uuidString) chars=\(displayMessage.text.count) running=\(isRunning) authenticated=\(isReady)")
+            var queuedMessage = displayMessage
+            queuedMessage.kind = .user(isQueued: true)
+            queuedMessage.pendingImagesBase64 = imagesBase64
+            queuedMessage.pendingFilesBase64 = filesBase64
+            queueMessage(queuedMessage, to: freshConv)
+            return
+        }
+
+        AppLogger.connectionInfo("\(source) send convId=\(freshConv.id.uuidString) chars=\(displayMessage.text.count) images=\(imagesBase64?.count ?? 0) files=\(filesBase64?.count ?? 0)")
+        var sentMessage = displayMessage
+        sentMessage.kind = .user()
+        sentMessage.pendingImagesBase64 = nil
+        sentMessage.pendingFilesBase64 = nil
+        addMessage(sentMessage, to: freshConv)
+
+        let updatedConv = self.conversation(withId: conversation.id) ?? freshConv
+        let isFork = updatedConv.pendingFork
+        let isNewSession = updatedConv.sessionId == nil && !isFork
+        environmentStore.connection(for: updatedConv.environmentId)?.sendChat(
+            displayMessage.text,
+            workingDirectory: updatedConv.workingDirectory,
+            sessionId: updatedConv.sessionId,
+            isNewSession: isNewSession,
+            conversationId: updatedConv.id,
+            imagesBase64: imagesBase64,
+            filesBase64: filesBase64,
+            conversationName: updatedConv.name,
+            forkSession: isFork,
+            effort: effort,
+            model: model
+        )
+
+        environmentStore.connection(for: updatedConv.environmentId)?.output(for: updatedConv.id).liveMessageId = insertLiveMessage(into: updatedConv)
+
+        if isNewSession {
+            AppLogger.connectionInfo("\(source) request name suggestion convId=\(updatedConv.id.uuidString)")
+            environmentStore.connection(for: updatedConv.environmentId)?.requestNameSuggestion(text: displayMessage.text, context: [], conversationId: updatedConv.id)
+        }
+
+        if isFork {
+            AppLogger.connectionInfo("\(source) clear pending fork convId=\(updatedConv.id.uuidString)")
+            clearPendingFork(updatedConv)
+        }
+    }
+
     func finalizeStreamingMessage(output: ConversationOutput, conversation: Conversation) {
         output.flushBuffer()
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
@@ -78,8 +140,8 @@ extension ConversationStore {
         }
     }
 
-    func replayQueuedMessages(conversation: Conversation, connection: ConnectionManager) {
-        guard connection.connection(for: conversation.environmentId)?.phase == .authenticated else { return }
+    func replayQueuedMessages(conversation: Conversation, environmentStore: EnvironmentStore) {
+        guard environmentStore.connection(for: conversation.environmentId)?.isReady == true else { return }
 
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
         guard let queuedMessage = freshConv.pendingMessages.first else { return }
@@ -91,24 +153,23 @@ extension ConversationStore {
             }
         }
 
-        var replayedMessage = queuedMessage
-        replayedMessage.kind = .user(isQueued: false)
-        addMessage(replayedMessage, to: freshConv)
-
         let updatedConv = self.conversation(withId: conversation.id) ?? freshConv
-
-        connection.sendChat(
-            replayedMessage.text,
-            workingDirectory: updatedConv.workingDirectory,
-            sessionId: updatedConv.sessionId,
-            isNewSession: false,
-            conversationId: updatedConv.id,
-            conversationName: updatedConv.name,
+        let replayedMessage = ChatMessage(
+            kind: .user(),
+            text: queuedMessage.text,
+            timestamp: queuedMessage.timestamp,
+            imageBase64: queuedMessage.imageBase64,
+            imageThumbnails: queuedMessage.imageThumbnails
+        )
+        dispatchUserTurn(
+            replayedMessage,
+            to: updatedConv,
+            environmentStore: environmentStore,
+            imagesBase64: queuedMessage.pendingImagesBase64,
+            filesBase64: queuedMessage.pendingFilesBase64,
             effort: updatedConv.defaultEffort?.rawValue,
             model: updatedConv.defaultModel?.rawValue,
-            environmentId: updatedConv.environmentId
+            source: "replay queued messages"
         )
-
-        connection.output(for: updatedConv.id).liveMessageId = insertLiveMessage(into: updatedConv)
     }
 }

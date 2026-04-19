@@ -27,7 +27,8 @@ extension App {
         }
 
         if let sessionId = output.newSessionId,
-           let environmentConnection = connection.connectionForConversation(conversationId) {
+           let envId = conversationStore.conversation(withId: conversationId)?.environmentId,
+           let environmentConnection = environmentStore.connection(for: envId) {
             environmentConnection.interruptedSessions[sessionId] = InterruptedSession(conversationId: conversationId, messageId: interruptedMessageId)
         }
     }
@@ -71,28 +72,26 @@ extension App {
                         if message.costUsd == nil { message.costUsd = metadata.costUsd }
                         if message.model == nil { message.model = metadata.model }
                     }
-                    let output = connection.output(for: conversation.id)
-                    if output.phase == .idle {
+                    if let output = environmentStore.connection(for: conversation.environmentId)?.output(for: conversation.id), output.phase == .idle {
                         output.reset()
                     }
                 }
-                if connection.output(for: conversation.id).phase == .idle {
-                    conversationStore.replayQueuedMessages(conversation: updatedConversation, connection: connection)
+                if !environmentStore.isStreaming(for: conversation) {
+                    conversationStore.replayQueuedMessages(conversation: updatedConversation, environmentStore: environmentStore)
                 }
             }
         }
     }
 
     func handleTurnCompleted(conversationId: UUID) {
-        let output = connection.output(for: conversationId)
-        if output.phase != .idle { return }
-        let needsHistorySync = output.needsHistorySync
+        guard var conversation = conversationStore.findConversation(withId: conversationId),
+              let output = environmentStore.connection(for: conversation.environmentId)?.output(for: conversationId),
+              output.phase == .idle else { return }
+        let requiresHistoryResync = output.requiresHistoryResync
 
         if UIApplication.shared.applicationState != .active && !output.text.isEmpty {
-            NotificationManager.showCompletionNotification(preview: output.text)
+            NotificationManager.showNotification(title: "Claude finished", body: output.text)
         }
-
-        guard var conversation = conversationStore.findConversation(withId: conversationId) else { return }
 
         if let newSessionId = output.newSessionId {
             conversationStore.updateSessionId(conversation, sessionId: newSessionId, workingDirectory: conversation.workingDirectory)
@@ -102,14 +101,14 @@ extension App {
         }
 
         let workingDirectory = conversation.workingDirectory
-            ?? connection.connection(for: conversation.environmentId)?.defaultWorkingDirectory
-        let shouldSyncBeforeFinalize = needsHistorySync ||
+            ?? environmentStore.connection(for: conversation.environmentId)?.defaultWorkingDirectory
+        let shouldSyncBeforeFinalize = requiresHistoryResync ||
             (output.liveMessageId != nil &&
              output.messageUUID == nil &&
              output.runStats != nil &&
              output.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
              output.toolCalls.isEmpty)
-        AppLogger.connectionInfo("heuristic_counter=shouldSyncBeforeFinalize_eval convId=\(conversationId.uuidString) value=\(shouldSyncBeforeFinalize) needsHistorySync=\(needsHistorySync)")
+        AppLogger.connectionInfo("heuristic_counter=shouldSyncBeforeFinalize_eval convId=\(conversationId.uuidString) value=\(shouldSyncBeforeFinalize) requiresHistoryResync=\(requiresHistoryResync)")
 
         if shouldSyncBeforeFinalize,
            output.liveMessageId != nil,
@@ -133,7 +132,7 @@ extension App {
                 costUsd: output.runStats?.costUsd,
                 model: output.runStats?.model
             )
-            connection.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory, environmentId: conversation.environmentId)
+            environmentStore.connection(for: conversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
             return
         }
 
@@ -147,10 +146,10 @@ extension App {
                 ($0.isUser ? "User: " : "Assistant: ") + String($0.text.prefix(300))
             }
             let lastUserMessage = updatedConversation.messages.last(where: { $0.isUser })?.text ?? ""
-            connection.requestNameSuggestion(text: lastUserMessage, context: contextMessages, conversationId: conversation.id)
+            environmentStore.connection(for: conversation.environmentId)?.requestNameSuggestion(text: lastUserMessage, context: contextMessages, conversationId: conversation.id)
         }
 
-        if needsHistorySync,
+        if requiresHistoryResync,
            let sessionId = updatedConversation.sessionId,
            let workingDirectory,
            !workingDirectory.isEmpty {
@@ -160,10 +159,10 @@ extension App {
                 costUsd: output.runStats?.costUsd,
                 model: output.runStats?.model
             )
-            connection.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory, environmentId: updatedConversation.environmentId)
+            environmentStore.connection(for: updatedConversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
         }
 
-        conversationStore.replayQueuedMessages(conversation: updatedConversation, connection: connection)
+        conversationStore.replayQueuedMessages(conversation: updatedConversation, environmentStore: environmentStore)
     }
 
     func handleDeleteConversation(conversationId: UUID) {
@@ -180,9 +179,9 @@ extension App {
     }
 
     func handleLiveSnapshot(conversationId: UUID) {
-        let output = connection.output(for: conversationId)
-        guard let liveId = output.liveMessageId,
-              let conversation = conversationStore.findConversation(withId: conversationId),
+        guard let conversation = conversationStore.findConversation(withId: conversationId),
+              let output = environmentStore.connection(for: conversation.environmentId)?.output(for: conversationId),
+              let liveId = output.liveMessageId,
               let message = conversation.messages.first(where: { $0.id == liveId }) else { return }
         if message.text != output.text || message.toolCalls != output.toolCalls {
             conversationStore.updateMessage(liveId, in: conversation) {

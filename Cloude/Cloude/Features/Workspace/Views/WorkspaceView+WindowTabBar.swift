@@ -1,14 +1,11 @@
 import SwiftUI
-import Combine
 import CloudeShared
 
 struct WindowTabBar: View, Equatable {
     let activeTab: WindowTab
     let envConnected: Bool
-    var connection: ConnectionManager? = nil
     let appTheme: AppTheme
-    var repoPath: String? = nil
-    var environmentId: UUID? = nil
+    var gitStatus: GitStatusInfo? = nil
     var folderName: String? = nil
     var totalCost: Double = 0
     let onSelectTab: (WindowTab) -> Void
@@ -18,13 +15,9 @@ struct WindowTabBar: View, Equatable {
         lhs.envConnected == rhs.envConnected &&
         lhs.totalCost == rhs.totalCost &&
         lhs.folderName == rhs.folderName &&
-        lhs.repoPath == rhs.repoPath &&
-        lhs.environmentId == rhs.environmentId &&
+        lhs.gitStatus == rhs.gitStatus &&
         lhs.appTheme == rhs.appTheme
     }
-    @State private var gitAdditions: Int = 0
-    @State private var gitDeletions: Int = 0
-    @State private var gitBranch: String = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -58,26 +51,14 @@ struct WindowTabBar: View, Equatable {
         }
         .padding(0)
         .agenticID("window_tab_bar")
-        .onReceive(connection?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { event in
-            if case let .gitStatus(path, status, envId) = event,
-               path == (repoPath ?? "~"),
-               envId == environmentId {
-                gitAdditions = status.files.compactMap(\.additions).reduce(0, +)
-                gitDeletions = status.files.compactMap(\.deletions).reduce(0, +)
-                gitBranch = status.branch
-            } else if case let .gitStatusError(path, _, envId) = event,
-                      path == (repoPath ?? "~"),
-                      envId == environmentId {
-                gitAdditions = 0
-                gitDeletions = 0
-                gitBranch = ""
-            }
-        }
     }
 
     @ViewBuilder
     private func tabLabel(for tab: WindowTab, enabled: Bool) -> some View {
         let isActive = activeTab == tab
+        let gitAdditions = gitStatus?.files.compactMap(\.additions).reduce(0, +) ?? 0
+        let gitDeletions = gitStatus?.files.compactMap(\.deletions).reduce(0, +) ?? 0
+        let gitBranch = gitStatus?.branch ?? ""
         if tab == .chat && totalCost > 0 {
             HStack(spacing: DS.Spacing.xs) {
                 Image(systemName: tab.icon)

@@ -1,11 +1,10 @@
 import SwiftUI
 import CloudeShared
-import Combine
 import HighlightSwift
 
 struct FilePreviewView: View {
     let path: String
-    let connection: ConnectionManager
+    let environmentStore: EnvironmentStore
     var environmentId: UUID?
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
@@ -15,22 +14,22 @@ struct FilePreviewView: View {
     @State var viewMode: FileViewMode = .rendered
     @State var diff: DiffState = .hidden
     @State var fileData: Data?
-    @State var cancellables = Set<AnyCancellable>()
     @State var highlightedCode: AttributedString?
     @AppStorage("wrapCodeLines") var wrapCodeLines = true
     @State var chunkProgress: (current: Int, total: Int)?
+    @State var diffRequest: GitDiffCacheKey?
 
-    init(file: FileEntry, connection: ConnectionManager, environmentId: UUID? = nil) {
+    init(file: FileEntry, environmentStore: EnvironmentStore, environmentId: UUID? = nil) {
         self.path = file.path
         self.fileEntry = file
-        self.connection = connection
+        self.environmentStore = environmentStore
         self.environmentId = environmentId
     }
 
-    init(path: String, connection: ConnectionManager, environmentId: UUID? = nil) {
+    init(path: String, environmentStore: EnvironmentStore, environmentId: UUID? = nil) {
         self.path = path
         self.fileEntry = nil
-        self.connection = connection
+        self.environmentStore = environmentStore
         self.environmentId = environmentId
     }
 
@@ -38,10 +37,52 @@ struct FilePreviewView: View {
     var fileExtension: String { path.pathExtension.lowercased() }
     var contentType: FileContentType { .from(extension: fileExtension) }
 
+    var connection: EnvironmentConnection? {
+        environmentStore.connection(for: environmentId)
+    }
+
+    var currentFileResponse: LoadedFileState? {
+        connection?.fileResponse(for: path)
+    }
+
+    var currentDirectoryListing: [FileEntry]? {
+        connection?.directoryListing(for: path)
+    }
+
+    var currentPathError: String? {
+        connection?.pathError(for: path)
+    }
+
+    var currentDiffText: String? {
+        if let diffRequest {
+            return connection?.gitDiffText(repoPath: diffRequest.repoPath, file: diffRequest.filePath, staged: diffRequest.staged)
+        }
+        return nil
+    }
+
+    var currentDiffError: String? {
+        if let diffRequest {
+            return connection?.gitDiffError(repoPath: diffRequest.repoPath, file: diffRequest.filePath, staged: diffRequest.staged)
+        }
+        return nil
+    }
+
     var body: some View {
+        Group {
+            if let connection {
+                EnvironmentConnectionObserver(connection: connection) { _ in
+                    screen
+                }
+            } else {
+                screen
+            }
+        }
+    }
+
+    private var screen: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                FileViewerBreadcrumb(path: path, environmentSymbol: connection.connection(for: environmentId)?.symbol)
+                FileViewerBreadcrumb(path: path, environmentSymbol: connection?.symbol)
                 Divider()
                 content
                 Spacer(minLength: 0)
@@ -85,22 +126,24 @@ struct FilePreviewView: View {
             }
         }
         .agenticID("file_preview_view")
-        .onAppear { loadFile() }
-        .onReceive(connection.events) { event in
-            if case let .gitDiff(_, text) = event, case .loading = diff {
-                diff = .loaded(text)
-            }
-        }
+        .onAppear { loadFile(); syncLoadedPath(); syncDiff() }
+        .onChange(of: currentFileResponse) { _, _ in syncLoadedPath() }
+        .onChange(of: currentDirectoryListing) { _, _ in syncLoadedPath() }
+        .onChange(of: currentPathError) { _, _ in syncLoadedPath() }
+        .onChange(of: currentDiffText) { _, _ in syncDiff() }
+        .onChange(of: currentDiffError) { _, _ in syncDiff() }
     }
 
     func toggleDiff() {
         switch diff {
         case .hidden:
             diff = .loading
-            let workDir = connection.connection(for: environmentId)?.defaultWorkingDirectory ?? path.deletingLastPathComponent
-            connection.gitDiff(path: workDir, file: path, environmentId: environmentId)
+            let workDir = connection?.defaultWorkingDirectory ?? path.deletingLastPathComponent
+            diffRequest = GitDiffCacheKey(repoPath: workDir, filePath: path, staged: false)
+            connection?.gitDiff(path: workDir, file: path)
         case .loading, .loaded:
             diff = .hidden
+            diffRequest = nil
         }
     }
 }

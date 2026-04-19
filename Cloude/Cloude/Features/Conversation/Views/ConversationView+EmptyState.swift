@@ -12,7 +12,6 @@ struct EmptyConversationView: View {
         "claude-boxer",
     ]
 
-    var connection: ConnectionManager?
     var conversationStore: ConversationStore?
     var environmentStore: EnvironmentStore?
     var conversation: Conversation?
@@ -23,7 +22,6 @@ struct EmptyConversationView: View {
     @State private var character: String
 
     init(
-        connection: ConnectionManager? = nil,
         conversationStore: ConversationStore? = nil,
         environmentStore: EnvironmentStore? = nil,
         conversation: Conversation? = nil,
@@ -31,7 +29,6 @@ struct EmptyConversationView: View {
         onSelectConversation: ((Conversation) -> Void)? = nil,
         onSeeAll: (() -> Void)? = nil
     ) {
-        self.connection = connection
         self.conversationStore = conversationStore
         self.environmentStore = environmentStore
         self.conversation = conversation
@@ -70,12 +67,11 @@ struct EmptyConversationView: View {
                     .frame(width: DS.Size.xxl * 3 / 8, height: DS.Size.xxl * 3 / 8)
             }
 
-            if let envStore = environmentStore, let conn = connection,
+            if let envStore = environmentStore,
                let convStore = conversationStore, let conv = conversation,
                conv.sessionId == nil {
                 EnvironmentFolderPicker(
                     environmentStore: envStore,
-                    connection: conn,
                     conversationStore: convStore,
                     conversation: conv
                 )

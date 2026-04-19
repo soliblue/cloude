@@ -1,6 +1,6 @@
 import Foundation
 
-public struct FileEntry: Codable, Identifiable {
+public struct FileEntry: Codable, Identifiable, Equatable {
     public var id: String { path }
     public let name: String
     public let path: String

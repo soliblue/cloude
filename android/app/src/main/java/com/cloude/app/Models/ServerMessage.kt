@@ -34,7 +34,6 @@ sealed class ServerMessage {
     data class GitLogResult(val path: String, val commits: List<GitCommit>) : ServerMessage()
     data class Transcription(val text: String) : ServerMessage()
     data class WhisperReady(val ready: Boolean) : ServerMessage()
-    data class ProcessList(val processes: List<AgentProcessInfo>) : ServerMessage()
     data class DefaultWorkingDirectory(val path: String) : ServerMessage()
     data class Skills(val skills: List<Skill>) : ServerMessage()
     data class HistorySync(val sessionId: String, val messages: List<HistoryMessage>) : ServerMessage()
@@ -142,9 +141,6 @@ sealed class ServerMessage {
                 )
                 "transcription" -> Transcription(text = obj.str("text") ?: "")
                 "whisper_ready" -> WhisperReady(ready = obj["ready"]?.jsonPrimitive?.boolean ?: false)
-                "process_list" -> ProcessList(
-                    processes = obj["processes"]?.jsonArray?.map { json.decodeFromJsonElement(AgentProcessInfo.serializer(), it) } ?: emptyList()
-                )
                 "default_working_directory" -> DefaultWorkingDirectory(path = obj.str("path") ?: "")
                 "skills" -> Skills(
                     skills = obj["skills"]?.jsonArray?.map { json.decodeFromJsonElement(Skill.serializer(), it) } ?: emptyList()

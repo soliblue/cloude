@@ -60,15 +60,6 @@ data class GitCommit(
 )
 
 @Serializable
-data class AgentProcessInfo(
-    val pid: Int,
-    val command: String,
-    val startTime: Double? = null,
-    val conversationId: String? = null,
-    val conversationName: String? = null
-)
-
-@Serializable
 data class Skill(
     val name: String,
     val description: String? = null,

@@ -82,7 +82,7 @@ extension ServerMessage {
         case .whisperReady(let ready):
             try container.encode("whisper_ready", forKey: .type)
             try container.encode(ready, forKey: .ready)
-        case .processList, .defaultWorkingDirectory, .skills, .historySync, .historySyncError,
+        case .defaultWorkingDirectory, .skills, .historySync, .historySyncError,
              .fileChunk, .fileThumbnail, .fileSearchResults, .messageUUID,
              .nameSuggestion, .pong, .resumeFromResponse:
             try encodeExtendedCases(&container)

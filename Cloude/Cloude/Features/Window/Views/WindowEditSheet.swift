@@ -4,7 +4,6 @@ struct WindowEditSheet: View {
     let window: Window
     @ObservedObject var conversationStore: ConversationStore
     @ObservedObject var windowManager: WindowManager
-    @ObservedObject var connection: ConnectionManager
     @ObservedObject var environmentStore: EnvironmentStore
     let onSelectConversation: (Conversation) -> Void
     let onDismiss: () -> Void
@@ -24,7 +23,6 @@ struct WindowEditSheet: View {
                     window: window,
                     conversationStore: conversationStore,
                     windowManager: windowManager,
-                    connection: connection,
                     environmentStore: environmentStore,
                     onSelectConversation: onSelectConversation
                 )
@@ -52,23 +50,11 @@ struct WindowEditSheet: View {
                                     .frame(height: DS.Icon.m)
                             }
 
-                            Button {
-                                guard !isRefreshing else { return }
-                                isRefreshing = true
-                                Task {
-                                    await onRefresh?()
-                                    isRefreshing = false
-                                }
-                            } label: {
-                                if isRefreshing {
-                                    ProgressView()
-                                        .scaleEffect(DS.Scale.s)
-                                } else {
-                                    Image(systemName: "arrow.clockwise")
-                                        .font(.system(size: DS.Icon.s, weight: .medium))
-                                }
-                            }
-                            .disabled(isRefreshing || connection.isAnyRunning)
+                            WindowEditRefreshButton(
+                                isRefreshing: $isRefreshing,
+                                output: conversation.flatMap { environmentStore.connection(for: $0.environmentId)?.output(for: $0.id) },
+                                onRefresh: onRefresh
+                            )
                         }
 
                         if windowManager.canRemoveWindow {

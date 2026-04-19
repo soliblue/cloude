@@ -61,11 +61,6 @@ extension ClientMessage {
         case "transcribe":
             let audioBase64 = try container.decode(String.self, forKey: .audioBase64)
             self = .transcribe(audioBase64: audioBase64)
-        case "get_processes":
-            self = .getProcesses
-        case "kill_process":
-            let pid = try container.decode(Int32.self, forKey: .pid)
-            self = .killProcess(pid: pid)
         case "sync_history":
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             let workingDirectory = try container.decode(String.self, forKey: .workingDirectory)

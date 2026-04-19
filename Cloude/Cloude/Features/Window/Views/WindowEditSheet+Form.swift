@@ -5,7 +5,6 @@ struct WindowEditForm: View {
     let window: Window
     let conversationStore: ConversationStore
     let windowManager: WindowManager
-    let connection: ConnectionManager
     let environmentStore: EnvironmentStore
     let onSelectConversation: (Conversation) -> Void
 
@@ -62,7 +61,6 @@ struct WindowEditForm: View {
             if let conv = conversation {
                 EnvironmentFolderPicker(
                     environmentStore: environmentStore,
-                    connection: connection,
                     conversationStore: conversationStore,
                     conversation: conv,
                     editable: canChangeFolder

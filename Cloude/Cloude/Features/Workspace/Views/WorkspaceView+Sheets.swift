@@ -6,7 +6,6 @@ extension WorkspaceView {
             window: window,
             conversationStore: conversationStore,
             windowManager: windowManager,
-            connection: connection,
             environmentStore: environmentStore,
             onSelectConversation: { conversation in
                 store.selectConversationForEditing(
@@ -17,7 +16,7 @@ extension WorkspaceView {
             },
             onDismiss: { store.editingWindow = nil },
             onRefresh: {
-                await store.refreshEditingWindowConversation(connection: connection, conversationStore: conversationStore)
+                await store.refreshEditingWindowConversation(environmentStore: environmentStore, conversationStore: conversationStore)
             },
             onDuplicate: { newConv in
                 store.duplicateEditingConversation(newConv, windowManager: windowManager)

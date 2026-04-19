@@ -91,4 +91,25 @@ extension StatusView {
             }
         }
     }
+
+    var actionsSection: some View {
+        HStack {
+            Button("Quit") {
+                _ = ProcessMonitor.killAllClaudeProcesses()
+                NSApp.terminate(nil)
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.red)
+
+            Spacer()
+
+            if runnerManager.isAnyRunning {
+                Button("Abort All") {
+                    runnerManager.abortAll()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+            }
+        }
+    }
 }
