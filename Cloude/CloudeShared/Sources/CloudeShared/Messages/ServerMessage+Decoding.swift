@@ -49,18 +49,6 @@ extension ServerMessage {
             let id = try container.decode(String.self, forKey: .id)
             let conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
             return .sessionId(id: id, conversationId: conversationId)
-        case "missed_response":
-            let sessionId = try container.decode(String.self, forKey: .sessionId)
-            let text = try container.decode(String.self, forKey: .text)
-            let completedAt = try container.decode(Date.self, forKey: .completedAt)
-            let toolCalls = try container.decodeIfPresent([StoredToolCall].self, forKey: .toolCalls) ?? []
-            let durationMs = try container.decodeIfPresent(Int.self, forKey: .durationMs)
-            let costUsd = try container.decodeIfPresent(Double.self, forKey: .costUsd)
-            let model = try container.decodeIfPresent(String.self, forKey: .model)
-            return .missedResponse(sessionId: sessionId, text: text, completedAt: completedAt, toolCalls: toolCalls, durationMs: durationMs, costUsd: costUsd, model: model)
-        case "no_missed_response":
-            let sessionId = try container.decode(String.self, forKey: .sessionId)
-            return .noMissedResponse(sessionId: sessionId)
         case "tool_call":
             let name = try container.decode(String.self, forKey: .name)
             let input = try container.decodeIfPresent(String.self, forKey: .input)

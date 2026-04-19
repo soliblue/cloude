@@ -32,7 +32,6 @@ class EnvironmentConnection: ObservableObject, Identifiable {
     var fileCache = FileCache()
     var pendingChunks: [String: (chunks: [Int: String], totalChunks: Int, mimeType: String, size: Int64)] = [:]
     var interruptedSessions: [String: (conversationId: UUID, messageId: UUID?)] = [:]
-    var pendingMissedResponseTargets: [String: (conversationId: UUID, messageId: UUID?)] = [:]
 
     var webSocket: URLSessionWebSocketTask?
     var session: URLSession?

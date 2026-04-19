@@ -34,16 +34,6 @@ extension AppDelegate {
         case .auth:
             break
 
-        case .requestMissedResponse(let sessionId):
-            if let stored = ResponseStore.retrieve(sessionId: sessionId) {
-                server.sendMessage(.missedResponse(sessionId: sessionId, text: stored.text, completedAt: stored.completedAt, toolCalls: stored.toolCalls, durationMs: stored.durationMs, costUsd: stored.costUsd, model: stored.model), to: connection)
-                ResponseStore.clear(sessionId: sessionId)
-            } else if let convRunner = runnerManager.activeRunners.values.first(where: { $0.sessionId == sessionId && $0.runner.isRunning }) {
-                server.sendMessage(.status(state: .running, conversationId: convRunner.conversationId), to: connection)
-            } else {
-                server.sendMessage(.noMissedResponse(sessionId: sessionId), to: connection)
-            }
-
         case .resumeFrom(let sessionId, let lastSeq):
             let result = runnerManager.replayBuffer.replayFrom(sessionId: sessionId, lastSeq: lastSeq)
             Log.info("resumeFrom sessionId=\(sessionId.prefix(8)) lastSeq=\(lastSeq) events=\(result.events.count) historyOnly=\(result.historyOnly)")

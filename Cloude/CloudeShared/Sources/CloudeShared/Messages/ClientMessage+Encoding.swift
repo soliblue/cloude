@@ -32,9 +32,6 @@ extension ClientMessage {
         case .getFileFullQuality(let path):
             try container.encode("get_file_full_quality", forKey: .type)
             try container.encode(path, forKey: .path)
-        case .requestMissedResponse(let sessionId):
-            try container.encode("request_missed_response", forKey: .type)
-            try container.encode(sessionId, forKey: .sessionId)
         case .resumeFrom(let sessionId, let lastSeq):
             try container.encode("resume_from", forKey: .type)
             try container.encode(sessionId, forKey: .sessionId)

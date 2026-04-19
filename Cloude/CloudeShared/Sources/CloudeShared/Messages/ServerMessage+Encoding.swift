@@ -37,18 +37,6 @@ extension ServerMessage {
             try container.encode("session_id", forKey: .type)
             try container.encode(id, forKey: .id)
             try container.encodeIfPresent(conversationId, forKey: .conversationId)
-        case .missedResponse(let sessionId, let text, let completedAt, let toolCalls, let durationMs, let costUsd, let model):
-            try container.encode("missed_response", forKey: .type)
-            try container.encode(sessionId, forKey: .sessionId)
-            try container.encode(text, forKey: .text)
-            try container.encode(completedAt, forKey: .completedAt)
-            try container.encode(toolCalls, forKey: .toolCalls)
-            try container.encodeIfPresent(durationMs, forKey: .durationMs)
-            try container.encodeIfPresent(costUsd, forKey: .costUsd)
-            try container.encodeIfPresent(model, forKey: .model)
-        case .noMissedResponse(let sessionId):
-            try container.encode("no_missed_response", forKey: .type)
-            try container.encode(sessionId, forKey: .sessionId)
         case .toolCall(let name, let input, let toolId, let parentToolId, let conversationId, let textPosition, let editInfo, let seq):
             try container.encode("tool_call", forKey: .type)
             try container.encode(name, forKey: .name)

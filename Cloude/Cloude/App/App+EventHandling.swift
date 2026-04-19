@@ -6,8 +6,6 @@ import CloudeShared
 extension App {
     func handleConnectionEvent(_ event: ConnectionEvent) {
         switch event {
-        case .missedResponse(_, let text, _, let storedToolCalls, let durationMs, let costUsd, let model, let interruptedConvId, let interruptedMsgId):
-            handleMissedResponse(text: text, storedToolCalls: storedToolCalls, durationMs: durationMs, costUsd: costUsd, model: model, interruptedConvId: interruptedConvId, interruptedMsgId: interruptedMsgId)
         case .disconnect(let convId, let output):
             handleDisconnect(conversationId: convId, output: output)
         case .renameConversation(let convId, let name):
@@ -40,8 +38,6 @@ extension App {
         case .switchConversation(let convId):
             handleSwitchConversation(conversationId: convId)
 
-        case .reconnectRunning(let convId):
-            handleReconnectRunning(conversationId: convId)
         case .liveSnapshot(let convId):
             handleLiveSnapshot(conversationId: convId)
 

@@ -79,7 +79,7 @@ extension WorkspaceStore {
                let environmentConnection = connection.connection(for: conv.environmentId),
                environmentConnection.interruptedSessions[sessionId] == nil {
                 environmentConnection.interruptedSessions[sessionId] = (conv.id, lastMessage.id)
-                connection.requestMissedResponse(sessionId: sessionId, environmentId: conv.environmentId)
+                environmentConnection.send(.resumeFrom(sessionId: sessionId, lastSeq: 0))
             }
         }
     }

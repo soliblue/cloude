@@ -17,7 +17,6 @@ public enum ClientMessage: Codable {
     case listDirectory(path: String)
     case getFile(path: String)
     case getFileFullQuality(path: String)
-    case requestMissedResponse(sessionId: String)
     case resumeFrom(sessionId: String, lastSeq: Int)
     case gitStatus(path: String)
     case gitDiff(path: String, file: String?, staged: Bool)

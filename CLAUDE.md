@@ -61,7 +61,6 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - **No single-use variables** - return or use the expression directly
 - **No single-use functions** - inline it. Get confirmation before extracting new functions
 - **No guard clauses** - always check for success, never check for failure: `if let subject = args.subject { process(subject) }`
-
 - **Ternary for simple conditionals**: `let role = user.isAdmin ? "admin" : "user"`
 - **One component per file** - every struct, class, or enum gets its own file, even if tiny
 - **Predictability over file count** - file-per-concern is good; don't merge files to reduce count. The enemy is incoherence (logic split across extensions with no clear reason, duplication, naming that doesn't predict contents), not verbosity. Before creating or modifying files, ask "can someone predict what lives here from the filename?"
@@ -76,15 +75,19 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - `Shared/` must stay earned and small, never a default dumping ground
 - Owner-local views with a single call site should use the owner prefix or live in the owner file
 - View files: no logic. Logic files: no SwiftUI.
+
+### Design System
+- **Accent is orange** (rgb 0.8/0.447/0.341) in `AccentColor.colorset`, not iOS default blue
+- Backgrounds come from the theme system (`AppTheme` in `Theme.swift`), majorelle default
+- **No hardcoded values** - colors, spacing, fonts, opacities, durations, and other visual constants must use design system tokens (`DS.*`, `AppTheme`, `Theme.swift`). Never inline magic numbers or color literals in views.
+- **Text tokens are dynamic** - `DS.Text.step` (0–3, set via `fontSizeStep` in Settings) is added to every `DS.Text.*` and `DS.Icon.*` size at read time. `DS.Spacing` and other size tokens stay fixed. Inline icons use `DS.Text` so they scale with adjacent text; standalone icons use `DS.Icon` which also scales with the same step.
+- **Icon sizing** - `DS.Icon` is for standalone icons/buttons only. When an SF Symbol appears inline next to text, use the same `DS.Text` size as the adjacent text so they match visually.
+- **No explicit spacers for gaps** - use `HStack(spacing:)` / `VStack(spacing:)` instead of `Spacer().frame(width/height:)` for fixed gaps between elements.
+- **Separators**: Use `Divider()` for standard separator lines across the app instead of drawing them manually. Only use custom shapes when the separator needs nonstandard geometry or behavior.
 - Sheets: use NavigationStack + `.toolbar`, not custom HStacks
 - SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
 - **Toolbar layout**: All toolbar icons use `DS.Icon.m` for consistent sizing across the app. Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: DS.Spacing.m)` with `.padding(.horizontal, DS.Spacing.l)`, use `Divider().frame(height: DS.Size.divider)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
-- **Separators**: Use `Divider()` for standard separator lines across the app instead of drawing them manually. Only use custom shapes when the separator needs nonstandard geometry or behavior.
 - Use markdown for text-heavy content. Use `mcp__ios__*` widgets for interactive/visual content like trees, timelines, image carousels, and color palettes.
-- **Text tokens will become dynamic** - DS.Text is separate from DS.Size because text will scale with iOS Dynamic Type settings. Size stays fixed while text scales. This is also why inline icons use DS.Text (they scale with text) while standalone icons use DS.Icon (fixed).
-- **No hardcoded values** - colors, spacing, fonts, opacities, durations, and other visual constants must use design system tokens (`DS.*`, `AppTheme`, `Theme.swift`). Never inline magic numbers or color literals in views.
-- **Icon sizing** - `DS.Icon` is for standalone icons/buttons only. When an SF Symbol appears inline next to text, use the same `DS.Text` size as the adjacent text so they match visually.
-- **No explicit spacers for gaps** - use `HStack(spacing:)` / `VStack(spacing:)` instead of `Spacer().frame(width/height:)` for fixed gaps between elements.
 
 ### Notes
 - **Prefer sub-agents for information retrieval** - whenever you need to look something up in the codebase, launch an Explore sub-agent instead of reading/grepping yourself. If the questions are independent, launch them in parallel in a single message. Main-thread context is expensive; sub-agent context is cheap.
@@ -93,7 +96,3 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - **Naming is automatic** - a background agent names conversations.
 - **Multi-agent project** - never touch another agent's code. If you see errors from someone else's work, stop and tell the user.
 - Full absolute paths starting with `/Users/` render as clickable file pills in the iOS app - always use full paths, never brace notation like {1-6}
-
-### Visual Defaults
-- **Accent is orange** (rgb 0.8/0.447/0.341) in `AccentColor.colorset`, not iOS default blue
-- Backgrounds come from the theme system (`AppTheme` in `Theme.swift`), majorelle default

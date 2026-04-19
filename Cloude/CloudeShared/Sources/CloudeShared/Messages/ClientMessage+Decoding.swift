@@ -37,9 +37,6 @@ extension ClientMessage {
         case "get_file_full_quality":
             let path = try container.decode(String.self, forKey: .path)
             self = .getFileFullQuality(path: path)
-        case "request_missed_response":
-            let sessionId = try container.decode(String.self, forKey: .sessionId)
-            self = .requestMissedResponse(sessionId: sessionId)
         case "resume_from":
             let sessionId = try container.decode(String.self, forKey: .sessionId)
             let lastSeq = try container.decode(Int.self, forKey: .lastSeq)

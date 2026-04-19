@@ -34,10 +34,6 @@ extension ConnectionManager {
     func getFile(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFile(path: path)) }
     func getFileFullQuality(path: String, environmentId: UUID? = nil) { connectionForSend(environmentId: environmentId)?.send(.getFileFullQuality(path: path)) }
 
-    func requestMissedResponse(sessionId: String, environmentId: UUID? = nil) {
-        connectionForSend(environmentId: environmentId)?.send(.requestMissedResponse(sessionId: sessionId))
-    }
-
     func gitStatus(path: String, environmentId: UUID? = nil) {
         if let conn = connectionForSend(environmentId: environmentId) {
             conn.gitStatusQueue.append(path)

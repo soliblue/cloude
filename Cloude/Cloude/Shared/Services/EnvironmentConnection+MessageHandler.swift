@@ -32,8 +32,6 @@ extension EnvironmentConnection {
         case .toolResult(let id, let sum, let out, let c, let seq):  handleToolResult(mgr, toolId: id, summary: sum, output: out, conversationId: c, seq: seq)
         case .runStats(let ms, let cost, let m, let c, let seq):    handleRunStats(mgr, durationMs: ms, costUsd: cost, model: m, conversationId: c, seq: seq)
         case .resumeFromResponse(let sid, let events, let historyOnly): handleResumeFromResponse(mgr, sessionId: sid, events: events, historyOnly: historyOnly)
-        case .missedResponse(let sid, let t, _, let tc, let durationMs, let costUsd, let model):  handleMissedResponse(mgr, sessionId: sid, text: t, storedToolCalls: tc, durationMs: durationMs, costUsd: costUsd, model: model)
-        case .noMissedResponse(let sid):                  handleNoMissedResponse(mgr, sessionId: sid)
         case .sessionId(let id, let c):                   handleSessionId(mgr, id, conversationId: c)
         case .messageUUID(let uuid, let c):               handleMessageUUID(mgr, uuid, conversationId: c)
         case .directoryListing(let path, let entries):    mgr.events.send(.directoryListing(path: path, entries: entries, environmentId: environmentId))

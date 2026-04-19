@@ -130,15 +130,6 @@ final class ConversationOutput: ObservableObject {
         }
     }
 
-    func seedForReconnect(_ existingText: String, toolCalls existingToolCalls: [ToolCall]) {
-        transientStateGeneration += 1
-        stopDraining()
-        fullText = existingText
-        text = existingText
-        displayIndex = fullText.endIndex
-        self.toolCalls = existingToolCalls
-    }
-
     func reset() {
         #if DEBUG
         DebugMetrics.log(

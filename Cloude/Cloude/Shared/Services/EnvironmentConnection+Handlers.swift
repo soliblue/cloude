@@ -9,6 +9,7 @@ extension EnvironmentConnection {
 
     func handleOutput(_ mgr: ConnectionManager, text: String, conversationId: String?, seq: Int? = nil) {
         guard let convId = conversationId.flatMap({ UUID(uuidString: $0) }) else { return }
+        if let seq, seq <= mgr.output(for: convId).lastSeenSeq { return }
         AppLogger.connectionInfo("assistant output convId=\(convId.uuidString) chars=\(text.count) seq=\(seq.map(String.init) ?? "nil")")
         AppLogger.endInterval("chat.firstToken", key: convId.uuidString)
         let out = mgr.output(for: convId)
@@ -114,49 +115,6 @@ extension EnvironmentConnection {
         let out = mgr.output(for: convId)
         out.runStats = (durationMs, costUsd, model)
         if let seq { out.lastSeenSeq = max(out.lastSeenSeq, seq) }
-    }
-
-    func handleMissedResponse(_ mgr: ConnectionManager, sessionId: String, text: String, storedToolCalls: [StoredToolCall], durationMs: Int?, costUsd: Double?, model: String?) {
-        let toolCalls = storedToolCalls.map { ToolCall(from: $0) }
-        var interruptedConvId: UUID?
-        var interruptedMsgId: UUID?
-        if let interrupted = interruptedSessions[sessionId] {
-            interruptedConvId = interrupted.conversationId
-            interruptedMsgId = interrupted.messageId
-            interruptedSessions.removeValue(forKey: sessionId)
-        } else if let target = pendingMissedResponseTargets[sessionId] {
-            interruptedConvId = target.conversationId
-            interruptedMsgId = target.messageId
-            pendingMissedResponseTargets.removeValue(forKey: sessionId)
-        }
-        AppLogger.connectionInfo("missed response sessionId=\(sessionId) chars=\(text.count) tools=\(toolCalls.count) convId=\(interruptedConvId?.uuidString ?? "nil")")
-        if let convId = interruptedConvId, let durationMs, let costUsd {
-            AppLogger.connectionInfo("run stats convId=\(convId.uuidString) durationMs=\(durationMs) costUsd=\(costUsd)")
-        }
-        mgr.events.send(.missedResponse(sessionId: sessionId, text: text, completedAt: Date(), toolCalls: storedToolCalls, durationMs: durationMs, costUsd: costUsd, model: model, interruptedConversationId: interruptedConvId, interruptedMessageId: interruptedMsgId))
-        if let convId = interruptedConvId {
-            let output = mgr.output(for: convId)
-            if let durationMs, let costUsd {
-                output.runStats = (durationMs, costUsd, model)
-            }
-            if output.isRunning {
-                output.liveMessageId = interruptedMsgId ?? output.liveMessageId
-                AppLogger.connectionInfo("heuristic_counter=seedForReconnect reason=missed_response sessionId=\(sessionId) chars=\(text.count) tools=\(toolCalls.count)")
-                output.seedForReconnect(text.trimmingCharacters(in: .whitespacesAndNewlines), toolCalls: toolCalls)
-                AppLogger.connectionInfo("heuristic_counter=needsHistorySync_flip reason=missed_response_running sessionId=\(sessionId)")
-                output.needsHistorySync = true
-            } else {
-                output.reset()
-                output.isRunning = false
-            }
-        }
-    }
-
-    func handleNoMissedResponse(_ _: ConnectionManager, sessionId: String) {
-        if pendingMissedResponseTargets.removeValue(forKey: sessionId) != nil {
-            return
-        }
-        interruptedSessions.removeValue(forKey: sessionId)
     }
 
     func handleSessionId(_ mgr: ConnectionManager, _ id: String, conversationId: String?) {

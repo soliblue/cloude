@@ -87,13 +87,8 @@ extension RunnerManager {
             let response = convRunner?.accumulatedResponse ?? ""
             let toolCalls = convRunner?.accumulatedToolCalls ?? []
             let sessionId = convRunner?.sessionId
-            let runStats = convRunner?.runStats
 
             Log.info("Runner for \(conversationId.prefix(8)) complete, response length=\(response.count), toolCalls=\(toolCalls.count)")
-
-            if let sid = sessionId, !response.isEmpty || !toolCalls.isEmpty || runStats != nil {
-                ResponseStore.store(sessionId: sid, text: response, toolCalls: toolCalls, durationMs: runStats?.durationMs, costUsd: runStats?.costUsd, model: runStats?.model)
-            }
 
             self.onComplete?(conversationId, sessionId)
             self.onStatusChange?(.idle, conversationId)
