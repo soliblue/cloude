@@ -34,13 +34,6 @@ The iOS app connects to the Mac agent or Linux relay over WebSocket. Two options
 - **Tailscale**: mesh VPN alternative. Works but drains iOS battery more.
 Both proxy to `localhost:8765` where the agent/relay listens. Specific endpoints and tunnel config live in personal memory, not here.
 
-### Server Hardening
-When running the relay on a VPS, the raw IP must be locked down so traffic can only enter through the tunnel:
-- Disable SSH password auth (key-only)
-- Firewall: deny all incoming by default, allow SSH (key-only), allow HTTP/S only from Cloudflare IP ranges, allow the relay port only from localhost
-- Without this, anyone who scans the IP can bypass Cloudflare's DDoS/WAF protections entirely
-- Setup script: `linux-relay/scripts/harden-firewall.sh`
-
 ### Streaming Architecture
 - The iOS app shows a "live bubble" for the currently streaming response, identified by `ConversationOutput.liveMessageId`
 - Live bubble is inserted at send time (after `sendChat`), at every call site. On reconnect, `handleHistorySync` restores it from server history
@@ -77,19 +70,13 @@ When running the relay on a VPS, the raw IP must be locked down so traffic can o
 - View files: no logic. Logic files: no SwiftUI.
 
 ### Design System
-- **Accent is orange** (rgb 0.8/0.447/0.341) in `AccentColor.colorset`, not iOS default blue
-- Backgrounds come from the theme system (`AppTheme` in `Theme.swift`), majorelle default
+- **Theme defaults** - accent orange (rgb 0.8/0.447/0.341, `AccentColor.colorset`); backgrounds from `AppTheme` in `Theme.swift`, majorelle default.
 - **No hardcoded values** - colors, spacing, fonts, opacities, durations, and other visual constants must use design system tokens (`DS.*`, `AppTheme`, `Theme.swift`). Never inline magic numbers or color literals in views.
-- **Text tokens are dynamic** - `DS.Text.step` (0–3, set via `fontSizeStep` in Settings) is added to every `DS.Text.*` and `DS.Icon.*` size at read time. `DS.Spacing` and other size tokens stay fixed. Inline icons use `DS.Text` so they scale with adjacent text; standalone icons use `DS.Icon` which also scales with the same step.
-- **Icon sizing** - `DS.Icon` is for standalone icons/buttons only. When an SF Symbol appears inline next to text, use the same `DS.Text` size as the adjacent text so they match visually.
-- **No explicit spacers for gaps** - use `HStack(spacing:)` / `VStack(spacing:)` instead of `Spacer().frame(width/height:)` for fixed gaps between elements.
-- **Separators**: Use `Divider()` for standard separator lines across the app instead of drawing them manually. Only use custom shapes when the separator needs nonstandard geometry or behavior.
-- Sheets: use NavigationStack + `.toolbar`, not custom HStacks
-- SF Symbols for toolbar buttons (`xmark`, `checkmark`, `trash`)
-- **Toolbar layout**: All toolbar icons use `DS.Icon.m` for consistent sizing across the app. Single button = no extra padding. Multiple buttons = wrap in `HStack(spacing: DS.Spacing.m)` with `.padding(.horizontal, DS.Spacing.l)`, use `Divider().frame(height: DS.Size.divider)` between button groups. Dismiss button (`xmark`) goes in `.topBarTrailing` with no extra padding.
-- Use markdown for text-heavy content. Use `mcp__ios__*` widgets for interactive/visual content like trees, timelines, image carousels, and color palettes.
+- **Token scaling** - `DS.Text.step` (0–3, `fontSizeStep` in Settings) is added to every `DS.Text.*` and `DS.Icon.*` at read time; `DS.Spacing` and other size tokens stay fixed. Use `DS.Text` for text and inline icons (so they match adjacent text); use `DS.Icon` for standalone icons/buttons.
+- **Use built-ins** - `HStack(spacing:)` / `VStack(spacing:)` for gaps (not `Spacer().frame()`); `Divider()` for separators (not custom lines). Only roll your own when the requirement is genuinely nonstandard.
+- **Sheets & toolbar** - sheets use NavigationStack + `.toolbar` (not custom HStacks). Toolbar buttons: SF Symbols (`xmark`, `checkmark`, `trash`), all `DS.Icon.m`. Single button = no extra padding. Multiple = `HStack(spacing: DS.Spacing.m)` + `.padding(.horizontal, DS.Spacing.l)`, `Divider().frame(height: DS.Size.divider)` between groups. Dismiss (`xmark`) in `.topBarTrailing`.
 
-### Notes
+### Agent Rules
 - **Prefer sub-agents for information retrieval** - whenever you need to look something up in the codebase, launch an Explore sub-agent instead of reading/grepping yourself. If the questions are independent, launch them in parallel in a single message. Main-thread context is expensive; sub-agent context is cheap.
 - **`.claude/` folder requires permission** - Anthropic added a permission gate on Edit/Write/sed for files inside `.claude/`. Since we run headless (no way to accept permission prompts), use workarounds: `cp` to `/tmp`, modify there, `cp` back. Or use `cat` with heredoc redirect. Never use the Edit tool on `.claude/` files.
 - Ask questions in plain text when needed
