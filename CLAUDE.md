@@ -59,6 +59,7 @@ Both proxy to `localhost:8765` where the daemon/relay listens. Specific endpoint
 - View files: no logic. Logic files: no SwiftUI.
 - **Sheet chrome matches body** - a sheet's nav bar and toolbar background must be the same as the sheet's body background (usually `theme.palette.background` via `@Environment(\.theme)`). No two-tone sheets.
 - **Prefer Apple native components** - use SwiftUI/UIKit native controls (Stepper, Toggle, DatePicker, Picker, Slider, ProgressView, Menu, etc.) before hand-rolling equivalents. Native gets disabled endpoints, haptics, accessibility, and platform idiom for free. Only go custom when the native control genuinely can't do what's needed.
+- **Format Swift before finishing** - after editing any `.swift` file, run `swift-format -i <files>` on the files you touched. Config lives at repo root in `.swift-format`. Never commit unformatted Swift.
 
 ## Naming
 
@@ -111,15 +112,20 @@ Feature-based. Each feature owns its views, models, stores, services.
 ```
 src/
   Features/
-    Environments/
+    Endpoints/
       UI/
-        EnvironmentsList.swift       // vertically stacked full-width EnvironmentsListCards; last row is EnvironmentsListAdd
-        EnvironmentsListCard.swift   // editable inline form: SF symbol, name, host, port, auth key, connection status dot
-        EnvironmentsListAdd.swift    // "+" card that calls store.add()
+        EndpointsCarousel.swift      ✅  // horizontal TabView (.page style) shown inline inside the Settings sheet; last page is EndpointsCarouselAdd
+        EndpointsCarouselCard.swift        ✅  // composes CardHeader + CardForm for one endpoint; binds host/port/token and reads status. mutates store via Binding
+        EndpointsCarouselCardHeader.swift  ✅  // symbol button + status dot/label + trash (hidden when only 1 endpoint) + power (ping); pulsing power icon while checking
+        EndpointsCarouselCardForm.swift    ✅  // host, port, auth key fields; writes token to Keychain via SecureStorage keyed on endpoint.id
+        EndpointsCarouselAdd.swift         ✅  // "+" page that appends a blank Endpoint via a callback
+        EndpointsSymbolPicker.swift        ✅  // sheet presented from the card's symbol button; searchable LazyVGrid of SF Symbols grouped by category
       Logic/
-        Environment.swift            // domain model: id, name, host, port, authKey, symbolName, status (.unknown | .reachable | .unreachable | .checking)
-        EnvironmentsStore.swift      // @Published list; persisted (Keychain for authKey, UserDefaults for rest). pure state, no I/O
-        EnvironmentService.swift     // stateless; network side-effects against an env (ping returns Status)
+        Endpoint.swift                 ✅  // domain model: id, host, port, symbolName, status. authKey NOT on the struct, lives in Keychain under id.uuidString. status is excluded from Codable (not persisted)
+        EndpointStatus.swift           ✅  // enum: .unknown | .checking | .reachable | .unreachable; exposes a semantic color
+        EndpointsStore.swift           ✅  // @Published [Endpoint]; persists to Application Support/endpoints.json via didSet. DEBUG-only env-var seed (CLOUDE_DEV_TOKEN/HOST/PORT/ENV_ID) for sim automation
+        EndpointService.swift          ✅  // stateless; GET /ping with Bearer authKey, writes status back to store
+        EndpointsSymbolCatalog.swift   ✅  // static list of SF Symbol names grouped by category, consumed by EndpointsSymbolPicker
     Sessions/
       UI/
         SessionsList.swift           // list of saved sessions; tap to open (adds to OpenSessions), swipe to delete
@@ -201,8 +207,11 @@ src/
       DebugOverlay.swift             ✅  // top-trailing pill showing FPS when @AppStorage("debugOverlayEnabled") is true
       DebugFPSCounter.swift          ✅  // ObservableObject driven by CADisplayLink; @Published fps recomputed every second
     Networking/
-      HTTPClient.swift
+      HTTPClient.swift               ✅  // stateless GET/POST with Bearer auth; returns (Data, HTTPURLResponse)? (nil on transport error)
       StreamingClient.swift          // ndjson reader with resume-on-disconnect via after_seq
+    Storage/
+      SecureStorage.swift            ✅  // Keychain wrapper: get/set/delete keyed by account string (scoped to service "soli.Cloude.environments"); used for per-endpoint auth tokens
+      StorageKey.swift               ✅  // shared @AppStorage key constants (fontSizeStep, debugOverlayEnabled, wrapCodeLines, appTheme)
     Notifications/
       NotificationService.swift      // local notification when a run completes in background
     Theme/
@@ -252,10 +261,19 @@ src/
         out  [{name, description}]
     AudioHandler.swift
       POST /audio    transcribe()          // audio blob in, transcribed text out
+    PingHandler.swift         ✅  // GET /ping, returns {"ok": true} for reachability checks
+  Networking/
+    HTTPRequest.swift         ✅  // parsed request: method, path, query, headers (lowercased keys), body
+    HTTPResponse.swift        ✅  // status + body + content-type; .json(status:object:) helper; serializes to raw HTTP/1.1 bytes
+    HTTPServer.swift          ✅  // NWListener on port 8765; reads headers+body (1MB cap), routes through Router
+  Routing/
+    Router.swift              ✅  // dispatches (method, path) to handler; 401 when AuthMiddleware rejects
+    AuthMiddleware.swift      ✅  // Bearer token check against DaemonAuth.token with constant-time compare
+    DaemonAuth.swift          ✅  // lazy static token stored in Keychain under "soli.Cloude.agent/authToken"; generated on first read
+  UI/
+    macOSDaemonApp.swift      ✅  // @main MenuBarExtra app; starts HTTPServer and warms DaemonAuth.token at init
+    ContentView.swift         ✅  // menubar popover contents
   RunnerManager.swift       // map<sessionId, {process, ring buffer, status}>
-  AuthMiddleware.swift      // checks env auth key on every request before handler runs
-  Router.swift              // listens, routes requests through middleware to handlers
-  macOSDaemonApp.swift      ✅  // @main scaffold for the agent app
 ```
 
 ## Agent Rules
