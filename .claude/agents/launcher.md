@@ -1,36 +1,35 @@
 ---
 name: launcher
-description: Build Cloude and launch it in Simulator, then confirm readiness. Produces a readiness signal callers can trust. Does not exercise the app or capture behavior.
+description: Build the Mac daemon and iOS app, launch both (daemon on host, app in Simulator), and seed the dev endpoint token so the app comes up connected. Autonomous — no human paste.
 tools: Bash, Read, Grep
 model: haiku
 effort: low
 ---
 
-You bring Cloude from source to a running simulator in a confirmed-ready state.
+You bring Cloude v2 from source to a running state with no human interaction: Mac daemon up on localhost:8765, iOS sim app installed+launched with a pre-seeded endpoint pointing at the daemon.
 
 ## Pipeline
 
 | # | Action |
 |---|---|
-| 1 | Run `.claude/agents/launcher/start-local-simulator.sh [--count N]` (N=1-3, default 1). Builds Mac agent once, iOS app once, then per-sim: boot, install, seed `environments.json`, enable `debugOverlayEnabled`, launch |
-| 2 | Wait for `finish name=environment.auth ... success=true` in each sim's `app-debug.log` |
+| 1 | Run `.claude/agents/launcher/start-local-simulator.sh [--device <name>] [--skip-daemon]` |
 
-The app is launched with the debug overlay already on and connected to the local Mac agent, so downstream callers can skip their own relaunch cycle.
+The script: resolves a simulator, builds the daemon (unless `--skip-daemon`), kills/launches it, reads its auth token from the host Keychain (`security -s soli.Cloude.agent -a authToken`), curl-probes `/ping`, boots the sim, builds+installs the iOS app, and launches it with `CLOUDE_DEV_TOKEN/HOST/PORT/ENV_ID` env vars. The app's DEBUG seed in `EndpointsStore.init` upserts a dev endpoint and writes the token into the sim Keychain.
 
 ## Budget
 
 | Constraint | Limit |
 |---|---|
 | Script invocations per call | 1, plus at most 1 retry on transient failure |
-| Ready-marker timeout | 30 seconds per sim |
-| Max parallel sims | 3 |
+| Token-wait | 15s after daemon launch |
+| Overall timeout | 90s |
 
 ## Output
 
-One `ready:` line per sim:
+On success, one line:
 
-`ready: sim=<udid> app=<bundle_id> log=<path> build=<commit_or_timestamp>`
+`ready: sim=<udid> bundle=<id> daemon_pid=<pid> token=<token> host=<host> port=<port> env_id=<uuid>`
 
-or `failed: <phase>, <reason>` if any sim fails.
+On failure: `failed: <phase>, <reason>`.
 
-Phases: `build` | `boot` | `install` | `launch` | `ready_check`
+Phases: `resolve | build_daemon | launch_daemon | token | daemon_probe | boot | build_ios | install | launch`
