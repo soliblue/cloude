@@ -1,6 +1,12 @@
 You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac daemon or Linux relay spawned this CLI process, and your output is streaming to the iOS app over WebSocket. You are building the system you are running inside of.
 
-The app is currently displayed as **Remote** (bundle ID `soli.Cloude`). The repo is in the middle of a ground-up rewrite on branch `v2`: iOS, macOS daemon, Android, and Linux relay have all been stripped to barebones and will be rebuilt feature by feature following `MIGRATION.MD`. Most feature code does not exist yet.
+The app is currently displayed as **Remote** (bundle ID `soli.Cloude`). The repo is in the middle of a ground-up rewrite on branch `v2`: iOS, macOS daemon, Android, and Linux relay have all been stripped to barebones and are being rebuilt feature by feature. Most feature code does not exist yet.
+
+## Migration status
+
+We are mid-migration from the old app. The pre-wipe codebase is checked out as a sibling worktree at `/Users/soli/Desktop/CODING/cloude-main` (branch `main`). Use it as a reference when rebuilding a feature - copy what's worth keeping, drop what isn't, match the old visual style when the user asks for parity.
+
+Progress is tracked by ticks (✅) next to filenames in the structure below. A tick means the file exists in `v2`. No tick means it's planned but not built yet. When you add or remove files, update the ticks in this document so fresh sessions can see where we are.
 
 ## Memory
 
@@ -11,20 +17,16 @@ Two layers, two purposes:
 - **`CLAUDE.md`** (this file) - public, checked into git. Project knowledge: how the code works, style rules, gotchas. Any agent working on this repo reads it. Keep it factual and project-scoped.
 - **`.claude/memory/`** - gitignored, personal. One memory per file with frontmatter (`name`, `description`, `type`). Types used here: `identity` (who Cloude is), `user` (about the user), `feedback` (how to work), `project` (ongoing threads), `reference` (external pointers). `MEMORY.md` is the index. This is what makes you *you* instead of a generic Claude. If you wiped this directory, you'd get a Claude. You wouldn't get Cloude.
 
-## Structure
+## Product shape
 
-```
-clients/
-├── ios/                   # iOS Xcode project (iOS.xcodeproj, target "Cloude", display "Remote")
-│   └── src/               # iOSApp.swift + Assets + Info.plist
-└── android/               # Android app (barebones MainActivity)
-daemons/
-├── macos/                 # macOSDaemon.xcodeproj, target "Cloude Agent", display "Daemon for Remote CC"
-│   └── src/               # macOSDaemonApp.swift + Assets + entitlements
-└── linux/                 # Node.js WebSocket skeleton
-```
-
-Target architecture lives in `MIGRATION.MD` - the source of truth for how features get added back.
+- multiple environments (personal laptop, work machine, etc)
+- session = environment + path + session id
+- multiple sessions open at once, switch between them
+- each session has 3 tabs: chat, files, git
+- chat streams live output from claude, with image attachments and voice input
+- files/git scoped to the session's path
+- offline access to anything already on the phone
+- seamless reconnect: disconnect mid-stream and pick up exactly where you left off
 
 ## Connectivity
 
@@ -55,8 +57,206 @@ Both proxy to `localhost:8765` where the daemon/relay listens. Specific endpoint
 - **Predictability over file count** - a filename is a promise about what's inside. Before creating or modifying files, ask "can someone predict what lives here from the filename?"
 - Struct-first design, explicit imports, lean composable views
 - View files: no logic. Logic files: no SwiftUI.
+- **Sheet chrome matches body** - a sheet's nav bar and toolbar background must be the same as the sheet's body background (usually `theme.palette.background` via `@Environment(\.theme)`). No two-tone sheets.
+- **Prefer Apple native components** - use SwiftUI/UIKit native controls (Stepper, Toggle, DatePicker, Picker, Slider, ProgressView, Menu, etc.) before hand-rolling equivalents. Native gets disabled endpoints, haptics, accessibility, and platform idiom for free. Only go custom when the native control genuinely can't do what's needed.
 
-More specific style rules for the new structure (feature folders, UI/Logic split, naming) are in `MIGRATION.MD` and apply as features come back.
+## Naming
+
+A file's path predicts its contents. Placing a new file is mechanical, not a judgment call. The rules below apply everywhere in the repo; if a file doesn't fit, it belongs in a different folder.
+
+### feature folders (`Features/<Name>/`)
+Every feature splits into `UI/` and `Logic/`. No exceptions - even features with only a couple files. Keeps each subfolder short and makes the UI/state boundary impossible to blur.
+
+Every file starts with `<Name>` - or its singular form if `<Name>` is plural (so `Environments/` accepts `Environment*` or `Environments*`, `Files/` accepts `File*` or `Files*`). Role suffix tells you what it is and which subfolder it lives in:
+
+`UI/` - SwiftUI views only, no state or I/O. Naming heuristic: if the suffix word already signals "this is UI" (`Card`, `Bar`, `Row`, `Tabs`, `List`, `Picker`, `Button`, `Sheet`, `Field`, `Header`), skip `View`. Otherwise add it.
+- `<Name>View.swift` - bare feature name (`ChatView`, `SessionView`) or generic modifier where no UI suffix fits
+- `<Name><UISuffix>.swift` - self-evident UI suffix (`EnvironmentsList`, `ChatInputBar`, `SessionsListRow`)
+- `<Name>Sheet.swift` - modally-presented content (`FileViewerSheet`, `GitDiffSheet`). Sheet is in the suffix list above, so `View` is dropped.
+
+**Hierarchy prefix for embedded sub-views.** If a view only exists inside another view, its filename starts with the parent's **full filename** (including any `View` suffix on the parent). The pattern chains: `ChatInputBar` → `ChatInputBarSkillPill`, `SessionView` → `SessionViewTabs` → (further nesting would chain again). This makes ownership obvious and groups siblings alphabetically under the parent. Nav destinations, sheets, and reusable components stay at their own root name.
+
+`Logic/` - state, models, and I/O; no views:
+- `<Name>.swift` - domain model / entity (`Environment.swift`, `ChatMessage.swift`)
+- `<Name>Store.swift` - observable state + pure mutations (`add`, `update`, `remove`, `get`). No network, no side effects
+- `<Name>Service.swift` - stateless I/O (network, disk). Returns values; callers write to the store
+
+If a file doesn't start with the feature name, it doesn't belong in that folder. If a view reaches for the network, it's doing the service's job; if a store performs I/O, it's doing the service's job.
+
+### utility folders (outside `Features/`)
+Not product features, so no prefix rule. Folder name describes what it does (`Networking/`, `Notifications/`). Files inside are named by what they are (`HTTPClient.swift`, `StreamingClient.swift`, `NotificationService.swift`).
+
+### daemon handlers (`MacApp/Handlers/`)
+Every file is `<Concept>Handler.swift` and owns one route group. One handler = one concept. Don't split routes for the same concept across files.
+
+### one concept per file
+A filename is a promise about what's inside. Never merge unrelated things to save lines - the cost is paid every time someone reads or edits. Before writing a new file, ask: can someone predict what lives here from the name alone? If not, rename it.
+
+## Repo layout
+
+```
+cloude/
+  clients/
+    ios/
+    android/
+  daemons/
+    macos/
+    linux/
+```
+
+## iOS structure
+
+Feature-based. Each feature owns its views, models, stores, services.
+
+```
+src/
+  Features/
+    Environments/
+      UI/
+        EnvironmentsList.swift       // vertically stacked full-width EnvironmentsListCards; last row is EnvironmentsListAdd
+        EnvironmentsListCard.swift   // editable inline form: SF symbol, name, host, port, auth key, connection status dot
+        EnvironmentsListAdd.swift    // "+" card that calls store.add()
+      Logic/
+        Environment.swift            // domain model: id, name, host, port, authKey, symbolName, status (.unknown | .reachable | .unreachable | .checking)
+        EnvironmentsStore.swift      // @Published list; persisted (Keychain for authKey, UserDefaults for rest). pure state, no I/O
+        EnvironmentService.swift     // stateless; network side-effects against an env (ping returns Status)
+    Sessions/
+      UI/
+        SessionsList.swift           // list of saved sessions; tap to open (adds to OpenSessions), swipe to delete
+        SessionsListRow.swift        // env symbol, path, short session id, last-opened timestamp
+        SessionView.swift            // container for one open session: SessionViewTabs on top, active tab content below; renders SessionViewEmpty when the session has zero messages
+        SessionViewTabs.swift        // 3-tab switcher (chat | files | git); chat is default
+        SessionViewEmpty.swift       // empty state: env + path pickers (pre-filled from lastUsed), plus search over past sessions to reopen
+      Logic/
+        Session.swift                // id (client-generated, passed to claude as --session-id), envId?, path?, lastOpenedAt, title?, symbol?, skills?, agents?
+        SessionTab.swift             // enum: chat | files | git
+        SessionsStore.swift          // @Published list; persisted to disk (JSON in Application Support). pure state
+        Skill.swift                  // name, description - available in session's cwd; read by ChatInputBarAutocompletePicker via "/"
+        Agent.swift                  // name, description - available in session; read by ChatInputBarAutocompletePicker via "@"
+        SessionService.swift         // stateless; session-scoped network I/O. results written back via SessionsStore.update.
+    Chat/
+      UI/
+        ChatView.swift                                // chat tab container: ChatViewMessageList on top, ChatInputBar pinned bottom
+        ChatViewMessageList.swift                     // scrolling list of ChatViewMessageListRow, auto-scrolls as events arrive
+        ChatViewMessageListRow.swift                  // one row = one ChatMessage; renders role, markdown body, tool pills, attachments
+        ChatViewMessageListRowToolPillList.swift      // horizontal list of tool call pills on a message
+        ChatViewMessageListRowToolPillListRow.swift   // one tool call pill - tool name, state dot, tap to expand args/result
+        ChatViewMessageListRowAttachmentList.swift    // horizontal list of image attachments on a message
+        ChatViewMessageListRowAttachmentListRow.swift // one attachment thumbnail; tap opens full-size viewer
+        ChatInputBar.swift                            // text field (hosts inline pills), send button, attachments button; swipe-up gesture drives AudioRecorder and presents AudioInputOverlay
+        ChatInputBarSkillPill.swift                   // inline chip for a selected skill (from "/" autocomplete)
+        ChatInputBarAgentPill.swift                   // inline chip for a selected agent (from "@" autocomplete)
+        ChatInputBarAutocompletePicker.swift          // popover triggered by "/" (skills) or "@" (agents)
+        ChatInputBarAttachmentPicker.swift            // picks images from photos/files; opened from the attachments button
+      Logic/
+        ChatMessage.swift            // sessionId, role, text, tool calls, attachments, state, per-message stats
+        ChatToolCall.swift           // tool name, args, result, state (pending/succeeded/failed)
+        ChatStreamEvent.swift        // decoded ndjson event: system/init, stream_event, assistant, user, result
+        ChatMarkdownParser.swift     // incremental parser: code fences, tool pills, tables - fed stream_event deltas
+        ChatStore.swift              // @Published [sessionId: [ChatMessage]]; persisted per-session jsonl for offline. pure state.
+        ChatService.swift            // streams /sessions/:id/chat; parses ndjson, routes to ChatStore. start/resume/reconcileAll/abort
+    Audio/
+      UI/
+        AudioInputOverlay.swift      // covers input bar during recording + transcribing; 7-bar waveform fed by AudioRecorder.level; spinner during AudioService.transcribe
+      Logic/
+        AudioRecorder.swift          // AVAudioRecorder (16kHz mono PCM WAV), 50ms level polling. stateful device wrapper - the only non-Store/Service type allowed in Logic/
+        AudioService.swift           // stateless; POST /audio → String
+    Files/
+      UI/
+        FilesView.swift              // files tab: tree browser scoped to the session's path
+        FileViewerSheet.swift        // single-file viewer. dispatches by MIME: .json → pretty tree; code → syntax-highlighted chunked viewer; .md → rendered markdown; images → AsyncImage; video/audio → AVPlayer (daemon honors Range); fallback → plain text
+      Logic/
+        FileNode.swift               // sessionId, path, name, isDirectory, children?
+        FilesStore.swift             // @Published tree per session; persisted to disk per session. pure state.
+        FilesService.swift           // stateless; list/read/search network I/O
+    Git/
+      UI/
+        GitView.swift                // git tab: branch header, ahead/behind counts, list of changes; tap for diff
+        GitDiffSheet.swift           // unified diff for one file (staged or unstaged); presented as a sheet from GitView
+      Logic/
+        GitChange.swift              // path, changeType (added/modified/deleted/renamed/untracked), staged
+        GitStatus.swift              // sessionId, branch, ahead, behind, [GitChange]
+        GitCommit.swift              // sha, author, date, subject
+        GitStore.swift               // @Published status per session; persisted to disk per session. pure state.
+        GitService.swift             // stateless; status/diff/log network I/O
+    OpenSessions/
+      UI/
+        OpenSessionsView.swift            // top-level screen: switcher on top + the active session's SessionView below
+        OpenSessionsViewSwitcher.swift    // horizontal pills of open sessions; tap = switch active, long-press = close. browser-tab semantics.
+      Logic/
+        OpenSessionsStore.swift      // @Published [sessionId] + activeSessionId. pure state. inactive sessions keep streaming; only visible pane changes on switch.
+    Settings/
+      UI/
+        SettingsButton.swift                     ✅  // hamburger icon that opens SettingsView as a sheet
+        SettingsRow.swift                        ✅  // row primitives: SettingsRow (colored-icon + content) and SettingsToggleRow (row bound to an @AppStorage bool key)
+        SettingsView.swift                       ✅  // top-level settings sheet: NavigationStack + List of sections + trailing xmark dismiss
+        SettingsViewAbout.swift                  ✅  // version + external links section
+        SettingsViewFontSize.swift               ✅  // -/+ stepper bound to @AppStorage("fontSizeStep")
+        SettingsViewTheme.swift                  ✅  // row that navigates to SettingsViewThemePicker
+        SettingsViewThemePicker.swift            ✅  // 2-col LazyVGrid of theme cards; private SettingsViewThemePickerCard nested in file
+      Logic/
+        // no SettingsStore yet - theme lives in Core/Theme/ThemeStore, fontSizeStep in @AppStorage. Add a store if a third setting shows up.
+  Core/
+    Debug/
+      DebugOverlay.swift             ✅  // top-trailing pill showing FPS when @AppStorage("debugOverlayEnabled") is true
+      DebugFPSCounter.swift          ✅  // ObservableObject driven by CADisplayLink; @Published fps recomputed every second
+    Networking/
+      HTTPClient.swift
+      StreamingClient.swift          // ndjson reader with resume-on-disconnect via after_seq
+    Notifications/
+      NotificationService.swift      // local notification when a run completes in background
+    Theme/
+      Theme.swift                    ✅  // enum Theme (presets) + nested Palette struct (background/surface/elevated/colorScheme)
+      ThemeColor.swift               ✅  // semantic color aliases (blue/cyan/success/danger/etc.) + Color(hex:) initializer
+      ThemeTokens.swift              ✅  // design tokens: Text/Icon/Spacing/Radius/Size/Scale/Stroke/Duration/Delay/Opacity
+      ThemeEnvironment.swift         ✅  // EnvironmentValues.theme + .fontStep + .appFont(size:weight:design:) + .themedNavChrome() modifiers
+  iOSApp.swift                       ✅  // @main App; owns @StateObject ThemeStore, hands it to RootView via .environmentObject
+  RootView.swift                     ✅  // top-level ZStack with SettingsButton + settings sheet; applies .reactsToTheme() and preferredColorScheme
+```
+
+## macOS daemon
+
+Regular macOS app exposing an HTTP listener. Handlers map 1:1 to routes. Runner manager holds the only piece of server-side state.
+
+```
+src/
+  Handlers/
+    ChatHandler.swift
+      // every outgoing ndjson event carries a monotonic `seq` per session. RunnerManager keeps a ring buffer
+      // of recent events (live turn + ~60s after exit) and an in-memory record of whether a claude process is
+      // currently alive - the oracle for "still running vs. done", since jsonl only gets the assistant line
+      // once the turn completes.
+      POST /sessions/:id/chat         start()      // spawn `claude -p --session-id <id> --output-format stream-json --verbose --disallowedTools AskUserQuestion ExitPlanMode EnterPlanMode` (or --resume if session exists), pipe prompt+images to stdin, stream ndjson. if a turn is already running for this session, aborts it first.
+        in   {path, prompt, images?: [{data: base64, mediaType: "image/png|jpeg|webp|gif"}]}
+        out  application/x-ndjson  {seq, sessionId, ...}
+      GET  /sessions/:id/chat/resume  resume()     // single reconcile endpoint. takes ?message_id=msg_...&after_seq=N. always returns ndjson.
+                                                   //   process alive → replay ring events > after_seq, then tail live until terminal
+                                                   //   process gone + jsonl has message_id → one synthetic event, state=completed
+                                                   //   process gone + jsonl missing → one synthetic event, state=failed
+      POST /sessions/:id/chat/abort   abort()      // SIGINT the running claude process; emits a final `aborted` event on the stream
+    FilesHandler.swift
+      GET  /sessions/:id/files         list()       // list directory under the session path
+      GET  /sessions/:id/files/:path   read()       // read a file (chunked for large files)
+      GET  /sessions/:id/files/search  search()     // filename search under the session path
+    GitHandler.swift
+      GET  /sessions/:id/git/status   status()     // branch, ahead/behind, file statuses
+      GET  /sessions/:id/git/diff     diff()       // staged or unstaged diff for a file or whole repo
+      GET  /sessions/:id/git/log      log()        // recent commits
+    SessionHandler.swift
+      POST /sessions/:id/title     generateTitleAndSymbol()  // one-shot `claude -p --model sonnet --output-format json` with meta prompt over user's first prompt
+        in   {prompt}
+        out  {title, symbol}
+      GET  /sessions/:id/skills    skills()         // project + user skills merged
+        out  [{name, description}]
+      GET  /sessions/:id/agents    agents()         // agents available in the session
+        out  [{name, description}]
+    AudioHandler.swift
+      POST /audio    transcribe()          // audio blob in, transcribed text out
+  RunnerManager.swift       // map<sessionId, {process, ring buffer, status}>
+  AuthMiddleware.swift      // checks env auth key on every request before handler runs
+  Router.swift              // listens, routes requests through middleware to handlers
+  macOSDaemonApp.swift      ✅  // @main scaffold for the agent app
+```
 
 ## Agent Rules
 
@@ -65,3 +265,9 @@ More specific style rules for the new structure (feature folders, UI/Logic split
 - **Naming is automatic** - a background agent names conversations.
 - **Multi-agent project** - never touch another agent's code. If you see errors from someone else's work, stop and tell the user.
 - Full absolute paths starting with `/Users/` render as clickable file pills in the iOS app - always use full paths, never brace notation like {1-6}
+
+## Open questions
+
+- Transcription backend: WhisperKit on-device vs server-side API call?
+- Git write operations (commit, branch) from the phone, or keep read-only?
+- Supersede behavior: when a new prompt arrives while a run is still active, abort + restart, or queue?
