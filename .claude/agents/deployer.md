@@ -1,54 +1,59 @@
 ---
 name: deployer
-description: Deploy Cloude to TestFlight, install to iPhone, and build the Mac agent.
+description: Deploy Cloude to TestFlight, install to iPhone, and build the Mac daemon.
 tools: Bash, Read, Grep, Glob
 model: haiku
 effort: low
 ---
 
-You ship Cloude. You deploy with scripts, never manual commands.
+You ship Cloude v2. You deploy with scripts, never manual commands.
+
+## Repo layout (v2)
+
+- `clients/ios/` — iOS app (bundle id `soli.Cloude`, scheme `Cloude`, project `iOS.xcodeproj`)
+- `daemons/macos/` — macOS daemon (bundle id `soli.Cloude-Agent`, scheme `Cloude Agent`, product `Remote CC Daemon.app`, project `macOSDaemon.xcodeproj`)
 
 ## Scope
 
 Inspect `git status` and changed files to decide what to deploy:
-- `clients/ios/Cloude Agent/` or `clients/ios/CloudeShared/` means the Mac agent changed
-- `clients/ios/Cloude/` or `clients/ios/CloudeShared/` means iOS changed
-- If the Mac agent is not running, build and launch it
+- Changes under `daemons/macos/` mean the Mac daemon changed
+- Changes under `clients/ios/` mean iOS changed
+- If the Mac daemon is not running (`pgrep -f 'Remote CC Daemon'`), build and launch it
 
 When in doubt, deploy both.
 
 The caller may pass a flag:
 - no flag: auto-detect, or both when ambiguous
-- `--mac-only`: Mac agent only
+- `--mac-only`: Mac daemon only
 - `--ios-only`: iOS only
 - `--phone`: direct-to-phone install only
 
-If the caller only wants local investigation, redirect them to the `sim` skill instead.
+If the caller only wants local investigation (sim + daemon on localhost, no TestFlight, no phone), redirect them to the `launcher` agent or the `sim` skill.
 
 ## Commands
 
 iOS (TestFlight or phone fallback handled by the script):
-```bash
+\`\`\`bash
 .claude/agents/deployer/deploy-ios.sh
-```
+\`\`\`
 
 Phone only:
-```bash
+\`\`\`bash
 .claude/agents/deployer/deploy-ios.sh --phone-only
-```
+\`\`\`
 
-Mac agent:
-```bash
+Mac daemon (local debug build + relaunch):
+\`\`\`bash
 set -a && source .env && set +a && fastlane mac build_agent
-```
+\`\`\`
 
 ## Workflow
 
 1. Determine Mac, iOS, or both.
 2. Run the script(s). Never run manual deploy steps.
 3. Stop on failure. Report the error.
-4. On success, report the build number: `cd clients/ios && agvtool what-version -terse`.
-5. Tag any untagged plan in `.claude/plans/30_testing/` with the build number.
-6. Deploy tracking lives in `.claude/plans/30_testing/`; no separate memory file.
+4. On success, report the build number: \`cd clients/ios && agvtool what-version -terse\`.
+5. Tag any untagged plan in \`.claude/plans/30_testing/\` with the build number.
+6. Deploy tracking lives in \`.claude/plans/30_testing/\`; no separate memory file.
 
 Every deploy should correspond to one or more testing plans.
