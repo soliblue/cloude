@@ -1,230 +1,125 @@
 #!/bin/bash
 set -euo pipefail
 
-COUNT=1
 DEVICE_NAME_ARG=""
-SKIP_AGENT=0
+SKIP_DAEMON=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --count)
-      COUNT="$2"
+    --device)
+      DEVICE_NAME_ARG="$2"
       shift 2
       ;;
-    --skip-agent)
-      SKIP_AGENT=1
+    --skip-daemon)
+      SKIP_DAEMON=1
       shift
       ;;
     *)
-      DEVICE_NAME_ARG="$1"
-      shift
+      echo "Unknown arg: $1" >&2
+      exit 1
       ;;
   esac
 done
 
-if [[ "$COUNT" -lt 1 || "$COUNT" -gt 3 ]]; then
-  echo "Invalid --count: $COUNT (must be 1-3)" >&2
+REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+BUNDLE_ID="soli.Cloude"
+HOST="127.0.0.1"
+PORT="8765"
+ENV_ID="c10de51d-5151-4551-8551-0000000c10de"
+KEYCHAIN_SERVICE="soli.Cloude.agent"
+KEYCHAIN_ACCOUNT="authToken"
+DAEMON_APP_NAME="Remote CC Daemon"
+DAEMON_BUILD_DIR="/tmp/cloude-daemon-build"
+IOS_BUILD_DIR="/tmp/cloude-ios-build"
+DAEMON_APP_PATH="$DAEMON_BUILD_DIR/Build/Products/Debug/$DAEMON_APP_NAME.app"
+IOS_APP_PATH="$IOS_BUILD_DIR/Build/Products/Debug-iphonesimulator/Cloude.app"
+
+fail() {
+  echo "failed: $1, $2" >&2
   exit 1
-fi
+}
 
-DEVICE_NAME="${DEVICE_NAME_ARG:-${CLOUDE_SIM_DEVICE_NAME:-}}"
-HOST="${CLOUDE_SIM_HOST:-127.0.0.1}"
-PORT="${CLOUDE_SIM_PORT:-8765}"
-BUNDLE_ID="${CLOUDE_BUNDLE_ID:-soli.Cloude}"
-DERIVED_DATA_PATH="${CLOUDE_SIM_DERIVED_DATA:-/tmp/cloude-sim-build}"
-SYMBOL="${CLOUDE_SIM_SYMBOL:-desktopcomputer}"
-
-DEVICE_IDS=()
-DEVICE_DISPLAY_NAMES=()
-
-RESOLVED="$(COUNT="$COUNT" DEVICE_NAME="$DEVICE_NAME" python3 <<'PYEOF'
+DEVICE_ID=""
+DEVICE_DISPLAY=""
+RESOLVED="$(DEVICE_NAME="$DEVICE_NAME_ARG" python3 <<'PYEOF'
 import json, os, subprocess
-
 raw = subprocess.check_output(["xcrun", "simctl", "list", "devices", "available", "-j"])
 data = json.loads(raw)
-count = int(os.environ.get("COUNT", "1"))
 name_filter = os.environ.get("DEVICE_NAME", "").strip()
 
-def ios_version(runtime_id):
-    if "iOS-" not in runtime_id:
-        return None
-    tail = runtime_id.split("iOS-", 1)[1]
-    parts = tail.split("-")
-    try:
-        return tuple(int(x) for x in parts)
-    except ValueError:
-        return None
+def ios_version(rid):
+    if "iOS-" not in rid: return None
+    try: return tuple(int(x) for x in rid.split("iOS-", 1)[1].split("-"))
+    except ValueError: return None
 
 candidates = []
-for runtime_id, devices in data["devices"].items():
-    version = ios_version(runtime_id)
-    if version is None:
-        continue
-    for device in devices:
-        if "iPhone" not in device["name"]:
-            continue
-        if name_filter and name_filter not in device["name"]:
-            continue
-        booted = device.get("state") == "Booted"
-        candidates.append((version, booted, device["udid"], device["name"]))
-
-candidates.sort(key=lambda c: (tuple(-v for v in c[0]), not c[1], c[3]))
-
-for version, booted, udid, device_name in candidates[:count]:
-    print(f"{udid}\t{device_name}")
+for rid, devices in data["devices"].items():
+    v = ios_version(rid)
+    if v is None: continue
+    for d in devices:
+        if "iPhone" not in d["name"]: continue
+        if name_filter and name_filter not in d["name"]: continue
+        candidates.append((v, d.get("state") == "Booted", d["udid"], d["name"]))
+candidates.sort(key=lambda c: (tuple(-x for x in c[0]), not c[1], c[3]))
+if candidates:
+    print(f"{candidates[0][2]}\t{candidates[0][3]}")
 PYEOF
 )"
+if [[ -z "$RESOLVED" ]]; then fail "resolve" "no iPhone simulator available"; fi
+IFS=$'\t' read -r DEVICE_ID DEVICE_DISPLAY <<< "$RESOLVED"
+echo "sim: $DEVICE_DISPLAY ($DEVICE_ID)"
 
-while IFS=$'\t' read -r udid name; do
-  [[ -z "$udid" ]] && continue
-  DEVICE_IDS+=("$udid")
-  DEVICE_DISPLAY_NAMES+=("$name")
-done <<< "$RESOLVED"
+if [[ "$SKIP_DAEMON" -eq 0 ]]; then
+  echo "build_daemon..."
+  xcodebuild -project "$REPO_ROOT/daemons/macos/macOSDaemon.xcodeproj" \
+    -scheme "Cloude Agent" -configuration Debug \
+    -derivedDataPath "$DAEMON_BUILD_DIR" build >/dev/null \
+    || fail "build_daemon" "xcodebuild failed"
+  [[ -d "$DAEMON_APP_PATH" ]] || fail "build_daemon" "app not at $DAEMON_APP_PATH"
 
-if [[ ${#DEVICE_IDS[@]} -lt $COUNT ]]; then
-  echo "Only resolved ${#DEVICE_IDS[@]} iPhone simulator(s); $COUNT requested. Check iOS runtime availability." >&2
-  exit 1
-fi
-
-echo "Resolved ${#DEVICE_IDS[@]} simulator(s):"
-for i in "${!DEVICE_IDS[@]}"; do
-  echo "  ${DEVICE_DISPLAY_NAMES[$i]} (${DEVICE_IDS[$i]})"
-done
-
-if [[ "$SKIP_AGENT" -eq 0 ]]; then
-  echo "Building and launching Mac agent..."
-  set -a
-  source .env
-  set +a
-  fastlane mac build_agent
-else
-  echo "Skipping Mac agent build (--skip-agent); using existing agent + token"
+  pkill -9 -f "$DAEMON_APP_NAME" 2>/dev/null || true
+  sleep 1
+  open "$DAEMON_APP_PATH" || fail "launch_daemon" "open failed"
 fi
 
 TOKEN=""
-for _ in {1..10}; do
-    TOKEN="$(security find-generic-password -s com.cloude.agent -a authToken -w 2>/dev/null || true)"
-    if [[ -n "$TOKEN" ]]; then
-        break
-    fi
-    sleep 1
-done
-
-if [[ -z "$TOKEN" ]]; then
-    echo "No auth token found in Keychain (agent never ran?)"
-    exit 1
-fi
-
-for i in "${!DEVICE_IDS[@]}"; do
-  DEVICE_ID="${DEVICE_IDS[$i]}"
-  DEVICE_DISPLAY="${DEVICE_DISPLAY_NAMES[$i]}"
-  if xcrun simctl list devices booted | grep -q "$DEVICE_ID"; then
-    echo "Using already booted simulator $DEVICE_DISPLAY ($DEVICE_ID)"
-  else
-    echo "Booting simulator $DEVICE_DISPLAY ($DEVICE_ID)..."
-    xcrun simctl boot "$DEVICE_ID" >/dev/null 2>&1 || true
-  fi
-done
-
-if [[ ${#DEVICE_IDS[@]} -eq 1 ]]; then
-  open -a Simulator --args -CurrentDeviceUDID "${DEVICE_IDS[0]}" >/dev/null 2>&1 || true
-else
-  open -a Simulator >/dev/null 2>&1 || true
-fi
-
-for DEVICE_ID in "${DEVICE_IDS[@]}"; do
-  xcrun simctl bootstatus "$DEVICE_ID" -b
-done
-
-echo "Building iOS app..."
-env GIT_CONFIG_GLOBAL=/dev/null xcodebuild -project clients/ios/iOS.xcodeproj \
-    -scheme Cloude \
-    -destination "platform=iOS Simulator,id=${DEVICE_IDS[0]}" \
-    -derivedDataPath "$DERIVED_DATA_PATH" \
-    build
-
-APP_PATH="$DERIVED_DATA_PATH/Build/Products/Debug-iphonesimulator/Cloude.app"
-if [[ ! -d "$APP_PATH" ]]; then
-    echo "Built Cloude.app not found at $APP_PATH"
-    exit 1
-fi
-
-ENV_ID="${CLOUDE_SIM_ENV_ID:-c10de51d-5151-4551-8551-0000000c10de}"
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-for i in "${!DEVICE_IDS[@]}"; do
-  DEVICE_ID="${DEVICE_IDS[$i]}"
-  DEVICE_DISPLAY="${DEVICE_DISPLAY_NAMES[$i]}"
-
-  echo ""
-  echo "Installing app into $DEVICE_DISPLAY ($DEVICE_ID)..."
-  xcrun simctl install "$DEVICE_ID" "$APP_PATH"
-
+for _ in {1..15}; do
+  TOKEN="$(security find-generic-password -s "$KEYCHAIN_SERVICE" -a "$KEYCHAIN_ACCOUNT" -w 2>/dev/null || true)"
+  [[ -n "$TOKEN" ]] && break
   sleep 1
-
-  echo "Seeding environment for $DEVICE_ID..."
-  CONTAINER_PATH="$(xcrun simctl get_app_container "$DEVICE_ID" "$BUNDLE_ID" data)"
-  DOCUMENTS_PATH="$CONTAINER_PATH/Documents"
-  PREFERENCES_DOMAIN="$CONTAINER_PATH/Library/Preferences/$BUNDLE_ID"
-
-  mkdir -p "$DOCUMENTS_PATH"
-  cat > "$DOCUMENTS_PATH/environments.json" <<ENV_EOF
-[
-  {
-    "id": "$ENV_ID",
-    "host": "$HOST",
-    "port": $PORT,
-    "token": "$TOKEN",
-    "symbol": "$SYMBOL"
-  }
-]
-ENV_EOF
-
-  defaults write "$PREFERENCES_DOMAIN" activeEnvironmentId -string "$ENV_ID"
-  xcrun simctl spawn "$DEVICE_ID" defaults write "$BUNDLE_ID" debugOverlayEnabled -bool true
-
-  echo "Launching app on $DEVICE_ID..."
-  SIMCTL_CHILD_CLOUDE_SKIP_PROMPTS=1 \
-    xcrun simctl launch --terminate-running-process "$DEVICE_ID" "$BUNDLE_ID" >/dev/null
-
-  sleep 2
-  echo "Warmup deep-link on $DEVICE_ID (consent prompt tax)..."
-  xcrun simctl openurl "$DEVICE_ID" "cloude://environment/select?id=$ENV_ID" >/dev/null
-  sleep 2
-  echo "Dismissing any consent prompts..."
-  "$SCRIPT_DIR/dismiss-sim-alerts.sh" 10 >/dev/null 2>&1 || true
 done
+[[ -n "$TOKEN" ]] || fail "token" "no token in Keychain after 15s"
 
-echo ""
-echo "Waiting for auth-ready on each sim..."
-AUTH_TIMEOUT=30
-for i in "${!DEVICE_IDS[@]}"; do
-  DEVICE_ID="${DEVICE_IDS[$i]}"
-  DEVICE_DISPLAY="${DEVICE_DISPLAY_NAMES[$i]}"
-  CONTAINER_PATH="$(xcrun simctl get_app_container "$DEVICE_ID" "$BUNDLE_ID" data)"
-  LOG_PATH="$CONTAINER_PATH/Documents/app-debug.log"
-  WAIT_START=$(date +%s)
-  while true; do
-    if grep -q "finish name=environment.auth .* success=true" "$LOG_PATH" 2>/dev/null; then
-      echo "  $DEVICE_DISPLAY: auth success after $(( $(date +%s) - WAIT_START ))s"
-      break
-    fi
-    if (( $(date +%s) - WAIT_START >= AUTH_TIMEOUT )); then
-      echo "  $DEVICE_DISPLAY: TIMEOUT waiting for auth success after ${AUTH_TIMEOUT}s" >&2
-      exit 1
-    fi
-    sleep 1
-  done
-done
+DAEMON_PID="$(pgrep -f "$DAEMON_APP_NAME" | head -1)"
+[[ -n "$DAEMON_PID" ]] || fail "launch_daemon" "daemon not running"
 
-echo ""
-echo "Ready:"
-for i in "${!DEVICE_IDS[@]}"; do
-  DEVICE_ID="${DEVICE_IDS[$i]}"
-  DEVICE_DISPLAY="${DEVICE_DISPLAY_NAMES[$i]}"
-  CONTAINER_PATH="$(xcrun simctl get_app_container "$DEVICE_ID" "$BUNDLE_ID" data)"
-  LOG_PATH="$CONTAINER_PATH/Documents/app-debug.log"
-  echo "  udid=$DEVICE_ID name=\"$DEVICE_DISPLAY\" bundle=$BUNDLE_ID log=$LOG_PATH"
-done
-echo "Host: $HOST:$PORT"
+PING="$(curl -sS -m 3 -H "Authorization: Bearer $TOKEN" "http://$HOST:$PORT/ping" 2>&1 || true)"
+echo "$PING" | grep -q '"ok":true' || fail "daemon_probe" "ping did not return ok: $PING"
+
+if ! xcrun simctl list devices booted | grep -q "$DEVICE_ID"; then
+  echo "boot..."
+  xcrun simctl boot "$DEVICE_ID" >/dev/null 2>&1 || fail "boot" "simctl boot failed"
+fi
+open -a Simulator --args -CurrentDeviceUDID "$DEVICE_ID" >/dev/null 2>&1 || true
+xcrun simctl bootstatus "$DEVICE_ID" -b >/dev/null 2>&1 || fail "boot" "bootstatus failed"
+
+echo "build_ios..."
+xcodebuild -project "$REPO_ROOT/clients/ios/iOS.xcodeproj" \
+  -scheme Cloude -configuration Debug \
+  -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+  -derivedDataPath "$IOS_BUILD_DIR" build >/dev/null \
+  || fail "build_ios" "xcodebuild failed"
+[[ -d "$IOS_APP_PATH" ]] || fail "build_ios" "app not at $IOS_APP_PATH"
+
+echo "install..."
+xcrun simctl install "$DEVICE_ID" "$IOS_APP_PATH" || fail "install" "simctl install failed"
+
+echo "launch..."
+SIMCTL_CHILD_CLOUDE_DEV_TOKEN="$TOKEN" \
+SIMCTL_CHILD_CLOUDE_DEV_HOST="$HOST" \
+SIMCTL_CHILD_CLOUDE_DEV_PORT="$PORT" \
+SIMCTL_CHILD_CLOUDE_DEV_ENV_ID="$ENV_ID" \
+  xcrun simctl launch --terminate-running-process "$DEVICE_ID" "$BUNDLE_ID" >/dev/null \
+  || fail "launch" "simctl launch failed"
+
+echo "ready: sim=$DEVICE_ID bundle=$BUNDLE_ID daemon_pid=$DAEMON_PID token=$TOKEN host=$HOST port=$PORT env_id=$ENV_ID"
