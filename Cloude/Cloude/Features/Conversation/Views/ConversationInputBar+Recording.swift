@@ -1,0 +1,85 @@
+import SwiftUI
+
+extension ConversationInputBar {
+    var inputBarDragGesture: some Gesture {
+        DragGesture(minimumDistance: 10)
+            .onChanged { value in
+                let verticalDrag = -value.translation.height
+                let horizontalDrag = -value.translation.width
+
+                if verticalDrag > abs(horizontalDrag) && canRecord && !audioRecorder.isRecording {
+                    phase = .swiping
+                    swipeOffset = verticalDrag
+                    horizontalSwipeOffset = 0
+                } else if horizontalDrag > abs(verticalDrag) && !inputText.isEmpty {
+                    horizontalSwipeOffset = horizontalDrag
+                    swipeOffset = 0
+                    phase = .idle
+                }
+            }
+            .onEnded { value in
+                let verticalDrag = -value.translation.height
+                let horizontalDrag = -value.translation.width
+
+                if verticalDrag >= Constants.swipeThreshold && canRecord && phase == .swiping {
+                    startRecording()
+                } else if horizontalDrag >= Constants.swipeThreshold && !inputText.isEmpty {
+                    withAnimation(.easeOut(duration: DS.Duration.s)) {
+                        inputText = ""
+                        attachedImages = []
+                        attachedFiles = []
+                    }
+                    withAnimation(.easeOut(duration: DS.Duration.s)) {
+                        swipeOffset = 0
+                        horizontalSwipeOffset = 0
+                        phase = .idle
+                    }
+                } else {
+                    withAnimation(.easeOut(duration: DS.Duration.s)) {
+                        swipeOffset = 0
+                        horizontalSwipeOffset = 0
+                        if phase == .swiping { phase = .idle }
+                    }
+                }
+            }
+    }
+
+    var canRecord: Bool {
+        isConnected && isWhisperReady && !isTranscribing
+    }
+
+    func startRecording() {
+        audioRecorder.requestPermission { granted in
+            if granted {
+                UIApplication.shared.isIdleTimerDisabled = true
+                withAnimation(.easeOut(duration: Constants.transitionDuration)) {
+                    phase = .recording
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
+                    audioRecorder.startRecording()
+                }
+            }
+        }
+    }
+
+    func stopRecording() {
+        UIApplication.shared.isIdleTimerDisabled = false
+        let data = audioRecorder.stopRecording()
+        withAnimation(.easeOut(duration: Constants.transitionDuration)) {
+            phase = .idle
+            swipeOffset = 0
+            horizontalSwipeOffset = 0
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Constants.transitionDuration) {
+            if let data = data {
+                onTranscribe?(data)
+            }
+        }
+    }
+
+    func resendPendingAudio() {
+        if let data = audioRecorder.pendingAudioData() {
+            onTranscribe?(data)
+        }
+    }
+}

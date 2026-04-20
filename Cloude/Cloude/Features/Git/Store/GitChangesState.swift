@@ -23,7 +23,7 @@ class GitChangesState: ObservableObject {
         recentCommits = commits
     }
 
-    func loadIfNeeded(repoPath: String?, git: GitRuntime?) {
+    func loadIfNeeded(repoPath: String?, git: GitAPI?) {
         if isInitialLoad {
             loadStatus(repoPath: repoPath, git: git)
         } else if let repoPath {
@@ -32,12 +32,12 @@ class GitChangesState: ObservableObject {
         }
     }
 
-    func resetAndLoadStatus(repoPath: String?, git: GitRuntime?) {
+    func resetAndLoadStatus(repoPath: String?, git: GitAPI?) {
         reset()
         loadStatus(repoPath: repoPath, git: git)
     }
 
-    func loadStatus(repoPath: String?, git: GitRuntime?) {
+    func loadStatus(repoPath: String?, git: GitAPI?) {
         if let repoPath {
             git?.cancelPendingStatus()
             pendingRepoPath = repoPath
@@ -49,7 +49,7 @@ class GitChangesState: ObservableObject {
         }
     }
 
-    func sync(repoPath: String, currentStatus: GitStatusInfo?, currentStatusError: String?, currentCommits: [GitCommit]?, git: GitRuntime?) {
+    func sync(repoPath: String, currentStatus: GitStatusInfo?, currentStatusError: String?, currentCommits: [GitCommit]?, git: GitAPI?) {
         if let currentStatus {
             applyStatus(currentStatus)
             AppLogger.endInterval("git.status", key: pendingRepoPath ?? repoPath, details: "files=\(currentStatus.files.count)")

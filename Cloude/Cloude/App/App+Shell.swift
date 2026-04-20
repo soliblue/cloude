@@ -9,7 +9,18 @@ extension App {
                 conversationStore: conversationStore,
                 windowManager: windowManager,
                 environmentStore: environmentStore,
-                onShowSettings: { settingsStore.isPresented = true }
+                onShowSettings: { settingsStore.isPresented = true },
+                onSendMessage: { sendActiveConversationMessage(onShowSettings: { settingsStore.isPresented = true }) },
+                onStopActiveConversation: stopActiveConversationRun,
+                onRefreshConversation: refreshConversation(for:),
+                onSelectConversationForEditing: { window, conversation in
+                    selectConversationForEditing(conversation, in: window)
+                },
+                onRefreshEditingWindowConversation: refreshEditingConversation(for:),
+                onDuplicateEditingConversation: { window, conversation in
+                    duplicateEditingConversation(conversation, in: window)
+                },
+                onSelectConversationFromSearch: selectConversationFromSearch(_:)
             )
             .agenticID("main_chat_view")
             .navigationBarTitleDisplayMode(.inline)
@@ -38,7 +49,7 @@ extension App {
                     }
                 }
         }
-        .onReceive(environmentStore.events, perform: handleConnectionEvent)
+        .onReceive(environmentStore.connectionStore.events, perform: handleConnectionEvent)
         .sheet(isPresented: $settingsStore.isPresented) {
             SettingsView(environmentStore: environmentStore)
                 .agenticID("settings_sheet")
@@ -62,6 +73,9 @@ extension App {
         }
         .onChange(of: scenePhase) { _, newPhase in
             handleScenePhaseChange(newPhase)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
+            importLatestScreenshot(conversationId: activeConversation()?.id)
         }
     }
 }

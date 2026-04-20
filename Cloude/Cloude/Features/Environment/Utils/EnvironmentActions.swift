@@ -3,7 +3,7 @@ import Foundation
 extension App {
     func connectEnvironment(env: ServerEnvironment) {
         environmentStore.setActive(env.id)
-        environmentStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+        environmentStore.connectionStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
         AppLogger.bootstrapInfo("connect environment envId=\(env.id.uuidString)")
     }
 
@@ -16,7 +16,7 @@ extension App {
     }
 
     func disconnectEnvironment(id: UUID) {
-        environmentStore.disconnectEnvironment(id, clearCredentials: false)
+        environmentStore.connectionStore.disconnectEnvironment(id, clearCredentials: false)
         AppLogger.bootstrapInfo("disconnect environment envId=\(id.uuidString)")
     }
 }

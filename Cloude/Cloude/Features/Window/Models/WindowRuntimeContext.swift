@@ -5,7 +5,7 @@ struct WindowRuntimeContext {
     let conversation: Conversation?
     let environmentId: UUID?
     let environment: ServerEnvironment?
-    let connection: EnvironmentConnection?
+    let connection: Connection?
     let workingDirectory: String?
 
     var symbol: String? {

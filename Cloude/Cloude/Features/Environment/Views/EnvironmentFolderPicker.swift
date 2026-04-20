@@ -19,7 +19,7 @@ struct EnvironmentFolderPicker: View {
     }
 
     private var isEnvAuthenticated: Bool {
-        environmentStore.connection(for: currentConversation.environmentId)?.isReady == true
+        environmentStore.connectionStore.connection(for: currentConversation.environmentId)?.isReady == true
     }
 
     private var folderDisplayName: String {
@@ -44,13 +44,13 @@ struct EnvironmentFolderPicker: View {
                             conversationStore.setWorkingDirectory(currentConversation, path: nil)
                         }
                         conversationStore.setEnvironmentId(currentConversation, environmentId: env.id)
-                        if environmentStore.connection(for: env.id)?.isReady == true {
+                        if environmentStore.connectionStore.connection(for: env.id)?.isReady == true {
                             DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.m) {
                                 showFolderPicker = true
                             }
                         } else {
                             pendingConnectionEnvId = env.id
-                            environmentStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
+                            environmentStore.connectionStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol)
                             DispatchQueue.main.asyncAfter(deadline: .now() + DS.Delay.xxl) {
                                 if pendingConnectionEnvId == env.id {
                                     pendingConnectionEnvId = nil
@@ -120,10 +120,10 @@ struct EnvironmentFolderPicker: View {
         }
         .background(Color.themeSecondary)
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.l))
-        .onReceive(environmentStore.events) { event in
+        .onReceive(environmentStore.connectionStore.events) { event in
             if case .authenticated(let envId) = event,
                envId == pendingConnectionEnvId,
-               environmentStore.connection(for: envId)?.isReady == true {
+               environmentStore.connectionStore.connection(for: envId)?.isReady == true {
                 pendingConnectionEnvId = nil
                 showFolderPicker = true
             }

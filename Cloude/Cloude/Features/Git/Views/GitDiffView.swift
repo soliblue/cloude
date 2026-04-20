@@ -13,8 +13,8 @@ struct GitDiffView: View {
     @State private var isLoading = false
     @State private var pendingDiffKey: String?
 
-    private var connection: EnvironmentConnection? {
-        environmentStore.connection(for: environmentId)
+    private var connection: Connection? {
+        environmentStore.connectionStore.connection(for: environmentId)
     }
 
     private var currentDiff: String? {
@@ -28,7 +28,7 @@ struct GitDiffView: View {
     var body: some View {
         Group {
             if let connection {
-                EnvironmentConnectionObserver(connection: connection) { _ in
+                ConnectionObserver(connection: connection) { _ in
                     content
                 }
             } else {

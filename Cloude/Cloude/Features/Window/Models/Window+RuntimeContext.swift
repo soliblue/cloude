@@ -7,7 +7,7 @@ extension Window {
         let environmentId = runtimeEnvironmentId(conversationStore: conversationStore, environmentStore: environmentStore)
             ?? environmentStore.activeEnvironmentId
         let environment = environmentStore.environments.first { $0.id == environmentId }
-        let connection = environmentStore.connection(for: environmentId)
+        let connection = environmentStore.connectionStore.connection(for: environmentId)
         let workingDirectory = conversation?.workingDirectory ?? connection?.defaultWorkingDirectory?.nilIfEmpty
         return WindowRuntimeContext(
             conversation: conversation,

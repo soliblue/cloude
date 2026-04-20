@@ -29,7 +29,7 @@ extension ChatMessageList {
                 isInitialLoad = false
             }
         }
-        .onReceive(environmentStore?.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
+        .onReceive(environmentStore?.connectionStore.events.eraseToAnyPublisher() ?? Empty().eraseToAnyPublisher()) { (event: ConnectionEvent) in
             if case .historySync = event { refreshingMessageId = nil }
             if case .historySyncError = event { refreshingMessageId = nil }
         }
@@ -42,7 +42,7 @@ extension ChatMessageList {
 
     private var conversationSkills: [Skill] {
         guard let conversation else { return [] }
-        return environmentStore?.connection(for: conversation.environmentId)?.skills ?? []
+        return environmentStore?.connectionStore.connection(for: conversation.environmentId)?.skills ?? []
     }
 
     var messageListSection: some View {
@@ -75,7 +75,7 @@ extension ChatMessageList {
         guard let conversation, let sessionId = conversation.sessionId,
               let workingDir = conversation.workingDirectory, !workingDir.isEmpty else { return }
         refreshingMessageId = message.id
-        environmentStore?.connection(for: conversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDir)
+        environmentStore?.connectionStore.connection(for: conversation.environmentId)?.conversation(conversation.id).syncHistory(sessionId: sessionId, workingDirectory: workingDir)
     }
 
     var queuedMessagesSection: some View {

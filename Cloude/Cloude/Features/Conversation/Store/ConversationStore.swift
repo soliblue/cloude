@@ -16,10 +16,6 @@ class ConversationStore: ObservableObject {
         return dir
     }
 
-    var listableConversations: [Conversation] {
-        conversations
-    }
-
     func conversation(withId id: UUID) -> Conversation? {
         conversations.first { $0.id == id }
     }

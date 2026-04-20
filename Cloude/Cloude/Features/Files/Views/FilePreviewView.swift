@@ -37,8 +37,8 @@ struct FilePreviewView: View {
     var fileExtension: String { path.pathExtension.lowercased() }
     var contentType: FileContentType { .from(extension: fileExtension) }
 
-    var connection: EnvironmentConnection? {
-        environmentStore.connection(for: environmentId)
+    var connection: Connection? {
+        environmentStore.connectionStore.connection(for: environmentId)
     }
 
     var currentFileResponse: LoadedFileState? {
@@ -70,7 +70,7 @@ struct FilePreviewView: View {
     var body: some View {
         Group {
             if let connection {
-                EnvironmentConnectionObserver(connection: connection) { _ in
+                ConnectionObserver(connection: connection) { _ in
                     screen
                 }
             } else {

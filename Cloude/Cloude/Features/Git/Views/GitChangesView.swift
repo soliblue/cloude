@@ -22,11 +22,11 @@ struct GitChangesView: View {
         resolvedRepoPath ?? "~"
     }
 
-    private var connection: EnvironmentConnection? {
-        environmentStore.connection(for: environmentId)
+    private var connection: Connection? {
+        environmentStore.connectionStore.connection(for: environmentId)
     }
 
-    private var gitRuntime: GitRuntime? {
+    private var gitRuntime: GitAPI? {
         connection?.git
     }
 
@@ -45,7 +45,7 @@ struct GitChangesView: View {
     var body: some View {
         Group {
             if let connection {
-                EnvironmentConnectionObserver(connection: connection) { _ in
+                ConnectionObserver(connection: connection) { _ in
                     content
                 }
             } else {

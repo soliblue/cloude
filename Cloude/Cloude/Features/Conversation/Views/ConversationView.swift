@@ -12,8 +12,12 @@ struct ConversationView: View {
     var onInteraction: (() -> Void)?
     var onSelectRecentConversation: ((Conversation) -> Void)?
     var onSeeAllConversations: (() -> Void)?
+    var onShowSettings: (() -> Void)?
+    var onSend: (() -> Void)?
+    var onStop: (() -> Void)?
+    var onRefresh: (() -> Void)?
 
-    private var effectiveConversation: Conversation? {
+    var effectiveConversation: Conversation? {
         if let conversation = conversation {
             return store.conversation(withId: conversation.id) ?? conversation
         }
@@ -28,16 +32,16 @@ struct ConversationView: View {
         effectiveConversation?.pendingMessages ?? []
     }
 
-    private var convOutput: ConversationOutput? {
+    var convOutput: ConversationOutput? {
         guard let conv = effectiveConversation else { return nil }
-        return environmentStore.connection(for: conv.environmentId)?.output(for: conv.id)
+        return environmentStore.connectionStore.connection(for: conv.environmentId)?.conversation(conv.id).output
     }
 
     var body: some View {
         let _ = NSLog("[STABILITY] ConversationView.body | msgs=\(messages.count) hasOutput=\(convOutput != nil) convId=\(effectiveConversation?.id.uuidString.prefix(6) ?? "nil")")
         Group {
-            if let connection = effectiveConversation.flatMap({ environmentStore.connection(for: $0.environmentId) }) {
-                EnvironmentConnectionObserver(connection: connection) { _ in
+            if let connection = effectiveConversation.flatMap({ environmentStore.connectionStore.connection(for: $0.environmentId) }) {
+                ConnectionObserver(connection: connection) { _ in
                     content(output: convOutput)
                 }
             } else {
@@ -51,25 +55,30 @@ struct ConversationView: View {
 
     @ViewBuilder
     private func content(output: ConversationOutput?) -> some View {
-        ChatMessageList(
-            messages: messages,
-            queuedMessages: queuedMessages,
-            conversationId: effectiveConversation?.id,
-            onInteraction: onInteraction,
-            onDeleteQueued: { messageId in
-                if let conv = effectiveConversation {
-                    store.removePendingMessage(messageId, from: conv)
-                }
-            },
-            conversation: effectiveConversation,
-            conversationStore: store,
-            window: window,
-            windowManager: windowManager,
-            onSelectConversation: onSelectRecentConversation,
-            onSeeAllConversations: onSeeAllConversations,
-            environmentStore: environmentStore,
-            conversationOutput: output
-        )
+        VStack(spacing: 0) {
+            ChatMessageList(
+                messages: messages,
+                queuedMessages: queuedMessages,
+                conversationId: effectiveConversation?.id,
+                onInteraction: onInteraction,
+                onDeleteQueued: { messageId in
+                    if let conv = effectiveConversation {
+                        store.removePendingMessage(messageId, from: conv)
+                    }
+                },
+                conversation: effectiveConversation,
+                conversationStore: store,
+                window: window,
+                windowManager: windowManager,
+                onSelectConversation: onSelectRecentConversation,
+                onSeeAllConversations: onSeeAllConversations,
+                environmentStore: environmentStore,
+                conversationOutput: output
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            conversationInputSection(output: output)
+        }
     }
 
     private func persistLiveTextStartIfNeeded() {

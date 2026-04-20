@@ -28,8 +28,8 @@ extension App {
 
         if let sessionId = output.newSessionId,
            let envId = conversationStore.conversation(withId: conversationId)?.environmentId,
-           let environmentConnection = environmentStore.connection(for: envId) {
-            environmentConnection.interruptedSessions[sessionId] = InterruptedSession(conversationId: conversationId, messageId: interruptedMessageId)
+           let environmentConnection = environmentStore.connectionStore.connection(for: envId) {
+            environmentConnection.conversation(conversationId).rememberInterruptedSession(sessionId: sessionId, messageId: interruptedMessageId)
         }
     }
 
@@ -72,11 +72,15 @@ extension App {
                         if message.costUsd == nil { message.costUsd = metadata.costUsd }
                         if message.model == nil { message.model = metadata.model }
                     }
-                    if let output = environmentStore.connection(for: conversation.environmentId)?.output(for: conversation.id), output.phase == .idle {
+                    if let output = environmentStore.connectionStore.connection(for: conversation.environmentId)?.conversation(conversation.id).output, output.phase == .idle {
                         output.reset()
                     }
                 }
-                if !environmentStore.isStreaming(for: conversation) {
+                if (environmentStore.connectionStore
+                    .connection(for: conversation.environmentId)?
+                    .conversation(conversation.id)
+                    .output
+                    .phase ?? .idle) == .idle {
                     conversationStore.replayQueuedMessages(conversation: updatedConversation, environmentStore: environmentStore)
                 }
             }
@@ -85,7 +89,7 @@ extension App {
 
     func handleTurnCompleted(conversationId: UUID) {
         guard var conversation = conversationStore.findConversation(withId: conversationId),
-              let output = environmentStore.connection(for: conversation.environmentId)?.output(for: conversationId),
+              let output = environmentStore.connectionStore.connection(for: conversation.environmentId)?.conversation(conversationId).output,
               output.phase == .idle else { return }
         let requiresHistoryResync = output.requiresHistoryResync
 
@@ -101,7 +105,7 @@ extension App {
         }
 
         let workingDirectory = conversation.workingDirectory
-            ?? environmentStore.connection(for: conversation.environmentId)?.defaultWorkingDirectory
+            ?? environmentStore.connectionStore.connection(for: conversation.environmentId)?.defaultWorkingDirectory
         let shouldSyncBeforeFinalize = requiresHistoryResync ||
             (output.liveMessageId != nil &&
              output.messageUUID == nil &&
@@ -132,7 +136,7 @@ extension App {
                 costUsd: output.runStats?.costUsd,
                 model: output.runStats?.model
             )
-            environmentStore.connection(for: conversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
+            environmentStore.connectionStore.connection(for: conversation.environmentId)?.conversation(conversation.id).syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
             return
         }
 
@@ -146,7 +150,7 @@ extension App {
                 ($0.isUser ? "User: " : "Assistant: ") + String($0.text.prefix(300))
             }
             let lastUserMessage = updatedConversation.messages.last(where: { $0.isUser })?.text ?? ""
-            environmentStore.connection(for: conversation.environmentId)?.requestNameSuggestion(text: lastUserMessage, context: contextMessages, conversationId: conversation.id)
+            environmentStore.connectionStore.connection(for: conversation.environmentId)?.conversation(conversation.id).requestNameSuggestion(text: lastUserMessage, context: contextMessages)
         }
 
         if requiresHistoryResync,
@@ -159,7 +163,7 @@ extension App {
                 costUsd: output.runStats?.costUsd,
                 model: output.runStats?.model
             )
-            environmentStore.connection(for: updatedConversation.environmentId)?.syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
+            environmentStore.connectionStore.connection(for: updatedConversation.environmentId)?.conversation(updatedConversation.id).syncHistory(sessionId: sessionId, workingDirectory: workingDirectory)
         }
 
         conversationStore.replayQueuedMessages(conversation: updatedConversation, environmentStore: environmentStore)
@@ -180,7 +184,7 @@ extension App {
 
     func handleLiveSnapshot(conversationId: UUID) {
         guard let conversation = conversationStore.findConversation(withId: conversationId),
-              let output = environmentStore.connection(for: conversation.environmentId)?.output(for: conversationId),
+              let output = environmentStore.connectionStore.connection(for: conversation.environmentId)?.conversation(conversationId).output,
               let liveId = output.liveMessageId,
               let message = conversation.messages.first(where: { $0.id == liveId }) else { return }
         if message.text != output.text || message.toolCalls != output.toolCalls {

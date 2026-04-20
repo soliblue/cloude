@@ -52,7 +52,7 @@ struct WindowEditSheet: View {
 
                             WindowEditRefreshButton(
                                 isRefreshing: $isRefreshing,
-                                output: conversation.flatMap { environmentStore.connection(for: $0.environmentId)?.output(for: $0.id) },
+                                output: conversation.flatMap { environmentStore.connectionStore.connection(for: $0.environmentId)?.conversation($0.id).output },
                                 onRefresh: onRefresh
                             )
                         }

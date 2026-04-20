@@ -26,8 +26,8 @@ struct FileBrowserView: View {
         rootPath?.nilIfEmpty ?? defaultWorkingDirectory
     }
 
-    var connection: EnvironmentConnection? {
-        environmentStore.connection(for: environmentId)
+    var connection: Connection? {
+        environmentStore.connectionStore.connection(for: environmentId)
     }
 
     var currentDirectoryListing: [FileEntry]? {
@@ -41,7 +41,7 @@ struct FileBrowserView: View {
     var body: some View {
         Group {
             if let connection {
-                EnvironmentConnectionObserver(connection: connection) { _ in
+                ConnectionObserver(connection: connection) { _ in
                     content
                 }
             } else {

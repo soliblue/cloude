@@ -14,8 +14,12 @@ extension ConversationStore {
         source: String
     ) {
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
-        let isRunning = environmentStore.isStreaming(for: freshConv)
-        let isReady = environmentStore.connection(for: freshConv.environmentId)?.isReady == true
+        let isRunning = (environmentStore.connectionStore
+            .connection(for: freshConv.environmentId)?
+            .conversation(freshConv.id)
+            .output
+            .phase ?? .idle) != .idle
+        let isReady = environmentStore.connectionStore.connection(for: freshConv.environmentId)?.isReady == true
 
         if queueIfUnavailable, isRunning || !isReady {
             AppLogger.connectionInfo("\(source) queue convId=\(freshConv.id.uuidString) chars=\(displayMessage.text.count) running=\(isRunning) authenticated=\(isReady)")
@@ -37,12 +41,11 @@ extension ConversationStore {
         let updatedConv = self.conversation(withId: conversation.id) ?? freshConv
         let isFork = updatedConv.pendingFork
         let isNewSession = updatedConv.sessionId == nil && !isFork
-        environmentStore.connection(for: updatedConv.environmentId)?.sendChat(
+        environmentStore.connectionStore.connection(for: updatedConv.environmentId)?.conversation(updatedConv.id).sendChat(
             displayMessage.text,
             workingDirectory: updatedConv.workingDirectory,
             sessionId: updatedConv.sessionId,
             isNewSession: isNewSession,
-            conversationId: updatedConv.id,
             imagesBase64: imagesBase64,
             filesBase64: filesBase64,
             conversationName: updatedConv.name,
@@ -51,11 +54,11 @@ extension ConversationStore {
             model: model
         )
 
-        environmentStore.connection(for: updatedConv.environmentId)?.output(for: updatedConv.id).liveMessageId = insertLiveMessage(into: updatedConv)
+        environmentStore.connectionStore.connection(for: updatedConv.environmentId)?.conversation(updatedConv.id).output.liveMessageId = insertLiveMessage(into: updatedConv)
 
         if isNewSession {
             AppLogger.connectionInfo("\(source) request name suggestion convId=\(updatedConv.id.uuidString)")
-            environmentStore.connection(for: updatedConv.environmentId)?.requestNameSuggestion(text: displayMessage.text, context: [], conversationId: updatedConv.id)
+            environmentStore.connectionStore.connection(for: updatedConv.environmentId)?.conversation(updatedConv.id).requestNameSuggestion(text: displayMessage.text, context: [])
         }
 
         if isFork {
@@ -141,7 +144,7 @@ extension ConversationStore {
     }
 
     func replayQueuedMessages(conversation: Conversation, environmentStore: EnvironmentStore) {
-        guard environmentStore.connection(for: conversation.environmentId)?.isReady == true else { return }
+        guard environmentStore.connectionStore.connection(for: conversation.environmentId)?.isReady == true else { return }
 
         let freshConv = self.conversation(withId: conversation.id) ?? conversation
         guard let queuedMessage = freshConv.pendingMessages.first else { return }

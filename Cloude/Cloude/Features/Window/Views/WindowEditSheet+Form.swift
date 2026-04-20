@@ -22,7 +22,7 @@ struct WindowEditForm: View {
     }
 
     var allConversations: [Conversation] {
-        conversationStore.listableConversations
+        conversationStore.conversations
             .filter { $0.id != conversation?.id && !openInOtherWindows.contains($0.id) }
             .sorted { $0.lastMessageAt > $1.lastMessageAt }
     }

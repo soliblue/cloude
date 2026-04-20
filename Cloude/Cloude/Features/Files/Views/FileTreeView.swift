@@ -17,8 +17,8 @@ struct FileTreeView: View {
         rootPath?.nilIfEmpty ?? defaultWorkingDirectory
     }
 
-    private var connection: EnvironmentConnection? {
-        environmentStore.connection(for: environmentId)
+    private var connection: Connection? {
+        environmentStore.connectionStore.connection(for: environmentId)
     }
 
     private var currentDirectoryListings: [String: [FileEntry]] {
@@ -28,7 +28,7 @@ struct FileTreeView: View {
     var body: some View {
         Group {
             if let connection {
-                EnvironmentConnectionObserver(connection: connection) { _ in
+                ConnectionObserver(connection: connection) { _ in
                     content
                 }
             } else {

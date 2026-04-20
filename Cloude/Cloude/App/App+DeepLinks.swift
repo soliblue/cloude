@@ -10,7 +10,7 @@ extension App {
         if host == "screenshot" {
             captureScreenshot()
         } else {
-            handleWorkspaceDeepLink(host: host, url: url)
+            handleShellDeepLink(host: host, url: url)
             handleGitDeepLink(host: host, url: url)
             handleWindowDeepLink(host: host, url: url)
             handleSettingsDeepLink(host: host, url: url)

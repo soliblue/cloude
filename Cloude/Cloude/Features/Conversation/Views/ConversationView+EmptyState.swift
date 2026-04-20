@@ -41,7 +41,7 @@ struct EmptyConversationView: View {
     private var recentConversations: [Conversation] {
         guard let store = conversationStore else { return [] }
         let openIds = windowManager?.openConversationIds ?? []
-        return store.listableConversations
+        return store.conversations
             .filter { !$0.isEmpty && !openIds.contains($0.id) }
             .sorted { $0.lastMessageAt > $1.lastMessageAt }
             .prefix(3)

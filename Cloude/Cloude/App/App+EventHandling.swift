@@ -15,10 +15,21 @@ extension App {
             handleSessionIdReceived(conversationId: convId, sessionId: sessionId)
         case .turnCompleted(let convId):
             handleTurnCompleted(conversationId: convId)
+            refreshGitStatusAfterTurn(conversationId: convId)
         case .historySync(let sessionId, let historyMessages):
+            endRefreshInterval(sessionId: sessionId)
             handleHistorySync(sessionId: sessionId, historyMessages: historyMessages)
+        case .historySyncError(let sessionId, _):
+            endRefreshInterval(sessionId: sessionId)
         case .deleteConversation(let convId):
             handleDeleteConversation(conversationId: convId)
+        case .authenticated(let environmentId):
+            recoverInterruptedMessagesIfNeeded(environmentId: environmentId)
+            replayQueuedMessagesIfNeeded(environmentId: environmentId)
+        case .transcription(let text):
+            appendTranscriptionToActiveConversation(text)
+        case .lastAssistantMessageCostUpdate(let convId, let costUsd):
+            updateLastAssistantMessageCost(conversationId: convId, costUsd: costUsd)
 
         case .notify(let title, let body):
             NotificationManager.showNotification(title: title, body: body)

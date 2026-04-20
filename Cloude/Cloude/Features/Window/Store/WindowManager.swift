@@ -98,18 +98,6 @@ class WindowManager: ObservableObject {
         save()
     }
 
-    func setFileBrowserRootPath(_ windowId: UUID, path: String?) {
-        guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
-        windows[index].fileBrowserRootPath = path
-        save()
-    }
-
-    func setGitRepoRootPath(_ windowId: UUID, path: String?) {
-        guard let index = windows.firstIndex(where: { $0.id == windowId }) else { return }
-        windows[index].gitRepoRootPath = path
-        save()
-    }
-
     func fileTreeState(for windowId: UUID) -> FileTreeState {
         if let existing = fileTreeStates[windowId] { return existing }
         let state = FileTreeState()

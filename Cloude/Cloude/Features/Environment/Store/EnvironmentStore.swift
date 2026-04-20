@@ -1,43 +1,15 @@
-import Foundation
 import Combine
+import Foundation
 import CloudeShared
 
 @MainActor
 class EnvironmentStore: ObservableObject {
     @Published var environments: [ServerEnvironment] = []
     @Published var activeEnvironmentId: UUID?
-    @Published var connections: [UUID: EnvironmentConnection] = [:]
-    let events = PassthroughSubject<ConnectionEvent, Never>()
+    let connectionStore = ConnectionStore()
 
     var activeEnvironment: ServerEnvironment? {
         environments.first { $0.id == activeEnvironmentId }
-    }
-
-    func connection(for environmentId: UUID?) -> EnvironmentConnection? {
-        environmentId.flatMap { connections[$0] }
-    }
-
-    func connectEnvironment(_ envId: UUID, host: String, port: UInt16, token: String, symbol: String = "laptopcomputer") {
-        AppLogger.connectionInfo("connectEnvironment envId=\(envId.uuidString) host=\(host):\(port)")
-        let conn = connections[envId] ?? EnvironmentConnection(environmentId: envId)
-        conn.manager = self
-        conn.symbol = symbol
-        connections[envId] = conn
-        conn.connect(host: host, port: port, token: token)
-    }
-
-    func disconnectEnvironment(_ envId: UUID, clearCredentials: Bool = true) {
-        connections[envId]?.disconnect(clearCredentials: clearCredentials)
-    }
-
-    func reconnectAll() {
-        for conn in connections.values {
-            conn.reconnectIfNeeded()
-        }
-    }
-
-    func isStreaming(for conversation: Conversation) -> Bool {
-        (connection(for: conversation.environmentId)?.output(for: conversation.id).phase ?? .idle) != .idle
     }
 
     private static var fileURL: URL {
@@ -84,9 +56,7 @@ class EnvironmentStore: ObservableObject {
     }
 
     func delete(_ envId: UUID) {
-        if let connection = connections.removeValue(forKey: envId) {
-            connection.disconnect()
-        }
+        connectionStore.removeConnection(envId)
         environments.removeAll { $0.id == envId }
         if activeEnvironmentId == envId {
             activeEnvironmentId = environments.first?.id

@@ -29,8 +29,8 @@ extension SettingsView {
 
     @ViewBuilder
     private func environmentCard(env: ServerEnvironment) -> some View {
-        if let connection = environmentStore.connection(for: env.id) {
-            EnvironmentConnectionObserver(connection: connection) { connection in
+        if let connection = environmentStore.connectionStore.connection(for: env.id) {
+            ConnectionObserver(connection: connection) { connection in
                 card(env: env, isConnected: connection.isReady, isConnecting: connection.isConnecting)
             }
         } else {
@@ -43,9 +43,9 @@ extension SettingsView {
             env: env,
             isConnected: isConnected,
             isConnecting: isConnecting,
-            onConnect: { environmentStore.setActive(env.id); environmentStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol) },
-            onDisconnect: { environmentStore.disconnectEnvironment(env.id, clearCredentials: false) },
-            onUpdate: { environmentStore.update($0); if let conn = environmentStore.connection(for: $0.id), conn.isReady { conn.disconnect(clearCredentials: false) } },
+            onConnect: { environmentStore.setActive(env.id); environmentStore.connectionStore.connectEnvironment(env.id, host: env.host, port: env.port, token: env.token, symbol: env.symbol) },
+            onDisconnect: { environmentStore.connectionStore.disconnectEnvironment(env.id, clearCredentials: false) },
+            onUpdate: { environmentStore.update($0); if let conn = environmentStore.connectionStore.connection(for: $0.id), conn.isReady { conn.disconnect(clearCredentials: false) } },
             onDelete: environmentStore.environments.count > 1 ? { environmentStore.delete(env.id) } : nil
         )
     }

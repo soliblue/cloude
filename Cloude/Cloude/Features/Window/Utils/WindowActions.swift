@@ -44,7 +44,20 @@ extension App {
             AppLogger.bootstrapInfo("create window ignored max windows")
             return
         }
+        let activeWindow = windowManager.activeWindow
+        let activeConversation = activeWindow?.conversation(in: conversationStore)
+        let environmentId = activeWindow?.runtimeEnvironmentId(
+            conversationStore: conversationStore,
+            environmentStore: environmentStore
+        ) ?? environmentStore.activeEnvironmentId
+        let workingDirectory = activeConversation?.workingDirectory
+            ?? environmentStore.connectionStore.connection(for: environmentId)?.defaultWorkingDirectory?.nilIfEmpty
         let newWindowId = windowManager.addWindow()
+        let conversation = conversationStore.newConversation(
+            workingDirectory: workingDirectory,
+            environmentId: environmentId
+        )
+        windowManager.linkToCurrentConversation(newWindowId, conversation: conversation)
         if let tab {
             windowManager.setWindowTab(newWindowId, tab: tab)
         }

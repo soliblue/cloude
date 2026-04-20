@@ -10,6 +10,13 @@ struct WorkspaceView: View {
     @ObservedObject var environmentStore: EnvironmentStore
     @Environment(\.appTheme) var appTheme
     var onShowSettings: (() -> Void)?
+    let onSendMessage: () -> Void
+    let onStopActiveConversation: () -> Void
+    let onRefreshConversation: (Window) -> Void
+    let onSelectConversationForEditing: (Window, Conversation) -> Void
+    let onRefreshEditingWindowConversation: (Window) async -> Void
+    let onDuplicateEditingConversation: (Window, Conversation) -> Void
+    let onSelectConversationFromSearch: (Conversation) -> Void
 
     var body: some View {
         #if DEBUG
@@ -28,62 +35,66 @@ struct WorkspaceView: View {
                 dismissKeyboard()
             }
             .overlay(alignment: .trailing) {
-                if !isKeyboardVisible && !(currentConversation?.messages.isEmpty ?? true) {
+                if !isKeyboardVisible && !(windowManager.activeWindow?.conversation(in: conversationStore)?.messages.isEmpty ?? true) {
                     WindowCreateButton {
                         if windowManager.windows.count >= 5, let id = windowManager.activeWindowId {
                             windowManager.removeWindow(id)
                         }
-                        store.addWindowWithNewChat(
+                        windowManager.addWindowWithNewChat(
                             conversationStore: conversationStore,
-                            windowManager: windowManager,
                             environmentStore: environmentStore
                         )
                     }
                     .transition(.opacity.animation(.easeIn(duration: DS.Duration.m)))
                 }
             }
-
-            inputSection()
+            windowSwitcher()
+                .padding(.top, DS.Spacing.xs)
+                .padding(.bottom, isKeyboardVisible ? DS.Spacing.m : DS.Spacing.xs)
+                .background(
+                    Color.themeBackground
+                        .ignoresSafeArea(.container, edges: .bottom)
+                        .ignoresSafeArea(.keyboard)
+                )
         }
         .onAppear {
-            store.initializeFirstWindow(conversationStore: conversationStore, windowManager: windowManager)
-            store.currentEffort = currentConversation?.defaultEffort
-            store.currentModel = currentConversation?.defaultModel
+            windowManager.initializeFirstWindow(
+                conversationStore: conversationStore,
+                environmentStore: environmentStore
+            )
             if let activeId = windowManager.activeWindowId {
-                store.checkGitForActiveWindow(windowId: activeId, conversationStore: conversationStore, windowManager: windowManager, environmentStore: environmentStore)
+                windowManager.checkGitForActiveWindow(
+                    windowId: activeId,
+                    conversationStore: conversationStore,
+                    environmentStore: environmentStore
+                )
             }
         }
         .onChange(of: windowManager.activeWindowId) { oldValue, newValue in
-            store.handleActiveWindowChange(oldId: oldValue, newId: newValue, conversationStore: conversationStore, windowManager: windowManager, environmentStore: environmentStore)
+            windowManager.handleActiveWindowChange(
+                oldId: oldValue,
+                newId: newValue,
+                conversationStore: conversationStore,
+                environmentStore: environmentStore
+            )
         }
-        .onChange(of: currentModel) { _, newValue in
-            store.handleModelChange(newValue, conversationStore: conversationStore, windowManager: windowManager)
-        }
-        .onChange(of: currentEffort) { _, newValue in
-            store.handleEffortChange(newValue, conversationStore: conversationStore, windowManager: windowManager)
-        }
-        .sheet(item: editingWindowBinding) { window in editWindowSheet(window) }
-        .sheet(isPresented: showConversationSearchBinding) { conversationSearchSheetContent() }
+        .sheet(item: windowBeingEditedBinding) { window in editWindowSheet(window) }
+        .sheet(isPresented: isShowingConversationSearchBinding) { conversationSearchSheetContent() }
         .onReceive(NotificationCenter.default.publisher(for: .editActiveWindow)) { _ in
-            if let window = windowManager.activeWindow { store.editingWindow = window }
+            if let window = windowManager.activeWindow { store.windowBeingEdited = window }
         }
         .onReceive(NotificationCenter.default.publisher(for: .openConversationSearch)) { _ in
-            store.openConversationSearch()
+            store.isShowingConversationSearch = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .dismissWorkspaceTransientUI)) { _ in
-            store.dismissTransientUI()
-        }
-        .onReceive(environmentStore.events) { event in
-            store.handleConnectionEvent(event, environmentStore: environmentStore, conversationStore: conversationStore)
+            store.windowBeingEdited = nil
+            store.isShowingConversationSearch = false
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             store.isKeyboardVisible = true
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             store.isKeyboardVisible = false
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
-            store.fetchLatestScreenshot()
         }
     }
 

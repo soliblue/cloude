@@ -15,9 +15,15 @@ struct Conversation: Codable, Identifiable {
     var defaultModel: ModelSelection?
     var environmentId: UUID?
     var savedTotalCost: Double?
+    var draft: ConversationDraft
 
     var isEmpty: Bool {
-        messages.isEmpty && pendingMessages.isEmpty && sessionId == nil
+        messages.isEmpty &&
+        pendingMessages.isEmpty &&
+        sessionId == nil &&
+        draft.isEmpty &&
+        defaultEffort == nil &&
+        defaultModel == nil
     }
 
     var totalCost: Double {
@@ -54,6 +60,7 @@ struct Conversation: Codable, Identifiable {
         self.defaultEffort = nil
         self.defaultModel = nil
         self.environmentId = environmentId
+        self.draft = ConversationDraft()
         self.name = name ?? Self.randomNames.randomElement() ?? "Chat"
         self.symbol = symbol ?? Self.randomSymbols.randomElement()
     }
@@ -73,6 +80,7 @@ struct Conversation: Codable, Identifiable {
         defaultModel = try container.decodeIfPresent(ModelSelection.self, forKey: .defaultModel)
         environmentId = try container.decodeIfPresent(UUID.self, forKey: .environmentId)
         savedTotalCost = try container.decodeIfPresent(Double.self, forKey: .savedTotalCost)
+        draft = ConversationDraft()
     }
 
     private enum CodingKeys: String, CodingKey {

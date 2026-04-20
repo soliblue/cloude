@@ -9,6 +9,13 @@ extension ConversationStore {
         return true
     }
 
+    @discardableResult
+    func mutateDraft(_ conversationId: UUID, _ mutation: (inout ConversationDraft) -> Void) -> Bool {
+        guard let idx = conversations.firstIndex(where: { $0.id == conversationId }) else { return false }
+        mutation(&conversations[idx].draft)
+        return true
+    }
+
     func findConversation(withId id: UUID) -> Conversation? {
         conversations.first { $0.id == id }
     }
@@ -66,7 +73,7 @@ extension ConversationStore {
 
     func duplicateConversation(_ conversation: Conversation) -> Conversation? {
         guard conversation.sessionId != nil else { return nil }
-        let newConversation = Conversation(
+        var newConversation = Conversation(
             name: conversation.name,
             symbol: conversation.symbol,
             sessionId: conversation.sessionId,
@@ -74,6 +81,8 @@ extension ConversationStore {
             pendingFork: true,
             environmentId: conversation.environmentId
         )
+        newConversation.defaultEffort = conversation.defaultEffort
+        newConversation.defaultModel = conversation.defaultModel
         conversations.insert(newConversation, at: 0)
         saveConversation(newConversation)
         return newConversation
