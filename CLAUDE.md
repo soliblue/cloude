@@ -57,6 +57,7 @@ Both proxy to `localhost:8765` where the daemon/relay listens. Specific endpoint
 - **Predictability over file count** - a filename is a promise about what's inside. Before creating or modifying files, ask "can someone predict what lives here from the filename?"
 - Struct-first design, explicit imports, lean composable views
 - View files: no logic. Logic files: no SwiftUI.
+- **Features don't reach into other features' models** - if feature A needs to create, mutate, or delete a model owned by feature B, it calls B's `Actions` enum. A feature's `Actions` is the only sanctioned mutation surface for its models; cross-feature `context.insert(OtherModel(...))` or direct field writes on another feature's model are off-limits. Reading another feature's model (e.g. SwiftData relationships, `@Query`) is fine.
 - **Sheet chrome matches body** - a sheet's nav bar and toolbar background must be the same as the sheet's body background (usually `theme.palette.background` via `@Environment(\.theme)`). No two-tone sheets.
 - **Prefer Apple native components** - use SwiftUI/UIKit native controls (Stepper, Toggle, DatePicker, Picker, Slider, ProgressView, Menu, etc.) before hand-rolling equivalents. Native gets disabled endpoints, haptics, accessibility, and platform idiom for free. Only go custom when the native control genuinely can't do what's needed.
 - **Format Swift before finishing** - after editing any `.swift` file, run `swift-format -i <files>` on the files you touched. Config lives at repo root in `.swift-format`. Never commit unformatted Swift.
@@ -121,25 +122,22 @@ src/
         EndpointsCarouselAdd.swift         ✅  // "+" page that appends a blank Endpoint via a callback
         EndpointsSymbolPicker.swift        ✅  // sheet presented from the card's symbol button; searchable LazyVGrid of SF Symbols grouped by category
       Logic/
-        Endpoint.swift                 ✅  // domain model: id, host, port, symbolName, status. authKey NOT on the struct, lives in Keychain under id.uuidString. status is excluded from Codable (not persisted)
+        Endpoint.swift                 ✅  // @Model: id, host, port, symbolName, createdAt; @Transient status. authKey NOT on the model, lives in Keychain under id.uuidString
         EndpointStatus.swift           ✅  // enum: .unknown | .checking | .reachable | .unreachable; exposes a semantic color
-        EndpointsStore.swift           ✅  // @Published [Endpoint]; persists to Application Support/endpoints.json via didSet. DEBUG-only env-var seed (CLOUDE_DEV_TOKEN/HOST/PORT/ENV_ID) for sim automation
-        EndpointService.swift          ✅  // stateless; GET /ping with Bearer authKey, writes status back to store
+        EndpointService.swift          ✅  // stateless; GET /ping with Bearer authKey, mutates endpoint.status directly
+        EndpointActions.swift          ✅  // stateless mutations on the Endpoint model: add, remove (deletes Keychain entry + the model), saveAuthKey (no-op if the endpoint was deleted), seedDev (DEBUG-only env-var dev-endpoint seed, called from iOSApp.init)
         EndpointsSymbolCatalog.swift   ✅  // static list of SF Symbol names grouped by category, consumed by EndpointsSymbolPicker
     Sessions/
       UI/
-        SessionsList.swift           // list of saved sessions; tap to open (adds to OpenSessions), swipe to delete
-        SessionsListRow.swift        // env symbol, path, short session id, last-opened timestamp
-        SessionView.swift            // container for one open session: SessionViewTabs on top, active tab content below; renders SessionViewEmpty when the session has zero messages
-        SessionViewTabs.swift        // 3-tab switcher (chat | files | git); chat is default
-        SessionViewEmpty.swift       // empty state: env + path pickers (pre-filled from lastUsed), plus search over past sessions to reopen
+        SessionView.swift            ✅  // owns its top bar (SessionViewTabs) and body. Takes a Session directly. Currently a "coming soon" placeholder; real tab bodies land later. Owns @State activeTab.
+        SessionViewTabs.swift        ✅  // 3-tab pill switcher (chat | files | git); rendered inside SessionView's top bar. Bound to SessionView's activeTab.
       Logic/
-        Session.swift                // id (client-generated, passed to claude as --session-id), envId?, path?, lastOpenedAt, title?, symbol?, skills?, agents?
-        SessionTab.swift             // enum: chat | files | git
-        SessionsStore.swift          // @Published list; persisted to disk (JSON in Application Support). pure state
-        Skill.swift                  // name, description - available in session's cwd; read by ChatInputBarAutocompletePicker via "/"
-        Agent.swift                  // name, description - available in session; read by ChatInputBarAutocompletePicker via "@"
-        SessionService.swift         // stateless; session-scoped network I/O. results written back via SessionsStore.update.
+        Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"); @Transient skills?, agents? (fetched on demand). path == nil is the empty-state signal.
+        SessionTab.swift             ✅  // enum: chat | files | git; each case has label + SF symbol
+        SessionActions.swift         ✅  // stateless mutations on the Session model: add (inserts a Session with defaults and returns it). Owns session-creation logic so callers like WindowActions don't.
+        Skill.swift                  ✅  // name, description. available in session's cwd; read by ChatInputBarAutocompletePicker via "/"
+        Agent.swift                  ✅  // name, description. available in session; read by ChatInputBarAutocompletePicker via "@"
+        // SessionService.swift — land when SessionHandler exists on the daemon
     Chat/
       UI/
         ChatView.swift                                // chat tab container: ChatViewMessageList on top, ChatInputBar pinned bottom
@@ -185,12 +183,14 @@ src/
         GitCommit.swift              // sha, author, date, subject
         GitStore.swift               // @Published status per session; persisted to disk per session. pure state.
         GitService.swift             // stateless; status/diff/log network I/O
-    OpenSessions/
+    Windows/
       UI/
-        OpenSessionsView.swift            // top-level screen: switcher on top + the active session's SessionView below
-        OpenSessionsViewSwitcher.swift    // horizontal pills of open sessions; tap = switch active, long-press = close. browser-tab semantics.
+        WindowsView.swift            ✅  // top-level screen: theme background + active SessionView + WindowsViewSwitcher pinned at the bottom + top-leading SettingsButton (owns the settings sheet) + DebugOverlay
+        WindowsViewSwitcher.swift    ✅  // bottom-of-screen horizontal scroll of WindowsViewSwitcherPill + a trailing "+" to spawn a new session via WindowActions.addNew
+        WindowsViewSwitcherPill.swift ✅  // one pill for a Window/Session pair. tap = activate, long-press = close. Title truncates at maxNameLength (10) with ellipsis
       Logic/
-        OpenSessionsStore.swift      // @Published [sessionId] + activeSessionId. pure state. inactive sessions keep streaming; only visible pane changes on switch.
+        Window.swift                 ✅  // @Model: session: Session? (SwiftData relationship), order: Int, isFocused: Bool. One Window per open pill in the switcher.
+        WindowActions.swift          ✅  // stateless mutations on the Window model: ensureOne (called from iOSApp.init), activate, addNew, close. addNew/ensureOne insert a matching Session alongside the Window; close deletes only the Window (Session persists for re-opening from SessionsList). Keeps WindowsViewSwitcher view body logic-free.
     Settings/
       UI/
         SettingsButton.swift                     ✅  // hamburger icon that opens SettingsView as a sheet
@@ -219,8 +219,7 @@ src/
       ThemeColor.swift               ✅  // semantic color aliases (blue/cyan/success/danger/etc.) + Color(hex:) initializer
       ThemeTokens.swift              ✅  // design tokens: Text/Icon/Spacing/Radius/Size/Scale/Stroke/Duration/Delay/Opacity
       ThemeEnvironment.swift         ✅  // EnvironmentValues.theme + .fontStep + .appFont(size:weight:design:) + .themedNavChrome() modifiers
-  iOSApp.swift                       ✅  // @main App; owns @StateObject ThemeStore, hands it to RootView via .environmentObject
-  RootView.swift                     ✅  // top-level ZStack with SettingsButton + settings sheet; applies .reactsToTheme() and preferredColorScheme
+  iOSApp.swift                       ✅  // @main App; constructs the SwiftData ModelContainer (Endpoint/Session/Window), calls EndpointActions.seedDev + WindowActions.ensureOne at init, renders WindowsView with .modelContainer injected and theme/fontStep AppStorage
 ```
 
 ## macOS daemon

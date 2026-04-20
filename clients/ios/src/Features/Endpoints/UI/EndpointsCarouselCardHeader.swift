@@ -1,16 +1,20 @@
+import SwiftData
 import SwiftUI
 
 struct EndpointsCarouselCardHeader: View {
-    @Binding var endpoint: Endpoint
+    @Bindable var endpoint: Endpoint
     let authKey: String
-    @EnvironmentObject private var store: EndpointsStore
+    let canDelete: Bool
+    @Environment(\.modelContext) private var context
     @State private var isSymbolPickerPresented = false
     @State private var isDeleteConfirmPresented = false
     @State private var isPulsing = false
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.m) {
-            Button { isSymbolPickerPresented = true } label: {
+            Button {
+                isSymbolPickerPresented = true
+            } label: {
                 Image(systemName: endpoint.symbolName)
                     .appFont(size: ThemeTokens.Icon.l)
                     .foregroundColor(.accentColor)
@@ -32,17 +36,21 @@ struct EndpointsCarouselCardHeader: View {
 
             Spacer()
 
-            if store.endpoints.count > 1 {
-                Button { isDeleteConfirmPresented = true } label: {
+            if canDelete {
+                Button {
+                    isDeleteConfirmPresented = true
+                } label: {
                     Image(systemName: "trash")
                         .appFont(size: ThemeTokens.Icon.s)
                         .foregroundColor(.accentColor)
                 }
                 .buttonStyle(.plain)
-                .confirmationDialog("Delete \(endpoint.host.isEmpty ? "endpoint" : endpoint.host)?", isPresented: $isDeleteConfirmPresented) {
+                .confirmationDialog(
+                    "Delete \(endpoint.host.isEmpty ? "endpoint" : endpoint.host)?",
+                    isPresented: $isDeleteConfirmPresented
+                ) {
                     Button("Delete", role: .destructive) {
-                        SecureStorage.delete(account: endpoint.id.uuidString)
-                        store.endpoints.removeAll { $0.id == endpoint.id }
+                        EndpointActions.remove(endpoint, context: context)
                     }
                 }
 
@@ -50,18 +58,23 @@ struct EndpointsCarouselCardHeader: View {
             }
 
             Button {
-                Task { await EndpointService.ping(id: endpoint.id, authKey: authKey, store: store) }
+                Task { await EndpointService.ping(endpoint: endpoint, authKey: authKey) }
             } label: {
                 Image(systemName: "power")
                     .appFont(size: ThemeTokens.Icon.m, weight: .medium)
-                    .foregroundStyle(endpoint.status == .reachable || endpoint.status == .checking ? Color.accentColor : .secondary)
-                    .opacity(isPulsing ? ThemeTokens.Opacity.m : 1.0)
+                    .foregroundStyle(
+                        endpoint.status == .reachable || endpoint.status == .checking
+                            ? Color.accentColor : .secondary
+                    )
+                    .opacity(isPulsing ? ThemeTokens.Opacity.m : 1)
             }
             .buttonStyle(.plain)
             .disabled(endpoint.host.isEmpty || authKey.isEmpty)
             .onChange(of: endpoint.status) { _, status in
                 if status == .checking {
-                    withAnimation(.easeInOut(duration: ThemeTokens.Duration.l).repeatForever(autoreverses: true)) { isPulsing = true }
+                    withAnimation(.easeInOut(duration: ThemeTokens.Duration.l).repeatForever(autoreverses: true)) {
+                        isPulsing = true
+                    }
                 } else {
                     withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) { isPulsing = false }
                 }

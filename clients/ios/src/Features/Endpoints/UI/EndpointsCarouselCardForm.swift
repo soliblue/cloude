@@ -1,9 +1,9 @@
+import SwiftData
 import SwiftUI
 
 struct EndpointsCarouselCardForm: View {
-    @Binding var endpoint: Endpoint
+    @Bindable var endpoint: Endpoint
     @Binding var authKey: String
-    @EnvironmentObject private var store: EndpointsStore
     @Environment(\.theme) private var theme
     @State private var isTokenVisible = false
 
@@ -46,19 +46,19 @@ struct EndpointsCarouselCardForm: View {
                 Group {
                     if isTokenVisible {
                         TextField("Auth Token", text: $authKey)
-                            .appFont(size: ThemeTokens.Text.m, design: .monospaced)
-                            .textFieldStyle(.plain)
                     } else {
                         SecureField("Auth Token", text: $authKey)
-                            .appFont(size: ThemeTokens.Text.m, design: .monospaced)
-                            .textFieldStyle(.plain)
                     }
                 }
+                .appFont(size: ThemeTokens.Text.m, design: .monospaced)
+                .textFieldStyle(.plain)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
 
-                Button { isTokenVisible.toggle() } label: {
+                Button {
+                    isTokenVisible.toggle()
+                } label: {
                     Image(systemName: isTokenVisible ? "eye.slash.fill" : "eye.fill")
                         .appFont(size: ThemeTokens.Text.m)
                         .foregroundColor(.secondary)
@@ -71,9 +71,7 @@ struct EndpointsCarouselCardForm: View {
         .background(theme.palette.surface)
         .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
         .onDisappear {
-            if store.endpoints.contains(where: { $0.id == endpoint.id }) {
-                SecureStorage.set(account: endpoint.id.uuidString, value: authKey)
-            }
+            EndpointActions.saveAuthKey(for: endpoint, authKey)
         }
     }
 }

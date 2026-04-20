@@ -27,9 +27,10 @@ enum ThemeTokens {
     }
 
     enum Size {
-        static let s: CGFloat = 8
-        static let m: CGFloat = 28
-        static let l: CGFloat = 44
+        static let s: CGFloat = 10
+        static let m: CGFloat = 25
+        static let l: CGFloat = 50
+        static let xl: CGFloat = 100
         static let xxl: CGFloat = 200
     }
 
