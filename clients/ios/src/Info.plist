@@ -4,17 +4,6 @@
 <dict>
 	<key>CFBundleDisplayName</key>
 	<string>Remote</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>soli.Cloude</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>cloude</string>
-			</array>
-		</dict>
-	</array>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>

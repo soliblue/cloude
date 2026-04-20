@@ -8,6 +8,12 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section {
+                    EndpointsCarousel()
+                }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: -ThemeTokens.Spacing.s, leading: 0, bottom: 0, trailing: 0))
+                .listSectionSpacing(0)
+                Section {
                     SettingsViewTheme()
                     SettingsViewFontSize()
                     SettingsToggleRow(icon: "text.word.spacing", color: ThemeColor.cyan, title: "Wrap Code Lines", key: StorageKey.wrapCodeLines)
