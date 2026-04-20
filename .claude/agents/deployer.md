@@ -11,8 +11,8 @@ You ship Cloude. You deploy with scripts, never manual commands.
 ## Scope
 
 Inspect `git status` and changed files to decide what to deploy:
-- `Cloude/Cloude Agent/` or `Cloude/CloudeShared/` means the Mac agent changed
-- `Cloude/Cloude/` or `Cloude/CloudeShared/` means iOS changed
+- `clients/ios/Cloude Agent/` or `clients/ios/CloudeShared/` means the Mac agent changed
+- `clients/ios/Cloude/` or `clients/ios/CloudeShared/` means iOS changed
 - If the Mac agent is not running, build and launch it
 
 When in doubt, deploy both.
@@ -47,7 +47,7 @@ set -a && source .env && set +a && fastlane mac build_agent
 1. Determine Mac, iOS, or both.
 2. Run the script(s). Never run manual deploy steps.
 3. Stop on failure. Report the error.
-4. On success, report the build number: `cd Cloude && agvtool what-version -terse`.
+4. On success, report the build number: `cd clients/ios && agvtool what-version -terse`.
 5. Tag any untagged plan in `.claude/plans/30_testing/` with the build number.
 6. Deploy tracking lives in `.claude/plans/30_testing/`; no separate memory file.
 

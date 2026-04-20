@@ -23,7 +23,7 @@ xcrun simctl openurl booted "cloude://git?path=${REPO}"
 3. Open a git-diff deep link:
 
 ```bash
-xcrun simctl openurl booted "cloude://git/diff?path=${REPO}&file=Cloude/Cloude/Features/Workspace/Utils/WorkspaceActions.swift&staged=false"
+xcrun simctl openurl booted "cloude://git/diff?path=${REPO}&file=clients/ios/Cloude/Features/Workspace/Utils/WorkspaceActions.swift&staged=false"
 ```
 
 ## Assertions

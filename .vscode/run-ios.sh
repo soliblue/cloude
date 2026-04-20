@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PROJECT_PATH="$ROOT_DIR/Cloude/Cloude.xcodeproj"
+PROJECT_PATH="$ROOT_DIR/clients/ios/iOS.xcodeproj"
 SCHEME_NAME="${CLOUDE_SCHEME:-Cloude}"
 SIMULATOR_DERIVED_DATA_PATH="$ROOT_DIR/build/vscode-simulator"
 DEVICE_DERIVED_DATA_PATH="$ROOT_DIR/build/vscode-device"

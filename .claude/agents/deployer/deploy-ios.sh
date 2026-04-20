@@ -12,7 +12,7 @@ fi
 echo "🔍 Checking for connected iPhone..."
 
 # Get xcodebuild device ID (different from devicectl UUID)
-XCODE_DEVICE=$(xcodebuild -project Cloude/Cloude.xcodeproj -scheme Cloude -showdestinations 2>&1 \
+XCODE_DEVICE=$(xcodebuild -project clients/ios/iOS.xcodeproj -scheme Cloude -showdestinations 2>&1 \
     | grep "platform:iOS, arch:" | grep -i "iphone" | head -1 || true)
 
 if [[ -z "$XCODE_DEVICE" ]]; then
@@ -35,7 +35,7 @@ echo "✅ $XCODE_NAME connected (ID: $XCODE_ID)"
 echo "🔨 Building and installing iOS app..."
 
 # Build for connected device
-xcodebuild -project Cloude/Cloude.xcodeproj \
+xcodebuild -project clients/ios/iOS.xcodeproj \
     -scheme Cloude \
     -destination "platform=iOS,id=$XCODE_ID" \
     build 2>&1 | tail -5

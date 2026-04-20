@@ -77,8 +77,8 @@ tools/sora/image_flow_capture.json
 .claude/skills/projects/
 
 # Linux relay runtime data
-linux-relay/whisper-env/
-linux-relay/whisper-models/
+daemons/linux/whisper-env/
+daemons/linux/whisper-models/
 
 # Cloudflare Wrangler
 .wrangler/

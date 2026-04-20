@@ -137,7 +137,7 @@ for DEVICE_ID in "${DEVICE_IDS[@]}"; do
 done
 
 echo "Building iOS app..."
-env GIT_CONFIG_GLOBAL=/dev/null xcodebuild -project Cloude/Cloude.xcodeproj \
+env GIT_CONFIG_GLOBAL=/dev/null xcodebuild -project clients/ios/iOS.xcodeproj \
     -scheme Cloude \
     -destination "platform=iOS Simulator,id=${DEVICE_IDS[0]}" \
     -derivedDataPath "$DERIVED_DATA_PATH" \

@@ -7,8 +7,8 @@ You ship Cloude. You deploy with scripts, never manual commands.
 ## Scope
 
 Inspect `git status` and changed files to decide what to deploy:
-- `Cloude/Cloude Agent/` or `Cloude/CloudeShared/` means the Mac agent changed
-- `Cloude/Cloude/` or `Cloude/CloudeShared/` means iOS changed
+- `clients/ios/Cloude Agent/` or `clients/ios/CloudeShared/` means the Mac agent changed
+- `clients/ios/Cloude/` or `clients/ios/CloudeShared/` means iOS changed
 - If the Mac agent is not running, build and launch it
 
 When in doubt, deploy both.
