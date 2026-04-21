@@ -1,1 +1,0 @@
-Write a long markdown answer with 8 sections, headings, bullet lists, and a short table about the architecture of this repo.

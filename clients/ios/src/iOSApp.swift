@@ -11,10 +11,13 @@ struct IOSApp: App {
         container = try! ModelContainer(
             for: Endpoint.self,
             Session.self,
-            Window.self
+            Window.self,
+            ChatMessage.self,
+            ChatToolCall.self
         )
         EndpointActions.seedDev(context: container.mainContext)
         WindowActions.ensureOne(context: container.mainContext)
+        AppLogger.bootstrapInfo("app launched")
     }
 
     var body: some Scene {
@@ -22,6 +25,7 @@ struct IOSApp: App {
             WindowsView()
                 .environment(\.theme, selectedTheme)
                 .environment(\.fontStep, CGFloat(fontSizeStep))
+                .onOpenURL { DeepLinkRouter.handle($0, container: container) }
         }
         .modelContainer(container)
     }

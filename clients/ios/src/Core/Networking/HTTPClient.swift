@@ -13,6 +13,20 @@ enum HTTPClient {
         return nil
     }
 
+    static func post(
+        endpoint: Endpoint, path: String, body: [String: Any] = [:], timeout: TimeInterval = 10
+    ) async -> (Data, HTTPURLResponse)? {
+        if let url = url(endpoint: endpoint, path: path, query: [:]) {
+            var request = URLRequest(url: url, timeoutInterval: timeout)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+            sign(&request, endpoint: endpoint)
+            return await send(request)
+        }
+        return nil
+    }
+
     static func download(
         endpoint: Endpoint, path: String, query: [String: String] = [:], range: ClosedRange<Int>? = nil
     ) async -> (Data, HTTPURLResponse)? {
@@ -28,7 +42,7 @@ enum HTTPClient {
         return nil
     }
 
-    private static func url(endpoint: Endpoint, path: String, query: [String: String]) -> URL? {
+    static func url(endpoint: Endpoint, path: String, query: [String: String]) -> URL? {
         var components = URLComponents()
         components.scheme = "http"
         components.host = endpoint.host
@@ -40,7 +54,7 @@ enum HTTPClient {
         return components.url
     }
 
-    private static func sign(_ request: inout URLRequest, endpoint: Endpoint) {
+    static func sign(_ request: inout URLRequest, endpoint: Endpoint) {
         if let key = SecureStorage.get(account: endpoint.id.uuidString), !key.isEmpty {
             request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         }

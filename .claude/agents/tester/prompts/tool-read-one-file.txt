@@ -1,0 +1,1 @@
+Read the file CLAUDE.md at the repo root and summarize the first section in one sentence.

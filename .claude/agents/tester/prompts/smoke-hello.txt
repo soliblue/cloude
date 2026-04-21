@@ -1,0 +1,1 @@
+Say hello in exactly one short sentence. Do not call any tools.

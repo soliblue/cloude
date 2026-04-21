@@ -18,4 +18,14 @@ enum SessionActions {
     static func setPath(_ path: String, for session: Session) {
         session.path = path
     }
+
+    @MainActor
+    static func markExistsOnServer(_ session: Session) {
+        session.existsOnServer = true
+    }
+
+    @MainActor
+    static func setTab(_ tab: SessionTab, for session: Session) {
+        session.tab = tab
+    }
 }

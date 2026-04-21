@@ -134,9 +134,9 @@ src/
         SessionEmptyView.swift       ✅  // setup screen shown when a session has no endpoint/path. Lists endpoints via @Query; tap assigns endpoint via SessionActions and opens SessionEmptyViewFolderSheet.
         SessionEmptyViewFolderSheet.swift ✅  // sheet presented from SessionEmptyView; wraps FolderPickerView in a NavigationStack, top-leading xmark dismisses, onPick writes path via SessionActions and dismisses.
       Logic/
-        Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"); @Transient skills?, agents? (fetched on demand). path == nil is the empty-state signal.
+        Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"), existsOnServer (flipped true after daemon emits system/init — swaps future spawns from --session-id to --resume), tabRaw (persisted active SessionTab); @Transient skills?, agents? (fetched on demand). path == nil is the empty-state signal.
         SessionTab.swift             ✅  // enum: chat | files | git; each case has label + SF symbol
-        SessionActions.swift         ✅  // stateless mutations on the Session model: add (inserts a Session), setEndpoint, setPath. Owns session-mutation surface so other features don't write Session fields directly.
+        SessionActions.swift         ✅  // stateless mutations on the Session model: add, setEndpoint, setPath, markExistsOnServer, setTab. Owns session-mutation surface so other features don't write Session fields directly.
         Skill.swift                  ✅  // name, description. available in session's cwd; read by ChatInputBarAutocompletePicker via "/"
         Agent.swift                  ✅  // name, description. available in session; read by ChatInputBarAutocompletePicker via "@"
         // SessionService.swift — land when SessionHandler exists on the daemon
@@ -159,8 +159,7 @@ src/
         ChatToolCall.swift           // tool name, args, result, state (pending/succeeded/failed)
         ChatStreamEvent.swift        // decoded ndjson event: system/init, stream_event, assistant, user, result
         ChatMarkdownParser.swift     // incremental parser: code fences, tool pills, tables - fed stream_event deltas
-        ChatStore.swift              // @Published [sessionId: [ChatMessage]]; persisted per-session jsonl for offline. pure state.
-        ChatService.swift            // streams /sessions/:id/chat; parses ndjson, routes to ChatStore. start/resume/reconcileAll/abort
+        ChatService.swift            // streams /sessions/:id/chat; parses ndjson, appends deltas directly onto ChatMessage.text (SwiftData is the single source of truth for live streaming text). start/resume/abort
     Audio/
       UI/
         AudioInputOverlay.swift      // covers input bar during recording + transcribing; 7-bar waveform fed by AudioRecorder.level; spinner during AudioService.transcribe
@@ -209,15 +208,16 @@ src/
         GitService.swift             // stateless; status/diff (raw unified text)/log network I/O
     Windows/
       UI/
-        WindowsView.swift            ✅  // top-level screen: theme background + active SessionView + WindowsViewSwitcher pinned at the bottom + top-leading SettingsButton (owns the settings sheet) + DebugOverlay
-        WindowsViewSwitcher.swift    ✅  // bottom-of-screen horizontal scroll of WindowsViewSwitcherPill + a trailing "+" to spawn a new session via WindowActions.addNew
+        WindowsView.swift            ✅  // top-level screen: theme background + active SessionView + WindowsViewSwitcher pinned at the bottom + DebugOverlay
+        WindowsViewSwitcher.swift    ✅  // bottom-of-screen horizontal scroll: leading SettingsPill, WindowsViewSwitcherPill per window, trailing WindowsViewSwitcherAddPill. Owns the settings sheet presentation.
         WindowsViewSwitcherPill.swift ✅  // one pill for a Window/Session pair. tap = activate, long-press = close. Title truncates at maxNameLength (10) with ellipsis
+        WindowsViewSwitcherAddPill.swift ✅  // thin wrapper around IconPillButton (plus symbol); spawns a new session via WindowActions.addNew
       Logic/
         Window.swift                 ✅  // @Model: session: Session? (SwiftData relationship), order: Int, isFocused: Bool. One Window per open pill in the switcher.
         WindowActions.swift          ✅  // stateless mutations on the Window model: ensureOne (called from iOSApp.init), activate, addNew, close. addNew/ensureOne insert a matching Session alongside the Window; close deletes only the Window (Session persists for re-opening from SessionsList). Keeps WindowsViewSwitcher view body logic-free.
     Settings/
       UI/
-        SettingsButton.swift                     ✅  // hamburger icon that opens SettingsView as a sheet
+        SettingsPill.swift                       ✅  // thin wrapper around IconPillButton (gear symbol) that flips the presentation @State bound from WindowsViewSwitcher
         SettingsRow.swift                        ✅  // row primitives: SettingsRow (colored-icon + content) and SettingsToggleRow (row bound to an @AppStorage bool key)
         SettingsView.swift                       ✅  // top-level settings sheet: NavigationStack + List of sections + trailing xmark dismiss
         SettingsViewAbout.swift                  ✅  // version + external links section
@@ -238,6 +238,8 @@ src/
       StorageKey.swift               ✅  // shared @AppStorage key constants (fontSizeStep, debugOverlayEnabled, wrapCodeLines, appTheme)
     Notifications/
       NotificationService.swift      // local notification when a run completes in background
+    UI/
+      IconPillButton.swift           ✅  // shared capsule pill chrome (symbol + action) used by SettingsPill and WindowsViewSwitcherAddPill
     Theme/
       Theme.swift                    ✅  // enum Theme (presets) + nested Palette struct (background/surface/elevated/colorScheme)
       ThemeColor.swift               ✅  // semantic color aliases (blue/cyan/success/danger/etc.) + Color(hex:) initializer
@@ -253,18 +255,9 @@ Regular macOS app exposing an HTTP listener. Handlers map 1:1 to routes. Runner 
 ```
 src/
   Handlers/
-    ChatHandler.swift
-      // every outgoing ndjson event carries a monotonic `seq` per session. RunnerManager keeps a ring buffer
-      // of recent events (live turn + ~60s after exit) and an in-memory record of whether a claude process is
-      // currently alive - the oracle for "still running vs. done", since jsonl only gets the assistant line
-      // once the turn completes.
-      POST /sessions/:id/chat         start()      // spawn `claude -p --session-id <id> --output-format stream-json --verbose --disallowedTools AskUserQuestion ExitPlanMode EnterPlanMode` (or --resume if session exists), pipe prompt+images to stdin, stream ndjson. if a turn is already running for this session, aborts it first.
-        in   {path, prompt, images?: [{data: base64, mediaType: "image/png|jpeg|webp|gif"}]}
-        out  application/x-ndjson  {seq, sessionId, ...}
-      GET  /sessions/:id/chat/resume  resume()     // single reconcile endpoint. takes ?message_id=msg_...&after_seq=N. always returns ndjson.
-                                                   //   process alive → replay ring events > after_seq, then tail live until terminal
-                                                   //   process gone + jsonl has message_id → one synthetic event, state=completed
-                                                   //   process gone + jsonl missing → one synthetic event, state=failed
+    ChatHandler.swift         ✅  // delegates start/resume/abort to RunnerManager.shared
+      POST /sessions/:id/chat         start()      // body {path, prompt, images?, existsOnServer}. Spawns `claude -p --session-id <id>` (or `--resume <id>` when existsOnServer=true), pipes prompt+images to stdin, streams ndjson. If a turn is already running for this session, aborts it first.
+      GET  /sessions/:id/chat/resume  resume()     // ?after_seq=N. Replays ring events > N then tails live. 404 if no runner exists.
       POST /sessions/:id/chat/abort   abort()      // SIGINT the running claude process; emits a final `aborted` event on the stream
     FilesHandler.swift        ✅
       GET  /sessions/:id/files?path=…                       list()    // directory listing → {path, entries:[{name,path,isDirectory,size?,modifiedAt?,mimeType?}]}
@@ -286,9 +279,9 @@ src/
       POST /audio    transcribe()          // audio blob in, transcribed text out
     PingHandler.swift         ✅  // GET /ping, returns {"ok": true} for reachability checks
   Networking/
-    HTTPRequest.swift         ✅  // parsed request: method, path, query, headers (lowercased keys), body
-    HTTPResponse.swift        ✅  // status + body + content-type; .json(status:object:) helper; serializes to raw HTTP/1.1 bytes
-    HTTPServer.swift          ✅  // NWListener on port 8765; reads headers+body (1MB cap), routes through Router
+    HTTPRequest.swift         ✅  // parsed request: method, path, query (parsed at request-parse time), headers (lowercased keys), body
+    HTTPResponse.swift        ✅  // status + Body enum (.buffered(Data) | .streamed((NWConnection) -> Void)) + content-type; .json / .text / .stream factory helpers
+    HTTPServer.swift          ✅  // NWListener on port 8765; reads headers+body (1MB cap), routes through Router; switches on response.body to pick buffered send vs header-then-streamer
   Routing/
     Router.swift              ✅  // dispatches (method, path) to handler; 401 when AuthMiddleware rejects
     AuthMiddleware.swift      ✅  // Bearer token check against DaemonAuth.token with constant-time compare
@@ -297,7 +290,9 @@ src/
   UI/
     macOSDaemonApp.swift      ✅  // @main MenuBarExtra app; starts HTTPServer and warms DaemonAuth.token at init
     ContentView.swift         ✅  // menubar popover contents
-  RunnerManager.swift       // map<sessionId, {process, ring buffer, status}>
+  RunnerManager.swift       ✅  // serial-queue actor around map<sessionId, Runner>. start spawns/replaces, resume attaches a subscriber, abort SIGINTs.
+  Runner.swift              ✅  // one claude child process + ring buffer + NWConnection subscribers. Prunes dead subscribers via stateUpdateHandler. Batches replay into a single send on subscribe.
+  ImageDropbox.swift        ✅  // persists incoming base64 images to a per-call FileManager.default.temporaryDirectory subfolder and rewrites the prompt to reference absolute paths
 ```
 
 ## Agent Rules

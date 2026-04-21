@@ -5,7 +5,7 @@ enum FilesHandler {
     private static let iso8601 = ISO8601DateFormatter()
 
     static func list(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
-        if let path = queryParam("path", from: request) {
+        if let path = request.query["path"] {
             let url = resolved(path)
             if let contents = try? FileManager.default.contentsOfDirectory(
                 at: url,
@@ -26,13 +26,13 @@ enum FilesHandler {
     }
 
     static func read(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
-        if let path = queryParam("path", from: request) {
+        if let path = request.query["path"] {
             let url = resolved(path)
+            let mime = mimeType(for: url)
+            if let range = request.headers["range"] {
+                return partial(url: url, range: range, contentType: mime)
+            }
             if let data = try? Data(contentsOf: url) {
-                let mime = mimeType(for: url)
-                if let range = request.headers["range"] {
-                    return partial(data, range: range, contentType: mime)
-                }
                 return HTTPResponse(status: 200, body: data, contentType: mime)
             }
             return HTTPResponse.json(404, ["error": "not_found"])
@@ -41,8 +41,8 @@ enum FilesHandler {
     }
 
     static func search(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
-        if let root = queryParam("path", from: request),
-            let needle = queryParam("query", from: request), !needle.isEmpty
+        if let root = request.query["path"],
+            let needle = request.query["query"], !needle.isEmpty
         {
             let rootURL = URL(fileURLWithPath: root).standardizedFileURL
             let enumerator = FileManager.default.enumerator(
@@ -69,11 +69,6 @@ enum FilesHandler {
             return HTTPResponse.json(200, ["entries": hits])
         }
         return HTTPResponse.json(400, ["error": "missing_params"])
-    }
-
-    private static func queryParam(_ name: String, from request: HTTPRequest) -> String? {
-        let (_, query) = RouteMatcher.split(request.path)
-        return query[name]
     }
 
     private static func resolved(_ path: String) -> URL {
@@ -103,24 +98,27 @@ enum FilesHandler {
         return "application/octet-stream"
     }
 
-    private static func partial(_ data: Data, range: String, contentType: String) -> HTTPResponse {
-        if let eq = range.firstIndex(of: "="),
+    private static func partial(url: URL, range: String, contentType: String) -> HTTPResponse {
+        if let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize,
+            let eq = range.firstIndex(of: "="),
             case let spec = range[range.index(after: eq)...],
             let dash = spec.firstIndex(of: "-")
         {
             let startStr = String(spec[..<dash])
             let endStr = String(spec[spec.index(after: dash)...])
             if let start = Int(startStr) {
-                let end = Int(endStr) ?? (data.count - 1)
-                let clampedEnd = min(end, data.count - 1)
-                if start <= clampedEnd {
-                    let slice = data.subdata(in: start..<(clampedEnd + 1))
+                let end = Int(endStr) ?? (size - 1)
+                let clampedEnd = min(end, size - 1)
+                if start <= clampedEnd, let handle = try? FileHandle(forReadingFrom: url) {
+                    try? handle.seek(toOffset: UInt64(start))
+                    let slice = (try? handle.read(upToCount: clampedEnd - start + 1)) ?? Data()
+                    try? handle.close()
                     return HTTPResponse(
                         status: 206,
                         body: slice,
                         contentType: contentType,
                         extraHeaders: [
-                            "Content-Range": "bytes \(start)-\(clampedEnd)/\(data.count)",
+                            "Content-Range": "bytes \(start)-\(clampedEnd)/\(size)",
                             "Accept-Ranges": "bytes",
                         ]
                     )

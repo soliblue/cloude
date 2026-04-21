@@ -12,6 +12,8 @@ final class Session {
     var lastOpenedAt: Date
     var title: String
     var symbol: String
+    var existsOnServer: Bool = false
+    var tabRaw: String = SessionTab.chat.rawValue
     @Transient var skills: [Skill]? = nil
     @Transient var agents: [Agent]? = nil
 
@@ -28,5 +30,10 @@ final class Session {
         self.lastOpenedAt = .now
         self.title = title
         self.symbol = symbol
+    }
+
+    var tab: SessionTab {
+        get { SessionTab(rawValue: tabRaw) ?? .chat }
+        set { tabRaw = newValue.rawValue }
     }
 }

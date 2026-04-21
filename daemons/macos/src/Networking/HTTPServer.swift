@@ -10,7 +10,7 @@ final class HTTPServer {
             self.listener = listener
             listener.newConnectionHandler = { connection in
                 connection.start(queue: .global())
-                Self.receive(on: connection, accumulated: Data())
+                Self.readHead(on: connection, accumulated: Data())
             }
             listener.start(queue: .global())
             NSLog("HTTPServer: listening on port \(Self.port)")
@@ -21,16 +21,14 @@ final class HTTPServer {
 
     private static let maxRequestBytes = 1_048_576
 
-    private static func receive(on connection: NWConnection, accumulated: Data) {
+    private static func readHead(on connection: NWConnection, accumulated: Data) {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { data, _, isComplete, error in
             var buffer = accumulated
             if let data { buffer.append(data) }
 
-            if let request = HTTPRequest.parse(buffer) {
-                let response = Router.handle(request)
-                connection.send(content: response.serialize(), completion: .contentProcessed { _ in
-                    connection.cancel()
-                })
+            if let head = HTTPRequest.parseHead(buffer) {
+                let bodySoFar = buffer.subdata(in: head.headerEnd..<buffer.count)
+                readBody(on: connection, head: head, body: bodySoFar)
                 return
             }
 
@@ -38,7 +36,37 @@ final class HTTPServer {
                 connection.cancel()
                 return
             }
-            receive(on: connection, accumulated: buffer)
+            readHead(on: connection, accumulated: buffer)
+        }
+    }
+
+    private static func readBody(on connection: NWConnection, head: HTTPRequest.ParsedHead, body: Data) {
+        if body.count >= head.contentLength {
+            dispatch(on: connection, request: HTTPRequest(head: head, body: body))
+            return
+        }
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { data, _, isComplete, error in
+            var next = body
+            if let data { next.append(data) }
+            if next.count > maxRequestBytes || isComplete || error != nil {
+                connection.cancel()
+                return
+            }
+            readBody(on: connection, head: head, body: next)
+        }
+    }
+
+    private static func dispatch(on connection: NWConnection, request: HTTPRequest) {
+        let response = Router.handle(request)
+        switch response.body {
+        case .streamed(let streamer):
+            connection.send(
+                content: response.serializeHeaders(),
+                completion: .contentProcessed { _ in streamer(connection) })
+        case .buffered:
+            connection.send(
+                content: response.serialize(),
+                completion: .contentProcessed { _ in connection.cancel() })
         }
     }
 }

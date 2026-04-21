@@ -1,18 +1,9 @@
-# Visual Capture
+# Visual capture
 
-Use visual capture when logs alone are not enough to prove the result, especially for:
+Use sparingly. Logs are authoritative; screenshots confirm layout or visual regressions.
 
-- streaming behavior
-- animation or transition fixes
-- whiteboard flows
-- layout or rendering regressions
-- final feature proof for interaction-heavy work
+```
+./scripts/capture-simulator-screenshot.sh [UDID] [OUT_DIR]
+```
 
-Artifacts may include:
-
-- screenshot path
-- screen recording path
-- final frame note
-
-When a round document exists, include artifact paths there.
-When a memory document exists, mention only the highest-signal artifact.
+Writes `simulator-YYYYMMDD-HHMMSS.png` under `tester/output/` and prints the path.

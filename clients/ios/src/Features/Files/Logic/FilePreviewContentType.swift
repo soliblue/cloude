@@ -36,12 +36,20 @@ enum FilePreviewContentType {
         case .html: return "xml"
         case .xml: return "xml"
         case .csv: return "plaintext"
+        case .code(let language): return language
         default: return "plaintext"
         }
     }
 
     static func detect(for node: FileNodeDTO) -> FilePreviewContentType {
-        let ext = URL(fileURLWithPath: node.name).pathExtension.lowercased()
+        detect(ext: URL(fileURLWithPath: node.name).pathExtension.lowercased(), mimeType: node.mimeType)
+    }
+
+    static func detect(path: String) -> FilePreviewContentType {
+        detect(ext: (path as NSString).pathExtension.lowercased(), mimeType: nil)
+    }
+
+    private static func detect(ext: String, mimeType: String?) -> FilePreviewContentType {
         switch ext {
         case "gif": return .gif
         case "png", "jpg", "jpeg", "webp", "heic", "heif", "bmp", "tiff", "svg":
@@ -81,7 +89,7 @@ enum FilePreviewContentType {
         case "dockerfile": return .code(language: "dockerfile")
         case "txt", "log", "rtf", "": return .text
         default:
-            if (node.mimeType ?? "").hasPrefix("text/") { return .text }
+            if (mimeType ?? "").hasPrefix("text/") { return .text }
             return .binary
         }
     }

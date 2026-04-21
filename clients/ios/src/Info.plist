@@ -8,6 +8,17 @@
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>soli.Cloude</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>cloude</string>
+			</array>
+		</dict>
+	</array>
 <key>NSMicrophoneUsageDescription</key>
 	<string>Cloude uses the microphone for voice-to-text input</string>
 	<key>NSPhotoLibraryUsageDescription</key>

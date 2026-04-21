@@ -11,6 +11,7 @@ enum ThemeTokens {
         static let s: CGFloat = 14
         static let m: CGFloat = 17
         static let l: CGFloat = 19
+        static let xl: CGFloat = 26
     }
 
     enum Spacing {

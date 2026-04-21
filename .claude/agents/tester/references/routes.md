@@ -1,11 +1,32 @@
-# Routes
+# Deep link routes (v2)
 
-## Verified Routes
+Scheme: `cloude://`
 
-- Chat: `cloude://send?text=...`, `cloude://conversation/new`, `cloude://conversation/duplicate`, `cloude://conversation/refresh`
-- Conversation config: `cloude://conversation/model?value=...`, `cloude://conversation/effort?value=...`, `cloude://conversation/environment?id=...`
-- Windows: `cloude://window?index=...`, `cloude://window/new?tab=chat|files|gitChanges`, `cloude://window/edit`, `cloude://window/close`
-- Tabs and surfaces: `cloude://tab?tab=chat|files|gitChanges`, `cloude://settings`, `cloude://memory`, `cloude://memories`, `cloude://plans`, `cloude://whiteboard`, `cloude://usage`, `cloude://search`
-- Files and git: `cloude://file/...`, `cloude://files?path=...`, `cloude://git?path=...`, `cloude://git/diff?path=...&file=...&staged=true|false`
-- Runtime: `cloude://run/stop`
-- Environment: `cloude://environment/select?id=...`, `cloude://environment/connect?id=...`, `cloude://environment/disconnect?id=...`
+## Windows
+| route | action |
+|---|---|
+| `cloude://window/new` | spawn new window (adds session, focuses it) |
+| `cloude://window/close` | close focused window |
+| `cloude://window/activate?index=N` | activate Nth window (0-based, ordered by `order`) |
+
+## Focused session
+| route | action |
+|---|---|
+| `cloude://session/endpoint?id=<uuid>` | assign endpoint to focused session |
+| `cloude://session/path?value=<abs-path>` | set cwd on focused session |
+| `cloude://session/tab?value=chat\|files\|git` | switch SessionView tab |
+
+## Chat (focused session)
+| route | action |
+|---|---|
+| `cloude://chat/send?text=<urlencoded>` | adds user message, starts stream |
+| `cloude://chat/abort` | sends abort to daemon |
+
+## App surfaces
+| route | action |
+|---|---|
+| `cloude://settings` | present SettingsView sheet over active window |
+| `cloude://screenshot` | broadcast capture notification |
+
+## Dev endpoint
+Seeded on launch when `CLOUDE_DEV_ENDPOINT_HOST/PORT/TOKEN` are set. Default id is `c10de51d-5151-4551-8551-0000000c10de` (constant from `EndpointActions.seedDev`); override via `CLOUDE_DEV_ENV_ID`.

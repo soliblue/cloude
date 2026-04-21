@@ -12,9 +12,9 @@ struct SessionViewTabs: View {
                 } label: {
                     HStack(spacing: ThemeTokens.Spacing.xs) {
                         Image(systemName: tab.symbol)
-                            .appFont(size: ThemeTokens.Icon.s)
+                            .appFont(size: ThemeTokens.Icon.m)
                         Text(tab.label)
-                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                            .appFont(size: ThemeTokens.Text.l, weight: .medium)
                     }
                     .padding(.horizontal, ThemeTokens.Spacing.m)
                     .padding(.vertical, ThemeTokens.Spacing.s)
