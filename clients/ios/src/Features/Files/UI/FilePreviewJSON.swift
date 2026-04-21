@@ -1,0 +1,22 @@
+import SwiftUI
+
+struct FilePreviewJSON: View {
+    let data: Data
+
+    var body: some View {
+        ScrollView([.vertical, .horizontal]) {
+            if let object = try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed]) {
+                FilePreviewJSONRow(key: nil, value: object)
+                    .padding(ThemeTokens.Spacing.m)
+                    .frame(minWidth: 0, alignment: .leading)
+            } else if let text = String(data: data, encoding: .utf8) {
+                Text(text)
+                    .appFont(size: ThemeTokens.Text.m, design: .monospaced)
+                    .padding(ThemeTokens.Spacing.m)
+                    .textSelection(.enabled)
+            }
+        }
+        .scrollIndicators(.hidden)
+        .defaultScrollAnchor(.topLeading)
+    }
+}

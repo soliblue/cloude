@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C2HL000000000000007FD3E4 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C2HL000000000000017FD3E4 /* HighlightSwift */; };
+		C2MD000000000000007FD3E4 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2MD000000000000017FD3E4 /* MarkdownUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C2B3BBA02F2619AE007FD3E4 /* Cloude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cloude.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cloude Agent.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -37,6 +42,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2HL000000000000007FD3E4 /* HighlightSwift in Frameworks */,
+				C2MD000000000000007FD3E4 /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,6 +94,10 @@
 				C2B3BBA22F2619AE007FD3E4 /* src */,
 			);
 			name = Cloude;
+			packageProductDependencies = (
+				C2HL000000000000017FD3E4 /* HighlightSwift */,
+				C2MD000000000000017FD3E4 /* MarkdownUI */,
+			);
 			productName = Cloude;
 			productReference = C2B3BBA02F2619AE007FD3E4 /* Cloude.app */;
 			productType = "com.apple.product-type.application";
@@ -118,6 +129,10 @@
 			);
 			mainGroup = C2B3BB972F2619AE007FD3E4;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C2HL000000000000027FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
+				C2MD000000000000027FD3E4 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C2B3BBA12F2619AE007FD3E4 /* Products */;
 			projectDirPath = "";
@@ -374,6 +389,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C2HL000000000000027FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/appstefan/HighlightSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+		C2MD000000000000027FD3E4 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C2HL000000000000017FD3E4 /* HighlightSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2HL000000000000027FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */;
+			productName = HighlightSwift;
+		};
+		C2MD000000000000017FD3E4 /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2MD000000000000027FD3E4 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C2B3BB982F2619AE007FD3E4 /* Project object */;
 }

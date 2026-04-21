@@ -70,8 +70,8 @@ struct EndpointsCarouselCardForm: View {
         .padding(.horizontal, ThemeTokens.Spacing.m)
         .background(theme.palette.surface)
         .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
-        .onDisappear {
-            EndpointActions.saveAuthKey(for: endpoint, authKey)
+        .onChange(of: authKey) { _, value in
+            EndpointActions.saveAuthKey(for: endpoint, value)
         }
     }
 }

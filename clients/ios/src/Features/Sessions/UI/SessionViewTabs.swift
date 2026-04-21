@@ -26,5 +26,6 @@ struct SessionViewTabs: View {
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.s)
+        .frame(height: ThemeTokens.Size.l)
     }
 }

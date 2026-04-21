@@ -124,17 +124,19 @@ src/
       Logic/
         Endpoint.swift                 ✅  // @Model: id, host, port, symbolName, createdAt; @Transient status. authKey NOT on the model, lives in Keychain under id.uuidString
         EndpointStatus.swift           ✅  // enum: .unknown | .checking | .reachable | .unreachable; exposes a semantic color
-        EndpointService.swift          ✅  // stateless; GET /ping with Bearer authKey, mutates endpoint.status directly
+        EndpointService.swift          ✅  // stateless; GET /ping via HTTPClient (auth resolved from Keychain), mutates endpoint.status directly
         EndpointActions.swift          ✅  // stateless mutations on the Endpoint model: add, remove (deletes Keychain entry + the model), saveAuthKey (no-op if the endpoint was deleted), seedDev (DEBUG-only env-var dev-endpoint seed, called from iOSApp.init)
         EndpointsSymbolCatalog.swift   ✅  // static list of SF Symbol names grouped by category, consumed by EndpointsSymbolPicker
     Sessions/
       UI/
-        SessionView.swift            ✅  // owns its top bar (SessionViewTabs) and body. Takes a Session directly. Currently a "coming soon" placeholder; real tab bodies land later. Owns @State activeTab.
+        SessionView.swift            ✅  // owns its top bar (SessionViewTabs) and body. Takes a Session directly. Shows SessionEmptyView when endpoint or path is missing; otherwise renders the (placeholder) tabbed body. Owns @State activeTab.
         SessionViewTabs.swift        ✅  // 3-tab pill switcher (chat | files | git); rendered inside SessionView's top bar. Bound to SessionView's activeTab.
+        SessionEmptyView.swift       ✅  // setup screen shown when a session has no endpoint/path. Lists endpoints via @Query; tap assigns endpoint via SessionActions and opens SessionEmptyViewFolderSheet.
+        SessionEmptyViewFolderSheet.swift ✅  // sheet presented from SessionEmptyView; wraps FolderPickerView in a NavigationStack, top-leading xmark dismisses, onPick writes path via SessionActions and dismisses.
       Logic/
         Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"); @Transient skills?, agents? (fetched on demand). path == nil is the empty-state signal.
         SessionTab.swift             ✅  // enum: chat | files | git; each case has label + SF symbol
-        SessionActions.swift         ✅  // stateless mutations on the Session model: add (inserts a Session with defaults and returns it). Owns session-creation logic so callers like WindowActions don't.
+        SessionActions.swift         ✅  // stateless mutations on the Session model: add (inserts a Session), setEndpoint, setPath. Owns session-mutation surface so other features don't write Session fields directly.
         Skill.swift                  ✅  // name, description. available in session's cwd; read by ChatInputBarAutocompletePicker via "/"
         Agent.swift                  ✅  // name, description. available in session; read by ChatInputBarAutocompletePicker via "@"
         // SessionService.swift — land when SessionHandler exists on the daemon
@@ -167,22 +169,44 @@ src/
         AudioService.swift           // stateless; POST /audio → String
     Files/
       UI/
-        FilesView.swift              // files tab: tree browser scoped to the session's path
-        FileViewerSheet.swift        // single-file viewer. dispatches by MIME: .json → pretty tree; code → syntax-highlighted chunked viewer; .md → rendered markdown; images → AsyncImage; video/audio → AVPlayer (daemon honors Range); fallback → plain text
+        FileTreeView.swift           ✅  // files tab: VSCode-style expanding tree rooted at session.path. Holds a FileTreeStore and presents FilePreviewSheet on tap.
+        FileTreeViewRow.swift        ✅  // one row in the tree; tap on a directory toggles expansion (lazy-loads children via FilesService), tap on a file sets store.previewNode. Recursively renders children when expanded.
+        FolderPickerView.swift       ✅  // reusable drill-navigable folder list. Takes session, endpoint, path, title, optional onPick. Rows NavigationLink into nested FolderPickerView; when onPick is set, a trailing checkmark toolbar button fires it with the current path. Used by SessionEmptyViewFolderSheet today; FilesView will consume it later.
+        FilePreviewSheet.swift       ✅  // single-file preview shell. Owns data load, source/rendered toggle for markup types, and code-wrap toggle; delegates rendering to FilePreviewSheetContent. KNOWN ISSUE: toggling source/rendered feels janky - likely because the sheet re-renders the entire Group on every toggle; investigate a cross-fade or keep both views mounted.
+        FilePreviewSheetContent.swift ✅  // dispatcher: switches on FilePreviewContentType and renders the matching FilePreview<Type> view.
+        FilePreviewImage.swift       ✅  // zoomable image renderer.
+        FilePreviewGIF.swift         ✅  // animated GIF via UIImageView/UIViewRepresentable.
+        FilePreviewVideo.swift       ✅  // AVPlayer-backed video; writes data to a temp file, cleans up onDisappear.
+        FilePreviewAudio.swift       ✅  // AVPlayer-backed audio with transport controls.
+        FilePreviewPDF.swift         ✅  // PDFKit-backed PDF viewer.
+        FilePreviewMarkdown.swift    ✅  // MarkdownUI-rendered markdown body.
+        FilePreviewJSON.swift        ✅  // pretty tree view of JSON (root).
+        FilePreviewJSONRow.swift     ✅  // recursive row for one key/value in the JSON tree.
+        FilePreviewCSV.swift         ✅  // scrollable grid; defaultScrollAnchor .topLeading.
+        FilePreviewHTML.swift        ✅  // WKWebView-backed HTML renderer.
+        FilePreviewXML.swift         ✅  // XML tree, delegates each node to FilePreviewXMLRow.
+        FilePreviewXMLRow.swift      ✅  // recursive row for one XML node (attributes + children + text).
+        FilePreviewCode.swift        ✅  // HighlightSwift CodeText; language-aware syntax highlighting with optional line wrap.
+        FilePreviewBinary.swift     ✅  // fallback placeholder for unrecognized binary files.
       Logic/
-        FileNode.swift               // sessionId, path, name, isDirectory, children?
-        FilesStore.swift             // @Published tree per session; persisted to disk per session. pure state.
-        FilesService.swift           // stateless; list/read/search network I/O
+        FileNodeDTO.swift            ✅  // Decodable wire structs: FileNodeDTO, FileListingDTO, FileSearchDTO. Mirror daemon responses 1:1
+        FilePreviewContentType.swift ✅  // enum of preview content types + extension-based detect(for:) + hasRenderedView/isCode/sourceLanguage helpers.
+        FilePreviewXMLNode.swift     ✅  // XML parser: recursive tree built from Foundation's XMLParser.
+        FileTreeStore.swift          ✅  // @Observable: children dict, expanded set, loading set, previewNode, rootPath. Shared by FileTreeView and FileTreeViewRow.
+        FilesService.swift           ✅  // stateless; list/read (HTTP Range)/search network I/O. URL built from endpoint host+port, session.id goes in path
     Git/
       UI/
         GitView.swift                // git tab: branch header, ahead/behind counts, list of changes; tap for diff
         GitDiffSheet.swift           // unified diff for one file (staged or unstaged); presented as a sheet from GitView
       Logic/
-        GitChange.swift              // path, changeType (added/modified/deleted/renamed/untracked), staged
-        GitStatus.swift              // sessionId, branch, ahead, behind, [GitChange]
-        GitCommit.swift              // sha, author, date, subject
-        GitStore.swift               // @Published status per session; persisted to disk per session. pure state.
-        GitService.swift             // stateless; status/diff/log network I/O
+        GitChangeType.swift          // enum: added/modified/deleted/renamed/copied/untracked/ignored/conflicted. Codable (String rawValue) for SwiftData + DTO decoding
+        GitChange.swift              // @Model: path, type: GitChangeType, isStaged, additions?, deletions?, status: GitStatus? (inverse)
+        GitStatus.swift              // @Model: session: Session? (one per session, upserted), branch, ahead, behind, updatedAt, changes via @Relationship(deleteRule: .cascade)
+        GitCommit.swift              // @Model: session: Session?, sha, author, date, subject
+        GitStatusDTO.swift           // Decodable wire structs: GitChangeDTO, GitStatusDTO
+        GitCommitDTO.swift           // Decodable wire structs: GitCommitDTO, GitLogDTO
+        GitActions.swift             // stateless mutations: upsertStatus (one GitStatus per session), replaceLog, clear
+        GitService.swift             // stateless; status/diff (raw unified text)/log network I/O
     Windows/
       UI/
         WindowsView.swift            ✅  // top-level screen: theme background + active SessionView + WindowsViewSwitcher pinned at the bottom + top-leading SettingsButton (owns the settings sheet) + DebugOverlay
@@ -207,7 +231,7 @@ src/
       DebugOverlay.swift             ✅  // top-trailing pill showing FPS when @AppStorage("debugOverlayEnabled") is true
       DebugFPSCounter.swift          ✅  // ObservableObject driven by CADisplayLink; @Published fps recomputed every second
     Networking/
-      HTTPClient.swift               ✅  // stateless GET/POST with Bearer auth; returns (Data, HTTPURLResponse)? (nil on transport error)
+      HTTPClient.swift               ✅  // stateless GET/download; every request takes an Endpoint and the client builds the URL, resolves the bearer token from SecureStorage via endpoint.id, and returns (Data, HTTPURLResponse)? (nil on transport error). No caller ever passes authKey.
       StreamingClient.swift          // ndjson reader with resume-on-disconnect via after_seq
     Storage/
       SecureStorage.swift            ✅  // Keychain wrapper: get/set/delete keyed by account string (scoped to service "soli.Cloude.environments"); used for per-endpoint auth tokens
@@ -242,14 +266,14 @@ src/
                                                    //   process gone + jsonl has message_id → one synthetic event, state=completed
                                                    //   process gone + jsonl missing → one synthetic event, state=failed
       POST /sessions/:id/chat/abort   abort()      // SIGINT the running claude process; emits a final `aborted` event on the stream
-    FilesHandler.swift
-      GET  /sessions/:id/files         list()       // list directory under the session path
-      GET  /sessions/:id/files/:path   read()       // read a file (chunked for large files)
-      GET  /sessions/:id/files/search  search()     // filename search under the session path
+    FilesHandler.swift        ✅
+      GET  /sessions/:id/files?path=…                       list()    // directory listing → {path, entries:[{name,path,isDirectory,size?,modifiedAt?,mimeType?}]}
+      GET  /sessions/:id/files/read?path=…                  read()    // raw bytes, detected Content-Type, honors Range → 206 Partial Content
+      GET  /sessions/:id/files/search?path=…&query=…        search()  // native FileManager enumeration, depth≤5, skips .git/node_modules, caps 100 hits → {entries:[…]}
     GitHandler.swift
-      GET  /sessions/:id/git/status   status()     // branch, ahead/behind, file statuses
-      GET  /sessions/:id/git/diff     diff()       // staged or unstaged diff for a file or whole repo
-      GET  /sessions/:id/git/log      log()        // recent commits
+      GET  /sessions/:id/git/status?path=…                  status()  // {branch, ahead, behind, changes:[{path,type,isStaged,additions?,deletions?}]}. Shells out to git; private runText() helper inside the handler
+      GET  /sessions/:id/git/diff?path=…&file=…&staged=…    diff()    // raw unified diff, text/plain
+      GET  /sessions/:id/git/log?path=…&count=…             log()     // {commits:[{sha,subject,author,date}]}
     SessionHandler.swift
       POST /sessions/:id/title     generateTitleAndSymbol()  // one-shot `claude -p --model sonnet --output-format json` with meta prompt over user's first prompt
         in   {prompt}
@@ -268,6 +292,7 @@ src/
   Routing/
     Router.swift              ✅  // dispatches (method, path) to handler; 401 when AuthMiddleware rejects
     AuthMiddleware.swift      ✅  // Bearer token check against DaemonAuth.token with constant-time compare
+    RouteMatcher.swift        ✅  // splits rawPath into (path, query) and matches path against `/sessions/:id/…` patterns, returning captured params
     DaemonAuth.swift          ✅  // lazy static token stored in Keychain under "soli.Cloude.agent/authToken"; generated on first read
   UI/
     macOSDaemonApp.swift      ✅  // @main MenuBarExtra app; starts HTTPServer and warms DaemonAuth.token at init

@@ -8,7 +8,11 @@ struct IOSApp: App {
     let container: ModelContainer
 
     init() {
-        container = try! ModelContainer(for: Endpoint.self, Session.self, Window.self)
+        container = try! ModelContainer(
+            for: Endpoint.self,
+            Session.self,
+            Window.self
+        )
         EndpointActions.seedDev(context: container.mainContext)
         WindowActions.ensureOne(context: container.mainContext)
     }

@@ -58,7 +58,7 @@ struct EndpointsCarouselCardHeader: View {
             }
 
             Button {
-                Task { await EndpointService.ping(endpoint: endpoint, authKey: authKey) }
+                Task { await EndpointService.ping(endpoint: endpoint) }
             } label: {
                 Image(systemName: "power")
                     .appFont(size: ThemeTokens.Icon.m, weight: .medium)

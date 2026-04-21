@@ -8,4 +8,14 @@ enum SessionActions {
         context.insert(session)
         return session
     }
+
+    @MainActor
+    static func setEndpoint(_ endpoint: Endpoint, for session: Session) {
+        session.endpoint = endpoint
+    }
+
+    @MainActor
+    static func setPath(_ path: String, for session: Session) {
+        session.path = path
+    }
 }
