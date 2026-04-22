@@ -4,6 +4,10 @@ private struct ThemeKey: EnvironmentKey {
     static let defaultValue: Theme = .majorelle
 }
 
+private struct AppAccentKey: EnvironmentKey {
+    static let defaultValue: AppAccent = .clay
+}
+
 private struct FontStepKey: EnvironmentKey {
     static let defaultValue: CGFloat = 0
 }
@@ -12,6 +16,11 @@ extension EnvironmentValues {
     var theme: Theme {
         get { self[ThemeKey.self] }
         set { self[ThemeKey.self] = newValue }
+    }
+
+    var appAccent: AppAccent {
+        get { self[AppAccentKey.self] }
+        set { self[AppAccentKey.self] = newValue }
     }
 
     var fontStep: CGFloat {

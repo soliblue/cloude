@@ -1,40 +1,58 @@
 import SwiftUI
+import UIKit
 
 struct ChatViewMessageListRow: View {
+    let session: Session
     let message: ChatMessage
-    @Environment(\.theme) private var theme
+    @Environment(\.filePreviewPresenter) private var presenter
+    @State private var isSelectTextPresented = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: ThemeTokens.Spacing.s) {
-            if message.role == .user { Spacer(minLength: ThemeTokens.Size.m) }
-            VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
-                if !message.imagesData.isEmpty {
-                    ChatViewMessageListRowAttachmentList(images: message.imagesData)
+        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
+            if !message.imagesData.isEmpty {
+                ChatViewMessageListRowAttachmentList(images: message.imagesData)
+            }
+            content
+            if message.state == .failed {
+                Text("Failed")
+                    .appFont(size: ThemeTokens.Text.s)
+                    .foregroundColor(ThemeColor.danger)
+            }
+        }
+        .contextMenu {
+            if !message.text.isEmpty {
+                Button {
+                    UIPasteboard.general.string = message.text
+                } label: {
+                    Label("Copy", systemImage: "doc.on.doc")
                 }
-                content
-                if !message.orderedToolCalls.isEmpty {
-                    ChatViewMessageListRowToolPillList(toolCalls: message.orderedToolCalls)
-                }
-                if message.state == .failed {
-                    Text("Failed")
-                        .appFont(size: ThemeTokens.Text.s)
-                        .foregroundColor(ThemeColor.danger)
+                Button {
+                    isSelectTextPresented = true
+                } label: {
+                    Label("Select Text", systemImage: "text.cursor")
                 }
             }
-            .padding(.horizontal, ThemeTokens.Spacing.m)
-            .padding(.vertical, ThemeTokens.Spacing.s)
-            .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
-            if message.role == .assistant { Spacer(minLength: ThemeTokens.Size.m) }
         }
+        .sheet(isPresented: $isSelectTextPresented) {
+            ChatViewMessageListRowSelectTextSheet(text: message.text)
+        }
+        .environment(
+            \.openURL,
+            OpenURLAction { url in
+                if let path = CloudeFileURL.path(from: url) {
+                    presenter.open(session: session, path: path)
+                    return .handled
+                }
+                return .systemAction
+            })
     }
 
     @ViewBuilder private var content: some View {
-        if message.text.isEmpty && message.state == .streaming && message.orderedToolCalls.isEmpty {
-            ProgressView().controlSize(.small)
+        if message.state == .streaming {
+            streaming
         } else if !message.text.isEmpty {
-            if message.role == .assistant && message.state != .streaming {
-                ChatViewMessageListRowMarkdown(text: message.text)
+            if message.role == .assistant {
+                ChatViewMessageListRowMarkdown(text: message.text).equatable()
             } else {
                 Text(message.text)
                     .appFont(size: ThemeTokens.Text.m)
@@ -43,7 +61,12 @@ struct ChatViewMessageListRow: View {
         }
     }
 
-    private var background: Color {
-        message.role == .user ? theme.palette.elevated : theme.palette.surface
+    @ViewBuilder private var streaming: some View {
+        let snapshot = ChatLiveStream.snapshot(for: message.sessionId)
+        if snapshot.text.isEmpty && message.orderedToolCalls.isEmpty {
+            ProgressView().controlSize(.small)
+        } else if !snapshot.text.isEmpty {
+            ChatViewMessageListRowStreamingMarkdown(text: snapshot.text)
+        }
     }
 }

@@ -9,7 +9,7 @@ enum SessionTab: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .chat: return "Chat"
         case .files: return "Files"
-        case .git: return "Git"
+        case .git: return ""
         }
     }
 
@@ -17,7 +17,7 @@ enum SessionTab: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .chat: return "bubble.left.and.bubble.right.fill"
         case .files: return "folder.fill"
-        case .git: return "arrow.triangle.branch"
+        case .git: return "plus.forwardslash.minus"
         }
     }
 }

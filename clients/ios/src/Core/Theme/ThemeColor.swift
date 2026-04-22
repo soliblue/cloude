@@ -1,19 +1,19 @@
 import SwiftUI
 
 enum ThemeColor {
-    static let blue = Color.blue
+    static let blue = Color(hex: 0x6E9BF0)
     static let green = Color.green
     static let red = Color.red
-    static let purple = Color.purple
-    static let orange = Color.orange
-    static let cyan = Color.cyan
-    static let pink = Color.pink
-    static let yellow = Color.yellow
-    static let teal = Color.teal
-    static let indigo = Color.indigo
-    static let mint = Color.mint
-    static let brown = Color.brown
-    static let gray = Color.gray
+    static let purple = Color(hex: 0xB98AEF)
+    static let orange = Color(hex: 0xDB9A6A)
+    static let cyan = Color(hex: 0x78CCE1)
+    static let pink = Color(hex: 0xDE97BE)
+    static let yellow = Color(hex: 0xD2BF72)
+    static let teal = Color(hex: 0x71C4B4)
+    static let indigo = Color(hex: 0x98A3F1)
+    static let mint = Color(hex: 0x93D4B6)
+    static let brown = Color(hex: 0xB89073)
+    static let gray = Color(hex: 0x828CA0)
 
     static let rust = Color(hex: 0xDE7630)
     static let success = Color(hex: 0x7AB87A)

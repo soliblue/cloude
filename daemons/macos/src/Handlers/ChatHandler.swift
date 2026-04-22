@@ -10,10 +10,13 @@ enum ChatHandler {
         {
             let images = (body["images"] as? [[String: String]]) ?? []
             let existsOnServer = (body["existsOnServer"] as? Bool) ?? false
+            let model = body["model"] as? String
+            let effort = body["effort"] as? String
             return HTTPResponse.stream { connection in
                 RunnerManager.shared.start(
                     sessionId: sessionId, path: path, prompt: prompt, images: images,
-                    existsOnServer: existsOnServer, connection: connection
+                    existsOnServer: existsOnServer, model: model, effort: effort,
+                    connection: connection
                 )
             }
         }
@@ -22,14 +25,18 @@ enum ChatHandler {
 
     static func resume(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let sessionId = params["id"] {
-            if !RunnerManager.shared.hasRunner(sessionId: sessionId) {
-                return HTTPResponse.json(404, ["error": "no_session"])
+            if RunnerManager.shared.hasRunner(sessionId: sessionId) {
+                let afterSeq = Int(request.query["after_seq"] ?? "") ?? -1
+                return HTTPResponse.stream { connection in
+                    RunnerManager.shared.resume(
+                        sessionId: sessionId, afterSeq: afterSeq, connection: connection
+                    )
+                }
             }
-            let afterSeq = Int(request.query["after_seq"] ?? "") ?? -1
             return HTTPResponse.stream { connection in
-                RunnerManager.shared.resume(
-                    sessionId: sessionId, afterSeq: afterSeq, connection: connection
-                )
+                if !SessionJSONLReplay.replay(sessionId: sessionId, to: connection) {
+                    connection.cancel()
+                }
             }
         }
         return HTTPResponse.json(400, ["error": "bad_request"])

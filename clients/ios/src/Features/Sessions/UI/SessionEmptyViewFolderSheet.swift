@@ -26,6 +26,7 @@ struct SessionEmptyViewFolderSheet: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     }
                 }
             }

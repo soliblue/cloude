@@ -7,12 +7,11 @@ struct FilePreviewCode: View {
     let wrap: Bool
 
     var body: some View {
-        ScrollView(wrap ? [.vertical] : [.vertical, .horizontal]) {
+        FilePreviewScrollContainer(axes: wrap ? [.vertical] : [.vertical, .horizontal]) {
             if let text = String(data: data, encoding: .utf8) {
                 CodeText(text)
-                    .font(.system(size: ThemeTokens.Text.m, design: .monospaced))
+                    .appFont(size: ThemeTokens.Text.s, design: .monospaced)
                     .padding(ThemeTokens.Spacing.m)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             } else {
                 Text("Unable to decode")
@@ -20,7 +19,5 @@ struct FilePreviewCode: View {
                     .foregroundColor(.secondary)
             }
         }
-        .scrollIndicators(.hidden)
-        .defaultScrollAnchor(.topLeading)
     }
 }

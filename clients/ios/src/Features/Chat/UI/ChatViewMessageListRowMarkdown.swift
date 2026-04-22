@@ -1,16 +1,16 @@
-import MarkdownUI
 import SwiftUI
 
-struct ChatViewMessageListRowMarkdown: View {
+struct ChatViewMessageListRowMarkdown: View, Equatable {
     let text: String
 
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.text == rhs.text }
+
     var body: some View {
-        Markdown(text)
-            .markdownTextStyle { FontSize(ThemeTokens.Text.m) }
-            .markdownTextStyle(\.code) {
-                FontFamilyVariant(.monospaced)
-                FontSize(ThemeTokens.Text.m)
+        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
+            ForEach(ChatMarkdownParser.parse(text), id: \.id) { block in
+                ChatViewMessageListRowMarkdownBlock(block: block)
             }
-            .textSelection(.enabled)
+        }
+        .appFont(size: ThemeTokens.Text.m)
     }
 }

@@ -3,8 +3,8 @@ import SwiftUI
 enum ThemeTokens {
     enum Text {
         static let l: CGFloat = 16
-        static let m: CGFloat = 13.5
-        static let s: CGFloat = 10.5
+        static let m: CGFloat = 14
+        static let s: CGFloat = 12
     }
 
     enum Icon {
@@ -22,9 +22,9 @@ enum ThemeTokens {
     }
 
     enum Radius {
-        static let s: CGFloat = 6
-        static let m: CGFloat = 9
-        static let l: CGFloat = 12
+        static let s: CGFloat = 8
+        static let m: CGFloat = 14
+        static let l: CGFloat = 20
     }
 
     enum Size {

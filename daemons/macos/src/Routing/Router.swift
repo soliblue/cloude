@@ -19,6 +19,15 @@ enum Router {
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/chat/resume") {
                     return ChatHandler.resume(request, params: params)
                 }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/git/status") {
+                    return GitHandler.status(request, params: params)
+                }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/git/diff") {
+                    return GitHandler.diff(request, params: params)
+                }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/git/log") {
+                    return GitHandler.log(request, params: params)
+                }
             }
             if request.method == "POST" {
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/chat") {
@@ -26,6 +35,9 @@ enum Router {
                 }
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/chat/abort") {
                     return ChatHandler.abort(request, params: params)
+                }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/title") {
+                    return SessionHandler.updateTitle(request, params: params)
                 }
             }
             return HTTPResponse.json(404, ["error": "not_found"])

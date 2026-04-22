@@ -6,6 +6,7 @@ struct ChatViewMessageListRowToolPillSheetOutput: View {
     @State private var isExpanded: Bool = false
     private let previewLineCount = 15
     @Environment(\.theme) private var theme
+    @Environment(\.appAccent) private var appAccent
 
     var body: some View {
         ChatViewMessageListRowToolPillSheetSection(
@@ -28,7 +29,7 @@ struct ChatViewMessageListRowToolPillSheetOutput: View {
                             Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                                 .appFont(size: ThemeTokens.Text.s, weight: .semibold)
                         }
-                        .foregroundColor(Color.accentColor)
+                        .foregroundColor(appAccent.color)
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.plain)

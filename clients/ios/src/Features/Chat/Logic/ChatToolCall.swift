@@ -95,7 +95,8 @@ final class ChatToolCall {
     }
 
     static func prettyJSON(_ object: Any) -> String {
-        if let data = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys]),
+        if let data = try? JSONSerialization.data(
+            withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]),
             let string = String(data: data, encoding: .utf8)
         {
             return string

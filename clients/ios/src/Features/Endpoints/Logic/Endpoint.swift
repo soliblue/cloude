@@ -11,7 +11,8 @@ final class Endpoint {
     var port: Int
     var symbolName: String
     var createdAt: Date
-    @Transient var status: EndpointStatus = .unknown
+    var lastCheckTimestamp: Date?
+    var lastCheckReachable: Bool?
 
     init(
         id: UUID = UUID(),

@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-import { WebSocketServer } from 'ws'
+import HTTPServer from './src/Networking/HTTPServer.js'
+import { daemonToken, daemonTokenPath } from './src/Routing/DaemonAuth.js'
 
-const PORT = parseInt(process.env.CLOUDE_PORT || '8765')
+const host = process.env.CLOUDE_HOST || '0.0.0.0'
+const port = Number.parseInt(process.env.CLOUDE_PORT || '8765', 10)
 
-const wss = new WebSocketServer({ port: PORT })
-wss.on('connection', (socket) => {
-  socket.send(JSON.stringify({ type: 'hello' }))
-})
-
-console.log(`Daemon for Remote CC listening on :${PORT}`)
+daemonToken()
+new HTTPServer({ host, port }).start()
+console.log(`DaemonAuth: token loaded from ${daemonTokenPath()}`)

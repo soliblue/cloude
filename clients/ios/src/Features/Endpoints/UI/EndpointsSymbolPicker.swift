@@ -4,6 +4,7 @@ struct EndpointsSymbolPicker: View {
     @Binding var selectedSymbol: String
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
+    @Environment(\.appAccent) private var appAccent
     @State private var searchText = ""
 
     private static let gridColumns = Array(repeating: GridItem(.flexible(), spacing: ThemeTokens.Spacing.xs), count: 6)
@@ -37,7 +38,10 @@ struct EndpointsSymbolPicker: View {
                                         Image(systemName: symbol)
                                             .appFont(size: ThemeTokens.Icon.l)
                                             .frame(width: ThemeTokens.Size.l, height: ThemeTokens.Size.l)
-                                            .background(selectedSymbol == symbol ? Color.accentColor.opacity(ThemeTokens.Opacity.m) : Color.clear)
+                                            .background(
+                                                selectedSymbol == symbol
+                                                    ? appAccent.color.opacity(ThemeTokens.Opacity.m) : Color.clear
+                                            )
                                             .cornerRadius(ThemeTokens.Radius.s)
                                     }
                                     .buttonStyle(.plain)
@@ -52,9 +56,11 @@ struct EndpointsSymbolPicker: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { dismiss() } label: {
+                    Button {
+                        dismiss()
+                    } label: {
                         Image(systemName: "xmark")
-                            .appFont(size: ThemeTokens.Icon.s, weight: .medium)
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     }
                 }
             }

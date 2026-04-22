@@ -1,5 +1,5 @@
 {
-  "name": "cloude-linux-relay",
+  "name": "cloude-linux-daemon",
   "version": "1.0.0",
   "type": "module",
   "bin": {
@@ -7,8 +7,5 @@
   },
   "scripts": {
     "start": "node index.js"
-  },
-  "dependencies": {
-    "ws": "^8.18.0"
   }
 }

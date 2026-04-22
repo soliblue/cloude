@@ -3,8 +3,36 @@ import SwiftData
 
 enum EndpointActions {
     @MainActor
-    static func add(into context: ModelContext) {
-        context.insert(Endpoint())
+    @discardableResult
+    static func add(into context: ModelContext) -> Endpoint {
+        let endpoint = Endpoint(symbolName: EndpointsSymbolCatalog.symbols.randomElement() ?? Endpoint.defaultSymbol)
+        context.insert(endpoint)
+        return endpoint
+    }
+
+    @MainActor
+    @discardableResult
+    static func create(
+        into context: ModelContext, host: String, port: Int, symbolName: String, authKey: String
+    ) -> Endpoint {
+        let endpoint = Endpoint(host: host, port: port, symbolName: symbolName)
+        endpoint.lastCheckReachable = true
+        endpoint.lastCheckTimestamp = .now
+        context.insert(endpoint)
+        SecureStorage.set(account: endpoint.id.uuidString, value: authKey)
+        return endpoint
+    }
+
+    @MainActor
+    static func update(
+        _ endpoint: Endpoint, host: String, port: Int, symbolName: String, authKey: String
+    ) {
+        endpoint.host = host
+        endpoint.port = port
+        endpoint.symbolName = symbolName
+        endpoint.lastCheckReachable = true
+        endpoint.lastCheckTimestamp = .now
+        SecureStorage.set(account: endpoint.id.uuidString, value: authKey)
     }
 
     @MainActor

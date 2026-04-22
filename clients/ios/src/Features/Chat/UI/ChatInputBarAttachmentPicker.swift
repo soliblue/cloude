@@ -8,10 +8,13 @@ struct ChatInputBarAttachmentPicker: View {
 
     var body: some View {
         PhotosPicker(selection: $selections, maxSelectionCount: 4, matching: .images) {
-            Image(systemName: "paperclip.circle.fill")
-                .appFont(size: ThemeTokens.Icon.xl)
+            Text(Image(systemName: "paperclip"))
+                .appFont(size: ThemeTokens.Text.m, weight: .medium)
                 .foregroundColor(.secondary)
+                .padding(ThemeTokens.Spacing.m)
+                .contentShape(Capsule())
         }
+        .glassEffect(.regular.interactive(), in: Capsule())
         .onChange(of: selections) { _, items in
             Task {
                 var loaded: [Data] = []

@@ -36,6 +36,7 @@ struct FolderPickerView: View {
                                 onPick(resolvedPath)
                             } label: {
                                 Image(systemName: "checkmark")
+                                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
                             }
                         }
                     }

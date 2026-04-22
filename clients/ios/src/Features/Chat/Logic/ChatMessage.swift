@@ -13,6 +13,7 @@ final class ChatMessage {
     var stateRaw: String
     var imagesData: [Data]
     var createdAt: Date
+    var costUsd: Double? = nil
     @Relationship(deleteRule: .cascade, inverse: \ChatToolCall.message)
     var toolCalls: [ChatToolCall] = []
 

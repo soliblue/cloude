@@ -16,6 +16,7 @@ enum ChatService {
             _ = ChatActions.addUserMessage(
                 sessionId: session.id, text: prompt, images: images, context: context
             )
+            SessionActions.setStreaming(true, for: session)
             let encodedImages = images.compactMap(encode)
             let existsOnServer = session.existsOnServer
             let sessionId = session.id
@@ -24,10 +25,38 @@ enum ChatService {
                     "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
                 ]
                 if !encodedImages.isEmpty { body["images"] = encodedImages }
+                if let model = session.model { body["model"] = model.rawValue }
+                if let effort = session.effort { body["effort"] = effort.rawValue }
                 let stream = StreamingClient.post(
                     endpoint: endpoint,
                     path: "/sessions/\(sessionId.uuidString)/chat",
                     body: body
+                )
+                await consume(stream: stream, sessionId: sessionId, context: context)
+            }
+        }
+    }
+
+    @MainActor
+    static func resumeIfStuck(session: Session, context: ModelContext) {
+        if let endpoint = session.endpoint, let stuck = stuckStreaming(sessionId: session.id, context: context) {
+            AppLogger.performanceInfo(
+                "start name=chat.resume sessionId=\(session.id.uuidString) stuckMessageId=\(stuck.id.uuidString)"
+            )
+            for call in stuck.toolCalls { context.delete(call) }
+            stuck.text = ""
+            streamingMessages[session.id] = stuck
+            SessionActions.setStreaming(true, for: session)
+            let snapshot = ChatLiveStream.snapshot(for: session.id)
+            snapshot.text = ""
+            snapshot.deltaCount = 0
+            snapshot.hasFirstToken = false
+            let sessionId = session.id
+            Task {
+                let stream = StreamingClient.get(
+                    endpoint: endpoint,
+                    path: "/sessions/\(sessionId.uuidString)/chat/resume",
+                    query: ["after_seq": "-1"]
                 )
                 await consume(stream: stream, sessionId: sessionId, context: context)
             }
@@ -40,6 +69,46 @@ enum ChatService {
                 _ = await HTTPClient.post(
                     endpoint: endpoint, path: "/sessions/\(session.id.uuidString)/chat/abort"
                 )
+            }
+        }
+    }
+
+    @MainActor
+    private static func stuckStreaming(sessionId: UUID, context: ModelContext) -> ChatMessage? {
+        let descriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.stateRaw == "streaming"
+            }
+        )
+        return try? context.fetch(descriptor).first
+    }
+
+    @MainActor
+    private static func maybeRename(sessionId: UUID, context: ModelContext) {
+        let descriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.roleRaw == "user"
+            }
+        )
+        let count = (try? context.fetchCount(descriptor)) ?? 0
+        if count > 0, (count - 1) % 5 == 0 {
+            let sessionDescriptor = FetchDescriptor<Session>(
+                predicate: #Predicate<Session> { $0.id == sessionId }
+            )
+            if let session = try? context.fetch(sessionDescriptor).first,
+                let endpoint = session.endpoint, let path = session.path
+            {
+                Task {
+                    if let result = await SessionService.generateTitleAndSymbol(
+                        endpoint: endpoint, sessionId: sessionId, path: path
+                    ) {
+                        await MainActor.run {
+                            SessionActions.setTitleAndSymbol(
+                                result.title, result.symbol, for: session
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -88,11 +157,13 @@ enum ChatService {
     @MainActor
     private static func ensureStreamingMessage(
         sessionId: UUID, context: ModelContext
-    )
-        -> ChatMessage
-    {
+    ) -> ChatMessage {
         if let existing = streamingMessages[sessionId] { return existing }
-        AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
+        let snapshot = ChatLiveStream.snapshot(for: sessionId)
+        if !snapshot.hasFirstToken {
+            AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
+            snapshot.hasFirstToken = true
+        }
         let message = ChatActions.beginAssistant(sessionId: sessionId, context: context)
         streamingMessages[sessionId] = message
         return message
@@ -101,12 +172,22 @@ enum ChatService {
     @MainActor
     private static func closeStream(sessionId: UUID, isFailed: Bool, context: ModelContext) {
         if let message = streamingMessages.removeValue(forKey: sessionId) {
+            let snapshot = ChatLiveStream.peek(for: sessionId)
+            let liveText = snapshot?.text ?? ""
+            if message.text.isEmpty && !liveText.isEmpty { message.text = liveText }
             if message.text.isEmpty && message.toolCalls.isEmpty {
                 context.delete(message)
             } else {
                 ChatActions.finishStreaming(message, isFailed: isFailed)
             }
         }
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first {
+            SessionActions.setStreaming(false, for: session)
+        }
+        ChatLiveStream.clear(sessionId: sessionId)
     }
 
     @MainActor
@@ -114,25 +195,34 @@ enum ChatService {
         switch event {
         case .assistantTextDelta(_, let text):
             if !text.isEmpty {
-                let message = ensureStreamingMessage(sessionId: sessionId, context: context)
-                message.text += text
+                _ = ensureStreamingMessage(sessionId: sessionId, context: context)
+                let snapshot = ChatLiveStream.snapshot(for: sessionId)
+                snapshot.text += text
+                snapshot.deltaCount += 1
             }
         case .assistantFinal(_, let text, let toolUses):
             if !text.isEmpty || !toolUses.isEmpty || streamingMessages[sessionId] != nil {
                 let message = ensureStreamingMessage(sessionId: sessionId, context: context)
+                let snapshot = ChatLiveStream.snapshot(for: sessionId)
+                let resolved = text.isEmpty ? snapshot.text : text
                 ChatActions.completeAssistant(
-                    message,
-                    finalText: text.isEmpty ? message.text : text,
-                    toolUses: toolUses,
-                    context: context)
+                    message, finalText: resolved, toolUses: toolUses, context: context)
                 streamingMessages.removeValue(forKey: sessionId)
+                ChatLiveStream.clear(sessionId: sessionId)
             }
         case .toolResult(_, let toolUseId, let text, let isError):
-            ChatActions.applyToolResult(toolUseId: toolUseId, text: text, isError: isError, context: context)
+            ChatActions.applyToolResult(
+                toolUseId: toolUseId, text: text, isError: isError, context: context)
         case .result, .aborted, .error:
             AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
             AppLogger.endInterval("chat.complete", key: sessionId.uuidString)
             closeStream(sessionId: sessionId, isFailed: false, context: context)
+            if case .result(_, let costUsd) = event {
+                if let costUsd {
+                    ChatActions.applyCost(sessionId: sessionId, costUsd: costUsd, context: context)
+                }
+                maybeRename(sessionId: sessionId, context: context)
+            }
         case .initialized:
             markSessionExistsOnServer(sessionId: sessionId, context: context)
         case .exited, .unknown:

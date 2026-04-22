@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct ChatViewMessageListRowToolPillList: View {
+    let session: Session
     let toolCalls: [ChatToolCall]
     @State private var selected: ChatToolCall?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: ThemeTokens.Spacing.xs) {
+            HStack(spacing: ThemeTokens.Spacing.s) {
                 ForEach(toolCalls) { toolCall in
                     ChatViewMessageListRowToolPillListRow(toolCall: toolCall) {
                         selected = toolCall
@@ -14,8 +15,11 @@ struct ChatViewMessageListRowToolPillList: View {
                 }
             }
         }
+        .contentMargins(.horizontal, ThemeTokens.Spacing.m, for: .scrollContent)
+        .padding(.horizontal, -ThemeTokens.Spacing.m)
+        .scrollClipDisabled()
         .sheet(item: $selected) { toolCall in
-            ChatViewMessageListRowToolPillSheet(toolCall: toolCall)
+            ChatViewMessageListRowToolPillSheet(session: session, toolCall: toolCall)
         }
     }
 }

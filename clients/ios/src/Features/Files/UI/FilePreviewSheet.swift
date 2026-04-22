@@ -44,7 +44,7 @@ struct FilePreviewSheet: View {
                                 systemName: showSource
                                     ? "doc.richtext" : "chevron.left.forwardslash.chevron.right"
                             )
-                            .appFont(size: ThemeTokens.Icon.m)
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
                             .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
                         }
                     }
@@ -58,7 +58,7 @@ struct FilePreviewSheet: View {
                                 systemName: wrapCodeLines
                                     ? "arrow.left.and.right.text.vertical" : "text.word.spacing"
                             )
-                            .appFont(size: ThemeTokens.Icon.m)
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
                             .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
                         }
                     }
@@ -68,8 +68,7 @@ struct FilePreviewSheet: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .appFont(size: ThemeTokens.Icon.m)
-                            .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     }
                 }
             }

@@ -4,7 +4,7 @@ set -e
 INSTALL_DIR="/opt/cloude-agent"
 DATA_DIR="$HOME/.cloude-agent"
 
-echo "Installing Cloude Agent..."
+echo "Installing Cloude Linux daemon..."
 
 sudo mkdir -p "$INSTALL_DIR"
 sudo cp -r ./* "$INSTALL_DIR/"
@@ -16,7 +16,7 @@ mkdir -p "$DATA_DIR"
 # Create systemd service
 sudo tee /etc/systemd/system/cloude-agent.service > /dev/null << EOF
 [Unit]
-Description=Cloude Agent
+Description=Cloude Linux Daemon
 After=network.target
 
 [Service]
@@ -38,10 +38,11 @@ sudo systemctl enable cloude-agent
 sudo systemctl start cloude-agent
 
 echo ""
-echo "Cloude Agent installed and running!"
+echo "Cloude Linux daemon installed and running!"
 echo "Auth token: $(cat $DATA_DIR/auth-token 2>/dev/null || echo 'will be generated on first start')"
 echo "Port: 8765"
-echo "Logs: $DATA_DIR/logs/"
+echo "Ping without auth: curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/ping"
+echo "Ping with auth: curl -s -H \"Authorization: Bearer \$(cat $DATA_DIR/auth-token)\" http://127.0.0.1:8765/ping"
 echo ""
 echo "Commands:"
 echo "  sudo systemctl status cloude-agent"

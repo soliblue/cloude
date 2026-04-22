@@ -12,7 +12,7 @@ enum ChatStreamEvent {
     case assistantTextDelta(seq: Int, text: String)
     case assistantFinal(seq: Int, text: String, toolUses: [DecodedToolUse])
     case toolResult(seq: Int, toolUseId: String, text: String, isError: Bool)
-    case result(seq: Int)
+    case result(seq: Int, costUsd: Double?)
     case aborted(seq: Int)
     case exited(seq: Int, code: Int)
     case error(seq: Int, message: String)
@@ -21,7 +21,7 @@ enum ChatStreamEvent {
     var seq: Int {
         switch self {
         case .initialized(let s), .assistantTextDelta(let s, _), .assistantFinal(let s, _, _),
-            .toolResult(let s, _, _, _), .result(let s), .aborted(let s), .exited(let s, _),
+            .toolResult(let s, _, _, _), .result(let s, _), .aborted(let s), .exited(let s, _),
             .error(let s, _), .unknown(let s):
             return s
         }
@@ -55,7 +55,10 @@ enum ChatStreamEvent {
             if eventType == "stream_event" { return decodeStreamEvent(event: event, seq: seq) }
             if eventType == "assistant" { return decodeAssistant(event: event, seq: seq) }
             if eventType == "user" { return decodeToolResult(event: event, seq: seq) }
-            if eventType == "result" { return .result(seq: seq) }
+            if eventType == "result" {
+                let cost = event["total_cost_usd"] as? Double
+                return .result(seq: seq, costUsd: cost)
+            }
         }
         return nil
     }

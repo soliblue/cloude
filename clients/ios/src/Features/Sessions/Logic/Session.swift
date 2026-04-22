@@ -9,11 +9,16 @@ final class Session {
     @Attribute(.unique) var id: UUID
     var endpoint: Endpoint?
     var path: String?
+    var createdAt: Date = Date.distantPast
     var lastOpenedAt: Date
     var title: String
     var symbol: String
     var existsOnServer: Bool = false
+    var isStreaming: Bool = false
+    var hasGit: Bool = true
     var tabRaw: String = SessionTab.chat.rawValue
+    var modelRaw: String? = nil
+    var effortRaw: String? = nil
     @Transient var skills: [Skill]? = nil
     @Transient var agents: [Agent]? = nil
 
@@ -27,6 +32,7 @@ final class Session {
         self.id = id
         self.endpoint = endpoint
         self.path = path
+        self.createdAt = .now
         self.lastOpenedAt = .now
         self.title = title
         self.symbol = symbol
@@ -35,5 +41,15 @@ final class Session {
     var tab: SessionTab {
         get { SessionTab(rawValue: tabRaw) ?? .chat }
         set { tabRaw = newValue.rawValue }
+    }
+
+    var model: ChatModel? {
+        get { modelRaw.flatMap(ChatModel.init(rawValue:)) }
+        set { modelRaw = newValue?.rawValue }
+    }
+
+    var effort: ChatEffort? {
+        get { effortRaw.flatMap(ChatEffort.init(rawValue:)) }
+        set { effortRaw = newValue?.rawValue }
     }
 }

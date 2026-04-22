@@ -3,50 +3,41 @@ import SwiftUI
 struct SettingsViewThemePicker: View {
     @AppStorage(StorageKey.appTheme) private var selectedTheme: Theme = .majorelle
 
-    private let columns = [
-        GridItem(.flexible(), spacing: ThemeTokens.Spacing.s),
-        GridItem(.flexible(), spacing: ThemeTokens.Spacing.s)
-    ]
-
     var body: some View {
         ScrollView(showsIndicators: false) {
-            LazyVGrid(columns: columns, spacing: ThemeTokens.Spacing.m) {
-                ForEach(Theme.allCases, id: \.self) { theme in
-                    SettingsViewThemePickerCard(theme: theme, isSelected: selectedTheme == theme)
+            VStack(spacing: 0) {
+                ForEach(Array(Theme.allCases.enumerated()), id: \.element) { index, theme in
+                    if index > 0 { Divider() }
+                    SettingsViewThemePickerRow(theme: theme, isSelected: selectedTheme == theme)
+                        .contentShape(Rectangle())
                         .onTapGesture { selectedTheme = theme }
                 }
             }
-            .padding(ThemeTokens.Spacing.m)
+            .padding(.horizontal, ThemeTokens.Spacing.m)
         }
         .themedNavChrome()
     }
 }
 
-private struct SettingsViewThemePickerCard: View {
+private struct SettingsViewThemePickerRow: View {
     let theme: Theme
     let isSelected: Bool
 
     var body: some View {
         let palette = theme.palette
-        VStack(spacing: 0) {
+        HStack(spacing: ThemeTokens.Spacing.m) {
+            Text(theme.rawValue)
+                .appFont(size: ThemeTokens.Text.m, weight: isSelected ? .semibold : .regular)
+                .foregroundColor(isSelected ? .primary : .secondary)
+            Spacer()
             HStack(spacing: ThemeTokens.Spacing.xs) {
                 ForEach([palette.background, palette.surface, palette.elevated], id: \.self) { color in
                     RoundedRectangle(cornerRadius: ThemeTokens.Radius.s)
                         .fill(color)
-                        .frame(height: ThemeTokens.Size.l)
+                        .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
                 }
             }
-            .padding(ThemeTokens.Spacing.s)
-
-            Text(theme.rawValue)
-                .appFont(size: ThemeTokens.Text.l, weight: isSelected ? .semibold : .regular)
-                .foregroundColor(isSelected ? .primary : .secondary)
-                .padding(.bottom, ThemeTokens.Spacing.s)
         }
-        .cornerRadius(ThemeTokens.Radius.m)
-        .overlay(
-            RoundedRectangle(cornerRadius: ThemeTokens.Radius.m)
-                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: ThemeTokens.Stroke.l)
-        )
+        .padding(.vertical, ThemeTokens.Spacing.m)
     }
 }

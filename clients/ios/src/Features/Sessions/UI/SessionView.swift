@@ -3,32 +3,33 @@ import SwiftUI
 
 struct SessionView: View {
     @Bindable var session: Session
+    @Binding var isSidebarOpen: Bool
 
     var body: some View {
-        if session.endpoint == nil || (session.path ?? "").isEmpty {
-            SessionEmptyView(session: session)
-        } else {
-            Group {
-                switch session.tab {
-                case .chat: ChatView(session: session)
-                case .files: FileTreeView(session: session)
-                case .git:
-                    VStack(spacing: ThemeTokens.Spacing.m) {
-                        Image(systemName: "hammer.fill")
-                            .appFont(size: ThemeTokens.Icon.l)
-                            .foregroundColor(.secondary)
-                        Text("\(session.tab.label) coming soon")
-                            .appFont(size: ThemeTokens.Text.m)
-                            .foregroundColor(.secondary)
+        ZStack {
+            ChatView(session: session)
+                .opacity(session.tab == .chat ? 1 : 0)
+                .allowsHitTesting(session.tab == .chat)
+            FileTreeView(session: session)
+                .opacity(session.tab == .files ? 1 : 0)
+                .allowsHitTesting(session.tab == .files)
+            GitView(session: session)
+                .opacity(session.tab == .git ? 1 : 0)
+                .allowsHitTesting(session.tab == .git)
+        }
+        .safeAreaInset(edge: .top) {
+            HStack(spacing: ThemeTokens.Spacing.s) {
+                IconPillButton(symbol: "line.3.horizontal") {
+                    withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                        isSidebarOpen = true
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                Spacer(minLength: 0)
+                if session.endpoint != nil, let path = session.path, !path.isEmpty {
+                    SessionViewTabs(selected: $session.tab, session: session)
                 }
             }
-            .safeAreaInset(edge: .top) {
-                SessionViewTabs(selected: $session.tab)
-                    .padding(.horizontal, ThemeTokens.Spacing.m)
-                    .padding(.vertical, ThemeTokens.Spacing.s)
-            }
+            .padding(.horizontal, ThemeTokens.Spacing.m)
         }
     }
 }

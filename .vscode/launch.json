@@ -26,6 +26,28 @@
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
       "outputCapture": "std"
+    },
+    {
+      "name": "macOS Daemon",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "/bin/zsh",
+      "args": [
+        "${workspaceFolder}/.vscode/run-daemon.sh"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "outputCapture": "std"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Daemon + Simulator",
+      "configurations": ["macOS Daemon", "iOS Simulator"]
+    },
+    {
+      "name": "Daemon + iPhone",
+      "configurations": ["macOS Daemon", "Connected iPhone"]
     }
   ]
 }

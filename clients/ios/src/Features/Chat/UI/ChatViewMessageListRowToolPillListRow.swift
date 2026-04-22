@@ -10,21 +10,16 @@ struct ChatViewMessageListRowToolPillListRow: View {
         Button(action: onTap) {
             HStack(spacing: ThemeTokens.Spacing.xs) {
                 Image(systemName: toolCall.symbol)
-                    .appFont(size: ThemeTokens.Icon.s, weight: .semibold)
+                    .appFont(size: ThemeTokens.Text.s)
                 Text(toolCall.shortLabel)
-                    .appFont(size: ThemeTokens.Text.s, weight: .medium)
+                    .appFont(size: ThemeTokens.Text.s)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
             .foregroundColor(tint)
             .padding(.horizontal, ThemeTokens.Spacing.s)
             .padding(.vertical, ThemeTokens.Spacing.xs)
-            .background(
-                Capsule().fill(tint.opacity(toolCall.state == .failed ? ThemeTokens.Opacity.m : ThemeTokens.Opacity.s))
-            )
-            .overlay(
-                Capsule().strokeBorder(tint.opacity(ThemeTokens.Opacity.m), lineWidth: ThemeTokens.Stroke.s)
-            )
+            .glassEffect(.regular.interactive(), in: Capsule())
             .overlay {
                 if toolCall.state == .pending {
                     ChatViewMessageListRowToolPillListRowShimmer(phase: shimmerPhase, tint: tint)

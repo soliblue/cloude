@@ -14,15 +14,13 @@ struct FilePreviewCSV: View {
     }
 
     private func grid(rows: [[String]]) -> some View {
-        ScrollView([.horizontal, .vertical]) {
+        FilePreviewScrollContainer(axes: [.horizontal, .vertical]) {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(rows.indices, id: \.self) { i in
                     row(cells: rows[i], index: i)
                 }
             }
         }
-        .scrollIndicators(.hidden)
-        .defaultScrollAnchor(.topLeading)
     }
 
     private func row(cells: [String], index: Int) -> some View {

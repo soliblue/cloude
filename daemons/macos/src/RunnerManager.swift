@@ -9,13 +9,16 @@ final class RunnerManager {
 
     func start(
         sessionId: String, path: String, prompt: String, images: [[String: String]],
-        existsOnServer: Bool, connection: NWConnection
+        existsOnServer: Bool, model: String?, effort: String?, connection: NWConnection
     ) {
         queue.async {
+            NSLog("[RunnerManager] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") promptChars=\(prompt.count) images=\(images.count)")
             if let existing = self.runners[sessionId] {
+                NSLog("[RunnerManager] aborting existing runner sessionId=\(sessionId)")
                 existing.abort()
             }
-            let runner = Runner(sessionId: sessionId, hasStartedBefore: existsOnServer, queue: self.queue)
+            let runner = Runner(
+                sessionId: sessionId, hasStartedBefore: existsOnServer, model: model, effort: effort, queue: self.queue)
             runner.onFinish = { [weak self, weak runner] in
                 self?.queue.async {
                     if let runner, self?.runners[sessionId] === runner {

@@ -4,37 +4,36 @@ import SwiftUI
 struct SessionEmptyView: View {
     let session: Session
     @Environment(\.theme) private var theme
-    @Query(sort: \Endpoint.createdAt) private var endpoints: [Endpoint]
-    @State private var pickerEndpoint: Endpoint?
+    @State private var folderSheetEndpoint: Endpoint?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
-            Text("Choose an environment")
-                .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            ForEach(endpoints) { endpoint in
-                Button {
-                    pickerEndpoint = endpoint
-                } label: {
-                    HStack(spacing: ThemeTokens.Spacing.s) {
-                        Image(systemName: endpoint.symbolName)
-                            .appFont(size: ThemeTokens.Icon.m)
-                        Text(endpoint.host.isEmpty ? "Unnamed" : endpoint.host)
-                            .appFont(size: ThemeTokens.Text.m)
-                        Spacer()
-                    }
-                    .padding(.horizontal, ThemeTokens.Spacing.m)
-                    .padding(.vertical, ThemeTokens.Spacing.s)
-                    .background(theme.palette.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
-                }
-                .buttonStyle(.plain)
+        VStack(spacing: ThemeTokens.Spacing.l) {
+            Spacer(minLength: 0)
+            SessionEmptyViewHero()
+                .frame(maxHeight: ThemeTokens.Size.xl)
+                .padding(.bottom, ThemeTokens.Spacing.l)
+            VStack(spacing: 0) {
+                SessionEmptyViewEndpointRow(
+                    session: session,
+                    folderSheetEndpoint: $folderSheetEndpoint
+                )
+                Divider()
+                SessionEmptyViewFolderRow(
+                    session: session,
+                    folderSheetEndpoint: $folderSheetEndpoint
+                )
+                SessionEmptyViewRecentList(currentSession: session)
             }
+            .glassEffect(
+                .regular.tint(theme.palette.background).interactive(),
+                in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
+            )
+            Spacer(minLength: 0)
+            Spacer(minLength: 0)
         }
         .padding(ThemeTokens.Spacing.m)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .sheet(item: $pickerEndpoint) { endpoint in
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .sheet(item: $folderSheetEndpoint) { endpoint in
             SessionEmptyViewFolderSheet(session: session, endpoint: endpoint)
         }
     }

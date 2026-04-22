@@ -56,6 +56,20 @@ enum ChatActions {
     }
 
     @MainActor
+    static func applyCost(sessionId: UUID, costUsd: Double, context: ModelContext) {
+        var descriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.roleRaw == "assistant"
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        descriptor.fetchLimit = 1
+        if let latest = try? context.fetch(descriptor).first {
+            latest.costUsd = costUsd
+        }
+    }
+
+    @MainActor
     static func finishStreaming(_ message: ChatMessage?, isFailed: Bool = false) {
         if let message, message.state == .streaming {
             message.state = isFailed ? .failed : .complete

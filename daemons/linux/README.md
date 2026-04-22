@@ -1,6 +1,6 @@
-# Linux Relay
+# Linux Daemon
 
-Node.js service that bridges the Cloude iOS app to Claude Code CLI on a Linux server. Runs as a systemd service, accepts WebSocket connections from the iOS app (through Cloudflare Tunnel), and spawns/manages Claude Code processes.
+Node.js service that mirrors the macOS daemon on Linux. It exposes the same authenticated HTTP routes the iOS app uses today, streams Claude output as NDJSON, and runs cleanly under systemd on a remote server.
 
 ## Setup
 
@@ -34,7 +34,7 @@ This does three things:
 
 1. **SSH**: Disables password auth. Key-only access. Brute force becomes impractical.
 2. **Ports 80/443**: Only accepts connections from [Cloudflare's IP ranges](https://www.cloudflare.com/ips/). Everyone else gets dropped.
-3. **Port 8765** (relay): Only accepts connections from localhost. The Cloudflare Tunnel connects internally, so external access is unnecessary.
+3. **Port 8765** (daemon): Only accepts connections from localhost. The Cloudflare Tunnel connects internally, so external access is unnecessary.
 
 After hardening, the only way to reach your server is through Cloudflare (for web/WebSocket) or with your SSH key (for admin). The raw IP becomes a dead end.
 
@@ -48,9 +48,13 @@ sudo ufw status verbose
 sudo sshd -T | grep passwordauthentication
 # should print: passwordauthentication no
 
-# Check relay is accessible locally
-curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765
-# should print: 426 (WebSocket upgrade expected)
+# Check daemon is accessible locally
+curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/ping
+# should print: 401
+
+# Check authenticated ping
+curl -s -H "Authorization: Bearer $(cat ~/.cloude-agent/auth-token)" http://127.0.0.1:8765/ping
+# should print: {"ok":true,"serverAt":...}
 ```
 
 ### Updating Cloudflare IPs

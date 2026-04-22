@@ -1,6 +1,6 @@
-You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac daemon or Linux relay spawned this CLI process, and your output is streaming to the iOS app over WebSocket. You are building the system you are running inside of.
+You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac daemon or Linux daemon spawned this CLI process. You are building the system you are running inside of.
 
-The app is currently displayed as **Remote** (bundle ID `soli.Cloude`). The repo is in the middle of a ground-up rewrite on branch `v2`: iOS, macOS daemon, Android, and Linux relay have all been stripped to barebones and are being rebuilt feature by feature. Most feature code does not exist yet.
+The app is currently displayed as **Remote** (bundle ID `soli.Cloude`). The repo is in the middle of a ground-up rewrite on branch `v2`: iOS, macOS daemon, Android, and Linux daemon have all been stripped to barebones and are being rebuilt feature by feature. Most feature code does not exist yet.
 
 ## Migration status
 
@@ -30,11 +30,11 @@ Two layers, two purposes:
 
 ## Connectivity
 
-The iOS app connects to the Mac daemon or Linux relay over WebSocket. Two options for secure remote access:
+The iOS app connects to the Mac daemon or Linux daemon over authenticated HTTP on port `8765`. Two options for secure remote access:
 - **Cloudflare Tunnel** (preferred): domain routes through Cloudflare's edge to localhost. Automatic TLS, no port forwarding, no VPN. Lighter on iOS battery.
 - **Tailscale**: mesh VPN alternative. Works but drains iOS battery more.
 
-Both proxy to `localhost:8765` where the daemon/relay listens. Specific endpoints and tunnel config live in personal memory, not here.
+Both proxy to `localhost:8765` where the daemon listens. Specific endpoints and tunnel config live in personal memory, not here.
 
 ## Engineering Philosophy
 
@@ -61,6 +61,8 @@ Both proxy to `localhost:8765` where the daemon/relay listens. Specific endpoint
 - **Sheet chrome matches body** - a sheet's nav bar and toolbar background must be the same as the sheet's body background (usually `theme.palette.background` via `@Environment(\.theme)`). No two-tone sheets.
 - **Prefer Apple native components** - use SwiftUI/UIKit native controls (Stepper, Toggle, DatePicker, Picker, Slider, ProgressView, Menu, etc.) before hand-rolling equivalents. Native gets disabled endpoints, haptics, accessibility, and platform idiom for free. Only go custom when the native control genuinely can't do what's needed.
 - **Format Swift before finishing** - after editing any `.swift` file, run `swift-format -i <files>` on the files you touched. Config lives at repo root in `.swift-format`. Never commit unformatted Swift.
+- **Inline icon size matches adjacent text** - when an `Image` sits next to a `Text` on the same baseline (pill labels, tab labels, buttons with leading icon), size both with the same `ThemeTokens.Text.*` token. Reserve `ThemeTokens.Icon.*` for standalone icons (icon-only buttons, decorative symbols). Mixing an Icon token next to a Text token creates visual weight mismatch at the baseline.
+- **Morphing icons need a fixed frame** - any `Image(systemName:)` that swaps glyphs via `.contentTransition(.symbolEffect(.replace))` (copy → checkmark, play → pause, etc.) must have an explicit `.frame(width:height:)` using a `ThemeTokens.Text.*` or `ThemeTokens.Icon.*` token. SF Symbol glyphs have different intrinsic bounding boxes; without a pinned frame, the surrounding row height jumps mid-animation.
 
 ## Naming
 
@@ -115,28 +117,28 @@ src/
   Features/
     Endpoints/
       UI/
-        EndpointsCarousel.swift      ✅  // horizontal TabView (.page style) shown inline inside the Settings sheet; last page is EndpointsCarouselAdd
-        EndpointsCarouselCard.swift        ✅  // composes CardHeader + CardForm for one endpoint; binds host/port/token and reads status. mutates store via Binding
-        EndpointsCarouselCardHeader.swift  ✅  // symbol button + status dot/label + trash (hidden when only 1 endpoint) + power (ping); pulsing power icon while checking
-        EndpointsCarouselCardForm.swift    ✅  // host, port, auth key fields; writes token to Keychain via SecureStorage keyed on endpoint.id
-        EndpointsCarouselAdd.swift         ✅  // "+" page that appends a blank Endpoint via a callback
-        EndpointsSymbolPicker.swift        ✅  // sheet presented from the card's symbol button; searchable LazyVGrid of SF Symbols grouped by category
+        EndpointView.swift           ✅  // dedicated single-endpoint editor destination pushed from WindowsSidebar with labeled Symbol/Host/Port/Auth Token fields, connection test, and delete action
+        EndpointsSymbolPicker.swift  ✅  // searchable LazyVGrid of SF Symbols grouped by category; presented from EndpointView's Symbol field
       Logic/
-        Endpoint.swift                 ✅  // @Model: id, host, port, symbolName, createdAt; @Transient status. authKey NOT on the model, lives in Keychain under id.uuidString
-        EndpointStatus.swift           ✅  // enum: .unknown | .checking | .reachable | .unreachable; exposes a semantic color
-        EndpointService.swift          ✅  // stateless; GET /ping via HTTPClient (auth resolved from Keychain), mutates endpoint.status directly
-        EndpointActions.swift          ✅  // stateless mutations on the Endpoint model: add, remove (deletes Keychain entry + the model), saveAuthKey (no-op if the endpoint was deleted), seedDev (DEBUG-only env-var dev-endpoint seed, called from iOSApp.init)
-        EndpointsSymbolCatalog.swift   ✅  // static list of SF Symbol names grouped by category, consumed by EndpointsSymbolPicker
+        Endpoint.swift                 ✅  // @Model: id, host, port, symbolName, createdAt, lastCheckTimestamp?, lastCheckReachable?. authKey NOT on the model, lives in Keychain under id.uuidString
+        EndpointService.swift          ✅  // stateless; GET /ping via HTTPClient (auth resolved from Keychain), writes lastCheckTimestamp + lastCheckReachable
+        EndpointActions.swift          ✅  // stateless mutations on the Endpoint model: add (seeds a random catalog symbol), remove (deletes Keychain entry + the model), saveAuthKey (no-op if the endpoint was deleted), seedDev (DEBUG-only env-var dev-endpoint seed, called from iOSApp.init)
+        EndpointsSymbolCatalog.swift   ✅  // static list of SF Symbol names grouped by category plus a flattened `symbols` pool for random endpoint defaults and EndpointsSymbolPicker
     Sessions/
       UI/
-        SessionView.swift            ✅  // owns its top bar (SessionViewTabs) and body. Takes a Session directly. Shows SessionEmptyView when endpoint or path is missing; otherwise renders the (placeholder) tabbed body. Owns @State activeTab.
+        SessionView.swift            ✅  // owns its top bar and body. Top bar is an HStack: leading hamburger (toggles NavigationSplitView columnVisibility), SessionViewTabs, trailing "+" (WindowActions.addNew). Always renders the tabbed ZStack (chat/files/git); the empty-state decision lives inside ChatView now. Takes a Session + a columnVisibility binding passed down from WindowsView.
         SessionViewTabs.swift        ✅  // 3-tab pill switcher (chat | files | git); rendered inside SessionView's top bar. Bound to SessionView's activeTab.
-        SessionEmptyView.swift       ✅  // setup screen shown when a session has no endpoint/path. Lists endpoints via @Query; tap assigns endpoint via SessionActions and opens SessionEmptyViewFolderSheet.
+        SessionEmptyView.swift       ✅  // setup screen shown by ChatView when the session has no messages: hero + endpoint row + folder row + recent sessions list. Owns the folder-sheet @State and presents SessionEmptyViewFolderSheet.
+        SessionEmptyViewHero.swift   ✅  // displays the `claude-painter` asset as the empty-state hero.
+        SessionEmptyViewEndpointRow.swift ✅  // Capsule-glass row: current endpoint symbol+host with chevron.up.chevron.down. Menu opens endpoint list; selecting one calls SessionActions.setEndpoint then sets the bound folderSheetEndpoint to auto-open the folder sheet.
+        SessionEmptyViewFolderRow.swift ✅  // Capsule-glass row showing the truncated leaf of session.path (or "Choose folder"). Tap sets the bound folderSheetEndpoint to the session's endpoint; disabled when no endpoint is set.
+        SessionEmptyViewRecentList.swift ✅  // VStack of up to 5 SessionEmptyViewRecentListRow. Filters @Query<Session> (sorted createdAt desc) by excluding the current session and any session open in another Window. Resolves the current window and calls WindowActions.swap on tap.
+        SessionEmptyViewRecentListRow.swift ✅  // Capsule-glass pill: session symbol + title + secondary path leaf. Tap fires the provided onTap closure.
         SessionEmptyViewFolderSheet.swift ✅  // sheet presented from SessionEmptyView; wraps FolderPickerView in a NavigationStack, top-leading xmark dismisses, onPick writes path via SessionActions and dismisses.
       Logic/
-        Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"), existsOnServer (flipped true after daemon emits system/init — swaps future spawns from --session-id to --resume), tabRaw (persisted active SessionTab); @Transient skills?, agents? (fetched on demand). path == nil is the empty-state signal.
+        Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"), existsOnServer (flipped true after daemon emits system/init — swaps future spawns from --session-id to --resume), tabRaw (persisted active SessionTab), modelRaw/effortRaw (persisted ChatModel/ChatEffort selection, nil = Auto/Default); @Transient skills?, agents? (fetched on demand). path == nil is the empty-state signal.
         SessionTab.swift             ✅  // enum: chat | files | git; each case has label + SF symbol
-        SessionActions.swift         ✅  // stateless mutations on the Session model: add, setEndpoint, setPath, markExistsOnServer, setTab. Owns session-mutation surface so other features don't write Session fields directly.
+        SessionActions.swift         ✅  // stateless mutations on the Session model: add, setEndpoint, setPath, markExistsOnServer, setTab, setModel, setEffort. Owns session-mutation surface so other features don't write Session fields directly.
         Skill.swift                  ✅  // name, description. available in session's cwd; read by ChatInputBarAutocompletePicker via "/"
         Agent.swift                  ✅  // name, description. available in session; read by ChatInputBarAutocompletePicker via "@"
         // SessionService.swift — land when SessionHandler exists on the daemon
@@ -149,7 +151,7 @@ src/
         ChatViewMessageListRowToolPillListRow.swift   // one tool call pill - tool name, state dot, tap to expand args/result
         ChatViewMessageListRowAttachmentList.swift    // horizontal list of image attachments on a message
         ChatViewMessageListRowAttachmentListRow.swift // one attachment thumbnail; tap opens full-size viewer
-        ChatInputBar.swift                            // text field (hosts inline pills), send button, attachments button; swipe-up gesture drives AudioRecorder and presents AudioInputOverlay
+        ChatInputBar.swift                            // text field (hosts inline pills), send button (tap=send, long-press=Menu with model/effort pickers), attachments button; swipe-up gesture drives AudioRecorder and presents AudioInputOverlay
         ChatInputBarSkillPill.swift                   // inline chip for a selected skill (from "/" autocomplete)
         ChatInputBarAgentPill.swift                   // inline chip for a selected agent (from "@" autocomplete)
         ChatInputBarAutocompletePicker.swift          // popover triggered by "/" (skills) or "@" (agents)
@@ -159,7 +161,9 @@ src/
         ChatToolCall.swift           // tool name, args, result, state (pending/succeeded/failed)
         ChatStreamEvent.swift        // decoded ndjson event: system/init, stream_event, assistant, user, result
         ChatMarkdownParser.swift     // incremental parser: code fences, tool pills, tables - fed stream_event deltas
-        ChatService.swift            // streams /sessions/:id/chat; parses ndjson, appends deltas directly onto ChatMessage.text (SwiftData is the single source of truth for live streaming text). start/resume/abort
+        ChatService.swift            // streams /sessions/:id/chat; parses ndjson, appends deltas directly onto ChatMessage.text (SwiftData is the single source of truth for live streaming text). start/resume/abort. Reads session.model + session.effort and puts them in the POST body when set.
+        ChatModel.swift              ✅  // enum: opus | sonnet | haiku. String raw value is sent to the daemon and passed to claude CLI as --model
+        ChatEffort.swift             ✅  // enum: low | medium | high. String raw value is sent to the daemon and passed to claude CLI as --effort
     Audio/
       UI/
         AudioInputOverlay.swift      // covers input bar during recording + transcribing; 7-bar waveform fed by AudioRecorder.level; spinner during AudioService.transcribe
@@ -208,17 +212,17 @@ src/
         GitService.swift             // stateless; status/diff (raw unified text)/log network I/O
     Windows/
       UI/
-        WindowsView.swift            ✅  // top-level screen: theme background + active SessionView + WindowsViewSwitcher pinned at the bottom + DebugOverlay
-        WindowsViewSwitcher.swift    ✅  // bottom-of-screen horizontal scroll: leading SettingsPill, WindowsViewSwitcherPill per window, trailing WindowsViewSwitcherAddPill. Owns the settings sheet presentation.
-        WindowsViewSwitcherPill.swift ✅  // one pill for a Window/Session pair. tap = activate, long-press = close. Title truncates at maxNameLength (10) with ellipsis
-        WindowsViewSwitcherAddPill.swift ✅  // thin wrapper around IconPillButton (plus symbol); spawns a new session via WindowActions.addNew
+        WindowsView.swift            ✅  // top-level screen: NavigationSplitView with WindowsSidebar + detail column (theme background + active SessionView + DebugOverlay). Owns columnVisibility state, passes binding into SessionView.
+        WindowsSidebar.swift         ✅  // left sidebar: Settings row (opens SettingsView sheet), Open section (rows activate window, swipe-to-close), Recent section (sessions without a window, tap swaps into focused window, swipe deletes). Closes itself after activate/swap.
+        WindowsSidebarRow.swift      ✅  // row primitive used by both sidebar sections: symbol + title, accents when focused.
       Logic/
         Window.swift                 ✅  // @Model: session: Session? (SwiftData relationship), order: Int, isFocused: Bool. One Window per open pill in the switcher.
-        WindowActions.swift          ✅  // stateless mutations on the Window model: ensureOne (called from iOSApp.init), activate, addNew, close. addNew/ensureOne insert a matching Session alongside the Window; close deletes only the Window (Session persists for re-opening from SessionsList). Keeps WindowsViewSwitcher view body logic-free.
+        WindowActions.swift          ✅  // stateless mutations on the Window model: ensureOne (called from iOSApp.init), activate, addNew, swap, close. addNew/ensureOne insert a matching Session alongside the Window; close deletes only the Window (Session persists for re-opening from WindowsSidebar's Recent section).
     Settings/
       UI/
-        SettingsPill.swift                       ✅  // thin wrapper around IconPillButton (gear symbol) that flips the presentation @State bound from WindowsViewSwitcher
         SettingsRow.swift                        ✅  // row primitives: SettingsRow (colored-icon + content) and SettingsToggleRow (row bound to an @AppStorage bool key)
+        SettingsViewAccent.swift                 ✅  // row that navigates to SettingsViewAccentPicker
+        SettingsViewAccentPicker.swift           ✅  // preset accent list with live AppStorage-backed selection
         SettingsView.swift                       ✅  // top-level settings sheet: NavigationStack + List of sections + trailing xmark dismiss
         SettingsViewAbout.swift                  ✅  // version + external links section
         SettingsViewFontSize.swift               ✅  // -/+ stepper bound to @AppStorage("fontSizeStep")
@@ -235,17 +239,18 @@ src/
       StreamingClient.swift          // ndjson reader with resume-on-disconnect via after_seq
     Storage/
       SecureStorage.swift            ✅  // Keychain wrapper: get/set/delete keyed by account string (scoped to service "soli.Cloude.environments"); used for per-endpoint auth tokens
-      StorageKey.swift               ✅  // shared @AppStorage key constants (fontSizeStep, debugOverlayEnabled, wrapCodeLines, appTheme)
+      StorageKey.swift               ✅  // shared @AppStorage key constants (fontSizeStep, debugOverlayEnabled, wrapCodeLines, appTheme, appAccent)
     Notifications/
       NotificationService.swift      // local notification when a run completes in background
     UI/
-      IconPillButton.swift           ✅  // shared capsule pill chrome (symbol + action) used by SettingsPill and WindowsViewSwitcherAddPill
+      IconPillButton.swift           ✅  // shared capsule pill chrome (symbol + action) used by the SessionView top bar (hamburger + add) and other icon buttons
     Theme/
+      AppAccent.swift                ✅  // preset app accent options; powers user-selectable primary accent color
       Theme.swift                    ✅  // enum Theme (presets) + nested Palette struct (background/surface/elevated/colorScheme)
       ThemeColor.swift               ✅  // semantic color aliases (blue/cyan/success/danger/etc.) + Color(hex:) initializer
       ThemeTokens.swift              ✅  // design tokens: Text/Icon/Spacing/Radius/Size/Scale/Stroke/Duration/Delay/Opacity
-      ThemeEnvironment.swift         ✅  // EnvironmentValues.theme + .fontStep + .appFont(size:weight:design:) + .themedNavChrome() modifiers
-  iOSApp.swift                       ✅  // @main App; constructs the SwiftData ModelContainer (Endpoint/Session/Window), calls EndpointActions.seedDev + WindowActions.ensureOne at init, renders WindowsView with .modelContainer injected and theme/fontStep AppStorage
+      ThemeEnvironment.swift         ✅  // EnvironmentValues.theme + appAccent + .fontStep + .appFont(size:weight:design:) + .themedNavChrome() modifiers
+  iOSApp.swift                       ✅  // @main App; constructs the SwiftData ModelContainer (Endpoint/Session/Window), calls EndpointActions.seedDev + WindowActions.ensureOne at init, renders WindowsView with .modelContainer injected and theme/accent/fontStep AppStorage
 ```
 
 ## macOS daemon
@@ -263,11 +268,11 @@ src/
       GET  /sessions/:id/files?path=…                       list()    // directory listing → {path, entries:[{name,path,isDirectory,size?,modifiedAt?,mimeType?}]}
       GET  /sessions/:id/files/read?path=…                  read()    // raw bytes, detected Content-Type, honors Range → 206 Partial Content
       GET  /sessions/:id/files/search?path=…&query=…        search()  // native FileManager enumeration, depth≤5, skips .git/node_modules, caps 100 hits → {entries:[…]}
-    GitHandler.swift
+    GitHandler.swift         ✅
       GET  /sessions/:id/git/status?path=…                  status()  // {branch, ahead, behind, changes:[{path,type,isStaged,additions?,deletions?}]}. Shells out to git; private runText() helper inside the handler
       GET  /sessions/:id/git/diff?path=…&file=…&staged=…    diff()    // raw unified diff, text/plain
       GET  /sessions/:id/git/log?path=…&count=…             log()     // {commits:[{sha,subject,author,date}]}
-    SessionHandler.swift
+    SessionHandler.swift     ✅
       POST /sessions/:id/title     generateTitleAndSymbol()  // one-shot `claude -p --model sonnet --output-format json` with meta prompt over user's first prompt
         in   {prompt}
         out  {title, symbol}
@@ -293,6 +298,39 @@ src/
   RunnerManager.swift       ✅  // serial-queue actor around map<sessionId, Runner>. start spawns/replaces, resume attaches a subscriber, abort SIGINTs.
   Runner.swift              ✅  // one claude child process + ring buffer + NWConnection subscribers. Prunes dead subscribers via stateUpdateHandler. Batches replay into a single send on subscribe.
   ImageDropbox.swift        ✅  // persists incoming base64 images to a per-call FileManager.default.temporaryDirectory subfolder and rewrites the prompt to reference absolute paths
+```
+
+## Linux daemon
+
+Node.js HTTP daemon matching the macOS route surface and NDJSON chat stream envelope. Linux keeps its auth token in a file at `~/.cloude-agent/auth-token` or `$CLOUDE_DATA/auth-token`.
+
+```
+daemons/linux/
+  index.js                 ✅  // boots the HTTPServer, warms DaemonAuth, reads CLOUDE_HOST/CLOUDE_PORT/CLOUDE_DATA
+  install.sh               ✅  // installs `cloude-agent.service` under systemd and prints local ping checks
+  README.md                ✅  // setup, auth, and firewall guidance for remote Linux hosts
+  src/
+    Handlers/
+      ChatHandler.js         ✅  // POST /sessions/:id/chat, GET /sessions/:id/chat/resume, POST /sessions/:id/chat/abort; same request/response shapes as macOS
+      FilesHandler.js        ✅  // GET /sessions/:id/files, /read, /search; directory listing + range reads + bounded search
+      GitHandler.js          ✅  // GET /sessions/:id/git/status, /diff, /log; mirrors macOS response shapes including diff truncation header
+      PingHandler.js         ✅  // GET /ping, returns {"ok": true, "serverAt": ...}
+      SessionHandler.js      ✅  // POST /sessions/:id/title; same title+symbol generation contract as macOS
+      SessionJSONLReplay.js  ✅  // replays the last turn from ~/.claude/projects/.../<session>.jsonl when no live runner exists
+    Networking/
+      HTTPRequest.js         ✅  // normalized method/path/query/headers/body wrapper around Node's request object
+      HTTPResponse.js        ✅  // buffered or streamed HTTP responses with shared content-type/header handling
+      HTTPServer.js          ✅  // Node http server on port 8765 with a 1MB request cap and streamed NDJSON support
+    Routing/
+      AuthMiddleware.js      ✅  // Bearer token check against DaemonAuth with constant-time comparison
+      DaemonAuth.js          ✅  // lazy file-backed token loader/generator
+      RouteMatcher.js        ✅  // splits raw URLs and matches `/sessions/:id/...` patterns
+      Router.js              ✅  // dispatches authenticated requests to handlers
+    Runtime/
+      ClaudeRuntime.js       ✅  // resolves claude from PATH plus Linux user-install locations and builds the spawn environment
+    ImageDropbox.js        ✅  // writes uploaded images to a temp folder and rewrites the prompt to reference those files
+    Runner.js              ✅  // one claude child process + ring buffer + live HTTP subscribers
+    RunnerManager.js       ✅  // sessionId → Runner map; aborts superseded runs and attaches resume subscribers
 ```
 
 ## Agent Rules
