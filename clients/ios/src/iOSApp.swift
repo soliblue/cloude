@@ -34,6 +34,14 @@ struct IOSApp: App {
                 .environment(\.filePreviewPresenter, filePreviewPresenter)
                 .tint(selectedAccent.color)
                 .onOpenURL { DeepLinkRouter.handle($0, container: container) }
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil, from: nil, for: nil
+                        )
+                    }
+                )
         }
         .modelContainer(container)
     }

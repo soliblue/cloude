@@ -13,9 +13,10 @@ enum EndpointActions {
     @MainActor
     @discardableResult
     static func create(
-        into context: ModelContext, host: String, port: Int, symbolName: String, authKey: String
+        into context: ModelContext, host: String, port: Int, name: String? = nil,
+        symbolName: String, authKey: String
     ) -> Endpoint {
-        let endpoint = Endpoint(host: host, port: port, symbolName: symbolName)
+        let endpoint = Endpoint(host: host, port: port, name: name, symbolName: symbolName)
         endpoint.lastCheckReachable = true
         endpoint.lastCheckTimestamp = .now
         context.insert(endpoint)
@@ -25,10 +26,12 @@ enum EndpointActions {
 
     @MainActor
     static func update(
-        _ endpoint: Endpoint, host: String, port: Int, symbolName: String, authKey: String
+        _ endpoint: Endpoint, host: String, port: Int, name: String? = nil,
+        symbolName: String, authKey: String
     ) {
         endpoint.host = host
         endpoint.port = port
+        if let name { endpoint.name = name }
         endpoint.symbolName = symbolName
         endpoint.lastCheckReachable = true
         endpoint.lastCheckTimestamp = .now

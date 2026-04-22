@@ -114,6 +114,17 @@ struct WindowsSidebar: View {
                         icon: "ant.fill", color: ThemeColor.orange, title: "Debug Overlay",
                         key: StorageKey.debugOverlayEnabled)
                     SettingsViewAbout()
+                    Button {
+                        isOpen = false
+                        NotificationCenter.default.post(name: .openOnboarding, object: nil)
+                    } label: {
+                        SettingsRow(icon: "sparkles", color: ThemeColor.purple) {
+                            Text("Onboarding")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, ThemeTokens.Spacing.l)
                 .padding(.vertical, ThemeTokens.Spacing.m)

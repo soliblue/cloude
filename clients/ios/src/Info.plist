@@ -23,6 +23,10 @@
 	<string>Cloude uses the microphone for voice-to-text input</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Cloude needs photo access to attach screenshots to your conversations</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Cloude uses the camera to scan the pairing QR on your Mac</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Cloude connects to Remote CC Daemon on your Mac over your local network</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

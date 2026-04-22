@@ -120,9 +120,10 @@ src/
         EndpointView.swift           ✅  // dedicated single-endpoint editor destination pushed from WindowsSidebar with labeled Symbol/Host/Port/Auth Token fields, connection test, and delete action
         EndpointsSymbolPicker.swift  ✅  // searchable LazyVGrid of SF Symbols grouped by category; presented from EndpointView's Symbol field
       Logic/
-        Endpoint.swift                 ✅  // @Model: id, host, port, symbolName, createdAt, lastCheckTimestamp?, lastCheckReachable?. authKey NOT on the model, lives in Keychain under id.uuidString
-        EndpointService.swift          ✅  // stateless; GET /ping via HTTPClient (auth resolved from Keychain), writes lastCheckTimestamp + lastCheckReachable
-        EndpointActions.swift          ✅  // stateless mutations on the Endpoint model: add (seeds a random catalog symbol), remove (deletes Keychain entry + the model), saveAuthKey (no-op if the endpoint was deleted), seedDev (DEBUG-only env-var dev-endpoint seed, called from iOSApp.init)
+        Endpoint.swift                 ✅  // @Model: id, host, port, name?, symbolName, createdAt, lastCheckTimestamp?, lastCheckReachable?. authKey NOT on the model, lives in Keychain under id.uuidString. name is the optional display label (e.g. "Ahmed's Mac" from the pairing QR).
+        EndpointService.swift          ✅  // stateless; GET /ping via HTTPClient (auth resolved from Keychain), writes lastCheckTimestamp + lastCheckReachable. probe(host:port:authKey:retryWindow:) returns EndpointProbeResult (reachable | unauthorized | unreachable | invalid); optional retryWindow polls within a deadline used by Onboarding and EndpointView.
+        EndpointProbeResult.swift      ✅  // enum returned by EndpointService.probe: reachable, unauthorized, unreachable, invalid. Drives recovery copy in onboarding and endpoint edit.
+        EndpointActions.swift          ✅  // stateless mutations on the Endpoint model: add (seeds a random catalog symbol), create (host/port/name?/symbol/authKey, used by onboarding + manual pairing), update (same params — Onboarding reuses an existing Endpoint with matching host+port instead of double-inserting), remove (deletes Keychain entry + the model), saveAuthKey (no-op if the endpoint was deleted), seedDev (DEBUG-only env-var dev-endpoint seed, called from iOSApp.init)
         EndpointsSymbolCatalog.swift   ✅  // static list of SF Symbol names grouped by category plus a flattened `symbols` pool for random endpoint defaults and EndpointsSymbolPicker
     Sessions/
       UI/
@@ -218,6 +219,21 @@ src/
       Logic/
         Window.swift                 ✅  // @Model: session: Session? (SwiftData relationship), order: Int, isFocused: Bool. One Window per open pill in the switcher.
         WindowActions.swift          ✅  // stateless mutations on the Window model: ensureOne (called from iOSApp.init), activate, addNew, swap, close. addNew/ensureOne insert a matching Session alongside the Window; close deletes only the Window (Session persists for re-opening from WindowsSidebar's Recent section).
+    Onboarding/
+      UI/
+        OnboardingView.swift                     ✅  // root onboarding surface gated from WindowsView when Endpoint count is 0. Owns the OnboardingStore, switches between Install/Pair/Status steps, listens for .deeplinkPair and applies the payload.
+        OnboardingViewInstallStep.swift          ✅  // first screen: downloads the latest public DMG to the iPhone, presents a `.sheet(item:)` share sheet for AirDrop, Continue button sets `store.step = .pair`.
+        OnboardingViewInstallStepShareSheet.swift ✅  // UIViewControllerRepresentable wrapper around UIActivityViewController for sharing the downloaded DMG via AirDrop.
+        OnboardingViewPairStep.swift             ✅  // embeds OnboardingViewScannerSheetPreview inline; "Enter manually" fallback presents OnboardingViewManualSheet. Surfaces camera-permission-denied copy via isPermissionDenied.
+        OnboardingViewScannerSheetPreview.swift  ✅  // UIViewControllerRepresentable bridge for the camera preview controller; forwards onCode and onPermissionDenied.
+        OnboardingViewScannerSheetController.swift ✅  // UIViewController driving AVCaptureSession, metadata output for QR, debounced single-emit. Checks AVCaptureDevice authorization and calls onPermissionDenied when access is unavailable. Reuses a prepared UINotificationFeedbackGenerator.
+        OnboardingViewManualSheet.swift          ✅  // manual fallback form (host/port/token/optional name) → emits OnboardingPairingPayload.
+        OnboardingViewStatusStep.swift           ✅  // verify-and-save step: runs EndpointService.probe, shows typed recovery copy for each EndpointProbeResult, calls onFinished(endpoint) and auto-dismisses on .reachable.
+      Logic/
+        OnboardingInstallService.swift           ✅  // stateless installer download helper. Fetches the latest public GitHub DMG to a temporary file so OnboardingViewInstallStep can present the iOS share sheet for AirDrop.
+        OnboardingStep.swift                     ✅  // enum: install | pair | status. Drives OnboardingStore.step.
+        OnboardingPairingPayload.swift           ✅  // struct {host, port, token, name?} with init?(url:) parsing cloude://pair?host=&port=&token=&name= URLs.
+        OnboardingStore.swift                    ✅  // @Observable MainActor store: step, draft payload, probeResult, isProbing. verifyAndSave hits EndpointService.probe and on .reachable either calls EndpointActions.update on a matching existing Endpoint or EndpointActions.create.
     Settings/
       UI/
         SettingsRow.swift                        ✅  // row primitives: SettingsRow (colored-icon + content) and SettingsToggleRow (row bound to an @AppStorage bool key)
@@ -234,6 +250,8 @@ src/
     Debug/
       DebugOverlay.swift             ✅  // top-trailing pill showing FPS when @AppStorage("debugOverlayEnabled") is true
       DebugFPSCounter.swift          ✅  // ObservableObject driven by CADisplayLink; @Published fps recomputed every second
+    DeepLinks/
+      DeepLinkRouter.swift           ✅  // single entry point for `cloude://` URLs from `iOSApp.onOpenURL`. Hosts: window/new|close|activate, session/endpoint|path|tab, chat/send|abort, pair (parses OnboardingPairingPayload and posts .deeplinkPair), settings, screenshot. Publishes `.deeplinkOpenSettings`, `.deeplinkScreenshot`, `.deeplinkPair` Notification.Names.
     Networking/
       HTTPClient.swift               ✅  // stateless GET/download; every request takes an Endpoint and the client builds the URL, resolves the bearer token from SecureStorage via endpoint.id, and returns (Data, HTTPURLResponse)? (nil on transport error). No caller ever passes authKey.
       StreamingClient.swift          // ndjson reader with resume-on-disconnect via after_seq
@@ -294,7 +312,11 @@ src/
     DaemonAuth.swift          ✅  // lazy static token stored in Keychain under "soli.Cloude.agent/authToken"; generated on first read
   UI/
     macOSDaemonApp.swift      ✅  // @main MenuBarExtra app; starts HTTPServer and warms DaemonAuth.token at init
-    ContentView.swift         ✅  // menubar popover contents
+    ContentView.swift         ✅  // menubar popover: computer name header, HOST row (local IP with copy), AUTH TOKEN row (with copy), inline pairing QR of the cloude://pair URL. Quit button at the bottom. Delegates each labelled copy row to ContentViewCopyRow.
+    ContentViewCopyRow.swift  ✅  // reusable labelled copy-row pill used by ContentView (HOST + AUTH TOKEN): monospaced value + doc.on.doc button that flips to checkmark while isCopied is true.
+    DaemonHost.swift          ✅  // static helpers: computerName (Host.current().localizedName) and localIPv4 (getifaddrs, skips loopback/down, prefers en* interfaces, falls back to any non-loopback IPv4).
+    DaemonPairingURL.swift    ✅  // builds the cloude://pair?host=&port=&token=&name= URL consumed by iOS OnboardingPairingPayload. Returns nil when no local IPv4 is available.
+    DaemonQR.swift            ✅  // CoreImage QR generator (CIFilter.qrCodeGenerator) → NSImage at requested pixel size. No third-party dependency.
   RunnerManager.swift       ✅  // serial-queue actor around map<sessionId, Runner>. start spawns/replaces, resume attaches a subscriber, abort SIGINTs.
   Runner.swift              ✅  // one claude child process + ring buffer + NWConnection subscribers. Prunes dead subscribers via stateUpdateHandler. Batches replay into a single send on subscribe.
   ImageDropbox.swift        ✅  // persists incoming base64 images to a per-call FileManager.default.temporaryDirectory subfolder and rewrites the prompt to reference absolute paths

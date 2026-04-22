@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var isCopied = false
+    @State private var isTokenCopied = false
+    @State private var isHostCopied = false
+
+    private let pairingURL = DaemonPairingURL.current()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -11,54 +14,46 @@ struct ContentView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 28, height: 28)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Remote CC Daemon")
+                    Text(DaemonHost.computerName)
                         .font(.headline)
                     HStack(spacing: 6) {
                         Circle()
                             .fill(.green)
                             .frame(width: 6, height: 6)
-                        Text("localhost:\(HTTPServer.port)")
+                        Text("port \(HTTPServer.port)")
                             .font(.system(.caption, design: .monospaced))
                             .foregroundStyle(.secondary)
                     }
                 }
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("AUTH TOKEN")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .tracking(0.8)
-                HStack(spacing: 8) {
-                    Text(DaemonAuth.token)
-                        .font(.system(.caption, design: .monospaced))
-                        .textSelection(.enabled)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Button {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(DaemonAuth.token, forType: .string)
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isCopied = true }
-                        Task {
-                            try? await Task.sleep(for: .seconds(1.2))
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isCopied = false }
-                        }
-                    } label: {
-                        Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(isCopied ? Color.green : .secondary)
-                            .contentTransition(.opacity)
-                            .frame(width: 16, height: 16)
-                    }
-                    .buttonStyle(.borderless)
+            ContentViewCopyRow(
+                label: "HOST",
+                value: DaemonHost.localIPv4 ?? "unavailable",
+                isCopied: isHostCopied
+            ) {
+                if let host = DaemonHost.localIPv4 {
+                    copy(host, flag: $isHostCopied)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.primary.opacity(0.06))
-                )
+            }
+
+            ContentViewCopyRow(
+                label: "AUTH TOKEN",
+                value: DaemonAuth.token,
+                isCopied: isTokenCopied
+            ) {
+                copy(DaemonAuth.token, flag: $isTokenCopied)
+            }
+
+            if let url = pairingURL,
+                let image = DaemonQR.image(from: url.absoluteString)
+            {
+                Image(nsImage: image)
+                    .interpolation(.none)
+                    .resizable()
+                    .frame(width: 220, height: 220)
+                    .padding(8)
+                    .frame(maxWidth: .infinity)
             }
 
             Divider()
@@ -73,5 +68,15 @@ struct ContentView: View {
         }
         .padding(16)
         .frame(width: 320)
+    }
+
+    private func copy(_ value: String, flag: Binding<Bool>) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(value, forType: .string)
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { flag.wrappedValue = true }
+        Task {
+            try? await Task.sleep(for: .seconds(1.2))
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { flag.wrappedValue = false }
+        }
     }
 }

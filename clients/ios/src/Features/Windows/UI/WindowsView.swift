@@ -6,7 +6,9 @@ struct WindowsView: View {
     @Environment(\.filePreviewPresenter) private var presenter
     @Environment(\.modelContext) private var context
     @Query(sort: \Window.order) private var windows: [Window]
+    @Query private var endpoints: [Endpoint]
     @State private var isSidebarOpen = false
+    @State private var isOnboardingPresented = false
 
     private var focusedSession: Session? {
         windows.first(where: { $0.isFocused })?.session
@@ -88,6 +90,23 @@ struct WindowsView: View {
             withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
                 isSidebarOpen = true
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openOnboarding)) { _ in
+            isOnboardingPresented = true
+        }
+        .fullScreenCover(isPresented: $isOnboardingPresented) {
+            OnboardingView { endpoint in
+                if let session = focusedSession {
+                    SessionActions.setEndpoint(endpoint, for: session)
+                }
+                isOnboardingPresented = false
+            }
+        }
+        .onAppear {
+            if endpoints.isEmpty { isOnboardingPresented = true }
+        }
+        .onChange(of: endpoints.isEmpty) { _, isEmpty in
+            if isEmpty { isOnboardingPresented = true }
         }
     }
 }

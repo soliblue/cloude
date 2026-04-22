@@ -209,9 +209,10 @@ struct EndpointView: View {
     private func save() async {
         saveError = nil
         isProbing = true
-        let ok = await EndpointService.probe(host: host, port: port, authKey: authKey)
+        let result = await EndpointService.probe(host: host, port: port, authKey: authKey)
         isProbing = false
-        if ok {
+        switch result {
+        case .reachable:
             if let existing {
                 EndpointActions.update(
                     existing, host: host, port: port, symbolName: symbolName, authKey: authKey)
@@ -222,9 +223,17 @@ struct EndpointView: View {
             withAnimation(.easeOut(duration: ThemeTokens.Duration.s)) { didSucceed = true }
             try? await Task.sleep(nanoseconds: 400_000_000)
             dismiss()
-        } else {
+        case .unauthorized:
             withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-                saveError = "Unreachable · check host, port, and token"
+                saveError = "Mac found · token rejected"
+            }
+        case .unreachable:
+            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                saveError = "Unreachable · check host and port"
+            }
+        case .invalid:
+            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                saveError = "Invalid response · check host and port"
             }
         }
     }
