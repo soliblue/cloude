@@ -4,7 +4,11 @@ KEYCHAIN_NAME = "cloude-build.keychain"
 KEYCHAIN_PASSWORD = "cloude-build-temp"
 
 def setup_signing
-  cert_path = ENV["SIGNING_CERT_PATH"] || File.expand_path("../certs/mac-distribution.p12", __dir__)
+  cert_path = if ENV["SIGNING_CERT_PATH"]
+    File.exist?(ENV["SIGNING_CERT_PATH"]) ? File.expand_path(ENV["SIGNING_CERT_PATH"]) : File.expand_path(ENV["SIGNING_CERT_PATH"], __dir__)
+  else
+    File.expand_path("../certs/mac-distribution.p12", __dir__)
+  end
   cert_path = File.expand_path("../certs/distribution.p12", __dir__) unless File.exist?(cert_path)
   cert_password = ENV["SIGNING_CERT_PASSWORD"] || ENV["MAC_CERT_PASSWORD"] || ENV["DISTRIBUTION_CERTIFICATE_PASSWORD"] || ENV["CERT_PASSWORD"]
 
