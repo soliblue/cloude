@@ -4,15 +4,16 @@ KEYCHAIN_NAME = "cloude-build.keychain"
 KEYCHAIN_PASSWORD = "cloude-build-temp"
 
 def setup_signing
-  cert_path = ENV["SIGNING_CERT_PATH"] || File.expand_path("../certs/distribution.p12", __dir__)
-  cert_password = ENV["SIGNING_CERT_PASSWORD"] || ENV["DISTRIBUTION_CERTIFICATE_PASSWORD"] || ENV["CERT_PASSWORD"]
+  cert_path = ENV["SIGNING_CERT_PATH"] || File.expand_path("../certs/mac-distribution.p12", __dir__)
+  cert_path = File.expand_path("../certs/distribution.p12", __dir__) unless File.exist?(cert_path)
+  cert_password = ENV["SIGNING_CERT_PASSWORD"] || ENV["MAC_CERT_PASSWORD"] || ENV["DISTRIBUTION_CERTIFICATE_PASSWORD"] || ENV["CERT_PASSWORD"]
 
   unless File.exist?(cert_path)
     UI.user_error!("Certificate not found at #{cert_path}")
   end
 
   unless cert_password
-    UI.user_error!("CERT_PASSWORD not set in environment")
+    UI.user_error!("Signing certificate password not set in environment")
   end
 
   sh("security delete-keychain #{KEYCHAIN_NAME} 2>/dev/null || true")

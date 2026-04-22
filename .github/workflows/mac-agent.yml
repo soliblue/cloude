@@ -54,8 +54,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Cloude-Agent-dmg
-          path: build/release/Cloude-Agent.dmg
+          name: Remote-CC-Daemon-dmg
+          path: build/release/Remote-CC-Daemon.dmg
 
       - name: Publish release asset
         if: github.ref_type == 'tag' || github.event.inputs.release_tag != ''
@@ -65,7 +65,7 @@ jobs:
         run: |
           TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --notes "Cloude Agent DMG"
-          gh release upload "$TAG" build/release/Cloude-Agent.dmg --clobber
+          gh release upload "$TAG" build/release/Remote-CC-Daemon.dmg --clobber
 
       - name: Cleanup
         if: always()
