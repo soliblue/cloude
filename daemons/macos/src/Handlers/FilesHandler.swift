@@ -2,14 +2,18 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum FilesHandler {
+    private static let fileManager = FileManager.default
     private static let iso8601 = ISO8601DateFormatter()
+    private static let entryKeys: Set<URLResourceKey> = [
+        .isDirectoryKey, .fileSizeKey, .contentModificationDateKey,
+    ]
 
     static func list(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let path = request.query["path"] {
             let url = resolved(path)
-            if let contents = try? FileManager.default.contentsOfDirectory(
+            if let contents = try? fileManager.contentsOfDirectory(
                 at: url,
-                includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey],
+                includingPropertiesForKeys: Array(entryKeys),
                 options: [.skipsHiddenFiles]
             ) {
                 let entries = contents.map { entry(for: $0) }.sorted { lhs, rhs in
@@ -44,10 +48,10 @@ enum FilesHandler {
         if let root = request.query["path"],
             let needle = request.query["query"], !needle.isEmpty
         {
-            let rootURL = URL(fileURLWithPath: root).standardizedFileURL
-            let enumerator = FileManager.default.enumerator(
+            let rootURL = resolved(root)
+            let enumerator = fileManager.enumerator(
                 at: rootURL,
-                includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey],
+                includingPropertiesForKeys: Array(entryKeys),
                 options: [.skipsHiddenFiles]
             )
             var hits: [[String: Any]] = []
@@ -76,7 +80,7 @@ enum FilesHandler {
     }
 
     private static func entry(for url: URL) -> [String: Any] {
-        let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey])
+        let values = try? url.resourceValues(forKeys: entryKeys)
         let isDir = values?.isDirectory ?? false
         var dict: [String: Any] = [
             "name": url.lastPathComponent,
@@ -100,28 +104,31 @@ enum FilesHandler {
 
     private static func partial(url: URL, range: String, contentType: String) -> HTTPResponse {
         if let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize,
-            let eq = range.firstIndex(of: "="),
-            case let spec = range[range.index(after: eq)...],
-            let dash = spec.firstIndex(of: "-")
+            let eq = range.firstIndex(of: "=")
         {
-            let startStr = String(spec[..<dash])
-            let endStr = String(spec[spec.index(after: dash)...])
-            if let start = Int(startStr) {
-                let end = Int(endStr) ?? (size - 1)
-                let clampedEnd = min(end, size - 1)
-                if start <= clampedEnd, let handle = try? FileHandle(forReadingFrom: url) {
-                    try? handle.seek(toOffset: UInt64(start))
-                    let slice = (try? handle.read(upToCount: clampedEnd - start + 1)) ?? Data()
-                    try? handle.close()
-                    return HTTPResponse(
-                        status: 206,
-                        body: slice,
-                        contentType: contentType,
-                        extraHeaders: [
-                            "Content-Range": "bytes \(start)-\(clampedEnd)/\(size)",
-                            "Accept-Ranges": "bytes",
-                        ]
-                    )
+            let spec = range[range.index(after: eq)...]
+            if let dash = spec.firstIndex(of: "-") {
+                let startStr = String(spec[..<dash])
+                let endStr = String(spec[spec.index(after: dash)...])
+                if let start = Int(startStr) {
+                    let end = Int(endStr) ?? (size - 1)
+                    let clampedEnd = min(end, size - 1)
+                    if start <= clampedEnd, let handle = try? FileHandle(forReadingFrom: url) {
+                        if (try? handle.seek(toOffset: UInt64(start))) != nil {
+                            let slice = (try? handle.read(upToCount: clampedEnd - start + 1)) ?? Data()
+                            try? handle.close()
+                            return HTTPResponse(
+                                status: 206,
+                                body: slice,
+                                contentType: contentType,
+                                extraHeaders: [
+                                    "Content-Range": "bytes \(start)-\(clampedEnd)/\(size)",
+                                    "Accept-Ranges": "bytes",
+                                ]
+                            )
+                        }
+                        try? handle.close()
+                    }
                 }
             }
         }

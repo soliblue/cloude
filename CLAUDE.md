@@ -237,13 +237,11 @@ src/
     Settings/
       UI/
         SettingsRow.swift                        ✅  // row primitives: SettingsRow (colored-icon + content) and SettingsToggleRow (row bound to an @AppStorage bool key)
-        SettingsViewAccent.swift                 ✅  // row that navigates to SettingsViewAccentPicker
-        SettingsViewAccentPicker.swift           ✅  // preset accent list with live AppStorage-backed selection
         SettingsView.swift                       ✅  // top-level settings sheet: NavigationStack + List of sections + trailing xmark dismiss
-        SettingsViewAbout.swift                  ✅  // version + external links section
+        SettingsViewAbout.swift                  ✅  // external links row (Help & Support)
         SettingsViewFontSize.swift               ✅  // -/+ stepper bound to @AppStorage("fontSizeStep")
         SettingsViewTheme.swift                  ✅  // row that navigates to SettingsViewThemePicker
-        SettingsViewThemePicker.swift            ✅  // 2-col LazyVGrid of theme cards; private SettingsViewThemePickerCard nested in file
+        SettingsViewThemePicker.swift            ✅  // combined Theme + Accent picker; each section is a list of rows bound to its @AppStorage key
       Logic/
         // no SettingsStore yet - theme lives in Core/Theme/ThemeStore, fontSizeStep in @AppStorage. Add a store if a third setting shows up.
   Core/

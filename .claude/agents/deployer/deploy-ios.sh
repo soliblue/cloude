@@ -1,18 +1,28 @@
 #!/bin/bash
-set -e
-
-# Deploy iOS app - checks for connected iPhone first, falls back to TestFlight
-# Usage: ./deploy-ios.sh [--phone-only]
+set -euo pipefail
 
 PHONE_ONLY=false
-if [[ "$1" == "--phone-only" ]]; then
-    PHONE_ONLY=true
-fi
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --phone | --phone-only)
+            PHONE_ONLY=true
+            shift
+            ;;
+        *)
+            echo "Unknown arg: $1"
+            exit 1
+            ;;
+    esac
+done
+
+REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+IOS_BUILD_DIR="/tmp/cloude-ios-device-build"
+APP_PATH="$IOS_BUILD_DIR/Build/Products/Debug-iphoneos/Cloude.app"
+BUNDLE_ID="soli.Cloude"
 
 echo "🔍 Checking for connected iPhone..."
 
-# Get xcodebuild device ID (different from devicectl UUID)
-XCODE_DEVICE=$(xcodebuild -project clients/ios/iOS.xcodeproj -scheme Cloude -showdestinations 2>&1 \
+XCODE_DEVICE=$(xcodebuild -project "$REPO_ROOT/clients/ios/iOS.xcodeproj" -scheme Cloude -showdestinations 2>&1 \
     | grep "platform:iOS, arch:" | grep -i "iphone" | head -1 || true)
 
 if [[ -z "$XCODE_DEVICE" ]]; then
@@ -21,6 +31,7 @@ if [[ -z "$XCODE_DEVICE" ]]; then
         exit 1
     fi
     echo "📱 iPhone not connected, falling back to TestFlight..."
+    cd "$REPO_ROOT"
     set -a
     source .env
     set +a
@@ -34,40 +45,48 @@ XCODE_NAME=$(echo "$XCODE_DEVICE" | grep -oE 'name:[^}]+' | sed 's/name://')
 echo "✅ $XCODE_NAME connected (ID: $XCODE_ID)"
 echo "🔨 Building and installing iOS app..."
 
-# Build for connected device
-xcodebuild -project clients/ios/iOS.xcodeproj \
-    -scheme Cloude \
-    -destination "platform=iOS,id=$XCODE_ID" \
-    build 2>&1 | tail -5
+rm -rf "$IOS_BUILD_DIR"
 
-if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+set +e
+xcodebuild -project "$REPO_ROOT/clients/ios/iOS.xcodeproj" \
+    -scheme Cloude \
+    -configuration Debug \
+    -destination "platform=iOS,id=$XCODE_ID" \
+    -derivedDataPath "$IOS_BUILD_DIR" \
+    build 2>&1 | tail -5
+BUILD_STATUS=${PIPESTATUS[0]}
+set -e
+
+if [[ $BUILD_STATUS -ne 0 ]]; then
     echo "❌ Build failed"
     exit 1
 fi
 
 echo "📲 Installing to iPhone..."
 
-# Get devicectl UUID for install
-DEVICECTL_UUID=$(xcrun devicectl list devices 2>&1 | grep -i "iphone" | grep "connected" \
-    | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
-
-# Find the built app in DerivedData
-APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData/Cloude-*/Build/Products/Debug-iphoneos/Cloude.app -maxdepth 0 2>/dev/null | head -1)
-
-if [[ -z "$APP_PATH" ]]; then
-    echo "❌ Could not find built Cloude.app in DerivedData"
+if [[ ! -d "$APP_PATH" ]]; then
+    echo "❌ Could not find built Cloude.app at $APP_PATH"
     exit 1
 fi
 
-# Install to device
-xcrun devicectl device install app \
-    --device "$DEVICECTL_UUID" \
-    "$APP_PATH"
-
-if [[ $? -eq 0 ]]; then
+if xcrun devicectl device install app \
+    --device "$XCODE_ID" \
+    "$APP_PATH"; then
     echo "✅ Installed directly to $XCODE_NAME"
-    exit 0
 else
     echo "❌ Install failed"
+    exit 1
+fi
+
+echo "🚀 Launching on iPhone..."
+
+if xcrun devicectl device process launch \
+    --device "$XCODE_ID" \
+    --terminate-existing \
+    "$BUNDLE_ID"; then
+    echo "✅ Launched $BUNDLE_ID on $XCODE_NAME"
+    exit 0
+else
+    echo "❌ Launch failed"
     exit 1
 fi

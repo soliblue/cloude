@@ -34,7 +34,7 @@ struct GitDiffSheetLine: View {
                 .foregroundStyle((color ?? .secondary).opacity(ThemeTokens.Opacity.l))
             Text(line.text)
         }
-        .appFont(size: ThemeTokens.Text.m, design: .monospaced)
+        .appFont(size: ThemeTokens.Text.s, design: .monospaced)
         .padding(.vertical, ThemeTokens.Spacing.xs)
         .padding(.horizontal, ThemeTokens.Spacing.s)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -69,7 +69,19 @@ struct WindowsSidebar: View {
                 }
 
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-                    sectionHeader("Endpoints")
+                    HStack {
+                        sectionHeader("Endpoints")
+                        Spacer()
+                        Button {
+                            isCreatingEndpoint = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .appFont(size: ThemeTokens.Text.s, weight: .medium)
+                                .foregroundColor(.secondary)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
                     ForEach(endpoints) { endpoint in
                         NavigationLink {
                             EndpointView(existing: endpoint, canDelete: endpoints.count > 1)
@@ -92,19 +104,7 @@ struct WindowsSidebar: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    Button {
-                        isCreatingEndpoint = true
-                    } label: {
-                        WindowsSidebarRow(
-                            symbol: "plus",
-                            title: "Add Endpoint",
-                            isFocused: false
-                        )
-                    }
-                    .buttonStyle(.plain)
-
                     sectionHeader("Settings")
-                    SettingsViewAccent()
                     SettingsViewTheme()
                     SettingsViewFontSize()
                     SettingsToggleRow(

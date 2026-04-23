@@ -10,8 +10,6 @@ struct OnboardingViewStatusStep: View {
     @State private var savedEndpoint: Endpoint?
 
     private struct Copy {
-        let symbol: String
-        let tint: Color
         let title: String
         let subtitle: String
     }
@@ -20,36 +18,26 @@ struct OnboardingViewStatusStep: View {
         switch store.probeResult {
         case .reachable:
             return Copy(
-                symbol: "",
-                tint: ThemeColor.success,
                 title: "You're all set",
                 subtitle: "Hope you enjoy it. Anything broken or weird, reach out [@_xsoli](https://x.com/_xsoli)."
             )
         case .unauthorized:
             return Copy(
-                symbol: "lock.trianglebadge.exclamationmark.fill",
-                tint: ThemeColor.danger,
                 title: "Token rejected",
                 subtitle: "Generate a new QR in Remote CC Daemon and try again."
             )
         case .unreachable:
             return Copy(
-                symbol: "wifi.exclamationmark",
-                tint: ThemeColor.orange,
                 title: "Can't reach your Mac",
                 subtitle: "Make sure your phone and Mac are on the same Wi-Fi."
             )
         case .invalid:
             return Copy(
-                symbol: "exclamationmark.triangle.fill",
-                tint: ThemeColor.danger,
                 title: "Unexpected response",
                 subtitle: "The host responded, but not like the daemon does."
             )
         case .none:
             return Copy(
-                symbol: "dot.radiowaves.left.and.right",
-                tint: .primary,
                 title: "Checking connection",
                 subtitle: "Running an authenticated ping against your Mac."
             )
@@ -58,6 +46,7 @@ struct OnboardingViewStatusStep: View {
 
     var body: some View {
         VStack(spacing: ThemeTokens.Spacing.l) {
+            Spacer()
             VStack(spacing: ThemeTokens.Spacing.s) {
                 Text(copy.title)
                     .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
@@ -69,8 +58,9 @@ struct OnboardingViewStatusStep: View {
                     .tint(appAccent.color)
                     .frame(maxWidth: 520)
             }
-            hero
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if store.isProbing {
+                ProgressView().controlSize(.large)
+            }
             if let savedEndpoint {
                 Button {
                     onFinished(savedEndpoint)
@@ -102,9 +92,10 @@ struct OnboardingViewStatusStep: View {
                 }
                 .buttonStyle(.plain)
             }
+            Spacer()
         }
         .padding(ThemeTokens.Spacing.l)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(theme.palette.background.ignoresSafeArea())
         .task(id: store.draft) {
             if store.draft != nil, store.probeResult == nil {
@@ -112,22 +103,6 @@ struct OnboardingViewStatusStep: View {
                     savedEndpoint = endpoint
                 }
             }
-        }
-    }
-
-    @ViewBuilder
-    private var hero: some View {
-        if store.isProbing {
-            ProgressView().controlSize(.large)
-        } else if store.probeResult == .reachable {
-            Image("claude-painter")
-                .resizable()
-                .scaledToFit()
-        } else {
-            Image(systemName: copy.symbol)
-                .appFont(size: ThemeTokens.Size.l)
-                .foregroundColor(copy.tint)
-                .contentTransition(.symbolEffect(.replace))
         }
     }
 }

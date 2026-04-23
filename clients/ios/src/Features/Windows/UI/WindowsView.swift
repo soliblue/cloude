@@ -9,6 +9,7 @@ struct WindowsView: View {
     @Query private var endpoints: [Endpoint]
     @State private var isSidebarOpen = false
     @State private var isOnboardingPresented = false
+    @State private var isKeyboardVisible = false
 
     private var focusedSession: Session? {
         windows.first(where: { $0.isFocused })?.session
@@ -60,7 +61,7 @@ struct WindowsView: View {
             }
         }
         .overlay(alignment: .trailing) {
-            if !isSidebarOpen, let session = focusedSession {
+            if !isSidebarOpen, !isKeyboardVisible, let session = focusedSession {
                 WindowsCreateButtonHost(session: session) {
                     withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
                         WindowActions.addNew(into: context, after: windows)
@@ -93,6 +94,12 @@ struct WindowsView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .openOnboarding)) { _ in
             isOnboardingPresented = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) { isKeyboardVisible = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) { isKeyboardVisible = false }
         }
         .fullScreenCover(isPresented: $isOnboardingPresented) {
             OnboardingView { endpoint in

@@ -8,6 +8,7 @@ struct ChatInputBar: View {
     @State private var images: [Data] = []
     @FocusState private var focused: Bool
     @Environment(\.appAccent) private var appAccent
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         VStack(spacing: ThemeTokens.Spacing.xs) {
@@ -23,23 +24,39 @@ struct ChatInputBar: View {
                     .padding(.horizontal, ThemeTokens.Spacing.m)
                     .padding(.vertical, ThemeTokens.Spacing.m)
                     .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
-                Menu {
-                    sendMenu
-                } label: {
-                    Text(Image(systemName: "arrow.up"))
-                        .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                        .foregroundColor(canSend ? appAccent.color : .secondary)
-                        .padding(ThemeTokens.Spacing.m)
-                        .contentShape(Capsule())
-                } primaryAction: {
-                    send()
+                if session.isStreaming {
+                    Button {
+                        ChatService.abort(session: session, context: context)
+                    } label: {
+                        Text(Image(systemName: "stop.fill"))
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                            .foregroundColor(appAccent.color)
+                            .padding(ThemeTokens.Spacing.m)
+                            .contentShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .glassEffect(.regular.interactive(), in: Capsule())
+                } else {
+                    Menu {
+                        sendMenu
+                    } label: {
+                        Text(Image(systemName: "paperplane.fill"))
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                            .foregroundColor(canSend ? appAccent.color : .secondary)
+                            .padding(ThemeTokens.Spacing.m)
+                            .contentShape(Capsule())
+                    } primaryAction: {
+                        send()
+                    }
+                    .buttonStyle(.plain)
+                    .glassEffect(.regular.interactive(), in: Capsule())
+                    .disabled(!enabled)
                 }
-                .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: Capsule())
-                .disabled(!enabled)
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
+        .padding(.bottom, focused ? ThemeTokens.Spacing.s : 0)
+        .animation(.easeInOut(duration: ThemeTokens.Duration.s), value: focused)
     }
 
     @ViewBuilder
@@ -84,6 +101,7 @@ struct ChatInputBar: View {
             onSend(trimmed, images)
             draft = ""
             images = []
+            focused = false
         }
     }
 

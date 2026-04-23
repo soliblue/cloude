@@ -31,18 +31,11 @@ export function start(request, params) {
 
 export function resume(request, params) {
   if (params.id) {
-    if (runnerManager.hasRunner(params.id)) {
-      return HTTPResponse.stream(200, 'application/x-ndjson', {}, (response) => {
-        const afterSeq = Number.parseInt(request.query.after_seq || '-1', 10)
-        runnerManager.resume(
-          params.id,
-          Number.isNaN(afterSeq) ? -1 : afterSeq,
-          response
-        )
-      })
-    }
     return HTTPResponse.stream(200, 'application/x-ndjson', {}, (response) => {
-      if (!replay(params.id, response)) {
+      const parsed = Number.parseInt(request.query.after_seq || '-1', 10)
+      const afterSeq = Number.isNaN(parsed) ? -1 : parsed
+      const attached = runnerManager.resumeIfExists(params.id, afterSeq, response)
+      if (!attached && !replay(params.id, response)) {
         response.end()
       }
     })
@@ -52,8 +45,8 @@ export function resume(request, params) {
 
 export function abort(request, params) {
   if (params.id) {
-    const ok = runnerManager.abort(params.id)
-    return HTTPResponse.json(ok ? 200 : 404, { ok })
+    const aborted = runnerManager.abort(params.id)
+    return HTTPResponse.json(200, { ok: true, aborted })
   }
   return HTTPResponse.json(400, { error: 'bad_request' })
 }

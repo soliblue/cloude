@@ -40,7 +40,7 @@ struct GitDiffSheet: View {
                     }
                 }
             }
-            .task { await load(full: false) }
+            .task { await load(isFull: false) }
         }
         .presentationBackground(theme.palette.background)
         .preferredColorScheme(theme.palette.colorScheme)
@@ -52,7 +52,7 @@ struct GitDiffSheet: View {
                 .appFont(size: ThemeTokens.Text.s)
                 .foregroundColor(.secondary)
             Button {
-                Task { await load(full: true) }
+                Task { await load(isFull: true) }
             } label: {
                 if isFullLoading {
                     ProgressView().controlSize(.small)
@@ -67,20 +67,17 @@ struct GitDiffSheet: View {
         .padding(ThemeTokens.Spacing.l)
     }
 
-    private func load(full: Bool) async {
-        if full { isFullLoading = true }
-        guard let endpoint = session.endpoint, let path = session.path else {
-            isLoading = false
-            isFullLoading = false
-            return
-        }
-        let result = await GitService.diff(
-            endpoint: endpoint, session: session, path: path,
-            file: change.path, staged: change.isStaged, full: full
-        )
-        if let result {
-            lines = GitDiffParser.parse(result.text)
-            truncatedFromLines = full ? nil : result.truncatedFromLines
+    private func load(isFull: Bool) async {
+        if isFull { isFullLoading = true }
+        if let endpoint = session.endpoint, let path = session.path {
+            let result = await GitService.diff(
+                endpoint: endpoint, session: session, path: path,
+                file: change.path, isStaged: change.isStaged, isFull: isFull
+            )
+            if let result {
+                lines = GitDiffParser.parse(result.text)
+                truncatedFromLines = isFull ? nil : result.truncatedFromLines
+            }
         }
         isLoading = false
         isFullLoading = false

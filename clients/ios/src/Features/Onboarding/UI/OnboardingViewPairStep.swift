@@ -19,6 +19,7 @@ struct OnboardingViewPairStep: View {
 
     var body: some View {
         VStack(spacing: ThemeTokens.Spacing.l) {
+            Spacer()
             VStack(spacing: ThemeTokens.Spacing.s) {
                 Text("Scan the pairing QR")
                     .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
@@ -59,9 +60,10 @@ struct OnboardingViewPairStep: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
+            Spacer()
         }
         .padding(ThemeTokens.Spacing.l)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(theme.palette.background.ignoresSafeArea())
         .sheet(isPresented: $isManualPresented) {
             OnboardingViewManualSheet { payload in

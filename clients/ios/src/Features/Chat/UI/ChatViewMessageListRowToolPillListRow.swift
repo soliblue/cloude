@@ -31,7 +31,7 @@ struct ChatViewMessageListRowToolPillListRow: View {
         .buttonStyle(.plain)
         .onAppear {
             if toolCall.state == .pending {
-                withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
+                withAnimation(.easeInOut(duration: 2.13).repeatForever(autoreverses: true)) {
                     shimmerPhase = 1.5
                 }
             }

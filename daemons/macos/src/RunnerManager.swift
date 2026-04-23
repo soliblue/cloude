@@ -12,7 +12,9 @@ final class RunnerManager {
         existsOnServer: Bool, model: String?, effort: String?, connection: NWConnection
     ) {
         queue.async {
-            NSLog("[RunnerManager] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") promptChars=\(prompt.count) images=\(images.count)")
+            NSLog(
+                "[RunnerManager] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
+            )
             if let existing = self.runners[sessionId] {
                 NSLog("[RunnerManager] aborting existing runner sessionId=\(sessionId)")
                 existing.abort()
@@ -33,17 +35,13 @@ final class RunnerManager {
         }
     }
 
-    func hasRunner(sessionId: String) -> Bool {
-        queue.sync { runners[sessionId] != nil }
-    }
-
-    func resume(sessionId: String, afterSeq: Int, connection: NWConnection) {
-        queue.async {
-            if let runner = self.runners[sessionId] {
+    func resumeIfExists(sessionId: String, afterSeq: Int, connection: NWConnection) -> Bool {
+        queue.sync {
+            if let runner = runners[sessionId] {
                 runner.subscribe(connection, afterSeq: afterSeq)
-            } else {
-                connection.cancel()
+                return true
             }
+            return false
         }
     }
 

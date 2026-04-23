@@ -27,15 +27,15 @@ enum GitService {
         session: Session,
         path: String,
         file: String,
-        staged: Bool,
-        full: Bool = false
+        isStaged: Bool,
+        isFull: Bool = false
     ) async -> DiffResult? {
         var query: [String: String] = [
             "path": path,
             "file": file,
-            "staged": staged ? "1" : "0",
+            "staged": isStaged ? "1" : "0",
         ]
-        if full { query["full"] = "1" }
+        if isFull { query["full"] = "1" }
         if let (data, response) = await HTTPClient.get(
             endpoint: endpoint,
             path: "/sessions/\(session.id.uuidString)/git/diff",

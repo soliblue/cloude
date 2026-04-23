@@ -60,10 +60,23 @@ enum ChatService {
                 )
                 await consume(stream: stream, sessionId: sessionId, context: context)
             }
+        } else if session.isStreaming {
+            SessionActions.setStreaming(false, for: session)
+            let sessionId = session.id
+            let pendingRaw = ChatToolCall.State.pending.rawValue
+            let descriptor = FetchDescriptor<ChatToolCall>(
+                predicate: #Predicate<ChatToolCall> {
+                    $0.stateRaw == pendingRaw && $0.message?.sessionId == sessionId
+                }
+            )
+            if let calls = try? context.fetch(descriptor) {
+                for call in calls { call.state = .failed }
+            }
         }
     }
 
-    static func abort(session: Session) {
+    @MainActor
+    static func abort(session: Session, context: ModelContext) {
         if let endpoint = session.endpoint {
             Task {
                 _ = await HTTPClient.post(
@@ -71,6 +84,7 @@ enum ChatService {
                 )
             }
         }
+        closeStream(sessionId: session.id, isFailed: false, context: context)
     }
 
     @MainActor
@@ -180,6 +194,15 @@ enum ChatService {
             } else {
                 ChatActions.finishStreaming(message, isFailed: isFailed)
             }
+        }
+        let pendingRaw = ChatToolCall.State.pending.rawValue
+        let pendingDescriptor = FetchDescriptor<ChatToolCall>(
+            predicate: #Predicate<ChatToolCall> {
+                $0.stateRaw == pendingRaw && $0.message?.sessionId == sessionId
+            }
+        )
+        if let pending = try? context.fetch(pendingDescriptor) {
+            for call in pending { call.state = .failed }
         }
         let descriptor = FetchDescriptor<Session>(
             predicate: #Predicate<Session> { $0.id == sessionId }

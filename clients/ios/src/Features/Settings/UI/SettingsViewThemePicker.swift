@@ -2,24 +2,50 @@ import SwiftUI
 
 struct SettingsViewThemePicker: View {
     @AppStorage(StorageKey.appTheme) private var selectedTheme: Theme = .majorelle
+    @AppStorage(StorageKey.appAccent) private var selectedAccent: AppAccent = .clay
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                ForEach(Array(Theme.allCases.enumerated()), id: \.element) { index, theme in
-                    if index > 0 { Divider() }
-                    SettingsViewThemePickerRow(theme: theme, isSelected: selectedTheme == theme)
+            VStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
+                sectionHeader("Theme")
+                VStack(spacing: 0) {
+                    ForEach(Array(Theme.allCases.enumerated()), id: \.element) { index, theme in
+                        if index > 0 { Divider() }
+                        SettingsViewThemePickerThemeRow(
+                            theme: theme, isSelected: selectedTheme == theme
+                        )
                         .contentShape(Rectangle())
                         .onTapGesture { selectedTheme = theme }
+                    }
+                }
+
+                sectionHeader("Accent")
+                VStack(spacing: 0) {
+                    ForEach(Array(AppAccent.allCases.enumerated()), id: \.element) { index, accent in
+                        if index > 0 { Divider() }
+                        SettingsViewThemePickerAccentRow(
+                            accent: accent, isSelected: selectedAccent == accent
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture { selectedAccent = accent }
+                    }
                 }
             }
             .padding(.horizontal, ThemeTokens.Spacing.m)
+            .padding(.vertical, ThemeTokens.Spacing.m)
         }
         .themedNavChrome()
     }
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .appFont(size: ThemeTokens.Text.s, weight: .medium)
+            .foregroundColor(.secondary)
+            .textCase(.uppercase)
+    }
 }
 
-private struct SettingsViewThemePickerRow: View {
+private struct SettingsViewThemePickerThemeRow: View {
     let theme: Theme
     let isSelected: Bool
 
@@ -36,6 +62,28 @@ private struct SettingsViewThemePickerRow: View {
                         .fill(color)
                         .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
                 }
+            }
+        }
+        .padding(.vertical, ThemeTokens.Spacing.m)
+    }
+}
+
+private struct SettingsViewThemePickerAccentRow: View {
+    let accent: AppAccent
+    let isSelected: Bool
+
+    var body: some View {
+        HStack(spacing: ThemeTokens.Spacing.m) {
+            Circle()
+                .fill(accent.color)
+                .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
+            Text(accent.rawValue)
+                .appFont(size: ThemeTokens.Text.m, weight: isSelected ? .semibold : .regular)
+                .foregroundColor(isSelected ? .primary : .secondary)
+            Spacer()
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .appFont(size: ThemeTokens.Text.m, weight: .semibold)
             }
         }
         .padding(.vertical, ThemeTokens.Spacing.m)

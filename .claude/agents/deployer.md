@@ -26,7 +26,7 @@ The caller may pass a flag:
 - no flag: auto-detect, or both when ambiguous
 - `--mac-only`: Mac daemon only
 - `--ios-only`: iOS only
-- `--phone`: direct-to-phone install only
+- `--phone`: direct-to-phone install and launch only
 
 If the caller only wants local investigation (sim + daemon on localhost, no TestFlight, no phone), redirect them to the `launcher` agent or the `sim` skill.
 
@@ -39,7 +39,7 @@ iOS (TestFlight or phone fallback handled by the script):
 
 Phone only:
 \`\`\`bash
-.claude/agents/deployer/deploy-ios.sh --phone-only
+.claude/agents/deployer/deploy-ios.sh --phone
 \`\`\`
 
 Mac daemon (local debug build + relaunch):

@@ -75,7 +75,7 @@ enum DeepLinkRouter {
                     ChatService.send(session: session, prompt: text, images: [], context: context)
                 }
             case "/abort":
-                ChatService.abort(session: session)
+                ChatService.abort(session: session, context: context)
             default: break
             }
         }

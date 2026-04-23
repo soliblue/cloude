@@ -25,16 +25,12 @@ enum ChatHandler {
 
     static func resume(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let sessionId = params["id"] {
-            if RunnerManager.shared.hasRunner(sessionId: sessionId) {
-                let afterSeq = Int(request.query["after_seq"] ?? "") ?? -1
-                return HTTPResponse.stream { connection in
-                    RunnerManager.shared.resume(
-                        sessionId: sessionId, afterSeq: afterSeq, connection: connection
-                    )
-                }
-            }
+            let afterSeq = Int(request.query["after_seq"] ?? "") ?? -1
             return HTTPResponse.stream { connection in
-                if !SessionJSONLReplay.replay(sessionId: sessionId, to: connection) {
+                let attached = RunnerManager.shared.resumeIfExists(
+                    sessionId: sessionId, afterSeq: afterSeq, connection: connection
+                )
+                if !attached, !SessionJSONLReplay.replay(sessionId: sessionId, to: connection) {
                     connection.cancel()
                 }
             }
@@ -44,8 +40,8 @@ enum ChatHandler {
 
     static func abort(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let sessionId = params["id"] {
-            let ok = RunnerManager.shared.abort(sessionId: sessionId)
-            return HTTPResponse.json(ok ? 200 : 404, ["ok": ok])
+            let aborted = RunnerManager.shared.abort(sessionId: sessionId)
+            return HTTPResponse.json(200, ["ok": true, "aborted": aborted])
         }
         return HTTPResponse.json(400, ["error": "bad_request"])
     }

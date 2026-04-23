@@ -26,16 +26,13 @@ class RunnerManager {
     runner.spawn(path, preparePrompt(prompt, images))
   }
 
-  hasRunner(sessionId) {
-    return this.runners.has(sessionId)
-  }
-
-  resume(sessionId, afterSeq, response) {
-    if (this.runners.has(sessionId)) {
-      this.runners.get(sessionId).subscribe(response, afterSeq)
-    } else {
-      response.end()
+  resumeIfExists(sessionId, afterSeq, response) {
+    const runner = this.runners.get(sessionId)
+    if (runner) {
+      runner.subscribe(response, afterSeq)
+      return true
     }
+    return false
   }
 
   abort(sessionId) {

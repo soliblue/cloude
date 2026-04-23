@@ -5,13 +5,14 @@ enum CloudeFileURL {
     static let host = "file"
 
     static func url(for path: String) -> URL? {
-        guard let encoded = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
-        else { return nil }
-        return URL(string: "\(scheme)://\(host)\(encoded)")
+        if let encoded = path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) {
+            return URL(string: "\(scheme)://\(host)\(encoded)")
+        }
+        return nil
     }
 
     static func path(from url: URL) -> String? {
-        guard url.scheme == scheme, url.host == host else { return nil }
-        return url.path
+        if url.scheme == scheme, url.host == host { return url.path }
+        return nil
     }
 }
