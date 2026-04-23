@@ -47,10 +47,21 @@ Phone only:
 
 Phone deploy requires Apple device signing on the Mac. If the phone is visible but the build fails with `No signing certificate "iOS Development" found`, `No "iOS Development" signing certificate matching team ID "Q9U8224WWM" with a private key was found`, or `0 valid identities found`, tell the user this is not a Wi-Fi or trust problem. A real iPhone install requires Xcode signed in to the correct Apple ID/team, Developer Mode enabled, the device paired in Xcode, and an Apple Development certificate plus provisioning profile available locally. Same Wi-Fi only helps after Xcode can already see the iPhone as an eligible `platform:iOS` destination.
 
-Mac daemon (local debug build + relaunch):
+Mac daemon — local debug build + relaunch:
 \`\`\`bash
 set -a && source .env && set +a && fastlane mac build_agent
 \`\`\`
+
+Mac daemon — public GitHub release DMG (what iOS onboarding pulls):
+\`\`\`bash
+.claude/agents/deployer/deploy-mac.sh
+\`\`\`
+
+The release script pushes an `agent-v<date>.<n>` tag; `.github/workflows/mac-agent.yml` picks it up, builds + notarizes the DMG, and publishes a GitHub release. If no release script is on disk yet, fall back to pushing the tag directly:
+\`\`\`bash
+TAG=agent-v$(date +%Y.%m.%d).1 && git tag "$TAG" && git push origin "$TAG"
+\`\`\`
+Report the tag and the run URL from `gh run list --workflow mac-agent.yml -L 1`.
 
 Provisioning backend on Medina:
 \`\`\`bash

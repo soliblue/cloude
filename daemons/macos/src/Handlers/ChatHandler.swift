@@ -12,6 +12,11 @@ enum ChatHandler {
             let existsOnServer = (body["existsOnServer"] as? Bool) ?? false
             let model = body["model"] as? String
             let effort = body["effort"] as? String
+            #if DEBUG
+            NSLog(
+                "[ChatHandler] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
+            )
+            #endif
             return HTTPResponse.stream { connection in
                 RunnerManager.shared.start(
                     sessionId: sessionId, path: path, prompt: prompt, images: images,
@@ -26,6 +31,9 @@ enum ChatHandler {
     static func resume(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let sessionId = params["id"] {
             let afterSeq = Int(request.query["after_seq"] ?? "") ?? -1
+            #if DEBUG
+            NSLog("[ChatHandler] resume sessionId=\(sessionId) afterSeq=\(afterSeq)")
+            #endif
             return HTTPResponse.stream { connection in
                 let attached = RunnerManager.shared.resumeIfExists(
                     sessionId: sessionId, afterSeq: afterSeq, connection: connection
@@ -40,6 +48,9 @@ enum ChatHandler {
 
     static func abort(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let sessionId = params["id"] {
+            #if DEBUG
+            NSLog("[ChatHandler] abort sessionId=\(sessionId)")
+            #endif
             let aborted = RunnerManager.shared.abort(sessionId: sessionId)
             return HTTPResponse.json(200, ["ok": true, "aborted": aborted])
         }

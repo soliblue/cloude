@@ -113,6 +113,9 @@ final class Runner {
         )
         #endif
         connection.stateUpdateHandler = { [weak self, weak connection] state in
+            #if DEBUG
+            NSLog("[Runner] subscriber_state sessionId=\(self?.sessionId ?? "?") state=\(String(describing: state))")
+            #endif
             switch state {
             case .failed, .cancelled:
                 self?.queue.async { self?.removeSubscriber(connection) }
@@ -122,17 +125,38 @@ final class Runner {
         var batch = Data()
         for (s, data) in ring where s > afterSeq { batch.append(data) }
         if !batch.isEmpty {
-            connection.send(content: batch, completion: .contentProcessed { _ in })
+            #if DEBUG
+            NSLog("[Runner] replay sessionId=\(sessionId) afterSeq=\(afterSeq) bytes=\(batch.count)")
+            #endif
+            connection.send(
+                content: batch,
+                completion: .contentProcessed { error in
+                    #if DEBUG
+                    if let error {
+                        NSLog("[Runner] replay_send_failed sessionId=\(self.sessionId) error=\(error)")
+                    }
+                    #endif
+                }
+            )
         }
         if hasExited {
+            #if DEBUG
+            NSLog("[Runner] subscribe_after_exit sessionId=\(sessionId)")
+            #endif
             connection.cancel()
         } else {
             subscribers.append(connection)
+            #if DEBUG
+            NSLog("[Runner] subscriber_added sessionId=\(sessionId) subscribers=\(subscribers.count)")
+            #endif
         }
     }
 
     func abort() {
         if let proc = process, proc.isRunning {
+            #if DEBUG
+            NSLog("[Runner] abort sessionId=\(sessionId)")
+            #endif
             emit(["type": "aborted"])
             proc.interrupt()
         }
@@ -141,6 +165,9 @@ final class Runner {
     private func removeSubscriber(_ connection: NWConnection?) {
         if let connection = connection {
             subscribers.removeAll { $0 === connection }
+            #if DEBUG
+            NSLog("[Runner] subscriber_removed sessionId=\(sessionId) subscribers=\(subscribers.count)")
+            #endif
         }
     }
 
@@ -150,7 +177,12 @@ final class Runner {
             let line = lineBuffer.subdata(in: 0..<nl)
             lineBuffer.removeSubrange(0...nl)
             if line.isEmpty { continue }
-            if let obj = try? JSONSerialization.jsonObject(with: line) {
+            if let obj = try? JSONSerialization.jsonObject(with: line) as? [String: Any] {
+                #if DEBUG
+                NSLog(
+                    "[Runner] ingest_event sessionId=\(sessionId) nextSeq=\(seq + 1) type=\(obj["type"] as? String ?? "unknown") bytes=\(line.count)"
+                )
+                #endif
                 emit(["event": obj])
             } else {
                 #if DEBUG
@@ -167,12 +199,27 @@ final class Runner {
         wrapped["seq"] = seq
         wrapped["sessionId"] = sessionId
         if let payload = try? JSONSerialization.data(withJSONObject: wrapped) {
+            let emittedSeq = seq
             var chunk = payload
             chunk.append(0x0A)
-            ring.append((seq, chunk))
+            ring.append((emittedSeq, chunk))
             if ring.count > maxRingSize { ring.removeFirst(ring.count - maxRingSize) }
+            #if DEBUG
+            NSLog(
+                "[Runner] emit sessionId=\(sessionId) seq=\(emittedSeq) type=\((wrapped["type"] as? String) ?? ((partial["event"] as? [String: Any])?["type"] as? String) ?? "unknown") subscribers=\(subscribers.count) ringSize=\(ring.count)"
+            )
+            #endif
             for sub in subscribers {
-                sub.send(content: chunk, completion: .contentProcessed { _ in })
+                sub.send(
+                    content: chunk,
+                    completion: .contentProcessed { error in
+                        #if DEBUG
+                        if let error {
+                            NSLog("[Runner] send_failed sessionId=\(self.sessionId) seq=\(emittedSeq) error=\(error)")
+                        }
+                        #endif
+                    }
+                )
             }
         }
     }

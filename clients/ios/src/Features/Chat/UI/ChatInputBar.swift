@@ -11,7 +11,15 @@ struct ChatInputBar: View {
     @Environment(\.appAccent) private var appAccent
     @Environment(\.modelContext) private var context
 
+    init(session: Session, enabled: Bool = true, onSend: @escaping (String, [Data]) -> Void) {
+        self.session = session
+        self.enabled = enabled
+        self.onSend = onSend
+        PerfCounters.bumpInit("ib")
+    }
+
     var body: some View {
+        let _ = PerfCounters.bump("ib.body")
         VStack(spacing: ThemeTokens.Spacing.xs) {
             if !images.isEmpty {
                 ChatInputBarAttachmentStrip(images: $images)
@@ -56,7 +64,7 @@ struct ChatInputBar: View {
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
-        .padding(.bottom, focused ? ThemeTokens.Spacing.s : 0)
+        .padding(.bottom, focused ? ThemeTokens.Spacing.xl : 0)
         .animation(.easeInOut(duration: ThemeTokens.Duration.s), value: focused)
     }
 

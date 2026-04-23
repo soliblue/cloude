@@ -88,3 +88,6 @@ daemons/linux/whisper-models/
 # Cloudflare Wrangler
 .wrangler/
 .claude/agents/tester/output/
+
+# Local plans (agent-writable workaround while .claude/ is permission-gated)
+/plans/

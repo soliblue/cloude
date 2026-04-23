@@ -4,6 +4,8 @@ import UIKit
 
 enum ChatService {
     @MainActor private static var streamingMessages: [UUID: ChatMessage] = [:]
+    @MainActor private static var lastSeqs: [UUID: Int] = [:]
+    @MainActor private static var activeStreams: Set<UUID> = []
 
     @MainActor
     static func send(session: Session, prompt: String, images: [Data], context: ModelContext) {
@@ -17,6 +19,8 @@ enum ChatService {
                 sessionId: session.id, text: prompt, images: images, context: context
             )
             SessionActions.setStreaming(true, for: session)
+            lastSeqs.removeValue(forKey: session.id)
+            activeStreams.insert(session.id)
             let encodedImages = images.compactMap(encode)
             let existsOnServer = session.existsOnServer
             let sessionId = session.id
@@ -39,39 +43,33 @@ enum ChatService {
 
     @MainActor
     static func resumeIfStuck(session: Session, context: ModelContext) {
-        if let endpoint = session.endpoint, let stuck = stuckStreaming(sessionId: session.id, context: context) {
-            AppLogger.performanceInfo(
-                "start name=chat.resume sessionId=\(session.id.uuidString) stuckMessageId=\(stuck.id.uuidString)"
-            )
-            for call in stuck.toolCalls { context.delete(call) }
-            stuck.text = ""
+        if activeStreams.contains(session.id) { return }
+        guard let endpoint = session.endpoint else { return }
+        let stuck = stuckStreaming(sessionId: session.id, context: context)
+        if stuck == nil && !session.isStreaming { return }
+        let warmSeq = lastSeqs[session.id]
+        let afterSeq = warmSeq ?? session.lastSeq
+        let isCold = warmSeq == nil
+        AppLogger.performanceInfo(
+            "start name=chat.resume sessionId=\(session.id.uuidString) stuckMessageId=\(stuck?.id.uuidString ?? "nil") afterSeq=\(afterSeq) cold=\(isCold)"
+        )
+        if let stuck {
+            if isCold {
+                stuck.text = ""
+                ChatLiveStream.clear(sessionId: session.id)
+            }
             streamingMessages[session.id] = stuck
-            SessionActions.setStreaming(true, for: session)
-            let snapshot = ChatLiveStream.snapshot(for: session.id)
-            snapshot.text = ""
-            snapshot.deltaCount = 0
-            snapshot.hasFirstToken = false
-            let sessionId = session.id
-            Task {
-                let stream = StreamingClient.get(
-                    endpoint: endpoint,
-                    path: "/sessions/\(sessionId.uuidString)/chat/resume",
-                    query: ["after_seq": "-1"]
-                )
-                await consume(stream: stream, sessionId: sessionId, context: context)
-            }
-        } else if session.isStreaming {
-            SessionActions.setStreaming(false, for: session)
-            let sessionId = session.id
-            let pendingRaw = ChatToolCall.State.pending.rawValue
-            let descriptor = FetchDescriptor<ChatToolCall>(
-                predicate: #Predicate<ChatToolCall> {
-                    $0.stateRaw == pendingRaw && $0.message?.sessionId == sessionId
-                }
+        }
+        activeStreams.insert(session.id)
+        SessionActions.setStreaming(true, for: session)
+        let sessionId = session.id
+        Task {
+            let stream = StreamingClient.get(
+                endpoint: endpoint,
+                path: "/sessions/\(sessionId.uuidString)/chat/resume",
+                query: ["after_seq": "\(afterSeq)"]
             )
-            if let calls = try? context.fetch(descriptor) {
-                for call in calls { call.state = .failed }
-            }
+            await consume(stream: stream, sessionId: sessionId, context: context)
         }
     }
 
@@ -128,6 +126,16 @@ enum ChatService {
     }
 
     @MainActor
+    private static func checkpointLastSeq(sessionId: UUID, seq: Int, context: ModelContext) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first, seq > session.lastSeq {
+            SessionActions.setLastSeq(seq, for: session)
+        }
+    }
+
+    @MainActor
     private static func markSessionExistsOnServer(sessionId: UUID, context: ModelContext) {
         let descriptor = FetchDescriptor<Session>(
             predicate: #Predicate<Session> { $0.id == sessionId }
@@ -151,6 +159,8 @@ enum ChatService {
         do {
             for try await line in stream {
                 if let event = ChatStreamEvent.decode(line) {
+                    let seq = event.seq
+                    if seq > (lastSeqs[sessionId] ?? -1) { lastSeqs[sessionId] = seq }
                     apply(event: event, sessionId: sessionId, context: context)
                 }
             }
@@ -158,13 +168,14 @@ enum ChatService {
                 "stream closed reason=eof sessionId=\(sessionId.uuidString)")
             AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
             AppLogger.endInterval("chat.complete", key: sessionId.uuidString)
+            activeStreams.remove(sessionId)
             closeStream(sessionId: sessionId, isFailed: false, context: context)
+            lastSeqs.removeValue(forKey: sessionId)
         } catch {
             AppLogger.connectionError(
                 "stream closed reason=error sessionId=\(sessionId.uuidString) error=\(error)")
-            AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
-            AppLogger.endInterval("chat.complete", key: sessionId.uuidString)
-            closeStream(sessionId: sessionId, isFailed: true, context: context)
+            activeStreams.remove(sessionId)
+            streamingMessages.removeValue(forKey: sessionId)
         }
     }
 
@@ -232,6 +243,7 @@ enum ChatService {
                     message, finalText: resolved, toolUses: toolUses, context: context)
                 streamingMessages.removeValue(forKey: sessionId)
                 ChatLiveStream.clear(sessionId: sessionId)
+                checkpointLastSeq(sessionId: sessionId, seq: event.seq, context: context)
             }
         case .toolResult(_, let toolUseId, let text, let isError):
             ChatActions.applyToolResult(
@@ -239,6 +251,7 @@ enum ChatService {
         case .result, .aborted, .error:
             AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
             AppLogger.endInterval("chat.complete", key: sessionId.uuidString)
+            checkpointLastSeq(sessionId: sessionId, seq: event.seq, context: context)
             closeStream(sessionId: sessionId, isFailed: false, context: context)
             if case .result(_, let costUsd) = event {
                 if let costUsd {

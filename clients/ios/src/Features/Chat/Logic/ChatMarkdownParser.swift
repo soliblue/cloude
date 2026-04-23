@@ -2,7 +2,8 @@ import Foundation
 import SwiftUI
 
 enum ChatMarkdownParser {
-    static func parse(_ text: String) -> [ChatMarkdownBlock] {
+    static func parse(_ text: String, lineOffset: Int = 0) -> [ChatMarkdownBlock] {
+        PerfCounters.bumpParse(hash: text.hashValue)
         var blocks: [ChatMarkdownBlock] = []
         let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if normalized.isEmpty { return blocks }
@@ -20,26 +21,28 @@ enum ChatMarkdownParser {
             }
 
             if line.hasPrefix("```") {
-                blocks.append(parseCodeBlock(lines: lines, index: &i))
+                blocks.append(parseCodeBlock(lines: lines, index: &i, lineOffset: lineOffset))
                 continue
             }
 
             if trimmed.hasPrefix("|") && line.contains("|") {
-                if let table = parseTable(lines: lines, index: &i, originalText: text) {
+                if let table = parseTable(
+                    lines: lines, index: &i, originalText: text, lineOffset: lineOffset)
+                {
                     blocks.append(table)
                 }
                 continue
             }
 
             if trimmed.hasPrefix(">") {
-                if let quote = parseBlockquote(lines: lines, index: &i) {
+                if let quote = parseBlockquote(lines: lines, index: &i, lineOffset: lineOffset) {
                     blocks.append(quote)
                 }
                 continue
             }
 
             if isHorizontalRule(trimmed) && !isLastLine {
-                blocks.append(.horizontalRule(id: "hr-L\(i)"))
+                blocks.append(.horizontalRule(id: "hr-L\(i + lineOffset)"))
                 i += 1
                 continue
             }
@@ -50,12 +53,13 @@ enum ChatMarkdownParser {
                 let attributed = segmentsToAttributedString(segments)
                 blocks.append(
                     .header(
-                        id: "header-L\(i)", level: level, content: attributed, segments: segments))
+                        id: "header-L\(i + lineOffset)", level: level, content: attributed,
+                        segments: segments))
                 i += 1
                 continue
             }
 
-            if let textBlock = parseTextBlock(lines: lines, index: &i) {
+            if let textBlock = parseTextBlock(lines: lines, index: &i, lineOffset: lineOffset) {
                 blocks.append(textBlock)
             }
         }

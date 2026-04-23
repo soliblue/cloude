@@ -39,6 +39,9 @@ enum Router {
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/title") {
                     return SessionHandler.updateTitle(request, params: params)
                 }
+                if request.path == "/debug/ios-log" {
+                    return DebugHandler.uploadIOSLog(request)
+                }
             }
             return HTTPResponse.json(404, ["error": "not_found"])
         }

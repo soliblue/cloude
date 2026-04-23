@@ -1,7 +1,11 @@
 import Foundation
 
 extension ChatMarkdownParser {
-    static func parseCodeBlock(lines: [String], index i: inout Int) -> ChatMarkdownBlock {
+    static func parseCodeBlock(
+        lines: [String], index i: inout Int, lineOffset: Int = 0
+    )
+        -> ChatMarkdownBlock
+    {
         let startLine = i
         let language = String(lines[i].dropFirst(3)).trimmingCharacters(in: .whitespaces)
         var codeLines: [String] = []
@@ -18,7 +22,7 @@ extension ChatMarkdownParser {
         }
 
         let block = ChatMarkdownBlock.code(
-            id: "code-L\(startLine)",
+            id: "code-L\(startLine + lineOffset)",
             content: codeLines.joined(separator: "\n"),
             language: language.isEmpty ? nil : language,
             isComplete: foundClose
@@ -28,7 +32,7 @@ extension ChatMarkdownParser {
     }
 
     static func parseTable(
-        lines: [String], index i: inout Int, originalText: String
+        lines: [String], index i: inout Int, originalText: String, lineOffset: Int = 0
     )
         -> ChatMarkdownBlock?
     {
@@ -60,10 +64,14 @@ extension ChatMarkdownParser {
         }
 
         if tableRows.isEmpty { return nil }
-        return .table(id: "table-L\(startLine)", rows: tableRows)
+        return .table(id: "table-L\(startLine + lineOffset)", rows: tableRows)
     }
 
-    static func parseBlockquote(lines: [String], index i: inout Int) -> ChatMarkdownBlock? {
+    static func parseBlockquote(
+        lines: [String], index i: inout Int, lineOffset: Int = 0
+    )
+        -> ChatMarkdownBlock?
+    {
         let startLine = i
         var quoteLines: [String] = []
 
@@ -75,10 +83,15 @@ extension ChatMarkdownParser {
         }
 
         if quoteLines.isEmpty { return nil }
-        return .blockquote(id: "quote-L\(startLine)", content: quoteLines.joined(separator: "\n"))
+        return .blockquote(
+            id: "quote-L\(startLine + lineOffset)", content: quoteLines.joined(separator: "\n"))
     }
 
-    static func parseTextBlock(lines: [String], index i: inout Int) -> ChatMarkdownBlock? {
+    static func parseTextBlock(
+        lines: [String], index i: inout Int, lineOffset: Int = 0
+    )
+        -> ChatMarkdownBlock?
+    {
         let textStartLine = i
         var textLines: [String] = []
         while i < lines.count {
@@ -99,6 +112,7 @@ extension ChatMarkdownParser {
         if content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return nil }
         let segments = parseToSegments(content)
         return .text(
-            id: "text-L\(textStartLine)", segmentsToAttributedString(segments), segments: segments)
+            id: "text-L\(textStartLine + lineOffset)", segmentsToAttributedString(segments),
+            segments: segments)
     }
 }

@@ -34,7 +34,7 @@ struct WindowsView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            DebugOverlay()
+            DebugOverlay(endpoint: focusedSession?.endpoint)
         }
         .overlay(alignment: .leading) {
             if !isSidebarOpen {

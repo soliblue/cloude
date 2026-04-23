@@ -65,6 +65,11 @@ enum SessionActions {
     }
 
     @MainActor
+    static func setLastSeq(_ seq: Int, for session: Session) {
+        session.lastSeq = seq
+    }
+
+    @MainActor
     static func setHasGit(_ hasGit: Bool, for session: Session) {
         if session.hasGit != hasGit { session.hasGit = hasGit }
     }

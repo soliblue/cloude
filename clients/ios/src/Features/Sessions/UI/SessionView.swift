@@ -7,6 +7,7 @@ struct SessionView: View {
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
 
     var body: some View {
+        let _ = PerfCounters.bump("sv.body")
         ZStack {
             if session.isConfigured {
                 ChatView(session: session, folderPickerRequest: $folderPickerRequest)

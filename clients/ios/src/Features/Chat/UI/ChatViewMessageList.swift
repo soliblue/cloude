@@ -3,13 +3,12 @@ import SwiftUI
 
 struct ChatViewMessageList: View {
     let session: Session
-    let bottomInset: CGFloat
     @Query private var messages: [ChatMessage]
     @State private var lastAnchoredUserId: UUID?
+    @State private var groupCache = GroupCache()
 
-    init(session: Session, bottomInset: CGFloat = 0) {
+    init(session: Session) {
         self.session = session
-        self.bottomInset = bottomInset
         let sessionId = session.id
         _messages = Query(
             filter: #Predicate<ChatMessage> { $0.sessionId == sessionId },
@@ -18,11 +17,13 @@ struct ChatViewMessageList: View {
     }
 
     var body: some View {
+        let _ = PerfCounters.bump("ml.body")
+        let groups = groupCache.groups(for: messages)
         GeometryReader { geo in
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
-                        ForEach(groupedMessages, id: \.groupId) { group in
+                        ForEach(groups, id: \.groupId) { group in
                             ChatViewMessageListGroup(session: session, messages: group.messages)
                                 .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
@@ -31,10 +32,20 @@ struct ChatViewMessageList: View {
                     }
                     .padding(.vertical, ThemeTokens.Spacing.m)
                     .animation(.spring(response: 0.35, dampingFraction: 0.85), value: messages.count)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.85), value: lastAnchoredUserId)
+                    .animation(
+                        .spring(response: 0.35, dampingFraction: 0.85), value: lastAnchoredUserId)
                 }
                 .scrollIndicators(.hidden)
-                .contentMargins(.bottom, bottomInset + ThemeTokens.Spacing.m, for: .scrollContent)
+                .onScrollGeometryChange(for: CGFloat.self) {
+                    $0.contentOffset.y
+                } action: {
+                    old, new in
+                    if abs(new - old) > 1 {
+                        PerfCounters.event(
+                            "scroll offsetY \(String(format: "%.1f", old)) -> \(String(format: "%.1f", new))"
+                        )
+                    }
+                }
                 .onAppear {
                     proxy.scrollTo("bottom", anchor: .bottom)
                 }
@@ -56,8 +67,22 @@ struct ChatViewMessageList: View {
     private var lastUserMessageId: UUID? {
         messages.last(where: { $0.role == .user })?.id
     }
+}
 
-    private var groupedMessages: [MessageGroup] {
+private struct MessageGroup {
+    let groupId: UUID
+    let messages: [ChatMessage]
+}
+
+@Observable
+private final class GroupCache {
+    private var key: [UUID] = []
+    private var cached: [MessageGroup] = []
+
+    func groups(for messages: [ChatMessage]) -> [MessageGroup] {
+        let newKey = messages.map(\.id)
+        if newKey == key { return cached }
+        PerfCounters.bump("ml.grouped")
         var groups: [[ChatMessage]] = []
         for message in messages {
             if var last = groups.last, last.first?.role == message.role {
@@ -67,11 +92,8 @@ struct ChatViewMessageList: View {
                 groups.append([message])
             }
         }
-        return groups.map { MessageGroup(groupId: $0.first?.id ?? UUID(), messages: $0) }
+        cached = groups.map { MessageGroup(groupId: $0.first?.id ?? UUID(), messages: $0) }
+        key = newKey
+        return cached
     }
-}
-
-private struct MessageGroup {
-    let groupId: UUID
-    let messages: [ChatMessage]
 }

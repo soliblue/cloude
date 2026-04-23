@@ -15,6 +15,7 @@ final class Session {
     var symbol: String
     var existsOnServer: Bool = false
     var isStreaming: Bool = false
+    var lastSeq: Int = -1
     var hasGit: Bool = true
     var tabRaw: String = SessionTab.chat.rawValue
     var modelRaw: String? = nil

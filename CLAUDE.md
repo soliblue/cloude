@@ -298,17 +298,17 @@ src/
     Router.swift              ✅  // dispatches (method, path) to handler; 401 when AuthMiddleware rejects
     AuthMiddleware.swift      ✅  // Bearer token check against DaemonAuth.token with constant-time compare
     RouteMatcher.swift        ✅  // splits rawPath into (path, query) and matches path against `/sessions/:id/…` patterns, returning captured params
-    DaemonAuth.swift          ✅  // lazy static token stored in Keychain under "soli.Cloude.agent/authToken"; generated on first read
+    DaemonAuth.swift          ✅  // lazy static token stored in Keychain under "soli.Cloude.agent/authToken" via KeychainStore; generated on first read
+  Storage/
+    KeychainStore.swift       ✅  // shared daemon Keychain read/set helpers plus randomHex/randomBase64, service "soli.Cloude.agent"; used by DaemonAuth and RemoteTunnelCredentialStore
   Privacy/
     FolderAccessProbeService.swift ✅  // startup/manual TCC prompt trigger that shallow-reads common protected user folders and mounted volume roots, then persists folderAccessGranted when all probes succeed
   Power/
     SleepPreventionService.swift ✅  // singleton IOKit idle-system-sleep assertion owner, restored from UserDefaults and toggled from ContentView
   Provisioning/
     CloudflaredBinary.swift      ✅  // locates bundled or locally installed cloudflared
-    CloudflaredRunner.swift      ✅  // owns the cloudflared child process and starts `cloudflared tunnel run --token`
-    RemoteTunnelDNSAnswer.swift  ✅  // one Cloudflare DNS-over-HTTPS answer row used by the public-route check
-    RemoteTunnelDNSResponse.swift ✅  // Cloudflare DNS-over-HTTPS response used to avoid blocking on the Mac's local DNS cache
-    RemoteTunnelClient.swift     ✅  // calls the provisioning backend to register this Mac, request a tunnel, and verify remote /ping
+    CloudflaredRunner.swift      ✅  // owns the cloudflared child process, redirects stdout/stderr to /dev/null so the process never blocks on a full pipe, clears itself on termination, and exposes stop() for app quit
+    RemoteTunnelClient.swift     ✅  // calls the provisioning backend to register this Mac, request a tunnel, and poll remote /ping for reachability
     RemoteTunnelConfiguration.swift ✅  // provisioning backend URL, defaulting to https://remotecc.soli.blue with REMOTECC_PROVISIONING_URL override
     RemoteTunnelCredentialStore.swift ✅  // Keychain storage for Mac tunnel id, Mac tunnel secret, hostname, and tunnel token
     RemoteTunnelEndpoint.swift   ✅  // host and port returned to the QR pairing payload

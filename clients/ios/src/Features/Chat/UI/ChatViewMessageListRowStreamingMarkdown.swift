@@ -8,6 +8,7 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
     @State private var splitCache = SplitCache()
 
     var body: some View {
+        let _ = PerfCounters.bump("str.body")
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
             if !frozen.blocks.isEmpty {
                 ChatViewMessageListRowStreamingMarkdownFrozen(blocks: frozen.blocks)
@@ -32,12 +33,13 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
                 frozen.blocks = ChatMarkdownParser.parse(frozenText)
                 frozen.upTo = frozenText
             }
-            tailBlocks = ChatMarkdownParser.parse(String(text[splitIndex...])).map {
-                $0.prefixed("tail-")
-            }
+            let frozenLineCount = frozenText.components(separatedBy: "\n").count - 1
+            tailBlocks = ChatMarkdownParser.parse(
+                String(text[splitIndex...]), lineOffset: frozenLineCount)
         } else {
+            PerfCounters.bump("str.splitReset")
             frozen.reset()
-            tailBlocks = ChatMarkdownParser.parse(text).map { $0.prefixed("tail-") }
+            tailBlocks = ChatMarkdownParser.parse(text)
         }
     }
 
