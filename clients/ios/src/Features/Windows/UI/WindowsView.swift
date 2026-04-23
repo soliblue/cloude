@@ -9,6 +9,8 @@ struct WindowsView: View {
     @Query private var endpoints: [Endpoint]
     @State private var isSidebarOpen = false
     @State private var isOnboardingPresented = false
+    @State private var onboardingInitialStep: OnboardingStep = .install
+    @State private var folderPickerRequest: SessionFolderPickerRequest?
     @State private var isKeyboardVisible = false
 
     private var focusedSession: Session? {
@@ -21,9 +23,13 @@ struct WindowsView: View {
             ZStack {
                 ForEach(windows) { window in
                     if let session = window.session {
-                        SessionView(session: session, isSidebarOpen: $isSidebarOpen)
-                            .opacity(window.isFocused ? 1 : 0)
-                            .allowsHitTesting(window.isFocused)
+                        SessionView(
+                            session: session,
+                            isSidebarOpen: $isSidebarOpen,
+                            folderPickerRequest: $folderPickerRequest
+                        )
+                        .opacity(window.isFocused ? 1 : 0)
+                        .allowsHitTesting(window.isFocused)
                     }
                 }
             }
@@ -64,7 +70,7 @@ struct WindowsView: View {
             if !isSidebarOpen, !isKeyboardVisible, let session = focusedSession {
                 WindowsCreateButtonHost(session: session) {
                     withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-                        WindowActions.addNew(into: context, after: windows)
+                        _ = WindowActions.addNew(into: context, after: windows)
                     }
                 }
                 .transition(.opacity.animation(.easeIn(duration: ThemeTokens.Duration.m)))
@@ -92,7 +98,8 @@ struct WindowsView: View {
                 isSidebarOpen = true
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .openOnboarding)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .openOnboarding)) { notification in
+            onboardingInitialStep = notification.object as? OnboardingStep ?? .install
             isOnboardingPresented = true
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
@@ -102,18 +109,26 @@ struct WindowsView: View {
             withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) { isKeyboardVisible = false }
         }
         .fullScreenCover(isPresented: $isOnboardingPresented) {
-            OnboardingView { endpoint in
-                if let session = focusedSession {
-                    SessionActions.setEndpoint(endpoint, for: session)
-                }
+            OnboardingView(initialStep: onboardingInitialStep) { endpoint in
+                let session = WindowActions.addNew(into: context, after: windows, endpoint: endpoint)
+                let request = SessionFolderPickerRequest(sessionId: session.id, endpointId: endpoint.id)
                 isOnboardingPresented = false
+                DispatchQueue.main.async {
+                    folderPickerRequest = request
+                }
             }
         }
         .onAppear {
-            if endpoints.isEmpty { isOnboardingPresented = true }
+            if endpoints.isEmpty {
+                onboardingInitialStep = .install
+                isOnboardingPresented = true
+            }
         }
         .onChange(of: endpoints.isEmpty) { _, isEmpty in
-            if isEmpty { isOnboardingPresented = true }
+            if isEmpty {
+                onboardingInitialStep = .install
+                isOnboardingPresented = true
+            }
         }
     }
 }

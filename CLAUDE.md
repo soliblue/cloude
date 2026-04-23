@@ -1,12 +1,10 @@
 You are most likely running inside Cloude - an iOS app that controls Claude Code remotely. The user is on their phone. A Mac daemon or Linux daemon spawned this CLI process. You are building the system you are running inside of.
 
-The app is currently displayed as **Remote** (bundle ID `soli.Cloude`). The repo is in the middle of a ground-up rewrite on branch `v2`: iOS, macOS daemon, Android, and Linux daemon have all been stripped to barebones and are being rebuilt feature by feature. Most feature code does not exist yet.
+The app is currently displayed as **Remote** (bundle ID `soli.Cloude`).
 
 ## Migration status
 
-We are mid-migration from the old app. The pre-wipe codebase is checked out as a sibling worktree at `/Users/soli/Desktop/CODING/cloude-main` (branch `main`). Use it as a reference when rebuilding a feature - copy what's worth keeping, drop what isn't, match the old visual style when the user asks for parity.
-
-Progress is tracked by ticks (✅) next to filenames in the structure below. A tick means the file exists in `v2`. No tick means it's planned but not built yet. When you add or remove files, update the ticks in this document so fresh sessions can see where we are.
+We are mid-migration from the old app. Progress is tracked by ticks (✅) next to filenames in the structure below. A tick means the file exists in `main`. No tick means it's planned but not built yet. When you add or remove files, update the ticks in this document so fresh sessions can see where we are.
 
 ## Memory
 
@@ -19,22 +17,14 @@ Two layers, two purposes:
 
 ## Product shape
 
-- multiple environments (personal laptop, work machine, etc)
-- session = environment + path + session id
+- multiple endpoints (personal laptop, work machine, etc)
+- session = endpoint + path + session id
 - multiple sessions open at once, switch between them
 - each session has 3 tabs: chat, files, git
 - chat streams live output from claude, with image attachments and voice input
 - files/git scoped to the session's path
 - offline access to anything already on the phone
 - seamless reconnect: disconnect mid-stream and pick up exactly where you left off
-
-## Connectivity
-
-The iOS app connects to the Mac daemon or Linux daemon over authenticated HTTP on port `8765`. Two options for secure remote access:
-- **Cloudflare Tunnel** (preferred): domain routes through Cloudflare's edge to localhost. Automatic TLS, no port forwarding, no VPN. Lighter on iOS battery.
-- **Tailscale**: mesh VPN alternative. Works but drains iOS battery more.
-
-Both proxy to `localhost:8765` where the daemon listens. Specific endpoints and tunnel config live in personal memory, not here.
 
 ## Engineering Philosophy
 
@@ -127,19 +117,20 @@ src/
         EndpointsSymbolCatalog.swift   ✅  // static list of SF Symbol names grouped by category plus a flattened `symbols` pool for random endpoint defaults and EndpointsSymbolPicker
     Sessions/
       UI/
-        SessionView.swift            ✅  // owns its top bar and body. Top bar is an HStack: leading hamburger (toggles NavigationSplitView columnVisibility), SessionViewTabs, trailing "+" (WindowActions.addNew). Always renders the tabbed ZStack (chat/files/git); the empty-state decision lives inside ChatView now. Takes a Session + a columnVisibility binding passed down from WindowsView.
+        SessionView.swift            ✅  // owns its top bar and body. Tabs render only after the session has both endpoint and path, so Files/Git do not fetch early. Takes a Session plus sidebar and folder-picker-request bindings from WindowsView.
         SessionViewTabs.swift        ✅  // 3-tab pill switcher (chat | files | git); rendered inside SessionView's top bar. Bound to SessionView's activeTab.
-        SessionEmptyView.swift       ✅  // setup screen shown by ChatView when the session has no messages: hero + endpoint row + folder row + recent sessions list. Owns the folder-sheet @State and presents SessionEmptyViewFolderSheet.
+        SessionEmptyView.swift       ✅  // setup screen shown by ChatView when the session has no messages: hero + endpoint row + folder row + recent sessions list. Owns the folder-sheet @State, handles folder picker requests from QR pairing, and presents SessionEmptyViewFolderSheet.
         SessionEmptyViewHero.swift   ✅  // displays the `claude-painter` asset as the empty-state hero.
-        SessionEmptyViewEndpointRow.swift ✅  // Capsule-glass row: current endpoint symbol+host with chevron.up.chevron.down. Menu opens endpoint list; selecting one calls SessionActions.setEndpoint then sets the bound folderSheetEndpoint to auto-open the folder sheet.
+        SessionEmptyViewEndpointRow.swift ✅  // Capsule-glass row: current endpoint symbol+displayName with chevron.up.chevron.down. Menu opens endpoint list; selecting one clears path when switching endpoints, then auto-opens the folder sheet.
         SessionEmptyViewFolderRow.swift ✅  // Capsule-glass row showing the truncated leaf of session.path (or "Choose folder"). Tap sets the bound folderSheetEndpoint to the session's endpoint; disabled when no endpoint is set.
         SessionEmptyViewRecentList.swift ✅  // VStack of up to 5 SessionEmptyViewRecentListRow. Filters @Query<Session> (sorted createdAt desc) by excluding the current session and any session open in another Window. Resolves the current window and calls WindowActions.swap on tap.
         SessionEmptyViewRecentListRow.swift ✅  // Capsule-glass pill: session symbol + title + secondary path leaf. Tap fires the provided onTap closure.
         SessionEmptyViewFolderSheet.swift ✅  // sheet presented from SessionEmptyView; wraps FolderPickerView in a NavigationStack, top-leading xmark dismisses, onPick writes path via SessionActions and dismisses.
       Logic/
-        Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"), existsOnServer (flipped true after daemon emits system/init — swaps future spawns from --session-id to --resume), tabRaw (persisted active SessionTab), modelRaw/effortRaw (persisted ChatModel/ChatEffort selection, nil = Auto/Default); @Transient skills?, agents? (fetched on demand). path == nil is the empty-state signal.
+        Session.swift                ✅  // @Model: id (client-generated, passed to claude as --session-id), endpoint: Endpoint? (SwiftData relationship), path?, lastOpenedAt, title ("Untitled"), symbol ("sparkles"), existsOnServer (flipped true after daemon emits system/init — swaps future spawns from --session-id to --resume), tabRaw (persisted active SessionTab), modelRaw/effortRaw (persisted ChatModel/ChatEffort selection, nil = Auto/Default); @Transient skills?, agents? (fetched on demand). isConfigured means endpoint and non-empty path are both present.
         SessionTab.swift             ✅  // enum: chat | files | git; each case has label + SF symbol
-        SessionActions.swift         ✅  // stateless mutations on the Session model: add, setEndpoint, setPath, markExistsOnServer, setTab, setModel, setEffort. Owns session-mutation surface so other features don't write Session fields directly.
+        SessionActions.swift         ✅  // stateless mutations on the Session model: add, setEndpoint (optional clearsPath when switching), setPath, markExistsOnServer, setTab, setModel, setEffort. Owns session-mutation surface so other features don't write Session fields directly.
+        SessionFolderPickerRequest.swift ✅  // transient request passed from WindowsView into the focused empty SessionView so QR pairing can open the folder picker after appending a new session.
         Skill.swift                  ✅  // name, description. available in session's cwd; read by ChatInputBarAutocompletePicker via "/"
         Agent.swift                  ✅  // name, description. available in session; read by ChatInputBarAutocompletePicker via "@"
         // SessionService.swift — land when SessionHandler exists on the daemon
@@ -213,12 +204,12 @@ src/
         GitService.swift             // stateless; status/diff (raw unified text)/log network I/O
     Windows/
       UI/
-        WindowsView.swift            ✅  // top-level screen: NavigationSplitView with WindowsSidebar + detail column (theme background + active SessionView + DebugOverlay). Owns columnVisibility state, passes binding into SessionView.
-        WindowsSidebar.swift         ✅  // left sidebar: Settings row (opens SettingsView sheet), Open section (rows activate window, swipe-to-close), Recent section (sessions without a window, tap swaps into focused window, swipe deletes). Closes itself after activate/swap.
+        WindowsView.swift            ✅  // top-level screen: NavigationSplitView with WindowsSidebar + detail column (theme background + active SessionView + DebugOverlay). Owns onboarding presentation; successful pairing always appends and focuses a new Window/Session, then requests folder picking.
+        WindowsSidebar.swift         ✅  // left sidebar: Settings row (opens SettingsView sheet), Open section (rows activate window, swipe-to-close), Recent section (sessions without a window, tap swaps into focused window, swipe deletes), Endpoints section whose plus opens QR pairing directly. Closes itself after activate/swap.
         WindowsSidebarRow.swift      ✅  // row primitive used by both sidebar sections: symbol + title, accents when focused.
       Logic/
         Window.swift                 ✅  // @Model: session: Session? (SwiftData relationship), order: Int, isFocused: Bool. One Window per open pill in the switcher.
-        WindowActions.swift          ✅  // stateless mutations on the Window model: ensureOne (called from iOSApp.init), activate, addNew, swap, close. addNew/ensureOne insert a matching Session alongside the Window; close deletes only the Window (Session persists for re-opening from WindowsSidebar's Recent section).
+        WindowActions.swift          ✅  // stateless mutations on the Window model: ensureOne (called from iOSApp.init), activate, addNew, open, swap, close. addNew/ensureOne insert a matching Session alongside the Window; QR pairing uses the endpoint overload to append a focused session with no inherited path.
     Onboarding/
       UI/
         OnboardingView.swift                     ✅  // root onboarding surface gated from WindowsView when Endpoint count is 0. Owns the OnboardingStore, switches between Install/Pair/Status steps, listens for .deeplinkPair and applies the payload.
@@ -308,12 +299,35 @@ src/
     AuthMiddleware.swift      ✅  // Bearer token check against DaemonAuth.token with constant-time compare
     RouteMatcher.swift        ✅  // splits rawPath into (path, query) and matches path against `/sessions/:id/…` patterns, returning captured params
     DaemonAuth.swift          ✅  // lazy static token stored in Keychain under "soli.Cloude.agent/authToken"; generated on first read
+  Privacy/
+    FolderAccessProbeService.swift ✅  // startup/manual TCC prompt trigger that shallow-reads common protected user folders and mounted volume roots, then persists folderAccessGranted when all probes succeed
+  Power/
+    SleepPreventionService.swift ✅  // singleton IOKit idle-system-sleep assertion owner, restored from UserDefaults and toggled from ContentView
+  Provisioning/
+    CloudflaredBinary.swift      ✅  // locates bundled or locally installed cloudflared
+    CloudflaredRunner.swift      ✅  // owns the cloudflared child process and starts `cloudflared tunnel run --token`
+    RemoteTunnelDNSAnswer.swift  ✅  // one Cloudflare DNS-over-HTTPS answer row used by the public-route check
+    RemoteTunnelDNSResponse.swift ✅  // Cloudflare DNS-over-HTTPS response used to avoid blocking on the Mac's local DNS cache
+    RemoteTunnelClient.swift     ✅  // calls the provisioning backend to register this Mac, request a tunnel, and verify remote /ping
+    RemoteTunnelConfiguration.swift ✅  // provisioning backend URL, defaulting to https://remotecc.soli.blue with REMOTECC_PROVISIONING_URL override
+    RemoteTunnelCredentialStore.swift ✅  // Keychain storage for Mac tunnel id, Mac tunnel secret, hostname, and tunnel token
+    RemoteTunnelEndpoint.swift   ✅  // host and port returned to the QR pairing payload
+    RemoteTunnelIdentity.swift   ✅  // local Mac tunnel id plus secret sent to provisioning
+    RemoteTunnelMacRequest.swift ✅  // JSON body for Mac registration
+    RemoteTunnelProvisioner.swift ✅  // menu-bar startup state machine: identity, auth key, provisioning server, tunnel process, reachability
+    RemoteTunnelResponse.swift   ✅  // tunnelId, tunnelToken, hostname from the backend
+    RemoteTunnelStep.swift       ✅  // ordered UI progress steps for provisioning, ending at Public route
+    RemoteTunnelStepState.swift  ✅  // UI progress step plus status
+    RemoteTunnelStepStatus.swift ✅  // waiting, active, complete, failed
   UI/
-    macOSDaemonApp.swift      ✅  // @main MenuBarExtra app; starts HTTPServer and warms DaemonAuth.token at init
-    ContentView.swift         ✅  // menubar popover: computer name header, HOST row (local IP with copy), AUTH TOKEN row (with copy), inline pairing QR of the cloude://pair URL. Quit button at the bottom. Delegates each labelled copy row to ContentViewCopyRow.
+    macOSDaemonApp.swift      ✅  // @main MenuBarExtra app; starts HTTPServer, warms DaemonAuth.token, starts RemoteTunnelProvisioner, restores the sleep-prevention preference, and starts the folder-access probe at init
+    ContentView.swift         ✅  // menubar popover: computer name header, HOST row (remote tunnel host after provisioning), AUTH TOKEN row, provisioning progress list, inline remote pairing QR, Keep Mac Awake toggle, Request Folder Access button, and Quit button.
     ContentViewCopyRow.swift  ✅  // reusable labelled copy-row pill used by ContentView (HOST + AUTH TOKEN): monospaced value + doc.on.doc button that flips to checkmark while isCopied is true.
+    ContentViewFolderAccessButton.swift ✅  // full-width folder probe row: shows Folder Access Granted from persisted AppStorage, otherwise offers Request Folder Access
+    ContentViewProvisioningList.swift ✅  // compact progress panel for the remote tunnel provisioning steps
+    ContentViewProvisioningRow.swift ✅  // one row in the provisioning progress panel, using native ProgressView while active
     DaemonHost.swift          ✅  // static helpers: computerName (Host.current().localizedName) and localIPv4 (getifaddrs, skips loopback/down, prefers en* interfaces, falls back to any non-loopback IPv4).
-    DaemonPairingURL.swift    ✅  // builds the cloude://pair?host=&port=&token=&name= URL consumed by iOS OnboardingPairingPayload. Returns nil when no local IPv4 is available.
+    DaemonPairingURL.swift    ✅  // builds the cloude://pair?host=&port=&token=&name= URL consumed by iOS OnboardingPairingPayload for either local or remote endpoints.
     DaemonQR.swift            ✅  // CoreImage QR generator (CIFilter.qrCodeGenerator) → NSImage at requested pixel size. No third-party dependency.
   RunnerManager.swift       ✅  // serial-queue actor around map<sessionId, Runner>. start spawns/replaces, resume attaches a subscriber, abort SIGINTs.
   Runner.swift              ✅  // one claude child process + ring buffer + NWConnection subscribers. Prunes dead subscribers via stateUpdateHandler. Batches replay into a single send on subscribe.
@@ -357,12 +371,5 @@ daemons/linux/
 
 - **Prefer sub-agents for information retrieval** - whenever you need to look something up in the codebase, launch an Explore sub-agent instead of reading/grepping yourself. If the questions are independent, launch them in parallel in a single message. Main-thread context is expensive; sub-agent context is cheap.
 - **`.claude/` folder requires permission** - Anthropic added a permission gate on Edit/Write/sed for files inside `.claude/`. Since we run headless (no way to accept permission prompts), use workarounds: `cp` to `/tmp`, modify there, `cp` back. Or use `cat` with heredoc redirect. Never use the Edit tool on `.claude/` files.
-- **Naming is automatic** - a background agent names conversations.
 - **Multi-agent project** - never touch another agent's code. If you see errors from someone else's work, stop and tell the user.
 - Full absolute paths starting with `/Users/` render as clickable file pills in the iOS app - always use full paths, never brace notation like {1-6}
-
-## Open questions
-
-- Transcription backend: WhisperKit on-device vs server-side API call?
-- Git write operations (commit, branch) from the phone, or keep read-only?
-- Supersede behavior: when a new prompt arrives while a run is still active, abort + restart, or queue?

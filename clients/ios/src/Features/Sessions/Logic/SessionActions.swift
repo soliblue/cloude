@@ -19,8 +19,14 @@ enum SessionActions {
     }
 
     @MainActor
-    static func setEndpoint(_ endpoint: Endpoint, for session: Session) {
+    static func setEndpoint(_ endpoint: Endpoint, for session: Session, clearsPath: Bool = false) {
+        let isSwitching = session.endpoint?.id != endpoint.id
         session.endpoint = endpoint
+        if clearsPath && isSwitching {
+            session.path = nil
+            session.tab = .chat
+            session.hasGit = true
+        }
     }
 
     @MainActor

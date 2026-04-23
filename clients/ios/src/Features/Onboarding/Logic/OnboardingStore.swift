@@ -9,6 +9,10 @@ final class OnboardingStore {
     var probeResult: EndpointProbeResult?
     var isProbing = false
 
+    init(step: OnboardingStep = .install) {
+        self.step = step
+    }
+
     func apply(payload: OnboardingPairingPayload) {
         draft = payload
         probeResult = nil

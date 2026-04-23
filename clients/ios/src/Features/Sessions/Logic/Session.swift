@@ -52,4 +52,8 @@ final class Session {
         get { effortRaw.flatMap(ChatEffort.init(rawValue:)) }
         set { effortRaw = newValue?.rawValue }
     }
+
+    var isConfigured: Bool {
+        endpoint != nil && path?.isEmpty == false
+    }
 }

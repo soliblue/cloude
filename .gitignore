@@ -8,6 +8,11 @@ xcuserdata/
 
 # Dependencies
 node_modules/
+.venv/
+__pycache__/
+*.pyc
+*.db
+*.db-*
 
 # macOS
 .DS_Store

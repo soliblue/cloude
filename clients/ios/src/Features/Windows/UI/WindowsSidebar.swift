@@ -8,7 +8,6 @@ struct WindowsSidebar: View {
     @Query(sort: \Window.order) private var windows: [Window]
     @Query(sort: \Session.lastOpenedAt, order: .reverse) private var sessions: [Session]
     @Query(sort: \Endpoint.createdAt) private var endpoints: [Endpoint]
-    @State private var isCreatingEndpoint = false
 
     var body: some View {
         NavigationStack {
@@ -73,7 +72,8 @@ struct WindowsSidebar: View {
                         sectionHeader("Endpoints")
                         Spacer()
                         Button {
-                            isCreatingEndpoint = true
+                            isOpen = false
+                            NotificationCenter.default.post(name: .openOnboarding, object: OnboardingStep.pair)
                         } label: {
                             Image(systemName: "plus")
                                 .appFont(size: ThemeTokens.Text.s, weight: .medium)
@@ -89,7 +89,7 @@ struct WindowsSidebar: View {
                             HStack(spacing: ThemeTokens.Spacing.s) {
                                 WindowsSidebarRow(
                                     symbol: endpoint.symbolName,
-                                    title: endpoint.host.isEmpty ? "New Endpoint" : endpoint.host,
+                                    title: endpoint.displayName,
                                     isFocused: false
                                 )
                                 Spacer(minLength: 0)
@@ -136,9 +136,6 @@ struct WindowsSidebar: View {
             .background(theme.palette.background)
             .themedNavChrome()
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: $isCreatingEndpoint) {
-                EndpointView(existing: nil, canDelete: false)
-            }
         }
     }
 

@@ -29,4 +29,18 @@ final class Endpoint {
         self.symbolName = symbolName
         self.createdAt = .now
     }
+
+    var displayName: String {
+        if let name, !name.isEmpty {
+            return name
+        }
+        if !host.isEmpty {
+            return host
+        }
+        return "New Endpoint"
+    }
+
+    var addressLabel: String {
+        host.isEmpty ? "No host" : "\(host):\(port)"
+    }
 }

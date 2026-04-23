@@ -38,6 +38,18 @@
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
       "outputCapture": "std"
+    },
+    {
+      "name": "Provisioning Server",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "/bin/zsh",
+      "args": [
+        "${workspaceFolder}/.vscode/run-provisioning.sh"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "outputCapture": "std"
     }
   ],
   "compounds": [
@@ -48,6 +60,14 @@
     {
       "name": "Daemon + iPhone",
       "configurations": ["macOS Daemon", "Connected iPhone"]
+    },
+    {
+      "name": "Provisioning + Daemon + Simulator",
+      "configurations": ["Provisioning Server", "macOS Daemon", "iOS Simulator"]
+    },
+    {
+      "name": "Provisioning + Daemon + iPhone",
+      "configurations": ["Provisioning Server", "macOS Daemon", "Connected iPhone"]
     }
   ]
 }

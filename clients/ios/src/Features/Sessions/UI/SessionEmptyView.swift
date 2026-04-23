@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SessionEmptyView: View {
     let session: Session
+    @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Environment(\.theme) private var theme
     @State private var folderSheetEndpoint: Endpoint?
 
@@ -35,6 +36,23 @@ struct SessionEmptyView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(item: $folderSheetEndpoint) { endpoint in
             SessionEmptyViewFolderSheet(session: session, endpoint: endpoint)
+        }
+        .onAppear {
+            handle(folderPickerRequest)
+        }
+        .onChange(of: folderPickerRequest) { _, request in
+            handle(request)
+        }
+    }
+
+    private func handle(_ request: SessionFolderPickerRequest?) {
+        if let request,
+            request.sessionId == session.id,
+            let endpoint = session.endpoint,
+            endpoint.id == request.endpointId
+        {
+            folderSheetEndpoint = endpoint
+            folderPickerRequest = nil
         }
     }
 }

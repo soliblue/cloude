@@ -12,7 +12,7 @@ struct SessionEmptyViewFolderSheet: View {
                 session: session,
                 endpoint: endpoint,
                 path: "~",
-                title: endpoint.host.isEmpty ? "Home" : endpoint.host,
+                title: endpoint.displayName,
                 onPick: { picked in
                     SessionActions.setEndpoint(endpoint, for: session)
                     SessionActions.setPath(picked, for: session)

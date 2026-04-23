@@ -19,14 +19,19 @@ enum WindowActions {
     }
 
     @MainActor
-    static func addNew(into context: ModelContext, after windows: [Window]) {
+    @discardableResult
+    static func addNew(
+        into context: ModelContext,
+        after windows: [Window],
+        endpoint: Endpoint? = nil
+    ) -> Session {
         let nextOrder = (windows.map(\.order).max() ?? -1) + 1
-        let inherited = windows.first(where: { $0.isFocused })?.session
+        let inherited = endpoint == nil ? windows.first(where: { $0.isFocused })?.session : nil
         windows.forEach { $0.isFocused = false }
-        spawn(
+        return spawn(
             order: nextOrder,
             focused: true,
-            endpoint: inherited?.endpoint,
+            endpoint: endpoint ?? inherited?.endpoint,
             path: inherited?.path,
             context: context
         )
@@ -66,14 +71,16 @@ enum WindowActions {
     }
 
     @MainActor
+    @discardableResult
     private static func spawn(
         order: Int,
         focused: Bool,
         endpoint: Endpoint? = nil,
         path: String? = nil,
         context: ModelContext
-    ) {
+    ) -> Session {
         let session = SessionActions.add(into: context, endpoint: endpoint, path: path)
         context.insert(Window(session: session, order: order, isFocused: focused))
+        return session
     }
 }

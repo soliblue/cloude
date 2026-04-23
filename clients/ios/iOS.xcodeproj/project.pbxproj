@@ -115,9 +115,6 @@
 					C2B3BB9F2F2619AE007FD3E4 = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
-					C2B3BBB12F2619E8007FD3E4 = {
-						CreatedOnToolsVersion = 26.1.1;
-					};
 				};
 			};
 			buildConfigurationList = C2B3BB9B2F2619AE007FD3E4 /* Build configuration list for PBXProject "iOS" */;
@@ -299,7 +296,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = src/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Cloude;
+				INFOPLIST_KEY_CFBundleDisplayName = "Remote CC";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -339,7 +336,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = src/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Cloude;
+				INFOPLIST_KEY_CFBundleDisplayName = "Remote CC";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

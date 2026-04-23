@@ -1,10 +1,9 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var isTokenCopied = false
-    @State private var isHostCopied = false
+    @AppStorage(SleepPreventionService.defaultsKey) private var preventsIdleSystemSleep = false
 
-    private let pairingURL = DaemonPairingURL.current()
+    @StateObject private var provisioner = RemoteTunnelProvisioner.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -20,30 +19,18 @@ struct ContentView: View {
                         Circle()
                             .fill(.green)
                             .frame(width: 6, height: 6)
-                        Text("port \(HTTPServer.port)")
+                        Text(statusText)
                             .font(.system(.caption, design: .monospaced))
                             .foregroundStyle(.secondary)
                     }
                 }
             }
 
-            ContentViewCopyRow(
-                label: "HOST",
-                value: DaemonHost.localIPv4 ?? "unavailable",
-                isCopied: isHostCopied
-            ) {
-                if let host = DaemonHost.localIPv4 {
-                    copy(host, flag: $isHostCopied)
-                }
-            }
+            ContentViewCopyRow(label: "HOST", value: displayedHost)
 
-            ContentViewCopyRow(
-                label: "AUTH TOKEN",
-                value: DaemonAuth.token,
-                isCopied: isTokenCopied
-            ) {
-                copy(DaemonAuth.token, flag: $isTokenCopied)
-            }
+            ContentViewCopyRow(label: "AUTH TOKEN", value: DaemonAuth.token)
+
+            ContentViewProvisioningList(steps: provisioner.steps, message: provisioner.errorMessage)
 
             if let url = pairingURL,
                 let image = DaemonQR.image(from: url.absoluteString)
@@ -55,6 +42,21 @@ struct ContentView: View {
                     .padding(8)
                     .frame(maxWidth: .infinity)
             }
+
+            Divider()
+
+            Toggle(isOn: $preventsIdleSystemSleep) {
+                Label("Keep Mac Awake", systemImage: "moon.zzz")
+            }
+            .toggleStyle(.switch)
+            .onChange(of: preventsIdleSystemSleep) { enabled in
+                let assertionIsActive = SleepPreventionService.shared.setEnabled(enabled)
+                if assertionIsActive != enabled {
+                    preventsIdleSystemSleep = assertionIsActive
+                }
+            }
+
+            ContentViewFolderAccessButton()
 
             Divider()
 
@@ -70,13 +72,19 @@ struct ContentView: View {
         .frame(width: 320)
     }
 
-    private func copy(_ value: String, flag: Binding<Bool>) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(value, forType: .string)
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { flag.wrappedValue = true }
-        Task {
-            try? await Task.sleep(for: .seconds(1.2))
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { flag.wrappedValue = false }
-        }
+    private var displayedHost: String {
+        provisioner.endpoint?.host ?? DaemonHost.localIPv4 ?? "provisioning"
     }
+
+    private var statusText: String {
+        provisioner.endpoint == nil ? "port \(HTTPServer.port)" : "remote 443"
+    }
+
+    private var pairingURL: URL? {
+        if let endpoint = provisioner.endpoint {
+            return DaemonPairingURL.current(endpoint: endpoint)
+        }
+        return nil
+    }
+
 }

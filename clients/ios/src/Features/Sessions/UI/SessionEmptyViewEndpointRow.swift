@@ -40,15 +40,22 @@ struct SessionEmptyViewEndpointRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(endpoints) { endpoint in
                     Button {
-                        SessionActions.setEndpoint(endpoint, for: session)
+                        SessionActions.setEndpoint(endpoint, for: session, clearsPath: true)
                         folderSheetEndpoint = endpoint
                         isPopoverPresented = false
                     } label: {
                         HStack(spacing: ThemeTokens.Spacing.s) {
                             Image(systemName: endpoint.symbolName)
                                 .appFont(size: ThemeTokens.Text.m)
-                            Text(endpoint.host.isEmpty ? "Unnamed" : "\(endpoint.host):\(endpoint.port)")
-                                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(endpoint.displayName)
+                                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                                if endpoint.name?.isEmpty == false {
+                                    Text(endpoint.addressLabel)
+                                        .appFont(size: ThemeTokens.Text.s, design: .monospaced)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                             Spacer(minLength: 0)
                             if session.endpoint?.id == endpoint.id {
                                 Image(systemName: "checkmark")
@@ -71,8 +78,8 @@ struct SessionEmptyViewEndpointRow: View {
     }
 
     private var label: String {
-        if let endpoint = session.endpoint, !endpoint.host.isEmpty {
-            return "\(endpoint.host):\(endpoint.port)"
+        if let endpoint = session.endpoint {
+            return endpoint.displayName
         }
         return "Choose endpoint"
     }

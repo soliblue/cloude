@@ -3,8 +3,7 @@ import SwiftUI
 struct ContentViewCopyRow: View {
     let label: String
     let value: String
-    let isCopied: Bool
-    let onCopy: () -> Void
+    @State private var isCopied = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -19,7 +18,7 @@ struct ContentViewCopyRow: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Button(action: onCopy) {
+                Button(action: copy) {
                     Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(isCopied ? Color.green : .secondary)
@@ -34,6 +33,16 @@ struct ContentViewCopyRow: View {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(Color.primary.opacity(0.06))
             )
+        }
+    }
+
+    private func copy() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(value, forType: .string)
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isCopied = true }
+        Task {
+            try? await Task.sleep(for: .seconds(1.2))
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isCopied = false }
         }
     }
 }

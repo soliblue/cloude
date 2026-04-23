@@ -12,7 +12,7 @@ enum EndpointService {
         host: String, port: Int, authKey: String, retryWindow: TimeInterval = 0
     ) async -> EndpointProbeResult {
         var components = URLComponents()
-        components.scheme = "http"
+        components.scheme = port == 443 ? "https" : "http"
         components.host = host
         components.port = port
         components.path = "/ping"

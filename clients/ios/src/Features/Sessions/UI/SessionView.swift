@@ -4,18 +4,23 @@ import SwiftUI
 struct SessionView: View {
     @Bindable var session: Session
     @Binding var isSidebarOpen: Bool
+    @Binding var folderPickerRequest: SessionFolderPickerRequest?
 
     var body: some View {
         ZStack {
-            ChatView(session: session)
-                .opacity(session.tab == .chat ? 1 : 0)
-                .allowsHitTesting(session.tab == .chat)
-            FileTreeView(session: session)
-                .opacity(session.tab == .files ? 1 : 0)
-                .allowsHitTesting(session.tab == .files)
-            GitView(session: session)
-                .opacity(session.tab == .git ? 1 : 0)
-                .allowsHitTesting(session.tab == .git)
+            if session.isConfigured {
+                ChatView(session: session, folderPickerRequest: $folderPickerRequest)
+                    .opacity(session.tab == .chat ? 1 : 0)
+                    .allowsHitTesting(session.tab == .chat)
+                FileTreeView(session: session)
+                    .opacity(session.tab == .files ? 1 : 0)
+                    .allowsHitTesting(session.tab == .files)
+                GitView(session: session)
+                    .opacity(session.tab == .git ? 1 : 0)
+                    .allowsHitTesting(session.tab == .git)
+            } else {
+                ChatView(session: session, folderPickerRequest: $folderPickerRequest)
+            }
         }
         .safeAreaInset(edge: .top) {
             HStack(spacing: ThemeTokens.Spacing.s) {
@@ -25,7 +30,7 @@ struct SessionView: View {
                     }
                 }
                 Spacer(minLength: 0)
-                if session.endpoint != nil, let path = session.path, !path.isEmpty {
+                if session.isConfigured {
                     SessionViewTabs(selected: $session.tab, session: session)
                 }
             }

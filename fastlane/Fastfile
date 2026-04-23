@@ -53,6 +53,32 @@ def cleanup_signing
   UI.success("Signing keychain cleaned up")
 end
 
+def cloudflared_source_path
+  configured = ENV["CLOUDFLARED_PATH"].to_s
+  return configured if configured.length > 0 && File.exist?(configured)
+
+  detected = `command -v cloudflared`.strip
+  return detected if detected.length > 0 && File.exist?(detected)
+
+  UI.user_error!("cloudflared not found. Install it with brew install cloudflared or set CLOUDFLARED_PATH")
+end
+
+def bundle_cloudflared(app_path, signing_identity = nil)
+  destination = File.join(app_path, "Contents", "Resources", "cloudflared")
+  FileUtils.rm_f(destination)
+  FileUtils.cp(cloudflared_source_path, destination)
+  FileUtils.chmod(0755, destination)
+
+  if signing_identity
+    entitlements = File.expand_path("../daemons/macos/src/macOSDaemon.entitlements", __dir__)
+    sh("codesign --force --options runtime --timestamp --sign #{Shellwords.escape(signing_identity)} #{Shellwords.escape(destination)}")
+    sh("codesign --force --options runtime --timestamp --entitlements #{Shellwords.escape(entitlements)} --sign #{Shellwords.escape(signing_identity)} #{Shellwords.escape(app_path)}")
+    sh("codesign --verify --deep --strict --verbose=2 #{Shellwords.escape(app_path)}")
+  end
+
+  UI.success("Bundled cloudflared at #{destination}")
+end
+
 platform :ios do
   desc "Build and upload iOS app to TestFlight"
   lane :beta_local do
@@ -113,6 +139,7 @@ platform :mac do
       end
 
       sh("xcodebuild -project ../daemons/macos/macOSDaemon.xcodeproj -scheme 'Cloude Agent' -destination 'platform=macOS' -derivedDataPath /tmp/cloude-daemon-build build 2>&1 | tee -a #{deploy_log}")
+      bundle_cloudflared("/tmp/cloude-daemon-build/Build/Products/Debug/Remote CC Daemon.app")
 
       File.open(deploy_log, "a") do |f|
         f.puts "BUILD COMPLETE: #{Time.now}"
@@ -166,6 +193,7 @@ platform :mac do
           teamID: "Q9U8224WWM"
         }
       )
+      bundle_cloudflared(app_path, signing_identity)
 
       notarize(
         api_key: api_key,

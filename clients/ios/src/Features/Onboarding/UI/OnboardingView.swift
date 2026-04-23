@@ -4,8 +4,13 @@ import SwiftUI
 struct OnboardingView: View {
     @Environment(\.theme) private var theme
     @Environment(\.modelContext) private var context
-    @State private var store = OnboardingStore()
+    @State private var store: OnboardingStore
     let onFinished: (Endpoint) -> Void
+
+    init(initialStep: OnboardingStep = .install, onFinished: @escaping (Endpoint) -> Void) {
+        _store = State(initialValue: OnboardingStore(step: initialStep))
+        self.onFinished = onFinished
+    }
 
     var body: some View {
         ZStack {

@@ -44,7 +44,7 @@ enum HTTPClient {
 
     static func url(endpoint: Endpoint, path: String, query: [String: String]) -> URL? {
         var components = URLComponents()
-        components.scheme = "http"
+        components.scheme = endpoint.port == 443 ? "https" : "http"
         components.host = endpoint.host
         components.port = endpoint.port
         components.path = path
