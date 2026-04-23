@@ -6,7 +6,7 @@ struct WindowsCreateButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: "plus")
-                .appFont(size: ThemeTokens.Icon.m, weight: .semibold)
+                .appFont(size: ThemeTokens.Text.m, weight: .semibold)
                 .foregroundStyle(.secondary)
                 .padding(.leading, ThemeTokens.Spacing.s)
                 .padding(.trailing, ThemeTokens.Spacing.l)
