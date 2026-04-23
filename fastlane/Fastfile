@@ -1,3 +1,5 @@
+require "shellwords"
+
 default_platform(:ios)
 
 KEYCHAIN_NAME = "cloude-build.keychain"
@@ -149,6 +151,9 @@ platform :mac do
         key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
         is_key_content_base64: false
       )
+      app_path = File.expand_path("../build/release/Remote CC Daemon.app", __dir__)
+      dmg_path = File.expand_path("../build/release/Remote-CC-Daemon.dmg", __dir__)
+      signing_identity = ENV["MAC_CODESIGN_IDENTITY"] || "Developer ID Application: J&S toy2life GmbH (Q9U8224WWM)"
 
       build_mac_app(
         project: "daemons/macos/macOSDaemon.xcodeproj",
@@ -164,14 +169,22 @@ platform :mac do
 
       notarize(
         api_key: api_key,
-        package: "build/release/Remote CC Daemon.app",
+        package: app_path,
         bundle_id: "soli.Cloude-Agent",
         print_log: true
       )
 
-      sh("hdiutil create -volname 'Remote CC Daemon' -srcfolder '../build/release/Remote CC Daemon.app' -ov -format UDZO '../build/release/Remote-CC-Daemon.dmg'")
+      sh("hdiutil create -volname 'Remote CC Daemon' -srcfolder #{Shellwords.escape(app_path)} -ov -format UDZO #{Shellwords.escape(dmg_path)}")
+      sh("codesign --force --timestamp --sign #{Shellwords.escape(signing_identity)} #{Shellwords.escape(dmg_path)}")
 
-      UI.success("DMG created at build/release/Remote-CC-Daemon.dmg")
+      notarize(
+        api_key: api_key,
+        package: dmg_path,
+        bundle_id: "soli.Cloude-Agent",
+        print_log: true
+      )
+
+      UI.success("DMG created at #{dmg_path}")
     ensure
       cleanup_signing
     end
