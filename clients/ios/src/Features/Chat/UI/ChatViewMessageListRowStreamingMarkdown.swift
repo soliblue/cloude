@@ -6,6 +6,7 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
     @State private var tailBlocks: [ChatMarkdownBlock] = []
     @State private var lastText = ""
     @State private var splitCache = SplitCache()
+    @State private var lastBlockSignature: [String] = []
 
     var body: some View {
         let _ = PerfCounters.bump("str.body")
@@ -34,12 +35,62 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
                 frozen.upTo = frozenText
             }
             let frozenLineCount = frozenText.components(separatedBy: "\n").count - 1
-            tailBlocks = ChatMarkdownParser.parse(
-                String(text[splitIndex...]), lineOffset: frozenLineCount)
+            tailBlocks = Self.stabilizeTailIds(
+                ChatMarkdownParser.parse(
+                    String(text[splitIndex...]), lineOffset: frozenLineCount))
         } else {
             PerfCounters.bump("str.splitReset")
             frozen.reset()
-            tailBlocks = ChatMarkdownParser.parse(text)
+            tailBlocks = Self.stabilizeTailIds(ChatMarkdownParser.parse(text))
+        }
+        diffBlockSignature()
+    }
+
+    private func diffBlockSignature() {
+        let combined = frozen.blocks + tailBlocks
+        let signature = combined.map { "\(Self.kind(of: $0)):\($0.id)" }
+        if signature.isEmpty { return }
+        if lastBlockSignature.isEmpty {
+            lastBlockSignature = signature
+            return
+        }
+        let old = lastBlockSignature
+        let oldIds = Set(old)
+        let newIds = Set(signature)
+        let added = signature.filter { !oldIds.contains($0) }
+        let removed = old.filter { !newIds.contains($0) }
+        if added.isEmpty && removed.isEmpty {
+            lastBlockSignature = signature
+            return
+        }
+        let reused = signature.filter { oldIds.contains($0) }.count
+        PerfCounters.bump("str.blockChurn")
+        PerfCounters.event(
+            "block diff added=\(added.count) removed=\(removed.count) reused=\(reused) "
+                + "addedList=[\(added.joined(separator: ","))] "
+                + "removedList=[\(removed.joined(separator: ","))]"
+        )
+        lastBlockSignature = signature
+    }
+
+    private static func stabilizeTailIds(_ blocks: [ChatMarkdownBlock]) -> [ChatMarkdownBlock] {
+        var counts: [String: Int] = [:]
+        return blocks.map { block in
+            let sig = block.contentSignature
+            let n = counts[sig, default: 0]
+            counts[sig] = n + 1
+            return block.withId("tail-\(sig)#\(n)")
+        }
+    }
+
+    private static func kind(of block: ChatMarkdownBlock) -> String {
+        switch block {
+        case .text: return "text"
+        case .code: return "code"
+        case .table: return "table"
+        case .blockquote: return "quote"
+        case .horizontalRule: return "hr"
+        case .header: return "header"
         }
     }
 

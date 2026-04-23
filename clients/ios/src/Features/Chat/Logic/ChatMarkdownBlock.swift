@@ -31,4 +31,57 @@ enum ChatMarkdownBlock: Identifiable {
             return .header(id: prefix + id, level: l, content: c, segments: s)
         }
     }
+
+    func withId(_ newId: String) -> ChatMarkdownBlock {
+        switch self {
+        case .text(_, let a, let s): return .text(id: newId, a, segments: s)
+        case .code(_, let c, let l, let comp):
+            return .code(id: newId, content: c, language: l, isComplete: comp)
+        case .table(_, let r): return .table(id: newId, rows: r)
+        case .blockquote(_, let c): return .blockquote(id: newId, content: c)
+        case .horizontalRule: return .horizontalRule(id: newId)
+        case .header(_, let l, let c, let s):
+            return .header(id: newId, level: l, content: c, segments: s)
+        }
+    }
+
+    var contentSignature: String {
+        switch self {
+        case .text(_, _, let segments):
+            return "t:" + Self.firstLineFromSegments(segments)
+        case .code(_, let content, let lang, _):
+            let head = content.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? ""
+            return "c:\(lang ?? ""):\(head.prefix(48))"
+        case .table(_, let rows):
+            return "tb:" + (rows.first?.joined(separator: "|") ?? "")
+        case .blockquote(_, let content):
+            let head = content.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? ""
+            return "q:" + head.prefix(48)
+        case .horizontalRule:
+            return "hr"
+        case .header(_, let level, _, let segments):
+            return "h\(level):" + Self.firstLineFromSegments(segments)
+        }
+    }
+
+    private static func firstLineFromSegments(_ segments: [ChatMarkdownInlineSegment]) -> String {
+        var result = ""
+        for segment in segments {
+            let str: String = {
+                switch segment {
+                case .text(_, let attr): return String(attr.characters)
+                case .code(_, let code): return code
+                case .filePath(_, let path): return path
+                case .lineBreak: return "\n"
+                }
+            }()
+            if let newlineIndex = str.firstIndex(of: "\n") {
+                result += str[..<newlineIndex]
+                return String(result.prefix(48))
+            }
+            result += str
+            if result.count >= 48 { return String(result.prefix(48)) }
+        }
+        return result
+    }
 }
