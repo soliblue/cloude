@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingViewPairStep: View {
     let store: OnboardingStore
     @Environment(\.theme) private var theme
+    @Environment(\.appAccent) private var appAccent
     @State private var isManualPresented = false
     @State private var isUnrecognized = false
     @State private var isPermissionDenied = false
@@ -18,17 +19,16 @@ struct OnboardingViewPairStep: View {
     }
 
     var body: some View {
-        VStack(spacing: ThemeTokens.Spacing.l) {
+        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
             Spacer()
-            VStack(spacing: ThemeTokens.Spacing.s) {
+            VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                 Text("Scan the pairing QR")
                     .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
-                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Text(subtitle)
                     .appFont(size: ThemeTokens.Text.xl)
                     .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 520)
+                    .frame(maxWidth: 520, alignment: .leading)
             }
             OnboardingViewScannerSheetPreview(
                 onCode: { code in
@@ -57,7 +57,8 @@ struct OnboardingViewPairStep: View {
             } label: {
                 Text("Enter manually")
                     .appFont(size: ThemeTokens.Text.l, weight: .semibold)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(appAccent.color)
+                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(.plain)
             Spacer()

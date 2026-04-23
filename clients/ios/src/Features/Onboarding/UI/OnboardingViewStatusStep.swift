@@ -8,90 +8,93 @@ struct OnboardingViewStatusStep: View {
     @Environment(\.appAccent) private var appAccent
     @Environment(\.modelContext) private var context
     @State private var savedEndpoint: Endpoint?
+    @State private var isSaving = false
 
-    private struct Copy {
-        let title: String
-        let subtitle: String
+    private enum StepState {
+        case pending
+        case active
+        case done
+        case failed
     }
 
-    private var copy: Copy {
+    private var connectState: StepState {
+        if store.isProbing { return .active }
+        if let result = store.probeResult {
+            return result == .reachable ? .done : .failed
+        }
+        return .pending
+    }
+
+    private var saveState: StepState {
+        if savedEndpoint != nil { return .done }
+        if isSaving { return .active }
+        return .pending
+    }
+
+    private var hostLabel: String {
+        store.draft?.name ?? store.draft?.host ?? "your Mac"
+    }
+
+    private var connectSubtitle: String? {
         switch store.probeResult {
-        case .reachable:
-            return Copy(
-                title: "You're all set",
-                subtitle: "Hope you enjoy it. Anything broken or weird, reach out [@_xsoli](https://x.com/_xsoli)."
-            )
-        case .unauthorized:
-            return Copy(
-                title: "Token rejected",
-                subtitle: "Generate a new QR in Remote CC Daemon and try again."
-            )
-        case .unreachable:
-            return Copy(
-                title: "Can't reach your Mac",
-                subtitle: "Make sure your phone and Mac are on the same Wi-Fi."
-            )
-        case .invalid:
-            return Copy(
-                title: "Unexpected response",
-                subtitle: "The host responded, but not like the daemon does."
-            )
-        case .none:
-            return Copy(
-                title: "Checking connection",
-                subtitle: "Running an authenticated ping against your Mac."
-            )
+        case .unauthorized: return "Token rejected. Generate a new QR and try again."
+        case .unreachable: return "Make sure your phone and Mac are on the same Wi-Fi."
+        case .invalid: return "The host responded, but not like the daemon does."
+        case .reachable, .none: return nil
         }
     }
 
+    private var hasError: Bool {
+        store.probeResult != nil && store.probeResult != .reachable
+    }
+
+    private var isButtonEnabled: Bool {
+        savedEndpoint != nil || hasError
+    }
+
     var body: some View {
-        VStack(spacing: ThemeTokens.Spacing.l) {
+        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
             Spacer()
-            VStack(spacing: ThemeTokens.Spacing.s) {
-                Text(copy.title)
-                    .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
-                    .multilineTextAlignment(.center)
-                Text(.init(copy.subtitle))
-                    .appFont(size: ThemeTokens.Text.xl)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .tint(appAccent.color)
-                    .frame(maxWidth: 520)
+            VStack(spacing: 0) {
+                stepRow(
+                    title: Text("Connecting to")
+                        + Text(" \(hostLabel)").font(
+                            .system(size: ThemeTokens.Text.l, design: .monospaced).weight(.medium)),
+                    subtitle: connectSubtitle,
+                    state: connectState
+                )
+                Divider()
+                    .padding(.leading, ThemeTokens.Size.m + ThemeTokens.Spacing.m * 2)
+                stepRow(
+                    title: Text("Storing token in")
+                        + Text(" Keychain").font(.system(size: ThemeTokens.Text.l, design: .monospaced).weight(.medium)),
+                    subtitle: nil,
+                    state: saveState
+                )
             }
-            if store.isProbing {
-                ProgressView().controlSize(.large)
-            }
-            if let savedEndpoint {
-                Button {
-                    onFinished(savedEndpoint)
-                } label: {
-                    Text("Enjoy")
-                        .appFont(size: ThemeTokens.Text.xl, weight: .semibold)
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, ThemeTokens.Spacing.m)
-                        .glassEffect(
-                            .regular.tint(theme.palette.background).interactive(),
-                            in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
-                        )
-                }
-                .buttonStyle(.plain)
-            } else if let result = store.probeResult, result != .reachable {
-                Button {
+            .padding(ThemeTokens.Spacing.s)
+            .frame(maxWidth: .infinity)
+            .glassEffect(
+                .regular.tint(theme.palette.surface),
+                in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
+            )
+            Button {
+                if hasError {
                     store.reset()
-                } label: {
-                    Text("Try again")
-                        .appFont(size: ThemeTokens.Text.xl, weight: .semibold)
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, ThemeTokens.Spacing.m)
-                        .glassEffect(
-                            .regular.tint(theme.palette.background).interactive(),
-                            in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
-                        )
+                } else if let savedEndpoint {
+                    onFinished(savedEndpoint)
                 }
-                .buttonStyle(.plain)
+            } label: {
+                Text(hasError ? "Try again" : "Continue")
+                    .appFont(size: ThemeTokens.Text.xl, weight: .semibold)
+                    .foregroundColor(appAccent.color)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, ThemeTokens.Spacing.m)
+                    .contentTransition(.opacity)
             }
+            .buttonStyle(.plain)
+            .disabled(!isButtonEnabled)
+            .opacity(isButtonEnabled ? 1 : ThemeTokens.Opacity.m)
             Spacer()
         }
         .padding(ThemeTokens.Spacing.l)
@@ -100,9 +103,58 @@ struct OnboardingViewStatusStep: View {
         .task(id: store.draft) {
             if store.draft != nil, store.probeResult == nil {
                 if let endpoint = await store.verifyAndSave(context: context) {
-                    savedEndpoint = endpoint
+                    withAnimation(.easeOut(duration: ThemeTokens.Duration.s)) { isSaving = true }
+                    try? await Task.sleep(nanoseconds: 300_000_000)
+                    withAnimation(.easeOut(duration: ThemeTokens.Duration.s)) {
+                        savedEndpoint = endpoint
+                        isSaving = false
+                    }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func stepRow(title: Text, subtitle: String?, state: StepState) -> some View {
+        HStack(alignment: .top, spacing: ThemeTokens.Spacing.m) {
+            stepIcon(state)
+                .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
+            VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
+                title
+                    .appFont(size: ThemeTokens.Text.l, weight: .medium)
+                    .foregroundColor(state == .pending ? .secondary : .primary)
+                if let subtitle {
+                    Text(subtitle)
+                        .appFont(size: ThemeTokens.Text.m)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, ThemeTokens.Spacing.s)
+        .padding(.horizontal, ThemeTokens.Spacing.m)
+    }
+
+    @ViewBuilder
+    private func stepIcon(_ state: StepState) -> some View {
+        switch state {
+        case .pending:
+            Image(systemName: "circle")
+                .appFont(size: ThemeTokens.Text.l)
+                .foregroundColor(.secondary.opacity(ThemeTokens.Opacity.m))
+        case .active:
+            ProgressView().controlSize(.small)
+        case .done:
+            Image(systemName: "checkmark.circle.fill")
+                .appFont(size: ThemeTokens.Text.l)
+                .foregroundColor(ThemeColor.success)
+                .contentTransition(.symbolEffect(.replace))
+        case .failed:
+            Image(systemName: "xmark.circle.fill")
+                .appFont(size: ThemeTokens.Text.l)
+                .foregroundColor(ThemeColor.danger)
+                .contentTransition(.symbolEffect(.replace))
         }
     }
 }

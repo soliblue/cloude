@@ -3,23 +3,23 @@ import SwiftUI
 struct OnboardingViewInstallStep: View {
     let store: OnboardingStore
     @Environment(\.theme) private var theme
+    @Environment(\.appAccent) private var appAccent
     @Environment(\.openURL) private var openURL
     @State private var installer: InstallerFile?
     @State private var isDownloadingInstaller = false
     @State private var isDownloadErrorPresented = false
 
     var body: some View {
-        VStack(spacing: ThemeTokens.Spacing.l) {
+        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
             Spacer()
-            VStack(spacing: ThemeTokens.Spacing.s) {
+            VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                 Text("Install on your Mac")
                     .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
-                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Text("To control Claude from your phone, you'll need our little Mac companion.")
                     .appFont(size: ThemeTokens.Text.xl)
                     .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 520)
+                    .frame(maxWidth: 520, alignment: .leading)
             }
             Image("OnboardingInstallIllustration")
                 .resizable()
@@ -63,7 +63,8 @@ struct OnboardingViewInstallStep: View {
                 } label: {
                     Text("Continue")
                         .appFont(size: ThemeTokens.Text.l, weight: .semibold)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(appAccent.color)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.plain)
             }
