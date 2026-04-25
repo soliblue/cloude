@@ -11,7 +11,6 @@ struct ChatViewMessageListRowMarkdownBlock: View {
             } else {
                 Text(attributed)
                     .textSelection(.enabled)
-                    .contentTransition(.interpolate)
             }
         case .code(_, let content, let language, _):
             ChatViewMessageListRowMarkdownBlockCode(code: content, language: language)
@@ -27,7 +26,6 @@ struct ChatViewMessageListRowMarkdownBlock: View {
             } else {
                 Text(content)
                     .textSelection(.enabled)
-                    .contentTransition(.interpolate)
             }
         }
     }

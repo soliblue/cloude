@@ -37,11 +37,13 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
             let frozenLineCount = frozenText.components(separatedBy: "\n").count - 1
             tailBlocks = Self.stabilizeTailIds(
                 ChatMarkdownParser.parse(
-                    String(text[splitIndex...]), lineOffset: frozenLineCount))
+                    String(text[splitIndex...]), lineOffset: frozenLineCount),
+                previous: tailBlocks)
         } else {
             PerfCounters.bump("str.splitReset")
             frozen.reset()
-            tailBlocks = Self.stabilizeTailIds(ChatMarkdownParser.parse(text))
+            tailBlocks = Self.stabilizeTailIds(
+                ChatMarkdownParser.parse(text), previous: tailBlocks)
         }
         diffBlockSignature()
     }
@@ -73,12 +75,23 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
         lastBlockSignature = signature
     }
 
-    private static func stabilizeTailIds(_ blocks: [ChatMarkdownBlock]) -> [ChatMarkdownBlock] {
+    private static func stabilizeTailIds(
+        _ blocks: [ChatMarkdownBlock], previous: [ChatMarkdownBlock]
+    ) -> [ChatMarkdownBlock] {
         var counts: [String: Int] = [:]
-        return blocks.map { block in
+        return blocks.enumerated().map { offset, block in
             let sig = block.contentSignature
             let n = counts[sig, default: 0]
             counts[sig] = n + 1
+            if offset < previous.count,
+                kind(of: previous[offset]) == kind(of: block),
+                previous[offset].id.hasPrefix("tail-")
+            {
+                let prevSig = previous[offset].contentSignature
+                if sig.hasPrefix(prevSig) || prevSig.hasPrefix(sig) {
+                    return block.withId(previous[offset].id)
+                }
+            }
             return block.withId("tail-\(sig)#\(n)")
         }
     }
