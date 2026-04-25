@@ -5,6 +5,7 @@ struct DecodedToolUse: Equatable {
     let name: String
     let inputSummary: String
     let inputJSON: String
+    let parentToolUseId: String?
 }
 
 enum ChatStreamEvent {
@@ -79,6 +80,7 @@ enum ChatStreamEvent {
         if let message = event["message"] as? [String: Any],
             let content = message["content"] as? [[String: Any]]
         {
+            let parentToolUseId = event["parent_tool_use_id"] as? String
             var text = ""
             var toolUses: [DecodedToolUse] = []
             for block in content {
@@ -93,7 +95,8 @@ enum ChatStreamEvent {
                             id: id,
                             name: name,
                             inputSummary: ChatToolCall.summarize(name: name, input: input),
-                            inputJSON: ChatToolCall.prettyJSON(input)
+                            inputJSON: ChatToolCall.prettyJSON(input),
+                            parentToolUseId: parentToolUseId
                         )
                     )
                 }

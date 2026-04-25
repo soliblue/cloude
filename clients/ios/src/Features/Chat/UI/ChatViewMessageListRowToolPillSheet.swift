@@ -1,4 +1,5 @@
 import HighlightSwift
+import SwiftData
 import SwiftUI
 
 struct ChatViewMessageListRowToolPillSheet: View {
@@ -7,6 +8,17 @@ struct ChatViewMessageListRowToolPillSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.filePreviewPresenter) private var presenter
     @Environment(\.theme) private var theme
+    @Query private var children: [ChatToolCall]
+
+    init(session: Session, toolCall: ChatToolCall) {
+        self.session = session
+        self.toolCall = toolCall
+        let parentId = toolCall.id
+        _children = Query(
+            filter: #Predicate<ChatToolCall> { $0.parentToolUseId == parentId },
+            sort: \ChatToolCall.order
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -19,6 +31,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
                             text: result, isError: toolCall.state == .failed
                         )
                     }
+                    if !children.isEmpty { childrenSection }
                 }
                 .padding(ThemeTokens.Spacing.m)
             }
@@ -130,6 +143,49 @@ struct ChatViewMessageListRowToolPillSheet: View {
                 .contentShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    private var childrenSection: some View {
+        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
+            Label("Tools (\(children.count))", systemImage: "square.stack")
+                .appFont(size: ThemeTokens.Text.m, weight: .semibold)
+                .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
+                    HStack(spacing: ThemeTokens.Spacing.m) {
+                        Image(systemName: child.symbol)
+                            .appFont(size: ThemeTokens.Text.m, weight: .semibold)
+                            .foregroundColor(child.kind.color)
+                        Text(child.name)
+                            .appFont(size: ThemeTokens.Text.m, weight: .semibold, design: .monospaced)
+                        Text(child.shortLabel)
+                            .appFont(size: ThemeTokens.Text.s, design: .monospaced)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Spacer()
+                        if child.state == .pending {
+                            ProgressView().controlSize(.small)
+                        } else if child.state == .failed {
+                            Image(systemName: "xmark")
+                                .appFont(size: ThemeTokens.Text.s, weight: .bold)
+                                .foregroundColor(.red)
+                        } else {
+                            Image(systemName: "checkmark")
+                                .appFont(size: ThemeTokens.Text.s, weight: .bold)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, ThemeTokens.Spacing.s)
+                    .padding(.horizontal, ThemeTokens.Spacing.m)
+                    if index < children.count - 1 {
+                        Divider().padding(.leading, ThemeTokens.Spacing.m)
+                    }
+                }
+            }
+            .background(theme.palette.surface)
+            .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
         }
     }
 

@@ -8,7 +8,7 @@ struct ChatViewMessageListRowToolPillList: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: ThemeTokens.Spacing.s) {
-                ForEach(toolCalls) { toolCall in
+                ForEach(toolCalls.filter { $0.parentToolUseId == nil }) { toolCall in
                     ChatViewMessageListRowToolPillListRow(toolCall: toolCall) {
                         selected = toolCall
                     }
