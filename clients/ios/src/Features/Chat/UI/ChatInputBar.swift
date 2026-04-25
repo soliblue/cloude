@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct ChatInputBar: View, Equatable {
@@ -5,9 +6,13 @@ struct ChatInputBar: View, Equatable {
     let isStreaming: Bool
     let model: ChatModel?
     let effort: ChatEffort?
+    let endpoint: Endpoint?
+    let path: String?
     var enabled: Bool = true
     @State private var draft: String = ""
     @State private var images: [Data] = []
+    @State private var skills: [Skill] = []
+    @State private var agents: [Agent] = []
     @State private var traceId = String(UUID().uuidString.prefix(6))
     @FocusState private var focused: Bool
     @Environment(\.appAccent) private var appAccent
@@ -19,6 +24,8 @@ struct ChatInputBar: View, Equatable {
             && lhs.model == rhs.model
             && lhs.effort == rhs.effort
             && lhs.enabled == rhs.enabled
+            && lhs.endpoint?.id == rhs.endpoint?.id
+            && lhs.path == rhs.path
     }
 
     init(
@@ -26,12 +33,16 @@ struct ChatInputBar: View, Equatable {
         isStreaming: Bool,
         model: ChatModel?,
         effort: ChatEffort?,
+        endpoint: Endpoint?,
+        path: String?,
         enabled: Bool = true
     ) {
         self.sessionId = sessionId
         self.isStreaming = isStreaming
         self.model = model
         self.effort = effort
+        self.endpoint = endpoint
+        self.path = path
         self.enabled = enabled
         PerfCounters.bumpInit("ib")
     }
@@ -42,6 +53,16 @@ struct ChatInputBar: View, Equatable {
         #endif
         let _ = PerfCounters.bump("ib.body")
         VStack(spacing: ThemeTokens.Spacing.xs) {
+            if let mode = pickerMode {
+                ChatInputBarAutocompletePicker(
+                    mode: mode,
+                    skills: skills,
+                    agents: agents,
+                    onSelectSkill: { name in insertOrReplace(trigger: "/", name: name) },
+                    onSelectAgent: { name in insertOrReplace(trigger: "@", name: name) }
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
             if !images.isEmpty {
                 ChatInputBarAttachmentStrip(images: $images)
             }
@@ -86,6 +107,21 @@ struct ChatInputBar: View, Equatable {
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
         .padding(.bottom, ThemeTokens.Spacing.s)
+        .animation(.easeInOut(duration: ThemeTokens.Duration.s), value: pickerMode)
+        .task(id: sessionId) {
+            if let endpoint, let path, !path.isEmpty {
+                if skills.isEmpty,
+                    let fetched = await SessionService.skills(endpoint: endpoint, sessionId: sessionId, path: path)
+                {
+                    skills = fetched
+                }
+                if agents.isEmpty,
+                    let fetched = await SessionService.agents(endpoint: endpoint, sessionId: sessionId, path: path)
+                {
+                    agents = fetched
+                }
+            }
+        }
         .onAppear {
             AppLogger.uiInfo(
                 "chatInput appear trace=\(traceId) session=\(sessionId.uuidString) enabled=\(enabled)"
@@ -99,6 +135,43 @@ struct ChatInputBar: View, Equatable {
                 "chatInput focus trace=\(traceId) session=\(sessionId.uuidString) \(oldValue)->\(newValue)"
             )
         }
+    }
+
+    private var pickerMode: ChatInputBarAutocompletePicker.Mode? {
+        let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let q = activeQuery(for: "/") { return .skills(query: q) }
+        if let q = activeQuery(for: "@") { return .agents(query: q) }
+        if trimmed.isEmpty, path?.isEmpty == false, !(skills.isEmpty && agents.isEmpty) {
+            return .ambient
+        }
+        return nil
+    }
+
+    private func activeQuery(for trigger: Character) -> String? {
+        guard let idx = draft.lastIndex(of: trigger) else { return nil }
+        let after = draft[draft.index(after: idx)...]
+        if after.contains(where: { $0 == " " || $0 == "\n" }) { return nil }
+        if idx != draft.startIndex {
+            let prev = draft[draft.index(before: idx)]
+            if !prev.isWhitespace { return nil }
+        }
+        return String(after).lowercased()
+    }
+
+    private func insertOrReplace(trigger: Character, name: String) {
+        let replacement = "\(trigger)\(name) "
+        if let idx = draft.lastIndex(of: trigger) {
+            let before = draft[..<idx]
+            let after = draft[draft.index(after: idx)...]
+            if !after.contains(where: { $0 == " " || $0 == "\n" }),
+                idx == draft.startIndex || draft[draft.index(before: idx)].isWhitespace
+            {
+                draft = String(before) + replacement
+                return
+            }
+        }
+        if !draft.isEmpty && !draft.hasSuffix(" ") { draft += " " }
+        draft += replacement
     }
 
     @ViewBuilder

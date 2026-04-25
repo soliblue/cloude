@@ -10,6 +10,12 @@ enum Router {
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/files") {
                     return FilesHandler.list(request, params: params)
                 }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/skills") {
+                    return SkillsHandler.list(request, params: params)
+                }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/agents") {
+                    return AgentsHandler.list(request, params: params)
+                }
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/files/read") {
                     return FilesHandler.read(request, params: params)
                 }

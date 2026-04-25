@@ -28,6 +28,8 @@ struct ChatView: View {
                     isStreaming: session.isStreaming,
                     model: session.model,
                     effort: session.effort,
+                    endpoint: session.endpoint,
+                    path: session.path,
                     enabled: canSend
                 )
                 .equatable()
