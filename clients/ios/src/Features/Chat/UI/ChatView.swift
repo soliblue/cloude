@@ -18,7 +18,7 @@ struct ChatView: View {
 
     var body: some View {
         #if DEBUG
-        let _ = Self._logChanges()
+        let _ = PerfCounters.enabled ? Self._logChanges() : ()
         #endif
         let _ = PerfCounters.bump("cv.body")
         ChatViewBody(session: session, folderPickerRequest: $folderPickerRequest)
@@ -71,7 +71,7 @@ private struct ChatViewBody: View {
 
     var body: some View {
         #if DEBUG
-        let _ = Self._logChanges()
+        let _ = PerfCounters.enabled ? Self._logChanges() : ()
         #endif
         let _ = PerfCounters.bump("cvb.body")
         ChatViewMessageList(session: session, folderPickerRequest: $folderPickerRequest)

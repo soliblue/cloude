@@ -7,8 +7,6 @@ struct WindowsView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Window.order) private var windows: [Window]
     @Query private var endpoints: [Endpoint]
-    @State private var dragTranslation: CGFloat = 0
-    @State private var paneWidth: CGFloat = 0
     @State private var selectedPane: WindowsPane = .session
     @State private var isOnboardingPresented = false
     @State private var onboardingInitialStep: OnboardingStep = .install
@@ -22,51 +20,33 @@ struct WindowsView: View {
 
     var body: some View {
         #if DEBUG
-        let _ = Self._logChanges()
+        let _ = PerfCounters.enabled ? Self._logChanges() : ()
         #endif
         let _ = PerfCounters.bump("wv.body")
-        GeometryReader { proxy in
-            ZStack(alignment: .topTrailing) {
-                theme.palette.background.ignoresSafeArea()
-                HStack(spacing: 0) {
-                    WindowsSidebar(selectedPane: $selectedPane)
-                        .frame(width: proxy.size.width)
-                    sessionPane
-                        .frame(width: proxy.size.width)
-                        .overlay(alignment: .leading) {
-                            Color.black.opacity(ThemeTokens.Opacity.s)
-                                .frame(width: 1)
-                        }
-                    gitPane
-                        .frame(width: proxy.size.width)
-                        .overlay(alignment: .leading) {
-                            Color.black.opacity(ThemeTokens.Opacity.s)
-                                .frame(width: 1)
-                        }
-                }
-                .offset(
-                    x: boundedOffset(baseOffset(width: proxy.size.width) + dragTranslation, width: proxy.size.width)
-                )
-                .contentShape(Rectangle())
-                DebugOverlay(endpoint: focusedSession?.endpoint)
-                if selectedPane == .session, !isKeyboardVisible, let session = focusedSession {
-                    WindowsCreateButtonHost(session: session) {
-                        withAnimation(paneAnimation) {
-                            let session = WindowActions.addNew(into: context, after: windows)
-                            centerTabs[session.id] = .chat
-                            selectedPane = .session
-                        }
+        ZStack(alignment: .topTrailing) {
+            theme.palette.background.ignoresSafeArea()
+            WindowsPagerTrack(
+                selectedPane: selectedPane,
+                hasGit: focusedSession?.hasGit == true,
+                selectPane: setPane
+            ) {
+                WindowsSidebar(selectedPane: $selectedPane)
+            } session: {
+                sessionPane
+            } git: {
+                gitPane
+            }
+            DebugOverlay(endpoint: focusedSession?.endpoint)
+            if selectedPane == .session, !isKeyboardVisible, focusedSession != nil {
+                WindowsCreateButton {
+                    withAnimation(paneAnimation) {
+                        let session = WindowActions.addNew(into: context, after: windows)
+                        centerTabs[session.id] = .chat
+                        selectedPane = .session
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                 }
-            }
-            .onAppear {
-                paneWidth = proxy.size.width
-                configurePagerGesture()
-            }
-            .onChange(of: proxy.size.width) { _, width in
-                paneWidth = width
-                configurePagerGesture()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                .zIndex(1)
             }
         }
         .preferredColorScheme(theme.palette.colorScheme)
@@ -93,22 +73,17 @@ struct WindowsView: View {
         }
         .onAppear {
             syncFocusedSession()
-            configurePagerGesture()
         }
         .onChange(of: focusedSession?.id) { _, _ in
             syncFocusedSession()
-            configurePagerGesture()
         }
         .onChange(of: focusedSession?.tabRaw) { _, _ in
             syncFocusedSession()
-            configurePagerGesture()
         }
         .onChange(of: focusedSession?.hasGit) { _, _ in
             syncFocusedSession()
-            configurePagerGesture()
         }
         .onChange(of: selectedPane) { oldValue, newValue in
-            configurePagerGesture()
             AppLogger.uiInfo(
                 "windows pane \(oldValue.rawValue)->\(newValue.rawValue) session=\(focusedSession?.id.uuidString ?? "-")"
             )
@@ -197,66 +172,24 @@ struct WindowsView: View {
         return session.tab == .git ? .chat : session.tab
     }
 
-    private func setPane(_ pane: WindowsPane) {
+    private func setPane(_ pane: WindowsPane, _ animated: Bool = true) {
         let target = pane == .git && focusedSession?.hasGit != true ? .session : pane
-        withAnimation(paneAnimation) {
-            dragTranslation = 0
+        if animated {
+            withAnimation(paneAnimation) {
+                if let session = focusedSession {
+                    let centerTab = resolvedCenterTab(for: session)
+                    centerTabs[session.id] = centerTab
+                    session.tab = target == .git ? .git : centerTab
+                }
+                selectedPane = target
+            }
+        } else {
             if let session = focusedSession {
                 let centerTab = resolvedCenterTab(for: session)
                 centerTabs[session.id] = centerTab
                 session.tab = target == .git ? .git : centerTab
             }
             selectedPane = target
-        }
-    }
-
-    private func baseOffset(width: CGFloat) -> CGFloat {
-        -CGFloat(selectedPane.rawValue) * width
-    }
-
-    private func boundedOffset(_ offset: CGFloat, width: CGFloat) -> CGFloat {
-        let maxIndex = maxPaneIndex(for: focusedSession)
-        return min(0, max(-CGFloat(maxIndex) * width, offset))
-    }
-
-    private func resolvedPane(for offset: CGFloat, session: Session?, width: CGFloat) -> WindowsPane {
-        let index = Int(round(-offset / width))
-        if index <= 0 { return .sidebar }
-        if index >= maxPaneIndex(for: session) { return session?.hasGit == true ? .git : .session }
-        return .session
-    }
-
-    private func maxPaneIndex(for session: Session?) -> Int {
-        session?.hasGit == true ? WindowsPane.git.rawValue : WindowsPane.session.rawValue
-    }
-
-    private func configurePagerGesture() {
-        WindowsPagerGesture.shared.install()
-        WindowsPagerGesture.shared.canBeginLeft = {
-            selectedPane != .sidebar
-        }
-        WindowsPagerGesture.shared.canBeginRight = {
-            selectedPane.rawValue != maxPaneIndex(for: focusedSession)
-        }
-        WindowsPagerGesture.shared.onChanged = { edge, translation in
-            let width = max(paneWidth, 1)
-            let base = baseOffset(width: width)
-            let proposed = base + translation
-            dragTranslation = boundedOffset(proposed, width: width) - base
-        }
-        WindowsPagerGesture.shared.onFinished = { _, translation, velocity in
-            let width = max(paneWidth, 1)
-            let base = baseOffset(width: width)
-            let projected = base + translation + velocity * 0.12
-            let pane = resolvedPane(
-                for: boundedOffset(projected, width: width),
-                session: focusedSession,
-                width: width
-            )
-            AppLogger.uiInfo(
-                "windows settle from=\(selectedPane.rawValue) to=\(pane.rawValue) projected=\(Int(projected)) velocity=\(Int(velocity))"
-            )
-            setPane(pane)
         }
     }
 }

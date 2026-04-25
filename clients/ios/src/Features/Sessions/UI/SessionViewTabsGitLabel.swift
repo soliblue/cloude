@@ -17,7 +17,7 @@ struct SessionViewTabsGitLabel: View {
 
     var body: some View {
         #if DEBUG
-        let _ = Self._logChanges()
+        let _ = PerfCounters.enabled ? Self._logChanges() : ()
         #endif
         let _ = PerfCounters.bump("svt.git.body")
         let status = statuses.first
