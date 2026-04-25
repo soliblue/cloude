@@ -8,6 +8,16 @@ enum ChatService {
     @MainActor private static var activeStreams: Set<UUID> = []
 
     @MainActor
+    static func send(sessionId: UUID, prompt: String, images: [Data], context: ModelContext) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first {
+            send(session: session, prompt: prompt, images: images, context: context)
+        }
+    }
+
+    @MainActor
     static func send(session: Session, prompt: String, images: [Data], context: ModelContext) {
         if let endpoint = session.endpoint, let path = session.path {
             AppLogger.performanceInfo(
@@ -70,6 +80,16 @@ enum ChatService {
                 query: ["after_seq": "\(afterSeq)"]
             )
             await consume(stream: stream, sessionId: sessionId, context: context)
+        }
+    }
+
+    @MainActor
+    static func abort(sessionId: UUID, context: ModelContext) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first {
+            abort(session: session, context: context)
         }
     }
 

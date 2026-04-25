@@ -9,6 +9,7 @@ extension ChatMarkdownParser {
     {
         if !(remaining.hasPrefix("***") || remaining.hasPrefix("___")) { return nil }
         let marker = String(remaining.prefix(3))
+        if !remaining.dropFirst(3).contains(marker) { return nil }
         remaining = remaining.dropFirst(3)
         let innerText = extractUntil(&remaining, marker: marker)
         return applyIntent(
@@ -22,6 +23,7 @@ extension ChatMarkdownParser {
         -> [ChatMarkdownInlineSegment]?
     {
         if !remaining.hasPrefix("~~") { return nil }
+        if !remaining.dropFirst(2).contains("~~") { return nil }
         remaining = remaining.dropFirst(2)
         let innerText = extractUntil(&remaining, marker: "~~")
         let innerSegments = parseLineToSegments(innerText, font: font)
@@ -43,6 +45,7 @@ extension ChatMarkdownParser {
         let marker = remaining.first!
         let nextIdx = remaining.index(after: remaining.startIndex)
         if nextIdx >= remaining.endIndex || remaining[nextIdx] == " " { return nil }
+        if !remaining.dropFirst().contains(marker) { return nil }
         remaining = remaining.dropFirst()
         var innerText = ""
         while !remaining.isEmpty {
@@ -62,6 +65,7 @@ extension ChatMarkdownParser {
     {
         if !(remaining.hasPrefix("**") || remaining.hasPrefix("__")) { return nil }
         let marker = String(remaining.prefix(2))
+        if !remaining.dropFirst(2).contains(marker) { return nil }
         remaining = remaining.dropFirst(2)
         let innerText = extractUntil(&remaining, marker: marker)
         return applyIntent(parseLineToSegments(innerText, font: font), intents: .stronglyEmphasized)
@@ -69,6 +73,7 @@ extension ChatMarkdownParser {
 
     static func parseInlineCode(_ remaining: inout Substring) -> ChatMarkdownInlineSegment? {
         if !remaining.hasPrefix("`") { return nil }
+        if !remaining.dropFirst().contains("`") { return nil }
         remaining = remaining.dropFirst()
         var codeText = ""
         while !remaining.isEmpty {

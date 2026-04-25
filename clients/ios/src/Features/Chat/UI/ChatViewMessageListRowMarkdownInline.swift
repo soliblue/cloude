@@ -7,6 +7,7 @@ struct ChatViewMessageListRowMarkdownInline: View {
     var body: some View {
         Text(build())
             .textSelection(.enabled)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private func build() -> AttributedString {

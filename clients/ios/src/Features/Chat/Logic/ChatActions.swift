@@ -65,7 +65,14 @@ enum ChatActions {
         )
         descriptor.fetchLimit = 1
         if let latest = try? context.fetch(descriptor).first {
+            let prior = latest.costUsd ?? 0
             latest.costUsd = costUsd
+            let sessionDescriptor = FetchDescriptor<Session>(
+                predicate: #Predicate<Session> { $0.id == sessionId }
+            )
+            if let session = try? context.fetch(sessionDescriptor).first {
+                session.totalCostUsd += costUsd - prior
+            }
         }
     }
 

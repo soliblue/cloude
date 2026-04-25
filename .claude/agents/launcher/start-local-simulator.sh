@@ -22,6 +22,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUNDLE_ID="soli.Cloude"
 HOST="127.0.0.1"
 PORT="8765"
@@ -93,7 +94,14 @@ done
 DAEMON_PID="$(pgrep -f "$DAEMON_APP_NAME" | head -1)"
 [[ -n "$DAEMON_PID" ]] || fail "launch_daemon" "daemon not running"
 
-PING="$(curl -sS -m 3 -H "Authorization: Bearer $TOKEN" "http://$HOST:$PORT/ping" 2>&1 || true)"
+PING=""
+for _ in {1..15}; do
+  PING="$(curl -sS -m 3 -H "Authorization: Bearer $TOKEN" "http://$HOST:$PORT/ping" 2>&1 || true)"
+  if echo "$PING" | grep -q '"ok":true'; then
+    break
+  fi
+  sleep 1
+done
 echo "$PING" | grep -q '"ok":true' || fail "daemon_probe" "ping did not return ok: $PING"
 
 if ! xcrun simctl list devices booted | grep -q "$DEVICE_ID"; then
@@ -121,5 +129,9 @@ SIMCTL_CHILD_CLOUDE_DEV_PORT="$PORT" \
 SIMCTL_CHILD_CLOUDE_DEV_ENV_ID="$ENV_ID" \
   xcrun simctl launch --terminate-running-process "$DEVICE_ID" "$BUNDLE_ID" >/dev/null \
   || fail "launch" "simctl launch failed"
+
+"$SCRIPT_DIR/dismiss-sim-alerts.sh" 8 >/dev/null 2>&1 &
+xcrun simctl openurl "$DEVICE_ID" "cloude://session/tab?value=chat" >/dev/null 2>&1 || true
+sleep 2
 
 echo "ready: sim=$DEVICE_ID bundle=$BUNDLE_ID daemon_pid=$DAEMON_PID token=$TOKEN host=$HOST port=$PORT env_id=$ENV_ID"

@@ -2,25 +2,28 @@ import SwiftData
 import SwiftUI
 
 struct SessionViewTabsChatLabel: View {
-    let session: Session
+    let sessionId: UUID
     let isActive: Bool
     @Environment(\.appAccent) private var appAccent
-    @Query private var messages: [ChatMessage]
+    @Query private var sessions: [Session]
 
-    init(session: Session, isActive: Bool) {
-        self.session = session
+    init(sessionId: UUID, isActive: Bool) {
+        self.sessionId = sessionId
         self.isActive = isActive
-        let sessionId = session.id
-        _messages = Query(
-            filter: #Predicate<ChatMessage> { $0.sessionId == sessionId }
+        _sessions = Query(
+            filter: #Predicate<Session> { $0.id == sessionId }
         )
     }
 
     var body: some View {
-        let total = messages.compactMap(\.costUsd).reduce(0, +)
+        #if DEBUG
+        let _ = Self._logChanges()
+        #endif
+        let _ = PerfCounters.bump("svt.chat.body")
+        let totalCost = sessions.first?.totalCostUsd ?? 0
         HStack(spacing: ThemeTokens.Spacing.xs) {
-            if total > 0 {
-                Text(Self.formatCost(total))
+            if totalCost > 0 {
+                Text(Self.formatCost(totalCost))
                     .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     .monospacedDigit()
             } else {

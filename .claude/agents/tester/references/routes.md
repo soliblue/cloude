@@ -15,6 +15,8 @@ Scheme: `cloude://`
 | `cloude://session/endpoint?id=<uuid>` | assign endpoint to focused session |
 | `cloude://session/path?value=<abs-path>` | set cwd on focused session |
 | `cloude://session/tab?value=chat\|files\|git` | switch SessionView tab |
+| `cloude://session/model?value=auto\|opus\|sonnet\|haiku` | set model for focused session |
+| `cloude://session/effort?value=default\|low\|medium\|high` | set effort for focused session |
 
 ## Chat (focused session)
 | route | action |

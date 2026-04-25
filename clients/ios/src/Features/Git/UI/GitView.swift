@@ -110,24 +110,9 @@ struct GitView: View {
     }
 
     private func refresh() async {
-        if let endpoint = session.endpoint, let path = session.path {
+        if session.endpoint != nil, session.path != nil {
             isLoading = true
-            async let statusResult = GitService.status(endpoint: endpoint, session: session, path: path)
-            async let logResult = GitService.log(endpoint: endpoint, session: session, path: path)
-            let (dto, code) = await statusResult
-            let commits = await logResult
-            if code == 404 {
-                SessionActions.setHasGit(false, for: session)
-                GitActions.clear(sessionId: session.id, context: context)
-            } else {
-                SessionActions.setHasGit(true, for: session)
-                if let dto {
-                    GitActions.upsertStatus(sessionId: session.id, dto: dto, context: context)
-                }
-                if let commits {
-                    GitActions.replaceLog(sessionId: session.id, commits: commits, context: context)
-                }
-            }
+            await GitService.refresh(session: session, context: context)
             isLoading = false
         }
     }

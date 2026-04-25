@@ -61,6 +61,22 @@ enum DeepLinkRouter {
                 if let value = url.queryValue("value"), let tab = SessionTab(rawValue: value) {
                     SessionActions.setTab(tab, for: session)
                 }
+            case "/model":
+                if let value = url.queryValue("value") {
+                    if value == "auto" {
+                        SessionActions.setModel(nil, for: session)
+                    } else if let model = ChatModel(rawValue: value) {
+                        SessionActions.setModel(model, for: session)
+                    }
+                }
+            case "/effort":
+                if let value = url.queryValue("value") {
+                    if value == "default" {
+                        SessionActions.setEffort(nil, for: session)
+                    } else if let effort = ChatEffort(rawValue: value) {
+                        SessionActions.setEffort(effort, for: session)
+                    }
+                }
             default: break
             }
         }
@@ -109,9 +125,16 @@ extension Notification.Name {
 
 extension URL {
     func queryValue(_ name: String) -> String? {
-        URLComponents(url: self, resolvingAgainstBaseURL: false)?
+        if var value = URLComponents(url: self, resolvingAgainstBaseURL: false)?
             .queryItems?
             .first(where: { $0.name == name })?
             .value
+        {
+            while let decoded = value.removingPercentEncoding, decoded != value {
+                value = decoded
+            }
+            return value
+        }
+        return nil
     }
 }

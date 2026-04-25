@@ -3,12 +3,17 @@ import SwiftUI
 
 struct ChatViewMessageList: View {
     let session: Session
+    @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Query private var messages: [ChatMessage]
     @State private var lastAnchoredUserId: UUID?
     @State private var groupCache = GroupCache()
 
-    init(session: Session) {
+    init(
+        session: Session,
+        folderPickerRequest: Binding<SessionFolderPickerRequest?>
+    ) {
         self.session = session
+        _folderPickerRequest = folderPickerRequest
         let sessionId = session.id
         _messages = Query(
             filter: #Predicate<ChatMessage> { $0.sessionId == sessionId },
@@ -18,8 +23,16 @@ struct ChatViewMessageList: View {
 
     var body: some View {
         let _ = PerfCounters.bump("ml.body")
+        if messages.isEmpty {
+            SessionEmptyView(session: session, folderPickerRequest: $folderPickerRequest)
+        } else {
+            messageList
+        }
+    }
+
+    private var messageList: some View {
         let groups = groupCache.groups(for: messages)
-        GeometryReader { geo in
+        return GeometryReader { geo in
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {

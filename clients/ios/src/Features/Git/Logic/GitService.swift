@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 enum GitService {
     struct DiffResult {
@@ -65,5 +66,27 @@ enum GitService {
             return (try? JSONDecoder().decode(GitLogDTO.self, from: data))?.commits
         }
         return nil
+    }
+
+    @MainActor
+    static func refresh(session: Session, context: ModelContext) async {
+        if let endpoint = session.endpoint, let path = session.path {
+            async let statusResult = status(endpoint: endpoint, session: session, path: path)
+            async let logResult = log(endpoint: endpoint, session: session, path: path)
+            let (dto, code) = await statusResult
+            let commits = await logResult
+            if code == 404 {
+                SessionActions.setHasGit(false, for: session)
+                GitActions.clear(sessionId: session.id, context: context)
+            } else {
+                SessionActions.setHasGit(true, for: session)
+                if let dto {
+                    GitActions.upsertStatus(sessionId: session.id, dto: dto, context: context)
+                }
+                if let commits {
+                    GitActions.replaceLog(sessionId: session.id, commits: commits, context: context)
+                }
+            }
+        }
     }
 }

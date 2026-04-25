@@ -22,14 +22,12 @@ struct WindowsView: View {
             theme.palette.background.ignoresSafeArea()
             ZStack {
                 ForEach(windows) { window in
-                    if let session = window.session {
+                    if window.isFocused, let session = window.session {
                         SessionView(
                             session: session,
                             isSidebarOpen: $isSidebarOpen,
                             folderPickerRequest: $folderPickerRequest
                         )
-                        .opacity(window.isFocused ? 1 : 0)
-                        .allowsHitTesting(window.isFocused)
                         .id(window.id)
                     }
                 }

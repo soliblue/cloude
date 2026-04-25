@@ -20,11 +20,11 @@ Running list of issues reported during dogfooding. Each gets a short note on sym
 ### ~~Backgrounding mid-stream then reopening leaves the session silent~~ — FIXED (commit 5bd0ed87)
 - `ChatView` now observes `scenePhase`; on `.active` it re-runs `resumeIfStuck`. `resumeIfStuck` proceeds whenever `session.isStreaming` is true (not only when a stuck message exists), so cold launches after a deploy kill between assistant blocks also resume. Delta-only replay via per-session `lastSeqs` + persisted `session.lastSeq` checkpoint prevents duplication.
 
-### Mid-stream content reflows / lists appear-disappear in already-rendered sections
-- **Symptom**: while a response is streaming, content that was already rendered above the streaming edge shifts. Example: a list appears, then disappears, items jump, prose reflows. It doesn't look like normal progressive rendering — it's as if earlier blocks re-render with different structure.
-- **Suspected**: incremental markdown parser runs on the partial buffer. A line like `- item` is only recognized as a list once the full line arrives; before that it's prose. The streaming renderer flips block types as tokens arrive, breaking stability. Compounded by unstable block IDs in `ChatViewMessageListRowStreamingMarkdown.swift:35-40` (`prefixed("tail-")` regenerates every render), which forces SwiftUI to re-mount blocks rather than diff them.
-- **Suspected #2**: the "tail" block (the still-streaming block at the bottom) and the committed blocks above may be parsed from the same buffer on every delta, so the tail boundary can slide backward if a heuristic changes, causing visible reflow.
-- **Status**: needs verification with render counters on the streaming rows + logging of block-type transitions per delta.
+### ~~Mid-stream content reflows / lists appear-disappear in already-rendered sections~~ — FIXED
+- Streaming markdown no longer treats unfinished inline markers as complete formatting, and the renderer now freezes committed blocks more aggressively. Added block-diff probes and fixed the header transition path so a live paragraph no longer flips from plain text into `header + paragraph` after the fact, which was causing the visible jump on the first paragraph under a heading.
+
+### ~~Keyboard dismisses itself in the active window while unrelated state changes land~~ — FIXED
+- Hidden tabs no longer stay mounted behind opacity, the active chat shell observes less transcript state, and `ChatInputBar` now sits behind an explicit equatable boundary. In the targeted git-status probe, `SessionView`, `ChatView`, and `ChatViewBody` still reevaluate, but `ChatInputBar` no longer appears in the `GitStatus.changes` invalidation window.
 
 ### ~~Typing in a new tab loses text + keyboard when a response completes elsewhere~~ — FIXED (commit 815d7c5c)
 - `ForEach(windows)` in `WindowsView` reused identities by index, so any `@Query<Window>` refire (triggered when another session's state changed) tore down `ChatInputBar` across windows and reset its `@State draft` + `@FocusState`. Pinned `.id(window.id)` on the per-window `SessionView` to keep each window's subtree stable across unrelated SwiftData updates.
@@ -32,12 +32,8 @@ Running list of issues reported during dogfooding. Each gets a short note on sym
 ### ~~iOS app restart interrupts in-flight agent tool calls~~ — FIXED (commit 5bd0ed87)
 - Client disconnect no longer triggers any abort; `ChatService.consume`'s catch path keeps the stuck message in `.streaming` state instead of marking it failed. Daemon runner keeps running. On reconnect `resumeIfStuck` replays the ring buffer from the persisted checkpoint.
 
-### Sub-agent tool pills leak into main chat transcript
-- **Symptom**: tool calls made by a sub-agent (spawned via the `Task` tool) render as top-level tool pills in the chat list alongside the parent assistant's pills. Long agent runs flood the main transcript with pills that belong to the agent's private reasoning.
-- **Expected**: only the parent agent pill (the `Task` tool call) appears in the main chat, with a small badge on it showing the count of nested tool calls. Tapping the pill opens a sheet where the child tool calls are listed.
-- **Suspected**: the daemon's jsonl already carries parent/child linkage — a tool_use can reference the Task tool_use_id that spawned the agent. iOS isn't consuming that relationship; it flattens every tool call onto the owning assistant message.
-- **How to apply**: when rendering `ChatToolCall` pills in a message row, filter out any whose parent is another tool call; count children on the parent agent pill and show as a badge; surface the children inside the agent's detail sheet.
-- **Status**: not started.
+### ~~Sub-agent tool pills leak into main chat transcript~~ — FIXED
+- iOS now preserves parent-child tool-call linkage, filters child tool calls out of the top-level transcript row, shows a child count on the parent Task pill, and renders the nested child tool calls inside the parent tool sheet instead of flattening them into the main chat.
 
 ### Expanded DebugOverlay pill looks cramped
 - **Symptom**: when the FPS pill expands to reveal the Send Logs button, padding and spacing between FPS row and button are tight. No visual separator. Content doesn't breathe.

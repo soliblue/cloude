@@ -50,8 +50,28 @@ enum SessionActions {
     }
 
     @MainActor
+    static func setModel(_ model: ChatModel?, for sessionId: UUID, context: ModelContext) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first {
+            session.model = model
+        }
+    }
+
+    @MainActor
     static func setEffort(_ effort: ChatEffort?, for session: Session) {
         session.effort = effort
+    }
+
+    @MainActor
+    static func setEffort(_ effort: ChatEffort?, for sessionId: UUID, context: ModelContext) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first {
+            session.effort = effort
+        }
     }
 
     @MainActor

@@ -6,6 +6,7 @@ struct ChatView: View {
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var scenePhase
+    @State private var traceId = String(UUID().uuidString.prefix(6))
 
     init(
         session: Session,
@@ -16,22 +17,34 @@ struct ChatView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = Self._logChanges()
+        #endif
         let _ = PerfCounters.bump("cv.body")
         ChatViewBody(session: session, folderPickerRequest: $folderPickerRequest)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 ChatInputBar(
-                    session: session,
-                    enabled: canSend,
-                    onSend: { prompt, images in
-                        ChatService.send(
-                            session: session, prompt: prompt, images: images, context: context)
-                    }
+                    sessionId: session.id,
+                    isStreaming: session.isStreaming,
+                    model: session.model,
+                    effort: session.effort,
+                    enabled: canSend
                 )
+                .equatable()
             }
             .onAppear {
+                AppLogger.uiInfo(
+                    "chatView appear trace=\(traceId) session=\(session.id.uuidString) configured=\(session.isConfigured)"
+                )
                 ChatService.resumeIfStuck(session: session, context: context)
             }
+            .onDisappear {
+                AppLogger.uiInfo("chatView disappear trace=\(traceId) session=\(session.id.uuidString)")
+            }
             .onChange(of: scenePhase) { _, phase in
+                AppLogger.uiInfo(
+                    "chatView scene trace=\(traceId) session=\(session.id.uuidString) phase=\(String(describing: phase))"
+                )
                 if phase == .active {
                     ChatService.resumeIfStuck(session: session, context: context)
                 }
@@ -46,7 +59,7 @@ struct ChatView: View {
 private struct ChatViewBody: View {
     let session: Session
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
-    @Query private var messages: [ChatMessage]
+    @State private var traceId = String(UUID().uuidString.prefix(6))
 
     init(
         session: Session,
@@ -54,16 +67,21 @@ private struct ChatViewBody: View {
     ) {
         self.session = session
         _folderPickerRequest = folderPickerRequest
-        let sessionId = session.id
-        _messages = Query(filter: #Predicate<ChatMessage> { $0.sessionId == sessionId })
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = Self._logChanges()
+        #endif
         let _ = PerfCounters.bump("cvb.body")
-        if messages.isEmpty {
-            SessionEmptyView(session: session, folderPickerRequest: $folderPickerRequest)
-        } else {
-            ChatViewMessageList(session: session)
-        }
+        ChatViewMessageList(session: session, folderPickerRequest: $folderPickerRequest)
+            .onAppear {
+                AppLogger.uiInfo(
+                    "chatBody appear trace=\(traceId) session=\(session.id.uuidString)"
+                )
+            }
+            .onDisappear {
+                AppLogger.uiInfo("chatBody disappear trace=\(traceId) session=\(session.id.uuidString)")
+            }
     }
 }

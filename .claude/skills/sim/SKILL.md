@@ -10,23 +10,53 @@ argument-hint: "[goal or problem]"
 
 # Sim
 
-Runs one complete round of behavioral investigation on Cloude in Simulator: plan, measure, hypothesize, fix, verify, judge. Produces a measured fix with a pass/fail verdict.
+Run one simulator issue loop with the fewest moving parts that still produces evidence.
 
-The skill owns `.claude/plans/20_active/<slug>.md` and opens with `# Round: <goal>`. Binary artifacts land in `.claude/agents/tester/output/`; the round doc references them by path. On `approved`, move the file from `20_active/<slug>.md` to `40_shipped/<slug>.md`. On `rejected`, report the reason and ask the user to re-enter at planner (more evidence) or solver (different fix).
+Default loop:
 
-Prefer observation over inference: code that appears logically sound is not verified.
+1. `launcher` gets the daemon and app into a known-ready state.
+2. `tester` runs one concrete scenario and captures logs.
+3. The main agent reads the evidence, forms the hypothesis, and adds instrumentation or code changes locally.
+4. `launcher` rebuilds if needed.
+5. `tester` reruns the same scenario.
+6. The main agent compares before and after and decides whether the issue is fixed.
 
-## Pipeline
+Prefer observation over inference. If the logs do not show the behavior clearly, add instrumentation and rerun instead of debating the code.
 
-| # | Agent | Input | Returns | Round doc | On failure |
-|---|---|---|---|---|---|
-| 1 | `planner` | `goal` | scope, reproduction, scenarios, target_metrics, instrumentation | `## Plan` | / |
-| 2 | `launcher` | optional `count` (1-3) | one or more `ready: sim=<udid> app=<bundle> log=<path> build=<commit>` lines | / | / |
-| 3 | `tester` | `scenarios, app_ref` | per scenario: invocation, build, metrics, assertions, notable_logs, artifacts, run_notes | `## Baseline` | / |
-| 4 | `analyst` | `baseline_reports, target_metrics, scope` | hypothesis, allowed_files, expected_deltas | `## Hypothesis` | `need_more_evidence`: add instrumentation and re-run, or abandon |
-| 5 | `solver` | `hypothesis, allowed_files` | `applied: N files, M lines` | `## Implementation` | `scope_escalation`: expand `allowed_files` or abandon; `scope_too_large`: reframe |
-| 6 | `launcher` | / | ready (rebuilt with fix) | / | / |
-| 7 | `tester` | `scenarios, app_ref` | per scenario: invocation, build, metrics, assertions, notable_logs, artifacts, run_notes | `## After` | / |
-| 8 | `reviewer` | `hypothesis, allowed_files, expected_deltas, implementation_summary, after_reports` | `approved + lesson` | `## Verdict` | `rejected`: ask user for more evidence or different fix |
+## Default Behavior
 
-When planner selects two or more scenarios, pass `count` to the launcher so tester can dispatch them in parallel across sims (cap: 3). A single scenario doesn't benefit from parallelism — use `count=1`. Prefer a superset scenario over running subsets individually; `streaming-lifecycle-stress` already covers normal streaming, reconnect, and relaunch in one run.
+- Do not create a plan file unless the work is going to span multiple rounds or the user explicitly asks for one.
+- Do not require `planner`, `analyst`, `solver`, or `reviewer` by default.
+- Keep the scenario fixed across before and after runs unless the current scenario is clearly the wrong probe.
+- Prefer one rich scenario over many small ones. For chat rendering and streaming issues, prefer `mixed-markdown-multi-tool.txt`. Use `smoke-hello.txt` only for launcher and connectivity checks.
+
+## Optional Agents
+
+Use extra agents only when they materially reduce mistakes, and only when the user wants subagents or delegation.
+
+- `analyst`: use when the tester logs are ambiguous and you want a second pass on the evidence.
+- `reviewer`: use when the fix is risky or the before and after comparison is subtle.
+- `solver`: use for a bounded code change with a tight write scope that will not block the main thread.
+- `planner`: use only when the issue report is too vague to choose a scenario or target signal.
+- Skip `deployer` and `scribe` for normal sim rounds.
+
+## Inputs You Want From The User
+
+Ask for these when they are missing:
+
+- symptom: what looks wrong
+- trigger: what action reproduces it
+- preferred scenario or prompt
+- success criterion: what should improve
+- device only or simulator reproducible
+
+## Return
+
+Report only what moves the investigation forward:
+
+- scenario used
+- important log lines or metrics
+- hypothesis
+- change made
+- before and after result
+- remaining risk or next probe

@@ -17,6 +17,7 @@ final class Session {
     var isStreaming: Bool = false
     var lastSeq: Int = -1
     var hasGit: Bool = true
+    var totalCostUsd: Double = 0
     var tabRaw: String = SessionTab.chat.rawValue
     var modelRaw: String? = nil
     var effortRaw: String? = nil

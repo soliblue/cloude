@@ -46,6 +46,8 @@ cloude/
 - **Features don't reach into other features' models** - mutate via the owning feature's `Actions` enum. Reading is fine.
 - **Sheet chrome matches body** - nav bar and toolbar background equal the sheet body background (usually `theme.palette.background`). No two-tone sheets.
 - **Prefer Apple native components** - Stepper, Toggle, DatePicker, Picker, Slider, ProgressView, Menu before hand-rolling.
+- **Prefer native debug hooks when sufficient** - for SwiftUI invalidation and rerender investigation, prefer `Self._logChanges()` over custom `onChange` logging. Add manual `AppLogger` probes only for signals the native hook does not expose, like lifecycle or focus transitions.
+- **Optimization never cuts product behavior** - reducing invalidation, queries, or view lifetime is only acceptable if visible behavior still updates correctly. Explicitly recheck streaming output, tab pills, and cross-session drawer state after each optimization pass.
 - **Format Swift before finishing** - `swift-format -i <files>` on edited files. Config at repo root in `.swift-format`.
 - **Inline icon size matches adjacent text** - `Image` next to `Text` on the same baseline uses the same `ThemeTokens.Text.*` token. Reserve `ThemeTokens.Icon.*` for standalone icons.
 - **Morphing icons need a fixed frame** - any `Image(systemName:)` with `.contentTransition(.symbolEffect(.replace))` needs an explicit `.frame(width:height:)`; SF Symbol bounds differ per glyph and rows jump mid-animation.

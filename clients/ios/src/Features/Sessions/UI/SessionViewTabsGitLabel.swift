@@ -2,21 +2,24 @@ import SwiftData
 import SwiftUI
 
 struct SessionViewTabsGitLabel: View {
-    let session: Session
+    let sessionId: UUID
     let isActive: Bool
     @Environment(\.appAccent) private var appAccent
     @Query private var statuses: [GitStatus]
 
-    init(session: Session, isActive: Bool) {
-        self.session = session
+    init(sessionId: UUID, isActive: Bool) {
+        self.sessionId = sessionId
         self.isActive = isActive
-        let sessionId = session.id
         _statuses = Query(
             filter: #Predicate<GitStatus> { $0.sessionId == sessionId }
         )
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = Self._logChanges()
+        #endif
+        let _ = PerfCounters.bump("svt.git.body")
         let status = statuses.first
         let additions = status?.changes.compactMap(\.additions).reduce(0, +) ?? 0
         let deletions = status?.changes.compactMap(\.deletions).reduce(0, +) ?? 0

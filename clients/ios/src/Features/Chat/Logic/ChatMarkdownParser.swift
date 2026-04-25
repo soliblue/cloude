@@ -7,12 +7,14 @@ enum ChatMarkdownParser {
         var blocks: [ChatMarkdownBlock] = []
         let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if normalized.isEmpty { return blocks }
+        let hasTrailingNewline = text.hasSuffix("\n") || text.hasSuffix("\n ")
         let lines = normalized.components(separatedBy: "\n")
         var i = 0
 
         while i < lines.count {
             let line = lines[i]
             let isLastLine = (i == lines.count - 1)
+            let isStreamingLine = isLastLine && !hasTrailingNewline
             let trimmed = line.trimmingCharacters(in: .whitespaces)
 
             if trimmed.isEmpty {
@@ -47,7 +49,7 @@ enum ChatMarkdownParser {
                 continue
             }
 
-            if let headerInfo = parseHeaderLine(trimmed) {
+            if let headerInfo = parseHeaderLine(trimmed, acceptsBareMarker: isStreamingLine) {
                 let (level, headerText) = headerInfo
                 let segments = parseLineToSegments(headerText, font: headerFont(for: level))
                 let attributed = segmentsToAttributedString(segments)
@@ -79,7 +81,15 @@ enum ChatMarkdownParser {
             || (underscoreOnly && underscoreCount >= 3)
     }
 
-    static func parseHeaderLine(_ line: String) -> (level: Int, text: String)? {
+    static func parseHeaderLine(_ line: String, acceptsBareMarker: Bool = false) -> (level: Int, text: String)? {
+        if acceptsBareMarker {
+            if line == "######" { return (6, "") }
+            if line == "#####" { return (5, "") }
+            if line == "####" { return (4, "") }
+            if line == "###" { return (3, "") }
+            if line == "##" { return (2, "") }
+            if line == "#" { return (1, "") }
+        }
         if line.hasPrefix("###### ") { return (6, String(line.dropFirst(7))) }
         if line.hasPrefix("##### ") { return (5, String(line.dropFirst(6))) }
         if line.hasPrefix("#### ") { return (4, String(line.dropFirst(5))) }

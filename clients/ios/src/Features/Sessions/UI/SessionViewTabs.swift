@@ -2,11 +2,11 @@ import SwiftUI
 
 struct SessionViewTabs: View {
     @Binding var selected: SessionTab
-    let session: Session
+    let sessionId: UUID
+    let hasGit: Bool
+    let filesLabel: String
     @Environment(\.theme) private var theme
     @Environment(\.appAccent) private var appAccent
-
-    private static let maxNameLength = 10
 
     @Namespace private var tabGlass
 
@@ -38,9 +38,9 @@ struct SessionViewTabs: View {
     private func tabContent(_ tab: SessionTab) -> some View {
         let active = selected == tab
         if tab == .git {
-            SessionViewTabsGitLabel(session: session, isActive: active)
+            SessionViewTabsGitLabel(sessionId: sessionId, isActive: active)
         } else if tab == .chat {
-            SessionViewTabsChatLabel(session: session, isActive: active)
+            SessionViewTabsChatLabel(sessionId: sessionId, isActive: active)
         } else {
             HStack(spacing: ThemeTokens.Spacing.xs) {
                 Image(systemName: tab.symbol)
@@ -58,20 +58,14 @@ struct SessionViewTabs: View {
     }
 
     private func isDisabled(_ tab: SessionTab) -> Bool {
-        tab == .git && !session.hasGit
+        tab == .git && !hasGit
     }
 
     private var visibleTabs: [SessionTab] {
-        SessionTab.allCases.filter { $0 != .git || session.hasGit }
+        SessionTab.allCases.filter { $0 != .git || hasGit }
     }
 
     private func label(for tab: SessionTab) -> String {
-        if tab == .files, let path = session.path, !path.isEmpty {
-            let leaf = (path as NSString).lastPathComponent
-            return leaf.count > Self.maxNameLength
-                ? String(leaf.prefix(Self.maxNameLength)) + "…"
-                : leaf
-        }
-        return tab.label
+        tab == .files ? filesLabel : tab.label
     }
 }

@@ -34,13 +34,15 @@ Under `.claude/agents/tester/`:
 
 | Script | Purpose |
 |---|---|
-| `run-perf-scenario.sh --scenario <file>.txt --wait <sec> [--path <abs>]` | Configures focused session (endpoint + path via deep links), clears app log, sends prompt, waits for `finish name=chat.complete`, prints perf summary |
+| `run-perf-scenario.sh --scenario <file>.txt --wait <sec> [--path <abs>] [--model <name>] [--effort <level>]` | Configures focused session (endpoint + path + model + effort via deep links), clears app log, sends prompt, waits for `finish name=chat.complete`, prints perf summary |
 | `send-simulator-message.sh "<text>"` | Opens `cloude://chat/send?text=...` |
 | `open-simulator-url.sh <route\|full-url>` | Opens a named route or raw URL (see `references/routes.md`) |
 | `stream-simulator-logs.sh` | Tails `Documents/app-debug.log` inside the app container |
 | `capture-simulator-screenshot.sh` | Writes PNG to `tester/output/` and prints path |
 
 Scripts honour `SIMULATOR_UDID` (default `booted`) and `CLOUDE_DEV_ENV_ID` (default `c10de51d-5151-4551-8551-0000000c10de`).
+
+Preferred richer regression target: `scenarios/chat-mixed-markdown-multi-tool.md`. Keep `chat-send-smoke` for fast launcher or connectivity checks.
 
 ## Run setup
 
