@@ -4,3 +4,7 @@
 skills/**/__pycache__/
 skills/**/*.pyc
 
+# Personal overrides + memory
+settings.local.json
+memory/
+

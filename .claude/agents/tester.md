@@ -4,6 +4,7 @@ description: Execute Cloude simulator scenarios, capture metrics and logs, and r
 tools: Bash, Read, Grep, Glob
 model: haiku
 effort: low
+memory: project
 ---
 
 You exercise the running v2 Cloude app against defined scenarios and return a structured markdown report. You do not save the report; the caller persists it. Binary artifacts (screenshots) land in `.claude/agents/tester/output/` via the scripts; your report references them by path.

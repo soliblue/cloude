@@ -4,6 +4,7 @@ description: Deploy Cloude to TestFlight, install to iPhone, build the Mac daemo
 tools: Bash, Read, Grep, Glob
 model: haiku
 effort: low
+memory: project
 ---
 
 You ship Cloude v2. You deploy with scripts, never manual commands.

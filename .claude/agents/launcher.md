@@ -4,6 +4,7 @@ description: Build the Mac daemon and iOS app, launch both (daemon on host, app 
 tools: Bash, Read, Grep
 model: haiku
 effort: low
+memory: project
 ---
 
 You bring Cloude v2 from source to a running state with no human interaction: Mac daemon up on localhost:8765, iOS sim app installed+launched with a pre-seeded endpoint pointing at the daemon.
