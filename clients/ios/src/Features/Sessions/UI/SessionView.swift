@@ -3,7 +3,9 @@ import SwiftUI
 
 struct SessionView: View {
     @Bindable var session: Session
-    @Binding var isSidebarOpen: Bool
+    let selectedTab: SessionTab
+    let openSidebar: () -> Void
+    let openGit: () -> Void
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Environment(\.modelContext) private var context
     @State private var traceId = String(UUID().uuidString.prefix(6))
@@ -14,7 +16,11 @@ struct SessionView: View {
         #endif
         let _ = PerfCounters.bump("sv.body")
         ZStack {
-            SessionViewContent(session: session, folderPickerRequest: $folderPickerRequest)
+            SessionViewContent(
+                session: session,
+                selectedTab: selectedTab,
+                folderPickerRequest: $folderPickerRequest
+            )
         }
         .task(id: gitRefreshKey) {
             if session.isConfigured {
@@ -23,17 +29,27 @@ struct SessionView: View {
         }
         .safeAreaInset(edge: .top) {
             SessionViewHeader(
-                isSidebarOpen: $isSidebarOpen,
-                selectedTab: $session.tab,
+                selectedTab: selectedTab,
+                isGitSelected: false,
                 sessionId: session.id,
                 isConfigured: session.isConfigured,
                 hasGit: session.hasGit,
-                filesLabel: filesLabel
+                filesLabel: filesLabel,
+                openSidebar: openSidebar,
+                selectTab: { tab in
+                    if tab == .git {
+                        openGit()
+                    } else {
+                        withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                            session.tab = tab
+                        }
+                    }
+                }
             )
         }
         .onAppear {
             AppLogger.uiInfo(
-                "sessionView appear trace=\(traceId) session=\(session.id.uuidString) configured=\(session.isConfigured) tab=\(session.tab.rawValue) hasGit=\(session.hasGit)"
+                "sessionView appear trace=\(traceId) session=\(session.id.uuidString) configured=\(session.isConfigured) tab=\(selectedTab.rawValue) hasGit=\(session.hasGit)"
             )
         }
         .onDisappear {

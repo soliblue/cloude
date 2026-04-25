@@ -2,13 +2,17 @@ import SwiftData
 import SwiftUI
 
 struct WindowsSidebar: View {
-    @Binding var isOpen: Bool
+    @Binding var selectedPane: WindowsPane
     @Environment(\.modelContext) private var context
     @Environment(\.theme) private var theme
     @Query(sort: \Window.order) private var windows: [Window]
     @Query(sort: \Endpoint.createdAt) private var endpoints: [Endpoint]
 
     var body: some View {
+        #if DEBUG
+        let _ = Self._logChanges()
+        #endif
+        let _ = PerfCounters.bump("ws.body")
         NavigationStack {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
                 ScrollView(showsIndicators: false) {
@@ -47,7 +51,7 @@ struct WindowsSidebar: View {
                         sectionHeader("Endpoints")
                         Spacer()
                         Button {
-                            isOpen = false
+                            selectedPane = .session
                             NotificationCenter.default.post(name: .openOnboarding, object: OnboardingStep.pair)
                         } label: {
                             Image(systemName: "plus")
@@ -109,7 +113,7 @@ struct WindowsSidebar: View {
     private func activate(_ window: Window) {
         withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
             WindowActions.activate(window, among: windows)
-            isOpen = false
+            selectedPane = window.session?.tab == .git ? .git : .session
         }
     }
 

@@ -40,6 +40,12 @@ Running list of issues reported during dogfooding. Each gets a short note on sym
 - **Note**: attempt to add full-width stretching, divider, and larger padding made it worse (edge-to-edge button felt wrong). Likely needs a proper designed layout, possibly a non-capsule shape when expanded, or just a tighter but clearly-separated two-row stack with more internal padding only.
 - **Priority**: low. Functional is fine. Polish later.
 
+### ~~Drawer open-close interaction feels binary and unpolished~~ — FIXED
+- Replaced the boolean overlay drawer with a 3-pane horizontal shell: left sidebar page, center session page, right git page.
+- Pane transitions now use bounded drag progress plus velocity-aware settle, so the shell can move left and right interactively instead of snapping only on drag end.
+- Git is now a real full-width right screen while keeping the existing git pill and badge data intact.
+- Verified with simulator pane logs (`windows pane 1->2`, `windows pane 2->1`) and full-width captures of both the left settings page and the right git page.
+
 ## Tooling / DX
 
 ### Agents cannot edit `.claude/` plans anymore

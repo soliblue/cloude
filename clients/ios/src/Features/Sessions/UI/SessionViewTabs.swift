@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct SessionViewTabs: View {
-    @Binding var selected: SessionTab
+    let selected: SessionTab
+    let isGitSelected: Bool
     let sessionId: UUID
     let hasGit: Bool
     let filesLabel: String
-    @Environment(\.theme) private var theme
+    let selectTab: (SessionTab) -> Void
     @Environment(\.appAccent) private var appAccent
 
     @Namespace private var tabGlass
@@ -15,9 +16,7 @@ struct SessionViewTabs: View {
             HStack(spacing: ThemeTokens.Spacing.m) {
                 ForEach(visibleTabs) { tab in
                     Button {
-                        withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-                            selected = tab
-                        }
+                        selectTab(tab)
                     } label: {
                         tabContent(tab)
                             .padding(.horizontal, ThemeTokens.Spacing.l)
@@ -36,7 +35,7 @@ struct SessionViewTabs: View {
 
     @ViewBuilder
     private func tabContent(_ tab: SessionTab) -> some View {
-        let active = selected == tab
+        let active = tab == .git ? isGitSelected : !isGitSelected && selected == tab
         if tab == .git {
             SessionViewTabsGitLabel(sessionId: sessionId, isActive: active)
         } else if tab == .chat {
