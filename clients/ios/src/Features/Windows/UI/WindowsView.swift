@@ -30,6 +30,7 @@ struct WindowsView: View {
                         )
                         .opacity(window.isFocused ? 1 : 0)
                         .allowsHitTesting(window.isFocused)
+                        .id(window.id)
                     }
                 }
             }
