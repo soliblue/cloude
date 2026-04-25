@@ -6,7 +6,6 @@ struct WindowsSidebar: View {
     @Environment(\.modelContext) private var context
     @Environment(\.theme) private var theme
     @Query(sort: \Window.order) private var windows: [Window]
-    @Query(sort: \Session.lastOpenedAt, order: .reverse) private var sessions: [Session]
     @Query(sort: \Endpoint.createdAt) private var endpoints: [Endpoint]
 
     var body: some View {
@@ -38,30 +37,6 @@ struct WindowsSidebar: View {
                             }
                         }
 
-                        if !remaining.isEmpty {
-                            sectionHeader("Recent")
-                            ForEach(remaining) { session in
-                                HStack(spacing: ThemeTokens.Spacing.s) {
-                                    WindowsSidebarRow(
-                                        symbol: session.symbol,
-                                        title: session.title,
-                                        isFocused: false
-                                    )
-                                    .contentShape(Rectangle())
-                                    .onTapGesture { open(session) }
-                                    Spacer(minLength: 0)
-                                    Button {
-                                        delete(session)
-                                    } label: {
-                                        Image(systemName: "trash")
-                                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                                            .foregroundColor(.secondary)
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .padding(.horizontal, ThemeTokens.Spacing.l)
@@ -108,23 +83,8 @@ struct WindowsSidebar: View {
                     SettingsViewTheme()
                     SettingsViewFontSize()
                     SettingsToggleRow(
-                        icon: "text.word.spacing", color: ThemeColor.cyan, title: "Wrap Code Lines",
-                        key: StorageKey.wrapCodeLines)
-                    SettingsToggleRow(
                         icon: "ant.fill", color: ThemeColor.orange, title: "Debug Overlay",
                         key: StorageKey.debugOverlayEnabled)
-                    SettingsViewAbout()
-                    Button {
-                        isOpen = false
-                        NotificationCenter.default.post(name: .openOnboarding, object: nil)
-                    } label: {
-                        SettingsRow(icon: "sparkles", color: ThemeColor.purple) {
-                            Text("Onboarding")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, ThemeTokens.Spacing.l)
                 .padding(.vertical, ThemeTokens.Spacing.m)
@@ -146,11 +106,6 @@ struct WindowsSidebar: View {
             .textCase(.uppercase)
     }
 
-    private var remaining: [Session] {
-        let openIds = Set(windows.compactMap { $0.session?.id })
-        return sessions.filter { !openIds.contains($0.id) }
-    }
-
     private func activate(_ window: Window) {
         withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
             WindowActions.activate(window, among: windows)
@@ -164,16 +119,4 @@ struct WindowsSidebar: View {
         }
     }
 
-    private func delete(_ session: Session) {
-        withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-            SessionActions.delete(session, context: context)
-        }
-    }
-
-    private func open(_ session: Session) {
-        withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-            WindowActions.open(session, among: windows, context: context)
-            isOpen = false
-        }
-    }
 }
