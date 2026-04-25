@@ -34,7 +34,8 @@ enum ChatActions {
                 name: use.name,
                 inputSummary: use.inputSummary,
                 inputJSON: use.inputJSON,
-                order: nextOrder
+                order: nextOrder,
+                parentToolUseId: use.parentToolUseId
             )
             call.message = message
             context.insert(call)

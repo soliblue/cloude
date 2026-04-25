@@ -13,6 +13,7 @@ final class ChatToolCall {
     var result: String?
     var stateRaw: String
     var order: Int
+    var parentToolUseId: String?
     @Transient private var cachedInput: [String: Any]?
 
     init(
@@ -22,7 +23,8 @@ final class ChatToolCall {
         inputJSON: String,
         result: String? = nil,
         state: State = .pending,
-        order: Int = 0
+        order: Int = 0,
+        parentToolUseId: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -31,6 +33,7 @@ final class ChatToolCall {
         self.result = result
         self.stateRaw = state.rawValue
         self.order = order
+        self.parentToolUseId = parentToolUseId
     }
 
     var state: State {
