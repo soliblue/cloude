@@ -64,8 +64,7 @@ struct ChatInputBar: View {
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
-        .padding(.bottom, focused ? ThemeTokens.Spacing.xl : 0)
-        .animation(.easeInOut(duration: ThemeTokens.Duration.s), value: focused)
+        .padding(.bottom, ThemeTokens.Spacing.s)
     }
 
     @ViewBuilder
