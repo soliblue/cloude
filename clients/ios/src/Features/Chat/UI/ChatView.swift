@@ -18,7 +18,6 @@ struct ChatView: View {
     var body: some View {
         let _ = PerfCounters.bump("cv.body")
         ChatViewBody(session: session, folderPickerRequest: $folderPickerRequest)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 ChatInputBar(
                     session: session,

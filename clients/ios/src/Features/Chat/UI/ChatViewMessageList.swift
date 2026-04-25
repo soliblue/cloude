@@ -57,6 +57,7 @@ struct ChatViewMessageList: View {
                 }
             }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 
     private func spacerHeight(in geo: GeometryProxy) -> CGFloat {

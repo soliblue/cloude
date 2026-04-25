@@ -8,32 +8,32 @@ struct SessionEmptyView: View {
     @State private var folderSheetEndpoint: Endpoint?
 
     var body: some View {
-        VStack(spacing: ThemeTokens.Spacing.l) {
-            Spacer(minLength: 0)
-            SessionEmptyViewHero()
-                .frame(maxHeight: ThemeTokens.Size.xl)
-                .padding(.bottom, ThemeTokens.Spacing.l)
-            VStack(spacing: 0) {
-                SessionEmptyViewEndpointRow(
-                    session: session,
-                    folderSheetEndpoint: $folderSheetEndpoint
+        ScrollView {
+            VStack(spacing: ThemeTokens.Spacing.l) {
+                SessionEmptyViewHero()
+                    .frame(maxHeight: ThemeTokens.Size.xl)
+                VStack(spacing: 0) {
+                    SessionEmptyViewEndpointRow(
+                        session: session,
+                        folderSheetEndpoint: $folderSheetEndpoint
+                    )
+                    Divider()
+                    SessionEmptyViewFolderRow(
+                        session: session,
+                        folderSheetEndpoint: $folderSheetEndpoint
+                    )
+                    SessionEmptyViewRecentList(currentSession: session)
+                }
+                .glassEffect(
+                    .regular.tint(theme.palette.background).interactive(),
+                    in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
                 )
-                Divider()
-                SessionEmptyViewFolderRow(
-                    session: session,
-                    folderSheetEndpoint: $folderSheetEndpoint
-                )
-                SessionEmptyViewRecentList(currentSession: session)
             }
-            .glassEffect(
-                .regular.tint(theme.palette.background).interactive(),
-                in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
-            )
-            Spacer(minLength: 0)
-            Spacer(minLength: 0)
+            .padding(ThemeTokens.Spacing.m)
+            .frame(maxWidth: .infinity, alignment: .top)
         }
-        .padding(ThemeTokens.Spacing.m)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .scrollIndicators(.hidden)
         .sheet(item: $folderSheetEndpoint) { endpoint in
             SessionEmptyViewFolderSheet(session: session, endpoint: endpoint)
         }
