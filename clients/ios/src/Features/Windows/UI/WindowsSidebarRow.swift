@@ -11,6 +11,7 @@ struct WindowsSidebarRow: View {
             Image(systemName: symbol)
                 .appFont(size: ThemeTokens.Text.l, weight: .medium)
                 .foregroundColor(isFocused ? appAccent.color : .secondary)
+                .frame(width: ThemeTokens.Size.m)
             Text(title)
                 .appFont(size: ThemeTokens.Text.l, weight: isFocused ? .medium : .regular)
                 .foregroundColor(isFocused ? appAccent.color : .primary)
