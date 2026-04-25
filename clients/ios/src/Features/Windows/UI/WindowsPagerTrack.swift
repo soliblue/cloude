@@ -86,8 +86,8 @@ struct WindowsPagerTrack<Sidebar: View, SessionPane: View, GitPane: View>: View 
     }
 
     private func settleAnimation(remaining: CGFloat, velocity: CGFloat) -> Animation {
-        let distance = max(abs(remaining), 1)
-        let initialVelocity = max(-12, min(12, velocity / distance))
+        let initialVelocity =
+            abs(remaining) < 1 ? 0 : max(-12, min(12, velocity / remaining))
         return .interpolatingSpring(
             stiffness: 320,
             damping: 34,
@@ -127,8 +127,12 @@ struct WindowsPagerTrack<Sidebar: View, SessionPane: View, GitPane: View>: View 
             ) {
                 dragTranslation = targetDrag
             } completion: {
-                selectPane(pane, false)
-                dragTranslation = 0
+                var transaction = Transaction(animation: nil)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    dragTranslation = 0
+                    selectPane(pane, false)
+                }
             }
         }
     }
