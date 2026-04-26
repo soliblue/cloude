@@ -89,17 +89,38 @@ struct ChatViewMessageListRowToolPillSheet: View {
         if let todos = toolCall.todoItems {
             ChatViewMessageListRowToolPillSheetTodoList(items: todos)
         } else if let edit = toolCall.editStrings {
-            if let path = toolCall.filePath { fileSection(path) }
+            if let path = toolCall.filePath {
+                ChatViewMessageListRowToolPillSheetFileRow(
+                    session: session, toolCall: toolCall, path: path)
+            }
             ChatViewMessageListRowToolPillSheetEditDiff(
                 oldText: edit.old, newText: edit.new, language: language
             )
-        } else if toolCall.kind == .read, let path = toolCall.filePath {
-            fileSection(path)
-            if let result = toolCall.result, !result.isEmpty {
-                ChatViewMessageListRowToolPillSheetReadOutput(text: result, language: language)
-            }
         } else {
-            inputSection
+            switch toolCall.kind {
+            case .read:
+                if let path = toolCall.filePath {
+                    ChatViewMessageListRowToolPillSheetFileRow(
+                        session: session, toolCall: toolCall, path: path)
+                }
+                if let result = toolCall.result, !result.isEmpty {
+                    ChatViewMessageListRowToolPillSheetReadOutput(text: result, language: language)
+                }
+            case .write:
+                ChatViewMessageListRowToolPillSheetWrite(session: session, toolCall: toolCall)
+            case .bash:
+                ChatViewMessageListRowToolPillSheetBash(toolCall: toolCall)
+            case .grep:
+                ChatViewMessageListRowToolPillSheetGrep(toolCall: toolCall)
+            case .glob:
+                ChatViewMessageListRowToolPillSheetGlob(toolCall: toolCall)
+            case .web:
+                ChatViewMessageListRowToolPillSheetWeb(toolCall: toolCall)
+            case .task:
+                ChatViewMessageListRowToolPillSheetAgent(toolCall: toolCall)
+            default:
+                inputSection
+            }
         }
     }
 
@@ -112,37 +133,6 @@ struct ChatViewMessageListRowToolPillSheet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
-        }
-    }
-
-    private func fileSection(_ path: String) -> some View {
-        VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-            Label("File", systemImage: "doc")
-                .appFont(size: ThemeTokens.Text.m, weight: .semibold)
-                .foregroundColor(.secondary)
-            Button {
-                presenter.open(session: session, path: path)
-                dismiss()
-            } label: {
-                HStack(spacing: ThemeTokens.Spacing.s) {
-                    Image(systemName: "doc.text")
-                        .foregroundColor(toolCall.kind.color)
-                    Text((path as NSString).lastPathComponent)
-                        .appFont(size: ThemeTokens.Text.m, design: .monospaced)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .appFont(size: ThemeTokens.Text.s)
-                        .foregroundColor(.secondary)
-                }
-                .padding(ThemeTokens.Spacing.m)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(theme.palette.surface)
-                .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
-                .contentShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
-            }
-            .buttonStyle(.plain)
         }
     }
 
