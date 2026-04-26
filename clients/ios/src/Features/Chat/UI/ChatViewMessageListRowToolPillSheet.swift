@@ -9,6 +9,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
     @Environment(\.filePreviewPresenter) private var presenter
     @Environment(\.theme) private var theme
     @Query private var children: [ChatToolCall]
+    @State private var shimmerPhase: CGFloat = -1
 
     init(session: Session, toolCall: ChatToolCall) {
         self.session = session
@@ -24,7 +25,6 @@ struct ChatViewMessageListRowToolPillSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-                    if toolCall.state == .pending { statusBanner }
                     primaryContent
                     if let result = toolCall.result, !result.isEmpty, !handlesOutputInline {
                         ChatViewMessageListRowToolPillSheetOutput(
@@ -57,31 +57,38 @@ struct ChatViewMessageListRowToolPillSheet: View {
     }
 
     private var titlePill: some View {
-        HStack(spacing: ThemeTokens.Spacing.xs) {
+        let tint = toolCall.kind.color
+        return HStack(spacing: ThemeTokens.Spacing.xs) {
             Image(systemName: toolCall.symbol)
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
             Text(toolCall.displayName)
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold, design: .monospaced)
                 .lineLimit(1)
         }
-        .foregroundColor(toolCall.kind.color)
+        .foregroundColor(tint)
         .padding(.horizontal, ThemeTokens.Spacing.m)
         .padding(.vertical, ThemeTokens.Spacing.s)
-        .background(toolCall.kind.color.opacity(ThemeTokens.Opacity.s))
+        .background(tint.opacity(ThemeTokens.Opacity.s))
         .clipShape(Capsule())
-    }
-
-    private var statusBanner: some View {
-        HStack(spacing: ThemeTokens.Spacing.s) {
-            ProgressView().controlSize(.small)
-            Text("Executing")
-                .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                .foregroundColor(.secondary)
-            Spacer()
+        .overlay {
+            if toolCall.state == .pending {
+                ChatViewMessageListRowToolPillListRowShimmer(phase: shimmerPhase, tint: tint)
+                    .clipShape(Capsule())
+                    .transition(.opacity)
+            }
         }
-        .padding(ThemeTokens.Spacing.m)
-        .background(theme.palette.surface)
-        .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.m))
+        .onAppear {
+            if toolCall.state == .pending {
+                withAnimation(.easeInOut(duration: 2.13).repeatForever(autoreverses: true)) {
+                    shimmerPhase = 1.5
+                }
+            }
+        }
+        .onChange(of: toolCall.state) { _, newState in
+            if newState != .pending {
+                withAnimation(.easeOut(duration: 0.2)) { shimmerPhase = -1 }
+            }
+        }
     }
 
     @ViewBuilder
