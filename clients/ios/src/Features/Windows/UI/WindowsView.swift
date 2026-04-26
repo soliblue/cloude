@@ -13,6 +13,7 @@ struct WindowsView: View {
     @State private var folderPickerRequest: SessionFolderPickerRequest?
     @State private var isKeyboardVisible = false
     @State private var centerTabs: [UUID: SessionTab] = [:]
+    private let toastStore = SessionToastStore.shared
 
     private var focusedSession: Session? {
         windows.first(where: { $0.isFocused })?.session
@@ -49,6 +50,18 @@ struct WindowsView: View {
                 .zIndex(1)
             }
         }
+        .overlay(alignment: .top) {
+            if let toast = toastStore.current {
+                SessionToastBanner(
+                    toast: toast,
+                    onTap: { activateToast(toast) },
+                    onDismiss: { toastStore.dismiss() }
+                )
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .zIndex(2)
+            }
+        }
+        .animation(.smooth(duration: 0.45), value: toastStore.current?.id)
         .preferredColorScheme(theme.palette.colorScheme)
         .sheet(
             item: Binding(
@@ -170,6 +183,27 @@ struct WindowsView: View {
             return tab == .git ? .chat : tab
         }
         return session.tab == .git ? .chat : session.tab
+    }
+
+    private func activateToast(_ toast: SessionToast) {
+        if let window = windows.first(where: { $0.session?.id == toast.sessionId }) {
+            withAnimation(paneAnimation) {
+                WindowActions.activate(window, among: windows)
+                selectedPane = .session
+            }
+        } else {
+            let sessionId = toast.sessionId
+            let descriptor = FetchDescriptor<Session>(
+                predicate: #Predicate<Session> { $0.id == sessionId }
+            )
+            if let session = try? context.fetch(descriptor).first {
+                withAnimation(paneAnimation) {
+                    WindowActions.open(session, among: windows, context: context)
+                    selectedPane = .session
+                }
+            }
+        }
+        toastStore.dismiss()
     }
 
     private func setPane(_ pane: WindowsPane, _ animated: Bool = true) {

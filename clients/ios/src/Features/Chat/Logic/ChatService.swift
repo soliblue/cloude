@@ -240,8 +240,36 @@ enum ChatService {
         )
         if let session = try? context.fetch(descriptor).first {
             SessionActions.setStreaming(false, for: session)
+            maybePresentToast(session: session, context: context)
         }
         ChatLiveStream.clear(sessionId: sessionId)
+    }
+
+    @MainActor
+    private static func maybePresentToast(session: Session, context: ModelContext) {
+        let windowDescriptor = FetchDescriptor<Window>(
+            predicate: #Predicate<Window> { $0.isFocused }
+        )
+        let focusedId = (try? context.fetch(windowDescriptor).first)?.session?.id
+        if focusedId == session.id { return }
+        let sessionId = session.id
+        var messageDescriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.roleRaw == "assistant"
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        messageDescriptor.fetchLimit = 1
+        let snippet = (try? context.fetch(messageDescriptor).first)?.text ?? ""
+        if snippet.isEmpty { return }
+        SessionToastStore.shared.present(
+            SessionToast(
+                sessionId: sessionId,
+                title: session.title,
+                symbol: session.symbol,
+                snippet: String(snippet.prefix(140))
+            )
+        )
     }
 
     @MainActor
