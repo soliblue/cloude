@@ -17,7 +17,7 @@ struct ChatViewMessageListRowToolPillListRow: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
-            .foregroundColor(tint)
+            .foregroundColor(isTinted ? .white : tint)
             .padding(.horizontal, ThemeTokens.Spacing.s)
             .padding(.vertical, ThemeTokens.Spacing.xs)
             .glassEffect(isTinted ? .regular.tint(tint).interactive() : .regular.interactive(), in: Capsule())
