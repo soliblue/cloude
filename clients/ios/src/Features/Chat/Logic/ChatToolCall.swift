@@ -47,10 +47,14 @@ final class ChatToolCall {
         if kind == .task, let subagent = parsedInput["subagent_type"] as? String, !subagent.isEmpty {
             return subagent
         }
+        if kind == .skill, let skill = parsedInput["skill"] as? String, !skill.isEmpty {
+            return skill
+        }
         return name
     }
 
     var shortLabel: String {
+        if kind == .skill { return displayName }
         let trimmed = inputSummary.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return name }
         switch kind {

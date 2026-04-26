@@ -10,6 +10,7 @@ enum ChatToolKind: Equatable, Sendable {
     case web
     case todo
     case task
+    case skill
     case other
 
     init(name: String) {
@@ -23,6 +24,7 @@ enum ChatToolKind: Equatable, Sendable {
         case "WebFetch", "WebSearch": self = .web
         case "TodoWrite": self = .todo
         case "Task", "Agent": self = .task
+        case "Skill": self = .skill
         default: self = .other
         }
     }
@@ -38,6 +40,7 @@ enum ChatToolKind: Equatable, Sendable {
         case .web: return "globe"
         case .todo: return "checklist"
         case .task: return "sparkles"
+        case .skill: return "command"
         case .other: return "hammer"
         }
     }

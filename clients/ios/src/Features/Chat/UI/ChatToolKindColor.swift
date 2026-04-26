@@ -10,6 +10,7 @@ extension ChatToolKind {
         case .web: return ThemeColor.cyan
         case .todo: return ThemeColor.yellow
         case .task: return ThemeColor.pink
+        case .skill: return ThemeColor.mint
         case .other: return .secondary
         }
     }
