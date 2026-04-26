@@ -43,6 +43,12 @@ final class ChatToolCall {
 
     var kind: ChatToolKind { ChatToolKind(name: name) }
     var symbol: String { kind.symbol }
+    var displayName: String {
+        if kind == .task, let subagent = parsedInput["subagent_type"] as? String, !subagent.isEmpty {
+            return subagent
+        }
+        return name
+    }
 
     var shortLabel: String {
         let trimmed = inputSummary.trimmingCharacters(in: .whitespacesAndNewlines)

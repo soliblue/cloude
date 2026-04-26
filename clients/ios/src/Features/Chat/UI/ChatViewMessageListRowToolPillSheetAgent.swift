@@ -5,10 +5,6 @@ struct ChatViewMessageListRowToolPillSheetAgent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-            if let subagent = toolCall.parsedInput["subagent_type"] as? String, !subagent.isEmpty {
-                ChatViewMessageListRowToolPillSheetChip(
-                    icon: "person.fill", label: subagent, tint: ChatToolKind.task.color)
-            }
             if let description = toolCall.parsedInput["description"] as? String,
                 !description.isEmpty
             {

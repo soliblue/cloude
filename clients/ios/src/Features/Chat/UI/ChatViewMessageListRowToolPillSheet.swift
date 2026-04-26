@@ -60,7 +60,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
         HStack(spacing: ThemeTokens.Spacing.xs) {
             Image(systemName: toolCall.symbol)
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
-            Text(toolCall.name)
+            Text(toolCall.displayName)
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold, design: .monospaced)
                 .lineLimit(1)
         }
