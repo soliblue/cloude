@@ -39,7 +39,7 @@ enum ChatToolKind: Equatable, Sendable {
         case .grep: return "text.magnifyingglass"
         case .web: return "globe"
         case .todo: return "checklist"
-        case .task: return "sparkles"
+        case .task: return "brain"
         case .skill: return "command"
         case .other: return "hammer"
         }
