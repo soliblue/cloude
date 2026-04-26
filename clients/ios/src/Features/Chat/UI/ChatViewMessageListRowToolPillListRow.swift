@@ -20,7 +20,10 @@ struct ChatViewMessageListRowToolPillListRow: View {
             .foregroundColor(isTinted ? .white : tint)
             .padding(.horizontal, ThemeTokens.Spacing.s)
             .padding(.vertical, ThemeTokens.Spacing.xs)
-            .glassEffect(isTinted ? .regular.tint(tint).interactive() : .regular.interactive(), in: Capsule())
+            .glassEffect(
+                isTinted ? .regular.tint(tint.opacity(ThemeTokens.Opacity.m)).interactive() : .regular.interactive(),
+                in: Capsule()
+            )
             .overlay {
                 if toolCall.state == .pending {
                     ChatViewMessageListRowToolPillListRowShimmer(phase: shimmerPhase, tint: tint)
