@@ -57,10 +57,7 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
                 try? await Task.sleep(for: .milliseconds(16))
                 let total = Double(tailLength)
                 if revealedGlyphs >= total { continue }
-                let backlog = total - revealedGlyphs
-                let baseCps = 80.0
-                let boost = max(0, backlog - 30) * 3.0
-                let cps = min(baseCps + boost, 600.0)
+                let cps = 80.0
                 revealedGlyphs = min(total, revealedGlyphs + cps * frame)
             }
         }
