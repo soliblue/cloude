@@ -3,6 +3,10 @@ import SwiftUI
 struct SettingsViewThemePicker: View {
     @AppStorage(StorageKey.appTheme) private var selectedTheme: Theme = .majorelle
     @AppStorage(StorageKey.appAccent) private var selectedAccent: AppAccent = .clay
+    @AppStorage(StorageKey.fontSizeStep) private var fontSizeStep = 0
+    @AppStorage(StorageKey.typewriterCps) private var cps: Double = TypewriterDefaults.cps
+    @AppStorage(StorageKey.typewriterFadeWindow) private var fadeWindow: Double = TypewriterDefaults
+        .fadeWindow
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -30,11 +34,38 @@ struct SettingsViewThemePicker: View {
                         .onTapGesture { selectedAccent = accent }
                     }
                 }
+
+                sectionHeader("Font size")
+                Stepper("Font size", value: $fontSizeStep, in: 0...3)
+                    .padding(.vertical, ThemeTokens.Spacing.s)
+
+                sectionHeader("Typewriter speed")
+                sliderRow(
+                    value: $cps, range: 10...300, step: 5,
+                    formatted: "\(Int(cps)) chars/sec")
+
+                sectionHeader("Typewriter fade")
+                sliderRow(
+                    value: $fadeWindow, range: 1...80, step: 1,
+                    formatted: "\(Int(fadeWindow)) glyphs")
             }
             .padding(.horizontal, ThemeTokens.Spacing.m)
             .padding(.vertical, ThemeTokens.Spacing.m)
         }
         .themedNavChrome()
+    }
+
+    private func sliderRow(
+        value: Binding<Double>, range: ClosedRange<Double>, step: Double, formatted: String
+    ) -> some View {
+        HStack {
+            Slider(value: value, in: range, step: step)
+            Text(formatted)
+                .appFont(size: ThemeTokens.Text.s, weight: .medium)
+                .monospacedDigit()
+                .foregroundColor(.secondary)
+                .frame(minWidth: 100, alignment: .trailing)
+        }
     }
 
     private func sectionHeader(_ title: String) -> some View {

@@ -9,6 +9,6 @@ enum StorageKey {
 }
 
 enum TypewriterDefaults {
-    static let cps: Double = 50
-    static let fadeWindow: Double = 18
+    static let cps: Double = 200
+    static let fadeWindow: Double = 60
 }
