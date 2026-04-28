@@ -2,6 +2,10 @@ import SwiftUI
 
 struct ChatViewMessageListRowStreamingMarkdown: View {
     let text: String
+    @AppStorage(StorageKey.typewriterCps) private var cps: Double = TypewriterDefaults.cps
+    @AppStorage(StorageKey.typewriterFadeWindow) private var fadeWindow: Double = TypewriterDefaults
+        .fadeWindow
+    @AppStorage(StorageKey.typewriterSlide) private var slide: Double = TypewriterDefaults.slide
     @State private var frozen: [ChatMarkdownBlock] = []
     @State private var tailBlocks: [ChatMarkdownBlock] = []
     @State private var tailLength: Int = 0
@@ -20,7 +24,9 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
             ForEach(tailBlocks, id: \.id) { block in
                 ChatViewMessageListRowMarkdownBlock(block: block)
             }
-            .textRenderer(ChatTypewriterTextRenderer(revealedGlyphs: revealedGlyphs))
+            .textRenderer(
+                ChatTypewriterTextRenderer(
+                    revealedGlyphs: revealedGlyphs, fadeWindow: fadeWindow, slide: slide))
         }
         .appFont(size: ThemeTokens.Text.m)
         .onAppear {
@@ -57,7 +63,6 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
                 try? await Task.sleep(for: .milliseconds(16))
                 let total = Double(tailLength)
                 if revealedGlyphs >= total { continue }
-                let cps = 50.0
                 revealedGlyphs = min(total, revealedGlyphs + cps * frame)
             }
         }

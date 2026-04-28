@@ -86,6 +86,7 @@ struct WindowsSidebar: View {
                     sectionHeader("Settings")
                     SettingsViewTheme()
                     SettingsViewFontSize()
+                    SettingsViewTypewriter()
                     SettingsToggleRow(
                         icon: "ant.fill", color: ThemeColor.orange, title: "Debug Overlay",
                         key: StorageKey.debugOverlayEnabled)

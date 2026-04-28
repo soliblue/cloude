@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ChatTypewriterTextRenderer: TextRenderer, Animatable {
     var revealedGlyphs: Double
+    var fadeWindow: Double
+    var slide: CGFloat
 
     var animatableData: Double {
         get { revealedGlyphs }
@@ -9,8 +11,6 @@ struct ChatTypewriterTextRenderer: TextRenderer, Animatable {
     }
 
     func draw(layout: Text.Layout, in context: inout GraphicsContext) {
-        let fadeWindow: Double = 18
-        let slide: CGFloat = 12
         var index = 0
         for line in layout {
             for run in line {
