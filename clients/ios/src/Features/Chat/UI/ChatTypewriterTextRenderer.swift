@@ -9,8 +9,8 @@ struct ChatTypewriterTextRenderer: TextRenderer, Animatable {
     }
 
     func draw(layout: Text.Layout, in context: inout GraphicsContext) {
-        let fadeWindow: Double = 6
-        let slide: CGFloat = 4
+        let fadeWindow: Double = 18
+        let slide: CGFloat = 12
         var index = 0
         for line in layout {
             for run in line {
