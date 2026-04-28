@@ -42,7 +42,10 @@ final class ChatToolCall {
     }
 
     var kind: ChatToolKind { ChatToolKind(name: name) }
-    var symbol: String { kind.symbol }
+    var symbol: String {
+        if kind == .bash, let parsed = ChatBashCommand.parse(inputSummary) { return parsed.symbol }
+        return kind.symbol
+    }
     var displayName: String {
         if kind == .task, let subagent = parsedInput["subagent_type"] as? String, !subagent.isEmpty {
             return subagent
@@ -50,6 +53,7 @@ final class ChatToolCall {
         if kind == .skill, let skill = parsedInput["skill"] as? String, !skill.isEmpty {
             return skill
         }
+        if kind == .bash, let parsed = ChatBashCommand.parse(inputSummary) { return parsed.label }
         return name
     }
 
@@ -61,6 +65,7 @@ final class ChatToolCall {
         case .read, .write, .edit:
             return (trimmed as NSString).lastPathComponent
         case .bash:
+            if let parsed = ChatBashCommand.parse(trimmed) { return parsed.label }
             let firstLine = trimmed.components(separatedBy: .newlines).first ?? trimmed
             return firstLine.components(separatedBy: " ").first ?? firstLine
         default:
