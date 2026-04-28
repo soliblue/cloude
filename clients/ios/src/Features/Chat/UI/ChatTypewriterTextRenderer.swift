@@ -3,7 +3,6 @@ import SwiftUI
 struct ChatTypewriterTextRenderer: TextRenderer, Animatable {
     var revealedGlyphs: Double
     var fadeWindow: Double
-    var slide: CGFloat
 
     var animatableData: Double {
         get { revealedGlyphs }
@@ -20,7 +19,6 @@ struct ChatTypewriterTextRenderer: TextRenderer, Animatable {
                     let eased = progress * progress * (3 - 2 * progress)
                     var copy = context
                     copy.opacity = eased
-                    copy.translateBy(x: (1 - eased) * -slide, y: 0)
                     copy.draw(slice)
                     index += 1
                 }

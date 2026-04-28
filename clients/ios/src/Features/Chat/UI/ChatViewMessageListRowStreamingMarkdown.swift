@@ -5,7 +5,6 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
     @AppStorage(StorageKey.typewriterCps) private var cps: Double = TypewriterDefaults.cps
     @AppStorage(StorageKey.typewriterFadeWindow) private var fadeWindow: Double = TypewriterDefaults
         .fadeWindow
-    @AppStorage(StorageKey.typewriterSlide) private var slide: Double = TypewriterDefaults.slide
     @State private var frozen: [ChatMarkdownBlock] = []
     @State private var tailBlocks: [ChatMarkdownBlock] = []
     @State private var tailLength: Int = 0
@@ -26,7 +25,7 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
             }
             .textRenderer(
                 ChatTypewriterTextRenderer(
-                    revealedGlyphs: revealedGlyphs, fadeWindow: fadeWindow, slide: slide))
+                    revealedGlyphs: revealedGlyphs, fadeWindow: fadeWindow))
         }
         .appFont(size: ThemeTokens.Text.m)
         .onAppear {

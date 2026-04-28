@@ -5,11 +5,10 @@ struct SettingsViewTypewriterTuner: View {
     @AppStorage(StorageKey.typewriterCps) private var cps: Double = TypewriterDefaults.cps
     @AppStorage(StorageKey.typewriterFadeWindow) private var fadeWindow: Double = TypewriterDefaults
         .fadeWindow
-    @AppStorage(StorageKey.typewriterSlide) private var slide: Double = TypewriterDefaults.slide
     @State private var replayToken: Int = 0
 
     private let demoText: String =
-        "The quick brown fox jumps over the lazy dog while a steady ticker drains the buffer at the speed you set, fading and sliding each character into place."
+        "The quick brown fox jumps over the lazy dog while a steady ticker drains the buffer at the speed you set, fading each character into place."
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -28,7 +27,7 @@ struct SettingsViewTypewriterTuner: View {
                             .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     }
                     .buttonStyle(.plain)
-                    .foregroundColor(theme.palette.accent)
+                    .foregroundColor(ThemeColor.blue)
                 }
 
                 sectionHeader("Reveal speed")
@@ -43,16 +42,9 @@ struct SettingsViewTypewriterTuner: View {
                     formatted: "\(Int(fadeWindow)) glyphs",
                     caption: "Number of trailing characters mid-fade. Wider = softer leading edge.")
 
-                sectionHeader("Slide distance")
-                sliderRow(
-                    value: $slide, range: 0...40, step: 1,
-                    formatted: "\(Int(slide)) pt",
-                    caption: "How far each character slides in from the left.")
-
                 Button {
                     cps = TypewriterDefaults.cps
                     fadeWindow = TypewriterDefaults.fadeWindow
-                    slide = TypewriterDefaults.slide
                     replayToken &+= 1
                 } label: {
                     Text("Reset to defaults")

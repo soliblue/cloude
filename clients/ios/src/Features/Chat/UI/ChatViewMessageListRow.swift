@@ -56,7 +56,6 @@ struct ChatViewMessageListRow: View {
             } else {
                 Text(message.text)
                     .appFont(size: ThemeTokens.Text.m)
-                    .textSelection(.enabled)
             }
         }
     }

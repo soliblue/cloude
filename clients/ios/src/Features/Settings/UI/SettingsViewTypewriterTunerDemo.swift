@@ -6,7 +6,6 @@ struct SettingsViewTypewriterTunerDemo: View {
     @AppStorage(StorageKey.typewriterCps) private var cps: Double = TypewriterDefaults.cps
     @AppStorage(StorageKey.typewriterFadeWindow) private var fadeWindow: Double = TypewriterDefaults
         .fadeWindow
-    @AppStorage(StorageKey.typewriterSlide) private var slide: Double = TypewriterDefaults.slide
     @State private var revealedGlyphs: Double = 0
     @State private var ticker: Task<Void, Never>?
 
@@ -17,7 +16,7 @@ struct SettingsViewTypewriterTunerDemo: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .textRenderer(
                 ChatTypewriterTextRenderer(
-                    revealedGlyphs: revealedGlyphs, fadeWindow: fadeWindow, slide: slide))
+                    revealedGlyphs: revealedGlyphs, fadeWindow: fadeWindow))
             .onAppear { startTicker() }
             .onDisappear {
                 ticker?.cancel()

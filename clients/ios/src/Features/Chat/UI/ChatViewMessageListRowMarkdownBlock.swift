@@ -10,7 +10,6 @@ struct ChatViewMessageListRowMarkdownBlock: View {
                 ChatViewMessageListRowMarkdownInline(segments: segments)
             } else {
                 Text(attributed)
-                    .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
             }
         case .code(_, let content, let language, _):
@@ -26,7 +25,6 @@ struct ChatViewMessageListRowMarkdownBlock: View {
                 ChatViewMessageListRowMarkdownInline(segments: segments)
             } else {
                 Text(content)
-                    .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
