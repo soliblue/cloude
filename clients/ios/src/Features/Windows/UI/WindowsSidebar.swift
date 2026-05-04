@@ -19,21 +19,14 @@ struct WindowsSidebar: View {
                     VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
                         if !windows.isEmpty {
                             sectionHeader("Open")
-                            ForEach(windows) { window in
-                                if let session = window.session {
-                                    HStack(spacing: ThemeTokens.Spacing.s) {
-                                        WindowsSidebarRow(
-                                            symbol: session.symbol,
-                                            title: session.title,
-                                            isFocused: window.isFocused
-                                        )
-                                        .contentShape(Rectangle())
-                                        .onTapGesture { activate(window) }
-                                        Spacer(minLength: 0)
-                                        WindowsSidebarOpenRowStatus(
+                            VStack(alignment: .leading, spacing: 0) {
+                                ForEach(windows) { window in
+                                    if let session = window.session {
+                                        WindowsSidebarOpenRow(
                                             session: session,
                                             isFocused: window.isFocused,
                                             canClose: windows.count > 1,
+                                            onActivate: { activate(window) },
                                             onClose: { close(window) }
                                         )
                                     }
