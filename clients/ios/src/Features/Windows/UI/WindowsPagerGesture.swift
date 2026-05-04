@@ -5,11 +5,27 @@ final class WindowsPagerGesture: NSObject, UIGestureRecognizerDelegate {
 
     private weak var window: UIWindow?
     private var pan: UIPanGestureRecognizer?
+    private var keyboardVisible = false
 
     var canBeginLeft: (() -> Bool)?
     var canBeginRight: (() -> Bool)?
     var onChanged: ((UIRectEdge, CGFloat) -> Void)?
     var onFinished: ((UIRectEdge, CGFloat, CGFloat) -> Void)?
+
+    override init() {
+        super.init()
+        let center = NotificationCenter.default
+        center.addObserver(
+            forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.keyboardVisible = true
+        }
+        center.addObserver(
+            forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.keyboardVisible = false
+        }
+    }
 
     func install() {
         let scene = UIApplication.shared.connectedScenes.first { $0 is UIWindowScene } as? UIWindowScene
@@ -47,6 +63,7 @@ final class WindowsPagerGesture: NSObject, UIGestureRecognizerDelegate {
     }
 
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if keyboardVisible { return false }
         if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
             let velocity = recognizer.velocity(in: recognizer.view)
             let isHorizontal = abs(velocity.x) > abs(velocity.y) * 1.25
