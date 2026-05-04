@@ -58,19 +58,11 @@ struct WindowsSidebar: View {
                         NavigationLink {
                             EndpointView(existing: endpoint, canDelete: endpoints.count > 1)
                         } label: {
-                            HStack(spacing: ThemeTokens.Spacing.s) {
-                                WindowsSidebarRow(
-                                    symbol: endpoint.symbolName,
-                                    title: endpoint.displayName,
-                                    isFocused: false
-                                )
-                                Spacer(minLength: 0)
-                                if let reachable = endpoint.lastCheckReachable {
-                                    Circle()
-                                        .fill(reachable ? ThemeColor.success : ThemeColor.danger)
-                                        .frame(width: ThemeTokens.Size.s, height: ThemeTokens.Size.s)
-                                }
-                            }
+                            WindowsSidebarRow(
+                                symbol: endpoint.symbolName,
+                                title: endpoint.displayName,
+                                isFocused: false
+                            )
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
