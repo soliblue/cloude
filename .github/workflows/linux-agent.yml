@@ -1,0 +1,66 @@
+name: Build Linux Agent Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Optional release tag to publish under
+        required: false
+        type: string
+  push:
+    tags:
+      - 'linux-v*'
+
+concurrency:
+  group: linux-agent-release
+  cancel_in_progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd daemons/linux
+          npm install
+
+      - name: Create release artifact
+        run: |
+          cd daemons/linux
+          mkdir -p release
+          cp -r src/ release/
+          cp -r scripts/ release/
+          cp index.js release/
+          cp package.json release/
+          cp package-lock.json release/
+          cp install.sh release/
+          cp README.md release/
+          tar -czf cloude-linux-daemon.tar.gz release/
+          mv cloude-linux-daemon.tar.gz ../..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloude-linux-daemon-archive
+          path: cloude-linux-daemon.tar.gz
+
+      - name: Publish release asset
+        if: github.ref_type == 'tag' || github.event.inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+        run: |
+          TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --notes "Cloude Linux Daemon"
+          gh release upload "$TAG" cloude-linux-daemon.tar.gz --clobber
