@@ -1,5 +1,6 @@
 import HTTPResponse from '../Networking/HTTPResponse.js'
 import { abort, resume, start } from '../Handlers/ChatHandler.js'
+import { uploadIOSLog } from '../Handlers/DebugHandler.js'
 import { diff, log, status } from '../Handlers/GitHandler.js'
 import { list, read, search } from '../Handlers/FilesHandler.js'
 import { handle as ping } from '../Handlers/PingHandler.js'
@@ -44,6 +45,9 @@ export function handle(request) {
       }
       if (match(request.path, '/sessions/:id/title')) {
         return updateTitle(request, match(request.path, '/sessions/:id/title'))
+      }
+      if (request.path === '/debug/ios-log') {
+        return uploadIOSLog(request)
       }
     }
     return HTTPResponse.json(404, { error: 'not_found' })
