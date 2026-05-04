@@ -97,22 +97,44 @@ platform :ios do
       ) + 1
     )
 
-    update_code_signing_settings(
-      use_automatic_signing: true,
-      path: "clients/ios/iOS.xcodeproj",
-      team_id: "Q9U8224WWM",
-      targets: ["Cloude"]
-    )
+    if ENV["CI"]
+      update_code_signing_settings(
+        use_automatic_signing: false,
+        path: "clients/ios/iOS.xcodeproj",
+        team_id: "Q9U8224WWM",
+        targets: ["Cloude"]
+      )
 
-    build_app(
-      project: "clients/ios/iOS.xcodeproj",
-      scheme: "Cloude",
-      export_method: "app-store",
-      export_options: {
-        signingStyle: "automatic",
-        teamID: "Q9U8224WWM"
-      }
-    )
+      build_app(
+        project: "clients/ios/iOS.xcodeproj",
+        scheme: "Cloude",
+        export_method: "app-store",
+        export_options: {
+          signingStyle: "manual",
+          teamID: "Q9U8224WWM",
+          provisioningProfiles: {
+            "soli.Cloude" => ENV["PROVISIONING_PROFILE_NAME"]
+          }
+        }
+      )
+    else
+      update_code_signing_settings(
+        use_automatic_signing: true,
+        path: "clients/ios/iOS.xcodeproj",
+        team_id: "Q9U8224WWM",
+        targets: ["Cloude"]
+      )
+
+      build_app(
+        project: "clients/ios/iOS.xcodeproj",
+        scheme: "Cloude",
+        export_method: "app-store",
+        export_options: {
+          signingStyle: "automatic",
+          teamID: "Q9U8224WWM"
+        }
+      )
+    end
 
     upload_to_testflight(
       api_key: api_key,
@@ -182,16 +204,18 @@ platform :mac do
       dmg_path = File.expand_path("../build/release/Remote-CC-Daemon.dmg", __dir__)
       signing_identity = ENV["MAC_CODESIGN_IDENTITY"] || "Developer ID Application: J&S toy2life GmbH (Q9U8224WWM)"
 
+      export_opts = {
+        signingStyle: ENV["CI"] ? "manual" : "automatic",
+        teamID: "Q9U8224WWM"
+      }
+
       build_mac_app(
         project: "daemons/macos/macOSDaemon.xcodeproj",
         scheme: "Cloude Agent",
         output_directory: "build/release",
         output_name: "Remote CC Daemon",
         export_method: "developer-id",
-        export_options: {
-          signingStyle: "automatic",
-          teamID: "Q9U8224WWM"
-        }
+        export_options: export_opts
       )
       bundle_cloudflared(app_path, signing_identity)
 
