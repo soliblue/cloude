@@ -108,11 +108,17 @@ platform :ios do
         code_sign_identity: "Apple Distribution"
       )
 
+      require "xcodeproj"
+      ios_proj = Xcodeproj::Project.open(File.expand_path("../clients/ios/iOS.xcodeproj", __dir__))
+      ios_proj.targets.find { |t| t.name == "Cloude" }.build_configurations.each do |config|
+        config.build_settings["CODE_SIGN_IDENTITY[sdk=iphoneos*]"] = "Apple Distribution"
+      end
+      ios_proj.save
+
       build_app(
         project: "clients/ios/iOS.xcodeproj",
         scheme: "Cloude",
         export_method: "app-store",
-        xcargs: "CODE_SIGN_IDENTITY=\"Apple Distribution\" 'CODE_SIGN_IDENTITY[sdk=iphoneos*]=Apple Distribution'",
         export_options: {
           signingStyle: "manual",
           teamID: "Q9U8224WWM",
