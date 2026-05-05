@@ -2,10 +2,15 @@
 set -euo pipefail
 
 PHONE_ONLY=false
+TESTFLIGHT_ONLY=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --phone | --phone-only)
             PHONE_ONLY=true
+            shift
+            ;;
+        --testflight | --force-testflight)
+            TESTFLIGHT_ONLY=true
             shift
             ;;
         *)
@@ -15,10 +20,25 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+if [[ "$TESTFLIGHT_ONLY" == true && "$PHONE_ONLY" == true ]]; then
+    echo "❌ --testflight and --phone are mutually exclusive"
+    exit 1
+fi
+
 REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 IOS_BUILD_DIR="/tmp/cloude-ios-device-build"
 APP_PATH="$IOS_BUILD_DIR/Build/Products/Debug-iphoneos/Cloude.app"
 BUNDLE_ID="soli.Cloude"
+
+if [[ "$TESTFLIGHT_ONLY" == true ]]; then
+    echo "🚀 Forcing TestFlight upload..."
+    cd "$REPO_ROOT"
+    set -a
+    source .env
+    set +a
+    fastlane ios beta_local
+    exit 0
+fi
 
 echo "🔍 Checking for connected iPhone..."
 
