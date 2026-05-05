@@ -11,6 +11,8 @@ final class SessionToastStore {
     func present(_ toast: SessionToast) {
         current = toast
         dismissTask?.cancel()
+        dismissTask = nil
+        if case .daemonUpdate = toast.kind { return }
         let presentedId = toast.id
         dismissTask = Task { @MainActor in
             try? await Task.sleep(nanoseconds: 4_500_000_000)
