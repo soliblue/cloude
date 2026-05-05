@@ -1,4 +1,4 @@
-name: Build Mac Agent DMG
+name: Build Mac Daemon
 
 on:
   workflow_dispatch:

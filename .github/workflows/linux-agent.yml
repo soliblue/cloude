@@ -1,4 +1,4 @@
-name: Build Linux Agent Release
+name: Build Linux Daemon
 
 on:
   workflow_dispatch:

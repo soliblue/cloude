@@ -1,4 +1,4 @@
-name: Deploy to TestFlight
+name: Deploy iOS to TestFlight
 
 on:
   workflow_dispatch:

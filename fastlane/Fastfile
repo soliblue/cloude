@@ -104,12 +104,19 @@ platform :ios do
       targets: ["Cloude"]
     )
 
+    auth_xcargs = ""
+    if ENV["CI"]
+      key_path = File.expand_path("../AuthKey.p8", __dir__)
+      File.write(key_path, ENV["APP_STORE_CONNECT_API_KEY_CONTENT"])
+      auth_xcargs = "-authenticationKeyID #{ENV["APP_STORE_CONNECT_API_KEY_ID"]} -authenticationKeyIssuerID #{ENV["APP_STORE_CONNECT_API_ISSUER_ID"]} -authenticationKeyPath #{Shellwords.escape(key_path)}"
+    end
+
     build_app(
       project: "clients/ios/iOS.xcodeproj",
       scheme: "Cloude",
-      xcargs: "-allowProvisioningUpdates",
+      xcargs: "-allowProvisioningUpdates #{auth_xcargs}",
       export_method: "app-store",
-      export_xcargs: "-allowProvisioningUpdates",
+      export_xcargs: "-allowProvisioningUpdates #{auth_xcargs}",
       export_options: {
         signingStyle: "automatic",
         teamID: "Q9U8224WWM"
