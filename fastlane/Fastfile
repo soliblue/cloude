@@ -112,6 +112,7 @@ platform :ios do
         project: "clients/ios/iOS.xcodeproj",
         scheme: "Cloude",
         export_method: "app-store",
+        xcargs: "CODE_SIGN_IDENTITY=\"Apple Distribution\" 'CODE_SIGN_IDENTITY[sdk=iphoneos*]=Apple Distribution'",
         export_options: {
           signingStyle: "manual",
           teamID: "Q9U8224WWM",
