@@ -5,11 +5,11 @@ REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 
 echo "🔨 Building macOS daemon release..."
 
-TAG="agent-v$(date +%Y.%m.%d).1"
+TAG="macos-daemon-v$(date +%Y.%m.%d).1"
 
 git -C "$REPO_ROOT" tag "$TAG" 2>/dev/null || {
     echo "❌ Tag $TAG already exists, trying with .2"
-    TAG="agent-v$(date +%Y.%m.%d).2"
+    TAG="macos-daemon-v$(date +%Y.%m.%d).2"
     git -C "$REPO_ROOT" tag "$TAG"
 }
 
