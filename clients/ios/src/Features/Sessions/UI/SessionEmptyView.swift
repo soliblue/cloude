@@ -22,7 +22,10 @@ struct SessionEmptyView: View {
                         session: session,
                         folderSheetEndpoint: $folderSheetEndpoint
                     )
-                    SessionEmptyViewRecentList(currentSession: session)
+                    Divider()
+                    SessionEmptyViewModelRow(session: session)
+                    Divider()
+                    SessionEmptyViewEffortRow(session: session)
                 }
                 .glassEffect(
                     .regular.tint(theme.palette.background).interactive(),
