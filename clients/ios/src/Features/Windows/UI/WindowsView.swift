@@ -38,16 +38,16 @@ struct WindowsView: View {
                 gitPane
             }
             DebugOverlay(endpoint: focusedSession?.endpoint)
-            if selectedPane == .session, !isKeyboardVisible, focusedSession != nil {
-                WindowsCreateButton {
-                    withAnimation(paneAnimation) {
-                        let session = WindowActions.addNew(into: context, after: windows)
-                        centerTabs[session.id] = .chat
-                        selectedPane = .session
-                    }
+            WindowsCreateButtonGate(
+                selectedPane: selectedPane,
+                isKeyboardVisible: isKeyboardVisible,
+                focusedSession: focusedSession
+            ) {
+                withAnimation(paneAnimation) {
+                    let session = WindowActions.addNew(into: context, after: windows)
+                    centerTabs[session.id] = .chat
+                    selectedPane = .session
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                .zIndex(1)
             }
         }
         .overlay(alignment: .top) {
