@@ -105,14 +105,13 @@ platform :ios do
         team_id: "Q9U8224WWM",
         targets: ["Cloude"],
         profile_name: profile_name,
-        code_sign_identity: "iPhone Distribution"
+        code_sign_identity: "Apple Distribution"
       )
 
       build_app(
         project: "clients/ios/iOS.xcodeproj",
         scheme: "Cloude",
         export_method: "app-store",
-        xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=Q9U8224WWM PROVISIONING_PROFILE_SPECIFIER=\"#{profile_name}\" CODE_SIGN_IDENTITY=\"iPhone Distribution\"",
         export_options: {
           signingStyle: "manual",
           teamID: "Q9U8224WWM",
@@ -225,8 +224,7 @@ platform :mac do
           use_automatic_signing: false,
           path: "daemons/macos/macOSDaemon.xcodeproj",
           team_id: "Q9U8224WWM",
-          targets: ["Cloude Agent"],
-          code_sign_identity: "Developer ID Application"
+          targets: ["Cloude Agent"]
         )
         build_args[:xcargs] = "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=Q9U8224WWM CODE_SIGN_IDENTITY=\"Developer ID Application\" PROVISIONING_PROFILE_SPECIFIER=\"\""
       end
