@@ -116,7 +116,7 @@ platform :ios do
       scheme: "Cloude",
       xcargs: "-allowProvisioningUpdates #{auth_xcargs}",
       export_method: "app-store",
-      export_xcargs: "-allowProvisioningUpdates #{auth_xcargs}",
+      export_xcargs: "-allowProvisioningUpdates",
       export_options: {
         signingStyle: "automatic",
         teamID: "Q9U8224WWM"
