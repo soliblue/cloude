@@ -42,9 +42,6 @@ struct WindowsSidebar: View {
                     SettingsViewEndpoints()
                     DaemonUpdateSettingsRow()
                     SettingsViewTheme()
-                    SettingsToggleRow(
-                        icon: "ant.fill", color: ThemeColor.orange, title: "Debug Overlay",
-                        key: StorageKey.debugOverlayEnabled)
                 }
                 .padding(.horizontal, ThemeTokens.Spacing.l)
                 .padding(.vertical, ThemeTokens.Spacing.m)

@@ -14,6 +14,7 @@ struct WindowsView: View {
     @State private var isKeyboardVisible = false
     @State private var centerTabs: [UUID: SessionTab] = [:]
     @State private var isDaemonUpdateSheetPresented = false
+    @AppStorage(StorageKey.debugOverlayEnabled) private var debugOverlayEnabled = false
     private let toastStore = SessionToastStore.shared
 
     private var focusedSession: Session? {
@@ -85,6 +86,7 @@ struct WindowsView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) { isKeyboardVisible = false }
         }
+        .onShake { debugOverlayEnabled.toggle() }
         .onAppear {
             syncFocusedSession()
         }
