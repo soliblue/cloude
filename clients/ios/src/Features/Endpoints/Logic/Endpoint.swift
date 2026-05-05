@@ -14,6 +14,8 @@ final class Endpoint {
     var createdAt: Date
     var lastCheckTimestamp: Date?
     var lastCheckReachable: Bool?
+    var daemonVersion: String?
+    var daemonPlatform: String?
 
     init(
         id: UUID = UUID(),

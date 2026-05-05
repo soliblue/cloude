@@ -60,6 +60,8 @@ struct HTTPResponse {
         if case .buffered(let data) = body {
             text += "Content-Length: \(data.count)\r\n"
         }
+        text += "X-Daemon-Version: \(DaemonVersion.current)\r\n"
+        text += "X-Daemon-Platform: \(DaemonVersion.platform)\r\n"
         for (key, value) in extraHeaders {
             text += "\(key): \(value)\r\n"
         }

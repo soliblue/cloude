@@ -35,6 +35,15 @@ jobs:
           cd daemons/linux
           npm install
 
+      - name: Stamp daemon version
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+        run: |
+          TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
+          VERSION="${TAG#linux-daemon-v}"
+          sed -i "s/export const DAEMON_VERSION = 'dev'/export const DAEMON_VERSION = '${VERSION}'/" daemons/linux/src/Version.js
+          cat daemons/linux/src/Version.js
+
       - name: Create release artifact
         run: |
           cd daemons/linux

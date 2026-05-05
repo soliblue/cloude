@@ -40,6 +40,7 @@ struct WindowsSidebar: View {
 
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
                     SettingsViewEndpoints()
+                    DaemonUpdateSettingsRow()
                     SettingsViewTheme()
                     SettingsToggleRow(
                         icon: "ant.fill", color: ThemeColor.orange, title: "Debug Overlay",

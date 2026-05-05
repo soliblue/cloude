@@ -22,6 +22,7 @@ struct IOSApp: App {
         )
         EndpointActions.seedDev(context: container.mainContext)
         WindowActions.ensureOne(context: container.mainContext)
+        DaemonVersionObserver.shared.modelContext = container.mainContext
         AppLogger.bootstrapInfo("app launched")
     }
 
