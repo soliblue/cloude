@@ -98,22 +98,26 @@ platform :ios do
     )
 
     if ENV["CI"]
+      profile_name = ENV["PROVISIONING_PROFILE_NAME"]
       update_code_signing_settings(
         use_automatic_signing: false,
         path: "clients/ios/iOS.xcodeproj",
         team_id: "Q9U8224WWM",
-        targets: ["Cloude"]
+        targets: ["Cloude"],
+        profile_name: profile_name,
+        code_sign_identity: "iPhone Distribution"
       )
 
       build_app(
         project: "clients/ios/iOS.xcodeproj",
         scheme: "Cloude",
         export_method: "app-store",
+        xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=Q9U8224WWM PROVISIONING_PROFILE_SPECIFIER=\"#{profile_name}\" CODE_SIGN_IDENTITY=\"iPhone Distribution\"",
         export_options: {
           signingStyle: "manual",
           teamID: "Q9U8224WWM",
           provisioningProfiles: {
-            "soli.Cloude" => ENV["PROVISIONING_PROFILE_NAME"]
+            "soli.Cloude" => profile_name
           }
         }
       )
@@ -204,19 +208,30 @@ platform :mac do
       dmg_path = File.expand_path("../build/release/Remote-CC-Daemon.dmg", __dir__)
       signing_identity = ENV["MAC_CODESIGN_IDENTITY"] || "Developer ID Application: J&S toy2life GmbH (Q9U8224WWM)"
 
-      export_opts = {
-        signingStyle: ENV["CI"] ? "manual" : "automatic",
-        teamID: "Q9U8224WWM"
-      }
-
-      build_mac_app(
+      build_args = {
         project: "daemons/macos/macOSDaemon.xcodeproj",
         scheme: "Cloude Agent",
         output_directory: "build/release",
         output_name: "Remote CC Daemon",
         export_method: "developer-id",
-        export_options: export_opts
-      )
+        export_options: {
+          signingStyle: ENV["CI"] ? "manual" : "automatic",
+          teamID: "Q9U8224WWM"
+        }
+      }
+
+      if ENV["CI"]
+        update_code_signing_settings(
+          use_automatic_signing: false,
+          path: "daemons/macos/macOSDaemon.xcodeproj",
+          team_id: "Q9U8224WWM",
+          targets: ["Cloude Agent"],
+          code_sign_identity: "Developer ID Application"
+        )
+        build_args[:xcargs] = "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=Q9U8224WWM CODE_SIGN_IDENTITY=\"Developer ID Application\" PROVISIONING_PROFILE_SPECIFIER=\"\""
+      end
+
+      build_mac_app(**build_args)
       bundle_cloudflared(app_path, signing_identity)
 
       notarize(
