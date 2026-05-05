@@ -220,12 +220,6 @@ platform :mac do
       }
 
       if ENV["CI"]
-        update_code_signing_settings(
-          use_automatic_signing: false,
-          path: "daemons/macos/macOSDaemon.xcodeproj",
-          team_id: "Q9U8224WWM",
-          targets: ["Cloude Agent"]
-        )
         build_args[:xcargs] = "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=Q9U8224WWM CODE_SIGN_IDENTITY=\"Developer ID Application\" PROVISIONING_PROFILE_SPECIFIER=\"\""
       end
 
