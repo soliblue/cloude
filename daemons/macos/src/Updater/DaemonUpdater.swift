@@ -2,13 +2,17 @@ import AppKit
 import Foundation
 
 enum DaemonUpdater {
-    static let repo = "Soli/cloude"
+    static let repo = "soliblue/cloude"
     static let assetName = "Remote-CC-Daemon.app.zip"
     static let tagPrefix = "macos-daemon-v"
     static let pollInterval: TimeInterval = 6 * 60 * 60
 
     static func start() {
-        if DaemonVersion.isDev { return }
+        if DaemonVersion.isDev {
+            NSLog("[DaemonUpdater] dev build, skipping update check")
+            return
+        }
+        NSLog("[DaemonUpdater] starting, current=\(DaemonVersion.current)")
         Task.detached { await loop() }
     }
 
@@ -20,14 +24,36 @@ enum DaemonUpdater {
     }
 
     private static func checkOnce() async {
-        if let release = await fetchLatestRelease(),
-            DaemonVersionCompare.isNewer(release.version, than: DaemonVersion.current),
-            let assetURL = release.assetURL,
-            let zipURL = await download(assetURL),
-            let appBundle = await unzip(zipURL),
-            verifySignature(appBundle)
-        {
-            installAndRelaunch(newAppBundle: appBundle)
+        NSLog("[DaemonUpdater] checking releases for repo=\(repo)")
+        if let release = await fetchLatestRelease() {
+            NSLog("[DaemonUpdater] found latest=\(release.version) current=\(DaemonVersion.current)")
+            if DaemonVersionCompare.isNewer(release.version, than: DaemonVersion.current) {
+                if let assetURL = release.assetURL {
+                    NSLog("[DaemonUpdater] downloading \(assetURL.absoluteString)")
+                    if let zipURL = await download(assetURL) {
+                        NSLog("[DaemonUpdater] downloaded to \(zipURL.path)")
+                        if let appBundle = await unzip(zipURL) {
+                            NSLog("[DaemonUpdater] unzipped app at \(appBundle.path)")
+                            if verifySignature(appBundle) {
+                                NSLog("[DaemonUpdater] signature verified, swapping and relaunching")
+                                installAndRelaunch(newAppBundle: appBundle)
+                            } else {
+                                NSLog("[DaemonUpdater] signature verification FAILED, aborting")
+                            }
+                        } else {
+                            NSLog("[DaemonUpdater] unzip failed")
+                        }
+                    } else {
+                        NSLog("[DaemonUpdater] download failed")
+                    }
+                } else {
+                    NSLog("[DaemonUpdater] no \(assetName) asset on release")
+                }
+            } else {
+                NSLog("[DaemonUpdater] up to date")
+            }
+        } else {
+            NSLog("[DaemonUpdater] no release found with prefix \(tagPrefix)")
         }
     }
 

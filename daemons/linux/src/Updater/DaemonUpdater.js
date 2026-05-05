@@ -7,28 +7,55 @@ import { pipeline } from 'stream/promises'
 import { fileURLToPath } from 'url'
 import { DAEMON_VERSION, IS_DEV } from '../Version.js'
 
-const REPO = 'Soli/cloude'
+const REPO = 'soliblue/cloude'
 const ASSET_NAME = 'cloude-linux-daemon.tar.gz'
 const TAG_PREFIX = 'linux-daemon-v'
 const POLL_INTERVAL_MS = 6 * 60 * 60 * 1000
 
 export function startDaemonUpdater() {
-  if (IS_DEV) return
-  checkOnce().catch(() => {})
-  setInterval(() => checkOnce().catch(() => {}), POLL_INTERVAL_MS)
+  if (IS_DEV) {
+    console.log('[DaemonUpdater] dev build, skipping update check')
+    return
+  }
+  console.log(`[DaemonUpdater] starting, current=${DAEMON_VERSION}`)
+  checkOnce().catch((e) => console.log(`[DaemonUpdater] check failed: ${e.message}`))
+  setInterval(
+    () => checkOnce().catch((e) => console.log(`[DaemonUpdater] check failed: ${e.message}`)),
+    POLL_INTERVAL_MS,
+  )
 }
 
 async function checkOnce() {
+  console.log(`[DaemonUpdater] checking releases for repo=${REPO}`)
   const release = await fetchLatestRelease()
-  if (!release || !isNewer(release.version, DAEMON_VERSION)) return
-  const assetURL = release.assetURL
-  if (!assetURL) return
+  if (!release) {
+    console.log(`[DaemonUpdater] no release found with prefix ${TAG_PREFIX}`)
+    return
+  }
+  console.log(`[DaemonUpdater] found latest=${release.version} current=${DAEMON_VERSION}`)
+  if (!isNewer(release.version, DAEMON_VERSION)) {
+    console.log('[DaemonUpdater] up to date')
+    return
+  }
+  if (!release.assetURL) {
+    console.log(`[DaemonUpdater] no ${ASSET_NAME} asset on release`)
+    return
+  }
   const installDir = resolveInstallDir()
-  if (!installDir) return
-  const archivePath = await download(assetURL)
-  if (!archivePath) return
+  console.log(`[DaemonUpdater] install dir=${installDir}`)
+  console.log(`[DaemonUpdater] downloading ${release.assetURL}`)
+  const archivePath = await download(release.assetURL)
+  if (!archivePath) {
+    console.log('[DaemonUpdater] download failed')
+    return
+  }
+  console.log(`[DaemonUpdater] downloaded to ${archivePath}`)
   const extractDir = await extract(archivePath)
-  if (!extractDir) return
+  if (!extractDir) {
+    console.log('[DaemonUpdater] extract failed')
+    return
+  }
+  console.log(`[DaemonUpdater] extracted to ${extractDir}, swapping and restarting`)
   await swapAndRestart(installDir, extractDir)
 }
 

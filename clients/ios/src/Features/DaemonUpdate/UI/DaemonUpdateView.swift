@@ -3,7 +3,6 @@ import UIKit
 
 struct DaemonUpdateView: View {
     @Environment(\.theme) private var theme
-    @Environment(\.dismiss) private var dismiss
     @State private var isFetchingMac = false
     @State private var isFetchingLinux = false
     @State private var shareItems: [Any]?
@@ -18,6 +17,8 @@ struct DaemonUpdateView: View {
                     color: ThemeColor.purple,
                     title: "AirDrop Mac daemon",
                     subtitle: "Downloads the latest .dmg, then sends it via AirDrop.",
+                    trailingIcon: "paperplane.fill",
+                    trailingTint: .secondary,
                     isLoading: isFetchingMac,
                     action: airdropMac
                 )
@@ -26,8 +27,10 @@ struct DaemonUpdateView: View {
                 actionRow(
                     icon: "terminal",
                     color: ThemeColor.rust,
-                    title: copiedAt == nil ? "Copy install command" : "Copied",
+                    title: "Copy install command",
                     subtitle: "Paste into your Linux machine's terminal to install.",
+                    trailingIcon: copiedAt == nil ? "doc.on.doc" : "checkmark",
+                    trailingTint: copiedAt == nil ? .secondary : ThemeColor.success,
                     isLoading: isFetchingLinux,
                     action: copyLinuxCommand
                 )
@@ -37,11 +40,6 @@ struct DaemonUpdateView: View {
         }
         .navigationTitle("Install Daemon")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Done") { dismiss() }
-            }
-        }
         .background(theme.palette.background)
         .themedNavChrome()
         .sheet(item: Binding(get: { shareItems.map { ShareItemsBox(items: $0) } }, set: { shareItems = $0?.items })) {
@@ -52,7 +50,7 @@ struct DaemonUpdateView: View {
 
     private func airdropMac() {
         isFetchingMac = true
-        Task {
+        Task { @MainActor in
             if let assetURL = await DaemonUpdateService.latestAssetURL(
                 tagPrefix: DaemonUpdate.macTagPrefix, assetName: DaemonUpdate.macAssetName),
                 let local = await DaemonUpdateService.downloadToTemp(
@@ -66,7 +64,7 @@ struct DaemonUpdateView: View {
 
     private func copyLinuxCommand() {
         isFetchingLinux = true
-        Task {
+        Task { @MainActor in
             if let assetURL = await DaemonUpdateService.latestAssetURL(
                 tagPrefix: DaemonUpdate.linuxTagPrefix, assetName: DaemonUpdate.linuxAssetName)
             {
@@ -82,7 +80,8 @@ struct DaemonUpdateView: View {
     }
 
     private func actionRow(
-        icon: String, color: Color, title: String, subtitle: String, isLoading: Bool,
+        icon: String, color: Color, title: String, subtitle: String,
+        trailingIcon: String, trailingTint: Color, isLoading: Bool,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -100,10 +99,13 @@ struct DaemonUpdateView: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.leading)
                 }
-                Spacer()
-                if isLoading {
-                    ProgressView()
-                }
+                Spacer(minLength: ThemeTokens.Spacing.m)
+                Image(systemName: trailingIcon)
+                    .appFont(size: ThemeTokens.Text.l, weight: .medium)
+                    .foregroundStyle(trailingTint)
+                    .contentTransition(.symbolEffect(.replace))
+                    .symbolEffect(.pulse, options: .repeating, isActive: isLoading)
+                    .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
             }
             .padding(.vertical, ThemeTokens.Spacing.m)
         }

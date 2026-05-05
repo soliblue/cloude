@@ -2,7 +2,7 @@ import Foundation
 
 enum DaemonUpdate {
     static let minVersion = "2026.05.05.1"
-    static let repo = "Soli/cloude"
+    static let repo = "soliblue/cloude"
     static let macAssetName = "Remote-CC-Daemon.dmg"
     static let macTagPrefix = "macos-daemon-v"
     static let linuxAssetName = "cloude-linux-daemon.tar.gz"
