@@ -21,11 +21,12 @@ enum ChatActions {
 
     @MainActor
     static func completeAssistant(
-        _ message: ChatMessage, finalText: String, toolUses: [DecodedToolUse],
+        _ message: ChatMessage, finalText: String, toolUses: [DecodedToolUse], model: String?,
         context: ModelContext
     ) {
         message.text = finalText
         message.state = .complete
+        if let model { message.model = model }
         let existingIds = Set(message.toolCalls.map { $0.id })
         var nextOrder = (message.toolCalls.map { $0.order }.max() ?? -1) + 1
         for use in toolUses where !existingIds.contains(use.id) {

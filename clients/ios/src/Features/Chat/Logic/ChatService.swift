@@ -282,13 +282,13 @@ enum ChatService {
                 snapshot.text += text
                 snapshot.deltaCount += 1
             }
-        case .assistantFinal(_, let text, let toolUses):
+        case .assistantFinal(_, let text, let toolUses, let model):
             if !text.isEmpty || !toolUses.isEmpty || streamingMessages[sessionId] != nil {
                 let message = ensureStreamingMessage(sessionId: sessionId, context: context)
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
                 let resolved = text.isEmpty ? snapshot.text : text
                 ChatActions.completeAssistant(
-                    message, finalText: resolved, toolUses: toolUses, context: context)
+                    message, finalText: resolved, toolUses: toolUses, model: model, context: context)
                 streamingMessages.removeValue(forKey: sessionId)
                 ChatLiveStream.clear(sessionId: sessionId)
                 checkpointLastSeq(sessionId: sessionId, seq: event.seq, context: context)

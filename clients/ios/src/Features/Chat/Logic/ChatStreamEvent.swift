@@ -11,7 +11,7 @@ struct DecodedToolUse: Equatable {
 enum ChatStreamEvent {
     case initialized(seq: Int)
     case assistantTextDelta(seq: Int, text: String)
-    case assistantFinal(seq: Int, text: String, toolUses: [DecodedToolUse])
+    case assistantFinal(seq: Int, text: String, toolUses: [DecodedToolUse], model: String?)
     case toolResult(seq: Int, toolUseId: String, text: String, isError: Bool)
     case result(seq: Int, costUsd: Double?)
     case aborted(seq: Int)
@@ -21,7 +21,7 @@ enum ChatStreamEvent {
 
     var seq: Int {
         switch self {
-        case .initialized(let s), .assistantTextDelta(let s, _), .assistantFinal(let s, _, _),
+        case .initialized(let s), .assistantTextDelta(let s, _), .assistantFinal(let s, _, _, _),
             .toolResult(let s, _, _, _), .result(let s, _), .aborted(let s), .exited(let s, _),
             .error(let s, _), .unknown(let s):
             return s
@@ -101,7 +101,8 @@ enum ChatStreamEvent {
                     )
                 }
             }
-            return .assistantFinal(seq: seq, text: text, toolUses: toolUses)
+            let model = message["model"] as? String
+            return .assistantFinal(seq: seq, text: text, toolUses: toolUses, model: model)
         }
         return nil
     }
