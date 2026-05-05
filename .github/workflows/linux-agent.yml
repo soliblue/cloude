@@ -62,5 +62,7 @@ jobs:
           RELEASE_TAG: ${{ github.event.inputs.release_tag }}
         run: |
           TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --notes "Cloude Linux Daemon"
+          TITLE="Linux Remote CC Daemon $(date +%Y-%m-%d)"
+          NOTES="Daemon for the Remote CC iOS app: control Claude Code remotely from your phone."
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TITLE" --notes "$NOTES"
           gh release upload "$TAG" cloude-linux-daemon.tar.gz --clobber
