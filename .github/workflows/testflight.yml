@@ -47,6 +47,12 @@ jobs:
           cp /tmp/cloude.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
           echo "PROVISIONING_PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
 
+      - name: Debug signing state
+        run: |
+          security list-keychains
+          security find-identity -v -p codesigning || true
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
+
       - name: Build and upload to TestFlight
         env:
           DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSWORD }}
