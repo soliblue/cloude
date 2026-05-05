@@ -9,7 +9,7 @@ on:
         type: string
   push:
     tags:
-      - 'linux-v*'
+      - 'linux-daemon-v*'
 
 concurrency:
   group: linux-agent-release

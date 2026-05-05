@@ -9,7 +9,7 @@ on:
         type: string
   push:
     tags:
-      - 'agent-v*'
+      - 'macos-daemon-v*'
 
 concurrency:
   group: mac-agent-dmg

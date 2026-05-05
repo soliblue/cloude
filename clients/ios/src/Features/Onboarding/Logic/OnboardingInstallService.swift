@@ -1,11 +1,11 @@
 import Foundation
 
 enum OnboardingInstallService {
-    static let releasePageURL = URL(string: "https://github.com/soliblue/cloude/releases?q=tag%3Aagent-v")!
+    static let releasePageURL = URL(string: "https://github.com/soliblue/cloude/releases?q=tag%3Amacos-daemon-v")!
     private static let releasesAPIURL =
         URL(string: "https://api.github.com/repos/soliblue/cloude/releases?per_page=30")!
     private static let assetName = "Remote-CC-Daemon.dmg"
-    private static let tagPrefix = "agent-v"
+    private static let tagPrefix = "macos-daemon-v"
 
     static func downloadInstaller() async -> URL? {
         let destination = FileManager.default.temporaryDirectory.appendingPathComponent(assetName)
