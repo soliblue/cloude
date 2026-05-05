@@ -8,7 +8,7 @@ enum HTTPClient {
             var request = URLRequest(url: url, timeoutInterval: timeout)
             request.httpMethod = "GET"
             sign(&request, endpoint: endpoint)
-            return await send(request)
+            return await send(request, endpoint: endpoint)
         }
         return nil
     }
@@ -22,7 +22,7 @@ enum HTTPClient {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try? JSONSerialization.data(withJSONObject: body)
             sign(&request, endpoint: endpoint)
-            return await send(request)
+            return await send(request, endpoint: endpoint)
         }
         return nil
     }
@@ -37,7 +37,7 @@ enum HTTPClient {
             if let range {
                 request.setValue("bytes=\(range.lowerBound)-\(range.upperBound)", forHTTPHeaderField: "Range")
             }
-            return await send(request)
+            return await send(request, endpoint: endpoint)
         }
         return nil
     }
@@ -60,10 +60,11 @@ enum HTTPClient {
         }
     }
 
-    private static func send(_ request: URLRequest) async -> (Data, HTTPURLResponse)? {
+    private static func send(_ request: URLRequest, endpoint: Endpoint) async -> (Data, HTTPURLResponse)? {
         if let (data, response) = try? await URLSession.shared.data(for: request),
             let http = response as? HTTPURLResponse
         {
+            DaemonVersionObserver.shared.observe(response: http, endpointId: endpoint.id)
             return (data, http)
         }
         return nil

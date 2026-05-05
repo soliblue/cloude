@@ -17,6 +17,7 @@ struct MacOSDaemonApp: App {
         Task {
             await RemoteTunnelProvisioner.shared.start()
         }
+        DaemonUpdater.start()
         NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification,
             object: nil,

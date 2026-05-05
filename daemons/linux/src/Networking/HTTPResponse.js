@@ -1,3 +1,5 @@
+import { DAEMON_VERSION, DAEMON_PLATFORM } from '../Version.js'
+
 export default class HTTPResponse {
   constructor(status, body, contentType = 'application/json', extraHeaders = {}, streamer = null) {
     this.status = status
@@ -22,6 +24,8 @@ export default class HTTPResponse {
   send(response) {
     response.statusCode = this.status
     response.setHeader('Content-Type', this.contentType)
+    response.setHeader('X-Daemon-Version', DAEMON_VERSION)
+    response.setHeader('X-Daemon-Platform', DAEMON_PLATFORM)
     for (const [key, value] of Object.entries(this.extraHeaders)) {
       response.setHeader(key, value)
     }

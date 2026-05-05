@@ -36,6 +36,15 @@ jobs:
       - name: Install cloudflared
         run: brew list cloudflared >/dev/null 2>&1 || brew install cloudflared
 
+      - name: Stamp daemon version
+        env:
+          RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+        run: |
+          TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
+          VERSION="${TAG#macos-daemon-v}"
+          sed -i '' "s/static let current = \"dev\"/static let current = \"${VERSION}\"/" daemons/macos/src/Version.swift
+          cat daemons/macos/src/Version.swift
+
       - name: Decode Developer ID certificate
         env:
           MAC_DEVELOPER_ID_CERTIFICATE_BASE64: ${{ secrets.MAC_DEVELOPER_ID_CERTIFICATE_BASE64 }}
@@ -54,11 +63,18 @@ jobs:
           cd fastlane
           fastlane mac release_agent
 
+      - name: Zip .app for self-update
+        run: |
+          cd "build/release"
+          ditto -c -k --keepParent "Remote CC Daemon.app" "Remote-CC-Daemon.app.zip"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Remote-CC-Daemon-dmg
-          path: build/release/Remote-CC-Daemon.dmg
+          path: |
+            build/release/Remote-CC-Daemon.dmg
+            build/release/Remote-CC-Daemon.app.zip
 
       - name: Publish release asset
         if: github.ref_type == 'tag' || github.event.inputs.release_tag != ''
@@ -71,6 +87,7 @@ jobs:
           NOTES="Daemon for the Remote CC iOS app: control Claude Code remotely from your phone."
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TITLE" --notes "$NOTES"
           gh release upload "$TAG" build/release/Remote-CC-Daemon.dmg --clobber
+          gh release upload "$TAG" build/release/Remote-CC-Daemon.app.zip --clobber
 
       - name: Cleanup
         if: always()

@@ -13,6 +13,7 @@ struct WindowsView: View {
     @State private var folderPickerRequest: SessionFolderPickerRequest?
     @State private var isKeyboardVisible = false
     @State private var centerTabs: [UUID: SessionTab] = [:]
+    @State private var isDaemonUpdateSheetPresented = false
     private let toastStore = SessionToastStore.shared
 
     private var focusedSession: Session? {
@@ -101,6 +102,9 @@ struct WindowsView: View {
                 "windows pane \(oldValue.rawValue)->\(newValue.rawValue) session=\(focusedSession?.id.uuidString ?? "-")"
             )
         }
+        .sheet(isPresented: $isDaemonUpdateSheetPresented) {
+            NavigationStack { DaemonUpdateView() }
+        }
         .fullScreenCover(isPresented: $isOnboardingPresented) {
             OnboardingView(initialStep: onboardingInitialStep) { endpoint in
                 let session = WindowActions.addNew(into: context, after: windows, endpoint: endpoint)
@@ -186,20 +190,24 @@ struct WindowsView: View {
     }
 
     private func activateToast(_ toast: SessionToast) {
-        if let window = windows.first(where: { $0.session?.id == toast.sessionId }) {
-            withAnimation(paneAnimation) {
-                WindowActions.activate(window, among: windows)
-                selectedPane = .session
-            }
-        } else {
-            let sessionId = toast.sessionId
-            let descriptor = FetchDescriptor<Session>(
-                predicate: #Predicate<Session> { $0.id == sessionId }
-            )
-            if let session = try? context.fetch(descriptor).first {
+        switch toast.kind {
+        case .daemonUpdate:
+            isDaemonUpdateSheetPresented = true
+        case .session(let sessionId):
+            if let window = windows.first(where: { $0.session?.id == sessionId }) {
                 withAnimation(paneAnimation) {
-                    WindowActions.open(session, among: windows, context: context)
+                    WindowActions.activate(window, among: windows)
                     selectedPane = .session
+                }
+            } else {
+                let descriptor = FetchDescriptor<Session>(
+                    predicate: #Predicate<Session> { $0.id == sessionId }
+                )
+                if let session = try? context.fetch(descriptor).first {
+                    withAnimation(paneAnimation) {
+                        WindowActions.open(session, among: windows, context: context)
+                        selectedPane = .session
+                    }
                 }
             }
         }
