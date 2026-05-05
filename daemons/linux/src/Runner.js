@@ -27,7 +27,7 @@ export default class Runner {
       '--verbose',
       '--include-partial-messages',
       '--disallowedTools',
-      'AskUserQuestion ExitPlanMode EnterPlanMode'
+      'AskUserQuestion ExitPlanMode EnterPlanMode Monitor ScheduleWakeup CronCreate CronDelete CronList RemoteTrigger PushNotification TeamCreate TeamDelete'
     ]
     if (this.model) {
       argumentsList.push('--model', this.model)

@@ -39,7 +39,7 @@ final class Runner {
                 "--output-format", "stream-json",
                 "--verbose",
                 "--include-partial-messages",
-                "--disallowedTools", "AskUserQuestion ExitPlanMode EnterPlanMode",
+                "--disallowedTools", "AskUserQuestion ExitPlanMode EnterPlanMode Monitor ScheduleWakeup CronCreate CronDelete CronList RemoteTrigger PushNotification TeamCreate TeamDelete",
             ]
         if let model {
             claudeArgs.append(contentsOf: ["--model", model])
