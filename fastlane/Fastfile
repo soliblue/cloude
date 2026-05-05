@@ -97,54 +97,24 @@ platform :ios do
       ) + 1
     )
 
-    if ENV["CI"]
-      profile_name = ENV["PROVISIONING_PROFILE_NAME"]
-      update_code_signing_settings(
-        use_automatic_signing: false,
-        path: "clients/ios/iOS.xcodeproj",
-        team_id: "Q9U8224WWM",
-        targets: ["Cloude"],
-        profile_name: profile_name,
-        code_sign_identity: "Apple Distribution"
-      )
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      path: "clients/ios/iOS.xcodeproj",
+      team_id: "Q9U8224WWM",
+      targets: ["Cloude"]
+    )
 
-      require "xcodeproj"
-      ios_proj = Xcodeproj::Project.open(File.expand_path("../clients/ios/iOS.xcodeproj", __dir__))
-      ios_proj.targets.find { |t| t.name == "Cloude" }.build_configurations.each do |config|
-        config.build_settings["CODE_SIGN_IDENTITY[sdk=iphoneos*]"] = "Apple Distribution"
-      end
-      ios_proj.save
-
-      build_app(
-        project: "clients/ios/iOS.xcodeproj",
-        scheme: "Cloude",
-        export_method: "app-store",
-        export_options: {
-          signingStyle: "manual",
-          teamID: "Q9U8224WWM",
-          provisioningProfiles: {
-            "soli.Cloude" => profile_name
-          }
-        }
-      )
-    else
-      update_code_signing_settings(
-        use_automatic_signing: true,
-        path: "clients/ios/iOS.xcodeproj",
-        team_id: "Q9U8224WWM",
-        targets: ["Cloude"]
-      )
-
-      build_app(
-        project: "clients/ios/iOS.xcodeproj",
-        scheme: "Cloude",
-        export_method: "app-store",
-        export_options: {
-          signingStyle: "automatic",
-          teamID: "Q9U8224WWM"
-        }
-      )
-    end
+    build_app(
+      project: "clients/ios/iOS.xcodeproj",
+      scheme: "Cloude",
+      xcargs: "-allowProvisioningUpdates",
+      export_method: "app-store",
+      export_xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: "Q9U8224WWM"
+      }
+    )
 
     upload_to_testflight(
       api_key: api_key,
