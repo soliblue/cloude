@@ -6,7 +6,6 @@ struct WindowsSidebar: View {
     @Environment(\.modelContext) private var context
     @Environment(\.theme) private var theme
     @Query(sort: \Window.order) private var windows: [Window]
-    @Query(sort: \Endpoint.createdAt) private var endpoints: [Endpoint]
 
     var body: some View {
         #if DEBUG
@@ -40,35 +39,7 @@ struct WindowsSidebar: View {
                 }
 
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-                    HStack {
-                        sectionHeader("Endpoints")
-                        Spacer()
-                        Button {
-                            selectedPane = .session
-                            NotificationCenter.default.post(name: .openOnboarding, object: OnboardingStep.pair)
-                        } label: {
-                            Image(systemName: "plus")
-                                .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                                .foregroundColor(.secondary)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    ForEach(endpoints) { endpoint in
-                        NavigationLink {
-                            EndpointView(existing: endpoint, canDelete: endpoints.count > 1)
-                        } label: {
-                            WindowsSidebarRow(
-                                symbol: endpoint.symbolName,
-                                title: endpoint.displayName,
-                                isFocused: false
-                            )
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    sectionHeader("Settings")
+                    SettingsViewEndpoints()
                     SettingsViewTheme()
                     SettingsToggleRow(
                         icon: "ant.fill", color: ThemeColor.orange, title: "Debug Overlay",
