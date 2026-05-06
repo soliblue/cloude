@@ -1,0 +1,24 @@
+---
+title: "Grid Multi-Image Generation"
+description: "Added grid template mode to generate 4 or 9 image variations in a single Gemini API call."
+created_at: 2026-02-12
+tags: ["skills"]
+icon: square.grid.2x2
+build: 71
+stage: shipped
+---
+
+
+# Grid Multi-Image Generation
+Generate 4 or 9 image variations in a single Gemini API call using a grid template approach.
+
+## Implementation
+- `grid.py` — creates grid templates (2x2/3x3) and splits output back into individual images
+- `generate.sh` — new `--grid` flag wires up template → Gemini edit → split pipeline
+- `SKILL.md` — documented grid mode usage
+
+## Usage
+```bash
+generate.sh --prompt "cute robots" --grid 2x2 --output robots
+# → robots-1.png, robots-2.png, robots-3.png, robots-4.png
+```

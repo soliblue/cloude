@@ -1,0 +1,20 @@
+---
+title: "Transcription Spinner Not Visible During Processing"
+description: "Fixed transcription loading spinner not showing after voice recording by forwarding isTranscribing state changes to ConnectionManager."
+created_at: 2026-03-14
+tags: ["ui", "input"]
+icon: progress.indicator
+build: 86
+stage: shipped
+---
+
+
+# Transcription Spinner Not Visible During Processing
+## Problem
+After stopping a voice recording, the transcription loading spinner wasn't showing. The audio waveform overlay disappeared and the input bar returned, with a gap of a few seconds before the transcription result appeared.
+
+## Root Cause
+`EnvironmentConnection.isTranscribing` changes weren't forwarded to `ConnectionManager.objectWillChange`, so SwiftUI never re-rendered `MainChatView` to show the `RecordingOverlayView` in its transcribing state.
+
+## Fix
+Added `didSet` on `isTranscribing` in `EnvironmentConnection.swift` to forward changes to the parent `ConnectionManager`, matching the pattern used by `ConversationOutput`.
