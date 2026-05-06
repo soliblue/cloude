@@ -6,8 +6,11 @@ struct ChatViewMessageListGroup: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        HStack(alignment: .top, spacing: ThemeTokens.Spacing.s) {
+        HStack(alignment: .center, spacing: ThemeTokens.Spacing.s) {
             if role == .user { Spacer(minLength: ThemeTokens.Spacing.xs) }
+            if let retryable = retryableUserMessage {
+                ChatViewMessageListGroupRetryButton(message: retryable)
+            }
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                 ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
                     switch segment {
@@ -31,6 +34,11 @@ struct ChatViewMessageListGroup: View {
         messages.first?.role ?? .assistant
     }
 
+    private var retryableUserMessage: ChatMessage? {
+        guard role == .user else { return nil }
+        return messages.first(where: { $0.state == .failed || $0.state == .retrying })
+    }
+
     private var bubbleShape: UnevenRoundedRectangle {
         let r = ThemeTokens.Radius.m
         return UnevenRoundedRectangle(
@@ -49,6 +57,7 @@ struct ChatViewMessageListGroup: View {
             let hasContent =
                 !message.imagesData.isEmpty || !message.text.isEmpty
                 || message.state == .streaming || message.state == .failed
+                || message.state == .retrying
             if hasContent {
                 if !toolBucket.isEmpty {
                     result.append(.tools(toolBucket))

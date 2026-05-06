@@ -1,5 +1,10 @@
 import Foundation
 
+enum StreamingError: Error {
+    case preHeaders(Error)
+    case body(Error)
+}
+
 enum StreamingClient {
     static func post(
         endpoint: Endpoint, path: String, body: [String: Any]
@@ -29,19 +34,26 @@ enum StreamingClient {
                     do {
                         let (bytes, response) = try await URLSession.shared.bytes(for: request)
                         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                            throw URLError(
-                                .badServerResponse,
-                                userInfo: [NSLocalizedDescriptionKey: "http \(http.statusCode)"])
+                            continuation.finish(
+                                throwing: StreamingError.preHeaders(
+                                    URLError(
+                                        .badServerResponse,
+                                        userInfo: [NSLocalizedDescriptionKey: "http \(http.statusCode)"])))
+                            return
                         }
-                        for try await line in bytes.lines {
-                            if !line.isEmpty { continuation.yield(Data(line.utf8)) }
+                        do {
+                            for try await line in bytes.lines {
+                                if !line.isEmpty { continuation.yield(Data(line.utf8)) }
+                            }
+                            continuation.finish()
+                        } catch {
+                            continuation.finish(throwing: StreamingError.body(error))
                         }
-                        continuation.finish()
                     } catch {
-                        continuation.finish(throwing: error)
+                        continuation.finish(throwing: StreamingError.preHeaders(error))
                     }
                 } else {
-                    continuation.finish(throwing: URLError(.badURL))
+                    continuation.finish(throwing: StreamingError.preHeaders(URLError(.badURL)))
                 }
             }
         }

@@ -4,6 +4,7 @@ import UIKit
 
 enum ChatService {
     @MainActor private static var streamingMessages: [UUID: ChatMessage] = [:]
+    @MainActor private static var pendingUserMessages: [UUID: ChatMessage] = [:]
     @MainActor private static var lastSeqs: [UUID: Int] = [:]
     @MainActor private static var activeStreams: Set<UUID> = []
 
@@ -25,9 +26,10 @@ enum ChatService {
             )
             AppLogger.beginInterval("chat.firstToken", key: session.id.uuidString)
             AppLogger.beginInterval("chat.complete", key: session.id.uuidString)
-            _ = ChatActions.addUserMessage(
+            let userMessage = ChatActions.addUserMessage(
                 sessionId: session.id, text: prompt, images: images, context: context
             )
+            pendingUserMessages[session.id] = userMessage
             SessionActions.setStreaming(true, for: session)
             lastSeqs.removeValue(forKey: session.id)
             activeStreams.insert(session.id)
@@ -80,6 +82,41 @@ enum ChatService {
                 query: ["after_seq": "\(afterSeq)"]
             )
             await consume(stream: stream, sessionId: sessionId, context: context)
+        }
+    }
+
+    @MainActor
+    static func retry(message: ChatMessage, context: ModelContext) {
+        if message.role != .user || message.state != .failed { return }
+        let sessionId = message.sessionId
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first,
+            let endpoint = session.endpoint, let path = session.path
+        {
+            message.state = .retrying
+            pendingUserMessages[sessionId] = message
+            SessionActions.setStreaming(true, for: session)
+            lastSeqs.removeValue(forKey: sessionId)
+            activeStreams.insert(sessionId)
+            let prompt = message.text
+            let encodedImages = message.imagesData.compactMap(encode)
+            let existsOnServer = session.existsOnServer
+            Task {
+                var body: [String: Any] = [
+                    "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
+                ]
+                if !encodedImages.isEmpty { body["images"] = encodedImages }
+                if let model = session.model { body["model"] = model.rawValue }
+                if let effort = session.effort { body["effort"] = effort.rawValue }
+                let stream = StreamingClient.post(
+                    endpoint: endpoint,
+                    path: "/sessions/\(sessionId.uuidString)/chat",
+                    body: body
+                )
+                await consume(stream: stream, sessionId: sessionId, context: context)
+            }
         }
     }
 
@@ -179,6 +216,11 @@ enum ChatService {
         do {
             for try await line in stream {
                 if let event = ChatStreamEvent.decode(line) {
+                    if let pending = pendingUserMessages.removeValue(forKey: sessionId),
+                        pending.state == .retrying
+                    {
+                        pending.state = .complete
+                    }
                     let seq = event.seq
                     if seq > (lastSeqs[sessionId] ?? -1) { lastSeqs[sessionId] = seq }
                     apply(event: event, sessionId: sessionId, context: context)
@@ -189,13 +231,29 @@ enum ChatService {
             AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
             AppLogger.endInterval("chat.complete", key: sessionId.uuidString)
             activeStreams.remove(sessionId)
+            pendingUserMessages.removeValue(forKey: sessionId)
             closeStream(sessionId: sessionId, isFailed: false, context: context)
             lastSeqs.removeValue(forKey: sessionId)
+        } catch StreamingError.preHeaders(let underlying) {
+            AppLogger.connectionError(
+                "stream failed reason=preHeaders sessionId=\(sessionId.uuidString) error=\(underlying)")
+            activeStreams.remove(sessionId)
+            streamingMessages.removeValue(forKey: sessionId)
+            if let pending = pendingUserMessages.removeValue(forKey: sessionId) {
+                pending.state = .failed
+            }
+            let descriptor = FetchDescriptor<Session>(
+                predicate: #Predicate<Session> { $0.id == sessionId }
+            )
+            if let session = try? context.fetch(descriptor).first {
+                SessionActions.setStreaming(false, for: session)
+            }
         } catch {
             AppLogger.connectionError(
                 "stream closed reason=error sessionId=\(sessionId.uuidString) error=\(error)")
             activeStreams.remove(sessionId)
             streamingMessages.removeValue(forKey: sessionId)
+            pendingUserMessages.removeValue(forKey: sessionId)
         }
     }
 
@@ -282,13 +340,13 @@ enum ChatService {
                 snapshot.text += text
                 snapshot.deltaCount += 1
             }
-        case .assistantFinal(_, let text, let toolUses):
+        case .assistantFinal(_, let text, let toolUses, let model):
             if !text.isEmpty || !toolUses.isEmpty || streamingMessages[sessionId] != nil {
                 let message = ensureStreamingMessage(sessionId: sessionId, context: context)
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
                 let resolved = text.isEmpty ? snapshot.text : text
                 ChatActions.completeAssistant(
-                    message, finalText: resolved, toolUses: toolUses, context: context)
+                    message, finalText: resolved, toolUses: toolUses, model: model, context: context)
                 streamingMessages.removeValue(forKey: sessionId)
                 ChatLiveStream.clear(sessionId: sessionId)
                 checkpointLastSeq(sessionId: sessionId, seq: event.seq, context: context)

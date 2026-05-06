@@ -6,6 +6,7 @@ struct ChatViewMessageListRow: View {
     let message: ChatMessage
     @Environment(\.filePreviewPresenter) private var presenter
     @State private var isSelectTextPresented = false
+    @State private var isInfoPresented = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
@@ -13,7 +14,7 @@ struct ChatViewMessageListRow: View {
                 ChatViewMessageListRowAttachmentList(images: message.imagesData)
             }
             content
-            if message.state == .failed {
+            if message.state == .failed && message.role == .assistant {
                 Text("Failed")
                     .appFont(size: ThemeTokens.Text.s)
                     .foregroundColor(ThemeColor.danger)
@@ -32,9 +33,17 @@ struct ChatViewMessageListRow: View {
                     Label("Select Text", systemImage: "text.cursor")
                 }
             }
+            Button {
+                isInfoPresented = true
+            } label: {
+                Label("Info", systemImage: "info.circle")
+            }
         }
         .sheet(isPresented: $isSelectTextPresented) {
             ChatViewMessageListRowSelectTextSheet(text: message.text)
+        }
+        .sheet(isPresented: $isInfoPresented) {
+            ChatViewMessageListRowInfoSheet(message: message)
         }
         .environment(
             \.openURL,

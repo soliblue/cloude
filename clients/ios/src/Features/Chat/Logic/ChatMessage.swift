@@ -4,7 +4,7 @@ import SwiftData
 @Model
 final class ChatMessage {
     enum Role: String { case user, assistant }
-    enum State: String { case streaming, complete, failed }
+    enum State: String { case streaming, complete, failed, retrying }
 
     @Attribute(.unique) var id: UUID
     var sessionId: UUID
@@ -14,6 +14,7 @@ final class ChatMessage {
     var imagesData: [Data]
     var createdAt: Date
     var costUsd: Double? = nil
+    var model: String? = nil
     @Relationship(deleteRule: .cascade, inverse: \ChatToolCall.message)
     var toolCalls: [ChatToolCall] = []
 
