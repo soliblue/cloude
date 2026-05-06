@@ -9,7 +9,7 @@ extension ChatToolKind {
         case .glob, .grep: return ThemeColor.purple
         case .web: return ThemeColor.cyan
         case .todo: return ThemeColor.yellow
-        case .task: return ThemeColor.pink
+        case .task: return ThemeColor.yellow
         case .skill: return ThemeColor.mint
         case .other: return .secondary
         }
