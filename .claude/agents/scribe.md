@@ -16,7 +16,7 @@ Workflow:
 1. `git status`, `git diff --stat`, `git log` to understand the change.
 2. Review the diff against CLAUDE.md (style, architecture, naming). Flag violations before proceeding.
 3. Split into focused commits only when the grouping is obvious; do not over-engineer.
-4. Every code change maps to a plan. Move the matching plan from `20_active/` to `40_shipped/`, or create one there.
+4. Every code change maps to a plan. Move the matching plan from `2_active/` to `3_shipped/`, or create one there.
 5. Stage, commit with a conventional prefix, push. Any plan ticket you create, move, or edit as part of this commit must be staged in the same commit as the code it describes, not a follow-up commit.
 
 Never push force. Never push secrets.
@@ -26,14 +26,13 @@ Never push force. Never push secrets.
 Plans are markdown tickets under `.claude/plans/`. Stages:
 
 ```
-00_backlog -> 10_next -> 20_active -> 40_shipped
+1_next -> 2_active -> 3_shipped
 ```
 
-- `05_pre_rewrite`: historical features from the pre-rewrite codebase (frozen at `a8f77f6f`). Each file has a `stage:` field in frontmatter recording its original stage. Ignore this folder unless the user explicitly asks about it.
-- `00_backlog`: worth remembering
-- `10_next`: prioritized next
-- `20_active`: currently being worked on
-- `40_shipped`: pushed and out the door
+- `4_archive`: historical features from the pre-rewrite codebase (frozen at `a8f77f6f`). Each file has a `stage:` field in frontmatter recording its original stage. Ignore this folder unless the user explicitly asks about it.
+- `1_next`: prioritized next
+- `2_active`: currently being worked on
+- `3_shipped`: pushed and out the door
 
 Filename: `kebab-case-description.md`.
 
@@ -54,7 +53,7 @@ build: 155
 
 Rules:
 - `title`, `description`, `created_at`, `tags`, and `icon` are required.
-- `build` is optional. Add it when the ticket is tied to a concrete app build, typically in `40_shipped`.
+- `build` is optional. Add it when the ticket is tied to a concrete app build, typically in `3_shipped`.
 - `created_at` is the calendar day the ticket was first created. Preserve it when moving stages.
 - `tags` must be a YAML array, usually 1 or 2 items.
 - `icon` is an SF Symbol name. It lives only in frontmatter. Do not append `{icon}` to the H1.
@@ -64,6 +63,6 @@ Rules:
 
 Use 1 or 2 tags per plan. Core vocab: `ui`, `agent`, `skills`, `memory`, `git`, `files`, `settings`, `streaming`. Add a new tag only when existing ones cannot express a distinct recurring kind of work; update this file when you do.
 
-Backlog items stay short. Detail grows as the plan moves forward. Prefer clarity over exhaustiveness.
+Detail grows as the plan moves forward. Prefer clarity over exhaustiveness.
 
 Stop and ask when intent or scope is genuinely ambiguous.
