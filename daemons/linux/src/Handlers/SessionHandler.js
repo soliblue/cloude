@@ -23,7 +23,7 @@ function parsedJSON(text) {
 
 function readTranscript(targetPath, sessionId) {
   const encoded = targetPath.replaceAll('/', '-').replaceAll('.', '-')
-  const file = path.join(os.homedir(), '.claude', 'projects', encoded, `${sessionId}.jsonl`)
+  const file = path.join(os.homedir(), '.claude', 'projects', encoded, `${sessionId.toLowerCase()}.jsonl`)
   if (fs.existsSync(file)) {
     const lines = []
     for (const raw of fs.readFileSync(file, 'utf8').split('\n')) {
@@ -75,6 +75,7 @@ function runSonnet(prompt) {
   if (!result.error && result.status === 0) {
     return result.stdout || ''
   }
+  console.error(`[SessionHandler] runSonnet exit=${result.status} stderr=${result.stderr || ''}`)
   return null
 }
 
