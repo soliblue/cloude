@@ -159,7 +159,30 @@ extension URL {
             .first(where: { $0.name == name })?
             .value
         {
-            while let decoded = value.removingPercentEncoding, decoded != value {
+            while value.contains("%") {
+                var data = Data()
+                var changed = false
+                var index = value.startIndex
+                while index < value.endIndex {
+                    if value[index] == "%" {
+                        let first = value.index(after: index)
+                        if first < value.endIndex {
+                            let second = value.index(after: first)
+                            if second < value.endIndex,
+                                let byte = UInt8(String(value[first...second]), radix: 16)
+                            {
+                                data.append(byte)
+                                changed = true
+                                index = value.index(after: second)
+                                continue
+                            }
+                        }
+                    }
+                    data.append(contentsOf: String(value[index]).utf8)
+                    index = value.index(after: index)
+                }
+                let decoded = String(decoding: data, as: UTF8.self)
+                if decoded == value || !changed { return decoded }
                 value = decoded
             }
             return value
