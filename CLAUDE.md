@@ -1,4 +1,4 @@
-> **Status:** we are rebuilding the whole app from scratch. The current tree still has reliability issues and missing features. The old structure had its own quirks and is frozen at commit `a8f77f6f`, with a worktree copy at `../cloude-a8f77f6` — when something needs historical context (how a feature used to work, why a decision was made), explore that worktree with subagents instead of guessing. The point of the rewrite is a simpler, more predictable architecture so we can actually love the code and make the app as reliable as possible.
+> **Status:** we are rebuilding the whole app from scratch. The current tree still has reliability issues and missing features. The old structure had its own quirks and is frozen at commit `a8f77f6f`, with a worktree copy at `../cloude-a8f77f6` - when something needs historical context (how a feature used to work, why a decision was made), explore that worktree with subagents instead of guessing. The point of the rewrite is a simpler, more predictable architecture so we can actually love the code and make the app as reliable as possible.
 
 We are building Remote CC, an app that controls Claude Code remotely from a phone. A Mac or Linux daemon on the user's machine spawns the CLI process you're running inside; the iOS app talks to it over HTTP. You might be invoked directly through the app or via VS Code on the same machine.
 
@@ -9,6 +9,10 @@ A user has multiple endpoints (personal laptop, work machine), and each session 
 Context rot destroys intelligence, so every word in CLAUDE.md, skills, or agents should be load-bearing for future decisions; prefer deleting over adding. Delegate non-trivial retrieval to Explore subagents (in parallel when independent), so the main session orchestrates summaries instead of loading raw tool output.
 
 `CLAUDE.md` is public, checked-in project knowledge. `.claude/memory/` is gitignored and personal: one memory per file with `name`/`description`/`type` frontmatter, indexed by `MEMORY.md`, and is what makes you *you* instead of a generic Claude. Writes inside `.claude/` are gated, so route them via `cp` through `/tmp` or `cat` heredoc. This is a multi-agent project, so never touch another agent's code; surface their errors instead of fixing them.
+
+## Codex Support
+
+Codex reads `AGENTS.md`, which symlinks to `CLAUDE.md`. `.codex/skills` points at `.claude/skills`; `.codex/agents` contains generated TOML, so after changing `.claude/agents/*.md`, run `node .codex/sync-codex-agents-from-claude.mjs`.
 
 ## Repo layout
 
