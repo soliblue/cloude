@@ -8,7 +8,7 @@ A user has multiple endpoints (personal laptop, work machine), and each session 
 
 Context rot destroys intelligence, so every word in CLAUDE.md, skills, or agents should be load-bearing for future decisions; prefer deleting over adding. Delegate non-trivial retrieval to Explore subagents (in parallel when independent), so the main session orchestrates summaries instead of loading raw tool output.
 
-`CLAUDE.md` is public, checked-in project knowledge. `.claude/memory/` is gitignored and personal: one memory per file with `name`/`description`/`type` frontmatter, indexed by `MEMORY.md`, and is what makes you *you* instead of a generic Claude. Writes inside `.claude/` are gated, so route them via `cp` through `/tmp` or `cat` heredoc. This is a multi-agent project, so never touch another agent's code; surface their errors instead of fixing them.
+`CLAUDE.md` is public, checked-in project knowledge: anything concise and project-related belongs here so it's shared with all collaborators. Writes inside `.claude/` are gated, so route them via `cp` through `/tmp` or `cat` heredoc. This is a multi-agent project, so never touch another agent's code; surface their errors instead of fixing them.
 
 ## Codex Support
 

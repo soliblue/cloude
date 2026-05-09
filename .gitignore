@@ -25,7 +25,7 @@ __pycache__/
 .claude/settings.local.json
 .claude/credentials.json
 CLAUDE.local.md
-.claude/memory/
+.claude/memory
 moltbook.local.json
 
 # Secrets
