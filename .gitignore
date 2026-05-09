@@ -21,12 +21,12 @@ __pycache__/
 ._*
 
 # Claude Code
-.cloude-tmp/
+.claude/worktrees/
+.claude/scheduled_tasks.lock
 .claude/settings.local.json
 .claude/credentials.json
 CLAUDE.local.md
 .claude/memory
-moltbook.local.json
 
 # Secrets
 *.env
@@ -40,54 +40,10 @@ fastlane/README.md
 *.ipa
 *.dSYM.zip
 
-# Personal data (never commit)
-.claude/skills/tweets/data/
-.claude/skills/notes/
-
-# Sora browser session (contains auth cookies)
-tools/sora/browser-data/
-tools/sora/output/
-tools/sora/image_flow_capture.json
-
 # Swift Package Manager
 .build/
 .swiftpm/
 
-# Old skills location (everything moved to .claude/skills/)
-/skills/
-
-# Skill runtime data (venvs, models, outputs, browser data)
-.claude/skills/speak/models/
-.claude/skills/speak/venv/
-.claude/skills/speak/output/
-.claude/skills/transcribe/output/
-.claude/skills/music/venv/
-.claude/skills/music/output/
-.claude/skills/icon/output/
-.claude/skills/icon/ref-creature.png
-.claude/skills/image/output/
-.claude/skills/slides/.venv/
-.claude/skills/slides/slides/output/
-.claude/skills/slides/reference/
-.claude/skills/slides/*.pptx
-.claude/skills/slides/*.png
-.claude/skills/slides/__pycache__/
-.claude/skills/slides/
-.claude/skills/video/__pycache__/
-.claude/skills/video/output/
-.claude/skills/video/browser-data/
-.claude/skills/video/data/
-
-# Personal skills (not relevant to other Cloude users)
-.claude/skills/projects/
-
-# Linux relay runtime data
-daemons/linux/whisper-env/
-daemons/linux/whisper-models/
-
 # Cloudflare Wrangler
 .wrangler/
 .claude/agents/tester/output/
-
-# Local plans (agent-writable workaround while .claude/ is permission-gated)
-/plans/
