@@ -67,7 +67,7 @@ struct SessionView: View {
 
     private var gitRefreshKey: String {
         if let endpoint = session.endpoint, let path = session.path, !path.isEmpty {
-            return "\(endpoint.id.uuidString)|\(path)"
+            return "\(endpoint.id.uuidString)|\(path)|\(session.lastSeq)"
         }
         return ""
     }
