@@ -6,6 +6,8 @@ enum StorageKey {
     static let appAccent = "appAccent"
     static let typewriterCps = "typewriterCps"
     static let typewriterFadeWindow = "typewriterFadeWindow"
+    static let defaultChatModel = "defaultChatModel"
+    static let defaultChatEffort = "defaultChatEffort"
 }
 
 enum TypewriterDefaults {

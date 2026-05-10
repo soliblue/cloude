@@ -14,6 +14,10 @@ enum SessionActions {
             title: SessionRandom.name(),
             symbol: SessionRandom.symbol()
         )
+        session.model = UserDefaults.standard.string(forKey: StorageKey.defaultChatModel).flatMap(
+            ChatModel.init(rawValue:))
+        session.effort = UserDefaults.standard.string(forKey: StorageKey.defaultChatEffort).flatMap(
+            ChatEffort.init(rawValue:))
         context.insert(session)
         return session
     }
