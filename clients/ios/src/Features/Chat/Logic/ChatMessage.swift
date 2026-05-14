@@ -15,8 +15,7 @@ final class ChatMessage {
     var createdAt: Date
     var costUsd: Double? = nil
     var model: String? = nil
-    @Relationship(deleteRule: .cascade, inverse: \ChatToolCall.message)
-    var toolCalls: [ChatToolCall] = []
+    var hasToolCalls: Bool = false
 
     init(
         id: UUID = UUID(),
@@ -39,8 +38,5 @@ final class ChatMessage {
     var state: State {
         get { State(rawValue: stateRaw) ?? .complete }
         set { stateRaw = newValue.rawValue }
-    }
-    var orderedToolCalls: [ChatToolCall] {
-        toolCalls.sorted { $0.order < $1.order }
     }
 }

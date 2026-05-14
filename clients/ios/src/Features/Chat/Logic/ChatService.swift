@@ -278,7 +278,7 @@ enum ChatService {
             let snapshot = ChatLiveStream.peek(for: sessionId)
             let liveText = snapshot?.text ?? ""
             if message.text.isEmpty && !liveText.isEmpty { message.text = liveText }
-            if message.text.isEmpty && message.toolCalls.isEmpty {
+            if message.text.isEmpty && !message.hasToolCalls {
                 context.delete(message)
             } else {
                 ChatActions.finishStreaming(message, isFailed: isFailed)
@@ -287,7 +287,7 @@ enum ChatService {
         let pendingRaw = ChatToolCall.State.pending.rawValue
         let pendingDescriptor = FetchDescriptor<ChatToolCall>(
             predicate: #Predicate<ChatToolCall> {
-                $0.stateRaw == pendingRaw && $0.message?.sessionId == sessionId
+                $0.stateRaw == pendingRaw && $0.sessionId == sessionId
             }
         )
         if let pending = try? context.fetch(pendingDescriptor) {
@@ -339,7 +339,11 @@ enum ChatService {
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
                 snapshot.text += text
                 snapshot.deltaCount += 1
+                snapshot.isCompacting = false
             }
+        case .compacting:
+            _ = ensureStreamingMessage(sessionId: sessionId, context: context)
+            ChatLiveStream.snapshot(for: sessionId).isCompacting = true
         case .assistantFinal(_, let text, let toolUses, let model):
             if !text.isEmpty || !toolUses.isEmpty || streamingMessages[sessionId] != nil {
                 let message = ensureStreamingMessage(sessionId: sessionId, context: context)

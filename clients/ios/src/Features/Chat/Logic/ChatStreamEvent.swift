@@ -17,13 +17,14 @@ enum ChatStreamEvent {
     case aborted(seq: Int)
     case exited(seq: Int, code: Int)
     case error(seq: Int, message: String)
+    case compacting(seq: Int)
     case unknown(seq: Int)
 
     var seq: Int {
         switch self {
         case .initialized(let s), .assistantTextDelta(let s, _), .assistantFinal(let s, _, _, _),
             .toolResult(let s, _, _, _), .result(let s, _), .aborted(let s), .exited(let s, _),
-            .error(let s, _), .unknown(let s):
+            .error(let s, _), .compacting(let s), .unknown(let s):
             return s
         }
     }
@@ -45,6 +46,9 @@ enum ChatStreamEvent {
             if type == "exit" { return .exited(seq: seq, code: obj["code"] as? Int ?? 0) }
             if type == "error" {
                 return .error(seq: seq, message: obj["message"] as? String ?? "unknown")
+            }
+            if type == "status", obj["state"] as? String == "compacting" {
+                return .compacting(seq: seq)
             }
         }
         return nil

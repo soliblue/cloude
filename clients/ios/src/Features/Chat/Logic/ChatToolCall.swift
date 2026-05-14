@@ -6,7 +6,8 @@ final class ChatToolCall {
     enum State: String { case pending, succeeded, failed }
 
     @Attribute(.unique) var id: String
-    var message: ChatMessage?
+    var messageId: UUID
+    var sessionId: UUID
     var name: String
     var inputSummary: String
     var inputJSON: String
@@ -18,6 +19,8 @@ final class ChatToolCall {
 
     init(
         id: String,
+        messageId: UUID,
+        sessionId: UUID,
         name: String,
         inputSummary: String,
         inputJSON: String,
@@ -27,6 +30,8 @@ final class ChatToolCall {
         parentToolUseId: String? = nil
     ) {
         self.id = id
+        self.messageId = messageId
+        self.sessionId = sessionId
         self.name = name
         self.inputSummary = inputSummary
         self.inputJSON = inputJSON

@@ -27,9 +27,16 @@ enum ChatActions {
         message.text = finalText
         message.state = .complete
         if let model { message.model = model }
-        let existingIds = Set(message.toolCalls.map { $0.id })
-        var nextTopOrder = (message.toolCalls.map { $0.order }.max() ?? -1) + 1
+        if toolUses.isEmpty { return }
+        let messageId = message.id
+        let existingDescriptor = FetchDescriptor<ChatToolCall>(
+            predicate: #Predicate<ChatToolCall> { $0.messageId == messageId }
+        )
+        let existing = (try? context.fetch(existingDescriptor)) ?? []
+        let existingIds = Set(existing.map { $0.id })
+        var nextTopOrder = (existing.filter { $0.parentToolUseId == nil }.map { $0.order }.max() ?? -1) + 1
         var nextChildOrder: [String: Int] = [:]
+        var inserted = false
         for use in toolUses where !existingIds.contains(use.id) {
             let order: Int
             if let parentId = use.parentToolUseId {
@@ -48,15 +55,18 @@ enum ChatActions {
             }
             let call = ChatToolCall(
                 id: use.id,
+                messageId: message.id,
+                sessionId: message.sessionId,
                 name: use.name,
                 inputSummary: use.inputSummary,
                 inputJSON: use.inputJSON,
                 order: order,
                 parentToolUseId: use.parentToolUseId
             )
-            call.message = message
             context.insert(call)
+            inserted = true
         }
+        if inserted && !message.hasToolCalls { message.hasToolCalls = true }
     }
 
     @MainActor

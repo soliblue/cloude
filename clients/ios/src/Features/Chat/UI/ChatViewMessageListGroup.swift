@@ -17,8 +17,8 @@ struct ChatViewMessageListGroup: View {
                     case .message(let message):
                         ChatViewMessageListRow(session: session, message: message)
                             .id(message.id)
-                    case .tools(let toolCalls):
-                        ChatViewMessageListRowToolPillList(session: session, toolCalls: toolCalls)
+                    case .tools(let messageIds):
+                        ChatViewMessageListRowToolPillList(session: session, messageIds: messageIds)
                     }
                 }
             }
@@ -51,8 +51,7 @@ struct ChatViewMessageListGroup: View {
 
     private var segments: [Segment] {
         var result: [Segment] = []
-        var toolBucket: [ChatToolCall] = []
-
+        var toolBucket: [UUID] = []
         for message in messages {
             let hasContent =
                 !message.imagesData.isEmpty || !message.text.isEmpty
@@ -65,7 +64,7 @@ struct ChatViewMessageListGroup: View {
                 }
                 result.append(.message(message))
             }
-            toolBucket.append(contentsOf: message.orderedToolCalls)
+            if message.hasToolCalls { toolBucket.append(message.id) }
         }
         if !toolBucket.isEmpty { result.append(.tools(toolBucket)) }
         return result
@@ -73,6 +72,6 @@ struct ChatViewMessageListGroup: View {
 
     private enum Segment {
         case message(ChatMessage)
-        case tools([ChatToolCall])
+        case tools([UUID])
     }
 }

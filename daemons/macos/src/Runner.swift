@@ -39,7 +39,8 @@ final class Runner {
                 "--output-format", "stream-json",
                 "--verbose",
                 "--include-partial-messages",
-                "--disallowedTools", "AskUserQuestion ExitPlanMode EnterPlanMode Monitor ScheduleWakeup CronCreate CronDelete CronList RemoteTrigger PushNotification TeamCreate TeamDelete",
+                "--disallowedTools",
+                "AskUserQuestion ExitPlanMode EnterPlanMode Monitor ScheduleWakeup CronCreate CronDelete CronList RemoteTrigger PushNotification TeamCreate TeamDelete",
             ]
         if let model {
             claudeArgs.append(contentsOf: ["--model", model])
@@ -183,7 +184,14 @@ final class Runner {
                     "[Runner] ingest_event sessionId=\(sessionId) nextSeq=\(seq + 1) type=\(obj["type"] as? String ?? "unknown") bytes=\(line.count)"
                 )
                 #endif
-                emit(["event": obj])
+                if obj["type"] as? String == "system",
+                    obj["subtype"] as? String == "informational",
+                    obj["status"] as? String == "compacting"
+                {
+                    emit(["type": "status", "state": "compacting"])
+                } else {
+                    emit(["event": obj])
+                }
             } else {
                 #if DEBUG
                 let text = String(data: line, encoding: .utf8) ?? "<binary \(line.count)>"

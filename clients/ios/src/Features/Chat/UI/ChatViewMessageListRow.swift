@@ -71,7 +71,9 @@ struct ChatViewMessageListRow: View {
 
     @ViewBuilder private var streaming: some View {
         let snapshot = ChatLiveStream.snapshot(for: message.sessionId)
-        if snapshot.text.isEmpty && message.orderedToolCalls.isEmpty {
+        if snapshot.isCompacting && snapshot.text.isEmpty {
+            ChatViewMessageListRowCompactingPill()
+        } else if snapshot.text.isEmpty && !message.hasToolCalls {
             ProgressView().controlSize(.small)
         } else if !snapshot.text.isEmpty {
             ChatViewMessageListRowStreamingMarkdown(text: snapshot.text)
