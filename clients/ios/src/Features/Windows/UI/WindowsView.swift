@@ -177,18 +177,11 @@ struct WindowsView: View {
     }
 
     private func rememberCenterTab(_ session: Session) {
-        if session.tab == .git {
-            centerTabs[session.id] = centerTabs[session.id] ?? .chat
-        } else {
-            centerTabs[session.id] = session.tab
-        }
+        centerTabs[session.id] = .chat
     }
 
     private func resolvedCenterTab(for session: Session) -> SessionTab {
-        if let tab = centerTabs[session.id] {
-            return tab == .git ? .chat : tab
-        }
-        return session.tab == .git ? .chat : session.tab
+        .chat
     }
 
     private func activateToast(_ toast: SessionToast) {

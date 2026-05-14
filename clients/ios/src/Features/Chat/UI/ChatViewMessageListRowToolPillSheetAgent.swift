@@ -14,8 +14,16 @@ struct ChatViewMessageListRowToolPillSheetAgent: View {
             }
             if let prompt = toolCall.parsedInput["prompt"] as? String, !prompt.isEmpty {
                 ChatViewMessageListRowToolPillSheetSection(title: "Prompt", icon: "text.alignleft") {
-                    ChatViewMessageListRowToolPillSheetExpandableText(
-                        text: prompt, previewLineCount: 8, tint: ChatToolKind.task.color)
+                    ChatViewMessageListRowMarkdown(text: prompt)
+                }
+            }
+            if let result = toolCall.result, !result.isEmpty {
+                ChatViewMessageListRowToolPillSheetSection(
+                    title: toolCall.state == .failed ? "Error" : "Output",
+                    icon: "arrow.left.circle"
+                ) {
+                    ChatViewMessageListRowMarkdown(text: result)
+                        .foregroundColor(toolCall.state == .failed ? ThemeColor.danger : .primary)
                 }
             }
         }

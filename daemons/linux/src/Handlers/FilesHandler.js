@@ -71,12 +71,13 @@ function parsedRange(rangeHeader) {
 export function list(request) {
   if (request.query.path) {
     const directory = resolved(request.query.path)
+    const showHidden = request.query.showHidden === 'true'
     if (fs.existsSync(directory) && fs.statSync(directory).isDirectory()) {
       return HTTPResponse.json(200, {
         path: directory,
         entries: fs
           .readdirSync(directory, { withFileTypes: true })
-          .filter((item) => !item.name.startsWith('.'))
+          .filter((item) => showHidden || !item.name.startsWith('.'))
           .map((item) => entry(path.join(directory, item.name), fs.statSync(path.join(directory, item.name))))
           .sort((left, right) => {
             if (left.isDirectory !== right.isDirectory) {

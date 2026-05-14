@@ -4,11 +4,15 @@ enum FilesService {
     private static let decoder = JSONDecoder()
 
     @MainActor
-    static func list(endpoint: Endpoint, session: Session, path: String) async -> FileListingDTO? {
-        await decode(
+    static func list(
+        endpoint: Endpoint, session: Session, path: String, showHidden: Bool = false
+    ) async -> FileListingDTO? {
+        var query = ["path": path]
+        if showHidden { query["showHidden"] = "true" }
+        return await decode(
             FileListingDTO.self,
             from: HTTPClient.get(
-                endpoint: endpoint, path: filePath(session), query: ["path": path])
+                endpoint: endpoint, path: filePath(session), query: query)
         )
     }
 

@@ -9,6 +9,7 @@ struct SessionView: View {
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Environment(\.modelContext) private var context
     @State private var traceId = String(UUID().uuidString.prefix(6))
+    @State private var isFilesSheetPresented = false
 
     var body: some View {
         #if DEBUG
@@ -18,9 +19,11 @@ struct SessionView: View {
         ZStack {
             SessionViewContent(
                 session: session,
-                selectedTab: selectedTab,
                 folderPickerRequest: $folderPickerRequest
             )
+        }
+        .sheet(isPresented: $isFilesSheetPresented) {
+            FileTreeSheet(session: session)
         }
         .task(id: gitRefreshKey) {
             if session.isConfigured {
@@ -39,6 +42,10 @@ struct SessionView: View {
                 selectTab: { tab in
                     if tab == .git {
                         openGit()
+                    } else if tab == .files {
+                        if session.isConfigured {
+                            isFilesSheetPresented = true
+                        }
                     } else {
                         withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
                             session.tab = tab

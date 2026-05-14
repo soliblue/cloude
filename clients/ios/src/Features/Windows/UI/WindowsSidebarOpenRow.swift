@@ -37,7 +37,9 @@ struct WindowsSidebarOpenRow: View {
                 title: session.title,
                 isFocused: isFocused,
                 isStreaming: session.isStreaming,
-                isUnread: isUnread
+                isUnread: isUnread,
+                endpointName: session.endpoint?.displayName,
+                path: session.path
             )
             .contentShape(Rectangle())
             .onTapGesture(perform: onActivate)

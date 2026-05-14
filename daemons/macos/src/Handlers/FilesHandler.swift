@@ -11,10 +11,12 @@ enum FilesHandler {
     static func list(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let path = request.query["path"] {
             let url = resolved(path)
+            let options: FileManager.DirectoryEnumerationOptions =
+                request.query["showHidden"] == "true" ? [] : [.skipsHiddenFiles]
             if let contents = try? fileManager.contentsOfDirectory(
                 at: url,
                 includingPropertiesForKeys: Array(entryKeys),
-                options: [.skipsHiddenFiles]
+                options: options
             ) {
                 let entries = contents.map { entry(for: $0) }.sorted { lhs, rhs in
                     if (lhs["isDirectory"] as? Bool ?? false) != (rhs["isDirectory"] as? Bool ?? false) {

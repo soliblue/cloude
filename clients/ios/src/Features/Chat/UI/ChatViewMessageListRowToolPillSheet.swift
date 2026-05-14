@@ -187,7 +187,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
     }
 
     private var handlesOutputInline: Bool {
-        toolCall.kind == .read || toolCall.todoItems != nil
+        toolCall.kind == .read || toolCall.kind == .task || toolCall.todoItems != nil
     }
 
     private var language: String {

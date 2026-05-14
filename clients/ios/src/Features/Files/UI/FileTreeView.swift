@@ -6,7 +6,6 @@ struct FileTreeView: View {
     @State private var store = FileTreeStore()
 
     var body: some View {
-        @Bindable var bindable = store
         ScrollView {
             LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
                 ForEach(store.children[store.rootPath] ?? [], id: \.path) { node in
@@ -21,16 +20,13 @@ struct FileTreeView: View {
         .task {
             if let endpoint = session.endpoint, let path = session.path, !path.isEmpty {
                 store.rootPath = path
-                let listing = await FilesService.list(endpoint: endpoint, session: session, path: path)
+                let listing = await FilesService.list(
+                    endpoint: endpoint, session: session, path: path, showHidden: true)
                 if let listing {
                     store.rootPath = listing.path
                     store.children[listing.path] = listing.entries
                 }
             }
-        }
-        .sheet(item: $bindable.previewNode) { node in
-            FilePreviewSheet(session: session, node: node)
-                .environment(\.theme, theme)
         }
     }
 }

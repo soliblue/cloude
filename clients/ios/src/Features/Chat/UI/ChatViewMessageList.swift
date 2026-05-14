@@ -38,7 +38,7 @@ struct ChatViewMessageList: View {
                     LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
                         ForEach(groups, id: \.groupId) { group in
                             ChatViewMessageListGroup(session: session, messages: group.messages)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                                .transition(.opacity)
                         }
                         Color.clear.frame(height: spacerHeight(in: geo))
                         Color.clear.frame(height: 0).id("bottom")

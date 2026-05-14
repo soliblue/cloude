@@ -28,6 +28,7 @@ struct ChatViewMessageListRowToolPillList: View {
                         }
                     }
                 }
+                .transaction { $0.animation = nil }
             }
             .contentMargins(.horizontal, ThemeTokens.Spacing.m, for: .scrollContent)
             .padding(.horizontal, -ThemeTokens.Spacing.m)
