@@ -10,16 +10,7 @@ struct IOSApp: App {
     let filePreviewPresenter = FilePreviewPresenter()
 
     init() {
-        container = try! ModelContainer(
-            for: Endpoint.self,
-            Session.self,
-            Window.self,
-            ChatMessage.self,
-            ChatToolCall.self,
-            GitStatus.self,
-            GitChange.self,
-            GitCommit.self
-        )
+        container = Self.makeContainer()
         EndpointActions.seedDev(context: container.mainContext)
         WindowActions.ensureOne(context: container.mainContext)
         DaemonVersionObserver.shared.modelContext = container.mainContext
@@ -38,5 +29,29 @@ struct IOSApp: App {
                 .onAppear { KeyboardDismissGesture.shared.install() }
         }
         .modelContainer(container)
+    }
+
+    private static func makeContainer() -> ModelContainer {
+        let models: [any PersistentModel.Type] = [
+            Endpoint.self, Session.self, Window.self,
+            ChatMessage.self, ChatToolCall.self,
+            GitStatus.self, GitChange.self, GitCommit.self,
+        ]
+        let schema = Schema(models)
+        if let container = try? ModelContainer(for: schema) { return container }
+        AppLogger.bootstrapInfo("model container init failed, wiping store")
+        wipeDefaultStore()
+        return try! ModelContainer(for: schema)
+    }
+
+    private static func wipeDefaultStore() {
+        let fm = FileManager.default
+        if let dir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            let candidates = ["default.store", "default.store-shm", "default.store-wal"]
+            for name in candidates {
+                let url = dir.appendingPathComponent(name)
+                try? fm.removeItem(at: url)
+            }
+        }
     }
 }

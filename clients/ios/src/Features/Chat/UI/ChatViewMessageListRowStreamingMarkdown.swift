@@ -12,6 +12,7 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
     @State private var revealedGlyphs: Double = 0
     @State private var ticker: Task<Void, Never>?
     @State private var lastText: String = ""
+    @State private var lastUpdate: Date = .distantPast
 
     var body: some View {
         let _ = PerfCounters.bump("str.body")
@@ -41,7 +42,9 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
 
     private func updateIncremental() {
         if text == lastText { return }
+        let isStale = Date().timeIntervalSince(lastUpdate) > 0.5
         lastText = text
+        lastUpdate = Date()
         let blocks = ChatMarkdownParser.parse(text)
         let newTail = Array(blocks.suffix(1))
         let newTailId = newTail.first?.id ?? ""
@@ -52,6 +55,7 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
         frozen = Array(blocks.dropLast())
         tailBlocks = newTail
         tailLength = newTail.first.map(Self.charCount(of:)) ?? 0
+        if isStale { revealedGlyphs = Double(tailLength) }
     }
 
     private func startTicker() {

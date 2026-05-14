@@ -28,11 +28,12 @@ struct GitDiffSheetLine: View {
     }
 
     private func row(prefix: String, color: Color?) -> some View {
-        HStack(spacing: ThemeTokens.Spacing.s) {
+        HStack(alignment: .top, spacing: ThemeTokens.Spacing.s) {
             Text(prefix)
-                .frame(width: ThemeTokens.Spacing.m)
+                .frame(width: ThemeTokens.Spacing.m, alignment: .leading)
                 .foregroundStyle((color ?? .secondary).opacity(ThemeTokens.Opacity.l))
             Text(line.text)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .appFont(size: ThemeTokens.Text.s, design: .monospaced)
         .padding(.vertical, ThemeTokens.Spacing.xs)

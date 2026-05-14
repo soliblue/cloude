@@ -12,7 +12,7 @@ struct GitDiffSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView([.horizontal, .vertical], showsIndicators: false) {
+            ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(lines) { line in
                         GitDiffSheetLine(line: line)

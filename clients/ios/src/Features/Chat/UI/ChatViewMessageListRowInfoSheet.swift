@@ -1,9 +1,19 @@
+import SwiftData
 import SwiftUI
 
 struct ChatViewMessageListRowInfoSheet: View {
     let message: ChatMessage
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
+    @Query private var toolCalls: [ChatToolCall]
+
+    init(message: ChatMessage) {
+        self.message = message
+        let messageId = message.id
+        _toolCalls = Query(
+            filter: #Predicate<ChatToolCall> { $0.messageId == messageId }
+        )
+    }
 
     private var rows: [(String, String)] {
         var result: [(String, String)] = [
@@ -16,8 +26,8 @@ struct ChatViewMessageListRowInfoSheet: View {
             result.append(("dollarsign.circle", String(format: "$%.4f", costUsd)))
         }
         result.append(("textformat.size", "\(message.text.count) chars"))
-        if !message.toolCalls.isEmpty {
-            result.append(("wrench", "\(message.toolCalls.count) tool calls"))
+        if !toolCalls.isEmpty {
+            result.append(("wrench", "\(toolCalls.count) tool calls"))
         }
         return result
     }
