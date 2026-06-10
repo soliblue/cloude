@@ -1,3 +1,11 @@
+function decoded(value) {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
 export function split(rawPath) {
   const question = rawPath.indexOf('?')
   if (question === -1) {
@@ -5,7 +13,18 @@ export function split(rawPath) {
   }
   return {
     path: rawPath.slice(0, question),
-    query: Object.fromEntries(new URLSearchParams(rawPath.slice(question + 1)))
+    query: Object.fromEntries(
+      rawPath
+        .slice(question + 1)
+        .split('&')
+        .filter(Boolean)
+        .map((pair) => {
+          const equals = pair.indexOf('=')
+          return equals === -1
+            ? [decoded(pair), '']
+            : [decoded(pair.slice(0, equals)), decoded(pair.slice(equals + 1))]
+        })
+    )
   }
 }
 

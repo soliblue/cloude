@@ -47,7 +47,7 @@ enum SessionHandler {
             .replacingOccurrences(of: "/", with: "-")
             .replacingOccurrences(of: ".", with: "-")
         let home = FileManager.default.homeDirectoryForCurrentUser
-        let url = home.appendingPathComponent(".claude/projects/\(encoded)/\(sessionId).jsonl")
+        let url = home.appendingPathComponent(".claude/projects/\(encoded)/\(sessionId.lowercased()).jsonl")
         if let data = try? Data(contentsOf: url),
             let text = String(data: data, encoding: .utf8)
         {

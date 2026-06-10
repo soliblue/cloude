@@ -1,5 +1,6 @@
 import http from 'node:http'
 import HTTPRequest from './HTTPRequest.js'
+import HTTPResponse from './HTTPResponse.js'
 import { handle } from '../Routing/Router.js'
 
 export default class HTTPServer {
@@ -16,13 +17,26 @@ export default class HTTPServer {
       request.on('data', (chunk) => {
         size += chunk.length
         if (size > 1_048_576) {
-          request.destroy()
+          request.removeAllListeners('data')
+          request.removeAllListeners('end')
+          request.resume()
+          HTTPResponse.json(413, { error: 'payload_too_large' }).send(response)
           return
         }
         chunks.push(chunk)
       })
       request.on('end', () => {
-        handle(HTTPRequest.fromNode(request, Buffer.concat(chunks))).send(response)
+        Promise.resolve()
+          .then(() => handle(HTTPRequest.fromNode(request, Buffer.concat(chunks))))
+          .then((result) => result.send(response))
+          .catch((error) => {
+            console.error(`HTTPServer: handler_failed ${request.method} ${request.url}: ${error.message}`)
+            if (response.headersSent) {
+              response.destroy()
+            } else {
+              HTTPResponse.json(500, { error: 'internal_error' }).send(response)
+            }
+          })
       })
     })
     this.server.requestTimeout = 0

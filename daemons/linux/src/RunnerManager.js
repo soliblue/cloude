@@ -7,9 +7,7 @@ class RunnerManager {
   }
 
   start({ sessionId, path, prompt, images, existsOnServer, model, effort, response }) {
-    if (this.runners.has(sessionId)) {
-      this.runners.get(sessionId).abort()
-    }
+    const previous = this.runners.get(sessionId)
     const runner = new Runner({
       sessionId,
       hasStartedBefore: existsOnServer,
@@ -23,7 +21,17 @@ class RunnerManager {
     })
     this.runners.set(sessionId, runner)
     runner.subscribe(response)
-    runner.spawn(path, preparePrompt(prompt, images))
+    const begin = () => runner.spawn(path, preparePrompt(prompt, images))
+    if (previous && !previous.hasExited) {
+      const previousFinish = previous.onFinish
+      previous.onFinish = () => {
+        previousFinish?.()
+        begin()
+      }
+      previous.abort()
+    } else {
+      begin()
+    }
   }
 
   resumeIfExists(sessionId, afterSeq, response) {

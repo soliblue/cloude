@@ -12,7 +12,7 @@ function parsedBody(request) {
 
 export function start(request, params) {
   const body = parsedBody(request)
-  if (params.id && body?.path && body?.prompt) {
+  if (params.id && body?.path && typeof body?.prompt === 'string') {
     return HTTPResponse.stream(200, 'application/x-ndjson', {}, (response) => {
       runnerManager.start({
         sessionId: params.id,

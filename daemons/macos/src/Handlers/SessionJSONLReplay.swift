@@ -38,7 +38,7 @@ enum SessionJSONLReplay {
         let projects = NSString("~/.claude/projects").expandingTildeInPath
         if let entries = try? FileManager.default.contentsOfDirectory(atPath: projects) {
             for folder in entries {
-                let path = "\(projects)/\(folder)/\(sessionId).jsonl"
+                let path = "\(projects)/\(folder)/\(sessionId.lowercased()).jsonl"
                 if let text = try? String(contentsOfFile: path, encoding: .utf8) {
                     return extractLastTurn(
                         lines: text.split(separator: "\n", omittingEmptySubsequences: true).map(

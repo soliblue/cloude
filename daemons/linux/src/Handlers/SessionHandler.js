@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import HTTPResponse from '../Networking/HTTPResponse.js'
 import { claudeCommand, spawnEnvironment } from '../Runtime/ClaudeRuntime.js'
 
@@ -63,28 +63,41 @@ function parseJSONBlock(text) {
 
 function runSonnet(prompt) {
   const { executable, leadingArguments } = claudeCommand()
-  const result = spawnSync(
-    executable,
-    [...leadingArguments, '-p', '--model', 'sonnet', '--output-format', 'json'],
-    {
-      env: spawnEnvironment(),
-      encoding: 'utf8',
-      input: prompt
-    }
-  )
-  if (!result.error && result.status === 0) {
-    return result.stdout || ''
-  }
-  console.error(`[SessionHandler] runSonnet exit=${result.status} stderr=${result.stderr || ''}`)
-  return null
+  return new Promise((resolve) => {
+    const child = spawn(executable, [...leadingArguments, '-p', '--model', 'sonnet', '--output-format', 'json'], {
+      env: spawnEnvironment()
+    })
+    let stdout = ''
+    let stderr = ''
+    child.stdout.on('data', (data) => {
+      stdout += data
+    })
+    child.stderr.on('data', (data) => {
+      stderr += data
+    })
+    child.on('error', (error) => {
+      console.error(`[SessionHandler] runSonnet spawn_failed: ${error.message}`)
+      resolve(null)
+    })
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(stdout)
+      } else {
+        console.error(`[SessionHandler] runSonnet exit=${code} stderr=${stderr}`)
+        resolve(null)
+      }
+    })
+    child.stdin.write(prompt)
+    child.stdin.end()
+  })
 }
 
-export function updateTitle(request, params) {
+export async function updateTitle(request, params) {
   const body = parsedBody(request)
   if (params.id && body?.path) {
     const transcript = readTranscript(body.path, params.id)
     if (transcript) {
-      const output = runSonnet(`You are naming a chat window in a mobile app. The user needs to glance at the name and instantly know what this conversation is about.
+      const output = await runSonnet(`You are naming a chat window in a mobile app. The user needs to glance at the name and instantly know what this conversation is about.
 
 Conversation:
 ${transcript}

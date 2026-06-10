@@ -72,13 +72,18 @@ export function list(request) {
   if (request.query.path) {
     const directory = resolved(request.query.path)
     const showHidden = request.query.showHidden === 'true'
-    if (fs.existsSync(directory) && fs.statSync(directory).isDirectory()) {
+    if (fs.statSync(directory, { throwIfNoEntry: false })?.isDirectory()) {
       return HTTPResponse.json(200, {
         path: directory,
         entries: fs
           .readdirSync(directory, { withFileTypes: true })
           .filter((item) => showHidden || !item.name.startsWith('.'))
-          .map((item) => entry(path.join(directory, item.name), fs.statSync(path.join(directory, item.name))))
+          .map((item) => ({
+            fullPath: path.join(directory, item.name),
+            stats: fs.statSync(path.join(directory, item.name), { throwIfNoEntry: false })
+          }))
+          .filter(({ stats }) => stats)
+          .map(({ fullPath, stats }) => entry(fullPath, stats))
           .sort((left, right) => {
             if (left.isDirectory !== right.isDirectory) {
               return left.isDirectory ? -1 : 1
@@ -95,10 +100,11 @@ export function list(request) {
 export function read(request) {
   if (request.query.path) {
     const file = resolved(request.query.path)
-    if (fs.existsSync(file) && fs.statSync(file).isFile()) {
+    const stats = fs.statSync(file, { throwIfNoEntry: false })
+    if (stats?.isFile()) {
       if (request.headers.range) {
         const range = parsedRange(request.headers.range)
-        const size = fs.statSync(file).size
+        const size = stats.size
         if (range && range.start <= size - 1) {
           const end = Math.min(range.end ?? size - 1, size - 1)
           const buffer = Buffer.alloc(end - range.start + 1)
@@ -123,12 +129,18 @@ export function search(request) {
   if (request.query.path && request.query.query) {
     const root = resolved(request.query.path)
     const needle = request.query.query.toLowerCase()
-    if (fs.existsSync(root) && fs.statSync(root).isDirectory()) {
+    if (fs.statSync(root, { throwIfNoEntry: false })?.isDirectory()) {
       const hits = []
       const stack = [{ directory: root, depth: 0 }]
       while (stack.length > 0 && hits.length < 100) {
         const { directory, depth } = stack.pop()
-        for (const item of fs.readdirSync(directory, { withFileTypes: true })) {
+        let items = []
+        try {
+          items = fs.readdirSync(directory, { withFileTypes: true })
+        } catch {
+          continue
+        }
+        for (const item of items) {
           if (item.name.startsWith('.')) {
             continue
           }
@@ -136,9 +148,11 @@ export function search(request) {
             continue
           }
           const fullPath = path.join(directory, item.name)
-          const stats = fs.statSync(fullPath)
           if (item.name.toLowerCase().includes(needle)) {
-            hits.push(entry(fullPath, stats))
+            const stats = fs.statSync(fullPath, { throwIfNoEntry: false })
+            if (stats) {
+              hits.push(entry(fullPath, stats))
+            }
             if (hits.length >= 100) {
               break
             }

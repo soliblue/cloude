@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import { StringDecoder } from 'node:string_decoder'
 import { claudeCommand, spawnEnvironment } from './Runtime/ClaudeRuntime.js'
 
 export default class Runner {
@@ -14,6 +15,7 @@ export default class Runner {
     this.subscribers = new Set()
     this.seq = 0
     this.lineBuffer = ''
+    this.decoder = new StringDecoder('utf8')
   }
 
   spawn(path, prompt) {
@@ -46,7 +48,10 @@ export default class Runner {
       stdio: ['pipe', 'pipe', 'pipe']
     })
     this.process.stdout.on('data', (data) => {
-      this.ingest(data.toString('utf8'))
+      this.ingest(this.decoder.write(data))
+    })
+    this.process.stderr.on('data', (data) => {
+      console.error(`Runner[${this.sessionId}]: ${data}`)
     })
     this.process.on('error', (error) => {
       this.emit({ type: 'error', message: `spawn_failed: ${error.message}` })
@@ -82,6 +87,11 @@ export default class Runner {
     if (this.process && this.process.exitCode === null) {
       this.emit({ type: 'aborted' })
       this.process.kill('SIGINT')
+      setTimeout(() => {
+        if (!this.hasExited) {
+          this.process.kill('SIGKILL')
+        }
+      }, 5000).unref()
     }
   }
 
@@ -99,7 +109,11 @@ export default class Runner {
           parsed = null
         }
         if (parsed) {
-          this.emit({ event: parsed })
+          if (parsed.type === 'system' && parsed.subtype === 'informational' && parsed.status === 'compacting') {
+            this.emit({ type: 'status', state: 'compacting' })
+          } else {
+            this.emit({ event: parsed })
+          }
         }
       }
       newline = this.lineBuffer.indexOf('\n')
@@ -124,6 +138,7 @@ export default class Runner {
     if (this.hasExited) {
       return
     }
+    this.lineBuffer += this.decoder.end()
     if (this.lineBuffer.trim().length !== 0) {
       let parsed = null
       try {

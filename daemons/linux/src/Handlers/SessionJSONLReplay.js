@@ -39,7 +39,7 @@ function loadLastTurn(sessionId) {
   if (fs.existsSync(projects)) {
     for (const entry of fs.readdirSync(projects, { withFileTypes: true })) {
       if (entry.isDirectory()) {
-        const file = path.join(projects, entry.name, `${sessionId}.jsonl`)
+        const file = path.join(projects, entry.name, `${sessionId.toLowerCase()}.jsonl`)
         if (fs.existsSync(file)) {
           return extractLastTurn(fs.readFileSync(file, 'utf8').split('\n').filter(Boolean))
         }
