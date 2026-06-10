@@ -2,7 +2,7 @@ import SwiftUI
 
 struct GitDiffSheet: View {
     let session: Session
-    let change: GitChange
+    let target: GitDiffTarget
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
     @State private var lines: [GitDiffLine] = []
@@ -27,7 +27,7 @@ struct GitDiffSheet: View {
             .overlay {
                 if isLoading { ProgressView() }
             }
-            .navigationTitle(change.path)
+            .navigationTitle(target.path)
             .navigationBarTitleDisplayMode(.inline)
             .themedNavChrome()
             .toolbar {
@@ -72,7 +72,7 @@ struct GitDiffSheet: View {
         if let endpoint = session.endpoint, let path = session.path {
             let result = await GitService.diff(
                 endpoint: endpoint, session: session, path: path,
-                file: change.path, isStaged: change.isStaged, isFull: isFull
+                file: target.path, isStaged: target.isStaged, isFull: isFull
             )
             if let result {
                 lines = GitDiffParser.parse(result.text)

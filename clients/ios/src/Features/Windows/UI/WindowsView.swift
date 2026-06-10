@@ -12,7 +12,6 @@ struct WindowsView: View {
     @State private var onboardingInitialStep: OnboardingStep = .install
     @State private var folderPickerRequest: SessionFolderPickerRequest?
     @State private var isKeyboardVisible = false
-    @State private var centerTabs: [UUID: SessionTab] = [:]
     @State private var isDaemonUpdateSheetPresented = false
     @AppStorage(StorageKey.debugOverlayEnabled) private var debugOverlayEnabled = false
     private let toastStore = SessionToastStore.shared
@@ -46,8 +45,7 @@ struct WindowsView: View {
                 focusedSession: focusedSession
             ) {
                 withAnimation(paneAnimation) {
-                    let session = WindowActions.addNew(into: context, after: windows)
-                    centerTabs[session.id] = .chat
+                    _ = WindowActions.addNew(into: context, after: windows)
                     selectedPane = .session
                 }
             }
@@ -89,6 +87,9 @@ struct WindowsView: View {
         .onShake { debugOverlayEnabled.toggle() }
         .onAppear {
             syncFocusedSession()
+        }
+        .task {
+            ChatService.resumeAllStuck(context: context)
         }
         .onChange(of: focusedSession?.id) { _, _ in
             syncFocusedSession()
@@ -136,7 +137,7 @@ struct WindowsView: View {
             if let session = focusedSession {
                 SessionView(
                     session: session,
-                    selectedTab: resolvedCenterTab(for: session),
+                    selectedTab: .chat,
                     openSidebar: { setPane(.sidebar) },
                     openGit: { setPane(.git) },
                     folderPickerRequest: $folderPickerRequest
@@ -167,21 +168,12 @@ struct WindowsView: View {
 
     private func syncFocusedSession() {
         if let session = focusedSession {
-            rememberCenterTab(session)
             if !session.hasGit, selectedPane == .git {
                 setPane(.session)
             } else if selectedPane != .sidebar {
                 selectedPane = session.tab == .git && session.hasGit ? .git : .session
             }
         }
-    }
-
-    private func rememberCenterTab(_ session: Session) {
-        centerTabs[session.id] = .chat
-    }
-
-    private func resolvedCenterTab(for session: Session) -> SessionTab {
-        .chat
     }
 
     private func activateToast(_ toast: SessionToast) {
@@ -214,17 +206,13 @@ struct WindowsView: View {
         if animated {
             withAnimation(paneAnimation) {
                 if let session = focusedSession {
-                    let centerTab = resolvedCenterTab(for: session)
-                    centerTabs[session.id] = centerTab
-                    session.tab = target == .git ? .git : centerTab
+                    session.tab = target == .git ? .git : .chat
                 }
                 selectedPane = target
             }
         } else {
             if let session = focusedSession {
-                let centerTab = resolvedCenterTab(for: session)
-                centerTabs[session.id] = centerTab
-                session.tab = target == .git ? .git : centerTab
+                session.tab = target == .git ? .git : .chat
             }
             selectedPane = target
         }

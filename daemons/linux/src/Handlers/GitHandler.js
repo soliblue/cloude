@@ -1,8 +1,9 @@
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import path from 'node:path'
 import HTTPResponse from '../Networking/HTTPResponse.js'
 
 const diffClampLines = 5000
+const maxOutputBytes = 10 * 1024 * 1024
 
 function resolved(filePath) {
   return filePath.startsWith('~/')
@@ -13,35 +14,48 @@ function resolved(filePath) {
 }
 
 function runText(argumentsList, cwd) {
-  const result = spawnSync('/usr/bin/env', ['git', ...argumentsList], {
-    cwd,
-    encoding: 'utf8',
-    maxBuffer: 10 * 1024 * 1024
+  return new Promise((resolve) => {
+    const child = spawn('/usr/bin/env', ['git', ...argumentsList], { cwd })
+    const chunks = []
+    let size = 0
+    child.stdout.on('data', (chunk) => {
+      size += chunk.length
+      if (size > maxOutputBytes) {
+        child.kill('SIGKILL')
+        return
+      }
+      chunks.push(chunk)
+    })
+    child.stderr.resume()
+    child.on('error', () => resolve(['', -1]))
+    child.on('close', (code) => {
+      if (size > maxOutputBytes) {
+        resolve(['', -1])
+      } else {
+        resolve([Buffer.concat(chunks).toString('utf8'), typeof code === 'number' ? code : -1])
+      }
+    })
   })
-  if (result.error) {
-    return ['', -1]
-  }
-  return [result.stdout || '', typeof result.status === 'number' ? result.status : -1]
 }
 
-function resolveBranch(cwd) {
-  const [branch] = runText(['branch', '--show-current'], cwd)
+async function resolveBranch(cwd) {
+  const [branch] = await runText(['branch', '--show-current'], cwd)
   if (branch.trim()) {
     return branch.trim()
   }
-  const [sha] = runText(['rev-parse', '--short', 'HEAD'], cwd)
+  const [sha] = await runText(['rev-parse', '--short', 'HEAD'], cwd)
   return sha.trim()
 }
 
-function resolveAheadBehind(cwd) {
-  const [upstream, upstreamCode] = runText(
+async function resolveAheadBehind(cwd) {
+  const [upstream, upstreamCode] = await runText(
     ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'],
     cwd
   )
   if (upstreamCode !== 0 || !upstream.trim()) {
     return [0, 0]
   }
-  const [counts, countsCode] = runText(
+  const [counts, countsCode] = await runText(
     ['rev-list', '--left-right', '--count', `${upstream.trim()}...HEAD`],
     cwd
   )
@@ -106,20 +120,20 @@ function parseNumstat(output) {
   return stats
 }
 
-export function status(request) {
+export async function status(request) {
   if (request.query.path) {
     const cwd = resolved(request.query.path)
-    const [inside, insideCode] = runText(['rev-parse', '--is-inside-work-tree'], cwd)
+    const [inside, insideCode] = await runText(['rev-parse', '--is-inside-work-tree'], cwd)
     if (insideCode !== 0 || inside.trim() !== 'true') {
       return HTTPResponse.json(404, { error: 'not_a_repo' })
     }
-    const [branch, [ahead, behind], porcelain, unstaged, staged] = [
+    const [branch, [ahead, behind], [porcelain], [unstaged], [staged]] = await Promise.all([
       resolveBranch(cwd),
       resolveAheadBehind(cwd),
-      runText(['status', '--porcelain=v1', '-uall', '-M'], cwd)[0],
-      runText(['diff', '--numstat', '-M'], cwd)[0],
-      runText(['diff', '--cached', '--numstat', '-M'], cwd)[0]
-    ]
+      runText(['status', '--porcelain=v1', '-uall', '-M'], cwd),
+      runText(['diff', '--numstat', '-M'], cwd),
+      runText(['diff', '--cached', '--numstat', '-M'], cwd)
+    ])
     const changes = parsePorcelain(porcelain)
     const unstagedStats = parseNumstat(unstaged)
     const stagedStats = parseNumstat(staged)
@@ -135,7 +149,7 @@ export function status(request) {
   return HTTPResponse.json(400, { error: 'missing_path' })
 }
 
-export function diff(request) {
+export async function diff(request) {
   if (request.query.path && request.query.file) {
     const argumentsList = ['diff']
     const full = request.query.full === '1' || request.query.full === 'true'
@@ -143,7 +157,7 @@ export function diff(request) {
       argumentsList.push('--cached')
     }
     argumentsList.push('-M', '--', request.query.file)
-    const output = runText(argumentsList, resolved(request.query.path))[0]
+    const [output] = await runText(argumentsList, resolved(request.query.path))
     const lines = output.split('\n')
     if (!full && lines.length > diffClampLines) {
       return new HTTPResponse(
@@ -158,9 +172,9 @@ export function diff(request) {
   return HTTPResponse.json(400, { error: 'missing_params' })
 }
 
-export function log(request) {
+export async function log(request) {
   if (request.query.path) {
-    const output = runText(
+    const [output] = await runText(
       [
         'log',
         '--format=%h\t%s\t%an\t%aI',
@@ -168,20 +182,24 @@ export function log(request) {
         `--max-count=${Number.parseInt(request.query.count || '50', 10) || 50}`
       ],
       resolved(request.query.path)
-    )[0]
+    )
     return HTTPResponse.json(200, {
       commits: output
         .split('\n')
         .filter(Boolean)
         .map((line) => {
           const parts = line.split('\t')
+          if (parts.length < 4) {
+            return null
+          }
           return {
             sha: parts[0],
-            subject: parts[1],
-            author: parts[2],
-            date: parts[3]
+            subject: parts.slice(1, parts.length - 2).join('\t'),
+            author: parts[parts.length - 2],
+            date: parts[parts.length - 1]
           }
         })
+        .filter(Boolean)
     })
   }
   return HTTPResponse.json(400, { error: 'missing_path' })

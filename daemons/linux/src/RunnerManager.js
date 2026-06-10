@@ -21,7 +21,7 @@ class RunnerManager {
     })
     this.runners.set(sessionId, runner)
     runner.subscribe(response)
-    const begin = () => runner.spawn(path, preparePrompt(prompt, images))
+    const begin = () => runner.spawn(path, preparePrompt(prompt, images, sessionId))
     if (previous && !previous.hasExited) {
       const previousFinish = previous.onFinish
       previous.onFinish = () => {

@@ -157,7 +157,7 @@ export function search(request) {
               break
             }
           }
-          if (item.isDirectory() && depth < 5) {
+          if (item.isDirectory() && depth < 4) {
             stack.push({ directory: fullPath, depth: depth + 1 })
           }
         }

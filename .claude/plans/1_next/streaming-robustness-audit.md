@@ -23,6 +23,14 @@ R8. **Daemon error events rendered as successful empty turns.** .error now surfa
 R9. **Messages stuck in .retrying forever** after EOF-before-first-event or abort-during-retry; reset to .failed so retry reappears.
 R10. Small fixes: git changes list sorted by path (was nondeterministic per refresh), GitDiffSheet lazy rendering (full diffs froze the sheet), retry button state seeding on row recreation, fixed frames on two morphing SF Symbols, em dash removal.
 
+## Fixed (round 3, all surfaces)
+
+Linux daemon: git handlers now async (spawnSync froze all live streams during status/diff/log), git log tolerates tabs in commit subjects, image dropbox dirs keyed by session and replaced per message (was leaking forever), slow subscribers capped at 8MB buffered (destroyed; client resumes via after_seq), search depth aligned with macOS.
+
+macOS daemon: runner restart serialized like Linux (was racing two claude processes per session; termination handler now retains the runner so the deferred spawn actually fires), abort escalates SIGINT to SIGKILL after 5s, trailing unterminated stdout line is parsed and emitted instead of dropped.
+
+iOS: NDJSON framing on raw newline bytes (bytes.lines also split on NEL/U+2028/U+2029, silently dropping events), pager pan no longer hijacks swipes inside sheets or horizontal scrollers, sessions stuck streaming in background windows resume on launch (resumeAllStuck), git diff sheet holds a value snapshot instead of a deletable SwiftData model, endpoint deletion nils out referencing sessions, git refresh has an in-flight guard, sidebar unread dot and create-button gate use fetchLimit 1 queries, pending pill shimmer restarts after scroll recycle, cold resume preserves any live partial text, dead centerTabs plumbing deleted.
+
 ## Open: round 2 findings (iOS, medium)
 
 R11. **Window pager pan recognizer hijacks horizontal gestures** inside sheets and horizontal scrollers; can switch panes behind a presented sheet. WindowsPagerGesture.swift:30-44.

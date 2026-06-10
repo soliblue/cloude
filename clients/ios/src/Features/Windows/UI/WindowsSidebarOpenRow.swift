@@ -23,11 +23,14 @@ struct WindowsSidebarOpenRow: View {
         self.onActivate = onActivate
         self.onClose = onClose
         let sessionId = session.id
-        _messages = Query(
-            filter: #Predicate<ChatMessage> { $0.sessionId == sessionId },
-            sort: \.createdAt,
-            order: .reverse
+        var descriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.roleRaw == "assistant" && $0.stateRaw == "complete"
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
+        descriptor.fetchLimit = 1
+        _messages = Query(descriptor)
     }
 
     var body: some View {
@@ -62,9 +65,6 @@ struct WindowsSidebarOpenRow: View {
 
     private var isUnread: Bool {
         if isFocused { return false }
-        for message in messages where message.role == .assistant && message.state == .complete {
-            return message.createdAt > session.lastOpenedAt
-        }
-        return false
+        return messages.first.map { $0.createdAt > session.lastOpenedAt } ?? false
     }
 }

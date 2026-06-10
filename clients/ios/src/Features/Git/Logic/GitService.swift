@@ -68,8 +68,12 @@ enum GitService {
         return nil
     }
 
+    @MainActor private static var refreshing: Set<UUID> = []
+
     @MainActor
     static func refresh(session: Session, context: ModelContext) async {
+        if refreshing.contains(session.id) { return }
+        refreshing.insert(session.id)
         if let endpoint = session.endpoint, let path = session.path {
             async let statusResult = status(endpoint: endpoint, session: session, path: path)
             async let logResult = log(endpoint: endpoint, session: session, path: path)
@@ -88,5 +92,6 @@ enum GitService {
                 }
             }
         }
+        refreshing.remove(session.id)
     }
 }

@@ -131,6 +131,9 @@ export default class Runner {
     }
     for (const subscriber of this.subscribers) {
       subscriber.write(data)
+      if (subscriber.writableLength > 8 * 1024 * 1024) {
+        subscriber.destroy()
+      }
     }
   }
 

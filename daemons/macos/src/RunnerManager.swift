@@ -15,10 +15,7 @@ final class RunnerManager {
             NSLog(
                 "[RunnerManager] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
             )
-            if let existing = self.runners[sessionId] {
-                NSLog("[RunnerManager] aborting existing runner sessionId=\(sessionId)")
-                existing.abort()
-            }
+            let previous = self.runners[sessionId]
             let runner = Runner(
                 sessionId: sessionId, hasStartedBefore: existsOnServer, model: model, effort: effort, queue: self.queue)
             runner.onFinish = { [weak self, weak runner] in
@@ -31,7 +28,18 @@ final class RunnerManager {
             self.runners[sessionId] = runner
             runner.subscribe(connection)
             let resolvedPrompt = ImageDropbox.prepare(cwd: path, prompt: prompt, images: images)
-            runner.spawn(path: path, prompt: resolvedPrompt)
+            let begin = { runner.spawn(path: path, prompt: resolvedPrompt) }
+            if let previous, !previous.hasExited {
+                NSLog("[RunnerManager] aborting existing runner sessionId=\(sessionId)")
+                let previousFinish = previous.onFinish
+                previous.onFinish = {
+                    previousFinish?()
+                    begin()
+                }
+                previous.abort()
+            } else {
+                begin()
+            }
         }
     }
 

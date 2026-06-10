@@ -81,10 +81,23 @@ final class WindowsPagerGesture: NSObject, UIGestureRecognizerDelegate {
     func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch
     ) -> Bool {
+        var responder: UIResponder? = touch.view
+        while let current = responder {
+            if let controller = current as? UIViewController {
+                if controller.presentingViewController != nil { return false }
+                break
+            }
+            responder = current.next
+        }
         var view = touch.view
         while let current = view {
             if current is UITextField || current is UITextView { return false }
             if current is UIControl { return false }
+            if let scroll = current as? UIScrollView,
+                scroll.contentSize.width > scroll.bounds.width + 1
+            {
+                return false
+            }
             view = current.superview
         }
         return true

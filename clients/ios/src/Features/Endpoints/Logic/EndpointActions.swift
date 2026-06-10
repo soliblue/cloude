@@ -41,6 +41,13 @@ enum EndpointActions {
     @MainActor
     static func remove(_ endpoint: Endpoint, context: ModelContext) {
         SecureStorage.delete(account: endpoint.id.uuidString)
+        let endpointId = endpoint.id
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.endpoint?.id == endpointId }
+        )
+        for session in (try? context.fetch(descriptor)) ?? [] {
+            session.endpoint = nil
+        }
         context.delete(endpoint)
     }
 

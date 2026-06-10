@@ -88,8 +88,8 @@ final class Runner {
             #endif
         }
 
-        proc.terminationHandler = { [weak self] p in
-            self?.queue.async { self?.finish(exitCode: p.terminationStatus) }
+        proc.terminationHandler = { p in
+            self.queue.async { self.finish(exitCode: p.terminationStatus) }
         }
 
         do {
@@ -160,6 +160,11 @@ final class Runner {
             #endif
             emit(["type": "aborted"])
             proc.interrupt()
+            queue.asyncAfter(deadline: .now() + 5) { [weak self] in
+                if let self, !self.hasExited, let proc = self.process, proc.isRunning {
+                    kill(proc.processIdentifier, SIGKILL)
+                }
+            }
         }
     }
 
@@ -235,6 +240,7 @@ final class Runner {
     private func finish(exitCode: Int32) {
         if hasExited { return }
         hasExited = true
+        process?.terminationHandler = nil
         if let stderrPipe = process?.standardError as? Pipe {
             stderrPipe.fileHandleForReading.readabilityHandler = nil
             let remaining = (try? stderrPipe.fileHandleForReading.readToEnd()) ?? Data()
@@ -250,6 +256,13 @@ final class Runner {
             let text = String(data: remaining, encoding: .utf8) ?? "<binary \(remaining.count)>"
             NSLog("[Runner] stdout (drained) sessionId=\(sessionId) bytes=\(remaining.count): \(text)")
             #endif
+            if !remaining.isEmpty { ingest(remaining) }
+            if !lineBuffer.isEmpty,
+                let obj = try? JSONSerialization.jsonObject(with: lineBuffer) as? [String: Any]
+            {
+                emit(["event": obj])
+                lineBuffer.removeAll()
+            }
         }
         #if DEBUG
         NSLog(

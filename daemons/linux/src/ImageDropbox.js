@@ -1,4 +1,3 @@
-import crypto from 'node:crypto'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -14,11 +13,12 @@ const mimeExtensions = {
   'image/webp': 'webp'
 }
 
-export function preparePrompt(prompt, images) {
+export function preparePrompt(prompt, images, sessionId) {
   if (!Array.isArray(images) || images.length === 0) {
     return prompt
   }
-  const directory = path.join(os.tmpdir(), `cloude-images-${crypto.randomUUID()}`)
+  const directory = path.join(os.tmpdir(), `cloude-images-${sessionId.toLowerCase()}`)
+  fs.rmSync(directory, { recursive: true, force: true })
   fs.mkdirSync(directory, { recursive: true })
   const paths = []
   for (const [index, image] of images.entries()) {

@@ -42,9 +42,18 @@ enum StreamingClient {
                             return
                         }
                         do {
-                            for try await line in bytes.lines {
-                                if !line.isEmpty { continuation.yield(Data(line.utf8)) }
+                            var buffer = Data()
+                            for try await byte in bytes {
+                                if byte == 0x0A {
+                                    if !buffer.isEmpty {
+                                        continuation.yield(buffer)
+                                        buffer = Data()
+                                    }
+                                } else {
+                                    buffer.append(byte)
+                                }
                             }
+                            if !buffer.isEmpty { continuation.yield(buffer) }
                             continuation.finish()
                         } catch {
                             continuation.finish(throwing: StreamingError.body(error))

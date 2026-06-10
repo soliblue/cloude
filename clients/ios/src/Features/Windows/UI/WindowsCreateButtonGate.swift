@@ -23,10 +23,11 @@ private struct WindowsCreateButtonGateQuery<Content: View>: View {
     let content: () -> Content
 
     init(sessionId: UUID, @ViewBuilder content: @escaping () -> Content) {
-        _messages = Query(
-            filter: #Predicate<ChatMessage> { $0.sessionId == sessionId },
-            sort: [SortDescriptor(\.createdAt)]
+        var descriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> { $0.sessionId == sessionId }
         )
+        descriptor.fetchLimit = 1
+        _messages = Query(descriptor)
         self.content = content
     }
 

@@ -7,7 +7,7 @@ struct GitView: View {
     @Environment(\.theme) private var theme
     @Query private var statuses: [GitStatus]
     @Query private var commits: [GitCommit]
-    @State private var selectedChange: GitChange?
+    @State private var selectedChange: GitDiffTarget?
     @State private var isLoading = false
     @State private var hasLoaded = false
 
@@ -33,8 +33,8 @@ struct GitView: View {
                 }
             }
             .refreshable { await refresh() }
-            .sheet(item: $selectedChange) { change in
-                GitDiffSheet(session: session, change: change)
+            .sheet(item: $selectedChange) { target in
+                GitDiffSheet(session: session, target: target)
             }
     }
 
@@ -68,16 +68,20 @@ struct GitView: View {
             if !staged.isEmpty {
                 Section("Staged") {
                     ForEach(staged) { change in
-                        GitViewChangeRow(change: change) { selectedChange = change }
-                            .listRowBackground(theme.palette.background)
+                        GitViewChangeRow(change: change) {
+                            selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
+                        }
+                        .listRowBackground(theme.palette.background)
                     }
                 }
             }
             if !unstaged.isEmpty {
                 Section("Changes") {
                     ForEach(unstaged) { change in
-                        GitViewChangeRow(change: change) { selectedChange = change }
-                            .listRowBackground(theme.palette.background)
+                        GitViewChangeRow(change: change) {
+                            selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
+                        }
+                        .listRowBackground(theme.palette.background)
                     }
                 }
             }

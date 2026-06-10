@@ -71,8 +71,9 @@ enum ChatService {
         )
         if let stuck {
             if isCold {
+                let snapshot = ChatLiveStream.snapshot(for: session.id)
+                if snapshot.text.isEmpty { snapshot.text = stuck.text }
                 stuck.text = ""
-                ChatLiveStream.clear(sessionId: session.id)
             }
             streamingMessages[session.id] = stuck
         }
@@ -89,6 +90,16 @@ enum ChatService {
             )
             await consume(
                 stream: stream, sessionId: sessionId, generation: generation, context: context)
+        }
+    }
+
+    @MainActor
+    static func resumeAllStuck(context: ModelContext) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.isStreaming }
+        )
+        for session in (try? context.fetch(descriptor)) ?? [] {
+            resumeIfStuck(session: session, context: context)
         }
     }
 
