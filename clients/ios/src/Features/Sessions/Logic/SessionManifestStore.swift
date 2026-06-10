@@ -1,20 +1,21 @@
 import Foundation
 
 @MainActor
-enum SessionManifestStore {
-    private static var skillsById: [UUID: [Skill]] = [:]
-    private static var agentsById: [UUID: [Agent]] = [:]
-    private static var transcriptionById: [UUID: Bool] = [:]
+@Observable
+final class SessionManifestStore {
+    static let shared = SessionManifestStore()
 
-    static func set(skills: [Skill], agents: [Agent], transcription: Bool, for sessionId: UUID) {
+    private var skillsById: [UUID: [Skill]] = [:]
+    private var agentsById: [UUID: [Agent]] = [:]
+    private var transcriptionById: [UUID: Bool] = [:]
+
+    func set(skills: [Skill], agents: [Agent], transcription: Bool, for sessionId: UUID) {
         skillsById[sessionId] = skills
         agentsById[sessionId] = agents
         transcriptionById[sessionId] = transcription
     }
 
-    static func skills(for sessionId: UUID) -> [Skill] { skillsById[sessionId] ?? [] }
-    static func agents(for sessionId: UUID) -> [Agent] { agentsById[sessionId] ?? [] }
-    static func transcriptionReady(for sessionId: UUID) -> Bool {
-        transcriptionById[sessionId] ?? false
-    }
+    func skills(for sessionId: UUID) -> [Skill] { skillsById[sessionId] ?? [] }
+    func agents(for sessionId: UUID) -> [Agent] { agentsById[sessionId] ?? [] }
+    func transcriptionReady(for sessionId: UUID) -> Bool { transcriptionById[sessionId] ?? false }
 }

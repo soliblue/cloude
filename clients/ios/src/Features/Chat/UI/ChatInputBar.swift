@@ -194,10 +194,10 @@ struct ChatInputBar: View, Equatable {
         switch ChatInputAutocomplete.trigger(in: draft) {
         case .slash(let query):
             suggestions = ChatInputAutocomplete.skillSuggestions(
-                SessionManifestStore.skills(for: sessionId), query: query)
+                SessionManifestStore.shared.skills(for: sessionId), query: query)
         case .mention(let query):
             let agents = ChatInputAutocomplete.agentSuggestions(
-                SessionManifestStore.agents(for: sessionId), query: query)
+                SessionManifestStore.shared.agents(for: sessionId), query: query)
             suggestions = agents
             scheduleFileSearch(query: query, agents: agents)
         case .none:
@@ -236,7 +236,7 @@ struct ChatInputBar: View, Equatable {
 
     private var canRecord: Bool {
         enabled && draft.isEmpty && images.isEmpty
-            && SessionManifestStore.transcriptionReady(for: sessionId)
+            && SessionManifestStore.shared.transcriptionReady(for: sessionId)
             && !recorder.isRecording && !isTranscribing
     }
 

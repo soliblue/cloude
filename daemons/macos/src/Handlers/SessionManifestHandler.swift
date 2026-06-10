@@ -4,17 +4,30 @@ enum SessionManifestHandler {
     static func manifest(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let path = request.query["path"] {
             let root = (path as NSString).expandingTildeInPath
+            let home = NSHomeDirectory()
             return HTTPResponse.json(200, [
-                "skills": skills(in: root),
-                "agents": agents(in: root),
+                "skills": merged([skills(in: "\(root)/.claude"), skills(in: "\(home)/.claude")]),
+                "agents": merged([agents(in: "\(root)/.claude"), agents(in: "\(home)/.claude")]),
                 "transcription": false,
             ])
         }
         return HTTPResponse.json(400, ["error": "missing_path"])
     }
 
-    private static func skills(in root: String) -> [[String: String]] {
-        let dir = "\(root)/.claude/skills"
+    private static func merged(_ lists: [[[String: String]]]) -> [[String: String]] {
+        var seen: Set<String> = []
+        var result: [[String: String]] = []
+        for list in lists {
+            for item in list where item["name"].map({ !seen.contains($0) }) ?? false {
+                seen.insert(item["name"] ?? "")
+                result.append(item)
+            }
+        }
+        return result
+    }
+
+    private static func skills(in base: String) -> [[String: String]] {
+        let dir = "\(base)/skills"
         let fm = FileManager.default
         guard let entries = try? fm.contentsOfDirectory(atPath: dir) else { return [] }
         var result: [[String: String]] = []
@@ -41,8 +54,8 @@ enum SessionManifestHandler {
         return result
     }
 
-    private static func agents(in root: String) -> [[String: String]] {
-        let dir = "\(root)/.claude/agents"
+    private static func agents(in base: String) -> [[String: String]] {
+        let dir = "\(base)/agents"
         let fm = FileManager.default
         guard let entries = try? fm.contentsOfDirectory(atPath: dir) else { return [] }
         var result: [[String: String]] = []

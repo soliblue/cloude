@@ -43,7 +43,7 @@ struct ChatView: View {
                     let manifest = await SessionManifestService.fetch(
                         endpoint: endpoint, sessionId: session.id, path: path)
                 {
-                    SessionManifestStore.set(
+                    SessionManifestStore.shared.set(
                         skills: manifest.skills, agents: manifest.agents,
                         transcription: manifest.transcription ?? false, for: session.id)
                 }

@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import HTTPResponse from '../Networking/HTTPResponse.js'
 import { transcriptionReady } from './TranscribeHandler.js'
@@ -69,8 +70,25 @@ function read(file) {
   }
 }
 
-function skills(root) {
-  const dir = path.join(root, '.claude', 'skills')
+function claudeDirs(root) {
+  return [path.join(root, '.claude'), path.join(os.homedir(), '.claude')]
+}
+
+function merged(lists) {
+  const seen = new Set()
+  const result = []
+  for (const list of lists) {
+    for (const item of list) {
+      if (!seen.has(item.name)) {
+        seen.add(item.name)
+        result.push(item)
+      }
+    }
+  }
+  return result
+}
+
+function skillsIn(dir) {
   let entries = []
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true })
@@ -94,8 +112,7 @@ function skills(root) {
   return result
 }
 
-function agents(root) {
-  const dir = path.join(root, '.claude', 'agents')
+function agentsIn(dir) {
   let entries = []
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true })
@@ -120,10 +137,10 @@ function agents(root) {
 
 export function manifest(request) {
   if (request.query.path) {
-    const root = resolved(request.query.path)
+    const dirs = claudeDirs(resolved(request.query.path))
     return HTTPResponse.json(200, {
-      skills: skills(root),
-      agents: agents(root),
+      skills: merged(dirs.map((dir) => skillsIn(path.join(dir, 'skills')))),
+      agents: merged(dirs.map((dir) => agentsIn(path.join(dir, 'agents')))),
       transcription: transcriptionReady()
     })
   }
