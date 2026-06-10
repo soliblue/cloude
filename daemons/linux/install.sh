@@ -76,6 +76,9 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+echo "Installing voice transcription (optional, downloads ~150MB model)..."
+bash "$INSTALL_DIR/scripts/install-whisper.sh" || echo "(whisper install skipped; voice input will be unavailable)"
+
 $SUDO systemctl daemon-reload
 $SUDO systemctl enable cloude-agent cloude-tunnel
 $SUDO systemctl restart cloude-agent cloude-tunnel

@@ -7,6 +7,7 @@ enum SessionManifestHandler {
             return HTTPResponse.json(200, [
                 "skills": skills(in: root),
                 "agents": agents(in: root),
+                "transcription": false,
             ])
         }
         return HTTPResponse.json(400, ["error": "missing_path"])

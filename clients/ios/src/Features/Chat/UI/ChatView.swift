@@ -44,7 +44,8 @@ struct ChatView: View {
                         endpoint: endpoint, sessionId: session.id, path: path)
                 {
                     SessionManifestStore.set(
-                        skills: manifest.skills, agents: manifest.agents, for: session.id)
+                        skills: manifest.skills, agents: manifest.agents,
+                        transcription: manifest.transcription ?? false, for: session.id)
                 }
             }
             .onDisappear {

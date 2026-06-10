@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import HTTPResponse from '../Networking/HTTPResponse.js'
+import { transcriptionReady } from './TranscribeHandler.js'
 
 function resolved(filePath) {
   return filePath.startsWith('~/')
@@ -120,7 +121,11 @@ function agents(root) {
 export function manifest(request) {
   if (request.query.path) {
     const root = resolved(request.query.path)
-    return HTTPResponse.json(200, { skills: skills(root), agents: agents(root) })
+    return HTTPResponse.json(200, {
+      skills: skills(root),
+      agents: agents(root),
+      transcription: transcriptionReady()
+    })
   }
   return HTTPResponse.json(400, { error: 'missing_path' })
 }

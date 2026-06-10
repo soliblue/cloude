@@ -11,6 +11,8 @@ struct ChatInputBar: View, Equatable {
     @State private var images: [Data] = []
     @State private var suggestions: [ChatInputSuggestion] = []
     @State private var fileSearchTask: Task<Void, Never>?
+    @State private var recorder = ChatAudioRecorder()
+    @State private var isTranscribing = false
     @State private var traceId = String(UUID().uuidString.prefix(6))
     @FocusState private var focused: Bool
     @Environment(\.appAccent) private var appAccent
@@ -51,42 +53,20 @@ struct ChatInputBar: View, Equatable {
             if !images.isEmpty {
                 ChatInputBarAttachmentStrip(images: $images)
             }
-            HStack(alignment: .bottom, spacing: ThemeTokens.Spacing.s) {
-                ChatInputBarAttachmentPicker(images: $images)
-                TextField("Message", text: $draft, axis: .vertical)
-                    .appFont(size: ThemeTokens.Text.m)
-                    .lineLimit(1...6)
-                    .focused($focused)
-                    .padding(.horizontal, ThemeTokens.Spacing.m)
-                    .padding(.vertical, ThemeTokens.Spacing.m)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
-                if isStreaming {
-                    Button {
-                        ChatService.abort(sessionId: sessionId, context: context)
-                    } label: {
-                        Text(Image(systemName: "stop.fill"))
-                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                            .foregroundColor(appAccent.color)
-                            .padding(ThemeTokens.Spacing.m)
-                            .contentShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .glassEffect(.regular.interactive(), in: Capsule())
-                } else {
-                    Menu {
-                        sendMenu
-                    } label: {
-                        Text(Image(systemName: "paperplane.fill"))
-                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                            .foregroundColor(canSend ? appAccent.color : .secondary)
-                            .padding(ThemeTokens.Spacing.m)
-                            .contentShape(Capsule())
-                    } primaryAction: {
-                        send()
-                    }
-                    .buttonStyle(.plain)
-                    .glassEffect(.regular.interactive(), in: Capsule())
-                    .disabled(!enabled)
+            if recorder.isRecording || isTranscribing {
+                ChatInputBarRecordingOverlay(
+                    level: recorder.level, isTranscribing: isTranscribing, onStop: stopRecording)
+            } else {
+                HStack(alignment: .bottom, spacing: ThemeTokens.Spacing.s) {
+                    ChatInputBarAttachmentPicker(images: $images)
+                    TextField("Message", text: $draft, axis: .vertical)
+                        .appFont(size: ThemeTokens.Text.m)
+                        .lineLimit(1...6)
+                        .focused($focused)
+                        .padding(.horizontal, ThemeTokens.Spacing.m)
+                        .padding(.vertical, ThemeTokens.Spacing.m)
+                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
+                    trailingButton
                 }
             }
         }
@@ -113,6 +93,46 @@ struct ChatInputBar: View, Equatable {
             AppLogger.uiInfo(
                 "chatInput focus trace=\(traceId) session=\(sessionId.uuidString) \(oldValue)->\(newValue)"
             )
+        }
+    }
+
+    @ViewBuilder
+    private var trailingButton: some View {
+        if isStreaming {
+            Button {
+                ChatService.abort(sessionId: sessionId, context: context)
+            } label: {
+                Text(Image(systemName: "stop.fill"))
+                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                    .foregroundColor(appAccent.color)
+                    .padding(ThemeTokens.Spacing.m)
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: Capsule())
+        } else if canRecord {
+            Image(systemName: "mic.fill")
+                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                .foregroundColor(appAccent.color)
+                .padding(ThemeTokens.Spacing.m)
+                .contentShape(Capsule())
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .gesture(recordGesture)
+        } else {
+            Menu {
+                sendMenu
+            } label: {
+                Text(Image(systemName: "paperplane.fill"))
+                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                    .foregroundColor(canSend ? appAccent.color : .secondary)
+                    .padding(ThemeTokens.Spacing.m)
+                    .contentShape(Capsule())
+            } primaryAction: {
+                send()
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: Capsule())
+            .disabled(!enabled)
         }
     }
 
@@ -212,5 +232,50 @@ struct ChatInputBar: View, Equatable {
 
     private var canSend: Bool {
         enabled && (!draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !images.isEmpty)
+    }
+
+    private var canRecord: Bool {
+        enabled && draft.isEmpty && images.isEmpty
+            && SessionManifestStore.transcriptionReady(for: sessionId)
+            && !recorder.isRecording && !isTranscribing
+    }
+
+    private var recordGesture: some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onEnded { value in
+                let up = -value.translation.height
+                let isTap = abs(value.translation.width) < 10 && abs(value.translation.height) < 10
+                let isSwipeUp = up >= 50 && up > abs(value.translation.width)
+                if canRecord && (isTap || isSwipeUp) { startRecording() }
+            }
+    }
+
+    private func startRecording() {
+        Task {
+            if await recorder.requestPermission() {
+                recorder.start()
+            }
+        }
+    }
+
+    private func stopRecording() {
+        if let data = recorder.stop(), !data.isEmpty {
+            isTranscribing = true
+            Task {
+                let descriptor = FetchDescriptor<Session>(
+                    predicate: #Predicate<Session> { $0.id == sessionId })
+                if let session = try? context.fetch(descriptor).first,
+                    let endpoint = session.endpoint,
+                    let text = await ChatTranscriptionService.transcribe(
+                        endpoint: endpoint, sessionId: sessionId, audio: data),
+                    !text.isEmpty
+                {
+                    draft = draft.isEmpty ? text : draft + " " + text
+                }
+                isTranscribing = false
+            }
+        } else {
+            isTranscribing = false
+        }
     }
 }

@@ -16,7 +16,7 @@ export default class HTTPServer {
       const chunks = []
       request.on('data', (chunk) => {
         size += chunk.length
-        if (size > 1_048_576) {
+        if (size > 16 * 1024 * 1024) {
           request.removeAllListeners('data')
           request.removeAllListeners('end')
           request.resume()

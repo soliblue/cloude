@@ -4,6 +4,7 @@ import { uploadIOSLog } from '../Handlers/DebugHandler.js'
 import { diff, log, status } from '../Handlers/GitHandler.js'
 import { list, read, search } from '../Handlers/FilesHandler.js'
 import { manifest } from '../Handlers/SessionManifestHandler.js'
+import { transcribe } from '../Handlers/TranscribeHandler.js'
 import { handle as ping } from '../Handlers/PingHandler.js'
 import { updateTitle } from '../Handlers/SessionHandler.js'
 import { isAuthorized } from './AuthMiddleware.js'
@@ -46,6 +47,9 @@ export function handle(request) {
       }
       if (match(request.path, '/sessions/:id/chat/abort')) {
         return abort(request, match(request.path, '/sessions/:id/chat/abort'))
+      }
+      if (match(request.path, '/sessions/:id/transcribe')) {
+        return transcribe(request, match(request.path, '/sessions/:id/transcribe'))
       }
       if (match(request.path, '/sessions/:id/title')) {
         return updateTitle(request, match(request.path, '/sessions/:id/title'))
