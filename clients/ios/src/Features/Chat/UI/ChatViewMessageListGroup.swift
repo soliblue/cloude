@@ -21,6 +21,9 @@ struct ChatViewMessageListGroup: View {
                         ChatViewMessageListRowToolPillList(session: session, messageIds: messageIds)
                     }
                 }
+                if let status = statusMessage, let modelId = status.model {
+                    ChatViewMessageListGroupStatusRow(modelId: modelId, costUsd: status.costUsd)
+                }
             }
             .padding(.horizontal, ThemeTokens.Spacing.m)
             .padding(.vertical, role == .user ? ThemeTokens.Spacing.s : 0)
@@ -32,6 +35,11 @@ struct ChatViewMessageListGroup: View {
 
     private var role: ChatMessage.Role {
         messages.first?.role ?? .assistant
+    }
+
+    private var statusMessage: ChatMessage? {
+        guard role == .assistant, messages.allSatisfy({ $0.state != .streaming }) else { return nil }
+        return messages.last(where: { $0.model != nil && $0.model != "<synthetic>" })
     }
 
     private var retryableUserMessage: ChatMessage? {

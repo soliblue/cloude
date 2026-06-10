@@ -11,9 +11,10 @@ struct DecodedToolUse: Equatable {
 enum ChatStreamEvent {
     case initialized(seq: Int)
     case assistantTextDelta(seq: Int, text: String)
-    case assistantFinal(seq: Int, text: String, toolUses: [DecodedToolUse], model: String?)
+    case assistantFinal(
+        seq: Int, text: String, toolUses: [DecodedToolUse], model: String?, contextTokens: Int?)
     case toolResult(seq: Int, toolUseId: String, text: String, isError: Bool)
-    case result(seq: Int, costUsd: Double?)
+    case result(seq: Int, costUsd: Double?, contextWindow: Int?)
     case aborted(seq: Int)
     case exited(seq: Int, code: Int)
     case error(seq: Int, message: String)
@@ -22,8 +23,8 @@ enum ChatStreamEvent {
 
     var seq: Int {
         switch self {
-        case .initialized(let s), .assistantTextDelta(let s, _), .assistantFinal(let s, _, _, _),
-            .toolResult(let s, _, _, _), .result(let s, _), .aborted(let s), .exited(let s, _),
+        case .initialized(let s), .assistantTextDelta(let s, _), .assistantFinal(let s, _, _, _, _),
+            .toolResult(let s, _, _, _), .result(let s, _, _), .aborted(let s), .exited(let s, _),
             .error(let s, _), .compacting(let s), .unknown(let s):
             return s
         }
@@ -62,7 +63,9 @@ enum ChatStreamEvent {
             if eventType == "user" { return decodeToolResult(event: event, seq: seq) }
             if eventType == "result" {
                 let cost = event["total_cost_usd"] as? Double
-                return .result(seq: seq, costUsd: cost)
+                let windows = ((event["modelUsage"] as? [String: Any]) ?? [:]).values
+                    .compactMap { ($0 as? [String: Any])?["contextWindow"] as? Int }
+                return .result(seq: seq, costUsd: cost, contextWindow: windows.max())
             }
         }
         return nil
@@ -106,7 +109,18 @@ enum ChatStreamEvent {
                 }
             }
             let model = message["model"] as? String
-            return .assistantFinal(seq: seq, text: text, toolUses: toolUses, model: model)
+            return .assistantFinal(
+                seq: seq, text: text, toolUses: toolUses, model: model,
+                contextTokens: contextTokens(message: message))
+        }
+        return nil
+    }
+
+    private static func contextTokens(message: [String: Any]) -> Int? {
+        if let usage = message["usage"] as? [String: Any] {
+            let total = ["input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"]
+                .compactMap { usage[$0] as? Int }.reduce(0, +)
+            return total > 0 ? total : nil
         }
         return nil
     }

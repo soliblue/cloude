@@ -18,6 +18,8 @@ final class Session {
     var lastSeq: Int = -1
     var hasGit: Bool = true
     var totalCostUsd: Double = 0
+    var contextTokens: Int = 0
+    var contextWindow: Int = 0
     var tabRaw: String = SessionTab.chat.rawValue
     var modelRaw: String? = nil
     var effortRaw: String? = nil

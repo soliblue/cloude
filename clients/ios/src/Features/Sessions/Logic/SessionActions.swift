@@ -79,6 +79,19 @@ enum SessionActions {
     }
 
     @MainActor
+    static func setContextUsage(
+        tokens: Int?, window: Int?, for sessionId: UUID, context: ModelContext
+    ) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first {
+            if let tokens { session.contextTokens = tokens }
+            if let window { session.contextWindow = window }
+        }
+    }
+
+    @MainActor
     static func markOpened(_ session: Session) {
         session.lastOpenedAt = .now
     }

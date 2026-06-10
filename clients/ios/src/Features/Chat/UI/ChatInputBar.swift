@@ -6,6 +6,8 @@ struct ChatInputBar: View, Equatable {
     let isStreaming: Bool
     let model: ChatModel?
     let effort: ChatEffort?
+    let contextTokens: Int
+    let contextWindow: Int
     var enabled: Bool = true
     @State private var draft: String = ""
     @State private var images: [Data] = []
@@ -23,6 +25,8 @@ struct ChatInputBar: View, Equatable {
             && lhs.isStreaming == rhs.isStreaming
             && lhs.model == rhs.model
             && lhs.effort == rhs.effort
+            && lhs.contextTokens == rhs.contextTokens
+            && lhs.contextWindow == rhs.contextWindow
             && lhs.enabled == rhs.enabled
     }
 
@@ -31,12 +35,16 @@ struct ChatInputBar: View, Equatable {
         isStreaming: Bool,
         model: ChatModel?,
         effort: ChatEffort?,
+        contextTokens: Int = 0,
+        contextWindow: Int = 0,
         enabled: Bool = true
     ) {
         self.sessionId = sessionId
         self.isStreaming = isStreaming
         self.model = model
         self.effort = effort
+        self.contextTokens = contextTokens
+        self.contextWindow = contextWindow
         self.enabled = enabled
         PerfCounters.bumpInit("ib")
     }
@@ -67,6 +75,16 @@ struct ChatInputBar: View, Equatable {
                         .padding(.vertical, ThemeTokens.Spacing.m)
                         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
                     trailingButton
+                }
+                if focused {
+                    ChatInputBarMetaRow(
+                        sessionId: sessionId,
+                        model: model,
+                        effort: effort,
+                        contextTokens: contextTokens,
+                        contextWindow: contextWindow
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
         }
@@ -138,38 +156,7 @@ struct ChatInputBar: View, Equatable {
 
     @ViewBuilder
     private var sendMenu: some View {
-        Menu {
-            Button {
-                SessionActions.setModel(nil, for: sessionId, context: context)
-            } label: {
-                Label("Auto", systemImage: model == nil ? "checkmark" : "")
-            }
-            ForEach(ChatModel.allCases, id: \.self) { model in
-                Button {
-                    SessionActions.setModel(model, for: sessionId, context: context)
-                } label: {
-                    Label(model.displayName, systemImage: self.model == model ? "checkmark" : "")
-                }
-            }
-        } label: {
-            Label("Model: \(model?.displayName ?? "Auto")", systemImage: "cpu")
-        }
-        Menu {
-            Button {
-                SessionActions.setEffort(nil, for: sessionId, context: context)
-            } label: {
-                Label("Default", systemImage: effort == nil ? "checkmark" : "")
-            }
-            ForEach(ChatEffort.allCases, id: \.self) { level in
-                Button {
-                    SessionActions.setEffort(level, for: sessionId, context: context)
-                } label: {
-                    Label(level.displayName, systemImage: effort == level ? "checkmark" : "")
-                }
-            }
-        } label: {
-            Label("Effort: \(effort?.displayName ?? "Default")", systemImage: "brain.head.profile")
-        }
+        ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
     }
 
     private func send() {

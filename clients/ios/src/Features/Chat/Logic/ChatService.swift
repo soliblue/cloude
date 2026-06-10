@@ -435,7 +435,11 @@ enum ChatService {
         case .compacting:
             _ = ensureStreamingMessage(sessionId: sessionId, context: context)
             ChatLiveStream.snapshot(for: sessionId).isCompacting = true
-        case .assistantFinal(_, let text, let toolUses, let model):
+        case .assistantFinal(_, let text, let toolUses, let model, let contextTokens):
+            if let contextTokens {
+                SessionActions.setContextUsage(
+                    tokens: contextTokens, window: nil, for: sessionId, context: context)
+            }
             if !text.isEmpty || !toolUses.isEmpty || streamingMessages[sessionId] != nil {
                 let message = ensureStreamingMessage(sessionId: sessionId, context: context)
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
@@ -459,9 +463,13 @@ enum ChatService {
             } else {
                 closeStream(sessionId: sessionId, isFailed: false, context: context)
             }
-            if case .result(_, let costUsd) = event {
+            if case .result(_, let costUsd, let contextWindow) = event {
                 if let costUsd {
                     ChatActions.applyCost(sessionId: sessionId, costUsd: costUsd, context: context)
+                }
+                if let contextWindow {
+                    SessionActions.setContextUsage(
+                        tokens: nil, window: contextWindow, for: sessionId, context: context)
                 }
                 maybeRename(sessionId: sessionId, context: context)
             }
