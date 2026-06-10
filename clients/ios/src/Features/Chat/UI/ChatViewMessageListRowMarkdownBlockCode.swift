@@ -37,6 +37,7 @@ struct ChatViewMessageListRowMarkdownBlockCode: View {
                         ? "text.word.spacing" : "arrow.left.and.right.text.vertical"
                 )
                 .appFont(size: ThemeTokens.Text.s)
+                .frame(width: ThemeTokens.Text.s, height: ThemeTokens.Text.s)
                 .foregroundStyle(.secondary)
                 .contentTransition(.symbolEffect(.replace))
             }

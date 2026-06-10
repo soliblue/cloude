@@ -13,7 +13,7 @@ struct GitDiffSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
+                LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(lines) { line in
                         GitDiffSheetLine(line: line)
                     }
@@ -48,7 +48,7 @@ struct GitDiffSheet: View {
 
     private func truncatedFooter(total: Int) -> some View {
         VStack(spacing: ThemeTokens.Spacing.s) {
-            Text("Diff truncated — \(total) lines")
+            Text("Diff truncated, \(total) lines")
                 .appFont(size: ThemeTokens.Text.s)
                 .foregroundColor(.secondary)
             Button {

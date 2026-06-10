@@ -8,7 +8,31 @@ icon: waveform.path.ecg
 
 # Streaming Robustness Audit
 
-Four parallel audits (Linux daemon, iOS streaming, protocol parity, iOS state) on 2026-06-10. Live token-by-token streaming is required product behavior; every fix below preserves it.
+Four parallel audits (Linux daemon, iOS streaming, protocol parity, iOS state) on 2026-06-10, plus a round-2 iOS UI audit (tool pills, markdown performance, UI sweep) the same day. Live token-by-token streaming is required product behavior; every fix below preserves it.
+
+## Fixed (round 2, iOS)
+
+R1. **Tool pill order flipping.** ChatToolCall.order restarted at 0 per message while the pill list buckets span multiple messages sorted by order alone, so orders collided and ties flipped per fetch. Order is now session-scoped monotonic, with a secondary id sort for legacy rows (ChatActions, ChatViewMessageListRowToolPillList).
+R2. **Pills jump and open tool sheets self-dismiss at turn end.** Segments were ForEach-keyed by array offset; now keyed by stable identity (ChatViewMessageListGroup).
+R3. **O(n^2) markdown parse while streaming.** Every delta re-parsed the whole message; now only the tail block re-parses via ChatMarkdownParser.parseResuming, byte-identical output, full-parse fallback for non-append updates.
+R4. **Code blocks re-syntax-highlighted up to 60x/sec while streaming.** Memoized in ChatMarkdownSyntaxHighlighter.
+R5. **Completed messages re-parsed on every scroll materialization.** ChatMarkdownParseCache (capped).
+R6. **Stale streams tearing down the live stream's state** (abort + re-send, deep-link send, resume racing a dying connection). Per-stream generation tokens in ChatService; StreamingClient streams now cancel their URLSession task on termination.
+R7. **Mid-stream drop while foregrounded never resumed.** Body errors now schedule resumeIfStuck after 3s with warm after_seq.
+R8. **Daemon error events rendered as successful empty turns.** .error now surfaces as a failed assistant message (previously dead UI).
+R9. **Messages stuck in .retrying forever** after EOF-before-first-event or abort-during-retry; reset to .failed so retry reappears.
+R10. Small fixes: git changes list sorted by path (was nondeterministic per refresh), GitDiffSheet lazy rendering (full diffs froze the sheet), retry button state seeding on row recreation, fixed frames on two morphing SF Symbols, em dash removal.
+
+## Open: round 2 findings (iOS, medium)
+
+R11. **Window pager pan recognizer hijacks horizontal gestures** inside sheets and horizontal scrollers; can switch panes behind a presented sheet. WindowsPagerGesture.swift:30-44.
+R12. **Composer draft and attachments lost on session switch** (@State in ChatInputBar, torn down by .id(session.id)). Key drafts by session.
+R13. **Full-resolution image decode in thumbnail bodies** causes scroll hitches with photo attachments. ChatAttachmentThumbnail.swift:7-11.
+R14. **Pending pill shimmer freezes after scroll recycle** (ChatViewMessageListRowToolPillListRow.swift:36-42).
+R15. **Sidebar rows run unbounded all-message queries for unread dots** (WindowsSidebarOpenRow.swift:26-31); add fetchLimit.
+R16. **GroupCache mutates observed state during body evaluation** (ChatViewMessageList.swift:34,90-111).
+R17. Onboarding step icons swap view types so the replace transition never animates (OnboardingViewStatusStep.swift:140-159).
+R18. Body-error auto-resume has no backoff cap; double closeStream after result+EOF can double-fire toasts (pre-existing).
 
 ## Fixed (this pass, Linux daemon + macOS parity)
 

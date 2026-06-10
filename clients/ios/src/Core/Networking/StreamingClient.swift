@@ -22,7 +22,7 @@ enum StreamingClient {
         endpoint: Endpoint, path: String, method: String, query: [String: String], body: [String: Any]?
     ) -> AsyncThrowingStream<Data, Error> {
         AsyncThrowingStream { continuation in
-            Task {
+            let task = Task {
                 if let url = HTTPClient.url(endpoint: endpoint, path: path, query: query) {
                     var request = URLRequest(url: url, timeoutInterval: 3600)
                     request.httpMethod = method
@@ -56,6 +56,7 @@ enum StreamingClient {
                     continuation.finish(throwing: StreamingError.preHeaders(URLError(.badURL)))
                 }
             }
+            continuation.onTermination = { _ in task.cancel() }
         }
     }
 }

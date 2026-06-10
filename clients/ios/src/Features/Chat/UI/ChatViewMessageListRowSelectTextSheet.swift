@@ -33,6 +33,7 @@ struct ChatViewMessageListRowSelectTextSheet: View {
                         } label: {
                             Image(systemName: copied ? "checkmark" : "doc.on.doc")
                                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                                .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
                                 .foregroundColor(copied ? ThemeColor.success : .secondary)
                                 .contentTransition(.symbolEffect(.replace))
                         }

@@ -8,7 +8,7 @@ struct ChatViewMessageListRowMarkdown: View, Equatable {
     var body: some View {
         let _ = PerfCounters.bump("mdrow.body")
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-            ForEach(ChatMarkdownParser.parse(text), id: \.id) { block in
+            ForEach(ChatMarkdownParseCache.blocks(for: text), id: \.id) { block in
                 ChatViewMessageListRowMarkdownBlock(block: block)
             }
         }

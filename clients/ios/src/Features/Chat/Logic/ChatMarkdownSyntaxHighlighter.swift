@@ -32,7 +32,19 @@ enum ChatMarkdownSyntaxHighlighter {
         "usize", "isize", "Vec", "Box", "Rc", "Arc", "Option",
     ]
 
+    @MainActor private static var cache: [String: AttributedString] = [:]
+
+    @MainActor
     static func highlight(_ code: String, language: String?) -> AttributedString {
+        let key = "\(language ?? "")\u{1}\(code)"
+        if let cached = cache[key] { return cached }
+        let highlighted = computeHighlight(code, language: language)
+        if cache.count >= 32 { cache.removeAll() }
+        cache[key] = highlighted
+        return highlighted
+    }
+
+    private static func computeHighlight(_ code: String, language: String?) -> AttributedString {
         var result = AttributedString()
         let lines = code.components(separatedBy: "\n")
         for (idx, line) in lines.enumerated() {

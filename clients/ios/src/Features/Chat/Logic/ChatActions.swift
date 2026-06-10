@@ -32,9 +32,15 @@ enum ChatActions {
         let existingDescriptor = FetchDescriptor<ChatToolCall>(
             predicate: #Predicate<ChatToolCall> { $0.messageId == messageId }
         )
-        let existing = (try? context.fetch(existingDescriptor)) ?? []
-        let existingIds = Set(existing.map { $0.id })
-        var nextTopOrder = (existing.filter { $0.parentToolUseId == nil }.map { $0.order }.max() ?? -1) + 1
+        let existingIds = Set(((try? context.fetch(existingDescriptor)) ?? []).map { $0.id })
+        let sessionId = message.sessionId
+        let topDescriptor = FetchDescriptor<ChatToolCall>(
+            predicate: #Predicate<ChatToolCall> {
+                $0.sessionId == sessionId && $0.parentToolUseId == nil
+            }
+        )
+        let topCalls = (try? context.fetch(topDescriptor)) ?? []
+        var nextTopOrder = (topCalls.map { $0.order }.max() ?? -1) + 1
         var nextChildOrder: [String: Int] = [:]
         var inserted = false
         for use in toolUses where !existingIds.contains(use.id) {

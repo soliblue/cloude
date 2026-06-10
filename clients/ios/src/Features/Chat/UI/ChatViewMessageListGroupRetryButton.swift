@@ -18,6 +18,7 @@ struct ChatViewMessageListGroupRetryButton: View {
         }
         .buttonStyle(.plain)
         .disabled(isVisuallyRetrying)
+        .onAppear { isVisuallyRetrying = message.state == .retrying }
         .onChange(of: message.state) { _, new in
             if new == .retrying {
                 retryStartedAt = .now

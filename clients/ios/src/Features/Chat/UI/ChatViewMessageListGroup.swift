@@ -12,7 +12,7 @@ struct ChatViewMessageListGroup: View {
                 ChatViewMessageListGroupRetryButton(message: retryable)
             }
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-                ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                ForEach(segments) { segment in
                     switch segment {
                     case .message(let message):
                         ChatViewMessageListRow(session: session, message: message)
@@ -70,8 +70,15 @@ struct ChatViewMessageListGroup: View {
         return result
     }
 
-    private enum Segment {
+    private enum Segment: Identifiable {
         case message(ChatMessage)
         case tools([UUID])
+
+        var id: String {
+            switch self {
+            case .message(let message): return "message-\(message.id.uuidString)"
+            case .tools(let messageIds): return "tools-\(messageIds.first?.uuidString ?? "")"
+            }
+        }
     }
 }

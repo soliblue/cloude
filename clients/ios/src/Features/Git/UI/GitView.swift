@@ -61,8 +61,9 @@ struct GitView: View {
     }
 
     private func changesList(_ changes: [GitChange]) -> some View {
-        let staged = changes.filter(\.isStaged)
-        let unstaged = changes.filter { !$0.isStaged }
+        let sorted = changes.sorted { $0.path < $1.path }
+        let staged = sorted.filter(\.isStaged)
+        let unstaged = sorted.filter { !$0.isStaged }
         return List {
             if !staged.isEmpty {
                 Section("Staged") {

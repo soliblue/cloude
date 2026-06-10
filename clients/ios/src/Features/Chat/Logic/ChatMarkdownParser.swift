@@ -3,10 +3,33 @@ import SwiftUI
 
 enum ChatMarkdownParser {
     static func parse(_ text: String, lineOffset: Int = 0) -> [ChatMarkdownBlock] {
+        parseWithTailStart(text, lineOffset: lineOffset).blocks
+    }
+
+    static func parseResuming(
+        _ text: String, tailStartLine: Int
+    ) -> (blocks: [ChatMarkdownBlock], tailStartLine: Int)? {
+        if tailStartLine > 0 {
+            let lines = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                .components(separatedBy: "\n")
+            if tailStartLine < lines.count {
+                let trailing = text.hasSuffix("\n ") ? "\n " : (text.hasSuffix("\n") ? "\n" : "")
+                let suffix = lines[tailStartLine...].joined(separator: "\n") + trailing
+                let result = parseWithTailStart(suffix, lineOffset: tailStartLine)
+                if !result.blocks.isEmpty { return result }
+            }
+        }
+        return nil
+    }
+
+    static func parseWithTailStart(
+        _ text: String, lineOffset: Int = 0
+    ) -> (blocks: [ChatMarkdownBlock], tailStartLine: Int) {
         PerfCounters.bumpParse(hash: text.hashValue)
         var blocks: [ChatMarkdownBlock] = []
+        var tailStartLine = lineOffset
         let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if normalized.isEmpty { return blocks }
+        if normalized.isEmpty { return (blocks, tailStartLine) }
         let hasTrailingNewline = text.hasSuffix("\n") || text.hasSuffix("\n ")
         let lines = normalized.components(separatedBy: "\n")
         var i = 0
@@ -22,8 +45,11 @@ enum ChatMarkdownParser {
                 continue
             }
 
+            let blockStart = i + lineOffset
+
             if line.hasPrefix("```") {
                 blocks.append(parseCodeBlock(lines: lines, index: &i, lineOffset: lineOffset))
+                tailStartLine = blockStart
                 continue
             }
 
@@ -32,6 +58,7 @@ enum ChatMarkdownParser {
                     lines: lines, index: &i, originalText: text, lineOffset: lineOffset)
                 {
                     blocks.append(table)
+                    tailStartLine = blockStart
                 }
                 continue
             }
@@ -39,12 +66,14 @@ enum ChatMarkdownParser {
             if trimmed.hasPrefix(">") {
                 if let quote = parseBlockquote(lines: lines, index: &i, lineOffset: lineOffset) {
                     blocks.append(quote)
+                    tailStartLine = blockStart
                 }
                 continue
             }
 
             if isHorizontalRule(trimmed) && !isLastLine {
                 blocks.append(.horizontalRule(id: "hr-L\(i + lineOffset)"))
+                tailStartLine = blockStart
                 i += 1
                 continue
             }
@@ -57,16 +86,18 @@ enum ChatMarkdownParser {
                     .header(
                         id: "header-L\(i + lineOffset)", level: level, content: attributed,
                         segments: segments))
+                tailStartLine = blockStart
                 i += 1
                 continue
             }
 
             if let textBlock = parseTextBlock(lines: lines, index: &i, lineOffset: lineOffset) {
                 blocks.append(textBlock)
+                tailStartLine = blockStart
             }
         }
 
-        return blocks
+        return (blocks, tailStartLine)
     }
 
     static func isHorizontalRule(_ line: String) -> Bool {
