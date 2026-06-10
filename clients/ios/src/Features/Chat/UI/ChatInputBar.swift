@@ -1,6 +1,16 @@
 import SwiftData
 import SwiftUI
 
+extension VerticalAlignment {
+    static let chatInputFieldBottom = VerticalAlignment(ChatInputFieldBottom.self)
+}
+
+private enum ChatInputFieldBottom: AlignmentID {
+    static func defaultValue(in dimensions: ViewDimensions) -> CGFloat {
+        dimensions[.bottom]
+    }
+}
+
 struct ChatInputBar: View, Equatable {
     let sessionId: UUID
     let isStreaming: Bool
@@ -65,26 +75,33 @@ struct ChatInputBar: View, Equatable {
                 ChatInputBarRecordingOverlay(
                     level: recorder.level, isTranscribing: isTranscribing, onStop: stopRecording)
             } else {
-                HStack(alignment: .bottom, spacing: ThemeTokens.Spacing.s) {
+                HStack(alignment: .chatInputFieldBottom, spacing: ThemeTokens.Spacing.s) {
                     ChatInputBarAttachmentPicker(images: $images)
-                    TextField("Message", text: $draft, axis: .vertical)
-                        .appFont(size: ThemeTokens.Text.m)
-                        .lineLimit(1...6)
-                        .focused($focused)
-                        .padding(.horizontal, ThemeTokens.Spacing.m)
-                        .padding(.vertical, ThemeTokens.Spacing.m)
-                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
+                        .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
+                    VStack(spacing: ThemeTokens.Spacing.xs) {
+                        TextField("Message", text: $draft, axis: .vertical)
+                            .appFont(size: ThemeTokens.Text.m)
+                            .lineLimit(1...6)
+                            .focused($focused)
+                            .padding(.horizontal, ThemeTokens.Spacing.m)
+                            .padding(.vertical, ThemeTokens.Spacing.m)
+                            .glassEffect(
+                                .regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
+                            )
+                            .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
+                        if focused {
+                            ChatInputBarMetaRow(
+                                sessionId: sessionId,
+                                model: model,
+                                effort: effort,
+                                contextTokens: contextTokens,
+                                contextWindow: contextWindow
+                            )
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
                     trailingButton
-                }
-                if focused {
-                    ChatInputBarMetaRow(
-                        sessionId: sessionId,
-                        model: model,
-                        effort: effort,
-                        contextTokens: contextTokens,
-                        contextWindow: contextWindow
-                    )
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                        .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
                 }
             }
         }
@@ -116,7 +133,7 @@ struct ChatInputBar: View, Equatable {
 
     @ViewBuilder
     private var trailingButton: some View {
-        if isStreaming {
+        if isStreaming && !canSend {
             Button {
                 ChatService.abort(sessionId: sessionId, context: context)
             } label: {
@@ -162,11 +179,15 @@ struct ChatInputBar: View, Equatable {
     private func send() {
         let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         if canSend && (!trimmed.isEmpty || !images.isEmpty) {
-            ChatService.send(sessionId: sessionId, prompt: trimmed, images: images, context: context)
+            let pendingImages = images
+            focused = false
             draft = ""
             images = []
             suggestions = []
-            focused = false
+            ChatDraftStore.setText("", for: sessionId)
+            ChatDraftStore.setImages([], for: sessionId)
+            ChatService.send(
+                sessionId: sessionId, prompt: trimmed, images: pendingImages, context: context)
         }
     }
 

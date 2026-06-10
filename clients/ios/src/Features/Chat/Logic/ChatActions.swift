@@ -4,12 +4,20 @@ import SwiftData
 enum ChatActions {
     @MainActor
     static func addUserMessage(
-        sessionId: UUID, text: String, images: [Data], context: ModelContext
+        sessionId: UUID, text: String, images: [Data], state: ChatMessage.State = .complete,
+        context: ModelContext
     ) -> ChatMessage {
         let message = ChatMessage(
-            sessionId: sessionId, role: .user, text: text, images: images, state: .complete)
+            sessionId: sessionId, role: .user, text: text, images: images, state: state)
         context.insert(message)
         return message
+    }
+
+    @MainActor
+    static func removeQueued(_ message: ChatMessage, context: ModelContext) {
+        if message.state == .queued {
+            context.delete(message)
+        }
     }
 
     @MainActor

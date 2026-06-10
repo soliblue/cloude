@@ -4,7 +4,7 @@ import SwiftData
 @Model
 final class ChatMessage {
     enum Role: String { case user, assistant }
-    enum State: String { case streaming, complete, failed, retrying }
+    enum State: String { case streaming, complete, failed, retrying, queued }
 
     @Attribute(.unique) var id: UUID
     var sessionId: UUID

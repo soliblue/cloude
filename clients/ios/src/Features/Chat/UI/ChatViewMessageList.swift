@@ -31,13 +31,23 @@ struct ChatViewMessageList: View {
     }
 
     private var messageList: some View {
-        let groups = groupCache.groups(for: messages)
+        let queued = messages.filter { $0.state == .queued }
+        let groups = groupCache.groups(for: messages.filter { $0.state != .queued })
         return GeometryReader { geo in
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
                         ForEach(groups, id: \.groupId) { group in
-                            ChatViewMessageListGroup(session: session, messages: group.messages)
+                            ChatViewMessageListGroup(
+                                session: session,
+                                messages: group.messages,
+                                isLast: group.groupId == groups.last?.groupId
+                            )
+                            .transition(.opacity)
+                        }
+                        ForEach(queued, id: \.id) { message in
+                            ChatViewMessageListQueuedRow(message: message)
+                                .id(message.id)
                                 .transition(.opacity)
                         }
                         Color.clear.frame(height: spacerHeight(in: geo))

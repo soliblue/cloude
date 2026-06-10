@@ -22,39 +22,63 @@ enum ChatService {
     @MainActor
     static func send(session: Session, prompt: String, images: [Data], context: ModelContext) {
         if let endpoint = session.endpoint, let path = session.path {
-            ChatNotificationService.requestPermissionOnce()
-            AppLogger.performanceInfo(
-                "start name=chat.send sessionId=\(session.id.uuidString) images=\(images.count) promptChars=\(prompt.count)"
-            )
-            AppLogger.beginInterval("chat.firstToken", key: session.id.uuidString)
-            AppLogger.beginInterval("chat.complete", key: session.id.uuidString)
-            let userMessage = ChatActions.addUserMessage(
-                sessionId: session.id, text: prompt, images: images, context: context
-            )
-            pendingUserMessages[session.id] = userMessage
-            SessionActions.setStreaming(true, for: session)
-            lastSeqs.removeValue(forKey: session.id)
-            activeStreams.insert(session.id)
-            let generation = UUID()
-            streamGenerations[session.id] = generation
-            let existsOnServer = session.existsOnServer
-            let sessionId = session.id
-            Task {
-                let encodedImages = await encodeForUpload(images)
-                var body: [String: Any] = [
-                    "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
-                ]
-                if !encodedImages.isEmpty { body["images"] = encodedImages }
-                if let model = session.model { body["model"] = model.rawValue }
-                if let effort = session.effort { body["effort"] = effort.rawValue }
-                let stream = StreamingClient.post(
-                    endpoint: endpoint,
-                    path: "/sessions/\(sessionId.uuidString)/chat",
-                    body: body
+            if session.isStreaming || activeStreams.contains(session.id) {
+                AppLogger.performanceInfo(
+                    "queue name=chat.send sessionId=\(session.id.uuidString) images=\(images.count) promptChars=\(prompt.count)"
                 )
-                await consume(
-                    stream: stream, sessionId: sessionId, generation: generation, context: context)
+                _ = ChatActions.addUserMessage(
+                    sessionId: session.id, text: prompt, images: images, state: .queued,
+                    context: context
+                )
+            } else {
+                ChatNotificationService.requestPermissionOnce()
+                AppLogger.performanceInfo(
+                    "start name=chat.send sessionId=\(session.id.uuidString) images=\(images.count) promptChars=\(prompt.count)"
+                )
+                AppLogger.beginInterval("chat.firstToken", key: session.id.uuidString)
+                AppLogger.beginInterval("chat.complete", key: session.id.uuidString)
+                let userMessage = ChatActions.addUserMessage(
+                    sessionId: session.id, text: prompt, images: images, context: context
+                )
+                begin(
+                    message: userMessage, session: session, endpoint: endpoint, path: path,
+                    context: context)
             }
+        }
+    }
+
+    @MainActor
+    private static func begin(
+        message: ChatMessage, session: Session, endpoint: Endpoint, path: String,
+        context: ModelContext
+    ) {
+        pendingUserMessages[session.id] = message
+        SessionActions.setStreaming(true, for: session)
+        lastSeqs.removeValue(forKey: session.id)
+        activeStreams.insert(session.id)
+        let generation = UUID()
+        streamGenerations[session.id] = generation
+        let existsOnServer = session.existsOnServer
+        let sessionId = session.id
+        let prompt = message.text
+        let images = message.imagesData
+        let model = session.model
+        let effort = session.effort
+        Task {
+            let encodedImages = await encodeForUpload(images)
+            var body: [String: Any] = [
+                "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
+            ]
+            if !encodedImages.isEmpty { body["images"] = encodedImages }
+            if let model { body["model"] = model.rawValue }
+            if let effort { body["effort"] = effort.rawValue }
+            let stream = StreamingClient.post(
+                endpoint: endpoint,
+                path: "/sessions/\(sessionId.uuidString)/chat",
+                body: body
+            )
+            await consume(
+                stream: stream, sessionId: sessionId, generation: generation, context: context)
         }
     }
 
@@ -115,31 +139,36 @@ enum ChatService {
             let endpoint = session.endpoint, let path = session.path
         {
             message.state = .retrying
-            pendingUserMessages[sessionId] = message
-            SessionActions.setStreaming(true, for: session)
-            lastSeqs.removeValue(forKey: sessionId)
-            activeStreams.insert(sessionId)
-            let generation = UUID()
-            streamGenerations[sessionId] = generation
-            let prompt = message.text
-            let images = message.imagesData
-            let existsOnServer = session.existsOnServer
-            Task {
-                let encodedImages = await encodeForUpload(images)
-                var body: [String: Any] = [
-                    "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
-                ]
-                if !encodedImages.isEmpty { body["images"] = encodedImages }
-                if let model = session.model { body["model"] = model.rawValue }
-                if let effort = session.effort { body["effort"] = effort.rawValue }
-                let stream = StreamingClient.post(
-                    endpoint: endpoint,
-                    path: "/sessions/\(sessionId.uuidString)/chat",
-                    body: body
-                )
-                await consume(
-                    stream: stream, sessionId: sessionId, generation: generation, context: context)
-            }
+            begin(message: message, session: session, endpoint: endpoint, path: path, context: context)
+        }
+    }
+
+    @MainActor
+    private static func drainQueue(sessionId: UUID, context: ModelContext) {
+        let queuedRaw = ChatMessage.State.queued.rawValue
+        var queuedDescriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.stateRaw == queuedRaw
+            },
+            sortBy: [SortDescriptor(\.createdAt)]
+        )
+        queuedDescriptor.fetchLimit = 1
+        let sessionDescriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let queued = try? context.fetch(queuedDescriptor).first,
+            let session = try? context.fetch(sessionDescriptor).first,
+            let endpoint = session.endpoint, let path = session.path,
+            !session.isStreaming, !activeStreams.contains(sessionId)
+        {
+            AppLogger.performanceInfo(
+                "start name=chat.drainQueue sessionId=\(sessionId.uuidString) promptChars=\(queued.text.count)"
+            )
+            AppLogger.beginInterval("chat.firstToken", key: sessionId.uuidString)
+            AppLogger.beginInterval("chat.complete", key: sessionId.uuidString)
+            queued.state = .retrying
+            queued.createdAt = .now
+            begin(message: queued, session: session, endpoint: endpoint, path: path, context: context)
         }
     }
 
@@ -472,6 +501,7 @@ enum ChatService {
                         tokens: nil, window: contextWindow, for: sessionId, context: context)
                 }
                 maybeRename(sessionId: sessionId, context: context)
+                drainQueue(sessionId: sessionId, context: context)
             }
         case .initialized:
             markSessionExistsOnServer(sessionId: sessionId, context: context)
