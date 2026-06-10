@@ -46,14 +46,14 @@ Preferred richer regression target: `scenarios/chat-mixed-markdown-multi-tool.md
 
 ## Run setup
 
-The launcher has already booted the sim, installed the app with dev endpoint env vars set, and launched. Trust that state — do not relaunch. The dev endpoint is auto-seeded via `EndpointActions.seedDev`; `run-perf-scenario.sh` assigns it to the focused session via `cloude://session/endpoint?id=...`.
+The launcher has already booted the sim, installed the app with dev endpoint env vars set, and launched. Trust that state. Do not relaunch. The dev endpoint is auto-seeded via `EndpointActions.seedDev`; `run-perf-scenario.sh` assigns it to the focused session via `cloude://session/endpoint?id=...`.
 
 Read `app-debug.log` first; screenshots are secondary unless the behaviour is inherently visual. Key events to grep for:
 
-- `start name=chat.send …`
+- `start name=chat.send ...`
 - `finish name=chat.firstToken key=<sessionId> durationMs=<n>`
 - `finish name=chat.complete key=<sessionId> durationMs=<n>`
-- `deeplink url=cloude://…`
+- `deeplink url=cloude://...`
 - `[ERROR] [Connection]` lines
 
 ## Budget

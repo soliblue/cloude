@@ -1,6 +1,6 @@
 ---
 name: launcher
-description: Build the Mac daemon and iOS app, launch both (daemon on host, app in Simulator), and seed the dev endpoint token so the app comes up connected. Autonomous — no human paste.
+description: Build the Mac daemon and iOS app, launch both (daemon on host, app in Simulator), and seed the dev endpoint token so the app comes up connected. Autonomous, no human paste.
 tools: Bash, Read, Grep
 model: haiku
 effort: low

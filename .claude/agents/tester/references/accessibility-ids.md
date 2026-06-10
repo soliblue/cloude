@@ -6,4 +6,4 @@ When adding coverage that *must* tap (e.g. attachment picker, tool pill sheet), 
 
 | id | location |
 |---|---|
-| (none yet) | — |
+| (none yet) | none |
