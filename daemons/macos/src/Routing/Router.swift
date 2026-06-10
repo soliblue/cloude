@@ -16,6 +16,9 @@ enum Router {
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/files/search") {
                     return FilesHandler.search(request, params: params)
                 }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/manifest") {
+                    return SessionManifestHandler.manifest(request, params: params)
+                }
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/chat/resume") {
                     return ChatHandler.resume(request, params: params)
                 }

@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct ChatInputBar: View, Equatable {
@@ -8,6 +9,8 @@ struct ChatInputBar: View, Equatable {
     var enabled: Bool = true
     @State private var draft: String = ""
     @State private var images: [Data] = []
+    @State private var suggestions: [ChatInputSuggestion] = []
+    @State private var fileSearchTask: Task<Void, Never>?
     @State private var traceId = String(UUID().uuidString.prefix(6))
     @FocusState private var focused: Bool
     @Environment(\.appAccent) private var appAccent
@@ -42,6 +45,9 @@ struct ChatInputBar: View, Equatable {
         #endif
         let _ = PerfCounters.bump("ib.body")
         VStack(spacing: ThemeTokens.Spacing.xs) {
+            if !suggestions.isEmpty {
+                ChatInputBarSuggestions(suggestions: suggestions, onSelect: applySuggestion)
+            }
             if !images.isEmpty {
                 ChatInputBarAttachmentStrip(images: $images)
             }
@@ -98,6 +104,7 @@ struct ChatInputBar: View, Equatable {
         }
         .onChange(of: draft) { _, value in
             ChatDraftStore.setText(value, for: sessionId)
+            recomputeSuggestions()
         }
         .onChange(of: images) { _, value in
             ChatDraftStore.setImages(value, for: sessionId)
@@ -151,7 +158,55 @@ struct ChatInputBar: View, Equatable {
             ChatService.send(sessionId: sessionId, prompt: trimmed, images: images, context: context)
             draft = ""
             images = []
+            suggestions = []
             focused = false
+        }
+    }
+
+    private func applySuggestion(_ suggestion: ChatInputSuggestion) {
+        draft = ChatInputAutocomplete.apply(suggestion, to: draft)
+        suggestions = []
+        focused = true
+    }
+
+    private func recomputeSuggestions() {
+        fileSearchTask?.cancel()
+        switch ChatInputAutocomplete.trigger(in: draft) {
+        case .slash(let query):
+            suggestions = ChatInputAutocomplete.skillSuggestions(
+                SessionManifestStore.skills(for: sessionId), query: query)
+        case .mention(let query):
+            let agents = ChatInputAutocomplete.agentSuggestions(
+                SessionManifestStore.agents(for: sessionId), query: query)
+            suggestions = agents
+            scheduleFileSearch(query: query, agents: agents)
+        case .none:
+            suggestions = []
+        }
+    }
+
+    private func scheduleFileSearch(query: String, agents: [ChatInputSuggestion]) {
+        if query.isEmpty { return }
+        fileSearchTask = Task {
+            try? await Task.sleep(for: .milliseconds(150))
+            if Task.isCancelled { return }
+            let descriptor = FetchDescriptor<Session>(
+                predicate: #Predicate<Session> { $0.id == sessionId })
+            if let session = try? context.fetch(descriptor).first,
+                let endpoint = session.endpoint, let path = session.path, !path.isEmpty,
+                let files = await FilesService.search(
+                    endpoint: endpoint, session: session, root: path, query: query)
+            {
+                if Task.isCancelled { return }
+                if case .mention(let current) = ChatInputAutocomplete.trigger(in: draft),
+                    current == query
+                {
+                    suggestions =
+                        agents
+                        + ChatInputAutocomplete.fileSuggestions(
+                            files.filter { !$0.isDirectory }.map { $0.path })
+                }
+            }
         }
     }
 

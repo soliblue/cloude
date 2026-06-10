@@ -21,8 +21,6 @@ final class Session {
     var tabRaw: String = SessionTab.chat.rawValue
     var modelRaw: String? = nil
     var effortRaw: String? = nil
-    @Transient var skills: [Skill]? = nil
-    @Transient var agents: [Agent]? = nil
 
     init(
         id: UUID = UUID(),

@@ -38,6 +38,15 @@ struct ChatView: View {
                 )
                 ChatService.resumeIfStuck(session: session, context: context)
             }
+            .task(id: session.id) {
+                if let endpoint = session.endpoint, let path = session.path, !path.isEmpty,
+                    let manifest = await SessionManifestService.fetch(
+                        endpoint: endpoint, sessionId: session.id, path: path)
+                {
+                    SessionManifestStore.set(
+                        skills: manifest.skills, agents: manifest.agents, for: session.id)
+                }
+            }
             .onDisappear {
                 AppLogger.uiInfo("chatView disappear trace=\(traceId) session=\(session.id.uuidString)")
             }

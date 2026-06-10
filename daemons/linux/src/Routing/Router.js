@@ -3,6 +3,7 @@ import { abort, resume, start } from '../Handlers/ChatHandler.js'
 import { uploadIOSLog } from '../Handlers/DebugHandler.js'
 import { diff, log, status } from '../Handlers/GitHandler.js'
 import { list, read, search } from '../Handlers/FilesHandler.js'
+import { manifest } from '../Handlers/SessionManifestHandler.js'
 import { handle as ping } from '../Handlers/PingHandler.js'
 import { updateTitle } from '../Handlers/SessionHandler.js'
 import { isAuthorized } from './AuthMiddleware.js'
@@ -22,6 +23,9 @@ export function handle(request) {
       }
       if (match(request.path, '/sessions/:id/files/search')) {
         return search(request, match(request.path, '/sessions/:id/files/search'))
+      }
+      if (match(request.path, '/sessions/:id/manifest')) {
+        return manifest(request, match(request.path, '/sessions/:id/manifest'))
       }
       if (match(request.path, '/sessions/:id/chat/resume')) {
         return resume(request, match(request.path, '/sessions/:id/chat/resume'))
