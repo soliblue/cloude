@@ -2,10 +2,11 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum ImageDropbox {
-    static func prepare(cwd: String, prompt: String, images: [[String: String]]) -> String {
+    static func prepare(cwd: String, prompt: String, images: [[String: String]], sessionId: String) -> String {
         if images.isEmpty { return prompt }
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(
-            "cloude-images-\(UUID().uuidString)", isDirectory: true)
+            "cloude-images-\(sessionId.lowercased())", isDirectory: true)
+        try? FileManager.default.removeItem(at: dir)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         var paths: [String] = []
         for (index, image) in images.enumerated() {

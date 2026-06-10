@@ -2,7 +2,7 @@ import AVFoundation
 import UIKit
 
 final class OnboardingViewScannerSheetController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
-    var onCode: ((String) -> Void)?
+    var onCode: ((String) -> Bool)?
     var onPermissionDenied: (() -> Void)?
     private let session = AVCaptureSession()
     private var previewLayer: AVCaptureVideoPreviewLayer?
@@ -90,8 +90,13 @@ final class OnboardingViewScannerSheetController: UIViewController, AVCaptureMet
             let value = object.stringValue
         {
             hasEmitted = true
-            haptics.notificationOccurred(.success)
-            onCode?(value)
+            let accepted = onCode?(value) ?? false
+            haptics.notificationOccurred(accepted ? .success : .error)
+            if !accepted {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                    self?.hasEmitted = false
+                }
+            }
         }
     }
 }

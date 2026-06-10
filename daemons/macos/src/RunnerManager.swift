@@ -27,7 +27,7 @@ final class RunnerManager {
             }
             self.runners[sessionId] = runner
             runner.subscribe(connection)
-            let resolvedPrompt = ImageDropbox.prepare(cwd: path, prompt: prompt, images: images)
+            let resolvedPrompt = ImageDropbox.prepare(cwd: path, prompt: prompt, images: images, sessionId: sessionId)
             let begin = { runner.spawn(path: path, prompt: resolvedPrompt) }
             if let previous, !previous.hasExited {
                 NSLog("[RunnerManager] aborting existing runner sessionId=\(sessionId)")

@@ -36,10 +36,10 @@ enum ChatService {
             activeStreams.insert(session.id)
             let generation = UUID()
             streamGenerations[session.id] = generation
-            let encodedImages = images.compactMap(encode)
             let existsOnServer = session.existsOnServer
             let sessionId = session.id
             Task {
+                let encodedImages = await encodeForUpload(images)
                 var body: [String: Any] = [
                     "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
                 ]
@@ -121,9 +121,10 @@ enum ChatService {
             let generation = UUID()
             streamGenerations[sessionId] = generation
             let prompt = message.text
-            let encodedImages = message.imagesData.compactMap(encode)
+            let images = message.imagesData
             let existsOnServer = session.existsOnServer
             Task {
+                let encodedImages = await encodeForUpload(images)
                 var body: [String: Any] = [
                     "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
                 ]
@@ -230,11 +231,47 @@ enum ChatService {
         }
     }
 
-    private static func encode(_ data: Data) -> [String: String]? {
-        if let image = UIImage(data: data), let png = image.pngData() {
-            return ["data": png.base64EncodedString(), "mediaType": "image/png"]
+    nonisolated private static func encodeForUpload(_ images: [Data]) async -> [[String: String]] {
+        await Task.detached {
+            let budget = 700_000 / max(images.count, 1)
+            return images.compactMap { encode($0, budget: budget) }
+        }.value
+    }
+
+    nonisolated private static func encode(_ data: Data, budget: Int) -> [String: String]? {
+        if let mediaType = passthroughMediaType(data), data.count <= budget {
+            return ["data": data.base64EncodedString(), "mediaType": mediaType]
+        }
+        if let image = UIImage(data: data) {
+            for dimension in [2048.0, 1024.0, 512.0] {
+                if let jpeg = downscaled(image, maxDimension: dimension).jpegData(compressionQuality: 0.8),
+                    jpeg.count <= budget || dimension == 512.0
+                {
+                    return ["data": jpeg.base64EncodedString(), "mediaType": "image/jpeg"]
+                }
+            }
         }
         return nil
+    }
+
+    nonisolated private static func passthroughMediaType(_ data: Data) -> String? {
+        if data.starts(with: [0x89, 0x50, 0x4E, 0x47]) { return "image/png" }
+        if data.starts(with: [0xFF, 0xD8, 0xFF]) { return "image/jpeg" }
+        if data.starts(with: [0x47, 0x49, 0x46, 0x38]) { return "image/gif" }
+        return nil
+    }
+
+    nonisolated private static func downscaled(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
+        let scale = min(1, maxDimension / max(image.size.width, image.size.height, 1))
+        let size = CGSize(
+            width: max(1, (image.size.width * scale).rounded(.down)),
+            height: max(1, (image.size.height * scale).rounded(.down))
+        )
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            image.draw(in: CGRect(origin: .zero, size: size))
+        }
     }
 
     @MainActor

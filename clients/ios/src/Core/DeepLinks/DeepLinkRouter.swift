@@ -14,7 +14,17 @@ enum DeepLinkRouter {
             case "chat": handleChat(path: path, url: url, context: context)
             case "pair":
                 if let payload = OnboardingPairingPayload(url: url) {
-                    upsertEndpoint(payload: payload, context: context)
+                    Task {
+                        let result = await EndpointService.probe(
+                            host: payload.host, port: payload.port,
+                            authKey: payload.token, retryWindow: 6
+                        )
+                        AppLogger.bootstrapInfo(
+                            "deeplink pair probe host=\(payload.host) result=\(result)")
+                        if result == .reachable {
+                            upsertEndpoint(payload: payload, context: context)
+                        }
+                    }
                     NotificationCenter.default.post(name: .deeplinkPair, object: payload)
                 }
             case "settings": NotificationCenter.default.post(name: .deeplinkOpenSettings, object: nil)
@@ -154,39 +164,9 @@ extension Notification.Name {
 
 extension URL {
     func queryValue(_ name: String) -> String? {
-        if var value = URLComponents(url: self, resolvingAgainstBaseURL: false)?
+        URLComponents(url: self, resolvingAgainstBaseURL: false)?
             .queryItems?
             .first(where: { $0.name == name })?
             .value
-        {
-            while value.contains("%") {
-                var data = Data()
-                var changed = false
-                var index = value.startIndex
-                while index < value.endIndex {
-                    if value[index] == "%" {
-                        let first = value.index(after: index)
-                        if first < value.endIndex {
-                            let second = value.index(after: first)
-                            if second < value.endIndex,
-                                let byte = UInt8(String(value[first...second]), radix: 16)
-                            {
-                                data.append(byte)
-                                changed = true
-                                index = value.index(after: second)
-                                continue
-                            }
-                        }
-                    }
-                    data.append(contentsOf: String(value[index]).utf8)
-                    index = value.index(after: index)
-                }
-                let decoded = String(decoding: data, as: UTF8.self)
-                if decoded == value || !changed { return decoded }
-                value = decoded
-            }
-            return value
-        }
-        return nil
     }
 }

@@ -36,9 +36,10 @@ struct OnboardingViewPairStep: View {
                         let payload = OnboardingPairingPayload(url: url)
                     {
                         store.apply(payload: payload)
-                    } else {
-                        isUnrecognized = true
+                        return true
                     }
+                    isUnrecognized = true
+                    return false
                 },
                 onPermissionDenied: { isPermissionDenied = true }
             )

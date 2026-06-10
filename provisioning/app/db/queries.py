@@ -11,9 +11,9 @@ def upsert_mac(mac_id: str, mac_secret_hash: str, display_name: str, now: int):
             insert into macs (mac_installation_id, mac_secret_hash, app_install_id, display_name, created_at, last_seen_at)
             values (?, ?, null, ?, ?, ?)
             on conflict(mac_installation_id) do update set
-              mac_secret_hash = excluded.mac_secret_hash,
               display_name = excluded.display_name,
               last_seen_at = excluded.last_seen_at
+            where macs.mac_secret_hash = excluded.mac_secret_hash
             """,
             (mac_id, mac_secret_hash, display_name, now, now),
         )
@@ -93,6 +93,13 @@ def insert_tunnel(mac_id: str, tunnel_id: str, hostname: str, dns_record_id: str
             """
             insert into tunnels (mac_installation_id, cloudflare_tunnel_id, hostname, dns_record_id, status, created_at, last_heartbeat_at)
             values (?, ?, ?, ?, 'active', ?, null)
+            on conflict(mac_installation_id) do update set
+              cloudflare_tunnel_id = excluded.cloudflare_tunnel_id,
+              hostname = excluded.hostname,
+              dns_record_id = excluded.dns_record_id,
+              status = 'active',
+              created_at = excluded.created_at,
+              last_heartbeat_at = null
             """,
             (mac_id, tunnel_id, hostname, dns_record_id, created_at),
         )

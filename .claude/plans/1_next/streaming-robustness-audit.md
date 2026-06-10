@@ -31,6 +31,20 @@ macOS daemon: runner restart serialized like Linux (was racing two claude proces
 
 iOS: NDJSON framing on raw newline bytes (bytes.lines also split on NEL/U+2028/U+2029, silently dropping events), pager pan no longer hijacks swipes inside sheets or horizontal scrollers, sessions stuck streaming in background windows resume on launch (resumeAllStuck), git diff sheet holds a value snapshot instead of a deletable SwiftData model, endpoint deletion nils out referencing sessions, git refresh has an in-flight guard, sidebar unread dot and create-button gate use fetchLimit 1 queries, pending pill shimmer restarts after scroll recycle, cold resume preserves any live partial text, dead centerTabs plumbing deleted.
 
+## Fixed (round 4, all surfaces)
+
+macOS daemon: git handler read stdout/stderr to EOF before waitUntilExit (was wait-then-read, deadlocking the git tab forever and leaking a thread per retry on any repo with a big diff or many untracked files), image dropbox keyed per session and cleaned (was leaking a temp dir per message).
+
+iOS: photo uploads now downscale + JPEG-encode under a per-image byte budget instead of full-resolution PNG (camera photos previously always failed the 1MB body cap with a 413), encoding moved off the main actor; QR scanner re-arms after an unrecognized code (was permanently dead until leaving and re-entering the pair step); pair deep link probes the daemon with the new token and only persists on success (was silently overwriting a working endpoint token from any cloude://pair URL); deep link query values no longer double-percent-decoded (text containing %XX was corrupted); composer draft and attachments preserved across session switches; GroupCache no longer mutates observed state during body evaluation.
+
+Provisioning backend: registration no longer rotates an existing Mac's secret without proving ownership (a known macInstallationId could previously be rebound and used to mint/revoke that Mac's tunnel), and tunnel insert is now an upsert so revoke-then-reprovision works instead of 500ing and orphaning Cloudflare tunnels and DNS records.
+
+## Open: round 4 findings (deferred, larger or product decisions)
+
+MAC: cloudflared never restarts on crash and cached tunnel token is never used as fallback (remote access silently dies until someone touches the Mac); NWListener bind failure is silent with no retry; updater terminates even when the swap script fails to launch, and its signature check does not pin the team id; idle/half-open connections never reaped.
+FEAT: file preview downloads whole files into memory (range-request plumbing exists but unused; binaries download then discard); voice input is entirely missing despite the mic permission string; SwiftData container init failure wipes all user data instead of backing up; onboarding opened from the Endpoints "+" cannot be cancelled; SVG previews always fail; audio preview ignores the silent switch; debug log grows unbounded in Documents; endpoint reachability fields are dead state.
+PROV: no rollback on partial tunnel creation (orphaned tunnels/DNS on mid-sequence failure); concurrent provisioning race; raw Cloudflare error bodies returned to clients; rate-limit map grows unbounded and is bypassable via spoofable forwarding headers; daemons never detect a revoked/crashed tunnel.
+
 ## Open: round 2 findings (iOS, medium)
 
 R11. **Window pager pan recognizer hijacks horizontal gestures** inside sheets and horizontal scrollers; can switch panes behind a presented sheet. WindowsPagerGesture.swift:30-44.

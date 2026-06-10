@@ -87,7 +87,6 @@ private struct MessageGroup {
     let messages: [ChatMessage]
 }
 
-@Observable
 private final class GroupCache {
     private var key: [UUID] = []
     private var cached: [MessageGroup] = []

@@ -90,9 +90,17 @@ struct ChatInputBar: View, Equatable {
             AppLogger.uiInfo(
                 "chatInput appear trace=\(traceId) session=\(sessionId.uuidString) enabled=\(enabled)"
             )
+            draft = ChatDraftStore.text(for: sessionId)
+            images = ChatDraftStore.images(for: sessionId)
         }
         .onDisappear {
             AppLogger.uiInfo("chatInput disappear trace=\(traceId) session=\(sessionId.uuidString)")
+        }
+        .onChange(of: draft) { _, value in
+            ChatDraftStore.setText(value, for: sessionId)
+        }
+        .onChange(of: images) { _, value in
+            ChatDraftStore.setImages(value, for: sessionId)
         }
         .onChange(of: focused) { oldValue, newValue in
             AppLogger.uiInfo(

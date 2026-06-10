@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OnboardingViewScannerSheetPreview: UIViewControllerRepresentable {
-    let onCode: (String) -> Void
+    let onCode: (String) -> Bool
     var onPermissionDenied: (() -> Void)?
 
     func makeUIViewController(context _: Context) -> OnboardingViewScannerSheetController {
