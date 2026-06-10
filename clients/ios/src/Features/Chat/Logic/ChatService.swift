@@ -22,6 +22,7 @@ enum ChatService {
     @MainActor
     static func send(session: Session, prompt: String, images: [Data], context: ModelContext) {
         if let endpoint = session.endpoint, let path = session.path {
+            ChatNotificationService.requestPermissionOnce()
             AppLogger.performanceInfo(
                 "start name=chat.send sessionId=\(session.id.uuidString) images=\(images.count) promptChars=\(prompt.count)"
             )
@@ -383,18 +384,13 @@ enum ChatService {
         )
         if let session = try? context.fetch(descriptor).first {
             SessionActions.setStreaming(false, for: session)
-            maybePresentToast(session: session, context: context)
+            notifyCompletion(session: session, context: context)
         }
         ChatLiveStream.clear(sessionId: sessionId)
     }
 
     @MainActor
-    private static func maybePresentToast(session: Session, context: ModelContext) {
-        let windowDescriptor = FetchDescriptor<Window>(
-            predicate: #Predicate<Window> { $0.isFocused }
-        )
-        let focusedId = (try? context.fetch(windowDescriptor).first)?.session?.id
-        if focusedId == session.id { return }
+    private static func notifyCompletion(session: Session, context: ModelContext) {
         let sessionId = session.id
         var messageDescriptor = FetchDescriptor<ChatMessage>(
             predicate: #Predicate<ChatMessage> {
@@ -405,6 +401,16 @@ enum ChatService {
         messageDescriptor.fetchLimit = 1
         let snippet = (try? context.fetch(messageDescriptor).first)?.text ?? ""
         if snippet.isEmpty { return }
+        if UIApplication.shared.applicationState != .active {
+            ChatNotificationService.postCompletion(
+                title: session.title, snippet: String(snippet.prefix(140)))
+            return
+        }
+        let windowDescriptor = FetchDescriptor<Window>(
+            predicate: #Predicate<Window> { $0.isFocused }
+        )
+        let focusedId = (try? context.fetch(windowDescriptor).first)?.session?.id
+        if focusedId == session.id { return }
         SessionToastStore.shared.present(
             SessionToast(
                 sessionId: sessionId,
