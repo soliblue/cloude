@@ -23,14 +23,11 @@ struct ChatInputBarMetaRow: View {
                 }
                 .appFont(size: ThemeTokens.Text.s, weight: .medium)
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, ThemeTokens.Spacing.m)
-                .padding(.vertical, ThemeTokens.Spacing.xs + 2)
-                .contentShape(Capsule())
+                .padding(.vertical, ThemeTokens.Spacing.xs)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: Capsule())
         }
-        .padding(.horizontal, ThemeTokens.Spacing.xs)
     }
 
     private var pillText: String {
@@ -57,7 +54,6 @@ struct ChatInputBarMetaRow: View {
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, ThemeTokens.Spacing.s)
     }
 
     private var usedFraction: Double {

@@ -78,28 +78,32 @@ struct ChatInputBar: View, Equatable {
                 HStack(alignment: .chatInputFieldBottom, spacing: ThemeTokens.Spacing.s) {
                     ChatInputBarAttachmentPicker(images: $images)
                         .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
-                    VStack(spacing: ThemeTokens.Spacing.xs) {
+                    VStack(spacing: 0) {
                         TextField("Message", text: $draft, axis: .vertical)
                             .appFont(size: ThemeTokens.Text.m)
                             .lineLimit(1...6)
                             .focused($focused)
                             .padding(.horizontal, ThemeTokens.Spacing.m)
                             .padding(.vertical, ThemeTokens.Spacing.m)
-                            .glassEffect(
-                                .regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
-                            )
                             .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
                         if focused {
-                            ChatInputBarMetaRow(
-                                sessionId: sessionId,
-                                model: model,
-                                effort: effort,
-                                contextTokens: contextTokens,
-                                contextWindow: contextWindow
-                            )
+                            VStack(spacing: 0) {
+                                Divider()
+                                    .padding(.horizontal, ThemeTokens.Spacing.m)
+                                ChatInputBarMetaRow(
+                                    sessionId: sessionId,
+                                    model: model,
+                                    effort: effort,
+                                    contextTokens: contextTokens,
+                                    contextWindow: contextWindow
+                                )
+                                .padding(.horizontal, ThemeTokens.Spacing.m)
+                                .padding(.vertical, ThemeTokens.Spacing.s)
+                            }
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
                     trailingButton
                         .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
                 }
