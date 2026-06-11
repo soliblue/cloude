@@ -5,6 +5,8 @@ enum Theme: String, CaseIterable {
     case bauder = "Bauder"
     case majorelle = "Majorelle"
     case klimt = "Klimt"
+    case ryman = "Ryman"
+    case monet = "Monet"
 
     struct Palette {
         let background: Color
@@ -26,6 +28,8 @@ enum Theme: String, CaseIterable {
         case .bauder: return Self.bauderPalette
         case .majorelle: return Self.majorellePalette
         case .klimt: return Self.klimtPalette
+        case .ryman: return Self.rymanPalette
+        case .monet: return Self.monetPalette
         }
     }
 
@@ -37,4 +41,8 @@ enum Theme: String, CaseIterable {
         background: 0x0C0F1F, surface: 0x141A35, elevated: 0x1C254B, colorScheme: .dark)
     private static let klimtPalette = Palette(
         background: 0x141008, surface: 0x221A0C, elevated: 0x302210, colorScheme: .dark)
+    private static let rymanPalette = Palette(
+        background: 0xFFFFFF, surface: 0xF4F4F2, elevated: 0xE9E9E6, colorScheme: .light)
+    private static let monetPalette = Palette(
+        background: 0xF2F5F7, surface: 0xE7EDF1, elevated: 0xDAE4EA, colorScheme: .light)
 }
