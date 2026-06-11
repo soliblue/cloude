@@ -136,17 +136,15 @@ struct ChatInputBar: View, Equatable {
                     .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     .foregroundColor(appAccent.color)
                     .padding(ThemeTokens.Spacing.m)
-                    .contentShape(Circle())
+                    .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: Circle())
         } else if canRecord {
             Image(systemName: "mic.fill")
                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
                 .foregroundColor(appAccent.color)
                 .padding(ThemeTokens.Spacing.m)
-                .contentShape(Circle())
-                .glassEffect(.regular.interactive(), in: Circle())
+                .contentShape(Capsule())
                 .gesture(recordGesture)
         } else {
             Menu {
@@ -156,12 +154,11 @@ struct ChatInputBar: View, Equatable {
                     .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     .foregroundColor(canSend ? appAccent.color : .secondary)
                     .padding(ThemeTokens.Spacing.m)
-                    .contentShape(Circle())
+                    .contentShape(Capsule())
             } primaryAction: {
                 send()
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: Circle())
             .disabled(!enabled)
         }
     }
