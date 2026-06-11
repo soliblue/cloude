@@ -10,10 +10,10 @@ struct ChatInputBarMetaRow: View {
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.s) {
+            Spacer()
             if contextTokens > 0 && contextWindow > 0 {
                 contextRing
             }
-            Spacer()
             Menu {
                 ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
             } label: {

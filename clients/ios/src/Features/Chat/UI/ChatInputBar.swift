@@ -1,16 +1,6 @@
 import SwiftData
 import SwiftUI
 
-extension VerticalAlignment {
-    static let chatInputFieldBottom = VerticalAlignment(ChatInputFieldBottom.self)
-}
-
-private enum ChatInputFieldBottom: AlignmentID {
-    static func defaultValue(in dimensions: ViewDimensions) -> CGFloat {
-        dimensions[.bottom]
-    }
-}
-
 struct ChatInputBar: View, Equatable {
     let sessionId: UUID
     let isStreaming: Bool
@@ -75,38 +65,39 @@ struct ChatInputBar: View, Equatable {
                 ChatInputBarRecordingOverlay(
                     level: recorder.level, isTranscribing: isTranscribing, onStop: stopRecording)
             } else {
-                HStack(alignment: .chatInputFieldBottom, spacing: ThemeTokens.Spacing.s) {
-                    ChatInputBarAttachmentPicker(images: $images)
-                        .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
-                    VStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    HStack(alignment: .bottom, spacing: 0) {
+                        if !focused {
+                            ChatInputBarAttachmentPicker(images: $images)
+                        }
                         TextField("Message", text: $draft, axis: .vertical)
                             .appFont(size: ThemeTokens.Text.m)
                             .lineLimit(1...6)
                             .focused($focused)
                             .padding(.horizontal, ThemeTokens.Spacing.m)
                             .padding(.vertical, ThemeTokens.Spacing.m)
-                            .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
-                        if focused {
-                            VStack(spacing: 0) {
-                                Divider()
-                                    .padding(.horizontal, ThemeTokens.Spacing.m)
-                                ChatInputBarMetaRow(
-                                    sessionId: sessionId,
-                                    model: model,
-                                    effort: effort,
-                                    contextTokens: contextTokens,
-                                    contextWindow: contextWindow
-                                )
-                                .padding(.horizontal, ThemeTokens.Spacing.m)
-                                .padding(.vertical, ThemeTokens.Spacing.s)
-                            }
-                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        if !focused {
+                            trailingButton
                         }
                     }
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
-                    trailingButton
-                        .alignmentGuide(.chatInputFieldBottom) { $0[VerticalAlignment.bottom] }
+                    if focused {
+                        HStack(spacing: ThemeTokens.Spacing.s) {
+                            ChatInputBarAttachmentPicker(images: $images)
+                            ChatInputBarMetaRow(
+                                sessionId: sessionId,
+                                model: model,
+                                effort: effort,
+                                contextTokens: contextTokens,
+                                contextWindow: contextWindow
+                            )
+                            trailingButton
+                        }
+                        .padding(.horizontal, ThemeTokens.Spacing.xs)
+                        .padding(.bottom, ThemeTokens.Spacing.xs)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
                 }
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
@@ -148,14 +139,12 @@ struct ChatInputBar: View, Equatable {
                     .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: Capsule())
         } else if canRecord {
             Image(systemName: "mic.fill")
                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
                 .foregroundColor(appAccent.color)
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())
-                .glassEffect(.regular.interactive(), in: Capsule())
                 .gesture(recordGesture)
         } else {
             Menu {
@@ -170,7 +159,6 @@ struct ChatInputBar: View, Equatable {
                 send()
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: Capsule())
             .disabled(!enabled)
         }
     }

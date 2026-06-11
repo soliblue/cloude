@@ -14,7 +14,6 @@ struct ChatInputBarAttachmentPicker: View {
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())
         }
-        .glassEffect(.regular.interactive(), in: Capsule())
         .onChange(of: selections) { _, items in
             Task {
                 var loaded: [Data] = []
