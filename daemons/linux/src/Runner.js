@@ -3,12 +3,13 @@ import { StringDecoder } from 'node:string_decoder'
 import { claudeCommand, spawnEnvironment } from './Runtime/ClaudeRuntime.js'
 
 export default class Runner {
-  constructor({ sessionId, hasStartedBefore, model, effort, onFinish }) {
+  constructor({ sessionId, hasStartedBefore, model, effort, permissionMode, onFinish }) {
     this.sessionId = sessionId
     this.hasExited = false
     this.hasStartedBefore = hasStartedBefore
     this.model = model
     this.effort = effort
+    this.permissionMode = permissionMode
     this.onFinish = onFinish
     this.process = null
     this.ring = []
@@ -23,7 +24,6 @@ export default class Runner {
     const argumentsList = [
       ...leadingArguments,
       '-p',
-      '--dangerously-skip-permissions',
       '--output-format',
       'stream-json',
       '--verbose',
@@ -31,6 +31,13 @@ export default class Runner {
       '--disallowedTools',
       'AskUserQuestion ExitPlanMode EnterPlanMode Monitor ScheduleWakeup CronCreate CronDelete CronList RemoteTrigger PushNotification TeamCreate TeamDelete'
     ]
+    const permissionFlags = new Map([
+      ['plan', ['--permission-mode', 'plan']],
+      ['default', ['--permission-mode', 'default']],
+      ['acceptEdits', ['--permission-mode', 'acceptEdits']],
+      ['custom', []]
+    ])
+    argumentsList.push(...(permissionFlags.get(this.permissionMode) ?? ['--dangerously-skip-permissions']))
     if (this.model) {
       argumentsList.push('--model', this.model)
     }

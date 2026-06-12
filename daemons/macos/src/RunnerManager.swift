@@ -9,15 +9,17 @@ final class RunnerManager {
 
     func start(
         sessionId: String, path: String, prompt: String, images: [[String: String]],
-        existsOnServer: Bool, model: String?, effort: String?, connection: NWConnection
+        existsOnServer: Bool, model: String?, effort: String?, permissionMode: String?,
+        connection: NWConnection
     ) {
         queue.async {
             NSLog(
-                "[RunnerManager] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
+                "[RunnerManager] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") permissionMode=\(permissionMode ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
             )
             let previous = self.runners[sessionId]
             let runner = Runner(
-                sessionId: sessionId, hasStartedBefore: existsOnServer, model: model, effort: effort, queue: self.queue)
+                sessionId: sessionId, hasStartedBefore: existsOnServer, model: model, effort: effort,
+                permissionMode: permissionMode, queue: self.queue)
             runner.onFinish = { [weak self, weak runner] in
                 self?.queue.async {
                     if let runner, self?.runners[sessionId] === runner {

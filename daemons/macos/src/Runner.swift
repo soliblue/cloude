@@ -7,6 +7,7 @@ final class Runner {
     private let hasStartedBefore: Bool
     private let model: String?
     private let effort: String?
+    private let permissionMode: String?
     private let queue: DispatchQueue
     var onFinish: (() -> Void)?
     private var process: Process?
@@ -17,11 +18,15 @@ final class Runner {
     private let maxRingSize = 1000
     private var lineBuffer = Data()
 
-    init(sessionId: String, hasStartedBefore: Bool, model: String?, effort: String?, queue: DispatchQueue) {
+    init(
+        sessionId: String, hasStartedBefore: Bool, model: String?, effort: String?,
+        permissionMode: String?, queue: DispatchQueue
+    ) {
         self.sessionId = sessionId
         self.hasStartedBefore = hasStartedBefore
         self.model = model
         self.effort = effort
+        self.permissionMode = permissionMode
         self.queue = queue
     }
 
@@ -42,6 +47,14 @@ final class Runner {
                 "--disallowedTools",
                 "AskUserQuestion ExitPlanMode EnterPlanMode Monitor ScheduleWakeup CronCreate CronDelete CronList RemoteTrigger PushNotification TeamCreate TeamDelete",
             ]
+        let permissionFlags: [String: [String]] = [
+            "plan": ["--permission-mode", "plan"],
+            "default": ["--permission-mode", "default"],
+            "acceptEdits": ["--permission-mode", "acceptEdits"],
+            "custom": [],
+        ]
+        claudeArgs.append(
+            contentsOf: permissionFlags[permissionMode ?? ""] ?? ["--dangerously-skip-permissions"])
         if let model {
             claudeArgs.append(contentsOf: ["--model", model])
         }

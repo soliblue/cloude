@@ -6,6 +6,7 @@ struct ChatInputBar: View, Equatable {
     let isStreaming: Bool
     let model: ChatModel?
     let effort: ChatEffort?
+    let permissionMode: ChatPermissionMode
     let contextTokens: Int
     let contextWindow: Int
     var enabled: Bool = true
@@ -25,6 +26,7 @@ struct ChatInputBar: View, Equatable {
             && lhs.isStreaming == rhs.isStreaming
             && lhs.model == rhs.model
             && lhs.effort == rhs.effort
+            && lhs.permissionMode == rhs.permissionMode
             && lhs.contextTokens == rhs.contextTokens
             && lhs.contextWindow == rhs.contextWindow
             && lhs.enabled == rhs.enabled
@@ -35,6 +37,7 @@ struct ChatInputBar: View, Equatable {
         isStreaming: Bool,
         model: ChatModel?,
         effort: ChatEffort?,
+        permissionMode: ChatPermissionMode = .bypassPermissions,
         contextTokens: Int = 0,
         contextWindow: Int = 0,
         enabled: Bool = true
@@ -43,6 +46,7 @@ struct ChatInputBar: View, Equatable {
         self.isStreaming = isStreaming
         self.model = model
         self.effort = effort
+        self.permissionMode = permissionMode
         self.contextTokens = contextTokens
         self.contextWindow = contextWindow
         self.enabled = enabled
@@ -87,6 +91,7 @@ struct ChatInputBar: View, Equatable {
                                 sessionId: sessionId,
                                 model: model,
                                 effort: effort,
+                                permissionMode: permissionMode,
                                 contextTokens: contextTokens,
                                 contextWindow: contextWindow
                             )

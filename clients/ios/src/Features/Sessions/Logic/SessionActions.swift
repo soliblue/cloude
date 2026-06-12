@@ -79,6 +79,18 @@ enum SessionActions {
     }
 
     @MainActor
+    static func setPermissionMode(
+        _ mode: ChatPermissionMode, for sessionId: UUID, context: ModelContext
+    ) {
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        if let session = try? context.fetch(descriptor).first {
+            session.permissionMode = mode
+        }
+    }
+
+    @MainActor
     static func setContextUsage(
         tokens: Int?, window: Int?, for sessionId: UUID, context: ModelContext
     ) {

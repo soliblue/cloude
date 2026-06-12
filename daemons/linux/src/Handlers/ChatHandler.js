@@ -22,6 +22,7 @@ export function start(request, params) {
         existsOnServer: body.existsOnServer === true,
         model: typeof body.model === 'string' ? body.model : null,
         effort: typeof body.effort === 'string' ? body.effort : null,
+        permissionMode: typeof body.permissionMode === 'string' ? body.permissionMode : null,
         response
       })
     })

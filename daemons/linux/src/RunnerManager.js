@@ -6,13 +6,14 @@ class RunnerManager {
     this.runners = new Map()
   }
 
-  start({ sessionId, path, prompt, images, existsOnServer, model, effort, response }) {
+  start({ sessionId, path, prompt, images, existsOnServer, model, effort, permissionMode, response }) {
     const previous = this.runners.get(sessionId)
     const runner = new Runner({
       sessionId,
       hasStartedBefore: existsOnServer,
       model,
       effort,
+      permissionMode,
       onFinish: () => {
         if (this.runners.get(sessionId) === runner) {
           this.runners.delete(sessionId)

@@ -4,6 +4,7 @@ struct ChatInputBarMetaRow: View {
     let sessionId: UUID
     let model: ChatModel?
     let effort: ChatEffort?
+    let permissionMode: ChatPermissionMode
     let contextTokens: Int
     let contextWindow: Int
     @Environment(\.appAccent) private var appAccent
@@ -11,6 +12,19 @@ struct ChatInputBarMetaRow: View {
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.s) {
             Spacer()
+            Menu {
+                ChatInputBarPermissionMenu(sessionId: sessionId, permissionMode: permissionMode)
+            } label: {
+                Image(systemName: permissionMode.symbol)
+                    .font(.system(size: ThemeTokens.Icon.s, weight: .medium))
+                    .foregroundStyle(
+                        permissionMode == .bypassPermissions ? ThemeColor.danger : Color.secondary
+                    )
+                    .frame(width: ThemeTokens.Icon.m, height: ThemeTokens.Icon.m)
+                    .padding(.vertical, ThemeTokens.Spacing.xs)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
             if contextTokens > 0 && contextWindow > 0 {
                 contextRing
             }

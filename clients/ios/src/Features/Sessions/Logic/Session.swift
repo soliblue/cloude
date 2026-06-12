@@ -23,6 +23,7 @@ final class Session {
     var tabRaw: String = SessionTab.chat.rawValue
     var modelRaw: String? = nil
     var effortRaw: String? = nil
+    var permissionModeRaw: String? = nil
 
     init(
         id: UUID = UUID(),
@@ -53,6 +54,11 @@ final class Session {
     var effort: ChatEffort? {
         get { effortRaw.flatMap(ChatEffort.init(rawValue:)) }
         set { effortRaw = newValue?.rawValue }
+    }
+
+    var permissionMode: ChatPermissionMode {
+        get { permissionModeRaw.flatMap(ChatPermissionMode.init(rawValue:)) ?? .bypassPermissions }
+        set { permissionModeRaw = newValue.rawValue }
     }
 
     var isConfigured: Bool {
