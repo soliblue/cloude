@@ -8,6 +8,7 @@ enum StorageKey {
     static let typewriterFadeWindow = "typewriterFadeWindow"
     static let defaultChatModel = "defaultChatModel"
     static let defaultChatEffort = "defaultChatEffort"
+    static let gitViewAsTree = "gitViewAsTree"
 }
 
 enum TypewriterDefaults {

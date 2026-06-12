@@ -10,6 +10,9 @@ struct GitView: View {
     @State private var selectedChange: GitDiffTarget?
     @State private var isLoading = false
     @State private var hasLoaded = false
+    @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = false
+    @State private var collapsedStaged: Set<String> = []
+    @State private var collapsedUnstaged: Set<String> = []
 
     init(session: Session) {
         self.session = session
@@ -67,28 +70,37 @@ struct GitView: View {
         return List {
             if !staged.isEmpty {
                 Section("Staged") {
-                    ForEach(staged) { change in
-                        GitViewChangeRow(change: change) {
-                            selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
-                        }
-                        .listRowBackground(theme.palette.background)
-                    }
+                    changeRows(staged, collapsed: $collapsedStaged)
                 }
             }
             if !unstaged.isEmpty {
                 Section("Changes") {
-                    ForEach(unstaged) { change in
-                        GitViewChangeRow(change: change) {
-                            selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
-                        }
-                        .listRowBackground(theme.palette.background)
-                    }
+                    changeRows(unstaged, collapsed: $collapsedUnstaged)
                 }
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(theme.palette.background)
+    }
+
+    @ViewBuilder
+    private func changeRows(_ changes: [GitChange], collapsed: Binding<Set<String>>) -> some View {
+        if viewAsTree {
+            ForEach(GitChangeTreeNode.build(changes)) { node in
+                GitViewChangeTreeRow(node: node, depth: 0, collapsed: collapsed) { change in
+                    selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
+                }
+                .listRowBackground(theme.palette.background)
+            }
+        } else {
+            ForEach(changes) { change in
+                GitViewChangeRow(change: change) {
+                    selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
+                }
+                .listRowBackground(theme.palette.background)
+            }
+        }
     }
 
     @ViewBuilder

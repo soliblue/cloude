@@ -4,6 +4,7 @@ struct GitViewStatusHeader: View {
     let status: GitStatus
     let session: Session
     @Environment(\.theme) private var theme
+    @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = false
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.s) {
@@ -36,6 +37,16 @@ struct GitViewStatusHeader: View {
                 Text("-\(totalDel)")
                     .appFont(size: ThemeTokens.Text.s, weight: .medium, design: .monospaced)
                     .foregroundColor(ThemeColor.danger)
+            }
+            if !status.changes.isEmpty {
+                Button {
+                    viewAsTree.toggle()
+                } label: {
+                    Image(systemName: viewAsTree ? "list.bullet" : "list.bullet.indent")
+                        .appFont(size: ThemeTokens.Icon.s)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
             }
         }
         .foregroundColor(.secondary)

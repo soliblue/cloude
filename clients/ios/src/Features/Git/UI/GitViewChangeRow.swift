@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GitViewChangeRow: View {
     let change: GitChange
+    var showsDirectory = true
     let onTap: () -> Void
 
     var body: some View {
@@ -14,10 +15,12 @@ struct GitViewChangeRow: View {
                     .background(badgeColor)
                     .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.s))
                 HStack(spacing: 0) {
-                    Text(directory)
-                        .appFont(size: ThemeTokens.Text.m)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                    if showsDirectory {
+                        Text(directory)
+                            .appFont(size: ThemeTokens.Text.m)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
                     Text(leaf)
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
                         .lineLimit(1)
