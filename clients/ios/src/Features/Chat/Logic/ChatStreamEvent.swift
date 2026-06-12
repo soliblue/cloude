@@ -1,6 +1,6 @@
 import Foundation
 
-struct DecodedToolUse: Equatable {
+nonisolated struct DecodedToolUse: Equatable {
     let id: String
     let name: String
     let inputSummary: String
@@ -8,7 +8,7 @@ struct DecodedToolUse: Equatable {
     let parentToolUseId: String?
 }
 
-enum ChatStreamEvent {
+nonisolated enum ChatStreamEvent {
     case initialized(seq: Int)
     case assistantTextDelta(seq: Int, text: String)
     case assistantFinal(

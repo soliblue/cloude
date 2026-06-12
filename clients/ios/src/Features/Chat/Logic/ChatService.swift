@@ -310,7 +310,7 @@ enum ChatService {
         context: ModelContext
     ) async {
         let events = AsyncThrowingStream<ChatStreamEvent, Error> { continuation in
-            let task = Task.detached(priority: .userInitiated) {
+            let task = Task.detached(priority: .userInitiated) { @concurrent in
                 do {
                     for try await line in stream {
                         if let event = ChatStreamEvent.decode(line) { continuation.yield(event) }

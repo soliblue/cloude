@@ -78,7 +78,7 @@ final class ChatToolCall {
         }
     }
 
-    static func summarize(name: String, input: [String: Any]) -> String {
+    nonisolated static func summarize(name: String, input: [String: Any]) -> String {
         let keys = ["command", "file_path", "path", "pattern", "query", "url", "description"]
         for key in keys {
             if let value = input[key] as? String, !value.isEmpty { return value }
@@ -117,7 +117,7 @@ final class ChatToolCall {
         return nil
     }
 
-    static func prettyJSON(_ object: Any) -> String {
+    nonisolated static func prettyJSON(_ object: Any) -> String {
         if let data = try? JSONSerialization.data(
             withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]),
             let string = String(data: data, encoding: .utf8)
