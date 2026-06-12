@@ -3,6 +3,11 @@ import UIKit
 final class KeyboardDismissGesture: NSObject, UIGestureRecognizerDelegate {
     static let shared = KeyboardDismissGesture()
     private var isInstalled = false
+    private let exemptViews = NSHashTable<UIView>.weakObjects()
+
+    func exempt(_ view: UIView) {
+        exemptViews.add(view)
+    }
 
     func install() {
         if isInstalled { return }
@@ -30,6 +35,9 @@ final class KeyboardDismissGesture: NSObject, UIGestureRecognizerDelegate {
             if current is UITextField || current is UITextView { return false }
             if current is UIControl { return false }
             view = current.superview
+        }
+        for exempt in exemptViews.allObjects where exempt.window === touch.window {
+            if exempt.bounds.contains(touch.location(in: exempt)) { return false }
         }
         return true
     }

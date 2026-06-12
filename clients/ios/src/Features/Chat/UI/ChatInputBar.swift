@@ -103,6 +103,7 @@ struct ChatInputBar: View, Equatable {
                     }
                 }
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
+                .background(KeyboardDismissExemptArea())
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
