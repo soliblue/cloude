@@ -55,6 +55,7 @@ cloude/
 - **Format Swift before finishing** - `swift-format -i <files>` on edited files. Config at repo root in `.swift-format`.
 - **Inline icon size matches adjacent text** - `Image` next to `Text` on the same baseline uses the same `ThemeTokens.Text.*` token. Reserve `ThemeTokens.Icon.*` for standalone icons.
 - **Morphing icons need a fixed frame** - any `Image(systemName:)` with `.contentTransition(.symbolEffect(.replace))` needs an explicit `.frame(width:height:)`; SF Symbol bounds differ per glyph and rows jump mid-animation.
+- **Everything is MainActor unless opted out** - the app builds with `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, so unannotated types, funcs, and even `Task.detached` closures silently run on the main actor (the compiler infers the closure main-actor so the call compiles). To genuinely move work off-main, mark the callee chain `nonisolated` and the closure `@concurrent`.
 
 ### Daemon specifics
 
