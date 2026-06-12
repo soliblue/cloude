@@ -17,7 +17,17 @@ struct WindowsSidebar: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
                         if !windows.isEmpty {
-                            sectionHeader("Open")
+                            HStack {
+                                sectionHeader("Open")
+                                Spacer()
+                                NavigationLink {
+                                    SessionHistoryView(selectedPane: $selectedPane)
+                                } label: {
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                             VStack(alignment: .leading, spacing: 0) {
                                 ForEach(windows) { window in
                                     if let session = window.session {
