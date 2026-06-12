@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ChatViewMessageListRowStreamingMarkdown: View {
-    let text: String
+    let snapshot: ChatLiveSnapshot
     @AppStorage(StorageKey.typewriterCps) private var cps: Double = TypewriterDefaults.cps
     @AppStorage(StorageKey.typewriterFadeWindow) private var fadeWindow: Double = TypewriterDefaults
         .fadeWindow
@@ -11,9 +11,11 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
     @State private var tailId: String = ""
     @State private var revealedGlyphs: Double = 0
     @State private var ticker: Task<Void, Never>?
-    @State private var lastText: String = ""
+    @State private var lastSnapshotId: ObjectIdentifier?
+    @State private var lastDeltaCount: Int = 0
     @State private var lastUpdate: Date = .distantPast
     @State private var tailStartLine: Int = 0
+    @State private var tailStartUTF8: Int = 0
 
     var body: some View {
         let _ = PerfCounters.bump("str.body")
@@ -38,25 +40,31 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
             ticker?.cancel()
             ticker = nil
         }
-        .onChange(of: text) { _, _ in updateIncremental() }
+        .onChange(of: snapshot.deltaCount) { _, _ in updateIncremental() }
     }
 
     private func updateIncremental() {
-        if text == lastText { return }
+        let snapshotId = ObjectIdentifier(snapshot)
+        if snapshotId == lastSnapshotId && snapshot.deltaCount == lastDeltaCount { return }
+        let text = snapshot.text
         let isStale = Date().timeIntervalSince(lastUpdate) > 0.5
-        let appendOnly = !lastText.isEmpty && text.hasPrefix(lastText)
-        lastText = text
+        let appendOnly = snapshotId == lastSnapshotId && snapshot.deltaCount > lastDeltaCount
+        lastSnapshotId = snapshotId
+        lastDeltaCount = snapshot.deltaCount
         lastUpdate = Date()
         let blocks: [ChatMarkdownBlock]
         if appendOnly,
-            let resumed = ChatMarkdownParser.parseResuming(text, tailStartLine: tailStartLine)
+            let resumed = ChatMarkdownParser.parseResuming(
+                text, tailStartLine: tailStartLine, tailStartUTF8: tailStartUTF8)
         {
             blocks = frozen + resumed.blocks
             tailStartLine = resumed.tailStartLine
+            tailStartUTF8 = resumed.tailStartUTF8
         } else {
             let full = ChatMarkdownParser.parseWithTailStart(text)
             blocks = full.blocks
             tailStartLine = full.tailStartLine
+            tailStartUTF8 = full.tailStartUTF8
         }
         let newTail = Array(blocks.suffix(1))
         let newTailId = newTail.first?.id ?? ""

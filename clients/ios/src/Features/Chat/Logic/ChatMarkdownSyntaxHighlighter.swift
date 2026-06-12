@@ -33,14 +33,16 @@ enum ChatMarkdownSyntaxHighlighter {
     ]
 
     @MainActor private static var cache: [String: AttributedString] = [:]
+    @MainActor private static var order: [String] = []
 
     @MainActor
     static func highlight(_ code: String, language: String?) -> AttributedString {
         let key = "\(language ?? "")\u{1}\(code)"
         if let cached = cache[key] { return cached }
         let highlighted = computeHighlight(code, language: language)
-        if cache.count >= 32 { cache.removeAll() }
+        if cache.count >= 32 { cache.removeValue(forKey: order.removeFirst()) }
         cache[key] = highlighted
+        order.append(key)
         return highlighted
     }
 

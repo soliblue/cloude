@@ -76,7 +76,7 @@ struct ChatViewMessageListRow: View {
         } else if snapshot.text.isEmpty && !message.hasToolCalls {
             ProgressView().controlSize(.small)
         } else if !snapshot.text.isEmpty {
-            ChatViewMessageListRowStreamingMarkdown(text: snapshot.text)
+            ChatViewMessageListRowStreamingMarkdown(snapshot: snapshot)
         }
     }
 }

@@ -7,16 +7,13 @@ enum ChatMarkdownParser {
     }
 
     static func parseResuming(
-        _ text: String, tailStartLine: Int
-    ) -> (blocks: [ChatMarkdownBlock], tailStartLine: Int)? {
-        if tailStartLine > 0 {
-            let lines = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                .components(separatedBy: "\n")
-            if tailStartLine < lines.count {
-                let trailing = text.hasSuffix("\n ") ? "\n " : (text.hasSuffix("\n") ? "\n" : "")
-                let suffix = lines[tailStartLine...].joined(separator: "\n") + trailing
-                let result = parseWithTailStart(suffix, lineOffset: tailStartLine)
-                if !result.blocks.isEmpty { return result }
+        _ text: String, tailStartLine: Int, tailStartUTF8: Int
+    ) -> (blocks: [ChatMarkdownBlock], tailStartLine: Int, tailStartUTF8: Int)? {
+        if tailStartUTF8 > 0 && tailStartUTF8 < text.utf8.count {
+            let start = text.utf8.index(text.utf8.startIndex, offsetBy: tailStartUTF8)
+            let result = parseWithTailStart(String(text[start...]), lineOffset: tailStartLine)
+            if !result.blocks.isEmpty {
+                return (result.blocks, result.tailStartLine, tailStartUTF8 + result.tailStartUTF8)
             }
         }
         return nil
@@ -24,12 +21,12 @@ enum ChatMarkdownParser {
 
     static func parseWithTailStart(
         _ text: String, lineOffset: Int = 0
-    ) -> (blocks: [ChatMarkdownBlock], tailStartLine: Int) {
+    ) -> (blocks: [ChatMarkdownBlock], tailStartLine: Int, tailStartUTF8: Int) {
         PerfCounters.bumpParse(hash: text.hashValue)
         var blocks: [ChatMarkdownBlock] = []
         var tailStartLine = lineOffset
         let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if normalized.isEmpty { return (blocks, tailStartLine) }
+        if normalized.isEmpty { return (blocks, tailStartLine, 0) }
         let hasTrailingNewline = text.hasSuffix("\n") || text.hasSuffix("\n ")
         let lines = normalized.components(separatedBy: "\n")
         var i = 0
@@ -97,7 +94,18 @@ enum ChatMarkdownParser {
             }
         }
 
-        return (blocks, tailStartLine)
+        let scalars = text.unicodeScalars
+        var firstContent = scalars.startIndex
+        while firstContent < scalars.endIndex,
+            CharacterSet.whitespacesAndNewlines.contains(scalars[firstContent])
+        {
+            firstContent = scalars.index(after: firstContent)
+        }
+        let leadingUTF8 = text.utf8.distance(from: text.utf8.startIndex, to: firstContent)
+        let tailStartUTF8 = lines[0..<(tailStartLine - lineOffset)].reduce(leadingUTF8) {
+            $0 + $1.utf8.count + 1
+        }
+        return (blocks, tailStartLine, tailStartUTF8)
     }
 
     static func isHorizontalRule(_ line: String) -> Bool {

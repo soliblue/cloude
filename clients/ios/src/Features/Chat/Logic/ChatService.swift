@@ -309,19 +309,30 @@ enum ChatService {
         stream: AsyncThrowingStream<Data, Error>, sessionId: UUID, generation: UUID,
         context: ModelContext
     ) async {
-        do {
-            for try await line in stream {
-                if streamGenerations[sessionId] != generation { return }
-                if let event = ChatStreamEvent.decode(line) {
-                    if let pending = pendingUserMessages.removeValue(forKey: sessionId),
-                        pending.state == .retrying
-                    {
-                        pending.state = .complete
+        let events = AsyncThrowingStream<ChatStreamEvent, Error> { continuation in
+            let task = Task.detached(priority: .userInitiated) {
+                do {
+                    for try await line in stream {
+                        if let event = ChatStreamEvent.decode(line) { continuation.yield(event) }
                     }
-                    let seq = event.seq
-                    if seq > (lastSeqs[sessionId] ?? -1) { lastSeqs[sessionId] = seq }
-                    apply(event: event, sessionId: sessionId, context: context)
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
                 }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+        do {
+            for try await event in events {
+                if streamGenerations[sessionId] != generation { return }
+                if let pending = pendingUserMessages.removeValue(forKey: sessionId),
+                    pending.state == .retrying
+                {
+                    pending.state = .complete
+                }
+                let seq = event.seq
+                if seq > (lastSeqs[sessionId] ?? -1) { lastSeqs[sessionId] = seq }
+                apply(event: event, sessionId: sessionId, context: context)
             }
             if streamGenerations[sessionId] != generation { return }
             AppLogger.performanceInfo(
