@@ -12,6 +12,8 @@ struct ChatInputBar: View, Equatable {
     var enabled: Bool = true
     @State private var draft: String = ""
     @State private var images: [Data] = []
+    @State private var pastedTexts: [String] = []
+    @State private var bypassPasteDetection = false
     @State private var suggestions: [ChatInputSuggestion] = []
     @State private var fileSearchTask: Task<Void, Never>?
     @State private var recorder = ChatAudioRecorder()
@@ -62,8 +64,12 @@ struct ChatInputBar: View, Equatable {
             if !suggestions.isEmpty {
                 ChatInputBarSuggestions(suggestions: suggestions, onSelect: applySuggestion)
             }
-            if !images.isEmpty {
-                ChatInputBarAttachmentStrip(images: $images)
+            if !images.isEmpty || !pastedTexts.isEmpty {
+                ChatInputBarAttachmentStrip(images: $images, pastedTexts: $pastedTexts) { text in
+                    bypassPasteDetection = true
+                    draft = draft.isEmpty ? text : draft + "\n" + text
+                    focused = true
+                }
             }
             if recorder.isRecording || isTranscribing {
                 ChatInputBarRecordingOverlay(
@@ -114,16 +120,27 @@ struct ChatInputBar: View, Equatable {
             )
             draft = ChatDraftStore.text(for: sessionId)
             images = ChatDraftStore.images(for: sessionId)
+            pastedTexts = ChatDraftStore.pastedTexts(for: sessionId)
         }
         .onDisappear {
             AppLogger.uiInfo("chatInput disappear trace=\(traceId) session=\(sessionId.uuidString)")
         }
-        .onChange(of: draft) { _, value in
-            ChatDraftStore.setText(value, for: sessionId)
-            recomputeSuggestions()
+        .onChange(of: draft) { oldValue, value in
+            let bypass = bypassPasteDetection
+            bypassPasteDetection = false
+            if !bypass, let paste = ChatPasteDetector.extract(old: oldValue, new: value) {
+                pastedTexts.append(paste.text)
+                draft = paste.remaining
+            } else {
+                ChatDraftStore.setText(value, for: sessionId)
+                recomputeSuggestions()
+            }
         }
         .onChange(of: images) { _, value in
             ChatDraftStore.setImages(value, for: sessionId)
+        }
+        .onChange(of: pastedTexts) { _, value in
+            ChatDraftStore.setPastedTexts(value, for: sessionId)
         }
         .onChange(of: focused) { oldValue, newValue in
             AppLogger.uiInfo(
@@ -176,16 +193,20 @@ struct ChatInputBar: View, Equatable {
 
     private func send() {
         let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        if canSend && (!trimmed.isEmpty || !images.isEmpty) {
+        if canSend && (!trimmed.isEmpty || !images.isEmpty || !pastedTexts.isEmpty) {
             let pendingImages = images
+            let prompt = (pastedTexts + [trimmed]).filter { !$0.isEmpty }
+                .joined(separator: "\n\n")
             focused = false
             draft = ""
             images = []
+            pastedTexts = []
             suggestions = []
             ChatDraftStore.setText("", for: sessionId)
             ChatDraftStore.setImages([], for: sessionId)
+            ChatDraftStore.setPastedTexts([], for: sessionId)
             ChatService.send(
-                sessionId: sessionId, prompt: trimmed, images: pendingImages, context: context)
+                sessionId: sessionId, prompt: prompt, images: pendingImages, context: context)
         }
     }
 
@@ -237,11 +258,13 @@ struct ChatInputBar: View, Equatable {
     }
 
     private var canSend: Bool {
-        enabled && (!draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !images.isEmpty)
+        enabled
+            && (!draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !images.isEmpty
+                || !pastedTexts.isEmpty)
     }
 
     private var canRecord: Bool {
-        enabled && draft.isEmpty && images.isEmpty
+        enabled && draft.isEmpty && images.isEmpty && pastedTexts.isEmpty
             && SessionManifestStore.shared.transcriptionReady(for: sessionId)
             && !recorder.isRecording && !isTranscribing
     }
@@ -276,6 +299,7 @@ struct ChatInputBar: View, Equatable {
                         endpoint: endpoint, sessionId: sessionId, audio: data),
                     !text.isEmpty
                 {
+                    bypassPasteDetection = true
                     draft = draft.isEmpty ? text : draft + " " + text
                 }
                 isTranscribing = false
