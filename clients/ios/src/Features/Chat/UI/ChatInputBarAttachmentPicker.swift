@@ -9,7 +9,7 @@ struct ChatInputBarAttachmentPicker: View {
     var body: some View {
         PhotosPicker(selection: $selections, maxSelectionCount: 4, matching: .images) {
             Text(Image(systemName: "paperclip"))
-                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                .appFont(size: ThemeTokens.Text.l, weight: .medium)
                 .foregroundColor(.secondary)
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())

@@ -7,7 +7,6 @@ struct ChatViewMessageListRowToolPillListRow: View {
 
     var body: some View {
         let tint = toolCall.kind.color
-        let isTinted = toolCall.kind == .task || toolCall.kind == .skill
         Button(action: onTap) {
             HStack(spacing: ThemeTokens.Spacing.xs) {
                 Image(systemName: toolCall.symbol)
@@ -17,11 +16,11 @@ struct ChatViewMessageListRowToolPillListRow: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
-            .foregroundColor(isTinted ? .white : tint)
+            .foregroundColor(tint)
             .padding(.horizontal, ThemeTokens.Spacing.s)
             .padding(.vertical, ThemeTokens.Spacing.xs)
             .glassEffect(
-                isTinted ? .regular.tint(tint.opacity(ThemeTokens.Opacity.m)).interactive() : .regular.interactive(),
+                .regular.tint(tint.opacity(ThemeTokens.Opacity.s)).interactive(),
                 in: Capsule()
             )
             .overlay {

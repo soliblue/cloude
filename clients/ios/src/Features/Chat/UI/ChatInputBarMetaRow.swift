@@ -16,11 +16,11 @@ struct ChatInputBarMetaRow: View {
                 ChatInputBarPermissionMenu(sessionId: sessionId, permissionMode: permissionMode)
             } label: {
                 Image(systemName: permissionMode.symbol)
-                    .font(.system(size: ThemeTokens.Icon.s, weight: .medium))
+                    .font(.system(size: ThemeTokens.Icon.m, weight: .medium))
                     .foregroundStyle(
                         permissionMode == .bypassPermissions ? ThemeColor.danger : Color.secondary
                     )
-                    .frame(width: ThemeTokens.Icon.m, height: ThemeTokens.Icon.m)
+                    .frame(width: ThemeTokens.Icon.l, height: ThemeTokens.Icon.l)
                     .padding(.vertical, ThemeTokens.Spacing.xs)
                     .padding(.horizontal, ThemeTokens.Spacing.s)
                     .contentShape(Rectangle())
@@ -36,7 +36,7 @@ struct ChatInputBarMetaRow: View {
                     Image(systemName: model?.symbol ?? "cpu")
                     Text(pillText)
                 }
-                .appFont(size: ThemeTokens.Text.s, weight: .medium)
+                .appFont(size: ThemeTokens.Text.m, weight: .medium)
                 .foregroundStyle(.secondary)
                 .padding(.vertical, ThemeTokens.Spacing.xs)
                 .contentShape(Rectangle())
@@ -63,9 +63,9 @@ struct ChatInputBarMetaRow: View {
                     )
                     .rotationEffect(.degrees(-90))
             }
-            .frame(width: ThemeTokens.Text.s, height: ThemeTokens.Text.s)
+            .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
             Text("\(Int((usedFraction * 100).rounded()))%")
-                .appFont(size: ThemeTokens.Text.s, weight: .medium)
+                .appFont(size: ThemeTokens.Text.m, weight: .medium)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
         }

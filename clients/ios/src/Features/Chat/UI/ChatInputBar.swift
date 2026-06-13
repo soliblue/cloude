@@ -112,8 +112,9 @@ struct ChatInputBar: View, Equatable {
                 .background(KeyboardDismissExemptArea())
             }
         }
-        .padding(.horizontal, ThemeTokens.Spacing.m)
+        .padding(.horizontal, focused ? ThemeTokens.Spacing.m : ThemeTokens.Spacing.xl)
         .padding(.bottom, ThemeTokens.Spacing.s)
+        .animation(.easeOut(duration: ThemeTokens.Duration.s), value: focused)
         .onAppear {
             AppLogger.uiInfo(
                 "chatInput appear trace=\(traceId) session=\(sessionId.uuidString) enabled=\(enabled)"
@@ -156,7 +157,7 @@ struct ChatInputBar: View, Equatable {
                 ChatService.abort(sessionId: sessionId, context: context)
             } label: {
                 Text(Image(systemName: "stop.fill"))
-                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                    .appFont(size: ThemeTokens.Text.l, weight: .medium)
                     .foregroundColor(appAccent.color)
                     .padding(ThemeTokens.Spacing.m)
                     .contentShape(Capsule())
@@ -164,7 +165,7 @@ struct ChatInputBar: View, Equatable {
             .buttonStyle(.plain)
         } else if canRecord {
             Image(systemName: "mic.fill")
-                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                .appFont(size: ThemeTokens.Text.l, weight: .medium)
                 .foregroundColor(appAccent.color)
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())
@@ -173,11 +174,16 @@ struct ChatInputBar: View, Equatable {
             Menu {
                 sendMenu
             } label: {
-                Text(Image(systemName: "paperplane.fill"))
-                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                    .foregroundColor(canSend ? appAccent.color : .secondary)
-                    .padding(ThemeTokens.Spacing.m)
-                    .contentShape(Capsule())
+                Text(Image(systemName: "arrow.up"))
+                    .appFont(size: ThemeTokens.Text.l, weight: .bold)
+                    .foregroundColor(canSend ? .white : .secondary)
+                    .frame(width: ThemeTokens.Icon.l, height: ThemeTokens.Icon.l)
+                    .padding(ThemeTokens.Spacing.s)
+                    .background(
+                        Circle().fill(
+                            canSend ? appAccent.color : Color.secondary.opacity(ThemeTokens.Opacity.s))
+                    )
+                    .contentShape(Circle())
             } primaryAction: {
                 send()
             }
