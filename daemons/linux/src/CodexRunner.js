@@ -455,8 +455,8 @@ export default class CodexRunner {
     } else if (item.type === 'image_generation_call') {
       const id = item.id || `image_generation_${this.rawSyntheticToolCount += 1}`
       this.emitToolUse({ id, name: 'ImageGeneration', input: { prompt: item.revised_prompt || '' } })
-      if (item.status && item.status !== 'in_progress') {
-        this.emitToolResultForId(id, item.result || item.revised_prompt || '', item.status === 'failed')
+      if (item.status === 'completed' || item.status === 'failed') {
+        this.emitToolResultForId(id, item.revised_prompt || '', item.status === 'failed')
       }
     }
   }
@@ -476,12 +476,12 @@ export default class CodexRunner {
       return this.rawNamedToolUse(id, item.name, item.input || '')
     }
     if (item.type === 'function_call') {
-      return this.rawNamedToolUse(id, item.name, this.parsedJSON(item.arguments) || { arguments: item.arguments || '' })
+      return this.rawNamedToolUse(id, item.name, this.parsedJSON(item.arguments) || { arguments: item.arguments || '' }, item.namespace || '')
     }
     return null
   }
 
-  rawNamedToolUse(id, name, input) {
+  rawNamedToolUse(id, name, input, namespace = '') {
     const shortName = (name || 'Tool').split('.').pop()
     if (shortName === 'exec_command') {
       return { id, name: 'Bash', input: { command: input.cmd || '', workdir: input.workdir || '' } }
@@ -496,7 +496,8 @@ export default class CodexRunner {
     if (shortName === 'view_image') {
       return { id, name: 'Read', input: { path: input.path || '' } }
     }
-    return { id, name: shortName || 'Tool', input: typeof input === 'object' && input !== null ? input : { input } }
+    const object = typeof input === 'object' && input !== null ? input : { input }
+    return { id, name: shortName || 'Tool', input: namespace ? { namespace, ...object } : object }
   }
 
   rawOutputText(item) {

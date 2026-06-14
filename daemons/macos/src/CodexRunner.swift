@@ -629,10 +629,10 @@ final class CodexRunner: ChatRunning {
                     "name": "ImageGeneration",
                     "input": ["prompt": item["revised_prompt"] as? String ?? ""],
                 ])
-                if let status = item["status"] as? String, status != "in_progress" {
+                if let status = item["status"] as? String, status == "completed" || status == "failed" {
                     emitToolResultForId(
                         id: id,
-                        text: item["result"] as? String ?? item["revised_prompt"] as? String ?? "",
+                        text: item["revised_prompt"] as? String ?? "",
                         isError: status == "failed")
                 }
             }
@@ -668,12 +668,13 @@ final class CodexRunner: ChatRunning {
         if item["type"] as? String == "function_call" {
             return rawNamedToolUse(
                 id: id, name: item["name"] as? String,
-                input: parsedJSON(item["arguments"] as? String) ?? ["arguments": item["arguments"] as? String ?? ""])
+                input: parsedJSON(item["arguments"] as? String) ?? ["arguments": item["arguments"] as? String ?? ""],
+                namespace: item["namespace"] as? String ?? "")
         }
         return nil
     }
 
-    private func rawNamedToolUse(id: String, name: String?, input: Any) -> [String: Any] {
+    private func rawNamedToolUse(id: String, name: String?, input: Any, namespace: String = "") -> [String: Any] {
         let shortName = name?.split(separator: ".").last.map(String.init) ?? "Tool"
         let object = input as? [String: Any] ?? [:]
         if shortName == "exec_command" {
@@ -701,10 +702,14 @@ final class CodexRunner: ChatRunning {
         if shortName == "view_image" {
             return ["id": id, "name": "Read", "input": ["path": object["path"] as? String ?? ""]]
         }
+        var genericInput = (input as? [String: Any]) ?? ["input": input]
+        if !namespace.isEmpty {
+            genericInput["namespace"] = namespace
+        }
         return [
             "id": id,
             "name": shortName,
-            "input": (input as? [String: Any]) ?? ["input": input],
+            "input": genericInput,
         ]
     }
 
