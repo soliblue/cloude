@@ -37,7 +37,6 @@ struct SessionView: View {
                 sessionId: session.id,
                 isConfigured: session.isConfigured,
                 hasGit: session.hasGit,
-                filesLabel: filesLabel,
                 openSidebar: openSidebar,
                 selectTab: { tab in
                     if tab == .git {
@@ -62,14 +61,6 @@ struct SessionView: View {
         .onDisappear {
             AppLogger.uiInfo("sessionView disappear trace=\(traceId) session=\(session.id.uuidString)")
         }
-    }
-
-    private var filesLabel: String {
-        if let path = session.path, !path.isEmpty {
-            let leaf = (path as NSString).lastPathComponent
-            return leaf.count > 10 ? String(leaf.prefix(10)) + "…" : leaf
-        }
-        return SessionTab.files.label
     }
 
     private var gitRefreshKey: String {

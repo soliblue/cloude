@@ -5,7 +5,6 @@ struct SessionViewTabs: View {
     let isGitSelected: Bool
     let sessionId: UUID
     let hasGit: Bool
-    let filesLabel: String
     let selectTab: (SessionTab) -> Void
     @Environment(\.appAccent) private var appAccent
 
@@ -38,21 +37,10 @@ struct SessionViewTabs: View {
         let active = tab == .git ? isGitSelected : !isGitSelected && selected == tab
         if tab == .git {
             SessionViewTabsGitLabel(sessionId: sessionId, isActive: active)
-        } else if tab == .chat {
-            SessionViewTabsChatLabel(sessionId: sessionId, isActive: active)
         } else {
-            HStack(spacing: ThemeTokens.Spacing.xs) {
-                Image(systemName: tab.symbol)
-                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                let text = label(for: tab)
-                if !text.isEmpty {
-                    Text(text)
-                        .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
-            }
-            .foregroundColor(active ? appAccent.color : .secondary)
+            Image(systemName: tab.symbol)
+                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                .foregroundColor(active ? appAccent.color : .secondary)
         }
     }
 
@@ -61,10 +49,6 @@ struct SessionViewTabs: View {
     }
 
     private var visibleTabs: [SessionTab] {
-        SessionTab.allCases.filter { $0 != .git || hasGit }
-    }
-
-    private func label(for tab: SessionTab) -> String {
-        tab == .files ? filesLabel : tab.label
+        SessionTab.allCases.filter { $0 != .chat && ($0 != .git || hasGit) }
     }
 }

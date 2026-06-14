@@ -6,7 +6,6 @@ struct SessionViewHeader: View {
     let sessionId: UUID
     let isConfigured: Bool
     let hasGit: Bool
-    let filesLabel: String
     let openSidebar: () -> Void
     let selectTab: (SessionTab) -> Void
 
@@ -22,7 +21,6 @@ struct SessionViewHeader: View {
                     isGitSelected: isGitSelected,
                     sessionId: sessionId,
                     hasGit: hasGit,
-                    filesLabel: filesLabel,
                     selectTab: selectTab
                 )
             }
