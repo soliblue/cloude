@@ -16,20 +16,24 @@ struct SessionEmptyViewModelRow: View {
     }
 
     private var options: [SessionEmptyViewPickerOption] {
+        let canSelectAuto = session.canSelectModel(nil)
         let auto = SessionEmptyViewPickerOption(
             id: "auto",
-            title: "Auto",
+            title: canSelectAuto ? "Auto" : "Auto (new session)",
             isSelected: session.model == nil,
+            isEnabled: canSelectAuto,
             action: {
                 defaultModel = ""
                 SessionActions.setModel(nil, for: session.id, context: context)
             }
         )
         let cases = ChatModel.allCases.map { model in
+            let canSelect = session.canSelectModel(model)
             SessionEmptyViewPickerOption(
                 id: model.rawValue,
-                title: model.displayName,
+                title: canSelect ? model.displayName : "\(model.displayName) (new session)",
                 isSelected: session.model == model,
+                isEnabled: canSelect,
                 action: {
                     defaultModel = model.rawValue
                     SessionActions.setModel(model, for: session.id, context: context)

@@ -4,6 +4,7 @@ struct SessionEmptyViewPickerOption: Identifiable {
     let id: String
     let title: String
     let isSelected: Bool
+    var isEnabled: Bool = true
     let action: () -> Void
 }
 
@@ -64,6 +65,8 @@ struct SessionEmptyViewPickerRow: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .disabled(!option.isEnabled)
+                    .opacity(option.isEnabled ? 1 : ThemeTokens.Opacity.m)
                 }
             }
             .padding(.vertical, ThemeTokens.Spacing.xs)

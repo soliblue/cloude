@@ -6,6 +6,7 @@ struct ChatInputBar: View, Equatable {
     let isStreaming: Bool
     let model: ChatModel?
     let effort: ChatEffort?
+    let providerLock: ChatModel.Provider?
     let permissionMode: ChatPermissionMode
     let contextTokens: Int
     let contextWindow: Int
@@ -28,6 +29,7 @@ struct ChatInputBar: View, Equatable {
             && lhs.isStreaming == rhs.isStreaming
             && lhs.model == rhs.model
             && lhs.effort == rhs.effort
+            && lhs.providerLock == rhs.providerLock
             && lhs.permissionMode == rhs.permissionMode
             && lhs.contextTokens == rhs.contextTokens
             && lhs.contextWindow == rhs.contextWindow
@@ -39,6 +41,7 @@ struct ChatInputBar: View, Equatable {
         isStreaming: Bool,
         model: ChatModel?,
         effort: ChatEffort?,
+        providerLock: ChatModel.Provider? = nil,
         permissionMode: ChatPermissionMode = .bypassPermissions,
         contextTokens: Int = 0,
         contextWindow: Int = 0,
@@ -48,6 +51,7 @@ struct ChatInputBar: View, Equatable {
         self.isStreaming = isStreaming
         self.model = model
         self.effort = effort
+        self.providerLock = providerLock
         self.permissionMode = permissionMode
         self.contextTokens = contextTokens
         self.contextWindow = contextWindow
@@ -97,6 +101,7 @@ struct ChatInputBar: View, Equatable {
                                 sessionId: sessionId,
                                 model: model,
                                 effort: effort,
+                                providerLock: providerLock,
                                 permissionMode: permissionMode,
                                 contextTokens: contextTokens,
                                 contextWindow: contextWindow
@@ -200,7 +205,8 @@ struct ChatInputBar: View, Equatable {
 
     @ViewBuilder
     private var sendMenu: some View {
-        ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
+        ChatInputBarModelMenu(
+            sessionId: sessionId, model: model, effort: effort, providerLock: providerLock)
     }
 
     private func send() {

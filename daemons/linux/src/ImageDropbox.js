@@ -14,8 +14,19 @@ const mimeExtensions = {
 }
 
 export function preparePrompt(prompt, images, sessionId) {
-  if (!Array.isArray(images) || images.length === 0) {
+  return promptWithImagePaths(prompt, materializeImages(images, sessionId))
+}
+
+export function promptWithImagePaths(prompt, imagePaths) {
+  if (imagePaths.length === 0) {
     return prompt
+  }
+  return `${imagePaths.map((file) => `Read the image at ${file}.`).join(' ')}\n\n${prompt}`
+}
+
+export function materializeImages(images, sessionId) {
+  if (!Array.isArray(images) || images.length === 0) {
+    return []
   }
   const directory = path.join(os.tmpdir(), `cloude-images-${sessionId.toLowerCase()}`)
   fs.rmSync(directory, { recursive: true, force: true })
@@ -32,8 +43,5 @@ export function preparePrompt(prompt, images, sessionId) {
       }
     }
   }
-  if (paths.length === 0) {
-    return prompt
-  }
-  return `${paths.map((file) => `Read the image at ${file}.`).join(' ')}\n\n${prompt}`
+  return paths
 }

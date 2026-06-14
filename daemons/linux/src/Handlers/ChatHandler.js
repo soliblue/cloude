@@ -20,6 +20,7 @@ export function start(request, params) {
         prompt: body.prompt,
         images: Array.isArray(body.images) ? body.images : [],
         existsOnServer: body.existsOnServer === true,
+        provider: typeof body.provider === 'string' ? body.provider : null,
         model: typeof body.model === 'string' ? body.model : null,
         effort: typeof body.effort === 'string' ? body.effort : null,
         permissionMode: typeof body.permissionMode === 'string' ? body.permissionMode : null,

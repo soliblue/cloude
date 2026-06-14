@@ -51,6 +51,18 @@ final class Session {
         set { modelRaw = newValue?.rawValue }
     }
 
+    var modelProvider: ChatModel.Provider {
+        model?.provider ?? .claude
+    }
+
+    var providerLock: ChatModel.Provider? {
+        existsOnServer || isStreaming ? modelProvider : nil
+    }
+
+    func canSelectModel(_ model: ChatModel?) -> Bool {
+        providerLock.map { (model?.provider ?? .claude) == $0 } ?? true
+    }
+
     var effort: ChatEffort? {
         get { effortRaw.flatMap(ChatEffort.init(rawValue:)) }
         set { effortRaw = newValue?.rawValue }

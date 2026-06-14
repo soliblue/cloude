@@ -10,18 +10,19 @@ enum ChatHandler {
         {
             let images = (body["images"] as? [[String: String]]) ?? []
             let existsOnServer = (body["existsOnServer"] as? Bool) ?? false
+            let provider = body["provider"] as? String
             let model = body["model"] as? String
             let effort = body["effort"] as? String
             let permissionMode = body["permissionMode"] as? String
             #if DEBUG
             NSLog(
-                "[ChatHandler] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") permissionMode=\(permissionMode ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
+                "[ChatHandler] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) provider=\(provider ?? "nil") model=\(model ?? "nil") effort=\(effort ?? "nil") permissionMode=\(permissionMode ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
             )
             #endif
             return HTTPResponse.stream { connection in
                 RunnerManager.shared.start(
                     sessionId: sessionId, path: path, prompt: prompt, images: images,
-                    existsOnServer: existsOnServer, model: model, effort: effort,
+                    existsOnServer: existsOnServer, provider: provider, model: model, effort: effort,
                     permissionMode: permissionMode, connection: connection
                 )
             }

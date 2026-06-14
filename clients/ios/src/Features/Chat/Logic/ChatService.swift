@@ -65,11 +65,12 @@ enum ChatService {
         let model = session.model
         let effort = session.effort
         let permissionMode = session.permissionMode
+        let provider = session.modelProvider
         Task {
             let encodedImages = await encodeForUpload(images)
             var body: [String: Any] = [
                 "path": path, "prompt": prompt, "existsOnServer": existsOnServer,
-                "permissionMode": permissionMode.rawValue,
+                "permissionMode": permissionMode.rawValue, "provider": provider.rawValue,
             ]
             if !encodedImages.isEmpty { body["images"] = encodedImages }
             if let model { body["model"] = model.rawValue }

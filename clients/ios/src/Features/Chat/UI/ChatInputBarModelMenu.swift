@@ -5,6 +5,7 @@ struct ChatInputBarModelMenu: View {
     let sessionId: UUID
     let model: ChatModel?
     let effort: ChatEffort?
+    let providerLock: ChatModel.Provider?
     @Environment(\.modelContext) private var context
 
     var body: some View {
@@ -12,13 +13,19 @@ struct ChatInputBarModelMenu: View {
             Button {
                 SessionActions.setModel(nil, for: sessionId, context: context)
             } label: {
-                Label("Auto", systemImage: model == nil ? "checkmark" : "")
+                Label(
+                    canSelect(nil) ? "Auto" : "Auto (new session)",
+                    systemImage: model == nil ? "checkmark" : "")
             }
-            ForEach(ChatModel.allCases, id: \.self) { option in
-                Button {
-                    SessionActions.setModel(option, for: sessionId, context: context)
-                } label: {
-                    Label(option.displayName, systemImage: model == option ? "checkmark" : "")
+            .disabled(!canSelect(nil))
+            Section("Claude") {
+                ForEach(ChatModel.claudeCases, id: \.self) { option in
+                    modelButton(option)
+                }
+            }
+            Section("Codex") {
+                ForEach(ChatModel.codexCases, id: \.self) { option in
+                    modelButton(option)
                 }
             }
         } label: {
@@ -40,5 +47,20 @@ struct ChatInputBarModelMenu: View {
         } label: {
             Label("Effort: \(effort?.displayName ?? "Default")", systemImage: "brain.head.profile")
         }
+    }
+
+    private func canSelect(_ option: ChatModel?) -> Bool {
+        providerLock.map { (option?.provider ?? .claude) == $0 } ?? true
+    }
+
+    private func modelButton(_ option: ChatModel) -> some View {
+        Button {
+            SessionActions.setModel(option, for: sessionId, context: context)
+        } label: {
+            Label(
+                canSelect(option) ? option.displayName : "\(option.displayName) (new session)",
+                systemImage: model == option ? "checkmark" : option.symbol)
+        }
+        .disabled(!canSelect(option))
     }
 }

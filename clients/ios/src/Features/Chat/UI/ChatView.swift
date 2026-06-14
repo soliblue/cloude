@@ -28,6 +28,7 @@ struct ChatView: View {
                     isStreaming: session.isStreaming,
                     model: session.model,
                     effort: session.effort,
+                    providerLock: session.providerLock,
                     permissionMode: session.permissionMode,
                     contextTokens: session.contextTokens,
                     contextWindow: session.contextWindow,

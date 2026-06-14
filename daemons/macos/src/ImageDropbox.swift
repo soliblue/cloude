@@ -3,7 +3,17 @@ import UniformTypeIdentifiers
 
 enum ImageDropbox {
     static func prepare(cwd: String, prompt: String, images: [[String: String]], sessionId: String) -> String {
-        if images.isEmpty { return prompt }
+        promptWithImagePaths(prompt: prompt, imagePaths: materialize(images: images, sessionId: sessionId))
+    }
+
+    static func promptWithImagePaths(prompt: String, imagePaths: [String]) -> String {
+        if imagePaths.isEmpty { return prompt }
+        let instructions = imagePaths.map { "Read the image at \($0)." }.joined(separator: " ")
+        return "\(instructions)\n\n\(prompt)"
+    }
+
+    static func materialize(images: [[String: String]], sessionId: String) -> [String] {
+        if images.isEmpty { return [] }
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(
             "cloude-images-\(sessionId.lowercased())", isDirectory: true)
         try? FileManager.default.removeItem(at: dir)
@@ -19,8 +29,6 @@ enum ImageDropbox {
                 }
             }
         }
-        if paths.isEmpty { return prompt }
-        let instructions = paths.map { "Read the image at \($0)." }.joined(separator: " ")
-        return "\(instructions)\n\n\(prompt)"
+        return paths
     }
 }

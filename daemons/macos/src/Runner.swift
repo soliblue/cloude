@@ -1,7 +1,7 @@
 import Foundation
 import Network
 
-final class Runner {
+final class Runner: ChatRunning {
     let sessionId: String
     private(set) var hasExited = false
     private let hasStartedBefore: Bool

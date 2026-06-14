@@ -50,7 +50,7 @@ enum SessionActions {
 
     @MainActor
     static func setModel(_ model: ChatModel?, for session: Session) {
-        session.model = model
+        if session.canSelectModel(model) { session.model = model }
     }
 
     @MainActor
@@ -59,7 +59,7 @@ enum SessionActions {
             predicate: #Predicate<Session> { $0.id == sessionId }
         )
         if let session = try? context.fetch(descriptor).first {
-            session.model = model
+            if session.canSelectModel(model) { session.model = model }
         }
     }
 

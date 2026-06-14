@@ -1,4 +1,5 @@
-import { preparePrompt } from './ImageDropbox.js'
+import { materializeImages, promptWithImagePaths } from './ImageDropbox.js'
+import CodexRunner from './CodexRunner.js'
 import Runner from './Runner.js'
 
 class RunnerManager {
@@ -6,9 +7,10 @@ class RunnerManager {
     this.runners = new Map()
   }
 
-  start({ sessionId, path, prompt, images, existsOnServer, model, effort, permissionMode, response }) {
+  start({ sessionId, path, prompt, images, existsOnServer, provider, model, effort, permissionMode, response }) {
     const previous = this.runners.get(sessionId)
-    const runner = new Runner({
+    const useCodex = provider === 'codex' || model?.startsWith('gpt-')
+    const runner = new (useCodex ? CodexRunner : Runner)({
       sessionId,
       hasStartedBefore: existsOnServer,
       model,
@@ -22,7 +24,14 @@ class RunnerManager {
     })
     this.runners.set(sessionId, runner)
     runner.subscribe(response)
-    const begin = () => runner.spawn(path, preparePrompt(prompt, images, sessionId))
+    const imagePaths = materializeImages(images, sessionId)
+    const begin = () => {
+      if (useCodex) {
+        runner.spawn(path, prompt, imagePaths)
+      } else {
+        runner.spawn(path, promptWithImagePaths(prompt, imagePaths))
+      }
+    }
     if (previous && !previous.hasExited) {
       const previousFinish = previous.onFinish
       previous.onFinish = () => {

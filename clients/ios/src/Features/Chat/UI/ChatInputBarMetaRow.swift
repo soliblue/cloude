@@ -4,6 +4,7 @@ struct ChatInputBarMetaRow: View {
     let sessionId: UUID
     let model: ChatModel?
     let effort: ChatEffort?
+    let providerLock: ChatModel.Provider?
     let permissionMode: ChatPermissionMode
     let contextTokens: Int
     let contextWindow: Int
@@ -30,7 +31,9 @@ struct ChatInputBarMetaRow: View {
                 contextRing
             }
             Menu {
-                ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
+                ChatInputBarModelMenu(
+                    sessionId: sessionId, model: model, effort: effort,
+                    providerLock: providerLock)
             } label: {
                 HStack(spacing: ThemeTokens.Spacing.xs) {
                     Image(systemName: model?.symbol ?? "cpu")
