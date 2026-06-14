@@ -162,7 +162,7 @@ struct ChatInputBar: View, Equatable {
                     .foregroundStyle(.white, appAccent.color)
                     .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
                     .padding(.vertical, ThemeTokens.Spacing.s)
-                    .padding(.trailing, ThemeTokens.Spacing.m)
+                    .padding(.horizontal, ThemeTokens.Spacing.m)
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
@@ -186,7 +186,7 @@ struct ChatInputBar: View, Equatable {
                     )
                     .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
                     .padding(.vertical, ThemeTokens.Spacing.s)
-                    .padding(.trailing, ThemeTokens.Spacing.m)
+                    .padding(.horizontal, ThemeTokens.Spacing.m)
                     .contentShape(Circle())
             } primaryAction: {
                 send()
