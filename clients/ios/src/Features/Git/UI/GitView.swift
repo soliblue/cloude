@@ -95,6 +95,7 @@ struct GitView: View {
                 }
                 .listRowBackground(theme.palette.background)
                 .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
             }
         } else {
             ForEach(changes) { change in
