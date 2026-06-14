@@ -10,7 +10,7 @@ struct GitView: View {
     @State private var selectedChange: GitDiffTarget?
     @State private var isLoading = false
     @State private var hasLoaded = false
-    @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = false
+    @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = true
     @State private var collapsedStaged: Set<String> = []
     @State private var collapsedUnstaged: Set<String> = []
 
@@ -80,6 +80,7 @@ struct GitView: View {
             }
         }
         .listStyle(.plain)
+        .listSectionSpacing(.compact)
         .scrollContentBackground(.hidden)
         .background(theme.palette.background)
     }
@@ -121,6 +122,7 @@ struct GitView: View {
                 }
             }
             .listStyle(.plain)
+            .listSectionSpacing(.compact)
             .scrollContentBackground(.hidden)
             .background(theme.palette.background)
         }

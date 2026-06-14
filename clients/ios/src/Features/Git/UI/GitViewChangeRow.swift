@@ -10,10 +10,8 @@ struct GitViewChangeRow: View {
             HStack(spacing: ThemeTokens.Spacing.s) {
                 Text(badgeLetter)
                     .appFont(size: ThemeTokens.Text.s, weight: .bold, design: .monospaced)
-                    .foregroundColor(.white)
-                    .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Icon.l)
-                    .background(badgeColor)
-                    .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.s))
+                    .foregroundColor(badgeColor)
+                    .frame(width: ThemeTokens.Size.m)
                 HStack(spacing: 0) {
                     if showsDirectory {
                         Text(directory)

@@ -4,7 +4,7 @@ struct GitViewStatusHeader: View {
     let status: GitStatus
     let session: Session
     @Environment(\.theme) private var theme
-    @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = false
+    @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = true
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.s) {
