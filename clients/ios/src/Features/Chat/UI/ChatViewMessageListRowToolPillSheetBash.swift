@@ -9,9 +9,10 @@ struct ChatViewMessageListRowToolPillSheetBash: View {
             if let description = toolCall.parsedInput["description"] as? String,
                 !description.isEmpty
             {
-                Text(description)
-                    .appFont(size: ThemeTokens.Text.l, weight: .semibold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                ChatViewMessageListRowToolPillSheetSection(title: "Task", icon: "checklist") {
+                    Text(description)
+                        .appFont(size: ThemeTokens.Text.m)
+                }
             }
             if !chips.isEmpty {
                 HStack(spacing: ThemeTokens.Spacing.s) {
