@@ -53,6 +53,16 @@ jobs:
           security find-identity -v -p codesigning || true
           ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
 
+      - name: Install cert-cleanup dependencies
+        run: pip3 install --break-system-packages requests cryptography
+
+      - name: Snapshot dev certs before build
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: python3 .github/scripts/asc_certs.py snapshot /tmp/certs-before.json
+
       - name: Build and upload to TestFlight
         env:
           DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.DISTRIBUTION_CERTIFICATE_PASSWORD }}
@@ -63,6 +73,14 @@ jobs:
         run: |
           cd fastlane
           fastlane ios beta_local
+
+      - name: Revoke dev cert created by this run
+        if: always()
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: python3 .github/scripts/asc_certs.py revoke-new /tmp/certs-before.json
 
       - name: Cleanup
         if: always()
