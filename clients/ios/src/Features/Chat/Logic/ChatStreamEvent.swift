@@ -11,8 +11,10 @@ nonisolated struct DecodedToolUse: Equatable {
 nonisolated enum ChatStreamEvent {
     case initialized(seq: Int)
     case assistantTextDelta(seq: Int, text: String)
+    case assistantThinkingDelta(seq: Int, text: String)
     case assistantFinal(
-        seq: Int, text: String, toolUses: [DecodedToolUse], model: String?, contextTokens: Int?)
+        seq: Int, text: String, thinking: String, thinkingRedacted: Bool,
+        toolUses: [DecodedToolUse], model: String?, contextTokens: Int?)
     case toolResult(seq: Int, toolUseId: String, text: String, isError: Bool)
     case result(seq: Int, costUsd: Double?, contextWindow: Int?)
     case aborted(seq: Int)
@@ -23,7 +25,8 @@ nonisolated enum ChatStreamEvent {
 
     var seq: Int {
         switch self {
-        case .initialized(let s), .assistantTextDelta(let s, _), .assistantFinal(let s, _, _, _, _),
+        case .initialized(let s), .assistantTextDelta(let s, _), .assistantThinkingDelta(let s, _),
+            .assistantFinal(let s, _, _, _, _, _, _),
             .toolResult(let s, _, _, _), .result(let s, _, _), .aborted(let s), .exited(let s, _),
             .error(let s, _), .compacting(let s), .unknown(let s):
             return s
@@ -74,11 +77,14 @@ nonisolated enum ChatStreamEvent {
     private static func decodeStreamEvent(event: [String: Any], seq: Int) -> ChatStreamEvent? {
         if let inner = event["event"] as? [String: Any],
             inner["type"] as? String == "content_block_delta",
-            let delta = inner["delta"] as? [String: Any],
-            delta["type"] as? String == "text_delta",
-            let text = delta["text"] as? String
+            let delta = inner["delta"] as? [String: Any]
         {
-            return .assistantTextDelta(seq: seq, text: text)
+            if delta["type"] as? String == "text_delta", let text = delta["text"] as? String {
+                return .assistantTextDelta(seq: seq, text: text)
+            }
+            if delta["type"] as? String == "thinking_delta", let text = delta["thinking"] as? String {
+                return .assistantThinkingDelta(seq: seq, text: text)
+            }
         }
         return nil
     }
@@ -89,10 +95,14 @@ nonisolated enum ChatStreamEvent {
         {
             let parentToolUseId = event["parent_tool_use_id"] as? String
             var text = ""
+            var thinking = ""
+            var redacted = false
             var toolUses: [DecodedToolUse] = []
             for block in content {
                 let type = block["type"] as? String
                 if type == "text", let t = block["text"] as? String { text += t }
+                if type == "thinking", let t = block["thinking"] as? String { thinking += t }
+                if type == "redacted_thinking" { redacted = true }
                 if type == "tool_use",
                     let id = block["id"] as? String, let name = block["name"] as? String
                 {
@@ -110,7 +120,8 @@ nonisolated enum ChatStreamEvent {
             }
             let model = message["model"] as? String
             return .assistantFinal(
-                seq: seq, text: text, toolUses: toolUses, model: model,
+                seq: seq, text: text, thinking: thinking, thinkingRedacted: redacted,
+                toolUses: toolUses, model: model,
                 contextTokens: contextTokens(message: message))
         }
         return nil

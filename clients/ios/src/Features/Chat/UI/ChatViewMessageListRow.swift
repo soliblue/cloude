@@ -59,12 +59,21 @@ struct ChatViewMessageListRow: View {
     @ViewBuilder private var content: some View {
         if message.state == .streaming {
             streaming
-        } else if !message.text.isEmpty {
-            if message.role == .assistant {
-                ChatViewMessageListRowMarkdown(text: message.text).equatable()
-            } else {
-                Text(message.text)
-                    .appFont(size: ThemeTokens.Text.m)
+        } else {
+            VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
+                if message.hasThinking {
+                    ChatViewMessageListRowThinking(
+                        text: message.thinking, durationMs: message.thinkingMs,
+                        redacted: message.thinkingRedacted)
+                }
+                if !message.text.isEmpty {
+                    if message.role == .assistant {
+                        ChatViewMessageListRowMarkdown(text: message.text).equatable()
+                    } else {
+                        Text(message.text)
+                            .appFont(size: ThemeTokens.Text.m)
+                    }
+                }
             }
         }
     }
@@ -73,10 +82,18 @@ struct ChatViewMessageListRow: View {
         let snapshot = ChatLiveStream.snapshot(for: message.sessionId)
         if snapshot.isCompacting && snapshot.text.isEmpty {
             ChatViewMessageListRowCompactingPill()
+        } else if snapshot.isThinking && snapshot.text.isEmpty {
+            ChatViewMessageListRowThinking(text: "", durationMs: 0, isLive: true)
         } else if snapshot.text.isEmpty && !message.hasToolCalls {
             ProgressView().controlSize(.small)
         } else if !snapshot.text.isEmpty {
-            ChatViewMessageListRowStreamingMarkdown(snapshot: snapshot)
+            VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
+                if !snapshot.thinking.isEmpty || snapshot.thinkingMs > 0 {
+                    ChatViewMessageListRowThinking(
+                        text: snapshot.thinking, durationMs: snapshot.thinkingMs)
+                }
+                ChatViewMessageListRowStreamingMarkdown(snapshot: snapshot)
+            }
         }
     }
 }

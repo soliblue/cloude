@@ -65,7 +65,7 @@ struct ChatViewMessageListGroup: View {
         var toolBucket: [UUID] = []
         for message in messages {
             let hasContent =
-                !message.imagesData.isEmpty || !message.text.isEmpty
+                !message.imagesData.isEmpty || !message.text.isEmpty || message.hasThinking
                 || message.state == .streaming || message.state == .failed
                 || message.state == .retrying
             if hasContent {

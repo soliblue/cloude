@@ -406,7 +406,11 @@ enum ChatService {
             let snapshot = ChatLiveStream.peek(for: sessionId)
             let liveText = snapshot?.text ?? ""
             if message.text.isEmpty && !liveText.isEmpty { message.text = liveText }
-            if message.text.isEmpty && !message.hasToolCalls && !isFailed {
+            if message.thinking.isEmpty, let snapshot {
+                message.thinking = snapshot.thinking
+                message.thinkingMs = snapshot.thinkingMs
+            }
+            if message.text.isEmpty && !message.hasToolCalls && !message.hasThinking && !isFailed {
                 context.delete(message)
             } else {
                 ChatActions.finishStreaming(message, isFailed: isFailed)
@@ -470,14 +474,31 @@ enum ChatService {
             if !text.isEmpty {
                 _ = ensureStreamingMessage(sessionId: sessionId, context: context)
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
+                if snapshot.isThinking {
+                    snapshot.isThinking = false
+                    if snapshot.thinkingMs == 0, let started = snapshot.thinkingStartedAt {
+                        snapshot.thinkingMs = Int(Date().timeIntervalSince(started) * 1000)
+                    }
+                }
                 snapshot.text += text
                 snapshot.deltaCount += 1
+                snapshot.isCompacting = false
+            }
+        case .assistantThinkingDelta(_, let text):
+            if !text.isEmpty {
+                _ = ensureStreamingMessage(sessionId: sessionId, context: context)
+                let snapshot = ChatLiveStream.snapshot(for: sessionId)
+                if snapshot.thinkingStartedAt == nil { snapshot.thinkingStartedAt = Date() }
+                snapshot.isThinking = true
+                snapshot.thinking += text
                 snapshot.isCompacting = false
             }
         case .compacting:
             _ = ensureStreamingMessage(sessionId: sessionId, context: context)
             ChatLiveStream.snapshot(for: sessionId).isCompacting = true
-        case .assistantFinal(_, let text, let toolUses, let model, let contextTokens):
+        case .assistantFinal(
+            _, let text, let thinking, let thinkingRedacted, let toolUses, let model,
+            let contextTokens):
             if let contextTokens {
                 SessionActions.setContextUsage(
                     tokens: contextTokens, window: nil, for: sessionId, context: context)
@@ -485,9 +506,18 @@ enum ChatService {
             if !text.isEmpty || !toolUses.isEmpty || streamingMessages[sessionId] != nil {
                 let message = ensureStreamingMessage(sessionId: sessionId, context: context)
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
+                if snapshot.isThinking {
+                    snapshot.isThinking = false
+                    if snapshot.thinkingMs == 0, let started = snapshot.thinkingStartedAt {
+                        snapshot.thinkingMs = Int(Date().timeIntervalSince(started) * 1000)
+                    }
+                }
                 let resolved = text.isEmpty ? snapshot.text : text
+                let resolvedThinking = thinking.isEmpty ? snapshot.thinking : thinking
                 ChatActions.completeAssistant(
-                    message, finalText: resolved, toolUses: toolUses, model: model, context: context)
+                    message, finalText: resolved, thinking: resolvedThinking,
+                    thinkingMs: snapshot.thinkingMs, thinkingRedacted: thinkingRedacted,
+                    toolUses: toolUses, model: model, context: context)
                 streamingMessages.removeValue(forKey: sessionId)
                 ChatLiveStream.clear(sessionId: sessionId)
                 checkpointLastSeq(sessionId: sessionId, seq: event.seq, context: context)

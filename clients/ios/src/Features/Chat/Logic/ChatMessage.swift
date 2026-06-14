@@ -16,6 +16,9 @@ final class ChatMessage {
     var costUsd: Double? = nil
     var model: String? = nil
     var hasToolCalls: Bool = false
+    var thinking: String = ""
+    var thinkingMs: Int = 0
+    var thinkingRedacted: Bool = false
 
     init(
         id: UUID = UUID(),
@@ -39,4 +42,5 @@ final class ChatMessage {
         get { State(rawValue: stateRaw) ?? .complete }
         set { stateRaw = newValue.rawValue }
     }
+    var hasThinking: Bool { thinkingMs > 0 || !thinking.isEmpty || thinkingRedacted }
 }

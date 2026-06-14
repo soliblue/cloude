@@ -29,10 +29,14 @@ enum ChatActions {
 
     @MainActor
     static func completeAssistant(
-        _ message: ChatMessage, finalText: String, toolUses: [DecodedToolUse], model: String?,
+        _ message: ChatMessage, finalText: String, thinking: String = "", thinkingMs: Int = 0,
+        thinkingRedacted: Bool = false, toolUses: [DecodedToolUse], model: String?,
         context: ModelContext
     ) {
         message.text = finalText
+        message.thinking = thinking
+        message.thinkingMs = thinkingMs
+        message.thinkingRedacted = thinkingRedacted
         message.state = .complete
         if let model { message.model = model }
         if toolUses.isEmpty { return }
