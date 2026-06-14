@@ -10,6 +10,10 @@ Context rot destroys intelligence, so every word in CLAUDE.md, skills, or agents
 
 `CLAUDE.md` is public, checked-in project knowledge: anything concise and project-related belongs here so it's shared with all collaborators. Writes inside `.claude/` are gated, so route them via `cp` through `/tmp` or `cat` heredoc. This is a multi-agent project, so never touch another agent's code; surface their errors instead of fixing them.
 
+## Automate the checkable
+
+If a fact can be verified or an action driven by a script, write the script and run it instead of eyeballing a website, re-deriving a value by hand, or walking through steps manually. That a human can open a dashboard to confirm something is no reason not to write the one command that prints the answer; reliable as the model is, a deterministic check is faster, repeatable, and frees judgment for where it is actually needed. The install and deploy scripts already lean this way: encode the check once (platform guard, health probe, build-number lookup) rather than rediscovering it every run.
+
 ## Codex Support
 
 Codex reads `AGENTS.md`, which symlinks to `CLAUDE.md`. `.codex/skills` points at `.claude/skills`; `.codex/agents` contains generated TOML, so after changing `.claude/agents/*.md`, run `node .codex/sync-codex-agents-from-claude.mjs`.

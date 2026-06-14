@@ -9,6 +9,10 @@ memory: project
 
 You ship Cloude v2. You deploy with scripts, never manual commands.
 
+## Platform
+
+Run `uname -s` first. `Darwin` builds locally; on Linux there is no Xcode, so iOS and Mac-daemon builds only run in CI. The scripts already absorb this: on a non-Mac host `deploy-ios.sh` pushes a `v<date>.<n>` tag that triggers `.github/workflows/testflight.yml` instead of building, and `deploy-mac.sh`/`deploy-linux.sh` are tag-only everywhere. Run the same scripts on either OS. On Linux you cannot install to a phone or read a local build number, so report the pushed tag and the run from `gh run list --workflow testflight.yml -L 1` instead.
+
 ## Repo layout (v2)
 
 - `clients/ios/` - iOS app (bundle id `soli.Cloude`, scheme `Cloude`, project `iOS.xcodeproj`)
@@ -36,38 +40,38 @@ If the caller only wants local investigation (sim + daemon on localhost, no Test
 
 ## Commands
 
-iOS (TestFlight or phone fallback handled by the script):
-\`\`\`bash
+iOS (phone, TestFlight, or GitHub Actions on Linux - handled by the script):
+```bash
 .claude/agents/deployer/deploy-ios.sh
-\`\`\`
+```
 
 Phone only:
-\`\`\`bash
+```bash
 .claude/agents/deployer/deploy-ios.sh --phone
-\`\`\`
+```
 
 Phone deploy requires Apple device signing on the Mac. If the phone is visible but the build fails with `No signing certificate "iOS Development" found`, `No "iOS Development" signing certificate matching team ID "Q9U8224WWM" with a private key was found`, or `0 valid identities found`, tell the user this is not a Wi-Fi or trust problem. A real iPhone install requires Xcode signed in to the correct Apple ID/team, Developer Mode enabled, the device paired in Xcode, and an Apple Development certificate plus provisioning profile available locally. Same Wi-Fi only helps after Xcode can already see the iPhone as an eligible `platform:iOS` destination.
 
 Mac daemon - local debug build + relaunch:
-\`\`\`bash
+```bash
 set -a && source .env && set +a && fastlane mac build_agent
-\`\`\`
+```
 
 Mac daemon - public GitHub release DMG (what iOS onboarding pulls):
-\`\`\`bash
+```bash
 .claude/agents/deployer/deploy-mac.sh
-\`\`\`
+```
 
 The release script pushes an `agent-v<date>.<n>` tag; `.github/workflows/mac-agent.yml` picks it up, builds + notarizes the DMG, and publishes a GitHub release. If no release script is on disk yet, fall back to pushing the tag directly:
-\`\`\`bash
+```bash
 TAG=agent-v$(date +%Y.%m.%d).1 && git tag "$TAG" && git push origin "$TAG"
-\`\`\`
+```
 Report the tag and the run URL from `gh run list --workflow mac-agent.yml -L 1`.
 
 Provisioning backend on Medina:
-\`\`\`bash
+```bash
 .claude/agents/deployer/deploy-provisioning.sh
-\`\`\`
+```
 
 The provisioning deploy script syncs `provisioning/` to `root@178.104.0.187:/opt/remotecc/provisioning`, writes root-only env files in `/etc/remotecc`, installs Python dependencies in a remote venv, creates or updates the `remotecc-provisioning-medina` Cloudflare Tunnel, maps `remotecc.soli.blue` to `127.0.0.1:8080`, starts `remotecc-provisioning.service` and `remotecc-provisioning-cloudflared.service`, and verifies `/health`. It reads Cloudflare credentials from repo-root `.env` locally and never copies that file directly. Mac tunnels issued by the provisioning backend use `random-remotecc.soli.blue`.
 
@@ -76,9 +80,9 @@ The provisioning deploy script syncs `provisioning/` to `root@178.104.0.187:/opt
 1. Determine Mac, iOS, provisioning, or a combination.
 2. Run the script(s). Never run manual deploy steps.
 3. Stop on failure. Report the error.
-4. If iOS was deployed, report the build number: \`cd clients/ios && agvtool what-version -terse\`.
+4. If iOS was deployed from a Mac, report the build number: `cd clients/ios && agvtool what-version -terse`. On Linux, report the pushed tag and the run URL from `gh run list --workflow testflight.yml -L 1`.
 5. If provisioning was deployed, report `https://remotecc.soli.blue/health` and the systemd services touched.
-6. Tag any untagged plan in \`.claude/plans/30_testing/\` with the build number when an iOS build shipped.
-7. Deploy tracking lives in \`.claude/plans/30_testing/\`; no separate memory file.
+6. Tag any untagged plan in `.claude/plans/30_testing/` with the build number when an iOS build shipped.
+7. Deploy tracking lives in `.claude/plans/30_testing/`; no separate memory file.
 
 Every deploy should correspond to one or more testing plans.

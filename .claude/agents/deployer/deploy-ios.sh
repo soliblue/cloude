@@ -30,6 +30,24 @@ IOS_BUILD_DIR="/tmp/cloude-ios-device-build"
 APP_PATH="$IOS_BUILD_DIR/Build/Products/Debug-iphoneos/Cloude.app"
 BUNDLE_ID="soli.Cloude"
 
+if [[ "$(uname -s)" != "Darwin" ]]; then
+    if [[ "$PHONE_ONLY" == true ]]; then
+        echo "❌ --phone needs a Mac with Xcode; cannot install to a device from $(uname -s)"
+        exit 1
+    fi
+    echo "🐧 No Xcode on $(uname -s); deploying to TestFlight via GitHub Actions..."
+    TAG="v$(date +%Y.%m.%d).1"
+    git -C "$REPO_ROOT" tag "$TAG" 2>/dev/null || {
+        echo "⚠️  Tag $TAG exists, trying .2"
+        TAG="v$(date +%Y.%m.%d).2"
+        git -C "$REPO_ROOT" tag "$TAG"
+    }
+    git -C "$REPO_ROOT" push origin "$TAG"
+    echo "✅ Pushed $TAG; testflight.yml will build and upload to TestFlight."
+    echo "Monitor: https://github.com/soliblue/cloude/actions/workflows/testflight.yml"
+    exit 0
+fi
+
 if [[ "$TESTFLIGHT_ONLY" == true ]]; then
     echo "🚀 Forcing TestFlight upload..."
     cd "$REPO_ROOT"
