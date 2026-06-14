@@ -33,7 +33,6 @@ final class KeyboardDismissGesture: NSObject, UIGestureRecognizerDelegate {
         var view = touch.view
         while let current = view {
             if current is UITextField || current is UITextView { return false }
-            if current is UIControl { return false }
             view = current.superview
         }
         for exempt in exemptViews.allObjects where exempt.window === touch.window {
