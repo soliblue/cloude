@@ -29,7 +29,7 @@ struct SessionEmptyViewModelRow: View {
         )
         let cases = ChatModel.allCases.map { model in
             let canSelect = session.canSelectModel(model)
-            SessionEmptyViewPickerOption(
+            return SessionEmptyViewPickerOption(
                 id: model.rawValue,
                 title: canSelect ? model.displayName : "\(model.displayName) (new session)",
                 isSelected: session.model == model,
