@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct ChatViewMessageListGroupGitCardRow: View {
+    let session: Session
     let change: ChatGitChange
+    @Environment(\.filePreviewPresenter) private var presenter
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.s) {
@@ -29,6 +31,16 @@ struct ChatViewMessageListGroupGitCardRow: View {
                 Text("-\(change.deletions)")
                     .appFont(size: ThemeTokens.Text.s, weight: .medium, design: .monospaced)
                     .foregroundColor(ThemeColor.danger)
+            }
+            if change.type != .deleted {
+                Button {
+                    presenter.open(session: session, path: change.path)
+                } label: {
+                    Image(systemName: "arrow.up.forward.square")
+                        .appFont(size: ThemeTokens.Icon.s)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
             }
         }
     }

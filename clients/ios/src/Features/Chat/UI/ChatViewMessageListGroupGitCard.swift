@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct ChatViewMessageListGroupGitCard: View {
+    let session: Session
     @Query private var changes: [ChatGitChange]
     @State private var expanded = false
     @State private var showAll = false
@@ -9,7 +10,8 @@ struct ChatViewMessageListGroupGitCard: View {
 
     private let collapsedLimit = 5
 
-    init(messageId: UUID) {
+    init(session: Session, messageId: UUID) {
+        self.session = session
         _changes = Query(
             filter: #Predicate<ChatGitChange> { $0.messageId == messageId },
             sort: \ChatGitChange.path)
@@ -20,7 +22,9 @@ struct ChatViewMessageListGroupGitCard: View {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                 header
                 if expanded {
-                    ForEach(visible) { ChatViewMessageListGroupGitCardRow(change: $0) }
+                    ForEach(visible) {
+                        ChatViewMessageListGroupGitCardRow(session: session, change: $0)
+                    }
                     if !showAll && changes.count > collapsedLimit {
                         Button { showAll = true } label: {
                             Text("View \(changes.count - collapsedLimit) more files")
