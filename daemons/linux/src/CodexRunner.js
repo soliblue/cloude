@@ -24,6 +24,11 @@ export default class CodexRunner {
     this.activeTurnId = null
     this.agentTextByItem = new Map()
     this.outputByItem = new Map()
+    this.fileChangesByItem = new Map()
+    this.emittedToolUses = new Set()
+    this.emittedToolResults = new Set()
+    this.rawToolNamesByCall = new Map()
+    this.rawSyntheticToolCount = 0
     this.contextTokens = null
     this.contextWindow = null
   }
@@ -147,7 +152,7 @@ export default class CodexRunner {
       cwd: path,
       approvalPolicy: this.permissionMode === 'bypassPermissions' ? 'never' : 'on-request',
       sandbox: this.sandboxMode(),
-      experimentalRawEvents: false,
+      experimentalRawEvents: true,
       persistExtendedHistory: false
     }
     if (this.model) {
@@ -218,19 +223,30 @@ export default class CodexRunner {
 
   handleServerRequest(id, method, params) {
     if (method === 'item/commandExecution/requestApproval') {
-      this.send({ id, result: { decision: this.permissionMode === 'plan' ? 'decline' : 'accept' } })
+      this.send({ id, result: { decision: this.modernApprovalDecision() } })
     } else if (method === 'item/fileChange/requestApproval') {
-      this.send({ id, result: { decision: this.permissionMode === 'plan' ? 'decline' : 'accept' } })
+      this.send({ id, result: { decision: this.modernApprovalDecision() } })
+    } else if (method === 'item/permissions/requestApproval') {
+      this.send({ id, result: { permissions: this.permissionMode === 'plan' ? {} : params.permissions || {}, scope: 'turn' } })
+    } else if (method === 'applyPatchApproval' || method === 'execCommandApproval') {
+      this.send({ id, result: { decision: this.legacyApprovalDecision() } })
     } else if (method === 'item/tool/requestUserInput') {
       this.send({ id, result: { answers: {} } })
+    } else if (method === 'mcpServer/elicitation/request') {
+      this.send({ id, result: { action: 'cancel', content: null, _meta: null } })
     } else if (method === 'item/tool/call') {
       this.send({ id, result: { contentItems: [], success: false } })
     } else {
       this.send({ id, error: { code: -32601, message: 'unsupported_request' } })
     }
-    if (params.itemId) {
-      this.outputByItem.set(params.itemId, method)
-    }
+  }
+
+  modernApprovalDecision() {
+    return this.permissionMode === 'plan' ? 'decline' : 'accept'
+  }
+
+  legacyApprovalDecision() {
+    return this.permissionMode === 'plan' ? 'denied' : 'approved'
   }
 
   handleNotification(method, params) {
@@ -241,12 +257,19 @@ export default class CodexRunner {
       this.emitThinkingDelta(params.delta)
     } else if ((method === 'item/commandExecution/outputDelta' || method === 'item/fileChange/outputDelta') && params.itemId && typeof params.delta === 'string') {
       this.outputByItem.set(params.itemId, `${this.outputByItem.get(params.itemId) || ''}${params.delta}`)
+    } else if (method === 'item/fileChange/patchUpdated' && params.itemId) {
+      this.fileChangesByItem.set(params.itemId, params.changes || [])
+      this.emitToolUse({ id: params.itemId, name: 'Edit', input: { file_path: this.fileChangeSummary(params.changes || []), changes: params.changes || [] } })
+    } else if (method === 'item/mcpToolCall/progress' && params.itemId && typeof params.message === 'string') {
+      this.outputByItem.set(params.itemId, `${this.outputByItem.get(params.itemId) || ''}${params.message}\n`)
     } else if (method === 'thread/tokenUsage/updated') {
       this.updateUsage(params)
     } else if (method === 'item/started') {
       this.handleStarted(params)
     } else if (method === 'item/completed') {
       this.handleCompleted(params)
+    } else if (method === 'rawResponseItem/completed') {
+      this.handleRawResponseItem(params.item || {})
     } else if (method === 'thread/compacted') {
       this.emit({ type: 'status', state: 'compacting' })
     } else if (method === 'turn/completed') {
@@ -260,10 +283,14 @@ export default class CodexRunner {
     const item = params.item || {}
     if (item.type === 'contextCompaction') {
       this.emit({ type: 'status', state: 'compacting' })
+    } else if (item.type === 'fileChange') {
+      if (item.changes) {
+        this.fileChangesByItem.set(item.id, item.changes)
+      }
     } else {
       const use = this.toolUse(item)
       if (use) {
-        this.emitAssistant('', [use])
+        this.emitToolUse(use)
       }
     }
   }
@@ -273,7 +300,14 @@ export default class CodexRunner {
     if (item.type === 'agentMessage') {
       this.emitAssistant(item.text || this.agentTextByItem.get(item.id) || '')
       this.agentTextByItem.delete(item.id)
-    } else if (['commandExecution', 'fileChange', 'mcpToolCall', 'dynamicToolCall', 'webSearch'].includes(item.type)) {
+    } else if (this.toolItemTypes().includes(item.type)) {
+      if (item.type === 'fileChange' && !item.changes) {
+        item.changes = this.fileChangesByItem.get(item.id) || []
+      }
+      const use = this.toolUse(item)
+      if (use) {
+        this.emitToolUse(use)
+      }
       this.emitToolResult(item)
     }
   }
@@ -304,16 +338,26 @@ export default class CodexRunner {
       return { id: item.id, name: 'Bash', input: { command: item.command || '' } }
     }
     if (item.type === 'fileChange') {
-      return { id: item.id, name: 'Edit', input: { file_path: this.fileChangeSummary(item.changes || []) } }
+      const changes = item.changes || this.fileChangesByItem.get(item.id) || []
+      return { id: item.id, name: 'Edit', input: { file_path: this.fileChangeSummary(changes), changes } }
     }
     if (item.type === 'mcpToolCall') {
-      return { id: item.id, name: item.tool || 'MCP', input: item.arguments || {} }
+      return { id: item.id, name: item.tool || 'MCP', input: { server: item.server || '', arguments: item.arguments || {} } }
     }
     if (item.type === 'dynamicToolCall') {
-      return { id: item.id, name: item.tool || 'Tool', input: item.arguments || {} }
+      return { id: item.id, name: item.tool || 'Tool', input: { namespace: item.namespace || '', arguments: item.arguments || {} } }
+    }
+    if (item.type === 'collabAgentToolCall') {
+      return { id: item.id, name: 'Agent', input: { subagent_type: item.tool?.type || item.tool || '', prompt: item.prompt || '', model: item.model || '' } }
     }
     if (item.type === 'webSearch') {
-      return { id: item.id, name: 'WebSearch', input: { query: item.query || '' } }
+      return { id: item.id, name: 'WebSearch', input: { query: item.query || this.webSearchSummary(item.action), action: item.action || null } }
+    }
+    if (item.type === 'imageView') {
+      return { id: item.id, name: 'Read', input: { path: item.path || '' } }
+    }
+    if (item.type === 'imageGeneration') {
+      return { id: item.id, name: 'ImageGeneration', input: { prompt: item.revisedPrompt || '', saved_path: item.savedPath || '' } }
     }
     return null
   }
@@ -321,15 +365,35 @@ export default class CodexRunner {
   emitToolResult(item) {
     const failed = item.status === 'failed' || item.status === 'declined'
     const text = this.outputByItem.get(item.id) || this.completedText(item)
+    this.emitToolResultForId(item.id, text, failed)
+    this.outputByItem.delete(item.id)
+    this.fileChangesByItem.delete(item.id)
+  }
+
+  emitToolUse(use) {
+    if (!use.id || this.emittedToolUses.has(use.id)) {
+      return
+    }
+    this.emittedToolUses.add(use.id)
+    this.emitAssistant('', [use])
+  }
+
+  emitToolResultForId(id, text, failed = false) {
+    if (!id || this.emittedToolResults.has(id)) {
+      return
+    }
+    if (!this.emittedToolUses.has(id)) {
+      this.emitToolUse({ id, name: this.rawToolNamesByCall.get(id) || 'Tool', input: {} })
+    }
+    this.emittedToolResults.add(id)
     this.emit({
       event: {
         type: 'user',
         message: {
-          content: [{ type: 'tool_result', tool_use_id: item.id, content: text, is_error: failed }]
+          content: [{ type: 'tool_result', tool_use_id: id, content: text, is_error: failed }]
         }
       }
     })
-    this.outputByItem.delete(item.id)
   }
 
   completedText(item) {
@@ -337,19 +401,166 @@ export default class CodexRunner {
       return item.aggregatedOutput || ''
     }
     if (item.type === 'fileChange') {
-      return this.fileChangeSummary(item.changes || [])
+      return this.fileChangeDetails(item.changes || [])
     }
     if (item.type === 'mcpToolCall') {
-      return item.error?.message || JSON.stringify(item.result || '')
+      return item.error?.message || this.pretty(item.result || '')
     }
     if (item.type === 'dynamicToolCall') {
-      return JSON.stringify(item.contentItems || '')
+      return this.textFromContent(item.contentItems || '')
     }
-    return item.query || ''
+    if (item.type === 'webSearch') {
+      return item.query || this.webSearchSummary(item.action)
+    }
+    if (item.type === 'imageView') {
+      return item.path || ''
+    }
+    if (item.type === 'imageGeneration') {
+      return item.savedPath || item.result || item.revisedPrompt || ''
+    }
+    return this.pretty(item)
   }
 
   fileChangeSummary(changes) {
     return changes.map((change) => change.path).filter(Boolean).join('\n')
+  }
+
+  fileChangeDetails(changes) {
+    return changes.map((change) => [change.path, change.diff].filter(Boolean).join('\n')).filter(Boolean).join('\n\n')
+  }
+
+  toolItemTypes() {
+    return ['commandExecution', 'fileChange', 'mcpToolCall', 'dynamicToolCall', 'collabAgentToolCall', 'webSearch', 'imageView', 'imageGeneration']
+  }
+
+  handleRawResponseItem(item) {
+    if (['function_call', 'custom_tool_call', 'local_shell_call', 'tool_search_call'].includes(item.type)) {
+      const use = this.rawToolUse(item)
+      if (use) {
+        this.rawToolNamesByCall.set(use.id, use.name)
+        this.emitToolUse(use)
+      }
+    } else if (['function_call_output', 'custom_tool_call_output', 'tool_search_output'].includes(item.type)) {
+      const id = item.call_id
+      if (id) {
+        this.emitToolResultForId(id, this.rawOutputText(item), item.status === 'failed')
+      }
+    } else if (item.type === 'web_search_call') {
+      if (item.call_id) {
+        this.emitToolUse({ id: item.call_id, name: 'WebSearch', input: { query: this.webSearchSummary(item.action), action: item.action || null } })
+        if (item.status && item.status !== 'in_progress') {
+          this.emitToolResultForId(item.call_id, this.webSearchSummary(item.action), item.status === 'failed')
+        }
+      }
+    } else if (item.type === 'image_generation_call') {
+      const id = item.id || `image_generation_${this.rawSyntheticToolCount += 1}`
+      this.emitToolUse({ id, name: 'ImageGeneration', input: { prompt: item.revised_prompt || '' } })
+      if (item.status && item.status !== 'in_progress') {
+        this.emitToolResultForId(id, item.result || item.revised_prompt || '', item.status === 'failed')
+      }
+    }
+  }
+
+  rawToolUse(item) {
+    const id = item.call_id
+    if (!id) {
+      return null
+    }
+    if (item.type === 'local_shell_call') {
+      return { id, name: 'Bash', input: { command: (item.action?.command || []).join(' '), workdir: item.action?.working_directory || '' } }
+    }
+    if (item.type === 'tool_search_call') {
+      return { id, name: 'ToolSearch', input: { execution: item.execution || '', arguments: item.arguments || {} } }
+    }
+    if (item.type === 'custom_tool_call') {
+      return this.rawNamedToolUse(id, item.name, item.input || '')
+    }
+    if (item.type === 'function_call') {
+      return this.rawNamedToolUse(id, item.name, this.parsedJSON(item.arguments) || { arguments: item.arguments || '' })
+    }
+    return null
+  }
+
+  rawNamedToolUse(id, name, input) {
+    const shortName = (name || 'Tool').split('.').pop()
+    if (shortName === 'exec_command') {
+      return { id, name: 'Bash', input: { command: input.cmd || '', workdir: input.workdir || '' } }
+    }
+    if (shortName === 'write_stdin') {
+      return { id, name: 'Bash', input: { command: `write_stdin ${input.session_id || ''}`.trim(), chars: input.chars || '' } }
+    }
+    if (shortName === 'apply_patch') {
+      const patch = typeof input === 'string' ? input : input.patch || input.arguments || ''
+      return { id, name: 'Edit', input: { file_path: this.patchSummary(patch), patch } }
+    }
+    if (shortName === 'view_image') {
+      return { id, name: 'Read', input: { path: input.path || '' } }
+    }
+    return { id, name: shortName || 'Tool', input: typeof input === 'object' && input !== null ? input : { input } }
+  }
+
+  rawOutputText(item) {
+    if (item.type === 'custom_tool_call_output') {
+      const parsed = this.parsedJSON(item.output)
+      if (parsed?.output) {
+        return parsed.output
+      }
+    }
+    if (item.type === 'tool_search_output') {
+      return this.pretty({ execution: item.execution || '', tools: item.tools || [] })
+    }
+    return this.textFromContent(item.output)
+  }
+
+  textFromContent(content) {
+    if (typeof content === 'string') {
+      return content
+    }
+    if (Array.isArray(content)) {
+      return content.map((item) => item.text || item.imageUrl || item.image_url || this.pretty(item)).join('\n')
+    }
+    return this.pretty(content)
+  }
+
+  webSearchSummary(action) {
+    if (!action) {
+      return ''
+    }
+    if (action.query) {
+      return action.query
+    }
+    if (Array.isArray(action.queries) && action.queries.length > 0) {
+      return action.queries.join('\n')
+    }
+    if (action.url && action.pattern) {
+      return `${action.pattern} in ${action.url}`
+    }
+    return action.url || action.type || ''
+  }
+
+  patchSummary(patch) {
+    return String(patch).split('\n').map((line) => {
+      const match = line.match(/^\*\*\* (?:Update|Add|Delete) File: (.+)$/)
+      return match?.[1]
+    }).filter(Boolean).join('\n')
+  }
+
+  parsedJSON(text) {
+    if (typeof text !== 'string') {
+      return null
+    }
+    try {
+      return JSON.parse(text)
+    } catch {
+      return null
+    }
+  }
+
+  pretty(value) {
+    if (typeof value === 'string') {
+      return value
+    }
+    return JSON.stringify(value, null, 2) || ''
   }
 
   emitTextDelta(text) {
