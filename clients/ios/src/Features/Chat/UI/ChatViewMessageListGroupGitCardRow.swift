@@ -34,9 +34,13 @@ struct ChatViewMessageListGroupGitCardRow: View {
             }
             if change.type != .deleted {
                 Button {
-                    presenter.open(session: session, path: change.path)
+                    presenter.open(
+                        session: session,
+                        path: session.path.map {
+                            ($0 as NSString).appendingPathComponent(change.path)
+                        } ?? change.path)
                 } label: {
-                    Image(systemName: "arrow.up.forward.square")
+                    Image(systemName: "arrow.up.forward")
                         .appFont(size: ThemeTokens.Icon.s)
                         .foregroundColor(.secondary)
                 }
