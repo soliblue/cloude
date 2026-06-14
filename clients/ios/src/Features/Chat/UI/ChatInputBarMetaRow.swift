@@ -10,7 +10,7 @@ struct ChatInputBarMetaRow: View {
     @Environment(\.appAccent) private var appAccent
 
     var body: some View {
-        HStack(spacing: ThemeTokens.Spacing.s) {
+        HStack(spacing: ThemeTokens.Spacing.m) {
             Spacer()
             Menu {
                 ChatInputBarPermissionMenu(sessionId: sessionId, permissionMode: permissionMode)

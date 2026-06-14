@@ -18,7 +18,7 @@ struct ChatInputBarModelMenu: View {
                 Button {
                     SessionActions.setModel(option, for: sessionId, context: context)
                 } label: {
-                    Label(option.displayName, systemImage: model == option ? "checkmark" : option.symbol)
+                    Label(option.displayName, systemImage: model == option ? "checkmark" : "")
                 }
             }
         } label: {

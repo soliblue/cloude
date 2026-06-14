@@ -91,7 +91,7 @@ struct ChatInputBar: View, Equatable {
                         }
                     }
                     if focused {
-                        HStack(spacing: ThemeTokens.Spacing.s) {
+                        HStack(spacing: ThemeTokens.Spacing.m) {
                             ChatInputBarAttachmentPicker(images: $images)
                             ChatInputBarMetaRow(
                                 sessionId: sessionId,
@@ -161,6 +161,7 @@ struct ChatInputBar: View, Equatable {
                     .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.white, appAccent.color)
+                    .padding(.vertical, ThemeTokens.Spacing.s)
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
@@ -182,6 +183,7 @@ struct ChatInputBar: View, Equatable {
                         canSend ? .white : Color.secondary,
                         canSend ? appAccent.color : Color.secondary.opacity(ThemeTokens.Opacity.s)
                     )
+                    .padding(.vertical, ThemeTokens.Spacing.s)
                     .contentShape(Circle())
             } primaryAction: {
                 send()
