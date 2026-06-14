@@ -88,6 +88,7 @@ struct ChatInputBar: View, Equatable {
                             .padding(.vertical, ThemeTokens.Spacing.m)
                         if !focused {
                             trailingButton
+                                .padding(.trailing, ThemeTokens.Spacing.m)
                         }
                     }
                     if focused {
