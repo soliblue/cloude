@@ -75,15 +75,20 @@ nonisolated enum ChatStreamEvent {
     }
 
     private static func decodeStreamEvent(event: [String: Any], seq: Int) -> ChatStreamEvent? {
-        if let inner = event["event"] as? [String: Any],
-            inner["type"] as? String == "content_block_delta",
-            let delta = inner["delta"] as? [String: Any]
-        {
-            if delta["type"] as? String == "text_delta", let text = delta["text"] as? String {
-                return .assistantTextDelta(seq: seq, text: text)
+        if let inner = event["event"] as? [String: Any] {
+            let innerType = inner["type"] as? String
+            if innerType == "content_block_start",
+                (inner["content_block"] as? [String: Any])?["type"] as? String == "thinking"
+            {
+                return .assistantThinkingDelta(seq: seq, text: "")
             }
-            if delta["type"] as? String == "thinking_delta", let text = delta["thinking"] as? String {
-                return .assistantThinkingDelta(seq: seq, text: text)
+            if innerType == "content_block_delta", let delta = inner["delta"] as? [String: Any] {
+                if delta["type"] as? String == "text_delta", let text = delta["text"] as? String {
+                    return .assistantTextDelta(seq: seq, text: text)
+                }
+                if delta["type"] as? String == "thinking_delta" {
+                    return .assistantThinkingDelta(seq: seq, text: delta["thinking"] as? String ?? "")
+                }
             }
         }
         return nil

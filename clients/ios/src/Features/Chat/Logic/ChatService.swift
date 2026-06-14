@@ -485,14 +485,12 @@ enum ChatService {
                 snapshot.isCompacting = false
             }
         case .assistantThinkingDelta(_, let text):
-            if !text.isEmpty {
-                _ = ensureStreamingMessage(sessionId: sessionId, context: context)
-                let snapshot = ChatLiveStream.snapshot(for: sessionId)
-                if snapshot.thinkingStartedAt == nil { snapshot.thinkingStartedAt = Date() }
-                snapshot.isThinking = true
-                snapshot.thinking += text
-                snapshot.isCompacting = false
-            }
+            _ = ensureStreamingMessage(sessionId: sessionId, context: context)
+            let snapshot = ChatLiveStream.snapshot(for: sessionId)
+            if snapshot.thinkingStartedAt == nil { snapshot.thinkingStartedAt = Date() }
+            snapshot.isThinking = true
+            snapshot.thinking += text
+            snapshot.isCompacting = false
         case .compacting:
             _ = ensureStreamingMessage(sessionId: sessionId, context: context)
             ChatLiveStream.snapshot(for: sessionId).isCompacting = true
