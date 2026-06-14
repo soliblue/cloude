@@ -33,7 +33,7 @@ struct ChatInputBarMetaRow: View {
             Menu {
                 ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
             } label: {
-                HStack(spacing: ThemeTokens.Spacing.xs) {
+                HStack(spacing: ThemeTokens.Spacing.s) {
                     Text(model?.displayName ?? "Auto")
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
                         .foregroundStyle(.secondary)
