@@ -88,7 +88,6 @@ struct ChatInputBar: View, Equatable {
                             .padding(.vertical, ThemeTokens.Spacing.m)
                         if !focused {
                             trailingButton
-                                .padding(.trailing, ThemeTokens.Spacing.m)
                         }
                     }
                     if focused {
@@ -105,7 +104,6 @@ struct ChatInputBar: View, Equatable {
                             trailingButton
                         }
                         .padding(.leading, ThemeTokens.Spacing.xs)
-                        .padding(.trailing, ThemeTokens.Spacing.m)
                         .padding(.bottom, ThemeTokens.Spacing.xs)
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
@@ -163,6 +161,7 @@ struct ChatInputBar: View, Equatable {
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.white, appAccent.color)
                     .padding(.vertical, ThemeTokens.Spacing.s)
+                    .padding(.trailing, ThemeTokens.Spacing.m)
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
@@ -185,6 +184,7 @@ struct ChatInputBar: View, Equatable {
                         canSend ? appAccent.color : Color.secondary.opacity(ThemeTokens.Opacity.s)
                     )
                     .padding(.vertical, ThemeTokens.Spacing.s)
+                    .padding(.trailing, ThemeTokens.Spacing.m)
                     .contentShape(Circle())
             } primaryAction: {
                 send()
