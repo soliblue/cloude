@@ -17,10 +17,10 @@ enum ChatModel: String, CaseIterable {
 
     var symbol: String {
         switch self {
-        case .fable: "moon.stars.fill"
-        case .opus: "sparkles"
-        case .sonnet: "bolt.fill"
-        case .haiku: "leaf.fill"
+        case .fable: "tornado"
+        case .opus: "crown.fill"
+        case .sonnet: "hare.fill"
+        case .haiku: "ant.fill"
         }
     }
 
