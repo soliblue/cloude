@@ -1,0 +1,73 @@
+name: Revoke Orphan Dev Certificates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  revoke:
+    runs-on: macos-15
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Revoke "Created via API" development certificates
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: |
+          python3 << 'PYTHON_EOF'
+          import os
+          import json
+          import time
+          import urllib.request
+          import urllib.error
+
+          api_key_id = os.environ['APP_STORE_CONNECT_API_KEY_ID']
+          api_key_issuer = os.environ['APP_STORE_CONNECT_API_ISSUER_ID']
+          api_key = os.environ['APP_STORE_CONNECT_API_KEY_CONTENT']
+
+          import jwt
+          now = int(time.time())
+          exp = now + 1200
+          payload = {
+              "iss": api_key_issuer,
+              "aud": "appstoreconnect-v1",
+              "sub": api_key_id,
+              "iat": now,
+              "exp": exp
+          }
+
+          token = jwt.encode(payload, api_key, algorithm='ES256')
+
+          # List certificates
+          url = 'https://api.appstoreconnect.apple.com/v1/certificates?filter[certificateType]=IOS_DEVELOPMENT'
+          req = urllib.request.Request(url)
+          req.add_header('Authorization', f'Bearer {token}')
+
+          with urllib.request.urlopen(req, timeout=10) as response:
+              data = json.loads(response.read().decode('utf-8'))
+              certs = data.get('data', [])
+              print(f"Total development certs: {len(certs)}")
+
+              api_created = [c for c in certs if 'Created via API' in c['attributes']['name']]
+              print(f"'Created via API' certs to revoke: {len(api_created)}\n")
+
+              for cert in api_created:
+                  cert_id = cert['id']
+                  print(f"Revoking {cert_id} (created {cert['attributes']['createdDate']})...")
+
+                  # Revoke the certificate
+                  revoke_url = f'https://api.appstoreconnect.apple.com/v1/certificates/{cert_id}'
+                  revoke_req = urllib.request.Request(revoke_url, method='DELETE')
+                  revoke_req.add_header('Authorization', f'Bearer {token}')
+
+                  try:
+                      with urllib.request.urlopen(revoke_req, timeout=10) as revoke_response:
+                          print(f"  ✓ Revoked successfully")
+                  except urllib.error.HTTPError as e:
+                      print(f"  ✗ Failed: HTTP {e.code}")
+                      if e.code == 204:
+                          print(f"  ✓ Revoked (204 No Content)")
+          PYTHON_EOF
