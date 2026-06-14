@@ -24,6 +24,7 @@ struct ChatViewMessageListGroup: View {
                 }
                 if let status = statusMessage, let modelId = status.model {
                     ChatViewMessageListGroupStatusRow(modelId: modelId, costUsd: status.costUsd)
+                    ChatViewMessageListGroupGitCard(messageId: status.id)
                 }
             }
             .padding(.horizontal, ThemeTokens.Spacing.m)

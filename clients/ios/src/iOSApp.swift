@@ -34,7 +34,7 @@ struct IOSApp: App {
     private static func makeContainer() -> ModelContainer {
         let models: [any PersistentModel.Type] = [
             Endpoint.self, Session.self, Window.self,
-            ChatMessage.self, ChatToolCall.self,
+            ChatMessage.self, ChatToolCall.self, ChatGitChange.self,
             GitStatus.self, GitChange.self, GitCommit.self,
         ]
         let schema = Schema(models)

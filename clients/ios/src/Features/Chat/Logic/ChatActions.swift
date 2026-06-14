@@ -88,6 +88,23 @@ enum ChatActions {
     }
 
     @MainActor
+    static func attachGitDelta(
+        messageId: UUID, sessionId: UUID, changes: [GitChangeDTO], context: ModelContext
+    ) {
+        let descriptor = FetchDescriptor<ChatGitChange>(
+            predicate: #Predicate<ChatGitChange> { $0.messageId == messageId }
+        )
+        for existing in (try? context.fetch(descriptor)) ?? [] { context.delete(existing) }
+        for change in changes {
+            context.insert(
+                ChatGitChange(
+                    messageId: messageId, sessionId: sessionId, path: change.path,
+                    type: GitChangeType(rawValue: change.type) ?? .modified,
+                    additions: change.additions ?? 0, deletions: change.deletions ?? 0))
+        }
+    }
+
+    @MainActor
     static func applyToolResult(
         toolUseId: String, text: String, isError: Bool, context: ModelContext
     ) {

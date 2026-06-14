@@ -8,6 +8,7 @@ enum ChatService {
     @MainActor private static var lastSeqs: [UUID: Int] = [:]
     @MainActor private static var activeStreams: Set<UUID> = []
     @MainActor private static var streamGenerations: [UUID: UUID] = [:]
+    @MainActor private static var gitBefore: [UUID: Task<[String: GitChangeDTO], Never>] = [:]
 
     @MainActor
     static func send(sessionId: UUID, prompt: String, images: [Data], context: ModelContext) {
@@ -58,6 +59,9 @@ enum ChatService {
         activeStreams.insert(session.id)
         let generation = UUID()
         streamGenerations[session.id] = generation
+        gitBefore[session.id] = Task {
+            await gitStatusMap(endpoint: endpoint, session: session, path: path)
+        }
         let existsOnServer = session.existsOnServer
         let sessionId = session.id
         let prompt = message.text
@@ -436,6 +440,46 @@ enum ChatService {
     }
 
     @MainActor
+    private static func gitStatusMap(
+        endpoint: Endpoint, session: Session, path: String
+    ) async -> [String: GitChangeDTO] {
+        let (dto, _) = await GitService.status(endpoint: endpoint, session: session, path: path)
+        var map: [String: GitChangeDTO] = [:]
+        for change in dto?.changes ?? [] { map[change.path] = change }
+        return map
+    }
+
+    @MainActor
+    private static func captureGitDelta(sessionId: UUID, context: ModelContext) {
+        let beforeTask = gitBefore.removeValue(forKey: sessionId)
+        let sessionDescriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId }
+        )
+        guard let session = try? context.fetch(sessionDescriptor).first,
+            let endpoint = session.endpoint, let path = session.path
+        else { return }
+        var messageDescriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.roleRaw == "assistant"
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        messageDescriptor.fetchLimit = 1
+        guard let messageId = (try? context.fetch(messageDescriptor).first)?.id else { return }
+        Task {
+            let before = await beforeTask?.value ?? [:]
+            let after = await gitStatusMap(endpoint: endpoint, session: session, path: path)
+            let changes = after.values.filter { change in
+                let prior = before[change.path]
+                return prior == nil || prior?.additions != change.additions
+                    || prior?.deletions != change.deletions
+            }
+            ChatActions.attachGitDelta(
+                messageId: messageId, sessionId: sessionId, changes: Array(changes), context: context)
+        }
+    }
+
+    @MainActor
     private static func notifyCompletion(session: Session, context: ModelContext) {
         let sessionId = session.id
         var messageDescriptor = FetchDescriptor<ChatMessage>(
@@ -542,6 +586,7 @@ enum ChatService {
                         tokens: nil, window: contextWindow, for: sessionId, context: context)
                 }
                 maybeRename(sessionId: sessionId, context: context)
+                captureGitDelta(sessionId: sessionId, context: context)
                 activeStreams.remove(sessionId)
                 drainQueue(sessionId: sessionId, context: context)
             }
