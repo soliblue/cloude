@@ -103,7 +103,8 @@ struct ChatInputBar: View, Equatable {
                             )
                             trailingButton
                         }
-                        .padding(.horizontal, ThemeTokens.Spacing.xs)
+                        .padding(.leading, ThemeTokens.Spacing.xs)
+                        .padding(.trailing, ThemeTokens.Spacing.m)
                         .padding(.bottom, ThemeTokens.Spacing.xs)
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
@@ -156,11 +157,11 @@ struct ChatInputBar: View, Equatable {
             Button {
                 ChatService.abort(sessionId: sessionId, context: context)
             } label: {
-                Text(Image(systemName: "stop.fill"))
-                    .appFont(size: ThemeTokens.Text.l, weight: .medium)
-                    .foregroundColor(appAccent.color)
-                    .padding(ThemeTokens.Spacing.m)
-                    .contentShape(Capsule())
+                Image(systemName: "stop.circle.fill")
+                    .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, appAccent.color)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
         } else if canRecord {
@@ -174,14 +175,12 @@ struct ChatInputBar: View, Equatable {
             Menu {
                 sendMenu
             } label: {
-                Text(Image(systemName: "arrow.up"))
-                    .appFont(size: ThemeTokens.Text.l, weight: .bold)
-                    .foregroundColor(canSend ? .white : .secondary)
-                    .frame(width: ThemeTokens.Icon.l, height: ThemeTokens.Icon.l)
-                    .padding(ThemeTokens.Spacing.s)
-                    .background(
-                        Circle().fill(
-                            canSend ? appAccent.color : Color.secondary.opacity(ThemeTokens.Opacity.s))
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(
+                        canSend ? .white : Color.secondary,
+                        canSend ? appAccent.color : Color.secondary.opacity(ThemeTokens.Opacity.s)
                     )
                     .contentShape(Circle())
             } primaryAction: {
