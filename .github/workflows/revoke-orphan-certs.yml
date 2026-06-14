@@ -17,19 +17,19 @@ jobs:
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: |
-          pip3 install PyJWT
-          python3 << 'PYTHON_EOF'
+          cat > /tmp/revoke_certs.py << 'PYTHON_EOF'
           import os
           import json
           import time
           import urllib.request
           import urllib.error
+          import subprocess
+          import base64
 
           api_key_id = os.environ['APP_STORE_CONNECT_API_KEY_ID']
           api_key_issuer = os.environ['APP_STORE_CONNECT_API_ISSUER_ID']
           api_key = os.environ['APP_STORE_CONNECT_API_KEY_CONTENT']
 
-          import jwt
           now = int(time.time())
           exp = now + 1200
           payload = {
@@ -40,7 +40,20 @@ jobs:
               "exp": exp
           }
 
-          token = jwt.encode(payload, api_key, algorithm='ES256')
+          # Manually create JWT using openssl
+          import tempfile
+          with tempfile.NamedTemporaryFile(mode='w', suffix='.p8', delete=False) as f:
+              f.write(api_key)
+              key_file = f.name
+
+          header = {"alg": "ES256", "typ": "JWT", "kid": api_key_id}
+          header_b64 = base64.urlsafe_b64encode(json.dumps(header, separators=(',', ':')).encode()).decode().rstrip('=')
+          payload_b64 = base64.urlsafe_b64encode(json.dumps(payload, separators=(',', ':')).encode()).decode().rstrip('=')
+          message = f"{header_b64}.{payload_b64}".encode()
+
+          proc = subprocess.run(['openssl', 'dgst', '-sha256', '-sign', key_file], input=message, capture_output=True)
+          signature = base64.urlsafe_b64encode(proc.stdout).decode().rstrip('=')
+          token = f"{header_b64}.{payload_b64}.{signature}"
 
           # List certificates
           url = 'https://api.appstoreconnect.apple.com/v1/certificates?filter[certificateType]=IOS_DEVELOPMENT'
@@ -68,7 +81,11 @@ jobs:
                       with urllib.request.urlopen(revoke_req, timeout=10) as revoke_response:
                           print(f"  ✓ Revoked successfully")
                   except urllib.error.HTTPError as e:
-                      print(f"  ✗ Failed: HTTP {e.code}")
                       if e.code == 204:
                           print(f"  ✓ Revoked (204 No Content)")
+                      else:
+                          print(f"  ✗ Failed: HTTP {e.code}")
+
+          os.unlink(key_file)
           PYTHON_EOF
+          python3 /tmp/revoke_certs.py
