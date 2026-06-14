@@ -81,6 +81,7 @@ struct GitView: View {
         }
         .listStyle(.plain)
         .listSectionSpacing(.compact)
+        .contentMargins(.top, 0, for: .scrollContent)
         .scrollContentBackground(.hidden)
         .background(theme.palette.background)
     }
@@ -123,6 +124,7 @@ struct GitView: View {
             }
             .listStyle(.plain)
             .listSectionSpacing(.compact)
+            .contentMargins(.top, 0, for: .scrollContent)
             .scrollContentBackground(.hidden)
             .background(theme.palette.background)
         }
