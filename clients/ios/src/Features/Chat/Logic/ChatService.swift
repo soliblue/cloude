@@ -514,6 +514,7 @@ enum ChatService {
                         tokens: nil, window: contextWindow, for: sessionId, context: context)
                 }
                 maybeRename(sessionId: sessionId, context: context)
+                activeStreams.remove(sessionId)
                 drainQueue(sessionId: sessionId, context: context)
             }
         case .initialized:
