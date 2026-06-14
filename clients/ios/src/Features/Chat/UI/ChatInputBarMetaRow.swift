@@ -8,6 +8,7 @@ struct ChatInputBarMetaRow: View {
     let contextTokens: Int
     let contextWindow: Int
     @Environment(\.appAccent) private var appAccent
+    @State private var showContextPercent = false
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.m) {
@@ -33,11 +34,13 @@ struct ChatInputBarMetaRow: View {
                 ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
             } label: {
                 HStack(spacing: ThemeTokens.Spacing.xs) {
-                    Image(systemName: model?.symbol ?? "cpu")
-                    Text(pillText)
+                    Text(model?.displayName ?? "Auto")
+                        .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                        .foregroundStyle(.secondary)
+                    if let effort {
+                        ChatInputBarMetaRowEffortBar(fraction: effort.fraction)
+                    }
                 }
-                .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                .foregroundStyle(.secondary)
                 .padding(.vertical, ThemeTokens.Spacing.xs)
                 .contentShape(Rectangle())
             }
@@ -45,30 +48,35 @@ struct ChatInputBarMetaRow: View {
         }
     }
 
-    private var pillText: String {
-        let name = model?.displayName ?? "Auto"
-        return effort.map { "\(name) · \($0.displayName)" } ?? name
-    }
-
     private var contextRing: some View {
-        HStack(spacing: ThemeTokens.Spacing.xs) {
-            ZStack {
-                Circle()
-                    .stroke(Color.secondary.opacity(ThemeTokens.Opacity.s), lineWidth: ThemeTokens.Stroke.l)
-                Circle()
-                    .trim(from: 0, to: usedFraction)
-                    .stroke(
-                        ringColor,
-                        style: StrokeStyle(lineWidth: ThemeTokens.Stroke.l, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(-90))
+        Button {
+            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                showContextPercent.toggle()
             }
-            .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
-            Text("\(Int((usedFraction * 100).rounded()))%")
-                .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+        } label: {
+            HStack(spacing: ThemeTokens.Spacing.xs) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.secondary.opacity(ThemeTokens.Opacity.s), lineWidth: ThemeTokens.Stroke.l)
+                    Circle()
+                        .trim(from: 0, to: usedFraction)
+                        .stroke(
+                            ringColor,
+                            style: StrokeStyle(lineWidth: ThemeTokens.Stroke.l, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                }
+                .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
+                if showContextPercent {
+                    Text("\(Int((usedFraction * 100).rounded()))%")
+                        .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 
     private var usedFraction: Double {

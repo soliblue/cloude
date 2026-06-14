@@ -16,4 +16,8 @@ enum ChatEffort: String, CaseIterable {
         case .max: "Max"
         }
     }
+
+    var fraction: Double {
+        Double(Self.allCases.firstIndex(of: self)! + 1) / Double(Self.allCases.count)
+    }
 }
