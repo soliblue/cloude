@@ -160,6 +160,7 @@ struct ChatInputBar: View, Equatable {
                     .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.white, appAccent.color)
+                    .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
                     .padding(.vertical, ThemeTokens.Spacing.s)
                     .padding(.trailing, ThemeTokens.Spacing.m)
                     .contentShape(Circle())
@@ -183,6 +184,7 @@ struct ChatInputBar: View, Equatable {
                         canSend ? .white : Color.secondary,
                         canSend ? appAccent.color : Color.secondary.opacity(ThemeTokens.Opacity.s)
                     )
+                    .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
                     .padding(.vertical, ThemeTokens.Spacing.s)
                     .padding(.trailing, ThemeTokens.Spacing.m)
                     .contentShape(Circle())
