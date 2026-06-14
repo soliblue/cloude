@@ -18,7 +18,7 @@ struct ChatViewMessageListRowThinking: View {
     }
 
     private var live: some View {
-        let label = Text("Thinking").appFont(size: ThemeTokens.Text.m, weight: .medium)
+        let label = Text("Thinking").appFont(size: ThemeTokens.Text.s, weight: .medium)
         return label
             .foregroundColor(ThemeColor.secondary)
             .overlay {

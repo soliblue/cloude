@@ -23,7 +23,6 @@ struct ChatInputBarMetaRow: View {
                     )
                     .frame(width: ThemeTokens.Icon.l, height: ThemeTokens.Icon.l)
                     .padding(.vertical, ThemeTokens.Spacing.xs)
-                    .padding(.horizontal, ThemeTokens.Spacing.s)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

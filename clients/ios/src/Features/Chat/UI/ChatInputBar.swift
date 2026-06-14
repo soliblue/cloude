@@ -91,7 +91,7 @@ struct ChatInputBar: View, Equatable {
                         }
                     }
                     if focused {
-                        HStack(spacing: ThemeTokens.Spacing.m) {
+                        HStack(spacing: 0) {
                             ChatInputBarAttachmentPicker(images: $images)
                             ChatInputBarMetaRow(
                                 sessionId: sessionId,
