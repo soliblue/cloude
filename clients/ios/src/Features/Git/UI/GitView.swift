@@ -94,6 +94,7 @@ struct GitView: View {
                     selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
                 }
                 .listRowBackground(theme.palette.background)
+                .listRowSeparator(.hidden)
             }
         } else {
             ForEach(changes) { change in
