@@ -170,8 +170,10 @@ struct ChatInputBar: View, Equatable {
             Image(systemName: "mic.fill")
                 .appFont(size: ThemeTokens.Text.l, weight: .medium)
                 .foregroundColor(appAccent.color)
-                .padding(ThemeTokens.Spacing.m)
-                .contentShape(Capsule())
+                .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
+                .padding(.vertical, ThemeTokens.Spacing.s)
+                .padding(.horizontal, ThemeTokens.Spacing.m)
+                .contentShape(Circle())
                 .gesture(recordGesture)
         } else {
             Menu {
