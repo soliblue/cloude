@@ -76,7 +76,7 @@ struct ChatInputBar: View, Equatable {
                     level: recorder.level, isTranscribing: isTranscribing, onStop: stopRecording)
             } else {
                 VStack(spacing: 0) {
-                    HStack(alignment: .bottom, spacing: 0) {
+                    HStack(alignment: .center, spacing: 0) {
                         if !focused {
                             ChatInputBarAttachmentPicker(images: $images)
                         }
