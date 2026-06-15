@@ -205,6 +205,7 @@ enum ChatService {
             pending.state = .failed
         }
         closeStream(sessionId: session.id, isFailed: false, context: context)
+        drainQueue(sessionId: session.id, context: context)
     }
 
     @MainActor
@@ -354,6 +355,7 @@ enum ChatService {
             }
             closeStream(sessionId: sessionId, isFailed: false, context: context)
             lastSeqs.removeValue(forKey: sessionId)
+            drainQueue(sessionId: sessionId, context: context)
         } catch StreamingError.preHeaders(let underlying) {
             AppLogger.connectionError(
                 "stream failed reason=preHeaders sessionId=\(sessionId.uuidString) error=\(underlying)")
@@ -587,9 +589,9 @@ enum ChatService {
                 }
                 maybeRename(sessionId: sessionId, context: context)
                 captureGitDelta(sessionId: sessionId, context: context)
-                activeStreams.remove(sessionId)
-                drainQueue(sessionId: sessionId, context: context)
             }
+            activeStreams.remove(sessionId)
+            drainQueue(sessionId: sessionId, context: context)
         case .initialized:
             markSessionExistsOnServer(sessionId: sessionId, context: context)
         case .exited, .unknown:
