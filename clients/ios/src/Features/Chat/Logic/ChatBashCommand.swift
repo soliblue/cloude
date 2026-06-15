@@ -2,12 +2,15 @@ import Foundation
 
 enum ChatBashCommand {
     static func parse(_ command: String) -> (symbol: String, label: String)? {
+        guard let sub = subcommand(command) else { return nil }
+        return (gitSymbol(sub), "git \(sub)")
+    }
+
+    static func subcommand(_ command: String) -> String? {
         let firstLine = command.components(separatedBy: .newlines).first ?? command
         let parts = firstLine.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
-        if let head = parts.first, head == "git", let sub = gitSubcommand(after: Array(parts.dropFirst())) {
-            return (gitSymbol(sub), "git \(sub)")
-        }
-        return nil
+        guard let head = parts.first, head == "git" else { return nil }
+        return gitSubcommand(after: Array(parts.dropFirst()))
     }
 
     private static func gitSubcommand(after args: [String]) -> String? {

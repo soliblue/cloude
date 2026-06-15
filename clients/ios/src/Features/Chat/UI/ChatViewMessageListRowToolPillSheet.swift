@@ -117,6 +117,9 @@ struct ChatViewMessageListRowToolPillSheet: View {
                 ChatViewMessageListRowToolPillSheetWrite(session: session, toolCall: toolCall)
             case .bash:
                 ChatViewMessageListRowToolPillSheetBash(toolCall: toolCall)
+                if toolCall.showsDiff, let result = toolCall.result, !result.isEmpty {
+                    ChatViewMessageListRowToolPillSheetBashDiff(text: result)
+                }
             case .grep:
                 ChatViewMessageListRowToolPillSheetGrep(toolCall: toolCall)
             case .glob:
@@ -188,6 +191,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
 
     private var handlesOutputInline: Bool {
         toolCall.kind == .read || toolCall.kind == .task || toolCall.todoItems != nil
+            || toolCall.showsDiff
     }
 
     private var language: String {

@@ -110,6 +110,11 @@ final class ChatToolCall {
         }
     }
 
+    var showsDiff: Bool {
+        guard state != .failed, kind == .bash else { return false }
+        return ChatBashCommand.subcommand(inputSummary) == "diff"
+    }
+
     var editStrings: (old: String, new: String)? {
         let old = parsedInput["old_string"] as? String
         let new = parsedInput["new_string"] as? String
