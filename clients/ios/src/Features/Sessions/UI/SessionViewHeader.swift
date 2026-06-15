@@ -11,9 +11,7 @@ struct SessionViewHeader: View {
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.s) {
-            IconPillButton(symbol: "line.3.horizontal") {
-                openSidebar()
-            }
+            SessionsMenuButton(action: openSidebar)
             Spacer(minLength: 0)
             if isConfigured {
                 SessionViewTabs(
