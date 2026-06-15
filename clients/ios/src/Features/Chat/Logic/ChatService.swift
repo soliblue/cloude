@@ -494,6 +494,7 @@ enum ChatService {
         let snippet = (try? context.fetch(messageDescriptor).first)?.text ?? ""
         if snippet.isEmpty { return }
         if UIApplication.shared.applicationState != .active {
+            session.hasUnread = true
             ChatNotificationService.postCompletion(
                 title: session.title, snippet: String(snippet.prefix(140)))
             return
@@ -503,6 +504,7 @@ enum ChatService {
         )
         let focusedId = (try? context.fetch(windowDescriptor).first)?.session?.id
         if focusedId == session.id { return }
+        session.hasUnread = true
         SessionToastStore.shared.present(
             SessionToast(
                 sessionId: sessionId,

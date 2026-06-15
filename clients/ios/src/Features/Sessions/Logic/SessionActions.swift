@@ -106,6 +106,7 @@ enum SessionActions {
     @MainActor
     static func markOpened(_ session: Session) {
         session.lastOpenedAt = .now
+        session.hasUnread = false
     }
 
     @MainActor

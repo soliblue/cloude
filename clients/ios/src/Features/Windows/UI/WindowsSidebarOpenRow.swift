@@ -1,4 +1,3 @@
-import SwiftData
 import SwiftUI
 
 struct WindowsSidebarOpenRow: View {
@@ -7,31 +6,7 @@ struct WindowsSidebarOpenRow: View {
     let canClose: Bool
     let onActivate: () -> Void
     let onClose: () -> Void
-    @Query private var messages: [ChatMessage]
     @Environment(\.appAccent) private var appAccent
-
-    init(
-        session: Session,
-        isFocused: Bool,
-        canClose: Bool,
-        onActivate: @escaping () -> Void,
-        onClose: @escaping () -> Void
-    ) {
-        self.session = session
-        self.isFocused = isFocused
-        self.canClose = canClose
-        self.onActivate = onActivate
-        self.onClose = onClose
-        let sessionId = session.id
-        var descriptor = FetchDescriptor<ChatMessage>(
-            predicate: #Predicate<ChatMessage> {
-                $0.sessionId == sessionId && $0.roleRaw == "assistant" && $0.stateRaw == "complete"
-            },
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )
-        descriptor.fetchLimit = 1
-        _messages = Query(descriptor)
-    }
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.s) {
@@ -64,7 +39,6 @@ struct WindowsSidebarOpenRow: View {
     }
 
     private var isUnread: Bool {
-        if isFocused { return false }
-        return messages.first.map { $0.createdAt > session.lastOpenedAt } ?? false
+        !isFocused && session.hasUnread
     }
 }
