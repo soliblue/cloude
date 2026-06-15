@@ -101,13 +101,7 @@ final class ChatToolCall {
 
     var todoItems: [ChatTodoItem]? {
         if case .todo = kind {} else { return nil }
-        let list = (parsedInput["todos"] as? [[String: Any]]) ?? (parsedInput["items"] as? [[String: Any]])
-        return list?.map {
-            ChatTodoItem(
-                content: $0["content"] as? String ?? "",
-                status: ChatTodoItem.Status(rawValue: $0["status"] as? String ?? "pending") ?? .pending
-            )
-        }
+        return ChatTodoItem.list(from: inputJSON)
     }
 
     var showsDiff: Bool {

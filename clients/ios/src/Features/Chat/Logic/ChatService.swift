@@ -439,6 +439,7 @@ enum ChatService {
             notifyCompletion(session: session, context: context)
         }
         ChatLiveStream.clear(sessionId: sessionId)
+        ChatLiveTasks.clear(sessionId: sessionId)
     }
 
     @MainActor
@@ -564,6 +565,10 @@ enum ChatService {
                     message, finalText: resolved, thinking: resolvedThinking,
                     thinkingMs: snapshot.thinkingMs, thinkingRedacted: thinkingRedacted,
                     toolUses: toolUses, model: model, context: context)
+                if let todo = toolUses.last(where: { $0.name == "TodoWrite" }) {
+                    ChatLiveTasks.snapshot(for: sessionId).items = ChatTodoItem.list(
+                        from: todo.inputJSON)
+                }
                 streamingMessages.removeValue(forKey: sessionId)
                 ChatLiveStream.clear(sessionId: sessionId)
                 checkpointLastSeq(sessionId: sessionId, seq: event.seq, context: context)

@@ -13,6 +13,7 @@ struct ChatViewMessageListRowToolPillList: View {
         _toolCalls = Query(
             filter: #Predicate<ChatToolCall> {
                 messageIds.contains($0.messageId) && $0.parentToolUseId == nil
+                    && $0.name != "TodoWrite"
             },
             sort: [SortDescriptor(\.order), SortDescriptor(\.id)]
         )

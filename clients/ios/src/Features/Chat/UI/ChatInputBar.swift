@@ -61,6 +61,9 @@ struct ChatInputBar: View, Equatable {
         #endif
         let _ = PerfCounters.bump("ib.body")
         VStack(spacing: ThemeTokens.Spacing.xs) {
+            if isStreaming {
+                ChatInputBarTaskList(sessionId: sessionId)
+            }
             if !suggestions.isEmpty {
                 ChatInputBarSuggestions(suggestions: suggestions, onSelect: applySuggestion)
             }

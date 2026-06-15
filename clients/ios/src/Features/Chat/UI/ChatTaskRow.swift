@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ChatViewMessageListRowToolPillSheetTodoListRow: View {
+struct ChatTaskRow: View {
     let item: ChatTodoItem
 
     var body: some View {

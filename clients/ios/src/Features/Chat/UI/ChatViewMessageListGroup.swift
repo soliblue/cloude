@@ -24,6 +24,7 @@ struct ChatViewMessageListGroup: View {
                 }
                 if let status = statusMessage, let modelId = status.model {
                     ChatViewMessageListGroupStatusRow(modelId: modelId, costUsd: status.costUsd)
+                    ChatViewMessageListGroupTaskCard(messageIds: messages.map { $0.id })
                     ChatViewMessageListGroupGitCard(session: session, messageId: status.id)
                 }
             }

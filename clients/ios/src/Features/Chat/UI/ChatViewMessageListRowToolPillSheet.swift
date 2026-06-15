@@ -93,9 +93,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
 
     @ViewBuilder
     private var primaryContent: some View {
-        if let todos = toolCall.todoItems {
-            ChatViewMessageListRowToolPillSheetTodoList(items: todos)
-        } else if let edit = toolCall.editStrings {
+        if let edit = toolCall.editStrings {
             if let path = toolCall.filePath {
                 ChatViewMessageListRowToolPillSheetFileRow(
                     session: session, toolCall: toolCall, path: path)
@@ -190,8 +188,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
     }
 
     private var handlesOutputInline: Bool {
-        toolCall.kind == .read || toolCall.kind == .task || toolCall.todoItems != nil
-            || toolCall.showsDiff
+        toolCall.kind == .read || toolCall.kind == .task || toolCall.showsDiff
     }
 
     private var language: String {
