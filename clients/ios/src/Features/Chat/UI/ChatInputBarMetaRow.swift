@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct ChatInputBarMetaRow: View {
@@ -8,6 +9,7 @@ struct ChatInputBarMetaRow: View {
     let contextTokens: Int
     let contextWindow: Int
     @Environment(\.appAccent) private var appAccent
+    @Environment(\.modelContext) private var context
     @State private var showContextPercent = false
 
     var body: some View {
@@ -29,21 +31,24 @@ struct ChatInputBarMetaRow: View {
             if contextTokens > 0 && contextWindow > 0 {
                 contextRing
             }
-            Menu {
-                ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
-            } label: {
-                HStack(spacing: ThemeTokens.Spacing.s) {
-                    Text(model?.displayName ?? "Auto")
-                        .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                        .foregroundStyle(.secondary)
-                    if let effort {
-                        ChatInputBarMetaRowEffortBar(fraction: effort.fraction)
-                    }
+            HStack(spacing: ThemeTokens.Spacing.s) {
+                Text(model?.displayName ?? "Auto")
+                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                    .foregroundStyle(.secondary)
+                if let effort {
+                    ChatInputBarMetaRowEffortBar(fraction: effort.fraction)
                 }
-                .padding(.vertical, ThemeTokens.Spacing.xs)
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .padding(.vertical, ThemeTokens.Spacing.xs)
+            .contentShape(Rectangle())
+            .overlay {
+                ChatInputBarModelMenuButton(
+                    model: model,
+                    effort: effort,
+                    onModel: { SessionActions.setModel($0, for: sessionId, context: context) },
+                    onEffort: { SessionActions.setEffort($0, for: sessionId, context: context) }
+                )
+            }
         }
     }
 
