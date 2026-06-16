@@ -13,6 +13,7 @@ struct GitView: View {
     @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = true
     @State private var collapsedStaged: Set<String> = []
     @State private var collapsedUnstaged: Set<String> = []
+    @State private var changeCache = GitChangeSectionCache()
 
     init(session: Session) {
         self.session = session
@@ -44,12 +45,13 @@ struct GitView: View {
     @ViewBuilder
     private var content: some View {
         if let status = statuses.first {
+            let sections = changeCache.sections(for: status.changes)
             VStack(spacing: 0) {
-                GitViewStatusHeader(status: status, session: session)
-                if status.changes.isEmpty {
+                GitViewStatusHeader(summary: GitStatusSummary(status: status), session: session)
+                if sections.isEmpty {
                     commitsList
                 } else {
-                    changesList(status.changes)
+                    changesList(sections)
                 }
             }
         } else if isLoading {
@@ -63,19 +65,24 @@ struct GitView: View {
         }
     }
 
-    private func changesList(_ changes: [GitChange]) -> some View {
-        let sorted = changes.sorted { $0.path < $1.path }
-        let staged = sorted.filter(\.isStaged)
-        let unstaged = sorted.filter { !$0.isStaged }
-        return List {
-            if !staged.isEmpty {
+    private func changesList(_ sections: GitChangeSections) -> some View {
+        List {
+            if !sections.staged.isEmpty {
                 Section("Staged") {
-                    changeRows(staged, collapsed: $collapsedStaged)
+                    changeRows(
+                        changes: sections.staged,
+                        tree: sections.stagedTree,
+                        collapsed: $collapsedStaged
+                    )
                 }
             }
-            if !unstaged.isEmpty {
+            if !sections.unstaged.isEmpty {
                 Section("Changes") {
-                    changeRows(unstaged, collapsed: $collapsedUnstaged)
+                    changeRows(
+                        changes: sections.unstaged,
+                        tree: sections.unstagedTree,
+                        collapsed: $collapsedUnstaged
+                    )
                 }
             }
         }
@@ -87,9 +94,11 @@ struct GitView: View {
     }
 
     @ViewBuilder
-    private func changeRows(_ changes: [GitChange], collapsed: Binding<Set<String>>) -> some View {
+    private func changeRows(
+        changes: [GitChange], tree: [GitChangeTreeNode], collapsed: Binding<Set<String>>
+    ) -> some View {
         if viewAsTree {
-            ForEach(GitChangeTreeNode.build(changes)) { node in
+            ForEach(tree) { node in
                 GitViewChangeTreeRow(node: node, depth: 0, collapsed: collapsed) { change in
                     selectedChange = GitDiffTarget(path: change.path, isStaged: change.isStaged)
                 }

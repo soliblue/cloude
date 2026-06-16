@@ -269,7 +269,7 @@ enum ChatService {
     }
 
     nonisolated private static func encodeForUpload(_ images: [Data]) async -> [[String: String]] {
-        await Task.detached {
+        await Task.detached { @concurrent in
             let budget = 700_000 / max(images.count, 1)
             return images.compactMap { encode($0, budget: budget) }
         }.value

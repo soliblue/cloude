@@ -5,8 +5,7 @@ struct ChatViewMessageListRow: View {
     let session: Session
     let message: ChatMessage
     @Environment(\.filePreviewPresenter) private var presenter
-    @State private var isSelectTextPresented = false
-    @State private var isInfoPresented = false
+    @State private var sheet: ChatViewMessageListRowSheet?
 
     var body: some View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
@@ -28,22 +27,24 @@ struct ChatViewMessageListRow: View {
                     Label("Copy", systemImage: "doc.on.doc")
                 }
                 Button {
-                    isSelectTextPresented = true
+                    sheet = .selectText
                 } label: {
                     Label("Select Text", systemImage: "text.cursor")
                 }
             }
             Button {
-                isInfoPresented = true
+                sheet = .info
             } label: {
                 Label("Info", systemImage: "info.circle")
             }
         }
-        .sheet(isPresented: $isSelectTextPresented) {
-            ChatViewMessageListRowSelectTextSheet(text: message.text)
-        }
-        .sheet(isPresented: $isInfoPresented) {
-            ChatViewMessageListRowInfoSheet(message: message)
+        .sheet(item: $sheet) { sheet in
+            switch sheet {
+            case .selectText:
+                ChatViewMessageListRowSelectTextSheet(text: message.text)
+            case .info:
+                ChatViewMessageListRowInfoSheet(message: message)
+            }
         }
         .environment(
             \.openURL,

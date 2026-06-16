@@ -1,7 +1,7 @@
 import Foundation
 
 struct GitDiffLine: Identifiable {
-    enum Kind { case added, removed, context, hunk, binary }
+    enum Kind: Equatable { case added, removed, context, hunk, binary }
     let id = UUID()
     let text: String
     let kind: Kind
@@ -44,7 +44,7 @@ enum GitDiffParser {
             for part in parts where part.hasPrefix("+") {
                 let span = part.dropFirst().split(separator: ",")
                 if let lineNo = span.first {
-                    return trailing.isEmpty ? "Line \(lineNo)" : "\(trailing) — Line \(lineNo)"
+                    return trailing.isEmpty ? "Line \(lineNo)" : "\(trailing) - Line \(lineNo)"
                 }
             }
         }

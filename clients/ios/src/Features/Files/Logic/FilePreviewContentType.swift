@@ -1,6 +1,6 @@
 import Foundation
 
-enum FilePreviewContentType {
+enum FilePreviewContentType: Equatable {
     case image
     case gif
     case video

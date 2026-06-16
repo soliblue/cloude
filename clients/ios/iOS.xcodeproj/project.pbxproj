@@ -11,9 +11,20 @@
 		C2MD000000000000007FD3E4 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2MD000000000000017FD3E4 /* MarkdownUI */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		C2E000082F2619AE007FD3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C2B3BB982F2619AE007FD3E4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C2B3BB9F2F2619AE007FD3E4;
+			remoteInfo = Cloude;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		C2B3BBA02F2619AE007FD3E4 /* Cloude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cloude.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cloude Agent.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2E000012F2619AE007FD3E4 /* CloudeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CloudeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -35,6 +46,11 @@
 			path = src;
 			sourceTree = "<group>";
 		};
+		C2E000022F2619AE007FD3E4 /* CloudeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CloudeTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +63,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C2E000042F2619AE007FD3E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -54,6 +77,7 @@
 			isa = PBXGroup;
 			children = (
 				C2B3BBA22F2619AE007FD3E4 /* src */,
+				C2E000022F2619AE007FD3E4 /* CloudeTests */,
 				C2B3BBA12F2619AE007FD3E4 /* Products */,
 				C2LIVEACT0D2F2619AE007FD3E4 /* Frameworks */,
 			);
@@ -64,6 +88,7 @@
 			children = (
 				C2B3BBA02F2619AE007FD3E4 /* Cloude.app */,
 				C2B3BBB22F2619E8007FD3E4 /* Cloude Agent.app */,
+				C2E000012F2619AE007FD3E4 /* CloudeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,6 +127,29 @@
 			productReference = C2B3BBA02F2619AE007FD3E4 /* Cloude.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C2E000072F2619AE007FD3E4 /* CloudeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C2E0000C2F2619AE007FD3E4 /* Build configuration list for PBXNativeTarget "CloudeTests" */;
+			buildPhases = (
+				C2E000062F2619AE007FD3E4 /* Sources */,
+				C2E000042F2619AE007FD3E4 /* Frameworks */,
+				C2E000052F2619AE007FD3E4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C2E000092F2619AE007FD3E4 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C2E000022F2619AE007FD3E4 /* CloudeTests */,
+			);
+			name = CloudeTests;
+			packageProductDependencies = (
+			);
+			productName = CloudeTests;
+			productReference = C2E000012F2619AE007FD3E4 /* CloudeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -114,6 +162,10 @@
 				TargetAttributes = {
 					C2B3BB9F2F2619AE007FD3E4 = {
 						CreatedOnToolsVersion = 26.1.1;
+					};
+					C2E000072F2619AE007FD3E4 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = C2B3BB9F2F2619AE007FD3E4;
 					};
 				};
 			};
@@ -136,12 +188,20 @@
 			projectRoot = "";
 			targets = (
 				C2B3BB9F2F2619AE007FD3E4 /* Cloude */,
+				C2E000072F2619AE007FD3E4 /* CloudeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		C2B3BB9E2F2619AE007FD3E4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C2E000052F2619AE007FD3E4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -158,7 +218,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C2E000062F2619AE007FD3E4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C2E000092F2619AE007FD3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C2B3BB9F2F2619AE007FD3E4 /* Cloude */;
+			targetProxy = C2E000082F2619AE007FD3E4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		C2B3BBA92F2619AF007FD3E4 /* Debug */ = {
@@ -364,6 +439,68 @@
 			};
 			name = Release;
 		};
+		C2E0000A2F2619AE007FD3E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q9U8224WWM;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = soli.CloudeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Cloude.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Cloude";
+			};
+			name = Debug;
+		};
+		C2E0000B2F2619AE007FD3E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q9U8224WWM;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = soli.CloudeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Cloude.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Cloude";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -381,6 +518,15 @@
 			buildConfigurations = (
 				C2B3BBAC2F2619AF007FD3E4 /* Debug */,
 				C2B3BBAD2F2619AF007FD3E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C2E0000C2F2619AE007FD3E4 /* Build configuration list for PBXNativeTarget "CloudeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C2E0000A2F2619AE007FD3E4 /* Debug */,
+				C2E0000B2F2619AE007FD3E4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

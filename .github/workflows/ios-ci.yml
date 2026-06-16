@@ -1,0 +1,40 @@
+name: iOS CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'codex/**'
+    paths:
+      - 'clients/ios/**'
+      - '.github/workflows/ios-ci.yml'
+  pull_request:
+    paths:
+      - 'clients/ios/**'
+      - '.github/workflows/ios-ci.yml'
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.2.app
+          xcodebuild -version
+
+      - name: Audit guidelines
+        run: node clients/ios/scripts/audit-guidelines.mjs
+
+      - name: Select simulator
+        run: |
+          SIMULATOR_NAME="$(xcrun simctl list devices available --json | python3 -c 'import json, re, sys; data=json.load(sys.stdin)["devices"]; versions=lambda key: tuple(map(int, re.findall(r"\\d+", key))); devices=((runtime, device) for runtime in sorted(data, key=versions, reverse=True) for device in data[runtime]); print(next(device["name"] for _, device in devices if device.get("isAvailable") and device["name"].startswith("iPhone")))')"
+          echo "IOS_CI_DESTINATION=platform=iOS Simulator,name=$SIMULATOR_NAME" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: |
+          xcodebuild test -project clients/ios/iOS.xcodeproj -scheme Cloude -destination "$IOS_CI_DESTINATION"

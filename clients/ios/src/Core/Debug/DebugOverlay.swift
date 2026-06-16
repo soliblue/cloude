@@ -13,7 +13,7 @@ struct DebugOverlay: View {
 
 private struct DebugOverlayPill: View {
     let endpoint: Endpoint?
-    @StateObject private var counter = DebugFPSCounter()
+    @State private var counter = DebugFPSCounter()
     @Environment(\.scenePhase) private var scenePhase
     @State private var position = CGPoint(x: 70, y: 100)
     @GestureState private var dragOffset = CGSize.zero

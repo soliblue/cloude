@@ -1,18 +1,18 @@
 import SwiftUI
 
 struct ChatInputBarAttachmentStrip: View {
-    @Binding var images: [Data]
-    @Binding var pastedTexts: [String]
+    @Binding var images: [ChatImageAttachment]
+    @Binding var pastedTexts: [ChatPastedTextAttachment]
     let onInsertPastedText: (String) -> Void
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: ThemeTokens.Spacing.s) {
-                ForEach(Array(images.enumerated()), id: \.offset) { index, data in
+                ForEach(images) { image in
                     ZStack(alignment: .topTrailing) {
-                        ChatAttachmentThumbnail(data: data)
+                        ChatAttachmentThumbnail(data: image.data)
                         Button {
-                            images.remove(at: index)
+                            images.removeAll { $0.id == image.id }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .appFont(size: ThemeTokens.Icon.s)
@@ -21,17 +21,17 @@ struct ChatInputBarAttachmentStrip: View {
                         .offset(x: ThemeTokens.Spacing.xs, y: -ThemeTokens.Spacing.xs)
                     }
                 }
-                ForEach(Array(pastedTexts.enumerated()), id: \.offset) { index, text in
+                ForEach(pastedTexts) { pastedText in
                     ZStack(alignment: .topTrailing) {
                         Button {
-                            pastedTexts.remove(at: index)
-                            onInsertPastedText(text)
+                            pastedTexts.removeAll { $0.id == pastedText.id }
+                            onInsertPastedText(pastedText.text)
                         } label: {
-                            ChatAttachmentTextChip(text: text)
+                            ChatAttachmentTextChip(text: pastedText.text)
                         }
                         .buttonStyle(.plain)
                         Button {
-                            pastedTexts.remove(at: index)
+                            pastedTexts.removeAll { $0.id == pastedText.id }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .appFont(size: ThemeTokens.Icon.s)

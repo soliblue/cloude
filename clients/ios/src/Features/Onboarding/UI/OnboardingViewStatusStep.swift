@@ -142,17 +142,22 @@ struct OnboardingViewStatusStep: View {
         case .pending:
             Image(systemName: "circle")
                 .appFont(size: ThemeTokens.Text.l)
+                .frame(width: ThemeTokens.Text.l, height: ThemeTokens.Text.l)
                 .foregroundColor(.secondary.opacity(ThemeTokens.Opacity.m))
         case .active:
-            ProgressView().controlSize(.small)
+            ProgressView()
+                .controlSize(.small)
+                .frame(width: ThemeTokens.Text.l, height: ThemeTokens.Text.l)
         case .done:
             Image(systemName: "checkmark.circle.fill")
                 .appFont(size: ThemeTokens.Text.l)
+                .frame(width: ThemeTokens.Text.l, height: ThemeTokens.Text.l)
                 .foregroundColor(ThemeColor.success)
                 .contentTransition(.symbolEffect(.replace))
         case .failed:
             Image(systemName: "xmark.circle.fill")
                 .appFont(size: ThemeTokens.Text.l)
+                .frame(width: ThemeTokens.Text.l, height: ThemeTokens.Text.l)
                 .foregroundColor(ThemeColor.danger)
                 .contentTransition(.symbolEffect(.replace))
         }

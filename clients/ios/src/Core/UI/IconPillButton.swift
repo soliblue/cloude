@@ -8,8 +8,9 @@ struct IconPillButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(Image(systemName: symbol))
+            Image(systemName: symbol)
                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
                 .foregroundColor(tint)
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())

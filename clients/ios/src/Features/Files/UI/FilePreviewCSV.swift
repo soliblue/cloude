@@ -1,11 +1,15 @@
 import SwiftUI
 
 struct FilePreviewCSV: View {
-    let data: Data
+    let rows: [[String]]?
+
+    init(data: Data) {
+        rows = String(data: data, encoding: .utf8).map(Self.parse)
+    }
 
     var body: some View {
-        if let text = String(data: data, encoding: .utf8) {
-            grid(rows: parse(text))
+        if let rows {
+            grid(rows: rows)
         } else {
             Text("Invalid CSV")
                 .appFont(size: ThemeTokens.Text.m)
@@ -41,7 +45,7 @@ struct FilePreviewCSV: View {
         return row.isMultiple(of: 2) ? Color.clear : ThemeColor.gray.opacity(0.08)
     }
 
-    private func parse(_ text: String) -> [[String]] {
+    private static func parse(_ text: String) -> [[String]] {
         let delimiter: Character = text.contains("\t") && !text.contains(",") ? "\t" : ","
         var rows: [[String]] = []
         var row: [String] = []

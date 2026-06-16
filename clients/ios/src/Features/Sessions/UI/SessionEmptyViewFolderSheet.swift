@@ -5,6 +5,7 @@ struct SessionEmptyViewFolderSheet: View {
     let session: Session
     let endpoint: Endpoint
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
 
     var body: some View {
         NavigationStack {
@@ -31,5 +32,6 @@ struct SessionEmptyViewFolderSheet: View {
                 }
             }
         }
+        .presentationBackground(theme.palette.background)
     }
 }

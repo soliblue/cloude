@@ -1,14 +1,19 @@
-import Combine
+import Foundation
+import Observation
 import QuartzCore
-import SwiftUI
 
-final class DebugFPSCounter: ObservableObject {
-    @Published var fps: Int = 0
+@Observable
+final class DebugFPSCounter: NSObject {
+    var fps: Int = 0
+    @ObservationIgnored
     private var displayLink: CADisplayLink?
+    @ObservationIgnored
     private var lastTimestamp: CFTimeInterval = 0
+    @ObservationIgnored
     private var frames: Int = 0
 
-    init() {
+    override init() {
+        super.init()
         let link = CADisplayLink(target: self, selector: #selector(tick(_:)))
         link.add(to: .main, forMode: .common)
         displayLink = link

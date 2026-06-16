@@ -2,7 +2,7 @@ import PhotosUI
 import SwiftUI
 
 struct ChatInputBarAttachmentPicker: View {
-    @Binding var images: [Data]
+    @Binding var images: [ChatImageAttachment]
     @State private var selections: [PhotosPickerItem] = []
     @Environment(\.theme) private var theme
 
@@ -14,7 +14,7 @@ struct ChatInputBarAttachmentPicker: View {
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())
         }
-        .onChange(of: selections) { _, items in
+        .onChange(of: selections) { (_: [PhotosPickerItem], items: [PhotosPickerItem]) in
             Task {
                 var loaded: [Data] = []
                 for item in items {
@@ -23,7 +23,7 @@ struct ChatInputBarAttachmentPicker: View {
                     }
                 }
                 await MainActor.run {
-                    images.append(contentsOf: loaded)
+                    images.append(contentsOf: loaded.map { ChatImageAttachment(data: $0) })
                     selections = []
                 }
             }

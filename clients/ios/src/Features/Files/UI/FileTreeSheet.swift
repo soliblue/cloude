@@ -33,6 +33,7 @@ struct FileTreeSheet: View {
                 FilePreviewSheet(session: session, node: node, isPushed: true)
             }
         }
+        .presentationBackground(theme.palette.background)
     }
 
     private var title: String {

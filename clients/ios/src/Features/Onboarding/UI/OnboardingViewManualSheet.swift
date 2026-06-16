@@ -76,6 +76,7 @@ struct OnboardingViewManualSheet: View {
             }
             .preferredColorScheme(theme.palette.colorScheme)
         }
+        .presentationBackground(theme.palette.background)
     }
 
     @ViewBuilder

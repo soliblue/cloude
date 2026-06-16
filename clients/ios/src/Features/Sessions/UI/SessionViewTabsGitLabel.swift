@@ -20,24 +20,22 @@ struct SessionViewTabsGitLabel: View {
         let _ = PerfCounters.enabled ? Self._logChanges() : ()
         #endif
         let _ = PerfCounters.bump("svt.git.body")
-        let status = statuses.first
-        let additions = status?.changes.compactMap(\.additions).reduce(0, +) ?? 0
-        let deletions = status?.changes.compactMap(\.deletions).reduce(0, +) ?? 0
-        let branch = status?.branch ?? ""
-        let hasChanges = additions > 0 || deletions > 0
+        let summary = statuses.first.map(GitStatusSummary.init)
+        let branch = summary?.branch ?? ""
+        let hasChanges = summary?.hasLineChanges ?? false
         HStack(spacing: ThemeTokens.Spacing.xs) {
             if !hasChanges {
                 Image(systemName: SessionTab.git.symbol)
                     .appFont(size: ThemeTokens.Text.m, weight: .medium)
             }
             if hasChanges {
-                if additions > 0 {
+                if let additions = summary?.additions, additions > 0 {
                     Text("+\(Self.formatK(additions))")
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
                         .monospacedDigit()
                         .foregroundColor(isActive ? appAccent.color : ThemeColor.success)
                 }
-                if deletions > 0 {
+                if let deletions = summary?.deletions, deletions > 0 {
                     Text("-\(Self.formatK(deletions))")
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
                         .monospacedDigit()

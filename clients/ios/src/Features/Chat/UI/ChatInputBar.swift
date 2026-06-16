@@ -11,8 +11,8 @@ struct ChatInputBar: View, Equatable {
     let contextWindow: Int
     var enabled: Bool = true
     @State private var draft: String = ""
-    @State private var images: [Data] = []
-    @State private var pastedTexts: [String] = []
+    @State private var images: [ChatImageAttachment] = []
+    @State private var pastedTexts: [ChatPastedTextAttachment] = []
     @State private var bypassPasteDetection = false
     @State private var suggestions: [ChatInputSuggestion] = []
     @State private var fileSearchTask: Task<Void, Never>?
@@ -20,7 +20,6 @@ struct ChatInputBar: View, Equatable {
     @State private var isTranscribing = false
     @State private var traceId = String(UUID().uuidString.prefix(6))
     @FocusState private var focused: Bool
-    @Environment(\.appAccent) private var appAccent
     @Environment(\.modelContext) private var context
 
     static func == (lhs: ChatInputBar, rhs: ChatInputBar) -> Bool {
@@ -60,154 +59,147 @@ struct ChatInputBar: View, Equatable {
         let _ = PerfCounters.enabled ? Self._logChanges() : ()
         #endif
         let _ = PerfCounters.bump("ib.body")
+        content
+            .padding(.horizontal, focused ? ThemeTokens.Spacing.m : ThemeTokens.Spacing.xl)
+            .padding(.bottom, ThemeTokens.Spacing.s)
+            .animation(.easeOut(duration: ThemeTokens.Duration.s), value: focused)
+            .onAppear(perform: appear)
+            .onDisappear(perform: disappear)
+            .onChange(of: draft) { oldValue, value in
+                draftChanged(oldValue: oldValue, value: value)
+            }
+            .onChange(of: images) { _, value in
+                ChatDraftStore.setImages(value.map(\.data), for: sessionId)
+            }
+            .onChange(of: pastedTexts) { _, value in
+                ChatDraftStore.setPastedTexts(value.map(\.text), for: sessionId)
+            }
+            .onChange(of: focused) { oldValue, newValue in
+                AppLogger.uiInfo(
+                    "chatInput focus trace=\(traceId) session=\(sessionId.uuidString) \(oldValue)->\(newValue)"
+                )
+            }
+    }
+
+    private var content: some View {
         VStack(spacing: ThemeTokens.Spacing.xs) {
-            if !suggestions.isEmpty {
-                ChatInputBarSuggestions(suggestions: suggestions, onSelect: applySuggestion)
-            }
-            if !images.isEmpty || !pastedTexts.isEmpty {
-                ChatInputBarAttachmentStrip(images: $images, pastedTexts: $pastedTexts) { text in
-                    bypassPasteDetection = true
-                    draft = draft.isEmpty ? text : draft + "\n" + text
-                    focused = true
-                }
-            }
-            if recorder.isRecording || isTranscribing {
-                ChatInputBarRecordingOverlay(
-                    level: recorder.level, isTranscribing: isTranscribing, onStop: stopRecording)
-            } else {
-                VStack(spacing: 0) {
-                    HStack(alignment: .center, spacing: 0) {
-                        if !focused {
-                            ChatInputBarAttachmentPicker(images: $images)
-                        }
-                        TextField("Message", text: $draft, axis: .vertical)
-                            .appFont(size: ThemeTokens.Text.m)
-                            .lineLimit(1...6)
-                            .focused($focused)
-                            .padding(.horizontal, ThemeTokens.Spacing.m)
-                            .padding(.vertical, ThemeTokens.Spacing.m)
-                        if !focused {
-                            trailingButton
-                        }
-                    }
-                    if focused {
-                        HStack(spacing: 0) {
-                            ChatInputBarAttachmentPicker(images: $images)
-                            ChatInputBarMetaRow(
-                                sessionId: sessionId,
-                                model: model,
-                                effort: effort,
-                                permissionMode: permissionMode,
-                                contextTokens: contextTokens,
-                                contextWindow: contextWindow
-                            )
-                            trailingButton
-                        }
-                        .padding(.leading, ThemeTokens.Spacing.xs)
-                        .padding(.bottom, ThemeTokens.Spacing.xs)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                }
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
-                .background(KeyboardDismissExemptArea())
-            }
-        }
-        .padding(.horizontal, focused ? ThemeTokens.Spacing.m : ThemeTokens.Spacing.xl)
-        .padding(.bottom, ThemeTokens.Spacing.s)
-        .animation(.easeOut(duration: ThemeTokens.Duration.s), value: focused)
-        .onAppear {
-            AppLogger.uiInfo(
-                "chatInput appear trace=\(traceId) session=\(sessionId.uuidString) enabled=\(enabled)"
-            )
-            draft = ChatDraftStore.text(for: sessionId)
-            images = ChatDraftStore.images(for: sessionId)
-            pastedTexts = ChatDraftStore.pastedTexts(for: sessionId)
-        }
-        .onDisappear {
-            AppLogger.uiInfo("chatInput disappear trace=\(traceId) session=\(sessionId.uuidString)")
-        }
-        .onChange(of: draft) { oldValue, value in
-            let bypass = bypassPasteDetection
-            bypassPasteDetection = false
-            if !bypass, let paste = ChatPasteDetector.extract(old: oldValue, new: value) {
-                pastedTexts.append(paste.text)
-                draft = paste.remaining
-            } else {
-                ChatDraftStore.setText(value, for: sessionId)
-                recomputeSuggestions()
-            }
-        }
-        .onChange(of: images) { _, value in
-            ChatDraftStore.setImages(value, for: sessionId)
-        }
-        .onChange(of: pastedTexts) { _, value in
-            ChatDraftStore.setPastedTexts(value, for: sessionId)
-        }
-        .onChange(of: focused) { oldValue, newValue in
-            AppLogger.uiInfo(
-                "chatInput focus trace=\(traceId) session=\(sessionId.uuidString) \(oldValue)->\(newValue)"
-            )
+            suggestionsContent
+            attachmentsContent
+            inputContent
         }
     }
-
     @ViewBuilder
-    private var trailingButton: some View {
-        if isStreaming && !canSend {
-            Button {
-                ChatService.abort(sessionId: sessionId, context: context)
-            } label: {
-                Image(systemName: "stop.circle.fill")
-                    .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.white, appAccent.color)
-                    .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
-                    .padding(.vertical, ThemeTokens.Spacing.s)
-                    .padding(.horizontal, ThemeTokens.Spacing.m)
-                    .contentShape(Circle())
+    private var suggestionsContent: some View {
+        if !suggestions.isEmpty {
+            ChatInputBarSuggestions(suggestions: suggestions, onSelect: applySuggestion)
+        }
+    }
+    @ViewBuilder
+    private var attachmentsContent: some View {
+        if !images.isEmpty || !pastedTexts.isEmpty {
+            ChatInputBarAttachmentStrip(images: $images, pastedTexts: $pastedTexts) { text in
+                bypassPasteDetection = true
+                draft = draft.isEmpty ? text : draft + "\n" + text
+                focused = true
             }
-            .buttonStyle(.plain)
-        } else if canRecord {
-            Image(systemName: "mic.fill")
-                .appFont(size: ThemeTokens.Text.l, weight: .medium)
-                .foregroundColor(appAccent.color)
-                .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
-                .padding(.vertical, ThemeTokens.Spacing.s)
-                .padding(.horizontal, ThemeTokens.Spacing.m)
-                .contentShape(Circle())
-                .gesture(recordGesture)
+        }
+    }
+    @ViewBuilder
+    private var inputContent: some View {
+        if recorder.isRecording || isTranscribing {
+            ChatInputBarRecordingOverlay(
+                level: recorder.level, isTranscribing: isTranscribing, onStop: stopRecording)
         } else {
-            Menu {
-                sendMenu
-            } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(
-                        canSend ? .white : Color.secondary,
-                        canSend ? appAccent.color : Color.secondary.opacity(ThemeTokens.Opacity.s)
-                    )
-                    .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
-                    .padding(.vertical, ThemeTokens.Spacing.s)
-                    .padding(.horizontal, ThemeTokens.Spacing.m)
-                    .contentShape(Circle())
-            } primaryAction: {
-                send()
-            }
-            .buttonStyle(.plain)
-            .disabled(!enabled)
+            inputSurface
         }
     }
-
-    @ViewBuilder
-    private var sendMenu: some View {
-        ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
+    private var inputSurface: some View {
+        VStack(spacing: 0) {
+            compactInputRow
+            if focused {
+                expandedInputRow
+            }
+        }
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
+        .background(KeyboardDismissExemptArea())
+    }
+    private var compactInputRow: some View {
+        HStack(alignment: .center, spacing: 0) {
+            if !focused {
+                ChatInputBarAttachmentPicker(images: $images)
+            }
+            TextField("Message", text: $draft, axis: .vertical)
+                .appFont(size: ThemeTokens.Text.m)
+                .lineLimit(1...6)
+                .focused($focused)
+                .padding(.horizontal, ThemeTokens.Spacing.m)
+                .padding(.vertical, ThemeTokens.Spacing.m)
+            if !focused {
+                trailingButton
+            }
+        }
+    }
+    private var expandedInputRow: some View {
+        HStack(spacing: 0) {
+            ChatInputBarAttachmentPicker(images: $images)
+            ChatInputBarMetaRow(
+                sessionId: sessionId,
+                model: model,
+                effort: effort,
+                permissionMode: permissionMode,
+                contextTokens: contextTokens,
+                contextWindow: contextWindow
+            )
+            trailingButton
+        }
+        .padding(.leading, ThemeTokens.Spacing.xs)
+        .padding(.bottom, ThemeTokens.Spacing.xs)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+    private var trailingButton: some View {
+        ChatInputBarTrailingButton(
+            sessionId: sessionId,
+            isStreaming: isStreaming,
+            canSend: canSend,
+            canRecord: canRecord,
+            enabled: enabled,
+            model: model,
+            effort: effort,
+            onAbort: abort,
+            onSend: send,
+            onStartRecording: startRecording
+        )
+    }
+    private func appear() {
+        AppLogger.uiInfo(
+            "chatInput appear trace=\(traceId) session=\(sessionId.uuidString) enabled=\(enabled)"
+        )
+        draft = ChatDraftStore.text(for: sessionId)
+        images = ChatDraftStore.images(for: sessionId).map { ChatImageAttachment(data: $0) }
+        pastedTexts = ChatDraftStore.pastedTexts(for: sessionId).map {
+            ChatPastedTextAttachment(text: $0)
+        }
+    }
+    private func disappear() {
+        AppLogger.uiInfo("chatInput disappear trace=\(traceId) session=\(sessionId.uuidString)")
+    }
+    private func draftChanged(oldValue: String, value: String) {
+        let bypass = bypassPasteDetection
+        bypassPasteDetection = false
+        if !bypass, let paste = ChatPasteDetector.extract(old: oldValue, new: value) {
+            pastedTexts.append(ChatPastedTextAttachment(text: paste.text))
+            draft = paste.remaining
+        } else {
+            ChatDraftStore.setText(value, for: sessionId)
+            recomputeSuggestions()
+        }
     }
 
     private func send() {
         let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         if canSend && (!trimmed.isEmpty || !images.isEmpty || !pastedTexts.isEmpty) {
-            let pendingImages = images
-            let prompt = (pastedTexts + [trimmed]).filter { !$0.isEmpty }
+            let pendingImages = images.map(\.data)
+            let prompt = (pastedTexts.map(\.text) + [trimmed]).filter { !$0.isEmpty }
                 .joined(separator: "\n\n")
             focused = false
             draft = ""
@@ -249,22 +241,13 @@ struct ChatInputBar: View, Equatable {
         fileSearchTask = Task {
             try? await Task.sleep(for: .milliseconds(150))
             if Task.isCancelled { return }
-            let descriptor = FetchDescriptor<Session>(
-                predicate: #Predicate<Session> { $0.id == sessionId })
-            if let session = try? context.fetch(descriptor).first,
-                let endpoint = session.endpoint, let path = session.path, !path.isEmpty,
-                let files = await FilesService.search(
-                    endpoint: endpoint, session: session, root: path, query: query)
+            let fileSuggestions = await ChatInputSuggestionService.fileSuggestions(
+                sessionId: sessionId, query: query, context: context)
+            if Task.isCancelled { return }
+            if case .mention(let current) = ChatInputAutocomplete.trigger(in: draft),
+                current == query
             {
-                if Task.isCancelled { return }
-                if case .mention(let current) = ChatInputAutocomplete.trigger(in: draft),
-                    current == query
-                {
-                    suggestions =
-                        agents
-                        + ChatInputAutocomplete.fileSuggestions(
-                            files.filter { !$0.isDirectory }.map { $0.path })
-                }
+                suggestions = agents + fileSuggestions
             }
         }
     }
@@ -281,14 +264,8 @@ struct ChatInputBar: View, Equatable {
             && !recorder.isRecording && !isTranscribing
     }
 
-    private var recordGesture: some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onEnded { value in
-                let up = -value.translation.height
-                let isTap = abs(value.translation.width) < 10 && abs(value.translation.height) < 10
-                let isSwipeUp = up >= 50 && up > abs(value.translation.width)
-                if canRecord && (isTap || isSwipeUp) { startRecording() }
-            }
+    private func abort() {
+        ChatService.abort(sessionId: sessionId, context: context)
     }
 
     private func startRecording() {
@@ -303,13 +280,8 @@ struct ChatInputBar: View, Equatable {
         if let data = recorder.stop(), !data.isEmpty {
             isTranscribing = true
             Task {
-                let descriptor = FetchDescriptor<Session>(
-                    predicate: #Predicate<Session> { $0.id == sessionId })
-                if let session = try? context.fetch(descriptor).first,
-                    let endpoint = session.endpoint,
-                    let text = await ChatTranscriptionService.transcribe(
-                        endpoint: endpoint, sessionId: sessionId, audio: data),
-                    !text.isEmpty
+                if let text = await ChatInputTranscriptionService.transcribe(
+                    sessionId: sessionId, audio: data, context: context)
                 {
                     bypassPasteDetection = true
                     draft = draft.isEmpty ? text : draft + " " + text

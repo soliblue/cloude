@@ -3,7 +3,7 @@ import SwiftUI
 struct ChatViewMessageListGroup: View {
     let session: Session
     let messages: [ChatMessage]
-    var isLast: Bool = false
+    var isStreamingLastGroup = false
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -40,7 +40,7 @@ struct ChatViewMessageListGroup: View {
     }
 
     private var statusMessage: ChatMessage? {
-        guard role == .assistant, !(isLast && session.isStreaming),
+        guard role == .assistant, !isStreamingLastGroup,
             messages.allSatisfy({ $0.state != .streaming })
         else { return nil }
         return messages.last(where: { $0.model != nil && $0.model != "<synthetic>" })

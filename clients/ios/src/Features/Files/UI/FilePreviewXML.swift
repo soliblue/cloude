@@ -1,14 +1,20 @@
 import SwiftUI
 
 struct FilePreviewXML: View {
-    let data: Data
+    let root: FilePreviewXMLNode?
+    let text: String?
+
+    init(data: Data) {
+        root = FilePreviewXMLNode.parse(data)
+        text = String(data: data, encoding: .utf8)
+    }
 
     var body: some View {
         FilePreviewScrollContainer(axes: [.vertical, .horizontal]) {
-            if let root = FilePreviewXMLNode.parse(data) {
+            if let root {
                 FilePreviewXMLRow(node: root)
                     .padding(ThemeTokens.Spacing.m)
-            } else if let text = String(data: data, encoding: .utf8) {
+            } else if let text {
                 Text(text)
                     .appFont(size: ThemeTokens.Text.m, design: .monospaced)
                     .padding(ThemeTokens.Spacing.m)
