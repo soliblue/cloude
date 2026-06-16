@@ -10,14 +10,6 @@ class MacRecord(BaseModel):
     last_seen_at: int
 
 
-class PairingSessionRecord(BaseModel):
-    pairing_id: str
-    pairing_secret_hash: str
-    mac_installation_id: str
-    expires_at: int
-    consumed_at: int | None
-
-
 class TunnelRecord(BaseModel):
     mac_installation_id: str
     cloudflare_tunnel_id: str

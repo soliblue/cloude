@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     cloudflare_zone_id: str = ""
     cloudflare_api_token: str = ""
     database_path: Path = Path("provisioning.db")
-    pairing_ttl_seconds: int = 300
+    enable_docs: bool = False
     public_base_url: str = "https://remotecc.soli.blue"
     provisioning_token_secret: str = ""
     rate_limit_auth_attempts_per_minute: int = 20

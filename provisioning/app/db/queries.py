@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 
 from app.db.connection import db
-from app.models.records import MacRecord, PairingSessionRecord, TunnelRecord
+from app.models.records import MacRecord, TunnelRecord
 
 
 def upsert_mac(mac_id: str, mac_secret_hash: str, display_name: str, now: int):
@@ -28,50 +28,6 @@ def mac(mac_id: str) -> MacRecord:
     if row:
         return MacRecord(**dict(row))
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid mac credentials")
-
-
-def insert_pairing_session(pairing_id: str, pairing_secret_hash: str, mac_id: str, expires_at: int):
-    with db() as conn:
-        conn.execute(
-            """
-            insert into pairing_sessions (pairing_id, pairing_secret_hash, mac_installation_id, expires_at, consumed_at)
-            values (?, ?, ?, ?, null)
-            """,
-            (pairing_id, pairing_secret_hash, mac_id, expires_at),
-        )
-
-
-def pairing_session(pairing_id: str) -> PairingSessionRecord | None:
-    with db() as conn:
-        row = conn.execute(
-            "select * from pairing_sessions where pairing_id = ?",
-            (pairing_id,),
-        ).fetchone()
-    return PairingSessionRecord(**dict(row)) if row else None
-
-
-def complete_pairing(app_install_id: str, mac_id: str, pairing_id: str, now: int):
-    with db() as conn:
-        conn.execute(
-            """
-            insert into app_installs (app_install_id, created_at, last_seen_at)
-            values (?, ?, ?)
-            on conflict(app_install_id) do update set last_seen_at = excluded.last_seen_at
-            """,
-            (app_install_id, now, now),
-        )
-        conn.execute(
-            """
-            update macs
-            set app_install_id = ?, last_seen_at = ?
-            where mac_installation_id = ?
-            """,
-            (app_install_id, now, mac_id),
-        )
-        conn.execute(
-            "update pairing_sessions set consumed_at = ? where pairing_id = ?",
-            (now, pairing_id),
-        )
 
 
 def active_tunnel(mac_id: str) -> TunnelRecord | None:
