@@ -26,3 +26,14 @@ export async function putTunnel(identity) {
   }
   return null
 }
+
+export async function putHeartbeat(identity) {
+  const response = await fetch(`${provisioningURL}/macs/${identity.installationId}/heartbeat`, {
+    method: 'PUT',
+    headers: {
+      'X-Mac-Secret': identity.secret,
+      'User-Agent': 'CloudeLinuxDaemon/1',
+    },
+  })
+  return response.ok
+}
