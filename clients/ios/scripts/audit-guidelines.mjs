@@ -28,8 +28,12 @@ for (const path of swiftFiles(src)) {
   if (text.includes('ObservableObject')) fail(path, 'Use Observation instead of ObservableObject')
   if (text.includes('@EnvironmentObject')) fail(path, 'Avoid broad EnvironmentObject observation')
   if (text.includes('AnyView')) fail(path, 'Avoid AnyView type erasure')
+  if (text.includes('.sheet(isPresented:')) fail(path, 'Use item-driven sheet routing instead of boolean sheet state')
   if (/[\u2013\u2014]/.test(text)) fail(path, 'Use ASCII punctuation')
   for (const line of text.split('\n')) {
+    if (/^\s*\/\//.test(line) || /^\s*\/\*/.test(line) || /^\s*\*/.test(line) || /\*\/\s*$/.test(line)) {
+      fail(path, 'Swift source should not include comments')
+    }
     if (line.includes('Task.detached') && !line.includes('@concurrent')) {
       fail(path, 'Task.detached closures must be explicit @concurrent')
     }

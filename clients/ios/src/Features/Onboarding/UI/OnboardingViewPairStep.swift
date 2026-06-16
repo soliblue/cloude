@@ -4,7 +4,7 @@ struct OnboardingViewPairStep: View {
     let store: OnboardingStore
     @Environment(\.theme) private var theme
     @Environment(\.appAccent) private var appAccent
-    @State private var isManualPresented = false
+    @State private var presentedSheet: OnboardingViewPairStepSheet?
     @State private var isUnrecognized = false
     @State private var isPermissionDenied = false
 
@@ -54,7 +54,7 @@ struct OnboardingViewPairStep: View {
             .aspectRatio(1, contentMode: .fit)
             .frame(maxWidth: .infinity)
             Button {
-                isManualPresented = true
+                presentedSheet = .manual
             } label: {
                 Text("Enter manually")
                     .appFont(size: ThemeTokens.Text.l, weight: .semibold)
@@ -67,10 +67,13 @@ struct OnboardingViewPairStep: View {
         .padding(ThemeTokens.Spacing.l)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(theme.palette.background.ignoresSafeArea())
-        .sheet(isPresented: $isManualPresented) {
-            OnboardingViewManualSheet { payload in
-                isManualPresented = false
-                store.apply(payload: payload)
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .manual:
+                OnboardingViewManualSheet { payload in
+                    presentedSheet = nil
+                    store.apply(payload: payload)
+                }
             }
         }
     }

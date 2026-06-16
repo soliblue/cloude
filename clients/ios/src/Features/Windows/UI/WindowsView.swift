@@ -12,7 +12,7 @@ struct WindowsView: View {
     @State private var onboardingInitialStep: OnboardingStep = .install
     @State private var folderPickerRequest: SessionFolderPickerRequest?
     @State private var isKeyboardVisible = false
-    @State private var isDaemonUpdateSheetPresented = false
+    @State private var presentedSheet: WindowsSheet?
     @AppStorage(StorageKey.debugOverlayEnabled) private var debugOverlayEnabled = false
     private let toastStore = SessionToastStore.shared
 
@@ -105,8 +105,12 @@ struct WindowsView: View {
                 "windows pane \(oldValue.rawValue)->\(newValue.rawValue) session=\(focusedSession?.id.uuidString ?? "-")"
             )
         }
-        .sheet(isPresented: $isDaemonUpdateSheetPresented) {
-            NavigationStack { DaemonUpdateView() }
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .daemonUpdate:
+                NavigationStack { DaemonUpdateView() }
+                    .presentationBackground(theme.palette.background)
+            }
         }
         .fullScreenCover(isPresented: $isOnboardingPresented) {
             OnboardingView(initialStep: onboardingInitialStep) { endpoint in
@@ -179,7 +183,7 @@ struct WindowsView: View {
     private func activateToast(_ toast: SessionToast) {
         switch toast.kind {
         case .daemonUpdate:
-            isDaemonUpdateSheetPresented = true
+            presentedSheet = .daemonUpdate
         case .session(let sessionId):
             if let window = windows.first(where: { $0.session?.id == sessionId }) {
                 withAnimation(paneAnimation) {

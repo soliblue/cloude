@@ -5,7 +5,7 @@ struct DaemonUpdateView: View {
     @Environment(\.theme) private var theme
     @State private var isFetchingMac = false
     @State private var isFetchingLinux = false
-    @State private var shareItems: [Any]?
+    @State private var shareItems: DaemonUpdateShareItems?
     @State private var copiedAt: Date?
 
     var body: some View {
@@ -42,9 +42,8 @@ struct DaemonUpdateView: View {
         .navigationBarTitleDisplayMode(.inline)
         .background(theme.palette.background)
         .themedNavChrome()
-        .sheet(item: Binding(get: { shareItems.map { ShareItemsBox(items: $0) } }, set: { shareItems = $0?.items })) {
-            box in
-            DaemonUpdateShareSheet(items: box.items)
+        .sheet(item: $shareItems) { shareItems in
+            DaemonUpdateShareSheet(items: shareItems.items)
         }
     }
 
@@ -56,7 +55,7 @@ struct DaemonUpdateView: View {
                 let local = await DaemonUpdateService.downloadToTemp(
                     assetURL, suggestedName: DaemonUpdate.macAssetName)
             {
-                shareItems = [local]
+                shareItems = DaemonUpdateShareItems(items: [local])
             }
             isFetchingMac = false
         }
@@ -119,9 +118,4 @@ struct DaemonUpdateView: View {
             .foregroundColor(.secondary)
             .textCase(.uppercase)
     }
-}
-
-private struct ShareItemsBox: Identifiable {
-    let id = UUID()
-    let items: [Any]
 }

@@ -13,7 +13,7 @@ struct EndpointView: View {
     @State private var authKey: String
     @State private var isDeleteConfirmPresented = false
     @State private var isProbing = false
-    @State private var isSymbolPickerPresented = false
+    @State private var presentedSheet: EndpointSheet?
     @State private var isTokenVisible = false
     @State private var saveError: String?
     @State private var didSucceed = false
@@ -36,7 +36,7 @@ struct EndpointView: View {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
                 HStack(spacing: ThemeTokens.Spacing.m) {
                     IconPillButton(symbol: symbolName, tint: ThemeColor.rust) {
-                        isSymbolPickerPresented = true
+                        presentedSheet = .symbolPicker
                     }
 
                     VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
@@ -187,8 +187,11 @@ struct EndpointView: View {
                 dismiss()
             }
         }
-        .sheet(isPresented: $isSymbolPickerPresented) {
-            EndpointsSymbolPicker(selectedSymbol: $symbolName)
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .symbolPicker:
+                EndpointsSymbolPicker(selectedSymbol: $symbolName)
+            }
         }
         .preferredColorScheme(theme.palette.colorScheme)
     }
