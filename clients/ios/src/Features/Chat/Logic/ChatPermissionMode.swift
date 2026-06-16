@@ -1,6 +1,6 @@
 import Foundation
 
-enum ChatPermissionMode: String, CaseIterable {
+enum ChatPermissionMode: String, CaseIterable, Identifiable {
     case plan
     case standard = "default"
     case acceptEdits
@@ -26,4 +26,6 @@ enum ChatPermissionMode: String, CaseIterable {
         case .custom: "gearshape"
         }
     }
+
+    var id: String { rawValue }
 }

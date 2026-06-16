@@ -1,6 +1,6 @@
 import Foundation
 
-enum ChatModel: String, CaseIterable {
+enum ChatModel: String, CaseIterable, Identifiable {
     case fable
     case opus
     case sonnet
@@ -23,6 +23,8 @@ enum ChatModel: String, CaseIterable {
         case .haiku: "ant.fill"
         }
     }
+
+    var id: String { rawValue }
 
     static func friendly(fromId id: String) -> (model: ChatModel, name: String)? {
         let parts = id.split(separator: "-").map(String.init)

@@ -29,6 +29,7 @@ for (const path of swiftFiles(src)) {
   if (text.includes('@EnvironmentObject')) fail(path, 'Avoid broad EnvironmentObject observation')
   if (text.includes('AnyView')) fail(path, 'Avoid AnyView type erasure')
   if (text.includes('.sheet(isPresented:')) fail(path, 'Use item-driven sheet routing instead of boolean sheet state')
+  if (/allCases,\s*id:\s*\\\.self/.test(text)) fail(path, 'Make option enums Identifiable instead of using id: \\.self')
   if (/[\u2013\u2014]/.test(text)) fail(path, 'Use ASCII punctuation')
   for (const line of text.split('\n')) {
     if (/^\s*\/\//.test(line) || /^\s*\/\*/.test(line) || /^\s*\*/.test(line) || /\*\/\s*$/.test(line)) {

@@ -1,6 +1,6 @@
 import Foundation
 
-enum ChatEffort: String, CaseIterable {
+enum ChatEffort: String, CaseIterable, Identifiable {
     case low
     case medium
     case high
@@ -20,4 +20,6 @@ enum ChatEffort: String, CaseIterable {
     var fraction: Double {
         Double(Self.allCases.firstIndex(of: self)! + 1) / Double(Self.allCases.count)
     }
+
+    var id: String { rawValue }
 }

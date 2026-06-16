@@ -1,10 +1,14 @@
 import SwiftUI
 
 struct ChatAttachmentThumbnail: View {
-    let data: Data
+    private let image: UIImage?
+
+    init(data: Data) {
+        image = UIImage(data: data)
+    }
 
     var body: some View {
-        if let image = UIImage(data: data) {
+        if let image {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()

@@ -7,7 +7,7 @@ struct ChatInputBarPermissionMenu: View {
     @Environment(\.modelContext) private var context
 
     var body: some View {
-        ForEach(ChatPermissionMode.allCases, id: \.self) { option in
+        ForEach(ChatPermissionMode.allCases) { option in
             Button {
                 SessionActions.setPermissionMode(option, for: sessionId, context: context)
             } label: {
