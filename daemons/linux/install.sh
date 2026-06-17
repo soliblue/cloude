@@ -57,7 +57,7 @@ if [ ! -x /usr/local/bin/cloudflared ]; then
     *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
   esac
   $SUDO curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$CF_ARCH" -o /usr/local/bin/cloudflared
-  $SUDO chmod +x /usr/local/bin/cloudflared
+  $SUDO chmod 755 /usr/local/bin/cloudflared
 fi
 
 echo "Provisioning Cloudflare tunnel..."
