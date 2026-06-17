@@ -47,7 +47,7 @@ $SUDO chown -R "$USER":"$USER" "$INSTALL_DIR"
 
 mkdir -p "$DATA_DIR"
 
-if ! command -v cloudflared >/dev/null 2>&1; then
+if [ ! -x /usr/local/bin/cloudflared ]; then
   echo "Installing cloudflared..."
   ARCH=$(dpkg --print-architecture 2>/dev/null || uname -m)
   case "$ARCH" in
