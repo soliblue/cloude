@@ -15,6 +15,11 @@ def limit(name: str, max_attempts: int, window_seconds: int) -> Callable[[Reques
     def dependency(request: Request):
         now = time.time()
         with lock:
+            if len(attempts) > 1024:
+                for stale in [key for key, entries in attempts.items() if not entries or entries[-1] <= now - 3600]:
+                    del attempts[stale]
+                if len(attempts) > 8192:
+                    attempts.clear()
             bucket = attempts[(name, client_ip(request))]
             while bucket and bucket[0] <= now - window_seconds:
                 bucket.popleft()

@@ -40,18 +40,18 @@ def create_dns_record(record_hostname: str, target: str) -> str:
 
 
 def delete_dns_record(dns_record_id: str) -> dict:
-    return request_cloudflare("delete", f"/zones/{settings().cloudflare_zone_id}/dns_records/{dns_record_id}")
+    return request_cloudflare("delete", f"/zones/{settings().cloudflare_zone_id}/dns_records/{dns_record_id}", ignore_missing=True)
 
 
 def delete_tunnel(tunnel_id: str) -> dict:
-    return request_cloudflare("delete", f"/accounts/{settings().cloudflare_account_id}/cfd_tunnel/{tunnel_id}")
+    return request_cloudflare("delete", f"/accounts/{settings().cloudflare_account_id}/cfd_tunnel/{tunnel_id}", ignore_missing=True)
 
 
 def hostname() -> str:
     return f"{dns_label(10)}-{settings().tunnel_host_label_suffix}.{settings().tunnel_host_suffix}"
 
 
-def request_cloudflare(method: str, path: str, body: dict | None = None) -> dict:
+def request_cloudflare(method: str, path: str, body: dict | None = None, ignore_missing: bool = False) -> dict:
     if settings().cloudflare_account_id and settings().cloudflare_zone_id and settings().cloudflare_api_token:
         response = httpx.request(
             method,
@@ -66,5 +66,7 @@ def request_cloudflare(method: str, path: str, body: dict | None = None) -> dict
         data = response.json()
         if response.is_success and data.get("success"):
             return data
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail={"cloudflare": data})
+        if ignore_missing and response.status_code == 404:
+            return data
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="cloudflare_request_failed")
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="cloudflare env missing")

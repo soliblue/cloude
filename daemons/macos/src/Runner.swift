@@ -14,6 +14,8 @@ final class Runner {
     private var stdinPipe: Pipe?
     private var ring: [(seq: Int, data: Data)] = []
     private var subscribers: [NWConnection] = []
+    private var pendingSendBytes: [ObjectIdentifier: Int] = [:]
+    private let maxBufferedBytes = 8 * 1024 * 1024
     private var seq = 0
     private let maxRingSize = 1000
     private var lineBuffer = Data()
@@ -142,14 +144,23 @@ final class Runner {
             #if DEBUG
             NSLog("[Runner] replay sessionId=\(sessionId) afterSeq=\(afterSeq) bytes=\(batch.count)")
             #endif
+            let batchCount = batch.count
+            pendingSendBytes[ObjectIdentifier(connection), default: 0] += batchCount
             connection.send(
                 content: batch,
-                completion: .contentProcessed { error in
+                completion: .contentProcessed { [weak self, weak connection] error in
                     #if DEBUG
                     if let error {
-                        NSLog("[Runner] replay_send_failed sessionId=\(self.sessionId) error=\(error)")
+                        NSLog("[Runner] replay_send_failed sessionId=\(self?.sessionId ?? "?") error=\(error)")
                     }
                     #endif
+                    self?.queue.async {
+                        if let self, let connection,
+                            let current = self.pendingSendBytes[ObjectIdentifier(connection)]
+                        {
+                            self.pendingSendBytes[ObjectIdentifier(connection)] = current - batchCount
+                        }
+                    }
                 }
             )
         }
@@ -183,6 +194,7 @@ final class Runner {
 
     private func removeSubscriber(_ connection: NWConnection?) {
         if let connection = connection {
+            pendingSendBytes.removeValue(forKey: ObjectIdentifier(connection))
             subscribers.removeAll { $0 === connection }
             #if DEBUG
             NSLog("[Runner] subscriber_removed sessionId=\(sessionId) subscribers=\(subscribers.count)")
@@ -235,17 +247,37 @@ final class Runner {
                 "[Runner] emit sessionId=\(sessionId) seq=\(emittedSeq) type=\((wrapped["type"] as? String) ?? ((partial["event"] as? [String: Any])?["type"] as? String) ?? "unknown") subscribers=\(subscribers.count) ringSize=\(ring.count)"
             )
             #endif
+            let chunkCount = chunk.count
+            var dropped: [NWConnection] = []
             for sub in subscribers {
+                let key = ObjectIdentifier(sub)
+                let pending = pendingSendBytes[key, default: 0] + chunkCount
+                if pending > maxBufferedBytes {
+                    dropped.append(sub)
+                    continue
+                }
+                pendingSendBytes[key] = pending
                 sub.send(
                     content: chunk,
-                    completion: .contentProcessed { error in
+                    completion: .contentProcessed { [weak self, weak sub] error in
                         #if DEBUG
                         if let error {
-                            NSLog("[Runner] send_failed sessionId=\(self.sessionId) seq=\(emittedSeq) error=\(error)")
+                            NSLog("[Runner] send_failed sessionId=\(self?.sessionId ?? "?") seq=\(emittedSeq) error=\(error)")
                         }
                         #endif
+                        self?.queue.async {
+                            if let self, let sub,
+                                let current = self.pendingSendBytes[ObjectIdentifier(sub)]
+                            {
+                                self.pendingSendBytes[ObjectIdentifier(sub)] = current - chunkCount
+                            }
+                        }
                     }
                 )
+            }
+            for sub in dropped {
+                sub.cancel()
+                removeSubscriber(sub)
             }
         }
     }
@@ -285,6 +317,7 @@ final class Runner {
         emit(["type": "exit", "code": Int(exitCode)])
         for sub in subscribers { sub.cancel() }
         subscribers.removeAll()
+        pendingSendBytes.removeAll()
         process?.standardOutput.flatMap { ($0 as? Pipe) }?.fileHandleForReading.readabilityHandler = nil
         onFinish?()
     }

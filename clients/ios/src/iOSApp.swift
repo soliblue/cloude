@@ -41,18 +41,19 @@ struct IOSApp: App {
         ]
         let schema = Schema(models)
         if let container = try? ModelContainer(for: schema) { return container }
-        AppLogger.bootstrapInfo("model container init failed, wiping store")
-        wipeDefaultStore()
+        AppLogger.bootstrapInfo("model container init failed, backing up store")
+        backupDefaultStore()
         return try! ModelContainer(for: schema)
     }
 
-    private static func wipeDefaultStore() {
+    private static func backupDefaultStore() {
         let fm = FileManager.default
         if let dir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            let stamp = Int(Date().timeIntervalSince1970)
             let candidates = ["default.store", "default.store-shm", "default.store-wal"]
             for name in candidates {
                 let url = dir.appendingPathComponent(name)
-                try? fm.removeItem(at: url)
+                try? fm.moveItem(at: url, to: dir.appendingPathComponent("\(name).bak-\(stamp)"))
             }
         }
     }

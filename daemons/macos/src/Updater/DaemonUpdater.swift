@@ -107,7 +107,11 @@ enum DaemonUpdater {
     private static func verifySignature(_ appBundle: URL) -> Bool {
         let process = Process()
         process.launchPath = "/usr/bin/codesign"
-        process.arguments = ["--verify", "--deep", "--strict", appBundle.path]
+        process.arguments = [
+            "--verify", "--deep", "--strict",
+            "-R=anchor apple generic and certificate leaf[subject.OU] = \"Q9U8224WWM\"",
+            appBundle.path,
+        ]
         try? process.run()
         process.waitUntilExit()
         return process.terminationStatus == 0
@@ -121,8 +125,17 @@ enum DaemonUpdater {
         let script = """
             #!/bin/bash
             while kill -0 \(pid) 2>/dev/null; do sleep 0.2; done
-            rm -rf "\(currentBundle.path)"
-            mv "\(newAppBundle.path)" "\(currentBundle.path)"
+            OLD="\(currentBundle.path).old-$$"
+            if mv "\(currentBundle.path)" "$OLD"; then
+              if mv "\(newAppBundle.path)" "\(currentBundle.path)"; then
+                rm -rf "$OLD"
+              else
+                mv "$OLD" "\(currentBundle.path)"
+              fi
+            else
+              rm -rf "\(currentBundle.path)"
+              mv "\(newAppBundle.path)" "\(currentBundle.path)"
+            fi
             open "\(currentBundle.path)"
             rm -f "\(scriptPath.path)"
             """

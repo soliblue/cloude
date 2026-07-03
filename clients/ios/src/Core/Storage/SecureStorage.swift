@@ -13,7 +13,10 @@ enum SecureStorage {
         SecItemDelete(query as CFDictionary)
         var add = query
         add[kSecValueData as String] = Data(value.utf8)
-        SecItemAdd(add as CFDictionary, nil)
+        let status = SecItemAdd(add as CFDictionary, nil)
+        if status != errSecSuccess {
+            AppLogger.bootstrapInfo("keychain add failed account=\(account) status=\(status)")
+        }
     }
 
     static func get(account: String) -> String? {

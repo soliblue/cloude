@@ -32,31 +32,49 @@ final class RemoteTunnelProvisioner: ObservableObject {
             {
                 RemoteTunnelCredentialStore.save(tunnel: tunnel)
                 set(.provisioning, status: .complete)
-
-                set(.tunnel, status: .active)
-                if CloudflaredRunner.shared.start(token: tunnel.tunnelToken) {
-                    set(.tunnel, status: .complete)
-
-                    let remoteEndpoint = RemoteTunnelEndpoint(host: tunnel.hostname, port: 443)
-                    endpoint = remoteEndpoint
-
-                    set(.reachability, status: .active)
-                    if await RemoteTunnelClient.isPublicRouteReady(
-                        endpoint: remoteEndpoint,
-                        authToken: authToken
-                    ) {
-                        set(.reachability, status: .complete)
-                    } else {
-                        fail(.reachability, "Public route is not ready yet")
-                    }
-                } else {
-                    fail(.tunnel, "cloudflared is not available")
-                }
+                await runTunnel(
+                    host: tunnel.hostname, token: tunnel.tunnelToken, authToken: authToken,
+                    publishBeforeReachability: true)
+            } else if let host = RemoteTunnelCredentialStore.tunnelHost,
+                let token = RemoteTunnelCredentialStore.tunnelToken
+            {
+                set(.provisioning, status: .complete)
+                await runTunnel(
+                    host: host, token: token, authToken: authToken,
+                    publishBeforeReachability: false)
             } else {
                 fail(.provisioning, "Provisioning server did not return a tunnel")
             }
 
             isRunning = false
+        }
+    }
+
+    private func runTunnel(
+        host: String, token: String, authToken: String, publishBeforeReachability: Bool
+    ) async {
+        set(.tunnel, status: .active)
+        if CloudflaredRunner.shared.start(token: token) {
+            set(.tunnel, status: .complete)
+
+            let remoteEndpoint = RemoteTunnelEndpoint(host: host, port: 443)
+            if publishBeforeReachability { endpoint = remoteEndpoint }
+
+            set(.reachability, status: .active)
+            if await RemoteTunnelClient.isPublicRouteReady(
+                endpoint: remoteEndpoint,
+                authToken: authToken
+            ) {
+                endpoint = remoteEndpoint
+                set(.reachability, status: .complete)
+            } else if publishBeforeReachability {
+                fail(.reachability, "Public route is not ready yet")
+            } else {
+                CloudflaredRunner.shared.stop()
+                fail(.provisioning, "Saved tunnel is no longer reachable")
+            }
+        } else {
+            fail(.tunnel, "cloudflared is not available")
         }
     }
 

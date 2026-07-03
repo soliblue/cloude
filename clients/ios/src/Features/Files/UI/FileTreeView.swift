@@ -4,10 +4,17 @@ struct FileTreeView: View {
     let session: Session
     @Environment(\.theme) private var theme
     @State private var store = FileTreeStore()
+    @State private var loadFailed = false
 
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
+                if loadFailed && (store.children[store.rootPath] ?? []).isEmpty {
+                    Text("Unable to load files")
+                        .appFont(size: ThemeTokens.Text.m)
+                        .foregroundColor(.secondary)
+                        .padding(ThemeTokens.Spacing.m)
+                }
                 ForEach(store.children[store.rootPath] ?? [], id: \.path) { node in
                     FileTreeViewRow(session: session, node: node, depth: 0, store: store)
                 }
@@ -25,6 +32,9 @@ struct FileTreeView: View {
                 if let listing {
                     store.rootPath = listing.path
                     store.children[listing.path] = listing.entries
+                    loadFailed = false
+                } else {
+                    loadFailed = true
                 }
             }
         }

@@ -131,11 +131,6 @@ enum SessionActions {
     }
 
     @MainActor
-    static func delete(_ session: Session, context: ModelContext) {
-        context.delete(session)
-    }
-
-    @MainActor
     static func deleteIfEmpty(_ session: Session, context: ModelContext) {
         let sessionId = session.id
         let descriptor = FetchDescriptor<ChatMessage>(
@@ -143,6 +138,7 @@ enum SessionActions {
         )
         let count = (try? context.fetchCount(descriptor)) ?? 0
         if count == 0 {
+            GitActions.clear(sessionId: sessionId, context: context)
             context.delete(session)
         }
     }

@@ -10,6 +10,7 @@ enum ChatService {
     @MainActor private static var streamGenerations: [UUID: UUID] = [:]
     @MainActor private static var producedOutput: Set<UUID> = []
     @MainActor private static var replayKeys: [UUID: Set<String>] = [:]
+    @MainActor private static var resumeDelay: [UUID: Double] = [:]
     @MainActor private static var gitBefore: [UUID: Task<[String: GitChangeDTO], Never>] = [:]
 
     @MainActor
@@ -59,6 +60,7 @@ enum ChatService {
         SessionActions.setStreaming(true, for: session)
         lastSeqs.removeValue(forKey: session.id)
         producedOutput.remove(session.id)
+        resumeDelay.removeValue(forKey: session.id)
         activeStreams.insert(session.id)
         let generation = UUID()
         streamGenerations[session.id] = generation
@@ -350,6 +352,7 @@ enum ChatService {
                     pending.state = .complete
                 }
                 eventCount += 1
+                if eventCount == 1 { resumeDelay.removeValue(forKey: sessionId) }
                 switch event {
                 case .result, .aborted, .error: sawClose = true
                 case .exited: sawExit = true
@@ -382,6 +385,7 @@ enum ChatService {
                 closeStream(sessionId: sessionId, isFailed: false, context: context)
             }
             lastSeqs.removeValue(forKey: sessionId)
+            resumeDelay.removeValue(forKey: sessionId)
             drainQueue(sessionId: sessionId, context: context)
         } catch StreamingError.preHeaders(let underlying) {
             AppLogger.connectionError(
@@ -390,6 +394,7 @@ enum ChatService {
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
             replayKeys.removeValue(forKey: sessionId)
+            resumeDelay.removeValue(forKey: sessionId)
             if let pending = pendingUserMessages.removeValue(forKey: sessionId) {
                 pending.state = .failed
             }
@@ -439,8 +444,10 @@ enum ChatService {
 
     @MainActor
     private static func scheduleResume(sessionId: UUID, context: ModelContext) {
+        let delay = resumeDelay[sessionId] ?? 3
+        resumeDelay[sessionId] = min(delay * 2, 30)
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(3))
+            try? await Task.sleep(for: .seconds(delay))
             let descriptor = FetchDescriptor<Session>(
                 predicate: #Predicate<Session> { $0.id == sessionId }
             )
