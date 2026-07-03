@@ -4,14 +4,6 @@ import SwiftData
 enum EndpointActions {
     @MainActor
     @discardableResult
-    static func add(into context: ModelContext) -> Endpoint {
-        let endpoint = Endpoint(symbolName: EndpointsSymbolCatalog.symbols.randomElement() ?? Endpoint.defaultSymbol)
-        context.insert(endpoint)
-        return endpoint
-    }
-
-    @MainActor
-    @discardableResult
     static func create(
         into context: ModelContext, host: String, port: Int, name: String? = nil,
         symbolName: String, authKey: String
@@ -49,13 +41,6 @@ enum EndpointActions {
             session.endpoint = nil
         }
         context.delete(endpoint)
-    }
-
-    @MainActor
-    static func saveAuthKey(for endpoint: Endpoint, _ key: String) {
-        if !endpoint.isDeleted {
-            SecureStorage.set(account: endpoint.id.uuidString, value: key)
-        }
     }
 
     @MainActor

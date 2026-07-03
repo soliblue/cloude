@@ -41,7 +41,7 @@ struct ChatView: View {
                 )
                 ChatService.resumeIfStuck(session: session, context: context)
             }
-            .task(id: session.id) {
+            .task(id: "\(session.id.uuidString)|\(session.path ?? "")") {
                 if let endpoint = session.endpoint, let path = session.path, !path.isEmpty,
                     let manifest = await SessionManifestService.fetch(
                         endpoint: endpoint, sessionId: session.id, path: path)

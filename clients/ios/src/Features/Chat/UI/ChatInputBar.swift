@@ -125,6 +125,7 @@ struct ChatInputBar: View, Equatable {
         }
         .onDisappear {
             AppLogger.uiInfo("chatInput disappear trace=\(traceId) session=\(sessionId.uuidString)")
+            if recorder.isRecording { stopRecording() }
         }
         .onChange(of: draft) { oldValue, value in
             let bypass = bypassPasteDetection
@@ -313,6 +314,7 @@ struct ChatInputBar: View, Equatable {
                 {
                     bypassPasteDetection = true
                     draft = draft.isEmpty ? text : draft + " " + text
+                    ChatDraftStore.setText(draft, for: sessionId)
                 }
                 isTranscribing = false
             }

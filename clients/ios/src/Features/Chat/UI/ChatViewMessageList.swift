@@ -54,7 +54,9 @@ struct ChatViewMessageList: View {
                         Color.clear.frame(height: 0).id("bottom")
                     }
                     .padding(.vertical, ThemeTokens.Spacing.m)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.85), value: messages.count)
+                    .animation(
+                        .spring(response: 0.35, dampingFraction: 0.85),
+                        value: groups.count + queued.count)
                     .animation(
                         .spring(response: 0.35, dampingFraction: 0.85), value: lastAnchoredUserId)
                 }
@@ -63,7 +65,7 @@ struct ChatViewMessageList: View {
                     $0.contentOffset.y
                 } action: {
                     old, new in
-                    if abs(new - old) > 1 {
+                    if PerfCounters.enabled && abs(new - old) > 1 {
                         PerfCounters.event(
                             "scroll offsetY \(String(format: "%.1f", old)) -> \(String(format: "%.1f", new))"
                         )

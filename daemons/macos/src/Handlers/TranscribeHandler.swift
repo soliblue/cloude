@@ -18,6 +18,11 @@ enum TranscribeHandler {
         return HTTPResponse.json(400, ["error": "missing_audio"])
     }
 
+    static func available() -> Bool {
+        let status = SFSpeechRecognizer.authorizationStatus()
+        return status != .denied && status != .restricted && availableRecognizer() != nil
+    }
+
     private static func authorized() -> Bool {
         if SFSpeechRecognizer.authorizationStatus() == .notDetermined {
             let semaphore = DispatchSemaphore(value: 0)

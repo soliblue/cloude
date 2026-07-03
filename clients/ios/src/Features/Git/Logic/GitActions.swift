@@ -53,11 +53,16 @@ enum GitActions {
         sessionId: UUID, commits: [GitCommitDTO], context: ModelContext
     ) {
         let descriptor = FetchDescriptor<GitCommit>(
-            predicate: #Predicate<GitCommit> { $0.sessionId == sessionId }
+            predicate: #Predicate<GitCommit> { $0.sessionId == sessionId },
+            sortBy: [SortDescriptor(\.order)]
         )
-        if let existing = try? context.fetch(descriptor) {
-            for commit in existing { context.delete(commit) }
+        let existing = (try? context.fetch(descriptor)) ?? []
+        if existing.count == commits.count,
+            zip(existing, commits).allSatisfy({ $0.sha == $1.sha })
+        {
+            return
         }
+        for commit in existing { context.delete(commit) }
         for (index, wire) in commits.enumerated() {
             let commit = GitCommit(
                 sessionId: sessionId,

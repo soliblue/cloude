@@ -2,12 +2,16 @@ import SwiftUI
 import UIKit
 
 struct FilePreviewImage: View {
-    let data: Data
+    private let image: UIImage?
     @State private var scale: CGFloat = 1
     @State private var committedScale: CGFloat = 1
 
+    init(data: Data) {
+        image = UIImage(data: data)
+    }
+
     var body: some View {
-        if let image = UIImage(data: data) {
+        if let image {
             GeometryReader { proxy in
                 ScrollView([.horizontal, .vertical]) {
                     Image(uiImage: image)

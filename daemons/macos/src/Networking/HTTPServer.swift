@@ -19,7 +19,8 @@ final class HTTPServer {
         }
     }
 
-    private static let maxRequestBytes = 1_048_576
+    private static let maxRequestBytes = 16 * 1024 * 1024
+    private static let preAuthMaxBodyBytes = 1_048_576
 
     private static func readHead(on connection: NWConnection, accumulated: Data) {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { data, _, isComplete, error in
@@ -27,6 +28,14 @@ final class HTTPServer {
             if let data { buffer.append(data) }
 
             if let head = HTTPRequest.parseHead(buffer) {
+                if head.contentLength > maxRequestBytes {
+                    reject(on: connection, response: HTTPResponse.json(413, ["error": "payload_too_large"]))
+                    return
+                }
+                if head.contentLength > preAuthMaxBodyBytes && !AuthMiddleware.isAuthorized(headers: head.headers) {
+                    reject(on: connection, response: HTTPResponse.json(401, ["error": "unauthorized"]))
+                    return
+                }
                 let bodySoFar = buffer.subdata(in: head.headerEnd..<buffer.count)
                 readBody(on: connection, head: head, body: bodySoFar)
                 return
@@ -48,12 +57,22 @@ final class HTTPServer {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { data, _, isComplete, error in
             var next = body
             if let data { next.append(data) }
-            if next.count > maxRequestBytes || isComplete || error != nil {
+            if next.count > maxRequestBytes {
+                reject(on: connection, response: HTTPResponse.json(413, ["error": "payload_too_large"]))
+                return
+            }
+            if isComplete || error != nil {
                 connection.cancel()
                 return
             }
             readBody(on: connection, head: head, body: next)
         }
+    }
+
+    private static func reject(on connection: NWConnection, response: HTTPResponse) {
+        connection.send(
+            content: response.serialize(),
+            completion: .contentProcessed { _ in connection.cancel() })
     }
 
     private static func dispatch(on connection: NWConnection, request: HTTPRequest) {

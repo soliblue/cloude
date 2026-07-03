@@ -1,13 +1,6 @@
 import Foundation
 
 enum EndpointService {
-    @MainActor
-    static func ping(endpoint: Endpoint) async {
-        let result = await HTTPClient.get(endpoint: endpoint, path: "/ping")
-        endpoint.lastCheckReachable = result?.1.statusCode == 200
-        endpoint.lastCheckTimestamp = .now
-    }
-
     static func probe(
         host: String, port: Int, authKey: String, retryWindow: TimeInterval = 0
     ) async -> EndpointProbeResult {

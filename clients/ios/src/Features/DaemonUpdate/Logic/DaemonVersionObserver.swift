@@ -33,7 +33,9 @@ final class DaemonVersionObserver {
             let descriptor = FetchDescriptor<Endpoint>(
                 predicate: #Predicate<Endpoint> { $0.id == endpointId }
             )
-            if let endpoint = try? context.fetch(descriptor).first {
+            if let endpoint = try? context.fetch(descriptor).first,
+                endpoint.daemonVersion != version || endpoint.daemonPlatform != platform
+            {
                 endpoint.daemonVersion = version
                 endpoint.daemonPlatform = platform
                 try? context.save()

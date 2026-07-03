@@ -2,7 +2,11 @@ import Foundation
 
 enum AuthMiddleware {
     static func isAuthorized(_ request: HTTPRequest) -> Bool {
-        if let header = request.headers["authorization"], header.hasPrefix("Bearer ") {
+        isAuthorized(headers: request.headers)
+    }
+
+    static func isAuthorized(headers: [String: String]) -> Bool {
+        if let header = headers["authorization"], header.hasPrefix("Bearer ") {
             let presented = Array(header.dropFirst("Bearer ".count).utf8)
             let expected = Array(DaemonAuth.token.utf8)
             if presented.count == expected.count {

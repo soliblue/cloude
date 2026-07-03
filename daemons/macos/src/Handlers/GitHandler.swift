@@ -193,9 +193,9 @@ enum GitHandler {
         process.standardError = stderr
         do {
             try process.run()
+            let stderrHandle = stderr.fileHandleForReading
+            DispatchQueue.global().async { _ = try? stderrHandle.readToEnd() }
             let data = stdout.fileHandleForReading.readDataToEndOfFile()
-            stderr.fileHandleForReading.readabilityHandler = nil
-            _ = try? stderr.fileHandleForReading.readToEnd()
             process.waitUntilExit()
             return (String(data: data, encoding: .utf8) ?? "", process.terminationStatus)
         } catch {

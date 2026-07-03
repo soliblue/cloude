@@ -8,6 +8,7 @@ enum ChatService {
     @MainActor private static var lastSeqs: [UUID: Int] = [:]
     @MainActor private static var activeStreams: Set<UUID> = []
     @MainActor private static var streamGenerations: [UUID: UUID] = [:]
+    @MainActor private static var producedOutput: Set<UUID> = []
     @MainActor private static var gitBefore: [UUID: Task<[String: GitChangeDTO], Never>] = [:]
 
     @MainActor
@@ -56,6 +57,7 @@ enum ChatService {
         pendingUserMessages[session.id] = message
         SessionActions.setStreaming(true, for: session)
         lastSeqs.removeValue(forKey: session.id)
+        producedOutput.remove(session.id)
         activeStreams.insert(session.id)
         let generation = UUID()
         streamGenerations[session.id] = generation
@@ -107,6 +109,7 @@ enum ChatService {
                 stuck.text = ""
             }
             streamingMessages[session.id] = stuck
+            producedOutput.insert(session.id)
         }
         activeStreams.insert(session.id)
         SessionActions.setStreaming(true, for: session)
@@ -330,6 +333,9 @@ enum ChatService {
             continuation.onTermination = { _ in task.cancel() }
         }
         do {
+            var eventCount = 0
+            var sawClose = false
+            var sawExit = false
             for try await event in events {
                 if streamGenerations[sessionId] != generation { return }
                 if let pending = pendingUserMessages.removeValue(forKey: sessionId),
@@ -337,23 +343,37 @@ enum ChatService {
                 {
                     pending.state = .complete
                 }
+                eventCount += 1
+                switch event {
+                case .result, .aborted, .error: sawClose = true
+                case .exited: sawExit = true
+                default: break
+                }
                 let seq = event.seq
                 if seq > (lastSeqs[sessionId] ?? -1) { lastSeqs[sessionId] = seq }
                 apply(event: event, sessionId: sessionId, context: context)
             }
             if streamGenerations[sessionId] != generation { return }
             AppLogger.performanceInfo(
-                "stream closed reason=eof sessionId=\(sessionId.uuidString)")
-            AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
-            AppLogger.endInterval("chat.complete", key: sessionId.uuidString)
+                "stream closed reason=eof sessionId=\(sessionId.uuidString) events=\(eventCount) terminal=\(sawClose || sawExit)"
+            )
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
+            if eventCount > 0 && !sawClose && !sawExit {
+                streamingMessages.removeValue(forKey: sessionId)
+                scheduleResume(sessionId: sessionId, context: context)
+                return
+            }
+            AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
+            AppLogger.endInterval("chat.complete", key: sessionId.uuidString)
             if let pending = pendingUserMessages.removeValue(forKey: sessionId),
                 pending.state == .retrying
             {
                 pending.state = .failed
             }
-            closeStream(sessionId: sessionId, isFailed: false, context: context)
+            if !sawClose {
+                closeStream(sessionId: sessionId, isFailed: false, context: context)
+            }
             lastSeqs.removeValue(forKey: sessionId)
             drainQueue(sessionId: sessionId, context: context)
         } catch StreamingError.preHeaders(let underlying) {
@@ -362,15 +382,18 @@ enum ChatService {
             if streamGenerations[sessionId] != generation { return }
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
-            streamingMessages.removeValue(forKey: sessionId)
             if let pending = pendingUserMessages.removeValue(forKey: sessionId) {
                 pending.state = .failed
             }
-            let descriptor = FetchDescriptor<Session>(
-                predicate: #Predicate<Session> { $0.id == sessionId }
-            )
-            if let session = try? context.fetch(descriptor).first {
-                SessionActions.setStreaming(false, for: session)
+            if streamingMessages[sessionId] != nil {
+                closeStream(sessionId: sessionId, isFailed: false, context: context)
+            } else {
+                let descriptor = FetchDescriptor<Session>(
+                    predicate: #Predicate<Session> { $0.id == sessionId }
+                )
+                if let session = try? context.fetch(descriptor).first {
+                    SessionActions.setStreaming(false, for: session)
+                }
             }
         } catch {
             AppLogger.connectionError(
@@ -379,14 +402,19 @@ enum ChatService {
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
             streamingMessages.removeValue(forKey: sessionId)
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(3))
-                let descriptor = FetchDescriptor<Session>(
-                    predicate: #Predicate<Session> { $0.id == sessionId }
-                )
-                if let session = try? context.fetch(descriptor).first {
-                    resumeIfStuck(session: session, context: context)
-                }
+            scheduleResume(sessionId: sessionId, context: context)
+        }
+    }
+
+    @MainActor
+    private static func scheduleResume(sessionId: UUID, context: ModelContext) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))
+            let descriptor = FetchDescriptor<Session>(
+                predicate: #Predicate<Session> { $0.id == sessionId }
+            )
+            if let session = try? context.fetch(descriptor).first {
+                resumeIfStuck(session: session, context: context)
             }
         }
     }
@@ -395,6 +423,7 @@ enum ChatService {
     private static func ensureStreamingMessage(
         sessionId: UUID, context: ModelContext
     ) -> ChatMessage {
+        producedOutput.insert(sessionId)
         if let existing = streamingMessages[sessionId] { return existing }
         let snapshot = ChatLiveStream.snapshot(for: sessionId)
         if !snapshot.hasFirstToken {
@@ -434,9 +463,11 @@ enum ChatService {
         let descriptor = FetchDescriptor<Session>(
             predicate: #Predicate<Session> { $0.id == sessionId }
         )
+        let produced = producedOutput.remove(sessionId) != nil
         if let session = try? context.fetch(descriptor).first {
+            let wasStreaming = session.isStreaming
             SessionActions.setStreaming(false, for: session)
-            notifyCompletion(session: session, context: context)
+            if wasStreaming && produced { notifyCompletion(session: session, context: context) }
         }
         ChatLiveStream.clear(sessionId: sessionId)
     }
