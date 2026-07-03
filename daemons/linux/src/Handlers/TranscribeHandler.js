@@ -60,6 +60,9 @@ export function transcribe(request) {
         resolve(HTTPResponse.json(500, { error: 'transcription_failed' }))
       }
     })
+    child.stdin.on('error', (error) => {
+      console.error(`Transcribe stdin: ${error.message}`)
+    })
     child.stdin.write(body.audio)
     child.stdin.end()
   })

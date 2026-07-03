@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UserNotifications
 
 @main
 struct IOSApp: App {
@@ -14,6 +15,7 @@ struct IOSApp: App {
         EndpointActions.seedDev(context: container.mainContext)
         WindowActions.ensureOne(context: container.mainContext)
         DaemonVersionObserver.shared.modelContext = container.mainContext
+        UNUserNotificationCenter.current().delegate = ChatNotificationDelegate.shared
         AppLogger.bootstrapInfo("app launched")
     }
 

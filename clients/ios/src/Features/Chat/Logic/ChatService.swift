@@ -9,6 +9,7 @@ enum ChatService {
     @MainActor private static var activeStreams: Set<UUID> = []
     @MainActor private static var streamGenerations: [UUID: UUID] = [:]
     @MainActor private static var producedOutput: Set<UUID> = []
+    @MainActor private static var replayKeys: [UUID: Set<String>] = [:]
     @MainActor private static var gitBefore: [UUID: Task<[String: GitChangeDTO], Never>] = [:]
 
     @MainActor
@@ -109,7 +110,11 @@ enum ChatService {
                 stuck.text = ""
             }
             streamingMessages[session.id] = stuck
-            producedOutput.insert(session.id)
+            if !ChatLiveStream.snapshot(for: session.id).text.isEmpty || stuck.hasToolCalls
+                || stuck.hasThinking
+            {
+                producedOutput.insert(session.id)
+            }
         }
         activeStreams.insert(session.id)
         SessionActions.setStreaming(true, for: session)
@@ -202,6 +207,7 @@ enum ChatService {
         }
         streamGenerations.removeValue(forKey: session.id)
         activeStreams.remove(session.id)
+        replayKeys.removeValue(forKey: session.id)
         if let pending = pendingUserMessages.removeValue(forKey: session.id),
             pending.state == .retrying
         {
@@ -359,6 +365,7 @@ enum ChatService {
             )
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
+            replayKeys.removeValue(forKey: sessionId)
             if eventCount > 0 && !sawClose && !sawExit {
                 streamingMessages.removeValue(forKey: sessionId)
                 scheduleResume(sessionId: sessionId, context: context)
@@ -382,6 +389,7 @@ enum ChatService {
             if streamGenerations[sessionId] != generation { return }
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
+            replayKeys.removeValue(forKey: sessionId)
             if let pending = pendingUserMessages.removeValue(forKey: sessionId) {
                 pending.state = .failed
             }
@@ -401,9 +409,32 @@ enum ChatService {
             if streamGenerations[sessionId] != generation { return }
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
+            replayKeys.removeValue(forKey: sessionId)
             streamingMessages.removeValue(forKey: sessionId)
             scheduleResume(sessionId: sessionId, context: context)
         }
+    }
+
+    @MainActor
+    private static func existingAssistantKeys(sessionId: UUID, context: ModelContext) -> Set<String>
+    {
+        var descriptor = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> {
+                $0.sessionId == sessionId && $0.roleRaw == "assistant"
+            },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        descriptor.fetchLimit = 100
+        var keys: Set<String> = []
+        for message in (try? context.fetch(descriptor)) ?? [] {
+            let messageId = message.id
+            let toolDescriptor = FetchDescriptor<ChatToolCall>(
+                predicate: #Predicate<ChatToolCall> { $0.messageId == messageId }
+            )
+            let toolIds = ((try? context.fetch(toolDescriptor)) ?? []).map { $0.id }.sorted()
+            keys.insert(message.text + "|" + toolIds.joined(separator: ","))
+        }
+        return keys
     }
 
     @MainActor
@@ -524,16 +555,16 @@ enum ChatService {
         messageDescriptor.fetchLimit = 1
         let snippet = (try? context.fetch(messageDescriptor).first)?.text ?? ""
         if snippet.isEmpty { return }
-        if UIApplication.shared.applicationState != .active {
-            session.hasUnread = true
-            ChatNotificationService.postCompletion(
-                title: session.title, snippet: String(snippet.prefix(140)))
-            return
-        }
         let windowDescriptor = FetchDescriptor<Window>(
             predicate: #Predicate<Window> { $0.isFocused }
         )
         let focusedId = (try? context.fetch(windowDescriptor).first)?.session?.id
+        if UIApplication.shared.applicationState != .active {
+            if focusedId != session.id { session.hasUnread = true }
+            ChatNotificationService.postCompletion(
+                sessionId: sessionId, title: session.title, snippet: String(snippet.prefix(140)))
+            return
+        }
         if focusedId == session.id { return }
         session.hasUnread = true
         SessionToastStore.shared.present(
@@ -576,6 +607,11 @@ enum ChatService {
         case .assistantFinal(
             _, let text, let thinking, let thinkingRedacted, let toolUses, let model,
             let contextTokens):
+            if let keys = replayKeys[sessionId],
+                keys.contains(text + "|" + toolUses.map(\.id).sorted().joined(separator: ","))
+            {
+                break
+            }
             if let contextTokens {
                 SessionActions.setContextUsage(
                     tokens: contextTokens, window: nil, for: sessionId, context: context)
@@ -625,6 +661,8 @@ enum ChatService {
             }
             activeStreams.remove(sessionId)
             drainQueue(sessionId: sessionId, context: context)
+        case .replay:
+            replayKeys[sessionId] = existingAssistantKeys(sessionId: sessionId, context: context)
         case .initialized:
             markSessionExistsOnServer(sessionId: sessionId, context: context)
         case .exited, .unknown:

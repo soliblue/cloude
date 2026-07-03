@@ -109,8 +109,11 @@ export function read(request) {
           const end = Math.min(range.end ?? size - 1, size - 1)
           const buffer = Buffer.alloc(end - range.start + 1)
           const handle = fs.openSync(file, 'r')
-          fs.readSync(handle, buffer, 0, buffer.length, range.start)
-          fs.closeSync(handle)
+          try {
+            fs.readSync(handle, buffer, 0, buffer.length, range.start)
+          } finally {
+            fs.closeSync(handle)
+          }
           return new HTTPResponse(206, buffer, mimeType(file), {
             'Accept-Ranges': 'bytes',
             'Content-Range': `bytes ${range.start}-${end}/${size}`

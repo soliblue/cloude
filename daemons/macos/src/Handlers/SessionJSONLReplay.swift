@@ -6,6 +6,11 @@ enum SessionJSONLReplay {
         if let lines = loadLastTurn(sessionId: sessionId) {
             var seq = 0
             var batch = Data()
+            let marker: [String: Any] = ["type": "replay", "seq": 0, "sessionId": sessionId]
+            if let payload = try? JSONSerialization.data(withJSONObject: marker) {
+                batch.append(payload)
+                batch.append(0x0A)
+            }
             for line in lines {
                 if let obj = try? JSONSerialization.jsonObject(with: Data(line.utf8)) {
                     seq += 1

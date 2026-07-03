@@ -67,8 +67,13 @@ export default class Runner {
     this.process.on('close', (code) => {
       this.finish(typeof code === 'number' ? code : -1)
     })
-    this.process.stdin.write(prompt)
-    this.process.stdin.end()
+    if (this.process.stdin) {
+      this.process.stdin.on('error', (error) => {
+        console.error(`Runner[${this.sessionId}] stdin: ${error.message}`)
+      })
+      this.process.stdin.write(prompt)
+      this.process.stdin.end()
+    }
   }
 
   subscribe(response, afterSeq = -1) {

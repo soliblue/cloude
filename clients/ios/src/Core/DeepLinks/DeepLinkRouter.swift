@@ -28,7 +28,6 @@ enum DeepLinkRouter {
                     NotificationCenter.default.post(name: .deeplinkPair, object: payload)
                 }
             case "settings": NotificationCenter.default.post(name: .deeplinkOpenSettings, object: nil)
-            case "screenshot": NotificationCenter.default.post(name: .deeplinkScreenshot, object: nil)
             default: AppLogger.bootstrapInfo("deeplink unhandled host=\(host)")
             }
         }
@@ -157,7 +156,6 @@ enum DeepLinkRouter {
 
 extension Notification.Name {
     static let deeplinkOpenSettings = Notification.Name("cloude.deeplink.settings")
-    static let deeplinkScreenshot = Notification.Name("cloude.deeplink.screenshot")
     static let deeplinkPair = Notification.Name("cloude.deeplink.pair")
     static let openOnboarding = Notification.Name("cloude.openOnboarding")
 }

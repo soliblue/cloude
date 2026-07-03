@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ChatViewMessageListRowMarkdownBlockQuote: View {
-    let text: String
+    let text: AttributedString
     @Environment(\.theme) private var theme
 
     var body: some View {

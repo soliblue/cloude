@@ -101,3 +101,11 @@ R18. Body-error auto-resume has no backoff cap; double closeStream after result+
 32. Linux git log rows with tabs in subjects can fail whole-log Codable decode on iOS (`GitHandler.js:177-183`).
 33. iOS minor unbounded growth: `ChatLiveStream.snapshot` insert-on-read, unpruned `lastSeqs`, dead `centerTabs`, unlimited message `@Query`.
 34. Duplicate concurrent git refresh on session open (`GitView.swift:29-35` + `SessionView.swift:28-32`).
+
+## Fixed (round 5, 2026-07-03, commit 0886bb8b)
+
+iOS: message-list spring animation rekeyed from messages.count to group/queued count (mid-stream inserts re-animated the whole scroll container, fighting drags and yanking the viewport on long streams); clean EOF without a terminal envelope now warm-resumes instead of silently completing truncated replies, and a resume failing preHeaders finalizes the partial text instead of spinning forever; completion toasts fire only when the turn produced output (stale previous-turn snippet + result/EOF double-fire fixed); recording stopped and transcribed into the draft on input-bar disappear (mic/timer leak); manifest refetch when path set late; git log dirty-check + in-flight refresh rerun; daemon version persisted only on change; image preview decodes once; dead endpoint code deleted.
+
+macOS daemon: manifest reports real transcription availability via TranscribeHandler.available (was hardcoded false with a working handler, hiding voice input); body cap 1MiB -> 16MiB with 413 payload_too_large (silent cancel before), >1MiB bodies require auth before buffering; git runText drains stderr concurrently (stderr >64KB deadlocked the git tab); 413 reason phrase added.
+
+Still deliberately open after round 5: ring-eviction resume gaps (21), JSONL replay renumbering duplicates the last turn on cold resume (15/29), daemon shutdown orphans claude children, RunnerManager restart chain can stall behind an unkillable child, resume retry has no backoff cap (R18 first half), nonzero exit envelopes ignored, HTTP scheme derived from port 443 only.

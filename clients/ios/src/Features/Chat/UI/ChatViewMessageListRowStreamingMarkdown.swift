@@ -96,7 +96,7 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
         case .text(_, let attr, _): return attr.characters.count
         case .header(_, _, let attr, _): return attr.characters.count
         case .code(_, let content, _, _): return content.count
-        case .blockquote(_, let content): return content.count
+        case .blockquote(_, let content): return content.characters.count
         case .table(_, let rows): return rows.reduce(0) { $0 + $1.reduce(0) { $0 + $1.count } }
         case .horizontalRule: return 1
         }

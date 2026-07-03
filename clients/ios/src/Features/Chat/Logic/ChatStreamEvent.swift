@@ -21,6 +21,7 @@ nonisolated enum ChatStreamEvent {
     case exited(seq: Int, code: Int)
     case error(seq: Int, message: String)
     case compacting(seq: Int)
+    case replay(seq: Int)
     case unknown(seq: Int)
 
     var seq: Int {
@@ -28,7 +29,7 @@ nonisolated enum ChatStreamEvent {
         case .initialized(let s), .assistantTextDelta(let s, _), .assistantThinkingDelta(let s, _),
             .assistantFinal(let s, _, _, _, _, _, _),
             .toolResult(let s, _, _, _), .result(let s, _, _), .aborted(let s), .exited(let s, _),
-            .error(let s, _), .compacting(let s), .unknown(let s):
+            .error(let s, _), .compacting(let s), .replay(let s), .unknown(let s):
             return s
         }
     }
@@ -54,6 +55,7 @@ nonisolated enum ChatStreamEvent {
             if type == "status", obj["state"] as? String == "compacting" {
                 return .compacting(seq: seq)
             }
+            if type == "replay" { return .replay(seq: seq) }
         }
         return nil
     }

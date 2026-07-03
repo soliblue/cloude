@@ -7,13 +7,15 @@ extension ChatMarkdownParser {
         -> ChatMarkdownBlock
     {
         let startLine = i
-        let language = String(lines[i].dropFirst(3)).trimmingCharacters(in: .whitespaces)
+        let fence = lines[i].prefix(while: { $0 == "`" }).count
+        let language = String(lines[i].dropFirst(fence)).trimmingCharacters(in: .whitespaces)
         var codeLines: [String] = []
         i += 1
         var foundClose = false
 
         while i < lines.count {
-            if lines[i].hasPrefix("```") {
+            let run = lines[i].prefix(while: { $0 == "`" }).count
+            if run >= fence, lines[i].dropFirst(run).trimmingCharacters(in: .whitespaces).isEmpty {
                 foundClose = true
                 break
             }
@@ -45,7 +47,8 @@ extension ChatMarkdownParser {
             if !tableTrimmed.hasPrefix("|") && !tableLine.contains("|") { break }
 
             let isSeparator =
-                tableLine.contains("-") && !tableLine.contains(where: { $0.isLetter })
+                tableLine.contains("-")
+                && tableTrimmed.allSatisfy { "-:|".contains($0) || $0.isWhitespace }
             if isSeparator {
                 i += 1
                 continue
@@ -83,8 +86,9 @@ extension ChatMarkdownParser {
         }
 
         if quoteLines.isEmpty { return nil }
+        let segments = parseToSegments(quoteLines.joined(separator: "\n"))
         return .blockquote(
-            id: "quote-L\(startLine + lineOffset)", content: quoteLines.joined(separator: "\n"))
+            id: "quote-L\(startLine + lineOffset)", content: segmentsToAttributedString(segments))
     }
 
     static func parseTextBlock(

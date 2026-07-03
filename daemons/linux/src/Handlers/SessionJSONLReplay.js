@@ -53,7 +53,7 @@ export function replay(sessionId, response) {
   const lines = loadLastTurn(sessionId)
   if (lines) {
     let seq = 0
-    let batch = ''
+    let batch = `${JSON.stringify({ type: 'replay', seq: 0, sessionId })}\n`
     for (const line of lines) {
       const object = parsed(line)
       if (object) {

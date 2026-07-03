@@ -9,11 +9,11 @@ struct ChatViewMessageListRowToolPillSheetEditDiff: View {
     var body: some View {
         ChatViewMessageListRowToolPillSheetSection(title: "Changes", icon: "arrow.left.arrow.right") {
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(removedLines, id: \.self) { line in
-                    ChatViewMessageListRowToolPillSheetEditDiffRow(text: line, kind: .removed)
+                ForEach(Array(removedLines.enumerated()), id: \.offset) { line in
+                    ChatViewMessageListRowToolPillSheetEditDiffRow(text: line.element, kind: .removed)
                 }
-                ForEach(addedLines, id: \.self) { line in
-                    ChatViewMessageListRowToolPillSheetEditDiffRow(text: line, kind: .added)
+                ForEach(Array(addedLines.enumerated()), id: \.offset) { line in
+                    ChatViewMessageListRowToolPillSheetEditDiffRow(text: line.element, kind: .added)
                 }
             }
         }

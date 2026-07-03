@@ -1,10 +1,10 @@
-import Foundation
+import SwiftUI
 
 enum ChatMarkdownBlock: Identifiable {
     case text(id: String, AttributedString, segments: [ChatMarkdownInlineSegment])
     case code(id: String, content: String, language: String?, isComplete: Bool)
     case table(id: String, rows: [[String]])
-    case blockquote(id: String, content: String)
+    case blockquote(id: String, content: AttributedString)
     case horizontalRule(id: String)
     case header(id: String, level: Int, content: AttributedString, segments: [ChatMarkdownInlineSegment])
 
@@ -55,7 +55,8 @@ enum ChatMarkdownBlock: Identifiable {
         case .table(_, let rows):
             return "tb:" + (rows.first?.joined(separator: "|") ?? "")
         case .blockquote(_, let content):
-            let head = content.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? ""
+            let text = String(content.characters)
+            let head = text.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? ""
             return "q:" + head.prefix(48)
         case .horizontalRule:
             return "hr"

@@ -71,6 +71,17 @@ struct WindowsView: View {
         ) { target in
             FilePreviewSheet(session: target.session, node: target.node)
         }
+        .onAppear {
+            if let pending = ChatNotificationDelegate.shared.consumePending() {
+                activateSession(pending)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .notificationOpenSession)) { note in
+            if let sessionId = note.object as? UUID {
+                _ = ChatNotificationDelegate.shared.consumePending()
+                activateSession(sessionId)
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .deeplinkOpenSettings)) { _ in
             setPane(.sidebar)
         }
@@ -181,37 +192,34 @@ struct WindowsView: View {
         case .daemonUpdate:
             isDaemonUpdateSheetPresented = true
         case .session(let sessionId):
-            if let window = windows.first(where: { $0.session?.id == sessionId }) {
-                withAnimation(paneAnimation) {
-                    WindowActions.activate(window, among: windows)
-                    selectedPane = .session
-                }
-            } else {
-                let descriptor = FetchDescriptor<Session>(
-                    predicate: #Predicate<Session> { $0.id == sessionId }
-                )
-                if let session = try? context.fetch(descriptor).first {
-                    withAnimation(paneAnimation) {
-                        WindowActions.open(session, among: windows, context: context)
-                        selectedPane = .session
-                    }
-                }
-            }
+            activateSession(sessionId)
         }
         toastStore.dismiss()
     }
 
-    private func setPane(_ pane: WindowsPane, _ animated: Bool = true) {
-        let target = pane == .git && focusedSession?.hasGit != true ? .session : pane
-        if animated {
+    private func activateSession(_ sessionId: UUID) {
+        if let window = windows.first(where: { $0.session?.id == sessionId }) {
             withAnimation(paneAnimation) {
-                if let session = focusedSession {
-                    session.tab = target == .git ? .git : .chat
-                }
-                selectedPane = target
+                WindowActions.activate(window, among: windows)
+                selectedPane = .session
             }
         } else {
-            if let session = focusedSession {
+            let descriptor = FetchDescriptor<Session>(
+                predicate: #Predicate<Session> { $0.id == sessionId }
+            )
+            if let session = try? context.fetch(descriptor).first {
+                withAnimation(paneAnimation) {
+                    WindowActions.open(session, among: windows, context: context)
+                    selectedPane = .session
+                }
+            }
+        }
+    }
+
+    private func setPane(_ pane: WindowsPane, _ animated: Bool = true) {
+        let target = pane == .git && focusedSession?.hasGit != true ? .session : pane
+        withAnimation(animated ? paneAnimation : nil) {
+            if let session = focusedSession, target != .sidebar {
                 session.tab = target == .git ? .git : .chat
             }
             selectedPane = target

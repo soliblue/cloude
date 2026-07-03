@@ -15,7 +15,7 @@ function resolved(filePath) {
 
 function runText(argumentsList, cwd) {
   return new Promise((resolve) => {
-    const child = spawn('/usr/bin/env', ['git', ...argumentsList], { cwd })
+    const child = spawn('/usr/bin/env', ['git', ...argumentsList], { cwd, timeout: 30_000, killSignal: 'SIGKILL' })
     const chunks = []
     let size = 0
     child.stdout.on('data', (chunk) => {
@@ -28,8 +28,8 @@ function runText(argumentsList, cwd) {
     })
     child.stderr.resume()
     child.on('error', () => resolve(['', -1]))
-    child.on('close', (code) => {
-      if (size > maxOutputBytes) {
+    child.on('close', (code, signal) => {
+      if (size > maxOutputBytes || signal) {
         resolve(['', -1])
       } else {
         resolve([Buffer.concat(chunks).toString('utf8'), typeof code === 'number' ? code : -1])

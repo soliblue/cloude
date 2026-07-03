@@ -95,14 +95,16 @@ struct ChatViewMessageListRowToolPillSheet: View {
     private var primaryContent: some View {
         if let todos = toolCall.todoItems {
             ChatViewMessageListRowToolPillSheetTodoList(items: todos)
-        } else if let edit = toolCall.editStrings {
+        } else if !toolCall.editPairs.isEmpty {
             if let path = toolCall.filePath {
                 ChatViewMessageListRowToolPillSheetFileRow(
                     session: session, toolCall: toolCall, path: path)
             }
-            ChatViewMessageListRowToolPillSheetEditDiff(
-                oldText: edit.old, newText: edit.new, language: language
-            )
+            ForEach(Array(toolCall.editPairs.enumerated()), id: \.offset) { pair in
+                ChatViewMessageListRowToolPillSheetEditDiff(
+                    oldText: pair.element.old, newText: pair.element.new, language: language
+                )
+            }
         } else {
             switch toolCall.kind {
             case .read:

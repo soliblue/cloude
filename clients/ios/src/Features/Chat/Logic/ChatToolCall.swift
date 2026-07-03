@@ -122,6 +122,17 @@ final class ChatToolCall {
         return nil
     }
 
+    var editPairs: [(old: String, new: String)] {
+        if let edit = editStrings { return [edit] }
+        var pairs: [(old: String, new: String)] = []
+        for edit in (parsedInput["edits"] as? [[String: Any]]) ?? [] {
+            if let old = edit["old_string"] as? String, let new = edit["new_string"] as? String {
+                pairs.append((old, new))
+            }
+        }
+        return pairs
+    }
+
     nonisolated static func prettyJSON(_ object: Any) -> String {
         if let data = try? JSONSerialization.data(
             withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]),

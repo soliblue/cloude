@@ -43,6 +43,10 @@ extension ChatMarkdownParser {
     {
         if !(remaining.hasPrefix("*") || remaining.hasPrefix("_")) { return nil }
         let marker = remaining.first!
+        if marker == "_", remaining.startIndex > remaining.base.startIndex {
+            let prev = remaining.base[remaining.base.index(before: remaining.startIndex)]
+            if prev.isLetter || prev.isNumber { return nil }
+        }
         let nextIdx = remaining.index(after: remaining.startIndex)
         if nextIdx >= remaining.endIndex || remaining[nextIdx] == " " { return nil }
         if !remaining.dropFirst().contains(marker) { return nil }
@@ -111,12 +115,29 @@ extension ChatMarkdownParser {
         if !remaining.hasPrefix("[") { return nil }
         guard let closeIdx = remaining.firstIndex(of: "]"),
             remaining.index(after: closeIdx) < remaining.endIndex,
-            remaining[remaining.index(after: closeIdx)...].hasPrefix("("),
-            let urlEndIdx = remaining[closeIdx...].firstIndex(of: ")")
+            remaining[remaining.index(after: closeIdx)...].hasPrefix("(")
         else { return nil }
 
         let linkText = String(remaining[remaining.index(after: remaining.startIndex)..<closeIdx])
         let urlStart = remaining.index(closeIdx, offsetBy: 2)
+        var depth = 0
+        var urlEnd: Substring.Index?
+        var idx = urlStart
+        while idx < remaining.endIndex {
+            let ch = remaining[idx]
+            if ch == "(" { depth += 1 }
+            if ch == ")" {
+                if depth == 0 {
+                    urlEnd = idx
+                    break
+                }
+                depth -= 1
+            }
+            idx = remaining.index(after: idx)
+        }
+        guard let urlEndIdx = urlEnd ?? remaining[urlStart...].firstIndex(of: ")") else {
+            return nil
+        }
         let urlString = String(remaining[urlStart..<urlEndIdx])
         remaining = remaining[remaining.index(after: urlEndIdx)...]
 

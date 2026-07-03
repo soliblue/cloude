@@ -87,6 +87,9 @@ function runSonnet(prompt) {
         resolve(null)
       }
     })
+    child.stdin.on('error', (error) => {
+      console.error(`[SessionHandler] runSonnet stdin: ${error.message}`)
+    })
     child.stdin.write(prompt)
     child.stdin.end()
   })
