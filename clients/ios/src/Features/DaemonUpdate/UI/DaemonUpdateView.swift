@@ -7,6 +7,7 @@ struct DaemonUpdateView: View {
     @State private var isFetchingLinux = false
     @State private var shareItems: [Any]?
     @State private var copiedAt: Date?
+    @State private var errorMessage: String?
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -46,6 +47,14 @@ struct DaemonUpdateView: View {
             box in
             DaemonUpdateShareSheet(items: box.items)
         }
+        .alert(
+            "Download failed",
+            isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
 
     private func airdropMac() {
@@ -57,6 +66,8 @@ struct DaemonUpdateView: View {
                     assetURL, suggestedName: DaemonUpdate.macAssetName)
             {
                 shareItems = [local]
+            } else {
+                errorMessage = "Could not fetch the latest Mac daemon release."
             }
             isFetchingMac = false
         }
@@ -74,6 +85,8 @@ struct DaemonUpdateView: View {
                     try? await Task.sleep(nanoseconds: 2_000_000_000)
                     copiedAt = nil
                 }
+            } else {
+                errorMessage = "Could not fetch the latest Linux daemon release."
             }
             isFetchingLinux = false
         }

@@ -210,16 +210,18 @@ struct ChatInputBar: View, Equatable {
             let pendingImages = images
             let prompt = (pastedTexts + [trimmed]).filter { !$0.isEmpty }
                 .joined(separator: "\n\n")
-            focused = false
-            draft = ""
-            images = []
-            pastedTexts = []
-            suggestions = []
-            ChatDraftStore.setText("", for: sessionId)
-            ChatDraftStore.setImages([], for: sessionId)
-            ChatDraftStore.setPastedTexts([], for: sessionId)
-            ChatService.send(
+            if ChatService.send(
                 sessionId: sessionId, prompt: prompt, images: pendingImages, context: context)
+            {
+                focused = false
+                draft = ""
+                images = []
+                pastedTexts = []
+                suggestions = []
+                ChatDraftStore.setText("", for: sessionId)
+                ChatDraftStore.setImages([], for: sessionId)
+                ChatDraftStore.setPastedTexts([], for: sessionId)
+            }
         }
     }
 
@@ -314,7 +316,9 @@ struct ChatInputBar: View, Equatable {
                 {
                     bypassPasteDetection = true
                     draft = draft.isEmpty ? text : draft + " " + text
-                    ChatDraftStore.setText(draft, for: sessionId)
+                    let stored = ChatDraftStore.text(for: sessionId)
+                    ChatDraftStore.setText(
+                        stored.isEmpty ? text : stored + " " + text, for: sessionId)
                 }
                 isTranscribing = false
             }

@@ -12,7 +12,7 @@ struct ChatInputBarAttachmentStrip: View {
                     ZStack(alignment: .topTrailing) {
                         ChatAttachmentThumbnail(data: data)
                         Button {
-                            images.remove(at: index)
+                            if index < images.count { images.remove(at: index) }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .appFont(size: ThemeTokens.Icon.s)
@@ -24,14 +24,16 @@ struct ChatInputBarAttachmentStrip: View {
                 ForEach(Array(pastedTexts.enumerated()), id: \.offset) { index, text in
                     ZStack(alignment: .topTrailing) {
                         Button {
-                            pastedTexts.remove(at: index)
-                            onInsertPastedText(text)
+                            if index < pastedTexts.count {
+                                pastedTexts.remove(at: index)
+                                onInsertPastedText(text)
+                            }
                         } label: {
                             ChatAttachmentTextChip(text: text)
                         }
                         .buttonStyle(.plain)
                         Button {
-                            pastedTexts.remove(at: index)
+                            if index < pastedTexts.count { pastedTexts.remove(at: index) }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .appFont(size: ThemeTokens.Icon.s)

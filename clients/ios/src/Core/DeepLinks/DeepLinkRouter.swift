@@ -14,18 +14,10 @@ enum DeepLinkRouter {
             case "chat": handleChat(path: path, url: url, context: context)
             case "pair":
                 if let payload = OnboardingPairingPayload(url: url) {
-                    Task {
-                        let result = await EndpointService.probe(
-                            host: payload.host, port: payload.port,
-                            authKey: payload.token, retryWindow: 6
-                        )
-                        AppLogger.bootstrapInfo(
-                            "deeplink pair probe host=\(payload.host) result=\(result)")
-                        if result == .reachable {
-                            upsertEndpoint(payload: payload, context: context)
-                        }
-                    }
+                    pendingPairPayload = payload
                     NotificationCenter.default.post(name: .deeplinkPair, object: payload)
+                    NotificationCenter.default.post(
+                        name: .openOnboarding, object: OnboardingStep.pair)
                 }
             case "settings": NotificationCenter.default.post(name: .deeplinkOpenSettings, object: nil)
             default: AppLogger.bootstrapInfo("deeplink unhandled host=\(host)")
@@ -118,32 +110,13 @@ enum DeepLinkRouter {
         fetchWindows(context: context).first(where: { $0.isFocused })?.session
     }
 
+    @MainActor private static var pendingPairPayload: OnboardingPairingPayload?
+
     @MainActor
-    private static func upsertEndpoint(payload: OnboardingPairingPayload, context: ModelContext) {
-        let host = payload.host
-        let port = payload.port
-        let fetch = FetchDescriptor<Endpoint>(
-            predicate: #Predicate<Endpoint> { $0.host == host && $0.port == port }
-        )
-        if let existing = (try? context.fetch(fetch))?.first {
-            EndpointActions.update(
-                existing,
-                host: host,
-                port: port,
-                name: payload.name,
-                symbolName: existing.symbolName,
-                authKey: payload.token
-            )
-        } else {
-            EndpointActions.create(
-                into: context,
-                host: host,
-                port: port,
-                name: payload.name,
-                symbolName: Endpoint.defaultSymbol,
-                authKey: payload.token
-            )
-        }
+    static func consumePendingPair() -> OnboardingPairingPayload? {
+        let payload = pendingPairPayload
+        pendingPairPayload = nil
+        return payload
     }
 
     @MainActor

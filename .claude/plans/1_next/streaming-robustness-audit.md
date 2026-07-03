@@ -1,9 +1,13 @@
 ---
 title: "Streaming Robustness Audit"
-description: "Ranked bug list from a four-agent audit of the streaming path, daemons, and iOS state; Linux daemon fixes shipped, iOS fixes open."
+description: "Ranked bug list from a four-agent audit of the streaming path, daemons, and iOS state."
 created_at: 2026-06-10
 tags: ["streaming", "daemon", "reliability"]
 icon: waveform.path.ecg
+shipped:
+  ios: v2026.07.03.2
+  macos-daemon: macos-daemon-v2026.07.03.2
+  linux-daemon: linux-daemon-v2026.07.03.1
 ---
 
 # Streaming Robustness Audit

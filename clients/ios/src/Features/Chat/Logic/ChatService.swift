@@ -14,17 +14,23 @@ enum ChatService {
     @MainActor private static var gitBefore: [UUID: Task<[String: GitChangeDTO], Never>] = [:]
 
     @MainActor
-    static func send(sessionId: UUID, prompt: String, images: [Data], context: ModelContext) {
+    @discardableResult
+    static func send(sessionId: UUID, prompt: String, images: [Data], context: ModelContext) -> Bool
+    {
         let descriptor = FetchDescriptor<Session>(
             predicate: #Predicate<Session> { $0.id == sessionId }
         )
         if let session = try? context.fetch(descriptor).first {
-            send(session: session, prompt: prompt, images: images, context: context)
+            return send(session: session, prompt: prompt, images: images, context: context)
         }
+        return false
     }
 
     @MainActor
-    static func send(session: Session, prompt: String, images: [Data], context: ModelContext) {
+    @discardableResult
+    static func send(session: Session, prompt: String, images: [Data], context: ModelContext)
+        -> Bool
+    {
         if let endpoint = session.endpoint, let path = session.path {
             if session.isStreaming || activeStreams.contains(session.id) {
                 AppLogger.performanceInfo(
@@ -48,7 +54,9 @@ enum ChatService {
                     message: userMessage, session: session, endpoint: endpoint, path: path,
                     context: context)
             }
+            return true
         }
+        return false
     }
 
     @MainActor
@@ -61,6 +69,7 @@ enum ChatService {
         lastSeqs.removeValue(forKey: session.id)
         producedOutput.remove(session.id)
         resumeDelay.removeValue(forKey: session.id)
+        replayKeys.removeValue(forKey: session.id)
         activeStreams.insert(session.id)
         let generation = UUID()
         streamGenerations[session.id] = generation
@@ -154,6 +163,10 @@ enum ChatService {
         if let session = try? context.fetch(descriptor).first,
             let endpoint = session.endpoint, let path = session.path
         {
+            if session.isStreaming || activeStreams.contains(sessionId) {
+                message.state = .queued
+                return
+            }
             message.state = .retrying
             begin(message: message, session: session, endpoint: endpoint, path: path, context: context)
         }
@@ -344,6 +357,7 @@ enum ChatService {
             var eventCount = 0
             var sawClose = false
             var sawExit = false
+            var sawProgress = false
             for try await event in events {
                 if streamGenerations[sessionId] != generation { return }
                 if let pending = pendingUserMessages.removeValue(forKey: sessionId),
@@ -352,7 +366,12 @@ enum ChatService {
                     pending.state = .complete
                 }
                 eventCount += 1
-                if eventCount == 1 { resumeDelay.removeValue(forKey: sessionId) }
+                if !sawProgress {
+                    if case .replay = event {} else {
+                        sawProgress = true
+                        resumeDelay.removeValue(forKey: sessionId)
+                    }
+                }
                 switch event {
                 case .result, .aborted, .error: sawClose = true
                 case .exited: sawExit = true
@@ -395,12 +414,14 @@ enum ChatService {
             activeStreams.remove(sessionId)
             replayKeys.removeValue(forKey: sessionId)
             resumeDelay.removeValue(forKey: sessionId)
+            lastSeqs.removeValue(forKey: sessionId)
             if let pending = pendingUserMessages.removeValue(forKey: sessionId) {
                 pending.state = .failed
             }
             if streamingMessages[sessionId] != nil {
                 closeStream(sessionId: sessionId, isFailed: false, context: context)
             } else {
+                producedOutput.remove(sessionId)
                 let descriptor = FetchDescriptor<Session>(
                     predicate: #Predicate<Session> { $0.id == sessionId }
                 )

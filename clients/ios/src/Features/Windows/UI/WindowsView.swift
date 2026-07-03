@@ -120,7 +120,10 @@ struct WindowsView: View {
             NavigationStack { DaemonUpdateView() }
         }
         .fullScreenCover(isPresented: $isOnboardingPresented) {
-            OnboardingView(initialStep: onboardingInitialStep) { endpoint in
+            OnboardingView(
+                initialStep: onboardingInitialStep,
+                onCancel: endpoints.isEmpty ? nil : { isOnboardingPresented = false }
+            ) { endpoint in
                 let session = WindowActions.addNew(into: context, after: windows, endpoint: endpoint)
                 let request = SessionFolderPickerRequest(sessionId: session.id, endpointId: endpoint.id)
                 isOnboardingPresented = false
