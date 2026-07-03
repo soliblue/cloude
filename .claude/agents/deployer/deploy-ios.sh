@@ -36,12 +36,11 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
         exit 1
     fi
     echo "🐧 No Xcode on $(uname -s); deploying to TestFlight via GitHub Actions..."
-    TAG="v$(date +%Y.%m.%d).1"
-    git -C "$REPO_ROOT" tag "$TAG" 2>/dev/null || {
-        echo "⚠️  Tag $TAG exists, trying .2"
-        TAG="v$(date +%Y.%m.%d).2"
-        git -C "$REPO_ROOT" tag "$TAG"
-    }
+    N=1
+    while ! git -C "$REPO_ROOT" tag "v$(date +%Y.%m.%d).$N" 2>/dev/null; do
+        N=$((N + 1))
+    done
+    TAG="v$(date +%Y.%m.%d).$N"
     git -C "$REPO_ROOT" push origin "$TAG"
     echo "✅ Pushed $TAG; testflight.yml will build and upload to TestFlight."
     echo "Monitor: https://github.com/soliblue/cloude/actions/workflows/testflight.yml"
