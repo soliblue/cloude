@@ -12,7 +12,8 @@ enum GitService {
         if let (data, response) = await HTTPClient.get(
             endpoint: endpoint,
             path: "/sessions/\(session.id.uuidString)/git/status",
-            query: ["path": path]
+            query: ["path": path],
+            timeout: 10
         ) {
             if response.statusCode == 200 {
                 return ((try? JSONDecoder().decode(GitStatusDTO.self, from: data)), 200)
@@ -76,7 +77,8 @@ enum GitService {
         if let (data, response) = await HTTPClient.get(
             endpoint: endpoint,
             path: "/sessions/\(session.id.uuidString)/git/log",
-            query: ["path": path, "skip": String(skip), "count": String(count)]
+            query: ["path": path, "skip": String(skip), "count": String(count)],
+            timeout: 10
         ),
             response.statusCode == 200
         {

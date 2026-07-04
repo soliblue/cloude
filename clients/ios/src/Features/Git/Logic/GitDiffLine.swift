@@ -57,8 +57,8 @@ enum GitDiffParser {
 
     static func parse(_ diff: String) -> [GitDiffLine] {
         var lines: [GitDiffLine] = []
-        var oldNo = 0
-        var newNo = 0
+        var oldNo: Int? = nil
+        var newNo: Int? = nil
         for raw in diff.components(separatedBy: "\n") {
             if raw.hasPrefix("diff ") || raw.hasPrefix("index ") || raw.hasPrefix("---") || raw.hasPrefix("+++") {
                 continue
@@ -77,20 +77,20 @@ enum GitDiffParser {
             if raw.hasPrefix("+") {
                 lines.append(
                     GitDiffLine(text: String(raw.dropFirst()), raw: raw, kind: .added, newLine: newNo))
-                newNo += 1
+                if newNo != nil { newNo! += 1 }
                 continue
             }
             if raw.hasPrefix("-") {
                 lines.append(
                     GitDiffLine(text: String(raw.dropFirst()), raw: raw, kind: .removed, oldLine: oldNo))
-                oldNo += 1
+                if oldNo != nil { oldNo! += 1 }
                 continue
             }
             let text = raw.hasPrefix(" ") ? String(raw.dropFirst()) : raw
             lines.append(
                 GitDiffLine(text: text, raw: raw, kind: .context, oldLine: oldNo, newLine: newNo))
-            oldNo += 1
-            newNo += 1
+            if oldNo != nil { oldNo! += 1 }
+            if newNo != nil { newNo! += 1 }
         }
         return withWordDiff(lines)
     }
