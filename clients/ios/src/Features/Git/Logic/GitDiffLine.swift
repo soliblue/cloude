@@ -8,7 +8,6 @@ struct GitDiffLine: Identifiable {
     let kind: Kind
     var oldLine: Int? = nil
     var newLine: Int? = nil
-    var changedRange: Range<Int>? = nil
 }
 
 enum GitDiffParser {
@@ -129,55 +128,7 @@ enum GitDiffParser {
             if oldNo != nil { oldNo! += 1 }
             if newNo != nil { newNo! += 1 }
         }
-        return withWordDiff(lines)
-    }
-
-    private static func withWordDiff(_ lines: [GitDiffLine]) -> [GitDiffLine] {
-        var result = lines
-        var index = 0
-        while index < result.count {
-            if result[index].kind == .removed {
-                var removed: [Int] = []
-                while index < result.count && result[index].kind == .removed {
-                    removed.append(index)
-                    index += 1
-                }
-                var added: [Int] = []
-                var probe = index
-                while probe < result.count && result[probe].kind == .added {
-                    added.append(probe)
-                    probe += 1
-                }
-                if removed.count == added.count {
-                    for pair in 0..<removed.count {
-                        let (oldRange, newRange) = charDiff(
-                            result[removed[pair]].text, result[added[pair]].text)
-                        result[removed[pair]].changedRange = oldRange
-                        result[added[pair]].changedRange = newRange
-                    }
-                }
-            } else {
-                index += 1
-            }
-        }
-        return result
-    }
-
-    private static func charDiff(_ old: String, _ new: String) -> (Range<Int>?, Range<Int>?) {
-        let o = Array(old)
-        let n = Array(new)
-        var prefix = 0
-        while prefix < o.count && prefix < n.count && o[prefix] == n[prefix] { prefix += 1 }
-        var suffix = 0
-        while suffix < o.count - prefix && suffix < n.count - prefix
-            && o[o.count - 1 - suffix] == n[n.count - 1 - suffix]
-        {
-            suffix += 1
-        }
-        if prefix == 0 && suffix == 0 { return (nil, nil) }
-        let oldRange = prefix < o.count - suffix ? prefix..<(o.count - suffix) : nil
-        let newRange = prefix < n.count - suffix ? prefix..<(n.count - suffix) : nil
-        return (oldRange, newRange)
+        return lines
     }
 
     private static func hunkHeader(_ raw: String) -> Substring? {

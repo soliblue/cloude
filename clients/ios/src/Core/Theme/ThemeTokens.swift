@@ -64,6 +64,7 @@ enum ThemeTokens {
     }
 
     enum Opacity {
+        static let xs: Double = 0.08
         static let s: Double = 0.15
         static let m: Double = 0.4
         static let l: Double = 0.7
