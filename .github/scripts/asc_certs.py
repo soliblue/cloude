@@ -60,7 +60,7 @@ def orphan_ids():
     return {
         cert["id"]
         for cert in all_dev_certs()
-        if cert["attributes"].get("name") == ORPHAN_NAME
+        if ORPHAN_NAME in cert["attributes"].get("name", "")
     }
 
 
@@ -86,8 +86,4 @@ if command == "revoke-new":
     revoke(orphan_ids() - before)
 
 if command == "revoke-all":
-    certs = all_dev_certs()
-    for cert in certs:
-        attrs = cert["attributes"]
-        print(f"  {attrs.get('certificateType')} {cert['id']}: {attrs.get('name')}")
-    revoke({cert["id"] for cert in certs})
+    revoke(orphan_ids())
