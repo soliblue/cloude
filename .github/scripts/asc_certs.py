@@ -43,14 +43,18 @@ def headers():
     return {"Authorization": f"Bearer {token()}"}
 
 
-def orphan_ids():
+def all_dev_certs():
     response = requests.get(
         f"{API}?filter[certificateType]=IOS_DEVELOPMENT&limit=200", headers=headers()
     )
     response.raise_for_status()
+    return response.json().get("data", [])
+
+
+def orphan_ids():
     return {
         cert["id"]
-        for cert in response.json().get("data", [])
+        for cert in all_dev_certs()
         if cert["attributes"].get("name") == ORPHAN_NAME
     }
 
@@ -77,4 +81,7 @@ if command == "revoke-new":
     revoke(orphan_ids() - before)
 
 if command == "revoke-all":
-    revoke(orphan_ids())
+    certs = all_dev_certs()
+    for cert in certs:
+        print(f"  dev cert {cert['id']}: {cert['attributes'].get('name')}")
+    revoke({cert["id"] for cert in certs})
