@@ -41,7 +41,7 @@ struct GitView: View {
                 GitDiffSheet(session: session, target: target)
             }
             .sheet(item: $selectedCommit) { target in
-                GitCommitDetailView(session: session, sha: target.sha, subject: target.subject)
+                GitCommitDetailView(session: session, sha: target.sha)
             }
     }
 
@@ -90,8 +90,7 @@ struct GitView: View {
                 Section("Recent Commits") {
                     ForEach(commits) { commit in
                         GitViewCommitRow(commit: commit) {
-                            selectedCommit = GitCommitTarget(
-                                sha: commit.sha, subject: commit.subject)
+                            selectedCommit = GitCommitTarget(sha: commit.sha)
                         }
                         .listRowBackground(theme.palette.background)
                     }

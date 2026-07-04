@@ -18,6 +18,43 @@ enum GitDiffParser {
         var id: String { path }
     }
 
+    struct DiffHunk: Identifiable {
+        let id: String
+        let header: String
+        let lines: [GitDiffLine]
+        let additions: Int
+        let deletions: Int
+    }
+
+    static func groupHunks(_ lines: [GitDiffLine], filePath: String) -> [DiffHunk] {
+        var hunks: [DiffHunk] = []
+        var header = ""
+        var body: [GitDiffLine] = []
+        var index = 0
+        func flush() {
+            let keep = !header.isEmpty || body.contains { $0.kind != .context }
+            if keep {
+                hunks.append(
+                    DiffHunk(
+                        id: "\(filePath)#\(index)", header: header, lines: body,
+                        additions: body.filter { $0.kind == .added }.count,
+                        deletions: body.filter { $0.kind == .removed }.count))
+                index += 1
+            }
+        }
+        for line in lines {
+            if line.kind == .hunk {
+                flush()
+                header = line.text
+                body = []
+            } else {
+                body.append(line)
+            }
+        }
+        flush()
+        return hunks
+    }
+
     static func splitByFile(_ diff: String) -> [FileDiff] {
         var files: [FileDiff] = []
         var currentPath: String?
