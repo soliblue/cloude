@@ -66,6 +66,7 @@ struct SessionEmptyViewPickerRow: View {
                     .buttonStyle(.plain)
                 }
             }
+            .padding(.horizontal, ThemeTokens.Spacing.xs)
             .padding(.vertical, ThemeTokens.Spacing.xs)
             .frame(minWidth: 200)
             .presentationCompactAdaptation(.popover)

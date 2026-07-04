@@ -10,7 +10,7 @@ struct ChatInputBarMetaRow: View {
     let contextWindow: Int
     @Environment(\.appAccent) private var appAccent
     @Environment(\.modelContext) private var context
-    @State private var showContextPercent = false
+    @State private var showContextDetail = false
 
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.m) {
@@ -54,33 +54,36 @@ struct ChatInputBarMetaRow: View {
 
     private var contextRing: some View {
         Button {
-            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-                showContextPercent.toggle()
-            }
+            showContextDetail.toggle()
         } label: {
-            HStack(spacing: ThemeTokens.Spacing.xs) {
-                ZStack {
-                    Circle()
-                        .stroke(Color.secondary.opacity(ThemeTokens.Opacity.s), lineWidth: ThemeTokens.Stroke.l)
-                    Circle()
-                        .trim(from: 0, to: usedFraction)
-                        .stroke(
-                            ringColor,
-                            style: StrokeStyle(lineWidth: ThemeTokens.Stroke.l, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                }
-                .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
-                if showContextPercent {
-                    Text("\(Int((usedFraction * 100).rounded()))%")
-                        .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                }
+            ZStack {
+                Circle()
+                    .stroke(Color.secondary.opacity(ThemeTokens.Opacity.s), lineWidth: ThemeTokens.Stroke.l)
+                Circle()
+                    .trim(from: 0, to: usedFraction)
+                    .stroke(
+                        ringColor,
+                        style: StrokeStyle(lineWidth: ThemeTokens.Stroke.l, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
             }
+            .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .popover(isPresented: $showContextDetail) {
+            Text("\(Int(((1 - usedFraction) * 100).rounded()))% left (\(tokensK(contextTokens)) used / \(tokensK(contextWindow)))")
+                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+                .padding(.horizontal, ThemeTokens.Spacing.m)
+                .padding(.vertical, ThemeTokens.Spacing.s)
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+
+    private func tokensK(_ tokens: Int) -> String {
+        "\(Int((Double(tokens) / 1000).rounded()))K"
     }
 
     private var usedFraction: Double {
