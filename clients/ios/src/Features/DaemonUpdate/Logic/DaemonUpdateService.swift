@@ -35,4 +35,13 @@ enum DaemonUpdateService {
     static func linuxInstallCommand(downloadURL: URL) -> String {
         "curl -fsSL \(downloadURL.absoluteString) | tar -xz && cd release && bash install.sh"
     }
+
+    static func latestLinuxInstallCommand() async -> String? {
+        if let assetURL = await latestAssetURL(
+            tagPrefix: DaemonUpdate.linuxTagPrefix, assetName: DaemonUpdate.linuxAssetName)
+        {
+            return linuxInstallCommand(downloadURL: assetURL)
+        }
+        return nil
+    }
 }

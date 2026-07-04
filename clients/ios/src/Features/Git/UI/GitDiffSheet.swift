@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct GitDiffSheet: View {
     let session: Session
@@ -9,15 +10,25 @@ struct GitDiffSheet: View {
     @State private var truncatedFromLines: Int?
     @State private var isLoading = true
     @State private var isFullLoading = false
+    @State private var search = ""
+
+    private var visibleLines: [GitDiffLine] {
+        let query = search.trimmingCharacters(in: .whitespaces)
+        if query.isEmpty { return lines }
+        return lines.filter {
+            $0.kind == .hunk || $0.text.localizedCaseInsensitiveContains(query)
+        }
+    }
 
     var body: some View {
+        let language = FilePreviewContentType.detect(path: target.path).sourceLanguage
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(lines) { line in
-                        GitDiffSheetLine(line: line)
+                    ForEach(visibleLines) { line in
+                        GitDiffSheetLine(line: line, language: language)
                     }
-                    if let truncated = truncatedFromLines {
+                    if let truncated = truncatedFromLines, search.isEmpty {
                         truncatedFooter(total: truncated)
                     }
                 }
@@ -27,6 +38,7 @@ struct GitDiffSheet: View {
             .overlay {
                 if isLoading { ProgressView() }
             }
+            .searchable(text: $search, prompt: "Search diff")
             .navigationTitle(target.path)
             .navigationBarTitleDisplayMode(.inline)
             .themedNavChrome()
@@ -38,6 +50,15 @@ struct GitDiffSheet: View {
                         Image(systemName: "xmark")
                             .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        UIPasteboard.general.string = lines.map(\.raw).joined(separator: "\n")
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                            .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                    }
+                    .disabled(lines.isEmpty)
                 }
             }
             .task { await load(isFull: false) }

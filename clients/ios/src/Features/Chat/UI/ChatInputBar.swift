@@ -78,7 +78,7 @@ struct ChatInputBar: View, Equatable {
                 VStack(spacing: 0) {
                     HStack(alignment: .center, spacing: 0) {
                         if !focused {
-                            ChatInputBarAttachmentPicker(images: $images)
+                            ChatInputBarAttachmentPicker(sessionId: sessionId, images: $images)
                         }
                         TextField("Message", text: $draft, axis: .vertical)
                             .appFont(size: ThemeTokens.Text.m)
@@ -92,7 +92,7 @@ struct ChatInputBar: View, Equatable {
                     }
                     if focused {
                         HStack(spacing: 0) {
-                            ChatInputBarAttachmentPicker(images: $images)
+                            ChatInputBarAttachmentPicker(sessionId: sessionId, images: $images)
                             ChatInputBarMetaRow(
                                 sessionId: sessionId,
                                 model: model,
@@ -298,32 +298,52 @@ struct ChatInputBar: View, Equatable {
         Task {
             if await recorder.requestPermission() {
                 recorder.start()
+                if !recorder.isRecording {
+                    presentInputError("Couldn't start recording", "Check microphone access.")
+                }
+            } else {
+                presentInputError(
+                    "Microphone access needed", "Enable it in Settings to use voice input.")
             }
         }
     }
 
     private func stopRecording() {
-        if let data = recorder.stop(), !data.isEmpty {
-            isTranscribing = true
-            Task {
-                let descriptor = FetchDescriptor<Session>(
-                    predicate: #Predicate<Session> { $0.id == sessionId })
-                if let session = try? context.fetch(descriptor).first,
-                    let endpoint = session.endpoint,
-                    let text = await ChatTranscriptionService.transcribe(
-                        endpoint: endpoint, sessionId: sessionId, audio: data),
-                    !text.isEmpty
-                {
-                    bypassPasteDetection = true
-                    draft = draft.isEmpty ? text : draft + " " + text
-                    let stored = ChatDraftStore.text(for: sessionId)
-                    ChatDraftStore.setText(
-                        stored.isEmpty ? text : stored + " " + text, for: sessionId)
-                }
-                isTranscribing = false
+        guard let data = recorder.stop(), !data.isEmpty else {
+            presentInputError("Nothing recorded", "No audio was captured, try again.")
+            isTranscribing = false
+            return
+        }
+        let descriptor = FetchDescriptor<Session>(
+            predicate: #Predicate<Session> { $0.id == sessionId })
+        guard let session = try? context.fetch(descriptor).first, let endpoint = session.endpoint
+        else {
+            presentInputError("Not connected", "Connect this session's endpoint to transcribe.")
+            isTranscribing = false
+            return
+        }
+        isTranscribing = true
+        Task {
+            let text = await ChatTranscriptionService.transcribe(
+                endpoint: endpoint, sessionId: sessionId, audio: data)
+            if let text, !text.isEmpty {
+                bypassPasteDetection = true
+                draft = draft.isEmpty ? text : draft + " " + text
+                let stored = ChatDraftStore.text(for: sessionId)
+                ChatDraftStore.setText(stored.isEmpty ? text : stored + " " + text, for: sessionId)
+            } else if text == nil {
+                presentInputError("Transcription failed", "Couldn't reach the transcription service.")
+            } else {
+                presentInputError("No speech detected", "That clip didn't contain any words.")
             }
-        } else {
             isTranscribing = false
         }
+    }
+
+    private func presentInputError(_ title: String, _ message: String) {
+        SessionToastStore.shared.present(
+            SessionToast(
+                sessionId: sessionId, title: title, symbol: "exclamationmark.triangle.fill",
+                snippet: message))
     }
 }

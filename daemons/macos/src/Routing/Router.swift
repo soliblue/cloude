@@ -31,6 +31,9 @@ enum Router {
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/git/log") {
                     return GitHandler.log(request, params: params)
                 }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/git/commit") {
+                    return GitHandler.commit(request, params: params)
+                }
             }
             if request.method == "POST" {
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/chat") {

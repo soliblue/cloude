@@ -74,6 +74,44 @@ enum GitHandler {
         return HTTPResponse.json(400, ["error": "missing_params"])
     }
 
+    static func commit(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
+        if let path = request.query["path"], let sha = request.query["sha"] {
+            let cwd = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+            let (meta, _) = runText(["show", "-s", "--format=%H%n%an%n%aI%n%s%n%b", sha], cwd: cwd)
+            let (numstat, _) = runText(["show", "--numstat", "--format=", "-M", sha], cwd: cwd)
+            let (diffText, code) = runText(["show", "--no-color", "--format=", "-M", sha], cwd: cwd)
+            if code != 0 {
+                return HTTPResponse.json(404, ["error": "not_found"])
+            }
+            let metaLines = meta.components(separatedBy: "\n")
+            var files: [[String: Any]] = []
+            for line in numstat.components(separatedBy: "\n") where !line.isEmpty {
+                let parts = line.components(separatedBy: "\t")
+                if parts.count >= 3 {
+                    files.append([
+                        "additions": Int(parts[0]) ?? 0,
+                        "deletions": Int(parts[1]) ?? 0,
+                        "path": parts[2...].joined(separator: "\t"),
+                    ])
+                }
+            }
+            let body =
+                metaLines.count > 4
+                ? metaLines[4...].joined(separator: "\n").trimmingCharacters(
+                    in: .whitespacesAndNewlines) : ""
+            return HTTPResponse.json(200, [
+                "sha": metaLines.first ?? sha,
+                "author": metaLines.count > 1 ? metaLines[1] : "",
+                "date": metaLines.count > 2 ? metaLines[2] : "",
+                "subject": metaLines.count > 3 ? metaLines[3] : "",
+                "body": body,
+                "files": files,
+                "diff": diffText,
+            ])
+        }
+        return HTTPResponse.json(400, ["error": "missing_params"])
+    }
+
     static func log(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
         if let path = request.query["path"] {
             let cwd = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)

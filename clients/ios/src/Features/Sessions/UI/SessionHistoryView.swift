@@ -12,6 +12,12 @@ struct SessionHistoryView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
+                if sessions.isEmpty {
+                    ContentUnavailableView(
+                        "No history yet", systemImage: "clock",
+                        description: Text("Sessions you open will show up here."))
+                        .padding(.top, ThemeTokens.Spacing.xl)
+                }
                 ForEach(Array(sessions.enumerated()), id: \.element.id) { index, session in
                     if index > 0 { Divider() }
                     Button {

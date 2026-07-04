@@ -5,17 +5,31 @@ struct FileTreeView: View {
     @Environment(\.theme) private var theme
     @State private var store = FileTreeStore()
     @State private var loadFailed = false
+    @State private var isLoading = true
+
+    private var rootEntries: [FileNodeDTO] { store.children[store.rootPath] ?? [] }
 
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
-                if loadFailed && (store.children[store.rootPath] ?? []).isEmpty {
-                    Text("Unable to load files")
-                        .appFont(size: ThemeTokens.Text.m)
-                        .foregroundColor(.secondary)
-                        .padding(ThemeTokens.Spacing.m)
+                if rootEntries.isEmpty {
+                    if isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, ThemeTokens.Spacing.xl)
+                    } else if loadFailed {
+                        ContentUnavailableView(
+                            "Unable to load files", systemImage: "folder.badge.questionmark",
+                            description: Text("Check your connection and try again."))
+                            .padding(.top, ThemeTokens.Spacing.xl)
+                    } else {
+                        ContentUnavailableView(
+                            "Empty folder", systemImage: "folder",
+                            description: Text("There are no files here."))
+                            .padding(.top, ThemeTokens.Spacing.xl)
+                    }
                 }
-                ForEach(store.children[store.rootPath] ?? [], id: \.path) { node in
+                ForEach(rootEntries, id: \.path) { node in
                     FileTreeViewRow(session: session, node: node, depth: 0, store: store)
                 }
             }
@@ -36,7 +50,10 @@ struct FileTreeView: View {
                 } else {
                     loadFailed = true
                 }
+            } else {
+                loadFailed = true
             }
+            isLoading = false
         }
     }
 }

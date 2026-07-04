@@ -172,6 +172,41 @@ export async function diff(request) {
   return HTTPResponse.json(400, { error: 'missing_params' })
 }
 
+export async function commit(request) {
+  if (request.query.path && request.query.sha) {
+    const cwd = resolved(request.query.path)
+    const sha = request.query.sha
+    const [meta] = await runText(['show', '-s', '--format=%H%n%an%n%aI%n%s%n%b', sha], cwd)
+    const [numstat] = await runText(['show', '--numstat', '--format=', '-M', sha], cwd)
+    const [diffText, code] = await runText(['show', '--no-color', '--format=', '-M', sha], cwd)
+    if (code !== 0) {
+      return HTTPResponse.json(404, { error: 'not_found' })
+    }
+    const metaLines = meta.split('\n')
+    const files = numstat
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const parts = line.split('\t')
+        return {
+          additions: Number.parseInt(parts[0], 10) || 0,
+          deletions: Number.parseInt(parts[1], 10) || 0,
+          path: parts.slice(2).join('\t')
+        }
+      })
+    return HTTPResponse.json(200, {
+      sha: metaLines[0] || sha,
+      author: metaLines[1] || '',
+      date: metaLines[2] || '',
+      subject: metaLines[3] || '',
+      body: metaLines.slice(4).join('\n').trim(),
+      files,
+      diff: diffText
+    })
+  }
+  return HTTPResponse.json(400, { error: 'missing_params' })
+}
+
 export async function log(request) {
   if (request.query.path) {
     const [output] = await runText(

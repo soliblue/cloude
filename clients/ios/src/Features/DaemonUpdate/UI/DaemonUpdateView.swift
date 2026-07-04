@@ -76,10 +76,8 @@ struct DaemonUpdateView: View {
     private func copyLinuxCommand() {
         isFetchingLinux = true
         Task { @MainActor in
-            if let assetURL = await DaemonUpdateService.latestAssetURL(
-                tagPrefix: DaemonUpdate.linuxTagPrefix, assetName: DaemonUpdate.linuxAssetName)
-            {
-                UIPasteboard.general.string = DaemonUpdateService.linuxInstallCommand(downloadURL: assetURL)
+            if let command = await DaemonUpdateService.latestLinuxInstallCommand() {
+                UIPasteboard.general.string = command
                 copiedAt = .now
                 Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 2_000_000_000)
