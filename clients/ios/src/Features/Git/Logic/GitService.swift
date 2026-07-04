@@ -53,6 +53,23 @@ enum GitService {
     }
 
     @MainActor
+    static func commitDetail(
+        endpoint: Endpoint, session: Session, path: String, sha: String
+    ) async -> GitCommitDetailDTO? {
+        if let (data, response) = await HTTPClient.get(
+            endpoint: endpoint,
+            path: "/sessions/\(session.id.uuidString)/git/commit",
+            query: ["path": path, "sha": sha],
+            timeout: 10
+        ),
+            response.statusCode == 200
+        {
+            return try? JSONDecoder().decode(GitCommitDetailDTO.self, from: data)
+        }
+        return nil
+    }
+
+    @MainActor
     static func log(
         endpoint: Endpoint, session: Session, path: String, skip: Int = 0, count: Int = 50
     ) async -> [GitCommitDTO]? {

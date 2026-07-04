@@ -12,6 +12,49 @@ struct GitDiffLine: Identifiable {
 }
 
 enum GitDiffParser {
+    struct FileDiff: Identifiable {
+        let path: String
+        let text: String
+        var id: String { path }
+    }
+
+    static func splitByFile(_ diff: String) -> [FileDiff] {
+        var files: [FileDiff] = []
+        var currentPath: String?
+        var current: [String] = []
+        var sawHunk = false
+        func flush() {
+            while current.last == "" { current.removeLast() }
+            if let path = currentPath, !current.isEmpty {
+                files.append(FileDiff(path: path, text: current.joined(separator: "\n")))
+            }
+        }
+        for raw in diff.components(separatedBy: "\n") {
+            if raw.hasPrefix("diff --git ") {
+                flush()
+                current = [raw]
+                currentPath = headerPath(raw)
+                sawHunk = false
+                continue
+            }
+            if currentPath == nil { continue }
+            if raw.hasPrefix("@@") { sawHunk = true }
+            if !sawHunk && raw.hasPrefix("+++ b/") {
+                currentPath = String(raw.dropFirst(6))
+            }
+            current.append(raw)
+        }
+        flush()
+        return files
+    }
+
+    private static func headerPath(_ raw: String) -> String {
+        if let range = raw.range(of: " b/", options: .backwards) {
+            return String(raw[range.upperBound...])
+        }
+        return "file"
+    }
+
     static func parse(_ diff: String) -> [GitDiffLine] {
         var lines: [GitDiffLine] = []
         var oldNo = 0

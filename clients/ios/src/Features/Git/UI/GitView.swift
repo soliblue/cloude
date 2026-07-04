@@ -8,6 +8,7 @@ struct GitView: View {
     @Query private var statuses: [GitStatus]
     @Query private var commits: [GitCommit]
     @State private var selectedChange: GitDiffTarget?
+    @State private var selectedCommit: GitCommitTarget?
     @State private var isLoading = false
     @State private var hasLoaded = false
     @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = true
@@ -39,6 +40,9 @@ struct GitView: View {
             .sheet(item: $selectedChange) { target in
                 GitDiffSheet(session: session, target: target)
             }
+            .sheet(item: $selectedCommit) { target in
+                GitCommitDetailView(session: session, sha: target.sha, subject: target.subject)
+            }
     }
 
     @ViewBuilder
@@ -46,10 +50,14 @@ struct GitView: View {
         if let status = statuses.first {
             VStack(spacing: 0) {
                 GitViewStatusHeader(status: status, session: session)
-                if status.changes.isEmpty {
-                    commitsList
+                if status.changes.isEmpty && commits.isEmpty {
+                    ContentUnavailableView(
+                        "No Commits",
+                        systemImage: "checkmark.circle",
+                        description: Text("Working tree clean")
+                    )
                 } else {
-                    changesList(status.changes)
+                    changesAndCommitsList(status.changes)
                 }
             }
         } else if isLoading {
@@ -63,7 +71,7 @@ struct GitView: View {
         }
     }
 
-    private func changesList(_ changes: [GitChange]) -> some View {
+    private func changesAndCommitsList(_ changes: [GitChange]) -> some View {
         let sorted = changes.sorted { $0.path < $1.path }
         let staged = sorted.filter(\.isStaged)
         let unstaged = sorted.filter { !$0.isStaged }
@@ -76,6 +84,17 @@ struct GitView: View {
             if !unstaged.isEmpty {
                 Section("Changes") {
                     changeRows(unstaged, collapsed: $collapsedUnstaged)
+                }
+            }
+            if !commits.isEmpty {
+                Section("Recent Commits") {
+                    ForEach(commits) { commit in
+                        GitViewCommitRow(commit: commit) {
+                            selectedCommit = GitCommitTarget(
+                                sha: commit.sha, subject: commit.subject)
+                        }
+                        .listRowBackground(theme.palette.background)
+                    }
                 }
             }
         }
@@ -107,31 +126,6 @@ struct GitView: View {
                 }
                 .listRowBackground(theme.palette.background)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var commitsList: some View {
-        if commits.isEmpty {
-            ContentUnavailableView(
-                "No Commits",
-                systemImage: "checkmark.circle",
-                description: Text("Working tree clean")
-            )
-        } else {
-            List {
-                Section("Recent Commits") {
-                    ForEach(commits) { commit in
-                        GitViewCommitRow(commit: commit)
-                            .listRowBackground(theme.palette.background)
-                    }
-                }
-            }
-            .listStyle(.plain)
-            .listSectionSpacing(.compact)
-            .contentMargins(.top, 0, for: .scrollContent)
-            .scrollContentBackground(.hidden)
-            .background(theme.palette.background)
         }
     }
 
