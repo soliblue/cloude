@@ -37,6 +37,7 @@ struct SessionEmptyView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .scrollIndicators(.hidden)
+        .dismissesKeyboardOnTap()
         .sheet(item: $folderSheetEndpoint) { endpoint in
             SessionEmptyViewFolderSheet(session: session, endpoint: endpoint)
         }

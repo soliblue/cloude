@@ -63,7 +63,11 @@ final class WindowsPagerGesture: NSObject, UIGestureRecognizerDelegate {
     }
 
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if keyboardVisible { return false }
+        if keyboardVisible {
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            return false
+        }
         if let recognizer = gestureRecognizer as? UIPanGestureRecognizer {
             let velocity = recognizer.velocity(in: recognizer.view)
             let isHorizontal = abs(velocity.x) > abs(velocity.y) * 1.25
