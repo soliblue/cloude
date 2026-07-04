@@ -10,6 +10,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 from cryptography.hazmat.backends import default_backend
 
 ORPHAN_NAME = "Created via API"
+DEV_TYPES = {"DEVELOPMENT", "IOS_DEVELOPMENT"}
 API = "https://api.appstoreconnect.apple.com/v1/certificates"
 
 
@@ -44,11 +45,15 @@ def headers():
 
 
 def all_dev_certs():
-    response = requests.get(
-        f"{API}?filter[certificateType]=IOS_DEVELOPMENT&limit=200", headers=headers()
-    )
-    response.raise_for_status()
-    return response.json().get("data", [])
+    certs = []
+    url = f"{API}?limit=200"
+    while url:
+        response = requests.get(url, headers=headers())
+        response.raise_for_status()
+        body = response.json()
+        certs.extend(body.get("data", []))
+        url = body.get("links", {}).get("next")
+    return [c for c in certs if c["attributes"].get("certificateType") in DEV_TYPES]
 
 
 def orphan_ids():
@@ -83,5 +88,6 @@ if command == "revoke-new":
 if command == "revoke-all":
     certs = all_dev_certs()
     for cert in certs:
-        print(f"  dev cert {cert['id']}: {cert['attributes'].get('name')}")
+        attrs = cert["attributes"]
+        print(f"  {attrs.get('certificateType')} {cert['id']}: {attrs.get('name')}")
     revoke({cert["id"] for cert in certs})
