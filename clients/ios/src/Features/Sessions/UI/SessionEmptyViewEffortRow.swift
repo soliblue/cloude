@@ -10,22 +10,32 @@ struct SessionEmptyViewEffortRow: View {
         SessionEmptyViewPickerRow(
             icon: "brain.head.profile",
             title: "Effort",
-            value: session.effort?.displayName ?? "Default"
-        ) {
-            Button {
+            value: session.effort?.displayName ?? "Default",
+            options: options
+        )
+    }
+
+    private var options: [SessionEmptyViewPickerOption] {
+        let defaultOpt = SessionEmptyViewPickerOption(
+            id: "default",
+            title: "Default",
+            isSelected: session.effort == nil,
+            action: {
                 defaultEffort = ""
                 SessionActions.setEffort(nil, for: session.id, context: context)
-            } label: {
-                Label("Default", systemImage: session.effort == nil ? "checkmark" : "")
             }
-            ForEach(ChatEffort.allCases, id: \.self) { level in
-                Button {
+        )
+        let cases = ChatEffort.allCases.map { level in
+            SessionEmptyViewPickerOption(
+                id: level.rawValue,
+                title: level.displayName,
+                isSelected: session.effort == level,
+                action: {
                     defaultEffort = level.rawValue
                     SessionActions.setEffort(level, for: session.id, context: context)
-                } label: {
-                    Label(level.displayName, systemImage: session.effort == level ? "checkmark" : "")
                 }
-            }
+            )
         }
+        return [defaultOpt] + cases
     }
 }

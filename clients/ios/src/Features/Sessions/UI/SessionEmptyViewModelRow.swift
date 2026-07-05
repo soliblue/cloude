@@ -10,22 +10,32 @@ struct SessionEmptyViewModelRow: View {
         SessionEmptyViewPickerRow(
             icon: "cpu",
             title: "Model",
-            value: session.model?.displayName ?? "Auto"
-        ) {
-            Button {
+            value: session.model?.displayName ?? "Auto",
+            options: options
+        )
+    }
+
+    private var options: [SessionEmptyViewPickerOption] {
+        let auto = SessionEmptyViewPickerOption(
+            id: "auto",
+            title: "Auto",
+            isSelected: session.model == nil,
+            action: {
                 defaultModel = ""
                 SessionActions.setModel(nil, for: session.id, context: context)
-            } label: {
-                Label("Auto", systemImage: session.model == nil ? "checkmark" : "")
             }
-            ForEach(ChatModel.allCases, id: \.self) { option in
-                Button {
-                    defaultModel = option.rawValue
-                    SessionActions.setModel(option, for: session.id, context: context)
-                } label: {
-                    Label(option.displayName, systemImage: session.model == option ? "checkmark" : "")
+        )
+        let cases = ChatModel.allCases.map { model in
+            SessionEmptyViewPickerOption(
+                id: model.rawValue,
+                title: model.displayName,
+                isSelected: session.model == model,
+                action: {
+                    defaultModel = model.rawValue
+                    SessionActions.setModel(model, for: session.id, context: context)
                 }
-            }
+            )
         }
+        return [auto] + cases
     }
 }

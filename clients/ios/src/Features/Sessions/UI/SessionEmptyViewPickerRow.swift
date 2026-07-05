@@ -1,14 +1,22 @@
 import SwiftUI
 
-struct SessionEmptyViewPickerRow<Options: View>: View {
+struct SessionEmptyViewPickerOption: Identifiable {
+    let id: String
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+}
+
+struct SessionEmptyViewPickerRow: View {
     let icon: String
     let title: String
     let value: String
-    @ViewBuilder let options: Options
+    let options: [SessionEmptyViewPickerOption]
+    @State private var isPopoverPresented = false
 
     var body: some View {
-        Menu {
-            options
+        Button {
+            isPopoverPresented = true
         } label: {
             HStack(spacing: ThemeTokens.Spacing.s) {
                 Image(systemName: icon)
@@ -33,5 +41,35 @@ struct SessionEmptyViewPickerRow<Options: View>: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .popover(isPresented: $isPopoverPresented, arrowEdge: .top) {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(options) { option in
+                    Button {
+                        option.action()
+                        isPopoverPresented = false
+                    } label: {
+                        HStack {
+                            Text(option.title)
+                                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                            Spacer(minLength: 0)
+                            if option.isSelected {
+                                Image(systemName: "checkmark")
+                                    .appFont(size: ThemeTokens.Text.s, weight: .semibold)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, ThemeTokens.Spacing.m)
+                        .padding(.vertical, ThemeTokens.Spacing.s)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, ThemeTokens.Spacing.xs)
+            .padding(.vertical, ThemeTokens.Spacing.xs)
+            .frame(minWidth: 200)
+            .presentationCompactAdaptation(.popover)
+        }
     }
 }
