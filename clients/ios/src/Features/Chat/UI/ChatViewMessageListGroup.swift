@@ -18,6 +18,19 @@ struct ChatViewMessageListGroup: View {
                     case .message(let message):
                         ChatViewMessageListRow(session: session, message: message)
                             .id(message.id)
+                    case .thinking(let run):
+                        if run.count == 1 {
+                            ChatViewMessageListRow(session: session, message: run[0])
+                                .id(run[0].id)
+                        } else {
+                            ChatViewMessageListRowThinking(
+                                text: run.map(\.thinking).filter { !$0.isEmpty }
+                                    .joined(separator: "\n\n"),
+                                durationMs: run.reduce(0) { $0 + $1.thinkingMs },
+                                redacted: run.allSatisfy(\.thinkingRedacted)
+                            )
+                            .id(run[0].id)
+                        }
                     case .tools(let messageIds):
                         ChatViewMessageListRowToolPillList(session: session, messageIds: messageIds)
                     }
@@ -76,7 +89,17 @@ struct ChatViewMessageListGroup: View {
                     result.append(.tools(toolBucket))
                     toolBucket = []
                 }
-                result.append(.message(message))
+                let thinkingOnly =
+                    message.hasThinking && message.text.isEmpty && message.imagesData.isEmpty
+                    && message.state != .streaming && message.state != .failed
+                    && message.state != .retrying
+                if thinkingOnly, case .thinking(let run)? = result.last {
+                    result[result.count - 1] = .thinking(run + [message])
+                } else if thinkingOnly {
+                    result.append(.thinking([message]))
+                } else {
+                    result.append(.message(message))
+                }
             }
             if message.hasToolCalls { toolBucket.append(message.id) }
         }
@@ -86,11 +109,13 @@ struct ChatViewMessageListGroup: View {
 
     private enum Segment: Identifiable {
         case message(ChatMessage)
+        case thinking([ChatMessage])
         case tools([UUID])
 
         var id: String {
             switch self {
             case .message(let message): return "message-\(message.id.uuidString)"
+            case .thinking(let run): return "thinking-\(run.first?.id.uuidString ?? "")"
             case .tools(let messageIds): return "tools-\(messageIds.first?.uuidString ?? "")"
             }
         }
