@@ -21,7 +21,7 @@ struct ChatInputBarMetaRow: View {
                 Image(systemName: permissionMode.symbol)
                     .font(.system(size: ThemeTokens.Icon.m, weight: .medium))
                     .foregroundStyle(
-                        permissionMode == .bypassPermissions ? ThemeColor.danger : Color.secondary
+                        permissionMode == .bypassPermissions ? ThemeColor.danger : ThemeColor.secondary
                     )
                     .frame(width: ThemeTokens.Icon.l, height: ThemeTokens.Icon.l)
                     .padding(.vertical, ThemeTokens.Spacing.xs)
@@ -34,7 +34,7 @@ struct ChatInputBarMetaRow: View {
             HStack(spacing: ThemeTokens.Spacing.s) {
                 Text(model?.displayName ?? "Auto")
                     .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(ThemeColor.secondary)
                 if let effort {
                     ChatInputBarMetaRowEffortBar(fraction: effort.fraction)
                 }
@@ -58,7 +58,7 @@ struct ChatInputBarMetaRow: View {
         } label: {
             ZStack {
                 Circle()
-                    .stroke(Color.secondary.opacity(ThemeTokens.Opacity.s), lineWidth: ThemeTokens.Stroke.l)
+                    .stroke(ThemeColor.secondary.opacity(ThemeTokens.Opacity.s), lineWidth: ThemeTokens.Stroke.l)
                 Circle()
                     .trim(from: 0, to: usedFraction)
                     .stroke(
@@ -68,13 +68,15 @@ struct ChatInputBarMetaRow: View {
                     .rotationEffect(.degrees(-90))
             }
             .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
+            .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.l)
+            .padding(.vertical, ThemeTokens.Spacing.xs)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .popover(isPresented: $showContextDetail) {
             Text("\(Int(((1 - usedFraction) * 100).rounded()))% left (\(tokensK(contextTokens)) used / \(tokensK(contextWindow)))")
                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ThemeColor.secondary)
                 .monospacedDigit()
                 .padding(.horizontal, ThemeTokens.Spacing.m)
                 .padding(.vertical, ThemeTokens.Spacing.s)
