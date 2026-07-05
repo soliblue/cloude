@@ -22,7 +22,7 @@ enum ChatToolKind: Equatable, Sendable {
         case "Glob": self = .glob
         case "Grep": self = .grep
         case "WebFetch", "WebSearch": self = .web
-        case "TodoWrite": self = .todo
+        case "TodoWrite", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet": self = .todo
         case "Task", "Agent": self = .task
         case "Skill": self = .skill
         default: self = .other
