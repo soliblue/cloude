@@ -13,7 +13,7 @@ struct GitViewStatusHeader: View {
                     .appFont(size: ThemeTokens.Text.m, weight: .semibold)
                 Text("/")
                     .appFont(size: ThemeTokens.Text.m, weight: .regular)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
             Text(status.branch)
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
@@ -44,12 +44,12 @@ struct GitViewStatusHeader: View {
                 } label: {
                     Image(systemName: viewAsTree ? "list.bullet" : "list.bullet.indent")
                         .appFont(size: ThemeTokens.Icon.s)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .foregroundColor(.secondary)
+        .foregroundColor(ThemeColor.secondary)
         .padding(.horizontal, ThemeTokens.Spacing.l)
         .padding(.vertical, ThemeTokens.Spacing.m)
         .background(theme.palette.surface)

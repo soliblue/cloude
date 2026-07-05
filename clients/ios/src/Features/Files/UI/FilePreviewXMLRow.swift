@@ -48,7 +48,7 @@ struct FilePreviewXMLRow: View {
     private var openTag: some View {
         HStack(spacing: ThemeTokens.Spacing.xs) {
             Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             HStack(spacing: 0) {
                 blue("<")
                 blue(node.name)

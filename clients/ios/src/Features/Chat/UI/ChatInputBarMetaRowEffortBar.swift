@@ -6,7 +6,7 @@ struct ChatInputBarMetaRowEffortBar: View {
 
     var body: some View {
         Capsule()
-            .fill(Color.secondary.opacity(ThemeTokens.Opacity.s))
+            .fill(ThemeColor.secondary.opacity(ThemeTokens.Opacity.s))
             .overlay(alignment: .bottom) {
                 Capsule()
                     .fill(appAccent.color)

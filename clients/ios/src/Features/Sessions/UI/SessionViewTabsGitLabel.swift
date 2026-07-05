@@ -49,7 +49,7 @@ struct SessionViewTabsGitLabel: View {
                     .lineLimit(1)
             }
         }
-        .foregroundColor(isActive ? appAccent.color : .secondary)
+        .foregroundColor(isActive ? appAccent.color : ThemeColor.secondary)
     }
 
     static func formatK(_ n: Int) -> String {

@@ -26,7 +26,7 @@ struct ChatViewMessageListRowMarkdownBlockCode: View {
             if let lang = language, !lang.isEmpty {
                 Text(lang)
                     .appFont(size: ThemeTokens.Text.s, design: .monospaced)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(ThemeColor.secondary)
             }
             Spacer()
             Button {
@@ -38,7 +38,7 @@ struct ChatViewMessageListRowMarkdownBlockCode: View {
                 )
                 .appFont(size: ThemeTokens.Text.s)
                 .frame(width: ThemeTokens.Text.s, height: ThemeTokens.Text.s)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ThemeColor.secondary)
                 .contentTransition(.symbolEffect(.replace))
             }
             Divider().frame(height: ThemeTokens.Text.s)
@@ -52,7 +52,7 @@ struct ChatViewMessageListRowMarkdownBlockCode: View {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                     .appFont(size: ThemeTokens.Text.s)
                     .frame(width: ThemeTokens.Text.s, height: ThemeTokens.Text.s)
-                    .foregroundStyle(copied ? ThemeColor.success : .secondary)
+                    .foregroundStyle(copied ? ThemeColor.success : ThemeColor.secondary)
                     .contentTransition(.symbolEffect(.replace))
             }
         }

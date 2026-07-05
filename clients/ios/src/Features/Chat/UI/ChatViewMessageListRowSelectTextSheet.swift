@@ -20,7 +20,7 @@ struct ChatViewMessageListRowSelectTextSheet: View {
                         } label: {
                             Image(systemName: "xmark")
                                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(ThemeColor.secondary)
                         }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
@@ -34,7 +34,7 @@ struct ChatViewMessageListRowSelectTextSheet: View {
                             Image(systemName: copied ? "checkmark" : "doc.on.doc")
                                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
                                 .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
-                                .foregroundColor(copied ? ThemeColor.success : .secondary)
+                                .foregroundColor(copied ? ThemeColor.success : ThemeColor.secondary)
                                 .contentTransition(.symbolEffect(.replace))
                         }
                     }

@@ -7,7 +7,7 @@ struct WindowsCreateButton: View {
         Button(action: action) {
             Image(systemName: "plus")
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ThemeColor.secondary)
                 .padding(.leading, ThemeTokens.Spacing.s)
                 .padding(.trailing, ThemeTokens.Spacing.l)
                 .frame(height: ThemeTokens.Size.xxl)

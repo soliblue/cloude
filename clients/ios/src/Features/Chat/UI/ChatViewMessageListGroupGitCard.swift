@@ -29,7 +29,7 @@ struct ChatViewMessageListGroupGitCard: View {
                         Button { showAll = true } label: {
                             Text("View \(changes.count - collapsedLimit) more files")
                                 .appFont(size: ThemeTokens.Text.s)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(ThemeColor.secondary)
                         }
                         .buttonStyle(.plain)
                     }
@@ -50,7 +50,7 @@ struct ChatViewMessageListGroupGitCard: View {
             HStack(spacing: ThemeTokens.Spacing.s) {
                 Image(systemName: "chevron.right")
                     .appFont(size: ThemeTokens.Text.s)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
                     .rotationEffect(.degrees(expanded ? 90 : 0))
                 Text("\(changes.count) file\(changes.count == 1 ? "" : "s") changed")
                     .appFont(size: ThemeTokens.Text.s, weight: .medium)

@@ -122,11 +122,11 @@ struct OnboardingViewStatusStep: View {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
                 title
                     .appFont(size: ThemeTokens.Text.l, weight: .medium)
-                    .foregroundColor(state == .pending ? .secondary : .primary)
+                    .foregroundColor(state == .pending ? ThemeColor.secondary : .primary)
                 if let subtitle {
                     Text(subtitle)
                         .appFont(size: ThemeTokens.Text.m)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -142,7 +142,7 @@ struct OnboardingViewStatusStep: View {
         case .pending:
             Image(systemName: "circle")
                 .appFont(size: ThemeTokens.Text.l)
-                .foregroundColor(.secondary.opacity(ThemeTokens.Opacity.m))
+                .foregroundColor(ThemeColor.secondary.opacity(ThemeTokens.Opacity.m))
         case .active:
             ProgressView().controlSize(.small)
         case .done:

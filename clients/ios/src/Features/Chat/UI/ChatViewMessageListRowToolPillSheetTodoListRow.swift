@@ -10,8 +10,8 @@ struct ChatViewMessageListRowToolPillSheetTodoListRow: View {
                 .foregroundColor(color)
             Text(item.content)
                 .appFont(size: ThemeTokens.Text.m)
-                .foregroundColor(item.status == .completed ? .secondary : .primary)
-                .strikethrough(item.status == .completed, color: .secondary)
+                .foregroundColor(item.status == .completed ? ThemeColor.secondary : .primary)
+                .strikethrough(item.status == .completed, color: ThemeColor.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, ThemeTokens.Spacing.s)
@@ -30,7 +30,7 @@ struct ChatViewMessageListRowToolPillSheetTodoListRow: View {
         switch item.status {
         case .completed: return ThemeColor.success
         case .inProgress: return ThemeColor.mint
-        case .pending: return .secondary
+        case .pending: return ThemeColor.secondary
         }
     }
 }

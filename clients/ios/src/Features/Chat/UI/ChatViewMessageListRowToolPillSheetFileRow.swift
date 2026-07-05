@@ -12,7 +12,7 @@ struct ChatViewMessageListRowToolPillSheetFileRow: View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
             Label("File", systemImage: "doc")
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             Button {
                 presenter.open(session: session, path: path)
                 dismiss()
@@ -27,7 +27,7 @@ struct ChatViewMessageListRowToolPillSheetFileRow: View {
                     Spacer()
                     Image(systemName: "chevron.right")
                         .appFont(size: ThemeTokens.Text.s)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                 }
                 .padding(ThemeTokens.Spacing.m)
                 .frame(maxWidth: .infinity, alignment: .leading)

@@ -85,7 +85,7 @@ struct OnboardingViewManualSheet: View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
             Text(label)
                 .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
                 .textCase(.uppercase)
             HStack(spacing: ThemeTokens.Spacing.m) {
                 Image(systemName: icon)

@@ -26,7 +26,7 @@ struct EndpointsSymbolPicker: View {
                         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                             Text(category)
                                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(ThemeColor.secondary)
                                 .padding(.horizontal, ThemeTokens.Spacing.xs)
 
                             LazyVGrid(columns: Self.gridColumns, spacing: ThemeTokens.Spacing.m) {

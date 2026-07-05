@@ -19,7 +19,7 @@ struct DaemonUpdateView: View {
                     title: "AirDrop Mac daemon",
                     subtitle: "Downloads the latest .dmg, then sends it via AirDrop.",
                     trailingIcon: "paperplane.fill",
-                    trailingTint: .secondary,
+                    trailingTint: ThemeColor.secondary,
                     isLoading: isFetchingMac,
                     action: airdropMac
                 )
@@ -31,7 +31,7 @@ struct DaemonUpdateView: View {
                     title: "Copy install command",
                     subtitle: "Paste into your Linux machine's terminal to install.",
                     trailingIcon: copiedAt == nil ? "doc.on.doc" : "checkmark",
-                    trailingTint: copiedAt == nil ? .secondary : ThemeColor.success,
+                    trailingTint: copiedAt == nil ? ThemeColor.secondary : ThemeColor.success,
                     isLoading: isFetchingLinux,
                     action: copyLinuxCommand
                 )
@@ -107,7 +107,7 @@ struct DaemonUpdateView: View {
                         .foregroundColor(.primary)
                     Text(subtitle)
                         .appFont(size: ThemeTokens.Text.s)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: ThemeTokens.Spacing.m)
@@ -127,7 +127,7 @@ struct DaemonUpdateView: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .appFont(size: ThemeTokens.Text.s, weight: .medium)
-            .foregroundColor(.secondary)
+            .foregroundColor(ThemeColor.secondary)
             .textCase(.uppercase)
     }
 }

@@ -14,7 +14,7 @@ struct FilePreviewAudio: View {
         VStack(spacing: ThemeTokens.Spacing.l) {
             Image(systemName: "waveform")
                 .appFont(size: ThemeTokens.Icon.l)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             Slider(value: $progress, in: 0...max(duration, 0.01)) { editing in
                 if !editing { player?.currentTime = progress }
             }

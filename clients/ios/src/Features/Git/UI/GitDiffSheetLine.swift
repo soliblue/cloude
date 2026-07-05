@@ -10,14 +10,14 @@ struct GitDiffSheetLine: View {
         case .hunk:
             Text(line.text.isEmpty ? "…" : line.text)
                 .appFont(size: ThemeTokens.Text.s, design: .monospaced)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ThemeColor.secondary)
                 .padding(ThemeTokens.Spacing.s)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(ThemeColor.blue.opacity(ThemeTokens.Opacity.s))
         case .binary:
             Text(line.text)
                 .appFont(size: ThemeTokens.Text.s, design: .monospaced)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ThemeColor.secondary)
                 .padding(ThemeTokens.Spacing.m)
                 .frame(maxWidth: .infinity, alignment: .leading)
         case .context:
@@ -37,7 +37,7 @@ struct GitDiffSheetLine: View {
                 .frame(width: 34, alignment: .trailing)
             Text(sign)
                 .appFont(size: ThemeTokens.Text.s, weight: .bold, design: .monospaced)
-                .foregroundStyle((tint ?? .secondary).opacity(ThemeTokens.Opacity.l))
+                .foregroundStyle((tint ?? ThemeColor.secondary).opacity(ThemeTokens.Opacity.l))
                 .frame(width: ThemeTokens.Spacing.m, alignment: .leading)
             HStack(alignment: .top, spacing: 0) {
                 if !indent.isEmpty {

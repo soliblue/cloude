@@ -16,7 +16,7 @@ struct FilePreviewXML: View {
             } else {
                 Text("Invalid XML")
                     .appFont(size: ThemeTokens.Text.m)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
         }
     }

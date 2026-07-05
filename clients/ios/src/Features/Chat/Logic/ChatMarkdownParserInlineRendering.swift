@@ -15,7 +15,7 @@ extension ChatMarkdownParser {
             case .code(_, let code):
                 var attr = AttributedString(code)
                 attr.font = .system(size: ThemeTokens.Text.m, weight: .regular, design: .monospaced)
-                attr.backgroundColor = .secondary.opacity(ThemeTokens.Opacity.s)
+                attr.backgroundColor = ThemeColor.secondary.opacity(ThemeTokens.Opacity.s)
                 result.append(attr)
             case .filePath(_, let path):
                 var attr = AttributedString(path)

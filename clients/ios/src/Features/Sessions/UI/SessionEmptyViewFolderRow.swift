@@ -17,7 +17,7 @@ struct SessionEmptyViewFolderRow: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Path")
                         .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                     Text(label)
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
                         .lineLimit(1)
@@ -26,7 +26,7 @@ struct SessionEmptyViewFolderRow: View {
                 Spacer()
                 Image(systemName: "chevron.right")
                     .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
             .foregroundColor(.primary)
             .padding(.horizontal, ThemeTokens.Spacing.m)

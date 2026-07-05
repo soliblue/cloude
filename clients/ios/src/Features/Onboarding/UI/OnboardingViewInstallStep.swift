@@ -22,7 +22,7 @@ struct OnboardingViewInstallStep: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text("To control Claude from your phone, you'll need the companion daemon running on your computer.")
                     .appFont(size: ThemeTokens.Text.xl)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
                     .frame(maxWidth: 520, alignment: .leading)
             }
             Picker("Platform", selection: $isLinux) {

@@ -40,7 +40,7 @@ struct SessionViewTabs: View {
         } else {
             Image(systemName: tab.symbol)
                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                .foregroundColor(active ? appAccent.color : .secondary)
+                .foregroundColor(active ? appAccent.color : ThemeColor.secondary)
         }
     }
 

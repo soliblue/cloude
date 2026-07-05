@@ -12,7 +12,7 @@ struct ChatInputBarRecordingOverlay: View {
                 ProgressView()
                 Text("Transcribing")
                     .appFont(size: ThemeTokens.Text.m)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             } else {
                 Circle()
                     .fill(appAccent.color)

@@ -11,7 +11,7 @@ struct SettingsViewTheme: View {
                 Text("Theme")
                 Spacer()
                 Text(selectedTheme.rawValue)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
         }
         .foregroundColor(.primary)

@@ -44,7 +44,7 @@ struct FileTreeSheetSearchResults: View {
         HStack(spacing: ThemeTokens.Spacing.s) {
             Image(systemName: "doc")
                 .appFont(size: ThemeTokens.Icon.m)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             VStack(alignment: .leading, spacing: 0) {
                 Text(node.name)
                     .appFont(size: ThemeTokens.Text.m)
@@ -55,7 +55,7 @@ struct FileTreeSheetSearchResults: View {
                     Text(directory)
                         .appFont(size: ThemeTokens.Text.s)
                         .lineLimit(1)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                 }
             }
             Spacer()

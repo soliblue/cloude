@@ -11,7 +11,7 @@ struct ChatInputBarAttachmentPicker: View {
         PhotosPicker(selection: $selections, maxSelectionCount: 4, matching: .images) {
             Text(Image(systemName: "paperclip"))
                 .appFont(size: ThemeTokens.Text.l, weight: .medium)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())
         }

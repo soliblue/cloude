@@ -5,7 +5,7 @@ struct ChatViewMessageListRowToolPillSheetChip: View {
     let label: String
     let tint: Color
 
-    init(icon: String? = nil, label: String, tint: Color = .secondary) {
+    init(icon: String? = nil, label: String, tint: Color = ThemeColor.secondary) {
         self.icon = icon
         self.label = label
         self.tint = tint

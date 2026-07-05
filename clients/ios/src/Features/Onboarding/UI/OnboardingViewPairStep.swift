@@ -27,7 +27,7 @@ struct OnboardingViewPairStep: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(subtitle)
                     .appFont(size: ThemeTokens.Text.xl)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
                     .frame(maxWidth: 520, alignment: .leading)
             }
             OnboardingViewScannerSheetPreview(

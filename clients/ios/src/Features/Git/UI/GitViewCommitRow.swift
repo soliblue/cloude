@@ -18,10 +18,10 @@ struct GitViewCommitRow: View {
                             .foregroundColor(appAccent.color)
                         Text(commit.author)
                             .appFont(size: ThemeTokens.Text.s)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                         Text(commit.date, style: .relative)
                             .appFont(size: ThemeTokens.Text.s)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                     }
                 }
                 Spacer()

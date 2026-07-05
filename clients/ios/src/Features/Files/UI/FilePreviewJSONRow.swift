@@ -38,7 +38,7 @@ struct FilePreviewJSONRow: View {
                     if let key {
                         Text("\(key):")
                             .appFont(size: ThemeTokens.Text.m, design: .monospaced)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                     }
                     Text(leafText(value))
                         .appFont(size: ThemeTokens.Text.m, design: .monospaced)
@@ -53,15 +53,15 @@ struct FilePreviewJSONRow: View {
         HStack(spacing: ThemeTokens.Spacing.xs) {
             Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                 .appFont(size: ThemeTokens.Icon.s)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             if let key {
                 Text("\(key):")
                     .appFont(size: ThemeTokens.Text.m, design: .monospaced)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
             Text(symbol)
                 .appFont(size: ThemeTokens.Text.m, design: .monospaced)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
         }
     }
 
@@ -74,7 +74,7 @@ struct FilePreviewJSONRow: View {
 
     private func leafColor(_ value: Any) -> Color {
         if value is String { return ThemeColor.green }
-        if value is NSNull { return .secondary }
+        if value is NSNull { return ThemeColor.secondary }
         if value is Bool { return ThemeColor.orange }
         if value is NSNumber { return ThemeColor.blue }
         return .primary

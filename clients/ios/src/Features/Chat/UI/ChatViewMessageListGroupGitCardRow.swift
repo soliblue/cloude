@@ -14,7 +14,7 @@ struct ChatViewMessageListGroupGitCardRow: View {
             HStack(spacing: 0) {
                 Text(directory)
                     .appFont(size: ThemeTokens.Text.s)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
                     .lineLimit(1)
                     .truncationMode(.head)
                 Text(leaf)
@@ -42,7 +42,7 @@ struct ChatViewMessageListGroupGitCardRow: View {
                 } label: {
                     Image(systemName: "arrow.up.forward")
                         .appFont(size: ThemeTokens.Icon.s)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                 }
                 .buttonStyle(.plain)
             }

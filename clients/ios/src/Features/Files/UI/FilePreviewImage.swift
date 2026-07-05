@@ -33,7 +33,7 @@ struct FilePreviewImage: View {
         } else {
             Text("Invalid image")
                 .appFont(size: ThemeTokens.Text.m)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
         }
     }
 }

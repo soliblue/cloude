@@ -7,7 +7,7 @@ struct SettingsViewAbout: View {
                 Text("Help & Support")
                 Spacer()
                 Image(systemName: "arrow.up.right")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
         }
         .foregroundColor(.primary)

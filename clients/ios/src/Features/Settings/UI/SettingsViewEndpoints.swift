@@ -12,7 +12,7 @@ struct SettingsViewEndpoints: View {
                 Text("Endpoints")
                 Spacer()
                 Text("\(endpoints.count)")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
         }
         .foregroundColor(.primary)

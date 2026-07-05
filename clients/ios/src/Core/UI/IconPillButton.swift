@@ -3,7 +3,7 @@ import SwiftUI
 struct IconPillButton: View {
     @Environment(\.theme) private var theme
     let symbol: String
-    var tint: Color = .secondary
+    var tint: Color = ThemeColor.secondary
     let action: () -> Void
 
     var body: some View {

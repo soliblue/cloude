@@ -26,7 +26,7 @@ struct WindowsSidebarOpenRow: View {
                 Button(action: onClose) {
                     Image(systemName: "xmark")
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

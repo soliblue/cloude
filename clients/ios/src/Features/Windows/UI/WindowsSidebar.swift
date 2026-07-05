@@ -25,7 +25,7 @@ struct WindowsSidebar: View {
                                 } label: {
                                     Image(systemName: "clock.arrow.circlepath")
                                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(ThemeColor.secondary)
                                 }
                             }
                             VStack(alignment: .leading, spacing: 0) {
@@ -69,7 +69,7 @@ struct WindowsSidebar: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .appFont(size: ThemeTokens.Text.s, weight: .medium)
-            .foregroundColor(.secondary)
+            .foregroundColor(ThemeColor.secondary)
             .textCase(.uppercase)
     }
 

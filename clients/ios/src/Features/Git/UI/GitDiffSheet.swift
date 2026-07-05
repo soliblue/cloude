@@ -71,7 +71,7 @@ struct GitDiffSheet: View {
         VStack(spacing: ThemeTokens.Spacing.s) {
             Text("Diff truncated, \(total) lines")
                 .appFont(size: ThemeTokens.Text.s)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             Button {
                 Task { await load(isFull: true) }
             } label: {

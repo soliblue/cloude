@@ -10,7 +10,7 @@ struct ChatViewMessageListRowToolPillSheetSection<Content: View>: View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
             Label(title, systemImage: icon)
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             content()
                 .padding(ThemeTokens.Spacing.m)
                 .frame(maxWidth: .infinity, alignment: .leading)

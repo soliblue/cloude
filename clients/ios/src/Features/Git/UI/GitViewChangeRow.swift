@@ -16,7 +16,7 @@ struct GitViewChangeRow: View {
                     if showsDirectory {
                         Text(directory)
                             .appFont(size: ThemeTokens.Text.m)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                             .lineLimit(1)
                     }
                     Text(leaf)

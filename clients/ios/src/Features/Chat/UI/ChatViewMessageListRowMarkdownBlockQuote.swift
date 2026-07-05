@@ -12,7 +12,7 @@ struct ChatViewMessageListRowMarkdownBlockQuote: View {
             Text(text)
                 .appFont(size: ThemeTokens.Text.m)
                 .italic()
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.leading, ThemeTokens.Spacing.m)

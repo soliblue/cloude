@@ -15,7 +15,7 @@ struct ChatViewMessageListGroupStatusRow: View {
             }
         }
         .appFont(size: ThemeTokens.Text.s)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(ThemeColor.secondary)
         .opacity(ThemeTokens.Opacity.l)
     }
 

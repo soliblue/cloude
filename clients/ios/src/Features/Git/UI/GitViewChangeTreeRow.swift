@@ -27,7 +27,7 @@ struct GitViewChangeTreeRow: View {
                                 ? "chevron.right" : "chevron.down"
                         )
                         .appFont(size: ThemeTokens.Icon.s)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .frame(width: ThemeTokens.Icon.m)
                         Image(systemName: "folder.fill")
                             .appFont(size: ThemeTokens.Icon.m)

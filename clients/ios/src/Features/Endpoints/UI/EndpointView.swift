@@ -45,7 +45,7 @@ struct EndpointView: View {
                             .foregroundColor(.primary)
                         Text(symbolName)
                             .appFont(size: ThemeTokens.Text.s, design: .monospaced)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                     }
 
                     Spacer()
@@ -54,7 +54,7 @@ struct EndpointView: View {
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                     Text("Host")
                         .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .textCase(.uppercase)
 
                     HStack(spacing: ThemeTokens.Spacing.m) {
@@ -78,7 +78,7 @@ struct EndpointView: View {
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                     Text("Port")
                         .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .textCase(.uppercase)
 
                     HStack(spacing: ThemeTokens.Spacing.m) {
@@ -99,7 +99,7 @@ struct EndpointView: View {
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                     Text("Auth Token")
                         .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .textCase(.uppercase)
 
                     HStack(spacing: ThemeTokens.Spacing.m) {
@@ -125,7 +125,7 @@ struct EndpointView: View {
                         } label: {
                             Image(systemName: isTokenVisible ? "eye.slash.fill" : "eye.fill")
                                 .appFont(size: ThemeTokens.Text.m)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(ThemeColor.secondary)
                                 .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
                                 .contentTransition(.symbolEffect(.replace))
                         }

@@ -63,7 +63,7 @@ struct SettingsViewThemePicker: View {
             Text(formatted)
                 .appFont(size: ThemeTokens.Text.s, weight: .medium)
                 .monospacedDigit()
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
                 .frame(minWidth: 100, alignment: .trailing)
         }
     }
@@ -71,7 +71,7 @@ struct SettingsViewThemePicker: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .appFont(size: ThemeTokens.Text.s, weight: .medium)
-            .foregroundColor(.secondary)
+            .foregroundColor(ThemeColor.secondary)
             .textCase(.uppercase)
     }
 }
@@ -85,7 +85,7 @@ private struct SettingsViewThemePickerThemeRow: View {
         HStack(spacing: ThemeTokens.Spacing.m) {
             Text(theme.rawValue)
                 .appFont(size: ThemeTokens.Text.m, weight: isSelected ? .semibold : .regular)
-                .foregroundColor(isSelected ? .primary : .secondary)
+                .foregroundColor(isSelected ? .primary : ThemeColor.secondary)
             Spacer()
             HStack(spacing: ThemeTokens.Spacing.xs) {
                 ForEach([palette.background, palette.surface, palette.elevated], id: \.self) { color in
@@ -110,7 +110,7 @@ private struct SettingsViewThemePickerAccentRow: View {
                 .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
             Text(accent.rawValue)
                 .appFont(size: ThemeTokens.Text.m, weight: isSelected ? .semibold : .regular)
-                .foregroundColor(isSelected ? .primary : .secondary)
+                .foregroundColor(isSelected ? .primary : ThemeColor.secondary)
             Spacer()
             if isSelected {
                 Image(systemName: "checkmark")

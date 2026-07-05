@@ -32,7 +32,7 @@ struct OnboardingView: View {
                         Button(action: onCancel) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: ThemeTokens.Icon.xl))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(ThemeColor.secondary)
                         }
                     }
                     Spacer()

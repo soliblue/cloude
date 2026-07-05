@@ -19,7 +19,7 @@ struct SessionToastBanner: View {
                         .lineLimit(1)
                     Text(toast.snippet)
                         .appFont(size: ThemeTokens.Text.s)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(ThemeColor.secondary)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }

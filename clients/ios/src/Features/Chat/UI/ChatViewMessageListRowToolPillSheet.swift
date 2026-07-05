@@ -45,7 +45,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
                     } label: {
                         Image(systemName: "xmark")
                             .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                     }
                 }
             }
@@ -152,7 +152,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
             Label("Tools (\(children.count))", systemImage: "square.stack")
                 .appFont(size: ThemeTokens.Text.m, weight: .semibold)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             VStack(spacing: 0) {
                 ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                     HStack(spacing: ThemeTokens.Spacing.m) {
@@ -163,7 +163,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
                             .appFont(size: ThemeTokens.Text.m, weight: .semibold, design: .monospaced)
                         Text(child.shortLabel)
                             .appFont(size: ThemeTokens.Text.s, design: .monospaced)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                             .lineLimit(1)
                             .truncationMode(.middle)
                         Spacer()
@@ -176,7 +176,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
                         } else {
                             Image(systemName: "checkmark")
                                 .appFont(size: ThemeTokens.Text.s, weight: .bold)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(ThemeColor.secondary)
                         }
                     }
                     .padding(.vertical, ThemeTokens.Spacing.s)

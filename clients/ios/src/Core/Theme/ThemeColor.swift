@@ -3,7 +3,7 @@ import UIKit
 
 enum ThemeColor {
     static let secondary = Color(
-        uiColor: UIColor { $0.userInterfaceStyle == .dark ? .secondaryLabel : UIColor(white: 0.28, alpha: 1) })
+        uiColor: UIColor { $0.userInterfaceStyle == .dark ? .secondaryLabel : UIColor(white: 0.12, alpha: 1) })
 
     static let blue = Color(hex: 0x6E9BF0)
     static let green = Color.green

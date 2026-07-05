@@ -21,7 +21,7 @@ struct EndpointsListView: View {
                             Spacer()
                             Image(systemName: "pencil.circle.fill")
                                 .appFont(size: ThemeTokens.Text.l)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(ThemeColor.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())

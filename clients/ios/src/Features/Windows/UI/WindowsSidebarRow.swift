@@ -16,7 +16,7 @@ struct WindowsSidebarRow: View {
         HStack(spacing: ThemeTokens.Spacing.m) {
             Image(systemName: symbol)
                 .appFont(size: ThemeTokens.Text.l, weight: .medium)
-                .foregroundColor(highlight ? appAccent.color : (isFocused ? .primary : .secondary))
+                .foregroundColor(highlight ? appAccent.color : (isFocused ? .primary : ThemeColor.secondary))
                 .frame(width: ThemeTokens.Size.m)
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
                 Text(title)
@@ -42,7 +42,7 @@ struct WindowsSidebarRow: View {
                         }
                     }
                     .appFont(size: ThemeTokens.Text.s, weight: .regular)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
                 }
             }
         }

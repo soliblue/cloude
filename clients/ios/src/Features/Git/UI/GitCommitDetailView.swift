@@ -71,7 +71,7 @@ struct GitCommitDetailView: View {
         return HStack(spacing: ThemeTokens.Spacing.s) {
             Text("\(files) file\(files == 1 ? "" : "s") changed")
                 .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
             Spacer()
             if additions > 0 {
                 Text("+\(additions)")
@@ -149,7 +149,7 @@ struct GitCommitDetailView: View {
                         .frame(width: ThemeTokens.Spacing.m)
                     Text(hunk.header)
                         .appFont(size: ThemeTokens.Text.s, design: .monospaced)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(ThemeColor.secondary)
                         .lineLimit(1)
                     Spacer()
                 }

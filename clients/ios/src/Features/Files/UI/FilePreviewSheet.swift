@@ -34,7 +34,7 @@ struct FilePreviewSheet: View {
             } else if failed {
                 Text("Unable to load file")
                     .appFont(size: ThemeTokens.Text.m)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             } else {
                 ProgressView()
             }

@@ -9,7 +9,7 @@ struct FilePreviewCSV: View {
         } else {
             Text("Invalid CSV")
                 .appFont(size: ThemeTokens.Text.m)
-                .foregroundColor(.secondary)
+                .foregroundColor(ThemeColor.secondary)
         }
     }
 

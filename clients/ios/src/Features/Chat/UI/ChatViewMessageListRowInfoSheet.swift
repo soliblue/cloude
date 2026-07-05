@@ -40,7 +40,7 @@ struct ChatViewMessageListRowInfoSheet: View {
                     HStack(spacing: ThemeTokens.Spacing.s) {
                         Image(systemName: row.0)
                             .appFont(size: ThemeTokens.Text.s)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                         Text(row.1)
                             .appFont(size: ThemeTokens.Text.m)
                     }
@@ -58,7 +58,7 @@ struct ChatViewMessageListRowInfoSheet: View {
                     } label: {
                         Image(systemName: "xmark")
                             .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(ThemeColor.secondary)
                     }
                 }
             }

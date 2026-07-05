@@ -17,7 +17,7 @@ struct FilePreviewCode: View {
             } else {
                 Text("Unable to decode")
                     .appFont(size: ThemeTokens.Text.m)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
         }
     }

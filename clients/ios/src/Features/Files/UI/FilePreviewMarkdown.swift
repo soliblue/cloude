@@ -14,7 +14,7 @@ struct FilePreviewMarkdown: View {
             } else {
                 Text("Unable to render markdown")
                     .appFont(size: ThemeTokens.Text.m)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(ThemeColor.secondary)
             }
         }
     }

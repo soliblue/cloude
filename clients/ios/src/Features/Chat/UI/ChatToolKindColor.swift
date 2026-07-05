@@ -11,7 +11,7 @@ extension ChatToolKind {
         case .todo: return ThemeColor.yellow
         case .task: return ThemeColor.yellow
         case .skill: return ThemeColor.mint
-        case .other: return .secondary
+        case .other: return ThemeColor.secondary
         }
     }
 }
