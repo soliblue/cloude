@@ -16,6 +16,8 @@ Sign in to your existing ChatGPT subscription as the same user named in the serv
 
 Set `CLOUDE_INSTALL_CLAUDE=1` to install Claude too, then run `claude auth login` as the same user. Set `CLOUDE_INSTALL_WHISPER=1` to install local CPU transcription and its free model download; existing voice models are always retained. Python 3 with venv support is needed for this optional installation.
 
+Transcription processes one bounded audio request at a time, reads audio in memory, and stops its worker when the HTTP client disconnects. The slot stays occupied until that worker exits; a connected request has a 55-second limit.
+
 Set `CLOUDE_TUNNEL=0` for a local-only installation without provisioning. Use an SSH forward or your own authenticated HTTPS/VPN setup, then pair manually with the token stored at `~/.cloude-agent/auth-token`. The default service remains bound to `127.0.0.1:8765`. This option does not stop a previously installed tunnel.
 
 ## Updates and removal
@@ -107,6 +109,8 @@ The daemon runs the official `codex app-server` protocol over local stdio. Insta
 No model gateway, token purchase, or separate inference service is needed. Model availability and reasoning levels come directly from your signed-in Codex account. `CLOUDE_CODEX_BIN` can select an existing Codex executable; `CODEX_HOME` can select its existing account/configuration directory.
 
 The installer binds the daemon to localhost for Cloudflare Tunnel. For a private LAN or VPN deployment, choose an appropriate `CLOUDE_HOST` and keep bearer authentication enabled.
+
+HTTP bearer authentication runs before reading request bodies or accepting `100-continue`. Bodies are limited to 16 MiB, including chunked uploads; oversized declared lengths are rejected immediately. Disconnected or rejected uploads release their buffered chunks without reaching a handler.
 
 ## Codex routes
 

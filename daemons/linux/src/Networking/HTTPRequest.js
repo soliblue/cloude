@@ -1,12 +1,13 @@
 import { split } from '../Routing/RouteMatcher.js'
 
 export default class HTTPRequest {
-  constructor(method, path, query, headers, body) {
+  constructor(method, path, query, headers, body, signal) {
     this.method = method
     this.path = path
     this.query = query
     this.headers = headers
     this.body = body
+    this.signal = signal
   }
 
   json() {
@@ -15,7 +16,7 @@ export default class HTTPRequest {
     throw new SyntaxError('Expected a JSON object')
   }
 
-  static fromNode(request, body) {
+  static fromNode(request, body, signal) {
     const { path, query } = split(request.url || '/')
     return new HTTPRequest(
       request.method || 'GET',
@@ -27,7 +28,8 @@ export default class HTTPRequest {
           Array.isArray(value) ? value.join(', ') : value || ''
         ])
       ),
-      body
+      body,
+      signal
     )
   }
 }

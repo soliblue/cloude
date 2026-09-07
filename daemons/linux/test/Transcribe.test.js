@@ -36,6 +36,10 @@ test('transcription passes exact audio to a local child and preserves Unicode an
 test('one CPU transcription runs at a time and a timed-out child frees the slot', async () => {
   const first = transcribe(request(), processOptions('process.stdin.resume(); setInterval(() => {}, 1000);', 120))
   assert.equal(isTranscribing(), true)
+  assert.equal((await transcribe({ get body() { assert.fail('busy request parsed body') } })).status, 429)
+  const canceled = new AbortController()
+  canceled.abort()
+  assert.equal((await transcribe({ signal: canceled.signal, get body() { assert.fail('canceled request parsed body') } })).status, 499)
   assert.equal((await transcribe(request(), processOptions(''))).status, 429)
   const timeout = await first
   assert.equal(timeout.status, 504)

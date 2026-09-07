@@ -1,8 +1,8 @@
 import base64
 import json
+import io
 import os
 import sys
-import tempfile
 
 
 def main():
@@ -20,10 +20,8 @@ def main():
         "base", device="cpu", compute_type="int8", download_root=os.path.join(root, "whisper-models")
     )
 
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as handle:
-        handle.write(audio)
-        handle.flush()
-        segments, _ = model.transcribe(handle.name, beam_size=5, language=None)
+    with io.BytesIO(audio) as handle:
+        segments, _ = model.transcribe(handle, beam_size=5, language=None)
         text = "".join(segment.text for segment in segments).strip()
 
     blanks = {"[BLANK_AUDIO]", "[NO_SPEECH]", "(silence)", ""}

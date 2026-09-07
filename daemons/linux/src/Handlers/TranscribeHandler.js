@@ -26,6 +26,12 @@ function parsedJSON(data) {
 }
 
 export function transcribe(request, { createProcess = spawn, ready = transcriptionReady, timeout = 55_000 } = {}) {
+  if (request.signal?.aborted) {
+    return HTTPResponse.json(499, { error: 'transcription_canceled' })
+  }
+  if (active) {
+    return HTTPResponse.json(429, { error: 'transcription_busy' })
+  }
   const body = parsedJSON(request.body)
   if (typeof body?.audio !== 'string' || body.audio.length === 0) {
     return HTTPResponse.json(400, { error: 'missing_audio' })
@@ -39,15 +45,15 @@ export function transcribe(request, { createProcess = spawn, ready = transcripti
   if (!ready()) {
     return HTTPResponse.json(503, { error: 'transcription_unavailable' })
   }
-  if (active) {
-    return HTTPResponse.json(429, { error: 'transcription_busy' })
-  }
   return new Promise((resolve) => {
     const child = createProcess(pythonPath, [scriptPath], { timeout, killSignal: 'SIGKILL' })
     active = true
     const chunks = []
     let size = 0
     let failed = false
+    const cancel = () => { child.kill('SIGKILL') }
+    request.signal?.addEventListener('abort', cancel, { once: true })
+    if (request.signal?.aborted) { cancel() }
     child.stdout.on('data', (chunk) => {
       size += chunk.length
       if (size <= 1024 * 1024) {
@@ -61,8 +67,11 @@ export function transcribe(request, { createProcess = spawn, ready = transcripti
     child.on('error', () => { failed = true })
     child.on('close', (code, signal) => {
       active = false
+      request.signal?.removeEventListener('abort', cancel)
       const parsed = code === 0 && !failed && !signal ? parsedJSON(Buffer.concat(chunks)) : null
-      if (parsed && typeof parsed.text === 'string') {
+      if (request.signal?.aborted) {
+        resolve(HTTPResponse.json(499, { error: 'transcription_canceled' }))
+      } else if (parsed && typeof parsed.text === 'string') {
         resolve(HTTPResponse.json(200, { text: parsed.text }))
       } else {
         resolve(HTTPResponse.json(signal && !failed ? 504 : 500, {
