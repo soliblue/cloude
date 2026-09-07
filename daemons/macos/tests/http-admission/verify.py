@@ -1,3 +1,4 @@
+import hashlib
 import json
 import socket
 import subprocess
@@ -60,8 +61,10 @@ try:
     status(port, b'X-Filler: ' + b'x' * 33000 + b'\r\n', 431)
     header_filler = 32768 - len(b'POST /fixture HTTP/1.1\r\n' + authorization + b'X-Filler: \r\n\r\n')
     status(port, b'X-Filler: ' + b'x' * header_filler + b'\r\n', 200)
-    maximum = status(port, b'Content-Length: 16777216\r\n', 200, body=b'x' * 16777216)
-    assert json.loads(maximum.split(b'\r\n\r\n', 1)[1])['bodyBytes'] == 16777216
+    payload = (bytes(range(251)) * (16777216 // 251 + 1))[:16777216]
+    maximum = json.loads(status(port, b'Content-Length: 16777216\r\n', 200, body=payload).split(b'\r\n\r\n', 1)[1])
+    assert maximum['bodyBytes'] == 16777216
+    assert maximum['bodySHA256'] == hashlib.sha256(payload).hexdigest()
     with connect(port) as connection:
         connection.sendall(b'POST /fixture HTTP/1.1\r\n' + authorization + b'Content-Length: 4\r\nExpect: 100-continue\r\n\r\n')
         assert connection.recv(1024) == b'HTTP/1.1 100 Continue\r\n\r\n'
@@ -70,7 +73,9 @@ try:
         connection.sendall(b'CD')
         response = receive(connection)
         assert response.startswith(b'HTTP/1.1 200 ')
-        assert json.loads(response.split(b'\r\n\r\n', 1)[1])['bodyBytes'] == 4
+        decoded = json.loads(response.split(b'\r\n\r\n', 1)[1])
+        assert decoded['bodyBytes'] == 4
+        assert decoded['bodySHA256'] == hashlib.sha256(b'ABCD').hexdigest()
     with connect(port) as connection:
         connection.sendall(b'POST /fixture HTTP/1.1\r\n' + authorization + b'Content-Length: 4\r\n\r\n')
         time.sleep(.02)

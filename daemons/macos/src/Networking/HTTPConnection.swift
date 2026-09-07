@@ -12,6 +12,7 @@ final class HTTPConnection {
     private var closed = false
     private var rejected = false
     private var handling = false
+    private var body = Data()
     private var observing = false
     private lazy var cancellation = HTTPRequestCancellation { [weak self] in
         self?.queue.async { self?.observeDisconnect() }
@@ -82,37 +83,39 @@ final class HTTPConnection {
         }
     }
 
-    private func admit(_ head: HTTPRequest.ParsedHead, body: Data, ended: Bool) {
+    private func admit(_ head: HTTPRequest.ParsedHead, body initialBody: Data, ended: Bool) {
         if !AuthMiddleware.isAuthorized(headers: head.headers) {
             reject(401, "unauthorized")
         } else if head.contentLength > Self.maxBodyBytes {
             reject(413, "payload_too_large")
-        } else if body.count > head.contentLength {
+        } else if initialBody.count > head.contentLength {
             reject(400, "invalid_body_length")
         } else if let expectation = head.headers["expect"], expectation.lowercased() != "100-continue" {
             reject(417, "unsupported_expectation")
         } else if let admission = DaemonLifecycle.shared.begin() {
             self.admission = admission
+            body = initialBody
             setDeadline(bodyTimeout)
             if head.headers["expect"] != nil, body.count < head.contentLength, !ended {
                 connection.send(
                     content: Data("HTTP/1.1 100 Continue\r\n\r\n".utf8),
                     completion: .contentProcessed { error in
-                        if error == nil { self.readBody(head, body: body, ended: ended) } else { self.close() }
+                        if error == nil { self.readBody(head, ended: ended) } else { self.close() }
                     })
             } else {
-                readBody(head, body: body, ended: ended)
+                readBody(head, ended: ended)
             }
         } else {
             reject(503, "daemon_updating")
         }
     }
 
-    private func readBody(_ head: HTTPRequest.ParsedHead, body: Data, ended: Bool = false) {
+    private func readBody(_ head: HTTPRequest.ParsedHead, ended: Bool = false) {
         if !closed, !rejected {
             if body.count == head.contentLength {
                 clearDeadline()
                 dispatch(HTTPRequest(head: head, body: body, cancellation: cancellation))
+                body = Data()
             } else if ended {
                 close()
             } else {
@@ -120,12 +123,13 @@ final class HTTPConnection {
                     minimumIncompleteLength: 1, maximumLength: min(65_536, head.contentLength - body.count)
                 ) {
                     data, _, isComplete, error in
-                    if error == nil {
-                        var next = body
-                        if let data { next.append(data) }
-                        self.readBody(head, body: next, ended: isComplete)
-                    } else {
-                        self.close()
+                    if !self.closed, !self.rejected {
+                        if error == nil {
+                            if let data { self.body.append(data) }
+                            self.readBody(head, ended: isComplete)
+                        } else {
+                            self.close()
+                        }
                     }
                 }
             }
@@ -173,6 +177,7 @@ final class HTTPConnection {
     private func reject(_ status: Int, _ message: String) {
         if !closed, !rejected {
             rejected = true
+            body = Data()
             clearDeadline()
             connection.send(
                 content: HTTPResponse.json(status, ["error": message]).serialize(),
@@ -190,6 +195,7 @@ final class HTTPConnection {
     private func close() {
         if !closed {
             closed = true
+            body = Data()
             clearDeadline()
             cancellation.cancel()
             if !handling { endAdmission() }

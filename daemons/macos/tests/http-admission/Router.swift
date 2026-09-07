@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import Network
 
@@ -26,7 +27,12 @@ enum Router {
             }
             print("DISPATCH \(request.path) \(request.body.count)")
             fflush(stdout)
-            return HTTPResponse.json(200, ["bodyBytes": request.body.count])
+            return HTTPResponse.json(
+                200,
+                [
+                    "bodyBytes": request.body.count,
+                    "bodySHA256": SHA256.hash(data: request.body).map { String(format: "%02x", $0) }.joined(),
+                ])
         }
         return HTTPResponse.json(401, ["error": "unauthorized"])
     }

@@ -2,28 +2,34 @@ import Foundation
 import Speech
 
 enum TranscribeHandler {
+    private static let gate = NSLock()
+
     static func transcribe(
         _ request: HTTPRequest, params: [String: String], authorizationTimeout: TimeInterval = 10,
         recognitionTimeout: TimeInterval = 55
     ) -> HTTPResponse {
-        if let body = try? JSONSerialization.jsonObject(with: request.body) as? [String: Any],
-            let audioBase64 = body["audio"] as? String,
-            let audioData = Data(base64Encoded: audioBase64), !audioData.isEmpty
-        {
-            if authorized(cancellation: request.cancellation, timeout: authorizationTimeout),
-                let recognizer = availableRecognizer()
+        if gate.try() {
+            defer { gate.unlock() }
+            if let body = try? JSONSerialization.jsonObject(with: request.body) as? [String: Any],
+                let audioBase64 = body["audio"] as? String,
+                let audioData = Data(base64Encoded: audioBase64), !audioData.isEmpty
             {
-                if let text = recognize(
-                    audioData: audioData, recognizer: recognizer, cancellation: request.cancellation,
-                    timeout: recognitionTimeout)
+                if authorized(cancellation: request.cancellation, timeout: authorizationTimeout),
+                    let recognizer = availableRecognizer()
                 {
-                    return HTTPResponse.json(200, ["text": text])
+                    if let text = recognize(
+                        audioData: audioData, recognizer: recognizer, cancellation: request.cancellation,
+                        timeout: recognitionTimeout)
+                    {
+                        return HTTPResponse.json(200, ["text": text])
+                    }
+                    return HTTPResponse.json(500, ["error": "transcription_failed"])
                 }
-                return HTTPResponse.json(500, ["error": "transcription_failed"])
+                return HTTPResponse.json(503, ["error": "transcription_unavailable"])
             }
-            return HTTPResponse.json(503, ["error": "transcription_unavailable"])
+            return HTTPResponse.json(400, ["error": "missing_audio"])
         }
-        return HTTPResponse.json(400, ["error": "missing_audio"])
+        return HTTPResponse.json(429, ["error": "transcription_busy"])
     }
 
     static func available() -> Bool {

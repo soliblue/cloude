@@ -61,8 +61,60 @@ import Speech
         precondition(transitioned.status == 500 && SpeechFixture.cancelledTasks == 4)
         precondition(SpeechFixture.lastTask == nil)
         precondition(!FileManager.default.fileExists(atPath: SpeechFixture.lastURL!.path))
+        for scenario in ["recognition_cancel", "recognition_timeout", "authorization_cancel", "authorization_timeout"] {
+            SpeechFixture.authorized = scenario.hasPrefix("recognition")
+            SpeechFixture.authorizeImmediately = false
+            SpeechFixture.finishImmediately = false
+            SpeechFixture.taskStarted = DispatchSemaphore(value: 0)
+            SpeechFixture.authorizationStarted = DispatchSemaphore(value: 0)
+            let cleanupStarted = DispatchSemaphore(value: 0)
+            let allowCleanup = DispatchSemaphore(value: 0)
+            let finished = DispatchSemaphore(value: 0)
+            let cancellation = HTTPRequestCancellation()
+            SpeechFixture.onCancel = {
+                cleanupStarted.signal()
+                precondition(allowCleanup.wait(timeout: .now() + 2) == .success)
+            }
+            DispatchQueue.global().async {
+                let response = TranscribeHandler.transcribe(
+                    HTTPRequest(head: head, body: audio, cancellation: cancellation), params: [:],
+                    authorizationTimeout: 0.3, recognitionTimeout: 0.3)
+                precondition(response.status == (scenario.hasPrefix("recognition") ? 500 : 503))
+                finished.signal()
+            }
+            precondition(
+                (scenario.hasPrefix("recognition") ? SpeechFixture.taskStarted : SpeechFixture.authorizationStarted)
+                    .wait(timeout: .now() + 2) == .success)
+            DispatchQueue.concurrentPerform(iterations: 8) { index in
+                let busy = TranscribeHandler.transcribe(
+                    HTTPRequest(head: head, body: index.isMultiple(of: 2) ? audio : Data([0xFF])), params: [:])
+                precondition(busy.status == 429)
+                if case .buffered(let data) = busy.body {
+                    precondition(String(data: data, encoding: .utf8)!.contains("transcription_busy"))
+                }
+            }
+            if scenario.hasSuffix("cancel") { cancellation.cancel() }
+            if scenario.hasPrefix("recognition") {
+                precondition(cleanupStarted.wait(timeout: .now() + 2) == .success)
+                precondition(
+                    TranscribeHandler.transcribe(HTTPRequest(head: head, body: audio), params: [:]).status == 429)
+                precondition(
+                    TranscribeHandler.transcribe(HTTPRequest(head: head, body: Data([0xFF])), params: [:]).status == 429
+                )
+                allowCleanup.signal()
+            }
+            precondition(finished.wait(timeout: .now() + 2) == .success)
+            precondition(SpeechFixture.lastTask == nil)
+            precondition(!FileManager.default.fileExists(atPath: SpeechFixture.lastURL!.path))
+            SpeechFixture.onCancel = {}
+            SpeechFixture.authorized = true
+            SpeechFixture.finishImmediately = true
+            precondition(
+                TranscribeHandler.transcribe(HTTPRequest(head: head, body: Data([0xFF])), params: [:]).status == 400)
+            precondition(TranscribeHandler.transcribe(HTTPRequest(head: head, body: audio), params: [:]).status == 200)
+        }
         print(
-            "PASS actual transcription handler result, task cancellation, deadline, disconnect, authorization wait and temporary-file cleanup with isolated Speech module"
+            "PASS actual transcription handler result, task cancellation, deadline, disconnect, authorization wait, temporary-file cleanup, concurrent 429 before parsing, cleanup-held gate and later recovery with isolated Speech module"
         )
     }
 }
