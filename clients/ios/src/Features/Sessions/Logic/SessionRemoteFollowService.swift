@@ -66,7 +66,7 @@ enum SessionRemoteFollowService {
                 session.connectionKey == connectionKey
             {
                 SessionActions.setRemoteHistoryETag(response.value(forHTTPHeaderField: "ETag"), for: session)
-                if let data = try? JSONSerialization.data(withJSONObject: history),
+                if let data = try? JSONSerialization.data(withJSONObject: history.filter { $0.key != "turns" }),
                     let thread = try? JSONDecoder().decode(SessionRemoteThread.self, from: data)
                 {
                     SessionActions.refreshRemoteTitle(thread, for: session)

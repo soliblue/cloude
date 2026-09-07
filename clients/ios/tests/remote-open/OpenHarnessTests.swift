@@ -47,12 +47,15 @@ struct OpenHarnessTests {
             let revisionResult = await revisionTask.value
             let revisionSessionCount = try context.fetchCount(FetchDescriptor<Session>())
             precondition(!revisionResult)
+            precondition(HTTPClient.getQuery["includeTurns"] == nil)
             precondition(revisionSessionCount == 0)
             precondition(HTTPClient.postPaths.isEmpty)
 
             HTTPClient.beforeGet = nil
+            endpoint.capabilities = ["codexHistoryPages"]
             endpoint.connectionRevision = nil
             let removedEndpoint = Endpoint()
+            removedEndpoint.capabilities = ["codexHistoryPages"]
             context.insert(removedEndpoint)
             let removedStore = SessionRemoteStore()
             var removedRelease: CheckedContinuation<Void, Never>?
@@ -67,6 +70,7 @@ struct OpenHarnessTests {
             let removedResult = await removedTask.value
             let removedSessionCount = try context.fetchCount(FetchDescriptor<Session>())
             precondition(!removedResult)
+            precondition(HTTPClient.getQuery["includeTurns"] == "false")
             precondition(removedSessionCount == 0)
             precondition(HTTPClient.postPaths.isEmpty)
 

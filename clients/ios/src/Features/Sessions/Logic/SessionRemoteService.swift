@@ -23,7 +23,9 @@ enum SessionRemoteService {
             return true
         }
         if let (data, response) = await HTTPClient.get(
-            endpoint: endpoint, path: "/codex/threads/\(threadId)", timeout: 30),
+            endpoint: endpoint, path: "/codex/threads/\(threadId)",
+            query: endpoint.capabilities?.contains("codexHistoryPages") == true ? ["includeTurns": "false"] : [:],
+            timeout: 30),
             isCurrent(endpoint: endpoint, scope: scope, store: store, context: context, threadId: threadId),
             response.statusCode == 200,
             let detail = try? JSONDecoder().decode(SessionRemoteThreadDetail.self, from: data)
