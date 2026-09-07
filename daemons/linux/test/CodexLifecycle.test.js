@@ -192,3 +192,25 @@ test('fork rejects missing, reordered, substituted or extra finished history bef
  assert.equal(response.status,200)
  assert.deepEqual(JSON.parse(response.body).thread.turns,finished)
 })
+
+
+test('receipt-only steering cannot dispatch missing or pending delivery into a later turn', async () => {
+ const {steer}=await import('../src/Handlers/CodexHandler.js')
+ const requestId='11111111-9999-4999-8999-999999999999'
+ let dispatches=0
+ runnerManager.runners.set('receipt-only-session',{turnId:'later-turn',steer:async()=>{dispatches+=1}})
+ try {
+  for(const body of [{prompt:'hello',receiptOnly:true},{prompt:'hello',requestId,receiptOnly:1},{prompt:'hello',requestId,receiptOnly:'true'}]) assert.equal((await steer(request(body),{id:'receipt-only-session'})).status,400)
+  assert.equal((await steer(request({prompt:'hello',requestId,receiptOnly:true}),{id:'receipt-only-session'})).status,409)
+  assert.equal(dispatches,0)
+  await assert.rejects(codexSessions.steer('receipt-only-session',requestId,'hello',async()=>{throw Error('lost result')}))
+  assert.equal((await steer(request({prompt:'hello',requestId,receiptOnly:true}),{id:'receipt-only-session'})).status,409)
+  assert.equal(dispatches,0)
+  const accepted='22222222-9999-4999-8999-999999999999'
+  await codexSessions.steer('receipt-only-session',accepted,'hello',async()=>{})
+  runnerManager.runners.delete('receipt-only-session')
+  assert.equal((await steer(request({prompt:'hello',requestId:accepted,receiptOnly:true}),{id:'receipt-only-session'})).status,200)
+  assert.equal((await steer(request({prompt:'changed',requestId:accepted,receiptOnly:true}),{id:'receipt-only-session'})).status,409)
+  assert.equal(dispatches,0)
+ } finally {runnerManager.runners.delete('receipt-only-session')}
+})

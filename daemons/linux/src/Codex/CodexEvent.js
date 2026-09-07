@@ -26,15 +26,16 @@ export function normalizedItem(item, completed = false) {
 }
 
 export function normalizedNotification(method, params) {
-  if (method === 'item/plan/delta') { return [{ type: 'plan', itemId: params.itemId, text: params.delta, delta: true, completed: false }] }
+  let events = []
+  if (method === 'item/plan/delta') { events = [{ type: 'plan', itemId: params.itemId, text: params.delta, delta: true, completed: false }] }
   if (method === 'item/agentMessage/delta' || method === 'item/reasoning/summaryTextDelta' || method === 'item/reasoning/textDelta') {
-    return [{ type: 'stream_event', event: { type: 'content_block_delta', delta: method === 'item/agentMessage/delta' ? { type: 'text_delta', text: params.delta } : { type: 'thinking_delta', thinking: params.delta } } }]
+    events = [{ type: 'stream_event', event: { type: 'content_block_delta', delta: method === 'item/agentMessage/delta' ? { type: 'text_delta', text: params.delta } : { type: 'thinking_delta', thinking: params.delta } } }]
   }
   if (method === 'turn/plan/updated') {
-    return [{ type: 'assistant', message: { content: [{ type: 'tool_use', id: `plan:${params.turnId}`, name: 'TodoWrite', input: { todos: (params.plan || []).map((step) => ({ content: step.step, status: step.status === 'inProgress' ? 'in_progress' : step.status, activeForm: step.step })), explanation: params.explanation } }] } }]
+    events = [{ type: 'assistant', message: { content: [{ type: 'tool_use', id: `plan:${params.turnId}`, name: 'TodoWrite', input: { todos: (params.plan || []).map((step) => ({ content: step.step, status: step.status === 'inProgress' ? 'in_progress' : step.status, activeForm: step.step })), explanation: params.explanation } }] } }]
   }
   if (method === 'item/started' || method === 'item/completed') {
-    return normalizedItem(params.item, method === 'item/completed')
+    events = normalizedItem(params.item, method === 'item/completed')
   }
-  return []
+  return events.map(event => ({ ...event, ...(params.itemId || params.item?.id ? { itemId: params.itemId || params.item.id } : {}), ...(params.turnId ? { turnId: params.turnId } : {}) }))
 }

@@ -133,9 +133,10 @@ export async function fork(request, params) {
 
 export async function steer(request, params) {
   const body = request.json()
-  if (typeof body?.prompt !== 'string' || !body.prompt.trim() || body.prompt.length > 32768 || body.requestId !== undefined && (typeof body.requestId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(body.requestId))) { return HTTPResponse.json(400, { error: 'Provide a nonempty steering message up to 32768 characters and an optional UUID requestId.' }) }
+  if (typeof body?.prompt !== 'string' || !body.prompt.trim() || body.prompt.length > 32768 || Object.keys(body).some(key => !['prompt', 'requestId', 'receiptOnly'].includes(key)) || body.receiptOnly !== undefined && typeof body.receiptOnly !== 'boolean' || body.receiptOnly === true && !body.requestId || body.requestId !== undefined && (typeof body.requestId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(body.requestId))) { return HTTPResponse.json(400, { error: 'Provide a nonempty steering message up to 32768 characters and an optional UUID requestId.' }) }
   return Promise.resolve().then(async () => {
     if (body.requestId && codexSessions.steeringReceipt(params.id, body.requestId, body.prompt)?.status === 'accepted') { return HTTPResponse.json(200, { ok: true }) }
+    if (body.receiptOnly === true) { return HTTPResponse.json(409, { code: 'steer_receipt_unconfirmed', error: 'Delivery has not been confirmed. Check task history before sending another message.' }) }
     const runner = runnerManager.runners.get(params.id.toLowerCase())
     if (runner?.steer && runner.turnId) {
       await runner.steer(body.prompt, body.requestId)

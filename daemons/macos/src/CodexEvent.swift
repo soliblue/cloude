@@ -238,6 +238,14 @@ nonisolated enum CodexEvent {
         default:
             break
         }
-        return envelopes
+        return envelopes.map { envelope in
+            var envelope = envelope
+            if var event = envelope["event"] as? [String: Any] {
+                event["itemId"] = params["itemId"] ?? (params["item"] as? [String: Any])?["id"]
+                event["turnId"] = params["turnId"]
+                envelope["event"] = event
+            }
+            return envelope
+        }
     }
 }

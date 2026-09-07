@@ -11,20 +11,38 @@ import Foundation
     }
 
     static func main() {
-        if case .assistantTextDelta(_, let text) = decode("item/agentMessage/delta", ["delta": "Hello 日本"])[0] {
+        for id in ["equal-first", "equal-second"] {
+            if case .assistantFinal(_, let text, _, _, _, _, _, let itemId, let turnId) = decode(
+                "item/completed",
+                ["turnId": "turn-identity", "item": ["id": id, "type": "agentMessage", "text": "Equal"]])[0]
+            {
+                precondition(text == "Equal" && itemId == id && turnId == "turn-identity")
+            } else {
+                preconditionFailure("Completed item identity was lost")
+            }
+            if case .assistantTextDelta(_, _, let itemId, let turnId) = decode(
+                "item/agentMessage/delta", ["itemId": id, "turnId": "turn-identity", "delta": "Equal"])[0]
+            {
+                precondition(itemId == id && turnId == "turn-identity")
+            } else {
+                preconditionFailure("Delta item identity was lost")
+            }
+        }
+
+        if case .assistantTextDelta(_, let text, _, _) = decode("item/agentMessage/delta", ["delta": "Hello 日本"])[0] {
             precondition(text == "Hello 日本")
         } else {
             preconditionFailure()
         }
         for method in ["item/reasoning/summaryTextDelta", "item/reasoning/textDelta"] {
-            if case .assistantThinkingDelta(_, let text) = decode(method, ["delta": "Live reasoning"])[0] {
+            if case .assistantThinkingDelta(_, let text, _, _) = decode(method, ["delta": "Live reasoning"])[0] {
                 precondition(text == "Live reasoning")
             } else {
                 preconditionFailure("Reasoning was not decoded")
             }
         }
         precondition(decode("item/started", ["item": ["type": "agentMessage", "id": "text"]]).isEmpty)
-        if case .assistantFinal(_, let text, _, _, _, _, _) = decode(
+        if case .assistantFinal(_, let text, _, _, _, _, _, _, _) = decode(
             "item/completed", ["item": ["type": "agentMessage", "id": "text", "text": "Full result"]])[0]
         {
             precondition(text == "Full result")
@@ -63,7 +81,7 @@ import Foundation
         precondition(planUpdateTodo["status"] as? String == "in_progress")
         precondition(planUpdateTodo["explanation"] as? String == "Waiting for approval")
         precondition(CodexEvent.normalizedMethods.contains("item/plan/delta"))
-        if case .assistantFinal(_, _, let thinking, _, _, _, _) = decode(
+        if case .assistantFinal(_, _, let thinking, _, _, _, _, _, _) = decode(
             "item/completed", ["item": ["type": "reasoning", "id": "reason", "summary": ["First", "Second"]]])[0]
         {
             precondition(thinking == "First\nSecond")
@@ -98,7 +116,7 @@ import Foundation
             ("Agent", ["type": "subAgentActivity", "id": "activity", "receiverThreadIds": ["child-1"]]),
         ]
         for (name, item) in items {
-            if case .assistantFinal(_, _, _, _, let tools, _, _) = decode("item/started", ["item": item])[0] {
+            if case .assistantFinal(_, _, _, _, let tools, _, _, _, _) = decode("item/started", ["item": item])[0] {
                 precondition(tools.count == 1 && tools[0].name == name && tools[0].id == item["id"] as! String)
                 precondition(!tools[0].inputJSON.isEmpty)
             } else {
@@ -146,7 +164,7 @@ import Foundation
                 preconditionFailure()
             }
         }
-        if case .assistantFinal(_, _, _, _, let tools, _, _) = decode(
+        if case .assistantFinal(_, _, _, _, let tools, _, _, _, _) = decode(
             "turn/plan/updated", ["turnId": "turn-1", "plan": [["step": "Run tests", "status": "in_progress"]]])[0]
         {
             precondition(tools[0].id == "plan:turn-1" && tools[0].name == "TodoWrite")
@@ -229,7 +247,7 @@ import Foundation
         let review = decode(
             "item/completed",
             ["item": ["id": "review-end", "type": "exitedReviewMode", "review": "Concrete review finding"]])
-        if case .assistantFinal(_, let text, _, _, _, _, _) = review.last! {
+        if case .assistantFinal(_, let text, _, _, _, _, _, _, _) = review.last! {
             precondition(text == "Concrete review finding")
         } else {
             preconditionFailure()

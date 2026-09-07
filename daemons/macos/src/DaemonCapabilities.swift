@@ -5,5 +5,6 @@ enum DaemonCapabilities {
         "codex", "codexPlugins", "codexSections", "gitMutations", "gitWorktrees", "codexCompaction", "codexReview",
         "codexShell",
         "codexTerminal", "codexActiveFork", "codexIdempotentFork", "codexAttentionBatch", "codexHistoryPages",
+        "codexSteerReceipts",
     ]
 }

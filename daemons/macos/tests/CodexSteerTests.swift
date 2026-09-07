@@ -145,6 +145,30 @@ struct CodexSteerTests {
                 sessionId: settledSession, prompt: "hello", requestId: requestId.lowercased(),
                 completion: { replay.finish($0) }))
         if case .failure = replay.wait() { preconditionFailure("accepted replay without active runner failed") }
+        for (body, expected): ([String: Any], Int) in [
+            (["prompt": "hello", "receiptOnly": true], 400),
+            (["prompt": "hello", "requestId": requestId, "receiptOnly": 1], 400),
+            (["prompt": "hello", "requestId": requestId, "receiptOnly": "true"], 400),
+            (["prompt": "hello", "requestId": UUID().uuidString, "receiptOnly": true], 409),
+            (["prompt": "hello", "requestId": requestId, "receiptOnly": true], 200),
+            (["prompt": "changed", "requestId": requestId, "receiptOnly": true], 409),
+        ] {
+            let response = ChatHandler.steer(
+                HTTPRequest(head: head, body: try JSONSerialization.data(withJSONObject: body)),
+                params: ["id": settledSession])
+            precondition(response.status == expected)
+        }
+        let pendingId = UUID().uuidString
+        precondition(
+            CodexSteerReceiptStore.shared.save(
+                sessionId: settledSession, requestId: pendingId, hash: hash, status: "pending"))
+        let pendingResponse = ChatHandler.steer(
+            HTTPRequest(
+                head: head,
+                body: try JSONSerialization.data(withJSONObject: [
+                    "prompt": "hello", "requestId": pendingId, "receiptOnly": true,
+                ])), params: ["id": settledSession])
+        precondition(pendingResponse.status == 409)
         print(
             "Native steering: durable pending before RPC, restart replay, unavailable storage, failed acceptance write, concurrent retries, payload conflict, UUID normalization and quota retry passed"
         )

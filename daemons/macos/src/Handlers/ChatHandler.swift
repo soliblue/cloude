@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 import Network
 
@@ -102,11 +103,26 @@ enum ChatHandler {
         guard request.body.count <= 262_144, request.query.isEmpty,
             let sessionId = params["id"],
             let body = try? JSONSerialization.jsonObject(with: request.body) as? [String: Any],
-            body.keys.allSatisfy({ ["prompt", "requestId"].contains($0) }),
+            body.keys.allSatisfy({ ["prompt", "requestId", "receiptOnly"].contains($0) }),
             let prompt = body["prompt"] as? String, !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             prompt.utf16.count <= 32_768,
+            body["receiptOnly"] == nil || CFGetTypeID(body["receiptOnly"] as CFTypeRef) == CFBooleanGetTypeID(),
+            body["receiptOnly"] as? Bool != true || body["requestId"] != nil,
             body["requestId"] == nil || (body["requestId"] as? String).flatMap(UUID.init(uuidString:)) != nil
         else { return HTTPResponse.json(400, ["error": "invalid_steering_request"]) }
+        if body["receiptOnly"] as? Bool == true, let requestId = body["requestId"] as? String {
+            if CodexSteerReceiptStore.shared.status(sessionId: sessionId, requestId: requestId, prompt: prompt)
+                == "accepted"
+            {
+                return HTTPResponse.json(200, ["ok": true])
+            }
+            return HTTPResponse.json(
+                409,
+                [
+                    "code": "steer_receipt_unconfirmed",
+                    "error": "Delivery has not been confirmed. Check task history before sending another message.",
+                ])
+        }
         let semaphore = DispatchSemaphore(value: 0)
         var result: Result<[String: Any], Error>?
         if RunnerManager.shared.steer(
