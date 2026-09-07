@@ -51,6 +51,10 @@ enum SessionRemoteFollowService {
 
     private static func load(session: Session, context: ModelContext) async {
         let connectionKey = session.connectionKey
+        if session.endpoint?.capabilities?.contains("codexHistoryPages") == true {
+            await SessionHistoryPageService.refresh(session: session, context: context)
+            return
+        }
         if session.followsRemote, !session.isStreaming, !Task.isCancelled, let endpoint = session.endpoint,
             let (data, response) = await HTTPClient.get(
                 endpoint: endpoint, path: "/sessions/\(session.id.uuidString)/history", timeout: 15,

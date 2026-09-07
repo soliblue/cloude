@@ -3,6 +3,7 @@ import SwiftData
 import UIKit
 
 enum ChatService {
+    @MainActor private static var steeringRequests: Set<UUID> = []
     @MainActor private static var activeModels: [UUID: String] = [:]
     @MainActor private static var streamingMessages: [UUID: ChatMessage] = [:]
     @MainActor private static var pendingUserMessages: [UUID: ChatMessage] = [:]
@@ -12,7 +13,6 @@ enum ChatService {
     @MainActor private static var streamTasks: [UUID: Task<Void, Never>] = [:]
     @MainActor private static var resumeTasks: [UUID: Task<Void, Never>] = [:]
     @MainActor private static var producedOutput: Set<UUID> = []
-    @MainActor private static var replayKeys: [UUID: Set<String>] = [:]
     @MainActor private static var resumeDelay: [UUID: Double] = [:]
     @MainActor private static var gitBefore: [UUID: Task<[String: GitChangeDTO], Never>] = [:]
 
@@ -50,7 +50,6 @@ enum ChatService {
         activeModels.removeValue(forKey: sessionId)
         lastSeqs.removeValue(forKey: sessionId)
         producedOutput.remove(sessionId)
-        replayKeys.removeValue(forKey: sessionId)
         resumeDelay.removeValue(forKey: sessionId)
         ChatLiveStream.clear(sessionId: sessionId)
         ChatInteractionStore.shared.clear(sessionId: sessionId)
@@ -136,6 +135,7 @@ enum ChatService {
         message: ChatMessage, session: Session, endpoint: Endpoint, path: String,
         context: ModelContext
     ) {
+        if message.steerRequestScope != nil { return }
         if let reviewTarget = message.reviewTarget, session.provider != .codex || !reviewTarget.isValid {
             message.state = .failed
             return
@@ -149,6 +149,10 @@ enum ChatService {
             message.state = .failed
             return
         }
+        if !checkpointLastSeq(sessionId: session.id, seq: -1, context: context, reset: true) {
+            message.state = .failed
+            return
+        }
         SessionActions.setRemoteFollowing(false, for: session)
         pendingUserMessages[session.id] = message
         activeModels.removeValue(forKey: session.id)
@@ -156,7 +160,6 @@ enum ChatService {
         lastSeqs.removeValue(forKey: session.id)
         producedOutput.remove(session.id)
         resumeDelay.removeValue(forKey: session.id)
-        replayKeys.removeValue(forKey: session.id)
         activeStreams.insert(session.id)
         let generation = UUID()
         streamGenerations[session.id] = generation
@@ -271,17 +274,71 @@ enum ChatService {
                 $0.sessionId == sessionId && $0.roleRaw == "user" && $0.stateRaw != "queued" && $0.stateRaw != "failed"
             }, sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
         userDescriptor.fetchLimit = 1
-        if let session = try? context.fetch(descriptor).first, session.provider == .codex,
-            session.isStreaming, let endpoint = session.endpoint, message.state == .queued, message.reviewTarget == nil,
-            message.shellCommand == nil, (try? context.fetch(userDescriptor).first)?.shellCommand == nil,
-            let (_, response) = await HTTPClient.post(
-                endpoint: endpoint, path: "/sessions/\(sessionId.uuidString)/chat/steer",
-                body: ["prompt": message.text, "requestId": message.id.uuidString]
-            ),
-            response.statusCode == 200
+        if !Task.isCancelled, !steeringRequests.contains(message.id),
+            let session = try? context.fetch(descriptor).first, session.provider == .codex,
+            session.modelContext === context, message.modelContext === context,
+            !session.isDeleted, !message.isDeleted, let endpoint = session.endpoint,
+            message.role == .user, message.reviewTarget == nil, message.shellCommand == nil,
+            message.imagesData.isEmpty, message.references.isEmpty,
+            message.state == .queued || (message.state == .failed && message.steerRequestScope != nil)
         {
-            message.state = .complete
-            return true
+            let recovery = message.steerRequestScope != nil
+            let scope = session.historyScopeKey
+            if recovery {
+                guard message.steerRequestScope == scope, message.steerRequestPrompt != nil,
+                    endpoint.capabilities?.contains("codexSteerReceipts") == true
+                else { return false }
+            } else {
+                guard session.isStreaming, let nativeThreadId = session.codexThreadId, !nativeThreadId.isEmpty,
+                    (try? context.fetch(userDescriptor).first)?.shellCommand == nil,
+                    !message.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                    message.text.utf16.count <= 32768
+                else { return false }
+                message.steerRequestScope = scope
+                message.steerRequestPrompt = message.text
+                if (try? context.save()) == nil {
+                    message.steerRequestScope = nil
+                    message.steerRequestPrompt = nil
+                    return false
+                }
+            }
+            steeringRequests.insert(message.id)
+            defer { steeringRequests.remove(message.id) }
+            let connection = session.connectionKey
+            let threadId = session.codexThreadId
+            let prompt = message.steerRequestPrompt!
+            let stateAtSend = message.state
+            var body: [String: Any] = ["prompt": prompt, "requestId": message.id.uuidString]
+            if recovery { body["receiptOnly"] = true }
+            if let (_, response) = await HTTPClient.post(
+                endpoint: endpoint, path: "/sessions/\(sessionId.uuidString)/chat/steer", body: body),
+                response.statusCode == 200, !Task.isCancelled,
+                session.modelContext === context, message.modelContext === context,
+                !session.isDeleted, !message.isDeleted, session.provider == .codex,
+                session.connectionKey == connection, session.codexThreadId == threadId,
+                session.historyScopeKey == scope, message.steerRequestScope == scope,
+                message.steerRequestPrompt == prompt,
+                message.state == stateAtSend,
+                (try? context.save()) != nil
+            {
+                let order = message.timelineOrder
+                let itemOrder = message.timelineItemOrder
+                let createdAt = message.createdAt
+                let state = message.state
+                message.timelineOrder = ChatActions.nextTimelineOrder(sessionId: sessionId, context: context)
+                message.timelineItemOrder = 0
+                message.createdAt = .now
+                message.state = .complete
+                message.steerRequestScope = nil
+                message.steerRequestPrompt = nil
+                if (try? context.save()) != nil { return true }
+                message.timelineOrder = order
+                message.timelineItemOrder = itemOrder
+                message.createdAt = createdAt
+                message.state = state
+                message.steerRequestScope = scope
+                message.steerRequestPrompt = prompt
+            }
         }
         return false
     }
@@ -289,6 +346,10 @@ enum ChatService {
     @MainActor
     static func retry(message: ChatMessage, context: ModelContext) {
         if message.role != .user || message.state != .failed { return }
+        if message.steerRequestScope != nil {
+            Task { await steer(message: message, context: context) }
+            return
+        }
         let sessionId = message.sessionId
         let descriptor = FetchDescriptor<Session>(
             predicate: #Predicate<Session> { $0.id == sessionId }
@@ -301,6 +362,9 @@ enum ChatService {
                 return
             }
             message.state = .retrying
+            message.timelineOrder = ChatActions.nextTimelineOrder(sessionId: sessionId, context: context)
+            message.timelineItemOrder = 0
+            message.createdAt = .now
             begin(message: message, session: session, endpoint: endpoint, path: path, context: context)
         }
     }
@@ -310,7 +374,7 @@ enum ChatService {
         let queuedRaw = ChatMessage.State.queued.rawValue
         var queuedDescriptor = FetchDescriptor<ChatMessage>(
             predicate: #Predicate<ChatMessage> {
-                $0.sessionId == sessionId && $0.stateRaw == queuedRaw
+                $0.sessionId == sessionId && $0.stateRaw == queuedRaw && $0.steerRequestScope == nil
             },
             sortBy: [SortDescriptor(\.createdAt)]
         )
@@ -329,6 +393,8 @@ enum ChatService {
             AppLogger.beginInterval("chat.firstToken", key: sessionId.uuidString)
             AppLogger.beginInterval("chat.complete", key: sessionId.uuidString)
             queued.state = .retrying
+            queued.timelineOrder = ChatActions.nextTimelineOrder(sessionId: sessionId, context: context)
+            queued.timelineItemOrder = 0
             queued.createdAt = .now
             begin(message: queued, session: session, endpoint: endpoint, path: path, context: context)
         }
@@ -359,7 +425,6 @@ enum ChatService {
         }
         streamGenerations.removeValue(forKey: session.id)
         activeStreams.remove(session.id)
-        replayKeys.removeValue(forKey: session.id)
         if let pending = pendingUserMessages.removeValue(forKey: session.id),
             pending.state == .retrying
         {
@@ -411,13 +476,18 @@ enum ChatService {
     }
 
     @MainActor
-    private static func checkpointLastSeq(sessionId: UUID, seq: Int, context: ModelContext) {
+    @discardableResult
+    private static func checkpointLastSeq(
+        sessionId: UUID, seq: Int, context: ModelContext, reset: Bool = false
+    ) -> Bool {
         let descriptor = FetchDescriptor<Session>(
             predicate: #Predicate<Session> { $0.id == sessionId }
         )
-        if let session = try? context.fetch(descriptor).first, seq > session.lastSeq {
-            SessionActions.setLastSeq(seq, for: session)
+        if let session = try? context.fetch(descriptor).first {
+            if reset || seq > session.lastSeq { SessionActions.setLastSeq(seq, for: session) }
+            return !reset || (try? context.save()) != nil
         }
+        return false
     }
 
     @MainActor
@@ -526,7 +596,6 @@ enum ChatService {
             )
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
-            replayKeys.removeValue(forKey: sessionId)
             if eventCount > 0 && !sawClose && !sawExit {
                 streamingMessages.removeValue(forKey: sessionId)
                 scheduleResume(sessionId: sessionId, context: context)
@@ -551,7 +620,6 @@ enum ChatService {
             if streamGenerations[sessionId] != generation { return }
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
-            replayKeys.removeValue(forKey: sessionId)
             resumeDelay.removeValue(forKey: sessionId)
             lastSeqs.removeValue(forKey: sessionId)
             if let pending = pendingUserMessages.removeValue(forKey: sessionId) {
@@ -574,31 +642,9 @@ enum ChatService {
             if streamGenerations[sessionId] != generation { return }
             streamGenerations.removeValue(forKey: sessionId)
             activeStreams.remove(sessionId)
-            replayKeys.removeValue(forKey: sessionId)
             streamingMessages.removeValue(forKey: sessionId)
             scheduleResume(sessionId: sessionId, context: context)
         }
-    }
-
-    @MainActor
-    private static func existingAssistantKeys(sessionId: UUID, context: ModelContext) -> Set<String> {
-        var descriptor = FetchDescriptor<ChatMessage>(
-            predicate: #Predicate<ChatMessage> {
-                $0.sessionId == sessionId && $0.roleRaw == "assistant"
-            },
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )
-        descriptor.fetchLimit = 100
-        var keys: Set<String> = []
-        for message in (try? context.fetch(descriptor)) ?? [] {
-            let messageId = message.id
-            let toolDescriptor = FetchDescriptor<ChatToolCall>(
-                predicate: #Predicate<ChatToolCall> { $0.messageId == messageId }
-            )
-            let toolIds = ((try? context.fetch(toolDescriptor)) ?? []).map { $0.id }.sorted()
-            keys.insert(message.text + "|" + toolIds.joined(separator: ","))
-        }
-        return keys
     }
 
     @MainActor
@@ -621,18 +667,52 @@ enum ChatService {
 
     @MainActor
     private static func ensureStreamingMessage(
-        sessionId: UUID, context: ModelContext
+        sessionId: UUID, context: ModelContext, itemId: String? = nil, turnId: String? = nil
     ) -> ChatMessage {
         producedOutput.insert(sessionId)
-        if let existing = streamingMessages[sessionId] { return existing }
+        if let existing = streamingMessages[sessionId] {
+            if itemId == nil || existing.remoteItemId == nil || existing.remoteItemId == itemId {
+                if let itemId { existing.remoteItemId = itemId }
+                if itemId != nil, let turnId { existing.remoteTurnId = turnId }
+                return existing
+            }
+            if let snapshot = ChatLiveStream.peek(for: sessionId) {
+                if !snapshot.text.isEmpty { existing.text = snapshot.text }
+                if !snapshot.thinking.isEmpty { existing.thinking = snapshot.thinking }
+            }
+            ChatLiveStream.clear(sessionId: sessionId)
+        }
         let snapshot = ChatLiveStream.snapshot(for: sessionId)
         if !snapshot.hasFirstToken {
             AppLogger.endInterval("chat.firstToken", key: sessionId.uuidString)
             snapshot.hasFirstToken = true
         }
-        let message = ChatActions.beginAssistant(sessionId: sessionId, context: context)
+        let message =
+            existingStreamMessage(sessionId: sessionId, itemId: itemId, context: context)
+            ?? ChatActions.beginAssistant(sessionId: sessionId, context: context)
+        if let itemId { message.remoteItemId = itemId }
+        if itemId != nil, let turnId { message.remoteTurnId = turnId }
+        if message.state == .streaming {
+            snapshot.text = message.text
+            snapshot.thinking = message.thinking
+        }
         streamingMessages[sessionId] = message
         return message
+    }
+
+    @MainActor
+    private static func existingStreamMessage(
+        sessionId: UUID, itemId: String?, context: ModelContext
+    ) -> ChatMessage? {
+        if let itemId {
+            return try? context.fetch(
+                FetchDescriptor<ChatMessage>(
+                    predicate: #Predicate {
+                        $0.sessionId == sessionId && $0.remoteItemId == itemId
+                    })
+            ).first
+        }
+        return nil
     }
 
     @MainActor
@@ -786,9 +866,12 @@ enum ChatService {
                 SessionActions.setNeedsAttention(
                     ChatInteractionStore.shared.hasAttention(sessionId: sessionId), for: session)
             }
-        case .assistantTextDelta(_, let text):
+        case .assistantTextDelta(_, let text, let itemId, let turnId):
+            if existingStreamMessage(sessionId: sessionId, itemId: itemId, context: context)?.state == .complete {
+                break
+            }
             if !text.isEmpty {
-                _ = ensureStreamingMessage(sessionId: sessionId, context: context)
+                _ = ensureStreamingMessage(sessionId: sessionId, context: context, itemId: itemId, turnId: turnId)
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
                 if snapshot.isThinking {
                     snapshot.isThinking = false
@@ -807,8 +890,11 @@ enum ChatService {
             {
                 producedOutput.insert(sessionId)
             }
-        case .assistantThinkingDelta(_, let text):
-            _ = ensureStreamingMessage(sessionId: sessionId, context: context)
+        case .assistantThinkingDelta(_, let text, let itemId, let turnId):
+            if existingStreamMessage(sessionId: sessionId, itemId: itemId, context: context)?.state == .complete {
+                break
+            }
+            _ = ensureStreamingMessage(sessionId: sessionId, context: context, itemId: itemId, turnId: turnId)
             let snapshot = ChatLiveStream.snapshot(for: sessionId)
             if snapshot.thinkingStartedAt == nil { snapshot.thinkingStartedAt = Date() }
             snapshot.isThinking = true
@@ -819,12 +905,7 @@ enum ChatService {
             ChatLiveStream.snapshot(for: sessionId).isCompacting = true
         case .assistantFinal(
             _, let text, let thinking, let thinkingRedacted, let toolUses, let model,
-            let contextTokens):
-            if let keys = replayKeys[sessionId],
-                keys.contains(text + "|" + toolUses.map(\.id).sorted().joined(separator: ","))
-            {
-                break
-            }
+            let contextTokens, let itemId, let turnId):
             if let contextTokens {
                 SessionActions.setContextUsage(
                     tokens: contextTokens, window: nil, for: sessionId, context: context)
@@ -832,7 +913,8 @@ enum ChatService {
             if !text.isEmpty || !thinking.isEmpty || thinkingRedacted || !toolUses.isEmpty
                 || streamingMessages[sessionId] != nil
             {
-                let message = ensureStreamingMessage(sessionId: sessionId, context: context)
+                let message = ensureStreamingMessage(
+                    sessionId: sessionId, context: context, itemId: itemId, turnId: turnId)
                 let snapshot = ChatLiveStream.snapshot(for: sessionId)
                 if snapshot.isThinking {
                     snapshot.isThinking = false
@@ -885,7 +967,11 @@ enum ChatService {
             activeStreams.remove(sessionId)
             drainQueue(sessionId: sessionId, context: context)
         case .replay:
-            replayKeys[sessionId] = existingAssistantKeys(sessionId: sessionId, context: context)
+            ChatLiveStream.clear(sessionId: sessionId)
+            if let message = streamingMessages[sessionId], message.state == .streaming {
+                message.text = ""
+                message.thinking = ""
+            }
         case .initialized(_, let model):
             activeModels[sessionId] = model
             markSessionExistsOnServer(sessionId: sessionId, context: context)

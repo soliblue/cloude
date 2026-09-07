@@ -129,7 +129,9 @@ enum SessionRemoteService {
         }
         let sessionId = UUID()
         if let (data, response) = await HTTPClient.post(
-            endpoint: endpoint, path: "/sessions/\(sessionId.uuidString)/import", body: ["threadId": thread.id],
+            endpoint: endpoint, path: "/sessions/\(sessionId.uuidString)/import",
+            body: endpoint.capabilities?.contains("codexHistoryPages") == true
+                ? ["threadId": thread.id, "includeTurns": false] : ["threadId": thread.id],
             timeout: 30),
             isCurrent(endpoint: endpoint, scope: scope, store: store, context: context, threadId: thread.id),
             response.statusCode == 200,
@@ -138,6 +140,53 @@ enum SessionRemoteService {
         {
             guard isCurrent(endpoint: endpoint, scope: scope, store: store, context: context, threadId: thread.id)
             else {
+                return false
+            }
+            if endpoint.capabilities?.contains("codexHistoryPages") == true {
+                let transaction = ModelContext(context.container)
+                transaction.autosaveEnabled = false
+                if (try? context.save()) != nil,
+                    let owner = try? transaction.fetch(
+                        FetchDescriptor<Endpoint>(predicate: #Predicate { $0.id == endpointId })
+                    ).first,
+                    let metadata = try? JSONSerialization.data(withJSONObject: history.filter { $0.key != "turns" }),
+                    let native = try? JSONDecoder().decode(SessionRemoteThread.self, from: metadata),
+                    native.id == threadId
+                {
+                    let importedSession = SessionActions.importThread(
+                        native, id: sessionId, endpoint: owner, context: transaction)
+                    if await SessionHistoryPageService.prepareInitial(
+                        session: importedSession, metadata: history, context: transaction,
+                        transportEndpoint: endpoint,
+                        isCurrent: {
+                            isCurrent(
+                                endpoint: endpoint, scope: scope, store: store, context: context, threadId: threadId)
+                        }),
+                        isCurrent(endpoint: endpoint, scope: scope, store: store, context: context, threadId: threadId)
+                    {
+                        if let existing = try? context.fetch(descriptor).first {
+                            activate(
+                                existing, thread: nil, endpoint: endpoint, scope: scope, store: store, context: context)
+                            return true
+                        }
+                        if (try? transaction.save()) != nil,
+                            let published = try? context.fetch(
+                                FetchDescriptor<Session>(predicate: #Predicate { $0.id == sessionId })
+                            ).first
+                        {
+                            WindowActions.open(
+                                published, among: (try? context.fetch(FetchDescriptor<Window>())) ?? [],
+                                context: context)
+                            finishOpening(threadId: thread.id, endpoint: endpoint, scope: scope, store: store)
+                            return true
+                        }
+                    }
+                }
+                failOpening(
+                    threadId: thread.id, endpoint: endpoint, scope: scope, store: store,
+                    message:
+                        "Could not open the latest history. Check the connection and available device storage, then retry."
+                )
                 return false
             }
             let session = SessionActions.importThread(thread, id: sessionId, endpoint: endpoint, context: context)

@@ -4,7 +4,6 @@ struct ChatHistoryWindow {
     private(set) var sessionId: UUID?
     private(set) var firstGroupId: UUID?
     let pageSize: Int
-
     init(pageSize: Int = 50) {
         self.pageSize = max(1, pageSize)
     }
@@ -28,5 +27,17 @@ struct ChatHistoryWindow {
             firstGroupId = groupIds[max(0, start - pageSize)]
         }
         return start > 0 ? groupIds[start] : nil
+    }
+
+    mutating func revealEarlier(sessionId: UUID, groupIds: [UUID], anchor: UUID) {
+        self.sessionId = sessionId
+        let anchorIndex = groupIds.firstIndex(of: anchor) ?? 0
+        let start = max(0, min(anchorIndex - pageSize, groupIds.count - pageSize))
+        firstGroupId = groupIds.indices.contains(start) ? groupIds[start] : nil
+    }
+
+    mutating func revealFromBeginning(sessionId: UUID, groupIds: [UUID]) {
+        self.sessionId = sessionId
+        firstGroupId = groupIds.first
     }
 }

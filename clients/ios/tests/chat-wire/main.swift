@@ -40,7 +40,7 @@ let tool = ChatStreamEvent.decode(
     Data(
         #"{"seq":12,"event":{"type":"assistant","message":{"model":"gpt-test","content":[{"type":"tool_use","id":"search-1","name":"WebSearch","input":{"query":"release notes"}}]}}}"#
             .utf8))!
-if case .assistantFinal(_, _, _, _, let uses, let model, _) = tool {
+if case .assistantFinal(_, _, _, _, let uses, let model, _, _, _) = tool {
     precondition(uses.count == 1 && uses[0].name == "WebSearch" && model == "gpt-test")
 } else {
     fatalError("Normalized Codex tool was not decoded")
@@ -50,7 +50,7 @@ let delta = ChatStreamEvent.decode(
     Data(
         #"{"seq":13,"event":{"type":"stream_event","event":{"type":"content_block_delta","delta":{"type":"text_delta","text":"hello"}}}}"#
             .utf8))!
-if case .assistantTextDelta(let seq, let text) = delta {
+if case .assistantTextDelta(let seq, let text, _, _) = delta {
     precondition(seq == 13 && text == "hello")
 } else {
     fatalError("Text delta was not decoded")

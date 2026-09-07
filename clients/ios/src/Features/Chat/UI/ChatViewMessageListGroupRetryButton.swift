@@ -17,7 +17,10 @@ struct ChatViewMessageListGroupRetryButton: View {
                 .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
                 .frame(width: ThemeTokens.Icon.l, height: ThemeTokens.Icon.l)
         }
-        .accessibilityLabel(message.shellCommand == nil ? "Retry message" : "Run command again")
+        .accessibilityLabel(
+            message.steerRequestScope != nil
+                ? "Check message delivery" : message.shellCommand == nil ? "Retry message" : "Run command again"
+        )
         .buttonStyle(.plain)
         .disabled(isVisuallyRetrying)
         .onAppear { isVisuallyRetrying = message.state == .retrying }

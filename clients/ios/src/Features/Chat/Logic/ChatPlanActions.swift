@@ -14,6 +14,19 @@ import SwiftData
             let message = existing ?? ChatMessage(sessionId: sessionId, role: .assistant)
             if existing == nil {
                 message.remoteItemId = itemId
+                var latest = FetchDescriptor<ChatMessage>(
+                    predicate: #Predicate { $0.sessionId == sessionId },
+                    sortBy: [SortDescriptor(\.timelineOrder, order: .reverse)])
+                latest.fetchLimit = 1
+                var order = (try? context.fetch(latest).first?.timelineOrder) ?? 0
+                if context.container.schema.entities.contains(where: { $0.name == "ChatHistoryTurnRecord" }) {
+                    var records = FetchDescriptor<ChatHistoryTurnRecord>(
+                        predicate: #Predicate { $0.sessionId == sessionId },
+                        sortBy: [SortDescriptor(\.order, order: .reverse)])
+                    records.fetchLimit = 1
+                    if let maximum = try? context.fetch(records).first?.order { order = max(order, maximum) }
+                }
+                message.timelineOrder = order < Int64.max ? order + 1 : order
                 context.insert(message)
             }
             message.text = delta && !completed ? message.text + text : text

@@ -37,6 +37,10 @@ final class Session {
     var remoteIsRunning: Bool = false
     var remoteTurnStatus: String? = nil
     var remoteHistoryETag: String? = nil
+    var remoteHistoryOlderCursor: String? = nil
+    var remoteHistoryNewerCursor: String? = nil
+    var remoteHistoryPagingScope: String? = nil
+    var remoteHistoryPagingInitialized: Bool = false
     var goalData: Data? = nil
     var modelRaw: String? = nil
     var effortRaw: String? = nil

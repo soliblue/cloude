@@ -249,7 +249,7 @@ enum SessionActions {
             )
             let count = (try? context.fetchCount(descriptor)) ?? 0
             let windows = try? context.fetch(FetchDescriptor<Window>())
-            if loaded && count == 0 && ChatDraftStore.snapshot(for: sessionId).isEmpty,
+            if loaded && count == 0 && !session.existsOnServer && ChatDraftStore.snapshot(for: sessionId).isEmpty,
                 session.modelContext != nil, let windows,
                 !windows.contains(where: { $0.session?.id == sessionId })
             {

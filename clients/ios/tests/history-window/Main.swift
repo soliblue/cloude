@@ -39,6 +39,16 @@ struct Main {
         precondition(window.startIndex(sessionId: otherSession, groupIds: short) == 0)
         precondition(window.loadEarlier(sessionId: otherSession, groupIds: short) == nil)
 
+        var remote = ChatHistoryWindow()
+        let remoteAnchor = ids[50]
+        remote.revealEarlier(sessionId: session, groupIds: ids, anchor: remoteAnchor)
+        precondition(remote.startIndex(sessionId: session, groupIds: ids) == 0)
+        let expanded = [UUID(), UUID()] + ids
+        remote.revealEarlier(sessionId: session, groupIds: expanded, anchor: remoteAnchor)
+        precondition(remote.startIndex(sessionId: session, groupIds: expanded) == 2)
+        precondition(
+            remote.startIndex(sessionId: session, groupIds: expanded) <= expanded.firstIndex(of: remoteAnchor)!)
+
         var empty = ChatHistoryWindow()
         empty.synchronize(sessionId: session, groupIds: [])
         precondition(empty.firstGroupId == nil)

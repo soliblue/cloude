@@ -29,6 +29,14 @@ import SwiftData
         context.insert(ChatMessage(sessionId: messaged.id))
         await messageCleanup.value
         precondition(messaged.modelContext != nil, "Message created during cleanup preserves task")
+        let remote = Session()
+        remote.existsOnServer = true
+        remote.codexThreadId = "empty-native-task"
+        remote.remoteHistoryPagingInitialized = true
+        remote.remoteHistoryOlderCursor = "earlier-empty-turns"
+        context.insert(remote)
+        await SessionActions.deleteIfEmpty(remote, context: context).value
+        precondition(remote.modelContext != nil, "Remote task with empty or unsupported turns remains available")
         let empty = Session()
         context.insert(empty)
         await SessionActions.deleteIfEmpty(empty, context: context).value

@@ -76,6 +76,7 @@ struct OpenHarnessTests {
 
             HTTPClient.beforeGet = nil
             var importRelease: CheckedContinuation<Void, Never>?
+            endpoint.capabilities = nil
             var historyRelease: CheckedContinuation<Void, Never>?
             HTTPClient.beforePost = { path in
                 if path.contains("/import") {
@@ -117,6 +118,7 @@ struct OpenHarnessTests {
             precondition(canceledWindowCount == 0)
 
             HTTPClient.beforePost = nil
+            endpoint.capabilities = nil
             ChatActions.beforeImport = nil
             let existing = Session(endpoint: endpoint, title: "Existing")
             existing.codexThreadId = thread.id
@@ -151,6 +153,7 @@ struct OpenHarnessTests {
             }
             try await ForkHarnessTests.run()
             try await ForkRetryTests.run()
+            try await PagedOpenHarnessTests.run()
             print("Remote open fencing passed revision, cancellation cleanup, existing reuse and import mutation tests")
         }
     }

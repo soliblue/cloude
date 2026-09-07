@@ -18,11 +18,16 @@ final class ChatMessage {
     var model: String? = nil
     var hasToolCalls: Bool = false
     var remoteItemId: String? = nil
+    var remoteTurnId: String? = nil
+    var timelineOrder: Int64 = 0
+    var timelineItemOrder: Int = 0
     var planIsComplete: Bool? = nil
     var planEventSeq: Int? = nil
     var referencesData: Data? = nil
     var reviewTargetData: Data? = nil
     var shellCommand: String? = nil
+    var steerRequestScope: String? = nil
+    var steerRequestPrompt: String? = nil
     var thinking: String = ""
     var thinkingMs: Int = 0
     var thinkingRedacted: Bool = false

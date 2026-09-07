@@ -15,12 +15,12 @@ nonisolated enum ChatStreamEvent {
     case requestResolved(seq: Int, requestId: String)
     case agentAttention(seq: Int, threadId: String, requestId: String, pending: Bool)
     case initialized(seq: Int, model: String?)
-    case assistantTextDelta(seq: Int, text: String)
-    case assistantThinkingDelta(seq: Int, text: String)
+    case assistantTextDelta(seq: Int, text: String, itemId: String? = nil, turnId: String? = nil)
+    case assistantThinkingDelta(seq: Int, text: String, itemId: String? = nil, turnId: String? = nil)
     case plan(seq: Int, itemId: String, text: String, delta: Bool, completed: Bool)
     case assistantFinal(
         seq: Int, text: String, thinking: String, thinkingRedacted: Bool,
-        toolUses: [DecodedToolUse], model: String?, contextTokens: Int?)
+        toolUses: [DecodedToolUse], model: String?, contextTokens: Int?, itemId: String? = nil, turnId: String? = nil)
     case toolOutputDelta(seq: Int, toolUseId: String, text: String)
     case toolResults(seq: Int, results: [ChatToolResult])
     case toolResult(seq: Int, toolUseId: String, text: String, isError: Bool)
@@ -36,10 +36,10 @@ nonisolated enum ChatStreamEvent {
         switch self {
         case .usage(let s, _, _), .sessionMetadata(let s, _), .request(let s, _), .requestResolved(let s, _),
             .agentAttention(let s, _, _, _), .initialized(let s, _),
-            .assistantTextDelta(let s, _),
-            .assistantThinkingDelta(let s, _),
+            .assistantTextDelta(let s, _, _, _),
+            .assistantThinkingDelta(let s, _, _, _),
             .plan(let s, _, _, _, _),
-            .assistantFinal(let s, _, _, _, _, _, _),
+            .assistantFinal(let s, _, _, _, _, _, _, _, _),
             .toolResults(let s, _), .toolOutputDelta(let s, _, _), .toolResult(let s, _, _, _), .result(let s, _, _),
             .aborted(let s),
             .exited(let s, _),
@@ -127,15 +127,18 @@ nonisolated enum ChatStreamEvent {
             if innerType == "content_block_start",
                 (inner["content_block"] as? [String: Any])?["type"] as? String == "thinking"
             {
-                return .assistantThinkingDelta(seq: seq, text: "")
+                return .assistantThinkingDelta(
+                    seq: seq, text: "", itemId: event["itemId"] as? String, turnId: event["turnId"] as? String)
             }
             if innerType == "content_block_delta", let delta = inner["delta"] as? [String: Any] {
                 if delta["type"] as? String == "text_delta", let text = delta["text"] as? String {
-                    return .assistantTextDelta(seq: seq, text: text)
+                    return .assistantTextDelta(
+                        seq: seq, text: text, itemId: event["itemId"] as? String, turnId: event["turnId"] as? String)
                 }
                 if delta["type"] as? String == "thinking_delta" {
                     return .assistantThinkingDelta(
-                        seq: seq, text: delta["thinking"] as? String ?? delta["text"] as? String ?? "")
+                        seq: seq, text: delta["thinking"] as? String ?? delta["text"] as? String ?? "",
+                        itemId: event["itemId"] as? String, turnId: event["turnId"] as? String)
                 }
             }
         }
@@ -175,7 +178,8 @@ nonisolated enum ChatStreamEvent {
             return .assistantFinal(
                 seq: seq, text: text, thinking: thinking, thinkingRedacted: redacted,
                 toolUses: toolUses, model: model,
-                contextTokens: contextTokens(message: message))
+                contextTokens: contextTokens(message: message),
+                itemId: event["itemId"] as? String ?? event["uuid"] as? String, turnId: event["turnId"] as? String)
         }
         return nil
     }
