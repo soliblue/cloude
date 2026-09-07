@@ -85,6 +85,7 @@ enum Router {
                 }
             }
             if request.method == "POST" {
+                if request.path == "/codex/attention" { return CodexAttentionHandler.batch(request) }
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/terminals/:terminalId/input") {
                     return CodexTerminalHandler.input(request, params: params)
                 }

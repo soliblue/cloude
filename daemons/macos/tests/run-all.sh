@@ -11,6 +11,7 @@ SCRIPTS=(
   run-codex-auth-fence-tests.sh
   run-daemon-lifecycle-tests.sh
   run-codex-attention-tests.sh
+  run-codex-attention-batch-tests.sh
   run-codex-requests-tests.sh
   run-codex-control-tests.sh
   run-codex-compaction-tests.sh
