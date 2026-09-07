@@ -98,9 +98,10 @@ jobs:
           [ "$(gh release view "$TAG" --json isDraft --jq '.isDraft')" = true ] || { echo "Refusing to replace an already published release"; exit 1; }
           gh release upload "$TAG" build/release/Remote-CC-Daemon.dmg --clobber
           gh release upload "$TAG" build/release/Remote-CC-Daemon.app.zip --clobber
+          RELEASE_ID=$(gh release view "$TAG" --json databaseId --jq '.databaseId')
           for ASSET in Remote-CC-Daemon.dmg Remote-CC-Daemon.app.zip; do
             EXPECTED="sha256:$(shasum -a 256 "build/release/$ASSET" | cut -d ' ' -f1)"
-            ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq ".assets[] | select(.name == \"$ASSET\") | .digest")
+            ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" --jq ".assets[] | select(.name == \"$ASSET\") | .digest")
             [ "$ACTUAL" = "$EXPECTED" ] || { echo "Release asset digest is missing or mismatched"; exit 1; }
           done
           gh release edit "$TAG" --draft=false

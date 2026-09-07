@@ -78,6 +78,7 @@ jobs:
           [ "$(gh release view "$TAG" --json isDraft --jq '.isDraft')" = true ] || { echo "Refusing to replace an already published release"; exit 1; }
           gh release upload "$TAG" cloude-linux-daemon.tar.gz cloude-linux-daemon.tar.gz.sha256 --clobber
           EXPECTED="sha256:$(cut -d ' ' -f1 cloude-linux-daemon.tar.gz.sha256)"
-          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets[] | select(.name == "cloude-linux-daemon.tar.gz") | .digest')
+          RELEASE_ID=$(gh release view "$TAG" --json databaseId --jq '.databaseId')
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" --jq '.assets[] | select(.name == "cloude-linux-daemon.tar.gz") | .digest')
           [ "$ACTUAL" = "$EXPECTED" ] || { echo "Published archive digest is missing or mismatched"; exit 1; }
           gh release edit "$TAG" --draft=false

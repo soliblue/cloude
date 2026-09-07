@@ -214,7 +214,6 @@ platform :mac do
       notarize(
         api_key: api_key,
         package: app_path,
-        bundle_id: "soli.Cloude-Agent",
         print_log: true
       )
 
@@ -224,7 +223,6 @@ platform :mac do
       notarize(
         api_key: api_key,
         package: dmg_path,
-        bundle_id: "soli.Cloude-Agent",
         print_log: true
       )
 
