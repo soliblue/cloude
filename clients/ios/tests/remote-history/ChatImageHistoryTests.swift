@@ -38,12 +38,15 @@ struct ChatImageHistoryTests {
             FetchDescriptor<ChatMessage>(
                 predicate: #Predicate { $0.sessionId == id && $0.remoteItemId == "user-photo" }))
         precondition(
-            photos.count == 1 && photos[0].imagesData == [attachment] && photos[0].text == "Inspect attached photo")
-        let capped = await ChatHistoryImage.decode(
+            photos.count == 1 && photos[0].imagesData.filter { !$0.isEmpty } == [attachment]
+                && photos[0].imagesData.count == 4 && photos[0].text == "Inspect attached photo")
+        let capped = await ChatHistoryImage.resolve(
             Array(
-                repeating: "data:image/png;base64," + Data(repeating: 0, count: 1_048_576).base64EncodedString(),
-                count: 24))
-        precondition(capped.count == 20 && capped.reduce(0) { $0 + $1.count } == 20_971_520)
+                repeating: (
+                    "image", "data:image/png;base64," + Data(repeating: 0, count: 1_048_576).base64EncodedString()
+                ),
+                count: 24), sources: [], images: [])
+        precondition(capped.images.count == 20 && capped.images.reduce(0) { $0 + $1.count } == 20_971_520)
         let success = calls.first { $0.id.hasSuffix(":image-saved") }!
         let failed = calls.first { $0.id.hasSuffix(":image-limit") }!
         precondition(success.kind == .image && success.state == .succeeded)

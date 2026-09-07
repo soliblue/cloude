@@ -33,6 +33,7 @@ import Foundation
         precondition(canceledResult == nil && DaemonVersionObserver.shared.observed.count == 1)
         let removed = await HTTPClient.delete(endpoint: endpoint, path: "/delete", body: ["pluginId": "fixture"])
         precondition(removed?.1.statusCode == 200)
+        try await HTTPBoundedTests.run()
         print(
             "HTTP transport: signed requests, invalidated endpoint response suppression, capability updates, encoded paths and cancellation passed"
         )

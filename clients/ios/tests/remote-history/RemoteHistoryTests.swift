@@ -457,5 +457,6 @@ import SwiftData
             "PASS fork preserves completed plan identity, excludes incomplete plan and clears transport sequence/native IDs"
         )
         try await ChatImageHistoryTests.run(context: context, endpoint: endpoint)
+        try await ChatLocalImageHistoryTests.run(context: context)
     }
 }

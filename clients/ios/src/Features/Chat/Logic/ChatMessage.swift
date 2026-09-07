@@ -12,6 +12,7 @@ final class ChatMessage {
     var text: String
     var stateRaw: String
     var imagesData: [Data]
+    var imageSources: [String]? = nil
     var createdAt: Date
     var costUsd: Double? = nil
     var model: String? = nil

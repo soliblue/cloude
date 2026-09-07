@@ -22,6 +22,7 @@ enum ChatActions {
     ) async -> Bool {
         if Task.isCancelled || session.isStreaming || (requiringRemoteFollow && !session.followsRemote) { return false }
         let sessionId = session.id
+        let connection = session.connectionKey
         let descriptor = FetchDescriptor<ChatMessage>(predicate: #Predicate<ChatMessage> { $0.sessionId == sessionId })
         var existing: [String: ChatMessage] = [:]
         for message in (try? context.fetch(descriptor)) ?? [] {
@@ -43,7 +44,9 @@ enum ChatActions {
                 items.filter { $0["type"] as? String == "agentMessage" }.compactMap { $0["text"] as? String }
                     .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) })
             for item in items {
-                if Task.isCancelled || session.isStreaming || (requiringRemoteFollow && !session.followsRemote) {
+                if Task.isCancelled || session.isDeleted || session.connectionKey != connection || session.isStreaming
+                    || (requiringRemoteFollow && !session.followsRemote)
+                {
                     return false
                 }
                 let type = item["type"] as? String ?? ""
@@ -72,18 +75,24 @@ enum ChatActions {
                     let content = (item["content"] as? [[String: Any]]) ?? []
                     let text = content.compactMap { $0["text"] as? String }.joined(separator: "\n")
                     if message.text != text { message.text = text }
-                    if message.imagesData.isEmpty {
-                        let urls = content.filter { $0["type"] as? String == "image" }.compactMap {
-                            $0["url"] as? String
+                    let inputs = content.compactMap { part -> (String, String)? in
+                        if let type = part["type"] as? String, type == "image" || type == "localImage" {
+                            return (type, part[type == "localImage" ? "path" : "url"] as? String ?? "")
                         }
-                        if !urls.isEmpty {
-                            let images = await ChatHistoryImage.decode(urls)
-                            if Task.isCancelled || session.isStreaming
-                                || (requiringRemoteFollow && !session.followsRemote)
-                            {
-                                return false
-                            }
-                            if !images.isEmpty { message.imagesData = images }
+                        return nil
+                    }
+                    if !inputs.isEmpty {
+                        let images = await ChatHistoryImage.resolve(
+                            inputs, sources: message.imageSources ?? [], images: message.imagesData)
+                        if Task.isCancelled || session.isDeleted || session.connectionKey != connection
+                            || session.isStreaming
+                            || (requiringRemoteFollow && !session.followsRemote)
+                        {
+                            return false
+                        }
+                        if !images.sources.isEmpty {
+                            if message.imageSources != images.sources { message.imageSources = images.sources }
+                            if message.imagesData != images.images { message.imagesData = images.images }
                         }
                     }
                 } else if type == "agentMessage" || type == "plan" {
@@ -151,6 +160,21 @@ enum ChatActions {
     }
 
     @MainActor
+    static func attachRemoteImage(_ data: Data, source: String, to message: ChatMessage, context: ModelContext) -> Bool
+    {
+        let indexes = (message.imageSources ?? []).indices.filter {
+            message.imageSources?[$0] == source && message.imagesData.indices.contains($0)
+                && message.imagesData[$0].isEmpty
+        }
+        if !indexes.isEmpty, data.count * indexes.count <= 20_971_520 - message.imagesData.reduce(0, { $0 + $1.count })
+        {
+            for index in indexes { message.imagesData[index] = data }
+            return (try? context.save()) != nil
+        }
+        return message.imageSources?.contains(source) == true && indexes.isEmpty
+    }
+
+    @MainActor
     static func copyHistory(from sourceId: UUID, to sessionId: UUID, context: ModelContext) {
         let descriptor = FetchDescriptor<ChatMessage>(
             predicate: #Predicate<ChatMessage> { $0.sessionId == sourceId }, sortBy: [SortDescriptor(\.createdAt)])
@@ -159,6 +183,7 @@ enum ChatActions {
             let message = ChatMessage(
                 sessionId: sessionId, role: original.role, text: original.text, images: original.imagesData)
             message.planIsComplete = original.planIsComplete
+            message.imageSources = original.imageSources
             message.referencesData = original.referencesData
             message.reviewTargetData = original.reviewTargetData
             message.shellCommand = original.shellCommand

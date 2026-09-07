@@ -51,6 +51,34 @@ import Foundation
         return nil
     }
 
+    static func downloadBounded(
+        endpoint: Endpoint, path: String, query: [String: String] = [:], maximumBytes: Int,
+        timeout: TimeInterval = 10
+    ) async -> (Data, HTTPURLResponse)? {
+        if !Task.isCancelled, maximumBytes >= 0, timeout.isFinite, timeout > 0,
+            let url = url(endpoint: endpoint, path: path, query: query)
+        {
+            var request = URLRequest(url: url, timeoutInterval: timeout)
+            request.httpMethod = "GET"
+            request.setValue("bytes=0-\(maximumBytes)", forHTTPHeaderField: "Range")
+            sign(&request, endpoint: endpoint)
+            let endpointId = endpoint.id
+            let revision = revisions[endpointId]
+            let cacheId = endpoint.cacheId
+            if let result = await HTTPBoundedDownload(maximumBytes: maximumBytes).receive(request),
+                revisions[endpointId] == revision, endpoint.cacheId == cacheId, !Task.isCancelled
+            {
+                DaemonVersionObserver.shared.observe(response: result.1, endpointId: endpointId)
+                if let header = result.1.value(forHTTPHeaderField: "X-Daemon-Capabilities") {
+                    EndpointActions.setCapabilities(
+                        header.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }, for: endpoint)
+                }
+                return result
+            }
+        }
+        return nil
+    }
+
     static func delete(
         endpoint: Endpoint, path: String, body: [String: Any] = [:], timeout: TimeInterval = 10
     ) async -> (Data, HTTPURLResponse)? {

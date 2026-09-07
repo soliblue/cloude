@@ -11,7 +11,7 @@ struct ChatViewMessageListRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
             if !message.imagesData.isEmpty {
-                ChatViewMessageListRowAttachmentList(images: message.imagesData)
+                ChatViewMessageListRowAttachmentList(images: message.imagesData, message: message, session: session)
             }
             content
             if message.state == .failed && message.role == .assistant {

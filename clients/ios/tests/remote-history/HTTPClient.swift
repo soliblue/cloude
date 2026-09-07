@@ -1,6 +1,16 @@
 import Foundation
 
 enum HTTPClient {
+    static var imageResponse: (Data, HTTPURLResponse)?
+    static var imageCalls: [(path: String, query: [String: String], maximumBytes: Int)] = []
+    static var beforeImage: (() async -> Void)?
+    static func downloadBounded(
+        endpoint: Endpoint, path: String, query: [String: String] = [:], maximumBytes: Int, timeout: TimeInterval = 10
+    ) async -> (Data, HTTPURLResponse)? {
+        imageCalls.append((path, query, maximumBytes))
+        if let beforeImage { await beforeImage() }
+        return imageResponse
+    }
     static var response: (Data, HTTPURLResponse)?
     static var calls = 0
     static var lastHeaders: [String: String] = [:]
