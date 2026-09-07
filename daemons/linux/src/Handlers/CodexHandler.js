@@ -45,10 +45,35 @@ export async function threads(request) {
 }
 
 export async function history(request, params) {
-  const body = Buffer.from(JSON.stringify(await codexClient.request('thread/read', { threadId: codexSessions.read(params.id)?.threadId || params.id, includeTurns: true })))
-  const etag = `"${createHash('sha256').update(body).digest('hex')}"`
-  const unchanged = request.headers['if-none-match'] === etag
-  return new HTTPResponse(unchanged ? 304 : 200, unchanged ? Buffer.alloc(0) : body, 'application/json', { ETag: etag, 'Cache-Control': 'private, no-cache' })
+  const query = request.query || {}
+  if (!validText(params.id) || Object.keys(query).some(key => key !== 'includeTurns') || query.includeTurns !== undefined && !['true', 'false'].includes(query.includeTurns)) { return HTTPResponse.json(400, { error: 'includeTurns must be true or false.' }) }
+  const threadId = codexSessions.read(params.id)?.threadId || params.id
+  return codexClient.request('thread/read', { threadId, includeTurns: query.includeTurns !== 'false' }).then(result => {
+    if ((codexSessions.read(params.id)?.threadId || params.id) !== threadId) { return HTTPResponse.json(409, { error: 'The task changed while loading history. Refresh and retry.' }) }
+    if (result.thread?.id !== threadId) { return HTTPResponse.json(502, { error: 'The host returned history for a different task. Refresh and retry.' }) }
+    const body = Buffer.from(JSON.stringify(result))
+    const etag = `"${createHash('sha256').update(body).digest('hex')}"`
+    const unchanged = request.headers['if-none-match'] === etag
+    return new HTTPResponse(unchanged ? 304 : 200, unchanged ? Buffer.alloc(0) : body, 'application/json', { ETag: etag, 'Cache-Control': 'private, no-cache' })
+  }).catch(() => HTTPResponse.json(502, { error: 'The host could not read this task. Refresh its task list and retry.' }))
+}
+
+export async function turns(request, params) {
+  const query = request.query || {}
+  if (!validText(params.id) || Object.keys(query).some(key => !['cursor', 'limit', 'sortDirection'].includes(key))
+    || query.cursor !== undefined && !validText(query.cursor, 4096)
+    || query.limit !== undefined && !/^(?:[1-9]|[1-4][0-9]|50)$/u.test(query.limit)
+    || query.sortDirection !== undefined && !['asc', 'desc'].includes(query.sortDirection)) { return HTTPResponse.json(400, { error: 'Provide a valid cursor, a limit from 1 to 50, and asc or desc ordering.' }) }
+  const threadId = codexSessions.read(params.id)?.threadId || params.id
+  const limit = Number(query.limit || 25)
+  return codexClient.request('thread/turns/list', { threadId, limit, sortDirection: query.sortDirection || 'desc', itemsView: 'full', ...(query.cursor !== undefined ? { cursor: query.cursor } : {}) }).then(result => {
+    if ((codexSessions.read(params.id)?.threadId || params.id) !== threadId) { return HTTPResponse.json(409, { error: 'The task changed while loading history. Refresh and retry.' }) }
+    if (!Array.isArray(result.data) || result.data.length > limit
+      || result.data.some(turn => !validText(turn?.id) || !Array.isArray(turn.items) || turn.itemsView !== undefined && turn.itemsView !== 'full' || !['completed', 'interrupted', 'failed', 'inProgress'].includes(turn.status))
+      || new Set(result.data.map(turn => turn.id)).size !== result.data.length
+      || ['nextCursor', 'backwardsCursor'].some(key => result[key] != null && !validText(result[key], 4096))) { return HTTPResponse.json(502, { error: 'The host returned incomplete history. Update the host daemon or retry.' }) }
+    return HTTPResponse.json(200, { threadId, data: result.data, nextCursor: result.nextCursor ?? null, backwardsCursor: result.backwardsCursor ?? null })
+  }).catch(() => HTTPResponse.json(502, { error: 'The host could not page this task. Check its Codex version and retry.' }))
 }
 
 export async function fork(request, params) {
@@ -142,19 +167,32 @@ export async function archive(request, params) {
   }).catch(() => HTTPResponse.json(502, { error: 'The host could not update the archive state. Refresh the task list and retry.' })).finally(() => codexSessions.release(params.id))
 }
 
-export function requests(request, params) {
-  const runner = runnerManager.runners.get(params.id.toLowerCase())
-  const pending = new Map(codexClient.requestsForThread(codexSessions.read(params.id)?.threadId || runner?.threadId || params.id).map((request) => [request.requestKey || String(request.id), request]))
+function requestSnapshot(sessionId, includeIdentity = false) {
+  const runner = runnerManager.runners.get(sessionId.toLowerCase())
+  const threadId = codexSessions.read(sessionId)?.threadId || runner?.threadId || sessionId
+  const pending = new Map(codexClient.requestsForThread(threadId).map((request) => [request.requestKey || String(request.id), request]))
   for (const [id, request] of runner?.requests || []) { pending.set(id, request) }
-  return HTTPResponse.json(200, { requests: [...pending.values()].map((request) => ({ requestId: request.requestKey || String(request.id), method: request.method, params: request.params })), agentAttention: codexClient.attentionForThread(codexSessions.read(params.id)?.threadId || runner?.threadId || params.id).map((request) => ({ threadId: request.params.threadId, requestId: request.requestKey })) })
+  return { ...(includeIdentity ? { sessionId, threadId } : {}), requests: [...pending.values()].map((request) => ({ requestId: request.requestKey || String(request.id), method: request.method, params: request.params })), agentAttention: codexClient.attentionForThread(threadId).map((request) => ({ threadId: request.params.threadId, requestId: request.requestKey })) }
+}
+
+export function requests(request, params) {
+  return HTTPResponse.json(200, requestSnapshot(params.id))
+}
+
+export function attention(request) {
+  if (request.body?.length > 512 * 1024) { return HTTPResponse.json(413, { error: 'payload_too_large' }) }
+  const body = request.json()
+  if (Object.keys(body).some(key => key !== 'sessionIds') || !Array.isArray(body.sessionIds) || body.sessionIds.length > 100
+    || body.sessionIds.some(id => !validText(id)) || new Set(body.sessionIds).size !== body.sessionIds.length) { return HTTPResponse.json(400, { error: 'Provide up to 100 unique nonempty session IDs of at most 512 characters.' }) }
+  return HTTPResponse.json(200, { sessions: body.sessionIds.map(id => requestSnapshot(id, true)) })
 }
 
 export async function importThread(request, params) {
   const body = request.json()
-  if (Object.keys(body).some((key) => !['threadId', 'path'].includes(key)) || !validText(body.threadId) || body.path !== undefined && !validText(body.path, 4096)) { return HTTPResponse.json(400, { error: 'Provide a valid native thread ID.' }) }
+  if (Object.keys(body).some((key) => !['threadId', 'path', 'includeTurns'].includes(key)) || !validText(body.threadId) || body.path !== undefined && !validText(body.path, 4096) || body.includeTurns !== undefined && typeof body.includeTurns !== 'boolean') { return HTTPResponse.json(400, { error: 'Provide a valid native thread ID and optional includeTurns boolean.' }) }
   if (runnerManager.runners.has(params.id.toLowerCase()) || !codexSessions.reserve(params.id)) { return HTTPResponse.json(409, { error: 'session_conflict' }) }
   return Promise.resolve().then(async () => {
-    const result = await codexClient.request('thread/read', { threadId: body.threadId, includeTurns: true })
+    const result = await codexClient.request('thread/read', { threadId: body.threadId, includeTurns: body.includeTurns !== false })
     if (result.thread?.id !== body.threadId || !validText(result.thread?.cwd, 4096)) { return HTTPResponse.json(502, { error: 'The host returned a different or invalid task. Refresh the task list.' }) }
     codexSessions.write(params.id, { threadId: result.thread.id, path: result.thread.cwd, provider: 'codex' })
     return HTTPResponse.json(200, { sessionId: params.id, threadId: result.thread.id, thread: result.thread })

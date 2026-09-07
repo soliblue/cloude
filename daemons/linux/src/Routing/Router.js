@@ -4,7 +4,7 @@ import { sections, updateSection, deleteSection, moveSection, sectionThreads } f
 import { plugins, plugin, apps, readApps, mcp } from '../Handlers/CodexPluginHandler.js'
 import HTTPResponse from '../Networking/HTTPResponse.js'
 import { register as registerPush } from '../Handlers/PushHandler.js'
-import { models, account, limits, threads, history, fork, steer, respond, archive, requests, importThread, rename, skills, modes, goal, projects, createProject, login, compact } from '../Handlers/CodexHandler.js'
+import { models, account, limits, threads, history, turns, fork, steer, respond, archive, requests, attention, importThread, rename, skills, modes, goal, projects, createProject, login, compact } from '../Handlers/CodexHandler.js'
 import { abort, resume, start } from '../Handlers/ChatHandler.js'
 import { uploadIOSLog } from '../Handlers/DebugHandler.js'
 import { commit, diff, log, status, mutate, worktrees, branches, createWorktree } from '../Handlers/GitHandler.js'
@@ -18,6 +18,7 @@ import { match } from './RouteMatcher.js'
 
 export function handle(request) {
   if (isAuthorized(request)) {
+    if (request.method === 'POST' && request.path === '/codex/attention') { return attention(request) }
     for (const route of ['/schedules/:id/:action', '/schedules/:id', '/schedules']) {
       if (match(request.path, route)) { return schedules(request, match(request.path, route)) }
     }
@@ -39,6 +40,7 @@ export function handle(request) {
     if (['GET', 'POST', 'DELETE'].includes(request.method) && match(request.path, '/sessions/:id/goal')) { return goal(request, match(request.path, '/sessions/:id/goal')) }
     if (request.method === 'PUT' && request.path === '/push/device') { return registerPush(request) }
     if (request.method === 'GET') {
+      if (match(request.path, '/sessions/:id/turns')) { return turns(request, match(request.path, '/sessions/:id/turns')) }
       if (match(request.path, '/sessions/:id/git/worktrees')) { return worktrees(request) }
       if (match(request.path, '/sessions/:id/git/branches')) { return branches(request) }
       if (match(request.path, '/sessions/:id/chat/requests')) { return requests(request, match(request.path, '/sessions/:id/chat/requests')) }
