@@ -145,9 +145,32 @@ enum CodexHandler {
         text(value, maximum) && !value.contains(where: { $0 == "/" || $0 == "\\" })
     }
 
+    private static func historyText(_ value: Any?, maximum: Int = 512) -> Bool {
+        if let value = value as? String {
+            return !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && value.utf16.count <= maximum
+                && !value.unicodeScalars.contains { $0.value < 0x20 || $0.value == 0x7f }
+        }
+        return false
+    }
+
     static func history(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
-        switch result("thread/read", params: ["threadId": threadId(params), "includeTurns": true]) {
+        if !historyText(params["id"]) || !request.query.keys.allSatisfy({ $0 == "includeTurns" })
+            || request.query["includeTurns"].map({ !["true", "false"].contains($0) }) == true
+        {
+            return HTTPResponse.json(400, ["error": "includeTurns must be true or false."])
+        }
+        let resolved = threadId(params)
+        switch result(
+            "thread/read", params: ["threadId": resolved, "includeTurns": request.query["includeTurns"] != "false"])
+        {
         case .success(let value):
+            if threadId(params) != resolved {
+                return HTTPResponse.json(409, ["error": "The task changed while loading history. Refresh and retry."])
+            }
+            if (value["thread"] as? [String: Any])?["id"] as? String != resolved {
+                return HTTPResponse.json(
+                    502, ["error": "The host returned history for a different task. Refresh and retry."])
+            }
             if let data = try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]) {
                 let etag = "\"\(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined())\""
                 let unchanged = request.headers["if-none-match"] == etag
@@ -156,8 +179,60 @@ enum CodexHandler {
                     extraHeaders: ["ETag": etag, "Cache-Control": "private, no-cache"])
             }
             return HTTPResponse.json(502, ["error": "invalid_codex_response"])
-        case .failure(let error): return failure(error)
+        case .failure:
+            return HTTPResponse.json(
+                502, ["error": "The host could not read this task. Refresh its task list and retry."])
         }
+    }
+
+    static func turns(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
+        if historyText(params["id"]),
+            request.query.keys.allSatisfy({ ["cursor", "limit", "sortDirection"].contains($0) }),
+            request.query["cursor"] == nil || historyText(request.query["cursor"], maximum: 4096),
+            let limit = Int(request.query["limit"] ?? "25"), (1...50).contains(limit),
+            request.query["limit"] == nil || request.query["limit"] == String(limit),
+            request.query["sortDirection"] == nil || ["asc", "desc"].contains(request.query["sortDirection"]!)
+        {
+            let resolved = threadId(params)
+            var arguments: [String: Any] = [
+                "threadId": resolved, "limit": limit, "sortDirection": request.query["sortDirection"] ?? "desc",
+                "itemsView": "full",
+            ]
+            if let cursor = request.query["cursor"] { arguments["cursor"] = cursor }
+            switch result("thread/turns/list", params: arguments) {
+            case .success(let value):
+                if threadId(params) != resolved {
+                    return HTTPResponse.json(
+                        409, ["error": "The task changed while loading history. Refresh and retry."])
+                }
+                if let turns = value["data"] as? [[String: Any]], turns.count <= limit,
+                    turns.allSatisfy({
+                        historyText($0["id"]) && $0["items"] is [Any]
+                            && ($0["itemsView"] == nil || $0["itemsView"] as? String == "full")
+                            && ["completed", "interrupted", "failed", "inProgress"].contains(
+                                $0["status"] as? String ?? "")
+                    }),
+                    Set(turns.map { Data(($0["id"] as! String).utf8) }).count == turns.count,
+                    ["nextCursor", "backwardsCursor"].allSatisfy({
+                        value[$0] == nil || value[$0] is NSNull || historyText(value[$0], maximum: 4096)
+                    })
+                {
+                    return HTTPResponse.json(
+                        200,
+                        [
+                            "threadId": resolved, "data": turns, "nextCursor": value["nextCursor"] ?? NSNull(),
+                            "backwardsCursor": value["backwardsCursor"] ?? NSNull(),
+                        ])
+                }
+                return HTTPResponse.json(
+                    502, ["error": "The host returned incomplete history. Update the host daemon or retry."])
+            case .failure:
+                return HTTPResponse.json(
+                    502, ["error": "The host could not page this task. Check its Codex version and retry."])
+            }
+        }
+        return HTTPResponse.json(
+            400, ["error": "Provide a valid cursor, a limit from 1 to 50, and asc or desc ordering."])
     }
 
     static func fork(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
@@ -296,8 +371,12 @@ enum CodexHandler {
     }
 
     static func importThread(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
-        if let body = body(request), let id = body["threadId"] as? String, identifier(id),
-            let sessionId = params["id"], !sessionId.isEmpty
+        if let body = body(request), body.keys.allSatisfy({ ["threadId", "path", "includeTurns"].contains($0) }),
+            let id = body["threadId"] as? String, historyText(id),
+            body["path"] == nil || historyText(body["path"], maximum: 4096),
+            body["includeTurns"] == nil
+                || (body["includeTurns"] as? NSNumber).map({ CFGetTypeID($0) == CFBooleanGetTypeID() }) == true,
+            let sessionId = params["id"], historyText(sessionId)
         {
             if !claim(sessionId) { return HTTPResponse.json(409, ["error": "session_conflict"]) }
             defer { release(sessionId) }
@@ -306,17 +385,23 @@ enum CodexHandler {
             {
                 return HTTPResponse.json(409, ["error": "turn_already_running"])
             }
-            switch result("thread/read", params: ["threadId": id, "includeTurns": true]) {
+            switch result(
+                "thread/read", params: ["threadId": id, "includeTurns": body["includeTurns"] as? Bool ?? true])
+            {
             case .success(let value):
                 if let thread = value["thread"] as? [String: Any], let returnedId = thread["id"] as? String,
-                    returnedId == id, let cwd = thread["cwd"] as? String, text(cwd, 4096)
+                    returnedId == id, let cwd = thread["cwd"] as? String, historyText(cwd, maximum: 4096)
                 {
-                    CodexSessionStore.shared.save(
-                        sessionId: sessionId, threadId: id, path: cwd)
-                    return HTTPResponse.json(200, ["sessionId": sessionId, "threadId": id, "thread": thread])
+                    if CodexSessionStore.shared.save(sessionId: sessionId, threadId: id, path: cwd) {
+                        return HTTPResponse.json(200, ["sessionId": sessionId, "threadId": id, "thread": thread])
+                    }
+                    return HTTPResponse.json(
+                        502, ["error": "The imported task could not be saved. Check host storage and retry."])
                 }
                 return HTTPResponse.json(502, ["error": "invalid_codex_response"])
-            case .failure(let error): return failure(error)
+            case .failure:
+                return HTTPResponse.json(
+                    502, ["error": "The host could not import this task. Refresh its task list and retry."])
             }
         }
         return HTTPResponse.json(400, ["error": "missing_thread_id"])

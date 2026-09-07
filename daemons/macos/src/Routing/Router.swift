@@ -47,6 +47,9 @@ enum Router {
                 if let params = RouteMatcher.match(request.path, pattern: "/codex/threads/:id") {
                     return CodexHandler.history(request, params: params)
                 }
+                if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/turns") {
+                    return CodexHandler.turns(request, params: params)
+                }
                 if let params = RouteMatcher.match(request.path, pattern: "/sessions/:id/history") {
                     return CodexHandler.history(request, params: params)
                 }
