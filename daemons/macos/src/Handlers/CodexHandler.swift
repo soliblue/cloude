@@ -95,7 +95,9 @@ enum CodexHandler {
         ]
         if let cursor = request.query["cursor"] { params["cursor"] = cursor }
         if let path = request.query["path"] { params["cwd"] = (path as NSString).expandingTildeInPath }
-        if let search = request.query["search"] { params["searchTerm"] = search }
+        if let search = request.query["search"]?.trimmingCharacters(in: .whitespaces), !search.isEmpty {
+            params["searchTerm"] = search
+        }
         if let sectionId {
             params["sectionId"] = sectionId
             params["sourceKinds"] = threadSourceKinds
@@ -113,7 +115,12 @@ enum CodexHandler {
                 ["cursor", "limit", "path", "search", "archived", "refresh", "sectionId", "unsectioned"].contains($0)
             })
         else { return false }
-        for key in ["cursor", "path", "search", "sectionId"] {
+        if let search = query["search"],
+            search.count > 4096 || search.unicodeScalars.contains(where: { $0.value < 0x20 || $0.value == 0x7f })
+        {
+            return false
+        }
+        for key in ["cursor", "path", "sectionId"] {
             if let value = query[key], !(key == "sectionId" ? identifier(value) : text(value, 4096)) { return false }
         }
         for key in ["archived", "refresh", "unsectioned"] {
@@ -166,22 +173,42 @@ enum CodexHandler {
             defer { release(sessionId) }
             if CodexSessionStore.shared.threadId(for: sessionId) != nil
                 || RunnerManager.shared.isRunning(sessionId: sessionId)
-                || RunnerManager.shared.isRunning(sessionId: params["id"] ?? "")
+                || RunnerManager.shared.isCompacting(threadId: threadId(params))
             {
                 return HTTPResponse.json(409, ["error": "session_conflict"])
             }
-            var forkParams: [String: Any] = ["threadId": threadId(params)]
+            var forkParams: [String: Any] = [
+                "threadId": threadId(params), "deferGoalContinuation": true, "excludeTurns": false,
+            ]
             if let path = body["path"] as? String { forkParams["cwd"] = (path as NSString).expandingTildeInPath }
-            switch result("thread/read", params: ["threadId": threadId(params), "includeTurns": false]) {
+            switch result("thread/read", params: ["threadId": threadId(params), "includeTurns": true]) {
             case .failure(let error): return failure(error)
             case .success(let value):
                 guard let source = value["thread"] as? [String: Any],
-                    source["id"] as? String == threadId(params), !active(source)
+                    source["id"] as? String == threadId(params), let turns = source["turns"] as? [[String: Any]]
                 else { return HTTPResponse.json(409, ["error": "source_thread_changed"]) }
+                let completed = Array(
+                    turns.prefix(while: {
+                        ["completed", "interrupted", "failed"].contains($0["status"] as? String ?? "")
+                    }))
+                let completedIds = completed.compactMap { $0["id"] as? String }
+                if let boundary = completedIds.last, completedIds.count == completed.count,
+                    completedIds.allSatisfy({ identifier($0) })
+                {
+                    forkParams["lastTurnId"] = boundary
+                } else {
+                    return HTTPResponse.json(
+                        409, ["error": "Wait for the first turn to finish before starting a side chat."])
+                }
                 switch result("thread/fork", params: forkParams) {
                 case .success(let value):
                     if let thread = value["thread"] as? [String: Any], let id = thread["id"] as? String,
-                        identifier(id), id != threadId(params), let cwd = thread["cwd"] as? String, text(cwd, 4096)
+                        identifier(id), id != threadId(params), let cwd = thread["cwd"] as? String, text(cwd, 4096),
+                        let turns = thread["turns"] as? [[String: Any]], !active(thread),
+                        turns.count == completedIds.count, turns.compactMap({ $0["id"] as? String }) == completedIds,
+                        turns.allSatisfy({
+                            ["completed", "interrupted", "failed"].contains($0["status"] as? String ?? "")
+                        })
                     {
                         CodexSessionStore.shared.save(sessionId: sessionId, threadId: id, path: cwd)
                         return HTTPResponse.json(200, ["sessionId": sessionId, "threadId": id, "thread": thread])

@@ -12,6 +12,7 @@ final class CodexRunner: Runner {
     private var reviewMessages: Set<Data> = []
     private let deliveryQueue: DispatchQueue
     private var turnId: String?
+    private var preflighting = true
     private var cancelled = false
     private var interruptRequested = false
     private let journal: CodexJournal?
@@ -72,12 +73,21 @@ final class CodexRunner: Runner {
             return
         }
         if threadId == nil { threadId = CodexSessionStore.shared.threadId(for: sessionId) }
+        if let threadId, codex.isThreadActive(threadId: threadId) {
+            fail("This task is running on the host. Wait for it to finish before continuing.")
+            return
+        }
         codex.observe(
             id: sessionId, on: deliveryQueue,
             message: { [weak self] message in
                 if let self, let method = message["method"] as? String,
                     let params = message["params"] as? [String: Any],
-                    params["threadId"] as? String == self.threadId || method == "account/updated", !self.hasExited
+                    params["threadId"] as? String == self.threadId || method == "account/updated", !self.hasExited,
+                    !self.preflighting
+                        || [
+                            "account/updated", "thread/closed", "thread/archived", "thread/deleted",
+                            "serverRequest/resolved",
+                        ].contains(method)
                 {
                     if let id = message["id"], let threadId = self.threadId,
                         let key = self.codex.pendingKey(id: id, threadId: threadId)
@@ -155,6 +165,10 @@ final class CodexRunner: Runner {
     }
 
     private func begin(path: String, prompt: String, images: [[String: String]]) {
+        if let threadId, codex.isThreadActive(threadId: threadId) {
+            fail("This task is running on the host. Wait for it to finish before continuing.")
+            return
+        }
         var params: [String: Any] = [
             "cwd": path, "modelProvider": "openai",
             "approvalPolicy": permissionMode == "bypassPermissions" ? "never" : "on-request",
@@ -173,6 +187,12 @@ final class CodexRunner: Runner {
                     if let thread = result["thread"] as? [String: Any], let id = thread["id"] as? String,
                         result["modelProvider"] as? String == "openai", let hostModel = result["model"] as? String
                     {
+                        if (thread["status"] as? [String: Any])?["type"] as? String == "active"
+                            || thread["status"] as? String == "active" || self.codex.isThreadActive(threadId: id)
+                        {
+                            self.fail("This task is running on the host. Wait for it to finish before continuing.")
+                            return
+                        }
                         let selectedModel = self.reviewTarget == nil ? self.model ?? hostModel : hostModel
                         self.threadId = id
                         CodexSessionStore.shared.save(sessionId: self.sessionId, threadId: id, path: path)
@@ -186,6 +206,9 @@ final class CodexRunner: Runner {
                             self.verifySubscription(path: path) { rejection in
                                 if let rejection {
                                     self.fail(rejection)
+                                } else if self.codex.isThreadActive(threadId: id) {
+                                    self.fail(
+                                        "This task is running on the host. Wait for it to finish before continuing.")
                                 } else if !self.hasExited, !self.cancelled {
                                     self.startTurn(
                                         id: id, model: selectedModel,
@@ -259,7 +282,7 @@ final class CodexRunner: Runner {
         if let shellCommand { turn = ["threadId": id, "command": shellCommand, "timeoutMs": 3_600_000] }
         codex.request(
             shellCommand != nil ? "thread/shellCommand" : reviewTarget == nil ? "turn/start" : "review/start",
-            params: turn, replyOn: deliveryQueue, noTimeout: true
+            params: turn, replyOn: deliveryQueue, noTimeout: true, onSent: { [weak self] in self?.preflighting = false }
         ) {
             [weak self] result in
             if let self, !self.hasExited {
@@ -305,7 +328,7 @@ final class CodexRunner: Runner {
 
     override func finish(exitCode: Int32) {
         if journalFailed && !reportingStorageFailure { return }
-        if let threadId { codex.settleGenerationStarts(threadId: threadId) }
+        if let threadId, !preflighting { codex.settleGenerationStarts(threadId: threadId) }
         heartbeat?.cancel()
         heartbeat = nil
         codex.removeObserver(id: sessionId)

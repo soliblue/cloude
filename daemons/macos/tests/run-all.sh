@@ -17,6 +17,7 @@ SCRIPTS=(
   run-codex-event-tests.sh
   run-codex-review-tests.sh
   run-codex-steer-tests.sh
+  run-codex-resume-guard-tests.sh
   run-codex-section-tests.sh
   run-codex-shell-tests.sh
   run-codex-terminal-tests.sh

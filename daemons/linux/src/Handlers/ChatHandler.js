@@ -28,7 +28,7 @@ export function start(request, params) {
   if (body?.provider && !['claude', 'codex'].includes(body.provider)) {
     return HTTPResponse.json(400, { error: 'unsupported_provider' })
   }
-  if (body?.provider === 'codex' && (codexCompaction.busy(body.threadId || codexSessions.read(params.id)?.threadId) || runnerManager.runners.has(params.id.toLowerCase()) || [...runnerManager.runners.values()].some((runner) => runner.threadId && runner.threadId === (body.threadId || codexSessions.read(params.id)?.threadId)))) {
+  if (body?.provider === 'codex' && (codexClient.activeTurns.has(body.threadId || codexSessions.read(params.id)?.threadId) || codexCompaction.busy(body.threadId || codexSessions.read(params.id)?.threadId) || runnerManager.runners.has(params.id.toLowerCase()) || [...runnerManager.runners.values()].some((runner) => runner.threadId && runner.threadId === (body.threadId || codexSessions.read(params.id)?.threadId)))) {
     return HTTPResponse.json(409, { error: 'turn_already_running', message: 'Steer or interrupt the active turn before starting another.' })
   }
   if (params.id && typeof body?.path === 'string' && body.path.length > 0 && typeof body?.prompt === 'string') {

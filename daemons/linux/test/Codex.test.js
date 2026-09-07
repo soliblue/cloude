@@ -982,3 +982,30 @@ test('normal turn model metadata matches its explicit selected engine after a re
     runner.finish(0)
   }
 })
+
+
+test('resuming an imported active task never starts, adopts or interrupts its existing turn', async (t) => {
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'codex-active-resume-'))
+ t.after(()=>fs.rmSync(directory,{recursive:true,force:true}))
+ for(const state of ['known','resume','during-auth']) {
+  const client=new FakeClient()
+  client.activeTurns=new Map(state==='known'?[['thread-1','existing-turn']]:[])
+  const request=client.request.bind(client)
+  let reads=0
+  client.request=async(method,params)=>{
+   const result=await request(method,params)
+   if(method==='thread/resume' && state==='resume') {
+    client.emit('notification',{method:'turn/started',params:{threadId:'thread-1',turn:{id:'existing-turn'}}})
+    result.thread.status={type:'active'}
+   }
+   if(method==='account/read' && ++reads===2 && state==='during-auth')client.activeTurns.set('thread-1','existing-turn')
+   return result
+  }
+  const runner=new CodexRunner({sessionId:state,threadId:'thread-1'},client,new CodexSessions(directory))
+  await assert.rejects(runner.begin(directory,'unwanted takeover',[]),/already running/)
+  assert.equal(runner.turnId,null)
+  runner.finish(1)
+  assert.ok(!client.calls.some(call=>['turn/start','review/start','thread/shellCommand','turn/interrupt'].includes(call.method)))
+  assert.equal(client.listenerCount('notification'),0)
+ }
+})

@@ -4,30 +4,33 @@ import SwiftUI
 struct SessionForkButton: View {
     let session: Session
     @Environment(\.modelContext) private var context
-    @State private var isForking = false
+    @State private var store = SessionForkStore()
     @State private var failed = false
 
     var body: some View {
         Button {
-            isForking = true
+            store.isForking = true
             Task {
-                failed = !(await SessionForkService.fork(session: session, context: context))
-                isForking = false
+                failed = !(await SessionForkService.fork(session: session, context: context, store: store))
             }
         } label: {
-            if isForking {
+            if store.isForking {
                 ProgressView().controlSize(.small)
             } else {
                 Image(systemName: "arrow.triangle.branch")
             }
         }
-        .disabled(session.isStreaming || isForking)
+        .disabled(
+            store.isForking
+                || ((session.isStreaming || session.remoteIsRunning)
+                    && session.endpoint?.capabilities?.contains("codexActiveFork") != true)
+        )
         .accessibilityLabel("Start side chat")
-        .help("Continue a copy of this conversation in a new chat")
+        .help("Start a side chat from the last finished turn")
         .alert("Could not start side chat", isPresented: $failed) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Check the connection and make sure the daemon supports Codex thread forks.")
+            Text(store.error ?? "Could not start side chat.")
         }
     }
 }

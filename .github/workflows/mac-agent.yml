@@ -35,8 +35,10 @@ jobs:
       - name: Install fastlane
         run: gem install fastlane
 
-      - name: Install cloudflared
-        run: brew list cloudflared >/dev/null 2>&1 || brew install cloudflared
+      - name: Prepare universal cloudflared
+        run: |
+          bash daemons/macos/scripts/package-cloudflared.sh "$RUNNER_TEMP/cloudflared"
+          echo "CLOUDFLARED_PATH=$RUNNER_TEMP/cloudflared" >> "$GITHUB_ENV"
 
       - name: Stamp daemon version
         env:

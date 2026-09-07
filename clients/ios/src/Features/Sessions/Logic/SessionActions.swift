@@ -71,9 +71,11 @@ enum SessionActions {
     }
 
     @MainActor
-    static func fork(_ source: Session, id: UUID, context: ModelContext) -> Session {
+    static func fork(
+        _ source: Session, id: UUID, path: String, context: ModelContext, copyHistory: Bool = true
+    ) -> Session {
         let session = Session(
-            id: id, endpoint: source.endpoint, path: source.path, title: source.title + " · side chat",
+            id: id, endpoint: source.endpoint, path: path, title: source.title + " · side chat",
             symbol: "arrow.triangle.branch")
         session.provider = source.provider
         session.model = source.model
@@ -82,7 +84,7 @@ enum SessionActions {
         session.parentSessionId = source.id
         session.existsOnServer = true
         context.insert(session)
-        ChatActions.copyHistory(from: source.id, to: session.id, context: context)
+        if copyHistory { ChatActions.copyHistory(from: source.id, to: session.id, context: context) }
         return session
     }
 

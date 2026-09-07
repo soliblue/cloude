@@ -37,7 +37,7 @@ test('authenticated HTTP drives Codex chat, import, fork, history, models and du
       if (completeFirstTurn === undefined) { completeFirstTurn = complete } else { setTimeout(complete, 10) }
       return { turn: { id: 'turn-http' }, ...(method === 'review/start' ? { reviewThreadId: 'thread-http' } : {}) }
     }
-    return { thread: { id: method === 'thread/fork' ? 'fork-http' : 'thread-http', cwd: directory, turns: [] }, modelProvider: 'openai', model: 'subscription-model' }
+    return { thread: { id: method === 'thread/fork' ? 'fork-http' : 'thread-http', cwd: directory, turns: ['thread/read', 'thread/fork'].includes(method) ? [{ id: 'turn-http', status: 'completed', items: [] }] : [] }, modelProvider: 'openai', model: 'subscription-model' }
   }
   assert.equal((await fetch(`${url}/codex/models`)).status, 401)
   assert.equal((await fetch(`${url}/codex/login`, { method: 'POST' })).status, 401)
@@ -78,6 +78,8 @@ test('authenticated HTTP drives Codex chat, import, fork, history, models and du
   assert.equal((await fetch(`${url}/sessions/import-http/compact`, { method: 'POST', headers, body: JSON.stringify({ model: 'unsupported' }) })).status, 400)
   const forked = await (await fetch(`${url}/sessions/session-http/fork`, { method: 'POST', headers, body: JSON.stringify({ newSessionId: 'fork-session' }) })).json()
   assert.equal(forked.threadId, 'fork-http')
+  assert.equal(calls.find(call => call.method === 'thread/fork').params.lastTurnId, 'turn-http')
+  assert.deepEqual(forked.thread.turns, [{ id: 'turn-http', status: 'completed', items: [] }])
   assert.equal((await fetch(`${url}/sessions/import-http/name`, { method: 'POST', headers, body: JSON.stringify({ name: 'Renamed task' }) })).status, 200)
   assert.equal(calls.find((call) => call.method === 'thread/name/set').params.name, 'Renamed task')
   const history = await fetch(`${url}/sessions/import-http/history`, { headers })
@@ -88,6 +90,19 @@ test('authenticated HTTP drives Codex chat, import, fork, history, models and du
   assert.equal((await fetch(`${url}/sessions/session-http/fork`, { method: 'POST', headers, body: JSON.stringify({ newSessionId: 'fork-session' }) })).status, 409)
   await fetch(`${url}/codex/threads`, { headers })
   assert.equal(calls.findLast((call) => call.method === 'thread/list').params.useStateDbOnly, true)
+  for (const search of ['', '   ']) {
+    const result = await fetch(`${url}/codex/threads?search=${encodeURIComponent(search)}&archived=false`, { headers })
+    assert.equal(result.status, 200)
+    assert.equal(calls.findLast(call => call.method === 'thread/list').params.searchTerm, undefined)
+  }
+  const searched = await fetch(`${url}/codex/threads?search=%20needle%20`, { headers })
+  assert.equal(searched.status, 200)
+  assert.equal(calls.findLast(call => call.method === 'thread/list').params.searchTerm, 'needle')
+  for (const query of ['search=%00', 'search=%0A', 'cursor=', 'cursor=%20', 'path=', 'sectionId=']) {
+    const previous = calls.length
+    assert.equal((await fetch(`${url}/codex/threads?${query}`, { headers })).status, 400)
+    assert.equal(calls.length, previous)
+  }
   await fetch(`${url}/codex/threads?refresh=true`, { headers })
   assert.equal(calls.findLast((call) => call.method === 'thread/list').params.useStateDbOnly, false)
   const manifest = await (await fetch(`${url}/sessions/import-http/manifest?provider=codex&path=${encodeURIComponent(directory)}`, { headers })).json()

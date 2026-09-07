@@ -63,15 +63,29 @@ enum ChatActions {
                         timeIntervalSince1970: (history["createdAt"] as? Double ?? 0) + Double(order) / 1000)
                     message.model =
                         type == "userMessage" || item["source"] as? String == "userShell"
-                        ? nil : session.modelRaw ?? "Codex"
+                        ? nil : "Codex"
                     context.insert(message)
                     existing[remoteId] = message
                 }
                 if item["source"] as? String == "userShell", message.model != nil { message.model = nil }
                 if type == "userMessage" {
-                    let text = ((item["content"] as? [[String: Any]]) ?? []).compactMap { $0["text"] as? String }
-                        .joined(separator: "\n")
+                    let content = (item["content"] as? [[String: Any]]) ?? []
+                    let text = content.compactMap { $0["text"] as? String }.joined(separator: "\n")
                     if message.text != text { message.text = text }
+                    if message.imagesData.isEmpty {
+                        let urls = content.filter { $0["type"] as? String == "image" }.compactMap {
+                            $0["url"] as? String
+                        }
+                        if !urls.isEmpty {
+                            let images = await ChatHistoryImage.decode(urls)
+                            if Task.isCancelled || session.isStreaming
+                                || (requiringRemoteFollow && !session.followsRemote)
+                            {
+                                return false
+                            }
+                            if !images.isEmpty { message.imagesData = images }
+                        }
+                    }
                 } else if type == "agentMessage" || type == "plan" {
                     let text = item["text"] as? String ?? ""
                     if message.text != text { message.text = text }
@@ -118,6 +132,22 @@ enum ChatActions {
             }
         }
         return true
+    }
+
+    @MainActor
+    static func discardHistory(sessionId: UUID, context: ModelContext) {
+        for message
+            in (try? context.fetch(
+                FetchDescriptor<ChatMessage>(predicate: #Predicate { $0.sessionId == sessionId }))) ?? []
+        {
+            context.delete(message)
+        }
+        for call
+            in (try? context.fetch(
+                FetchDescriptor<ChatToolCall>(predicate: #Predicate { $0.sessionId == sessionId }))) ?? []
+        {
+            context.delete(call)
+        }
     }
 
     @MainActor

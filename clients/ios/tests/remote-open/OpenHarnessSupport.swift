@@ -5,6 +5,7 @@ import SwiftData
 final class Endpoint {
     @Attribute(.unique) var id: UUID
     var connectionRevision: UUID?
+    var capabilities: [String]? = nil
 
     init(id: UUID = UUID(), revision: UUID? = nil) {
         self.id = id
@@ -21,6 +22,9 @@ final class Session {
     var codexThreadId: String?
     var isArchived = false
     var followsRemote = false
+    var isStreaming = false
+    var remoteIsRunning = false
+    var connectionKey: String { "\(id)|\(endpoint?.cacheId.uuidString ?? "")|\(path ?? "")" }
     var existsOnServer = false
     var title: String
     var path: String?
@@ -41,6 +45,17 @@ final class Window {
 }
 
 enum SessionActions {
+    static var copiedHistory = false
+    static func fork(
+        _ source: Session, id: UUID, path: String, context: ModelContext, copyHistory: Bool = true
+    ) -> Session {
+        copiedHistory = copyHistory
+        let session = Session(id: id, endpoint: source.endpoint, path: path, title: source.title)
+        context.insert(session)
+        return session
+    }
+    static func setCodexThreadId(_ id: String, for session: Session) { session.codexThreadId = id }
+
     static func importThread(
         _ thread: SessionRemoteThread, id: UUID, endpoint: Endpoint, context: ModelContext
     ) -> Session {
@@ -67,10 +82,14 @@ enum WindowActions {
 enum ChatActions {
     static var beforeImport: (() async -> Void)?
     static var importResult = true
+    static var importedHistory: [String: Any]?
+    static var discarded: [UUID] = []
+    static func discardHistory(sessionId: UUID, context: ModelContext) { discarded.append(sessionId) }
 
     static func importHistory(
         _ history: [String: Any], session: Session, context: ModelContext
     ) async -> Bool {
+        importedHistory = history
         if let beforeImport { await beforeImport() }
         return importResult
     }
@@ -110,6 +129,7 @@ enum HTTPClient {
     static var beforePost: ((String) async -> Void)?
     static var postPaths: [String] = []
     static var getCalls = 0
+    static var getQuery: [String: String] = [:]
 
     static func get(
         endpoint: Endpoint, path: String, timeout: TimeInterval
@@ -122,7 +142,8 @@ enum HTTPClient {
     static func get(
         endpoint: Endpoint, path: String, query: [String: String], timeout: TimeInterval
     ) async -> (Data, HTTPURLResponse)? {
-        await get(endpoint: endpoint, path: path, timeout: timeout)
+        getQuery = query
+        return await get(endpoint: endpoint, path: path, timeout: timeout)
     }
 
     static func post(

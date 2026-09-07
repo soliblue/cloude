@@ -31,7 +31,7 @@ export async function threads(request) {
   const query = request.query
   if (Object.keys(query).some((key) => !['cursor', 'limit', 'path', 'search', 'archived', 'refresh', 'sectionId', 'unsectioned'].includes(key))
     || ['archived', 'refresh', 'unsectioned'].some((key) => query[key] !== undefined && !['true', 'false'].includes(query[key]))
-    || ['cursor', 'path', 'search', 'sectionId'].some((key) => query[key] !== undefined && (typeof query[key] !== 'string' || !query[key].trim() || query[key].length > (key === 'sectionId' ? 512 : 4096) || /[\u0000-\u001f\u007f]/u.test(query[key])))
+    || ['cursor', 'path', 'search', 'sectionId'].some((key) => query[key] !== undefined && (typeof query[key] !== 'string' || key !== 'search' && !query[key].trim() || query[key].length > (key === 'sectionId' ? 512 : 4096) || /[\u0000-\u001f\u007f]/u.test(query[key])))
     || query.sectionId !== undefined && query.unsectioned === 'true'
     || query.limit !== undefined && !/^(?:[1-9][0-9]?|100)$/u.test(query.limit)) {
     return HTTPResponse.json(400, { error: 'Provide valid thread filters, one section filter, and a page limit from 1 to 100.' })
@@ -39,7 +39,7 @@ export async function threads(request) {
   return HTTPResponse.json(200, await codexClient.request('thread/list', {
     limit: Number(query.limit || 50), sortKey: query.sectionId ? 'section_position' : 'updated_at', sortDirection: query.sectionId ? 'asc' : 'desc', ...(query.sectionId ? { sectionId: query.sectionId, sourceKinds: THREAD_SOURCE_KINDS } : query.unsectioned === 'true' ? { sectionId: null, sourceKinds: THREAD_SOURCE_KINDS } : {}), useStateDbOnly: request.query.refresh !== 'true', ...(request.query.cursor ? { cursor: request.query.cursor } : {}),
     ...(request.query.path ? { cwd: request.query.path } : {}),
-    ...(request.query.search ? { searchTerm: request.query.search } : {}),
+    ...(request.query.search?.trim() ? { searchTerm: request.query.search.trim() } : {}),
     archived: request.query.archived === 'true'
   }))
 }
@@ -59,14 +59,20 @@ export async function fork(request, params) {
   const sessionId = body.newSessionId || randomUUID()
   const source = codexSessions.read(params.id)
   const threadId = source?.threadId || params.id
-  if (active(threadId, params.id) || runnerManager.runners.has(sessionId.toLowerCase()) || codexSessions.read(sessionId) || !codexSessions.reserve(sessionId)) {
+  if (codexCompaction.busy(threadId) || runnerManager.runners.has(sessionId.toLowerCase()) || codexSessions.read(sessionId) || !codexSessions.reserve(sessionId)) {
     return HTTPResponse.json(409, { error: 'session_conflict' })
   }
   return Promise.resolve().then(async () => {
-    const snapshot = await codexClient.request('thread/read', { threadId, includeTurns: false })
-    if (snapshot.thread?.id !== threadId || snapshot.thread.status?.type === 'active' || active(threadId, params.id)) { return HTTPResponse.json(409, { error: 'The source task changed or is running. Wait before forking it.' }) }
-    const result = await codexClient.request('thread/fork', { threadId, ...(body.path ? { cwd: body.path } : {}) })
-    if (!validText(result.thread?.id) || result.thread.id === threadId || !validText(result.thread?.cwd, 4096)) { return HTTPResponse.json(502, { error: 'The host returned an invalid fork. Refresh the task list before retrying.' }) }
+    const snapshot = await codexClient.request('thread/read', { threadId, includeTurns: true })
+    if (snapshot.thread?.id !== threadId || !Array.isArray(snapshot.thread.turns) || codexCompaction.busy(threadId)) { return HTTPResponse.json(409, { error: 'The source history changed or is unavailable. Refresh before forking it.' }) }
+    const completedTurnIds = []
+    for (const turn of snapshot.thread.turns) {
+      if (!['completed', 'interrupted', 'failed'].includes(turn.status) || !validText(turn.id)) { break }
+      completedTurnIds.push(turn.id)
+    }
+    if (!completedTurnIds.length) { return HTTPResponse.json(409, { error: 'Wait for the first turn to finish before starting a side chat.' }) }
+    const result = await codexClient.request('thread/fork', { threadId, lastTurnId: completedTurnIds.at(-1), deferGoalContinuation: true, excludeTurns: false, ...(body.path ? { cwd: body.path } : {}) })
+    if (!validText(result.thread?.id) || result.thread.id === threadId || !validText(result.thread?.cwd, 4096) || result.thread.status?.type === 'active' || !Array.isArray(result.thread?.turns) || result.thread.turns.length !== completedTurnIds.length || result.thread.turns.some((turn, index) => turn.id !== completedTurnIds[index] || !['completed', 'interrupted', 'failed'].includes(turn.status))) { return HTTPResponse.json(502, { error: 'The host returned an invalid fork. Refresh the task list before retrying.' }) }
     codexSessions.write(sessionId, { threadId: result.thread.id, path: result.thread.cwd, provider: 'codex' })
     return HTTPResponse.json(200, { sessionId, threadId: result.thread.id, thread: result.thread })
   }).catch(() => HTTPResponse.json(502, { error: 'The host could not fork this task. Refresh its task list before retrying.' })).finally(() => codexSessions.release(sessionId))

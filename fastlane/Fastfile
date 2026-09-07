@@ -69,6 +69,8 @@ def bundle_cloudflared(app_path, signing_identity = nil)
   FileUtils.rm_f(destination)
   FileUtils.cp(cloudflared_source_path, destination)
   FileUtils.chmod(0755, destination)
+  architectures = sh("lipo -archs #{Shellwords.escape(File.join(app_path, 'Contents', 'MacOS', File.basename(app_path, '.app')))}", log: false).split
+  sh("lipo #{Shellwords.escape(destination)} -verify_arch #{architectures.map { |architecture| Shellwords.escape(architecture) }.join(' ')}")
 
   if signing_identity
     entitlements = File.expand_path("../daemons/macos/src/macOSDaemon.entitlements", __dir__)
@@ -77,7 +79,7 @@ def bundle_cloudflared(app_path, signing_identity = nil)
     sh("codesign --verify --deep --strict --verbose=2 #{Shellwords.escape(app_path)}")
   end
 
-  UI.success("Bundled cloudflared at #{destination}")
+  UI.success("Bundled cloudflared (#{architectures.join(", ")}) at #{destination}")
 end
 
 platform :ios do

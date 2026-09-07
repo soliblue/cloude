@@ -38,6 +38,10 @@ final class RunnerManager {
         }
     }
 
+    func isCompacting(threadId: String) -> Bool {
+        queue.sync { compactingThreads[threadId] != nil }
+    }
+
     func isRunning(sessionId: String) -> Bool {
         queue.sync {
             runners[sessionId.lowercased()].map { !$0.hasExited } == true

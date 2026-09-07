@@ -26,6 +26,8 @@ struct CodexHandlerTests {
         setenv("CLOUDE_DATA", root.path, 1)
         var calls: [(String, [String: Any])] = []
         var text = "first"
+        var sourceTurns: [[String: Any]] = [["id": "finished", "status": "completed"]]
+        var childTurns: [[String: Any]] = [["id": "finished", "status": "completed"]]
         CodexHandler.transport = { method, params, callback in
             calls.append((method, params))
             if method == "skills/list" {
@@ -45,7 +47,8 @@ struct CodexHandlerTests {
                     .success([
                         "thread": [
                             "id": method == "thread/fork" ? "fork-thread" : "source-thread", "cwd": root.path,
-                            "turns": [["text": text]],
+                            "turns": method == "thread/fork" ? childTurns : sourceTurns, "text": text,
+                            "goal": ["objective": "Keep goal", "status": "active"],
                         ]
                     ]))
             } else {
@@ -54,6 +57,18 @@ struct CodexHandlerTests {
         }
         precondition(CodexHandler.threads(request()).status == 200)
         precondition(calls.last?.1["useStateDbOnly"] as? Bool == true)
+        for search in ["", "   "] {
+            precondition(CodexHandler.threads(request(query: ["search": search])).status == 200)
+            precondition(calls.last?.1["searchTerm"] == nil)
+        }
+        precondition(CodexHandler.threads(request(query: ["search": "  hello  "])).status == 200)
+        precondition(calls.last?.1["searchTerm"] as? String == "hello")
+        for search in ["\n", "\0", "hello\t"] {
+            precondition(CodexHandler.threads(request(query: ["search": search])).status == 400)
+        }
+        for key in ["cursor", "path", "sectionId"] {
+            precondition(CodexHandler.threads(request(query: [key: ""])).status == 400)
+        }
         precondition(CodexHandler.threads(request(query: ["refresh": "true", "cursor": "cursor"])).status == 200)
         precondition(calls.last?.1["useStateDbOnly"] as? Bool == false)
         precondition(calls.last?.1["cursor"] as? String == "cursor")
@@ -92,6 +107,9 @@ struct CodexHandlerTests {
 
         precondition(
             CodexHandler.fork(request("POST", body: ["newSessionId": "fork-session"]), params: params).status == 200)
+        precondition(calls.last?.1["lastTurnId"] as? String == "finished")
+        precondition(calls.last?.1["deferGoalContinuation"] as? Bool == true)
+        precondition(calls.last?.1["excludeTurns"] as? Bool == false)
         let beforeConflict = calls.count
         precondition(
             CodexHandler.fork(request("POST", body: ["newSessionId": "fork-session"]), params: params).status == 409)
@@ -99,8 +117,38 @@ struct CodexHandlerTests {
         RunnerManager.shared.active = ["source-session"]
         precondition(
             CodexHandler.importThread(request("POST", body: ["threadId": "other"]), params: params).status == 409)
-        precondition(CodexHandler.fork(request("POST", body: ["newSessionId": "other"]), params: params).status == 409)
         precondition(calls.count == beforeConflict)
+        sourceTurns.append(["id": "running", "status": "inProgress"])
+        sourceTurns.append(["id": "later", "status": "completed"])
+        let activeFork = CodexHandler.fork(request("POST", body: ["newSessionId": "other"]), params: params)
+        precondition(activeFork.status == 200)
+        precondition(calls.last?.1["lastTurnId"] as? String == "finished")
+        precondition(
+            ((json(activeFork)["thread"] as? [String: Any])?["goal"] as? [String: Any])?["objective"] as? String
+                == "Keep goal")
+        precondition(RunnerManager.shared.active == ["source-session"])
+        precondition(CodexSessionStore.shared.threadId(for: "source-session") == "source-thread")
+        sourceTurns = [["id": "running", "status": "inProgress"]]
+        precondition(
+            CodexHandler.fork(request("POST", body: ["newSessionId": "no-boundary"]), params: params).status == 409)
+        precondition(calls.last?.0 == "thread/read")
+        sourceTurns = [["id": "finished", "status": "completed"]]
+        childTurns = [["id": "unexpected", "status": "inProgress"]]
+        precondition(
+            CodexHandler.fork(request("POST", body: ["newSessionId": "bad-child"]), params: params).status == 502)
+        precondition(CodexSessionStore.shared.threadId(for: "bad-child") == nil)
+        for invalid: [[String: Any]] in [[], [["id": "wrong-prefix", "status": "completed"]]] {
+            childTurns = invalid
+            precondition(
+                CodexHandler.fork(request("POST", body: ["newSessionId": "invalid-prefix"]), params: params).status
+                    == 502)
+            precondition(CodexSessionStore.shared.threadId(for: "invalid-prefix") == nil)
+        }
+        childTurns = sourceTurns
+        RunnerManager.shared.compacting = ["source-thread"]
+        precondition(
+            CodexHandler.fork(request("POST", body: ["newSessionId": "compacting"]), params: params).status == 409)
+        RunnerManager.shared.compacting = []
         RunnerManager.shared.active = []
         precondition(CodexHandler.archive(request("POST", body: ["archived": false]), params: params).status == 200)
         precondition(calls.last?.0 == "thread/unarchive")
@@ -259,11 +307,23 @@ struct CodexHandlerTests {
         var firstStatus = 0
         CodexHandler.transport = { method, _, callback in
             if method == "thread/read" {
-                callback(.success(["thread": ["id": "source-thread", "cwd": root.path]]))
+                callback(
+                    .success([
+                        "thread": [
+                            "id": "source-thread", "cwd": root.path,
+                            "turns": [["id": "finished", "status": "completed"]],
+                        ]
+                    ]))
             } else {
                 entered.signal()
                 precondition(allowReply.wait(timeout: .now() + 3) == .success)
-                callback(.success(["thread": ["id": "concurrent-thread", "cwd": root.path]]))
+                callback(
+                    .success([
+                        "thread": [
+                            "id": "concurrent-thread", "cwd": root.path,
+                            "turns": [["id": "finished", "status": "completed"]],
+                        ]
+                    ]))
             }
         }
         DispatchQueue.global().async {

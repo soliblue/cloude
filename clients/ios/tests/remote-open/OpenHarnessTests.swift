@@ -131,6 +131,16 @@ struct OpenHarnessTests {
         precondition(importResult)
         precondition(importedSessionCount == 1)
         precondition(importedWindowCount >= 1)
+        HTTPClient.getResponse = (
+            Data(#"{"data":[],"nextCursor":null}"#.utf8),
+            HTTPURLResponse(url: URL(string: "http://test")!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        )
+        for search in ["", "   ", "\n\t", "  feature name  "] {
+            await SessionRemoteService.load(endpoint: endpoint, store: store, search: search, archived: false)
+            precondition(HTTPClient.getQuery["search"] == (search.contains("feature") ? "feature name" : nil))
+            precondition(HTTPClient.getQuery["archived"] == "false" && store.error == nil)
+        }
+        try await ForkHarnessTests.run()
         print("Remote open fencing passed revision, cancellation cleanup, existing reuse and import mutation tests")
     }
 }

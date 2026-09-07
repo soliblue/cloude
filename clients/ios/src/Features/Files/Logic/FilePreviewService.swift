@@ -22,7 +22,8 @@ enum FilePreviewService {
                     return await resource(url: url, node: node, cached: false)
                 }
                 try? FileManager.default.removeItem(at: file)
-            } else if !Task.isCancelled, endpoint.cacheId == cacheId,
+            }
+            if !Task.isCancelled, endpoint.cacheId == cacheId,
                 let url = await FileCache.shared.cached(endpoint: cacheId, path: node.path)
             {
                 return await resource(url: url, node: node, cached: true)

@@ -30,6 +30,7 @@ export default class CodexRunner extends Runner {
     this.childRequests = new Map()
     this.journalFailed = false
     this.cancelled = false
+    this.preflighting = false
     this.interruptedTurnId = null
     this.notification = (message) => this.receive(message)
     this.requested = (message) => {
@@ -85,6 +86,8 @@ export default class CodexRunner extends Runner {
 
   async begin(path, prompt, images) {
     this.path = path
+    this.preflighting = true
+    if (this.threadId && this.client.activeTurns?.has(this.threadId)) { throw new Error('This remote task is already running. Stop it or wait before sending another message.') }
     if (this.shellCommand !== undefined && (typeof this.shellCommand !== 'string' || !this.shellCommand.trim() || this.shellCommand.length > 16384 || this.reviewTarget !== undefined || images.length || this.skills.length || this.mentions.length)) { throw new Error('Invalid Codex shell command.') }
     if (this.reviewTarget !== undefined && !validReviewTarget(this.reviewTarget)) { throw new Error('Invalid Codex review target.') }
     SubscriptionPolicy.codex(...await Promise.all([this.client.request('account/read', { refreshToken: false }), this.client.request('config/read', { cwd: path, includeLayers: false }), this.shellCommand === undefined ? this.client.request('account/rateLimits/read') : {}]), { capacity: this.shellCommand === undefined })
@@ -96,11 +99,13 @@ export default class CodexRunner extends Runner {
       approvalPolicy: this.permissionMode === 'bypassPermissions' ? 'never' : 'on-request',
       sandbox: this.permissionMode === 'plan' ? 'read-only' : this.permissionMode === 'bypassPermissions' ? 'danger-full-access' : 'workspace-write'
     }
+    if (this.threadId && this.client.activeTurns?.has(this.threadId)) { throw new Error('This remote task is already running. Stop it or wait before sending another message.') }
     const result = await this.client.request(this.threadId ? 'thread/resume' : 'thread/start', {
       ...options,
       ...(this.threadId ? { threadId: this.threadId } : this.projectId ? { projectId: this.projectId } : {})
     })
     if (this.hasExited) { return }
+    if (result.thread?.status?.type === 'active' || this.client.activeTurns?.has(result.thread?.id)) { throw new Error('This remote task is already running. Stop it or wait before sending another message.') }
     if (result.modelProvider !== 'openai') {
       throw new Error('Codex did not select the subscription-backed OpenAI provider.')
     }
@@ -114,6 +119,8 @@ export default class CodexRunner extends Runner {
     } else {
       SubscriptionPolicy.codex(await this.client.request('account/read', { refreshToken: false }), { config: {} }, {}, { capacity: false })
       if (this.hasExited || this.cancelled) { this.finish(0); return }
+      if (this.client.activeTurns?.has(this.threadId)) { throw new Error('This remote task is already running. Stop it or wait before sending another message.') }
+      this.preflighting = false
       const turn = await this.client.request(this.shellCommand !== undefined ? 'thread/shellCommand' : this.reviewTarget ? 'review/start' : 'turn/start', this.shellCommand !== undefined ? { threadId: this.threadId, command: this.shellCommand } : this.reviewTarget ? { threadId: this.threadId, delivery: 'inline', target: this.reviewTarget } : {
         threadId: this.threadId,
         collaborationMode: { mode: this.permissionMode === 'plan' ? 'plan' : 'default', settings: { model: this.model || result.model, reasoning_effort: this.effort ?? result.reasoningEffort ?? null, developer_instructions: null } },
@@ -136,7 +143,7 @@ export default class CodexRunner extends Runner {
       this.abort()
     }
     if (method === 'serverRequest/resolved' && this.childRequests.has(params?.requestKey)) { this.clearChildAttention(params.requestKey) }
-    if (params?.threadId === this.threadId && !this.hasExited) {
+    if (params?.threadId === this.threadId && !this.hasExited && (!this.preflighting || ['thread/closed', 'thread/archived', 'thread/deleted', 'serverRequest/resolved'].includes(method))) {
       if (method === 'turn/started') {
         this.turnId = params.turn.id
         if (this.cancelled) { this.abort() }

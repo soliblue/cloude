@@ -30,6 +30,12 @@ enum ChatHandler {
                 return HTTPResponse.json(
                     400, ["error": "Provide one Codex command without images, references or a review target."])
             }
+            if provider == "codex", let id = threadId ?? CodexSessionStore.shared.threadId(for: sessionId),
+                CodexClient.shared.isThreadActive(threadId: id)
+            {
+                return HTTPResponse.json(
+                    409, ["error": "This task is running on the host. Wait for it to finish before continuing."])
+            }
             if CodexHandler.isMutating(sessionId) || RunnerManager.shared.isRunning(sessionId: sessionId) {
                 return HTTPResponse.json(409, ["error": "session_already_running"])
             }

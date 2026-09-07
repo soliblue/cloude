@@ -42,7 +42,8 @@ enum SessionRemoteService {
         section: SessionSectionFilter = .all
     ) async {
         let scope = endpoint.cacheId
-        let requestKey = "\(scope)|\(search)|\(archived)|\(section)"
+        let term = search.trimmingCharacters(in: .whitespacesAndNewlines)
+        let requestKey = "\(scope)|\(term)|\(archived)|\(section)"
         if store.requestKey != requestKey {
             store.threads = []
             store.nextCursor = nil
@@ -52,7 +53,8 @@ enum SessionRemoteService {
         store.generation = generation
         store.isLoading = true
         store.error = nil
-        var query = ["search": search, "archived": String(archived)]
+        var query = ["archived": String(archived)]
+        if !term.isEmpty { query["search"] = term }
         query.merge(section.query) { _, new in new }
         if more, let cursor = store.nextCursor { query["cursor"] = cursor }
         let response = await HTTPClient.get(endpoint: endpoint, path: "/codex/threads", query: query, timeout: 15)
@@ -141,6 +143,7 @@ enum SessionRemoteService {
             guard imported,
                 isCurrent(endpoint: endpoint, scope: scope, store: store, context: context, threadId: thread.id)
             else {
+                ChatActions.discardHistory(sessionId: session.id, context: context)
                 context.delete(session)
                 return false
             }

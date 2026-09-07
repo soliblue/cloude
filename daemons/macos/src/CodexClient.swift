@@ -35,6 +35,10 @@ final class CodexClient {
         self.requestTimeout = requestTimeout
     }
 
+    func isThreadActive(threadId: String) -> Bool {
+        queue.sync { activeTurns[threadId] != nil }
+    }
+
     func stop() {
         queue.async { self.disconnect(Self.error("Codex connection stopped")) }
     }
@@ -64,6 +68,7 @@ final class CodexClient {
         _ method: String, params: [String: Any] = [:], replyOn: DispatchQueue = .global(),
         timeout: TimeInterval? = nil,
         noTimeout: Bool = false,
+        onSent: (() -> Void)? = nil,
         completion: @escaping (Result<[String: Any], Error>) -> Void
     ) {
         guard let admission = DaemonLifecycle.shared.begin() else {
@@ -80,14 +85,14 @@ final class CodexClient {
             if self.initialized {
                 self.sendRequest(
                     method, params: params, timeout: noTimeout ? nil : timeout ?? self.requestTimeout,
-                    completion: complete)
+                    sent: { if let onSent { replyOn.async(execute: onSent) } }, completion: complete)
             } else {
                 self.startup.append { result in
                     switch result {
                     case .success:
                         self.sendRequest(
                             method, params: params, timeout: noTimeout ? nil : timeout ?? self.requestTimeout,
-                            completion: complete)
+                            sent: { if let onSent { replyOn.async(execute: onSent) } }, completion: complete)
                     case .failure(let error): complete(.failure(error))
                     }
                 }
@@ -236,6 +241,7 @@ final class CodexClient {
 
     private func sendRequest(
         _ method: String, params: [String: Any], timeout: TimeInterval?,
+        sent: (() -> Void)? = nil,
         completion: @escaping (Result<[String: Any], Error>) -> Void
     ) {
         if ["turn/start", "review/start", "turn/steer", "thread/compact/start"].contains(method), authenticationKnown,
@@ -244,6 +250,13 @@ final class CodexClient {
             completion(
                 .failure(
                     Self.error("Codex authentication changed. Sign in with a ChatGPT subscription before continuing.")))
+            return
+        }
+        if ["turn/start", "review/start", "thread/shellCommand"].contains(method),
+            let threadId = params["threadId"] as? String, activeTurns[threadId] != nil
+        {
+            completion(
+                .failure(Self.error("This task is running on the host. Wait for it to finish before continuing.")))
             return
         }
         nextId += 1
@@ -262,7 +275,7 @@ final class CodexClient {
                 self?.pending.removeValue(forKey: id)?(.failure(Self.error("Codex \(method) timed out")))
             }
         }
-        write(["id": id, "method": method, "params": params])
+        if write(["id": id, "method": method, "params": params]) { sent?() }
     }
 
     @discardableResult
