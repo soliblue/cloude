@@ -5,6 +5,8 @@ import Foundation
     static var postResponse: (Data, HTTPURLResponse)?
     static var beforeGet: (() async -> Void)?
     static var beforePost: (() async -> Void)?
+    static var postHandler: ((Endpoint, [String: Any]) -> (Data, HTTPURLResponse)?)?
+    static var postBodies: [[String: Any]] = []
     static var getCount = 0
     static var postCount = 0
     static var lastBody: [String: Any] = [:]
@@ -15,11 +17,14 @@ import Foundation
         if let beforeGet { await beforeGet() }
         return result
     }
-    static func post(endpoint: Endpoint, path: String, body: [String: Any]) async -> (Data, HTTPURLResponse)? {
-        precondition(path.hasSuffix("/chat/respond"))
+    static func post(
+        endpoint: Endpoint, path: String, body: [String: Any], timeout: TimeInterval = 10
+    ) async -> (Data, HTTPURLResponse)? {
+        precondition(path.hasSuffix("/chat/respond") || path == "/codex/attention")
         postCount += 1
         lastBody = body
-        let result = postResponse
+        postBodies.append(body)
+        let result = postHandler?(endpoint, body) ?? postResponse
         if let beforePost { await beforePost() }
         return result
     }

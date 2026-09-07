@@ -732,18 +732,14 @@ enum ChatService {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let preview =
             snippet.isEmpty ? (isFailed ? "Task ended with an error" : "Task finished") : String(snippet.prefix(140))
-        let windowDescriptor = FetchDescriptor<Window>(
-            predicate: #Predicate<Window> { $0.isFocused }
-        )
-        let focusedId = (try? context.fetch(windowDescriptor).first)?.session?.id
         if UIApplication.shared.applicationState != .active {
-            session.hasUnread = true
+            SessionActions.setUnread(true, for: session)
             ChatNotificationService.postCompletion(
                 sessionId: sessionId, title: session.title, snippet: preview)
             return
         }
-        if focusedId == session.id { return }
-        session.hasUnread = true
+        if ChatVisibilityStore.isVisible(session.id) { return }
+        SessionActions.setUnread(true, for: session)
         SessionToastStore.shared.present(
             SessionToast(
                 sessionId: sessionId,

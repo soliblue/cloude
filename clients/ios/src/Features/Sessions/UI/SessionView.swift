@@ -9,6 +9,7 @@ struct SessionView: View {
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Environment(\.modelContext) private var context
     @State private var traceId = String(UUID().uuidString.prefix(6))
+    @State private var filesPresentationId = UUID()
     @State private var isFilesSheetPresented = false
 
     var body: some View {
@@ -24,6 +25,10 @@ struct SessionView: View {
         }
         .sheet(isPresented: $isFilesSheetPresented) {
             FileTreeSheet(session: session)
+        }
+        .onChange(of: isFilesSheetPresented, initial: true) { _, presented in
+            ChatVisibilityStore.cover(presented ? session.id : nil, for: filesPresentationId)
+            if !presented && ChatVisibilityStore.isVisible(session.id) { SessionActions.setUnread(false, for: session) }
         }
         .task(id: "models|\(session.connectionKey)|\(session.providerRaw ?? "")") {
             await ChatModelService.refresh(session: session)
@@ -63,6 +68,7 @@ struct SessionView: View {
             )
         }
         .onDisappear {
+            ChatVisibilityStore.cover(nil, for: filesPresentationId)
             AppLogger.uiInfo("sessionView disappear trace=\(traceId) session=\(session.id.uuidString)")
         }
     }

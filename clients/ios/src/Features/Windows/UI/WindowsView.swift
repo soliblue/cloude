@@ -8,6 +8,7 @@ struct WindowsView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Window.order) private var windows: [Window]
     @Query private var endpoints: [Endpoint]
+    @State private var visibilityId = UUID()
     @State private var selectedPane: WindowsPane = .session
     @State private var isOnboardingPresented = false
     @State private var onboardingInitialStep: OnboardingStep = .install
@@ -21,6 +22,13 @@ struct WindowsView: View {
 
     private var focusedSession: Session? {
         windows.first(where: { $0.isFocused })?.session
+    }
+
+    private var visibleChatId: UUID? {
+        scenePhase == .active && selectedPane == .session
+            && presenter.target == nil && !isOnboardingPresented && folderPickerRequest == nil
+            && scheduleNotification == nil && !isDaemonUpdateSheetPresented
+            ? focusedSession?.id : nil
     }
 
     private var archivedWindowIds: [PersistentIdentifier] {
@@ -111,6 +119,13 @@ struct WindowsView: View {
             WindowActions.removeArchived(among: windows, context: context)
             syncFocusedSession()
         }
+        .onChange(of: visibleChatId, initial: true) { _, id in
+            ChatVisibilityStore.set(id, for: visibilityId)
+            if let id, let session = focusedSession, session.id == id, ChatVisibilityStore.isVisible(id) {
+                SessionActions.markOpened(session)
+            }
+        }
+        .onDisappear { ChatVisibilityStore.set(nil, for: visibilityId) }
         .onChange(of: archivedWindowIds) { _, _ in
             WindowActions.removeArchived(among: windows, context: context)
         }
@@ -118,7 +133,12 @@ struct WindowsView: View {
             ChatService.resumeAllStuck(context: context)
         }
         .task(id: scenePhase) {
-            if scenePhase == .active { await SessionRemoteFollowService.refreshRunning(context: context) }
+            if scenePhase == .active {
+                await SessionRemoteFollowService.refreshRunning(context: context)
+            }
+        }
+        .task(id: scenePhase) {
+            if scenePhase == .active { await ChatAttentionService.observe(context: context) }
         }
         .task(id: selectedPane == .sidebar) {
             if scenePhase == .active && selectedPane == .sidebar {
@@ -257,7 +277,7 @@ struct WindowsView: View {
         if let window = windows.first(where: { $0.session?.id == sessionId }) {
             withAnimation(paneAnimation) {
                 WindowActions.activate(window, among: windows)
-                selectedPane = .session
+                setPane(.session)
             }
         } else {
             let descriptor = FetchDescriptor<Session>(
@@ -266,7 +286,7 @@ struct WindowsView: View {
             if let session = try? context.fetch(descriptor).first {
                 withAnimation(paneAnimation) {
                     WindowActions.open(session, among: windows, context: context)
-                    selectedPane = .session
+                    setPane(.session)
                 }
             }
         }
@@ -276,7 +296,7 @@ struct WindowsView: View {
         let target = pane == .git && focusedSession?.hasGit != true ? .session : pane
         withAnimation(animated ? paneAnimation : nil) {
             if let session = focusedSession, target != .sidebar {
-                session.tab = target == .git ? .git : .chat
+                SessionActions.setTab(target == .git ? .git : .chat, for: session)
             }
             selectedPane = target
         }

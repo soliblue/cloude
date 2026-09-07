@@ -27,7 +27,7 @@ enum WindowActions {
     static func activate(_ window: Window, among windows: [Window]) {
         windows.forEach { $0.isFocused = ($0.id == window.id) }
         if let session = window.session {
-            SessionActions.markOpened(session)
+            SessionActions.markOpened(session, markRead: false)
         }
     }
 
@@ -57,7 +57,7 @@ enum WindowActions {
         } else {
             let nextOrder = (windows.map(\.order).max() ?? -1) + 1
             windows.forEach { $0.isFocused = false }
-            SessionActions.markOpened(session)
+            SessionActions.markOpened(session, markRead: false)
             context.insert(Window(session: session, order: nextOrder, isFocused: true))
         }
     }
@@ -66,7 +66,7 @@ enum WindowActions {
     static func swap(_ window: Window, to target: Session, context: ModelContext) {
         let current = window.session
         window.session = target
-        SessionActions.markOpened(target)
+        SessionActions.markOpened(target, markRead: false)
         if let current, current.id != target.id {
             SessionActions.deleteIfEmpty(current, context: context)
         }

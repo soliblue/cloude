@@ -16,7 +16,7 @@ pathlib.Path(sys.argv[1]).write_text('import Foundation\nimport SwiftData\n@Main
 PY
 swiftc -parse-as-library -default-isolation MainActor -target "$(uname -m)-apple-macosx14.0" \
   "$test_dir/ChatService.swift" \
-  src/Features/Chat/Logic/Chat{Message,Reference,ReviewKind,ReviewTarget,Provider,Interaction,InteractionQuestion,InteractionStore,AgentAttention}.swift \
+  src/Features/Chat/Logic/Chat{Message,Reference,ReviewKind,ReviewTarget,Provider,Interaction,InteractionQuestion,InteractionStore,AgentAttention,VisibilityStore}.swift \
   src/Features/Windows/Logic/{Window,SessionToast,SessionToastStore}.swift \
   tests/chat-completion/*.swift -o "$test_dir/chat-completion-tests"
 "$test_dir/chat-completion-tests"

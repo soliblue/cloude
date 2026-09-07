@@ -72,6 +72,7 @@ import Foundation
         task.cancel()
         await task.value
         precondition(HTTPClient.getCount == before + 1)
+        await ChatAttentionTests.run()
         print(
             "PASS imported child approval polling independent of running status, explicit-only responses, offline retention, live revision precedence, connection fencing and cancellation"
         )

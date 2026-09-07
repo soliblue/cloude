@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 @MainActor enum ChatInteractionService {
     static func observe(session: Session, interval: Duration = .seconds(3)) async {
@@ -18,6 +19,8 @@ import Foundation
 
     static func refresh(session: Session) async {
         let connectionKey = session.connectionKey
+        let threadId = session.codexThreadId
+        let context = session.modelContext
         let revision = ChatInteractionStore.shared.revisions[session.id, default: 0]
         let agentRevision = ChatInteractionStore.shared.agentRevisions[session.id, default: 0]
         if session.provider == .codex, session.existsOnServer, let endpoint = session.endpoint,
@@ -25,8 +28,30 @@ import Foundation
                 endpoint: endpoint, path: "/sessions/\(session.id.uuidString)/chat/requests"),
             response.statusCode == 200,
             let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let requests = object["requests"] as? [[String: Any]], !Task.isCancelled,
-            session.connectionKey == connectionKey
+            object["requests"] is [[String: Any]], !Task.isCancelled,
+            session.connectionKey == connectionKey, session.codexThreadId == threadId,
+            session.modelContext === context, !session.isDeleted, !session.isArchived,
+            session.provider == .codex, session.existsOnServer
+        {
+            apply(object, session: session, revision: revision, agentRevision: agentRevision)
+        }
+    }
+
+    static func apply(_ object: [String: Any], session: Session, revision: Int, agentRevision: Int) {
+        if let requests = object["requests"] as? [[String: Any]],
+            requests.allSatisfy({
+                ($0["requestId"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+                    && ($0["method"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+                    && ($0["params"] == nil || $0["params"] is [String: Any])
+            }), Set(requests.compactMap { $0["requestId"] as? String }).count == requests.count,
+            object["agentAttention"] == nil
+                || (object["agentAttention"] as? [[String: Any]]).map({ children in
+                    children.allSatisfy {
+                        ($0["threadId"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+                            && ($0["requestId"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                == false
+                    } && Set(children.compactMap { $0["requestId"] as? String }).count == children.count
+                }) == true
         {
             let pending = requests.compactMap { request -> ChatInteraction? in
                 if let id = request["requestId"] as? String, let method = request["method"] as? String {

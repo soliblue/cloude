@@ -182,6 +182,11 @@ enum SessionActions {
     }
 
     @MainActor
+    static func setUnread(_ value: Bool, for session: Session) {
+        session.hasUnread = value
+    }
+
+    @MainActor
     static func setNeedsAttention(_ value: Bool, for session: Session) {
         session.needsAttention = value
     }
@@ -205,9 +210,9 @@ enum SessionActions {
     }
 
     @MainActor
-    static func markOpened(_ session: Session) {
+    static func markOpened(_ session: Session, markRead: Bool = true) {
         session.lastOpenedAt = .now
-        session.hasUnread = false
+        if markRead { session.hasUnread = false }
     }
 
     @MainActor

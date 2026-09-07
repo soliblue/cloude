@@ -51,9 +51,24 @@ import SwiftData
         SessionToastStore.shared.dismiss()
         session.hasUnread = false
         window.session = session
+        let visibilityId = UUID()
+        ChatVisibilityStore.set(session.id, for: visibilityId)
         UIApplication.shared.applicationState = .active
         ChatService.notifyCompletion(session: session, context: context)
         precondition(!session.hasUnread && SessionToastStore.shared.current == nil)
+        let presentationId = UUID()
+        ChatVisibilityStore.cover(session.id, for: presentationId)
+        ChatService.notifyCompletion(session: session, context: context)
+        precondition(session.hasUnread && SessionToastStore.shared.current != nil)
+        SessionToastStore.shared.dismiss()
+        session.hasUnread = false
+        ChatVisibilityStore.cover(nil, for: presentationId)
+        ChatVisibilityStore.set(nil, for: visibilityId)
+        ChatService.notifyCompletion(session: session, context: context)
+        precondition(session.hasUnread && SessionToastStore.shared.current != nil)
+        SessionToastStore.shared.dismiss()
+        session.hasUnread = false
+        ChatVisibilityStore.set(session.id, for: visibilityId)
         UIApplication.shared.applicationState = .background
         ChatService.notifyCompletion(session: session, context: context)
         precondition(session.hasUnread && ChatNotificationService.notifications.last?.2 == "Task finished")
@@ -64,6 +79,7 @@ import SwiftData
         precondition(session.hasUnread && ChatNotificationService.notifications.last?.2 == "Task ended with an error")
         UIApplication.shared.applicationState = .active
         window.session = other
+        ChatVisibilityStore.set(nil, for: visibilityId)
         image.text = String(repeating: "x", count: 200)
         ChatService.notifyCompletion(session: session, context: context)
         precondition(SessionToastStore.shared.current?.snippet == String(repeating: "x", count: 140))
