@@ -16,11 +16,11 @@ struct OnboardingViewInstallStep: View {
     var body: some View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-                Text("Connect your agents")
+                Text("Install the daemon")
                     .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(
-                    "Use Codex or Claude on your own machine with your existing subscription."
+                    "Control Codex or Claude on your computer with your existing subscription."
                 )
                 .appFont(size: ThemeTokens.Text.xl)
                 .foregroundColor(ThemeColor.secondary)
@@ -31,6 +31,11 @@ struct OnboardingViewInstallStep: View {
                 Text("Mac").tag(false)
             }
             .pickerStyle(.segmented)
+            Image("OnboardingInstallIllustration")
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity)
+                .accessibilityHidden(true)
             Text(
                 isLinux
                     ? "Paste the command into your server's terminal as your normal user with sudo access."

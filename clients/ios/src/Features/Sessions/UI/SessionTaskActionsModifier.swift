@@ -75,6 +75,11 @@ struct SessionTaskActionsModifier: ViewModifier {
             {
                 Button("Terminal", systemImage: "apple.terminal") { showingTerminal = true }
             }
+            if session.followsRemote {
+                Button("Refresh conversation", systemImage: "arrow.clockwise") {
+                    Task { await SessionRemoteFollowService.refresh(session: session, context: context) }
+                }
+            }
             Button("Rename", systemImage: "pencil") { renaming = true }
             if session.provider == .codex && session.isConfigured
                 && session.endpoint?.capabilities?.contains("agentSchedules") == true

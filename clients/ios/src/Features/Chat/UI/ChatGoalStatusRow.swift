@@ -5,7 +5,7 @@ struct ChatGoalStatusRow: View {
     @State private var showingGoal = false
 
     var body: some View {
-        if let goal = session.goal {
+        if let goal = session.goal, goal.status != "complete" {
             Button {
                 showingGoal = true
             } label: {

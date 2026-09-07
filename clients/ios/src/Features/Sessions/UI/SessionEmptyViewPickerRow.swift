@@ -12,6 +12,7 @@ struct SessionEmptyViewPickerRow: View {
     let title: String
     let value: String
     let options: [SessionEmptyViewPickerOption]
+    var modelSession: Session? = nil
     @State private var isPopoverPresented = false
 
     var body: some View {
@@ -64,6 +65,10 @@ struct SessionEmptyViewPickerRow: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                }
+                if let modelSession, modelSession.provider == .codex {
+                    SessionModelStatusView(session: modelSession)
+                        .padding(ThemeTokens.Spacing.m)
                 }
             }
             .padding(.horizontal, ThemeTokens.Spacing.xs)

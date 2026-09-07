@@ -30,9 +30,6 @@ struct ChatInputBarMetaRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Agent mode: \(permissionMode.displayName)")
-            if permissionMode == .plan {
-                Text("Plan").font(.caption.weight(.medium)).foregroundStyle(.secondary)
-            }
             if contextTokens > 0 && contextWindow > 0 {
                 contextRing
             }

@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct SettingsView: View {
+    @Binding var selectedPane: WindowsPane
     @Environment(\.theme) private var theme
     @Query(sort: \Endpoint.createdAt) private var endpoints: [Endpoint]
     @State private var accountEndpoint: Endpoint?
@@ -12,6 +13,14 @@ struct SettingsView: View {
                 SettingsViewEndpoints()
                 DaemonUpdateSettingsRow()
                 SettingsViewTheme()
+                NavigationLink {
+                    SessionHistoryView(selectedPane: $selectedPane)
+                } label: {
+                    SettingsRow(icon: "clock.arrow.circlepath", color: ThemeColor.secondary) {
+                        Text("History")
+                        Spacer()
+                    }
+                }
             }
             if endpoints.contains(where: { $0.supportsCodex == true }) {
                 Section("Codex accounts") {

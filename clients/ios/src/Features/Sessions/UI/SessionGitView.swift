@@ -8,7 +8,7 @@ struct SessionGitView: View {
     var body: some View {
         GitView(session: session)
             .safeAreaInset(edge: .top, spacing: 0) {
-                SessionGitHeader(session: session, openSidebar: openSidebar, openChat: openChat)
+                SessionGitHeader(openSidebar: openSidebar, openChat: openChat)
             }
     }
 }

@@ -5,52 +5,44 @@ struct WindowsSidebar: View {
     @Binding var selectedPane: WindowsPane
     @Environment(\.modelContext) private var context
     @Environment(\.theme) private var theme
+    @Environment(\.appAccent) private var appAccent
     @Query(sort: \Window.order) private var windows: [Window]
     @Query(sort: \Session.lastOpenedAt, order: .reverse) private var sessions: [Session]
     @State private var search = ""
+    @State private var showingSearch = false
 
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
-                HStack {
-                    Text("Afto")
-                        .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
-                    Spacer()
-                    Button {
-                        _ = WindowActions.addNew(into: context, after: windows)
-                        selectedPane = .session
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                            .appFont(size: ThemeTokens.Text.xl, weight: .medium)
-                            .frame(width: 44, height: 44)
+                if showingSearch {
+                    HStack(spacing: ThemeTokens.Spacing.s) {
+                        Image(systemName: "magnifyingglass")
+                        TextField("Search", text: $search)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .accessibilityLabel("Search tasks, folders, and hosts")
+                        Button {
+                            search = ""
+                            showingSearch = false
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityLabel("Close search")
                     }
-                    .accessibilityLabel("New task")
+                    .appFont(size: ThemeTokens.Text.m)
+                    .padding(.horizontal, ThemeTokens.Spacing.l)
+                    .frame(minHeight: 44)
                 }
-                .padding(.horizontal, ThemeTokens.Spacing.l)
-                HStack(spacing: ThemeTokens.Spacing.s) {
-                    Image(systemName: "magnifyingglass")
-                    TextField("Search tasks, folders, hosts", text: $search)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .accessibilityLabel("Search tasks, folders, and hosts")
-                }
-                .appFont(size: ThemeTokens.Text.m)
-                .padding(ThemeTokens.Spacing.m)
-                .background(theme.palette.surface, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
-                .padding(.horizontal, ThemeTokens.Spacing.l)
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                         ForEach(WindowsSidebarSection.allCases) { section in
                             let matches = section.sessions(from: sessions, search: search)
                             if !matches.isEmpty {
-                                HStack {
-                                    Text(section.rawValue)
-                                    Spacer()
-                                    Text(matches.count, format: .number)
-                                }
-                                .appFont(size: ThemeTokens.Text.s, weight: .medium)
-                                .foregroundColor(ThemeColor.secondary)
-                                .padding(.top, ThemeTokens.Spacing.m)
+                                Text(section.rawValue)
+                                    .appFont(size: ThemeTokens.Text.s, weight: .medium)
+                                    .foregroundColor(ThemeColor.secondary)
+                                    .textCase(.uppercase)
+                                    .padding(.top, ThemeTokens.Spacing.m)
                                 ForEach(matches) { session in
                                     Button {
                                         withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
@@ -73,6 +65,12 @@ struct WindowsSidebar: View {
                                         )
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.vertical, ThemeTokens.Spacing.s)
+                                        .padding(.horizontal, ThemeTokens.Spacing.l)
+                                        .background(
+                                            windows.contains { $0.isFocused && $0.session?.id == session.id }
+                                                ? appAccent.color.opacity(0.15) : Color.clear
+                                        )
+                                        .padding(.horizontal, -ThemeTokens.Spacing.l)
                                         .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
@@ -97,17 +95,35 @@ struct WindowsSidebar: View {
                     .padding(.horizontal, ThemeTokens.Spacing.l)
                 }
                 .scrollDismissesKeyboard(.interactively)
-                NavigationLink {
-                    SettingsView()
-                } label: {
-                    SettingsRow(icon: "gearshape", color: ThemeColor.secondary) {
-                        Text("Settings")
-                        Spacer()
+                HStack(spacing: ThemeTokens.Spacing.l) {
+                    NavigationLink {
+                        SettingsView(selectedPane: $selectedPane)
+                    } label: {
+                        SettingsRow(icon: "gearshape", color: ThemeColor.secondary) {
+                            Text("Settings")
+                            Spacer()
+                        }
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                     }
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
+                    Button {
+                        showingSearch.toggle()
+                    } label: {
+                        Image(systemName: "magnifyingglass")
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Search chats")
+                    Button {
+                        _ = WindowActions.addNew(into: context, after: windows)
+                        selectedPane = .session
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("New task")
                 }
-                .foregroundColor(.primary)
+                .appFont(size: ThemeTokens.Text.l)
+                .foregroundColor(ThemeColor.secondary)
                 .padding(.horizontal, ThemeTokens.Spacing.l)
                 .padding(.vertical, ThemeTokens.Spacing.s)
                 .background(theme.palette.surface.ignoresSafeArea(edges: .bottom))

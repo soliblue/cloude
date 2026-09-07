@@ -45,6 +45,7 @@ cloude/
 
 ### iOS / SwiftUI specifics
 
+- **Preserve the existing minimal design** - keep the original icon, character artwork, colors, compact pills and spacing. Add functionality through existing controls, sidebar context menus or settings; do not add branding, slogans, persistent idle status rows or extra header buttons.
 - Struct-first design, lean composable views
 - **Utility folders** (outside `Features/`) drop the prefix rule: folder describes what it does (`Networking/`), files named by what they are (`HTTPClient.swift`)
 - **View files: no logic. Logic files: no SwiftUI.** A view reaching for the network is doing the service's job; a store performing I/O is doing the service's job

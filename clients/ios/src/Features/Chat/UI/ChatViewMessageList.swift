@@ -252,7 +252,10 @@ struct ChatViewMessageList: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .frame(minHeight: 44)
         .disabled(isLoading || session.isStreaming)
         .padding(.horizontal, ThemeTokens.Spacing.m)
         .accessibilityHint("Shows earlier messages without changing this conversation")

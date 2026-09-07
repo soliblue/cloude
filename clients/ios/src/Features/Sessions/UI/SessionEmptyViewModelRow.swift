@@ -11,7 +11,8 @@ struct SessionEmptyViewModelRow: View {
             icon: "cpu",
             title: "Model",
             value: ChatModelCatalog.shared.displayName(session.model, sessionId: session.id),
-            options: options
+            options: options,
+            modelSession: session
         )
     }
 

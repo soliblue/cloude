@@ -6,10 +6,9 @@ struct SessionViewHeader: View {
     let isGitSelected: Bool
     let openSidebar: () -> Void
     let selectTab: (SessionTab) -> Void
-    @Environment(\.theme) private var theme
 
     var body: some View {
-        HStack(spacing: ThemeTokens.Spacing.m) {
+        HStack(spacing: ThemeTokens.Spacing.s) {
             SessionsMenuButton(action: openSidebar)
             Spacer(minLength: 0)
             if session.isConfigured {
@@ -19,7 +18,5 @@ struct SessionViewHeader: View {
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
-        .padding(.vertical, ThemeTokens.Spacing.xs)
-        .background(theme.palette.background)
     }
 }
