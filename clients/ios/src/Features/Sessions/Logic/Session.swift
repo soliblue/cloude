@@ -28,6 +28,8 @@ final class Session {
     var tabRaw: String = SessionTab.chat.rawValue
     var providerRaw: String? = nil
     var parentSessionId: UUID? = nil
+    var pendingForkId: UUID? = nil
+    var pendingForkScope: String? = nil
     var codexThreadId: String? = nil
     var codexProjectId: String? = nil
     var codexProjectName: String? = nil

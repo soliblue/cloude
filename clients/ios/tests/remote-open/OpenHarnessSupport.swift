@@ -6,6 +6,9 @@ final class Endpoint {
     @Attribute(.unique) var id: UUID
     var connectionRevision: UUID?
     var capabilities: [String]? = nil
+    var host = "fixture"
+    var port = 8765
+    var transportScheme = "http"
 
     init(id: UUID = UUID(), revision: UUID? = nil) {
         self.id = id
@@ -20,6 +23,9 @@ final class Session {
     @Attribute(.unique) var id: UUID
     var endpoint: Endpoint?
     var codexThreadId: String?
+    var parentSessionId: UUID?
+    var pendingForkId: UUID?
+    var pendingForkScope: String?
     var isArchived = false
     var followsRemote = false
     var isStreaming = false
@@ -46,11 +52,28 @@ final class Window {
 
 enum SessionActions {
     static var copiedHistory = false
+    static func prepareFork(_ session: Session, scope: String) -> UUID {
+        let id = session.pendingForkScope == scope ? session.pendingForkId ?? UUID() : UUID()
+        restoreFork(session, id: id, scope: scope)
+        return id
+    }
+    static func restoreFork(_ session: Session, id: UUID, scope: String) {
+        session.pendingForkId = id
+        session.pendingForkScope = scope
+    }
+    static func finishFork(_ session: Session, id: UUID) {
+        if session.pendingForkId == id {
+            session.pendingForkId = nil
+            session.pendingForkScope = nil
+        }
+    }
     static func fork(
         _ source: Session, id: UUID, path: String, context: ModelContext, copyHistory: Bool = true
     ) -> Session {
         copiedHistory = copyHistory
         let session = Session(id: id, endpoint: source.endpoint, path: path, title: source.title)
+        session.parentSessionId = source.id
+        session.followsRemote = true
         context.insert(session)
         return session
     }
@@ -128,6 +151,7 @@ enum HTTPClient {
     static var beforeGet: (() async -> Void)?
     static var beforePost: ((String) async -> Void)?
     static var postPaths: [String] = []
+    static var postBodies: [[String: Any]] = []
     static var getCalls = 0
     static var getQuery: [String: String] = [:]
 
@@ -158,7 +182,15 @@ enum HTTPClient {
         endpoint: Endpoint, path: String, body: [String: Any], timeout: TimeInterval
     ) async -> (Data, HTTPURLResponse)? {
         postPaths.append(path)
+        postBodies.append(body)
         if let beforePost { await beforePost(path) }
+        if path.hasSuffix("/fork"), let response = postResponse,
+            var object = try? JSONSerialization.jsonObject(with: response.0) as? [String: Any],
+            object["sessionId"] == nil, let id = body["newSessionId"] as? String
+        {
+            object["sessionId"] = id
+            return (try! JSONSerialization.data(withJSONObject: object), response.1)
+        }
         return postResponse
     }
 }

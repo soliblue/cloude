@@ -93,9 +93,9 @@ final class RunnerManager {
             NSLog(
                 "[RunnerManager] start sessionId=\(sessionId) path=\(path) existsOnServer=\(existsOnServer) model=\(model ?? "nil") effort=\(effort ?? "nil") permissionMode=\(permissionMode ?? "nil") promptChars=\(prompt.count) images=\(images.count)"
             )
-            if let previous = self.runners[sessionId], !previous.hasExited {
+            if self.runners[sessionId]?.hasExited == false || CodexHandler.isMutating(sessionId) {
                 let message =
-                    "{\"type\":\"error\",\"message\":\"This task already has a running turn. Wait, steer it, or interrupt it before sending again.\",\"seq\":1}\n{\"type\":\"exit\",\"code\":1,\"seq\":2}\n"
+                    "{\"type\":\"error\",\"message\":\"This task has a running turn or a side chat being created. Wait before sending again.\",\"seq\":1}\n{\"type\":\"exit\",\"code\":1,\"seq\":2}\n"
                 connection.send(
                     content: Data(message.utf8), isComplete: true,
                     completion: .contentProcessed { _ in connection.cancel() })

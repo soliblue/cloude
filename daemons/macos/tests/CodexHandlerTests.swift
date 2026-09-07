@@ -26,6 +26,7 @@ struct CodexHandlerTests {
         setenv("CLOUDE_DATA", root.path, 1)
         var calls: [(String, [String: Any])] = []
         var text = "first"
+        var compactOnRead = false
         var sourceTurns: [[String: Any]] = [["id": "finished", "status": "completed"]]
         var childTurns: [[String: Any]] = [["id": "finished", "status": "completed"]]
         CodexHandler.transport = { method, params, callback in
@@ -43,6 +44,7 @@ struct CodexHandlerTests {
                         ]
                     ]))
             } else if ["thread/read", "thread/fork"].contains(method) {
+                if method == "thread/read", compactOnRead { RunnerManager.shared.compacting = ["source-thread"] }
                 callback(
                     .success([
                         "thread": [
@@ -112,7 +114,7 @@ struct CodexHandlerTests {
         precondition(calls.last?.1["excludeTurns"] as? Bool == false)
         let beforeConflict = calls.count
         precondition(
-            CodexHandler.fork(request("POST", body: ["newSessionId": "fork-session"]), params: params).status == 409)
+            CodexHandler.fork(request("POST", body: ["newSessionId": "FORK-SESSION"]), params: params).status == 200)
         precondition(calls.count == beforeConflict)
         RunnerManager.shared.active = ["source-session"]
         precondition(
@@ -137,17 +139,28 @@ struct CodexHandlerTests {
         precondition(
             CodexHandler.fork(request("POST", body: ["newSessionId": "bad-child"]), params: params).status == 502)
         precondition(CodexSessionStore.shared.threadId(for: "bad-child") == nil)
-        for invalid: [[String: Any]] in [[], [["id": "wrong-prefix", "status": "completed"]]] {
+        for (index, invalid) in ([[], [["id": "wrong-prefix", "status": "completed"]]] as [[[String: Any]]])
+            .enumerated()
+        {
             childTurns = invalid
             precondition(
-                CodexHandler.fork(request("POST", body: ["newSessionId": "invalid-prefix"]), params: params).status
+                CodexHandler.fork(request("POST", body: ["newSessionId": "invalid-prefix-\(index)"]), params: params)
+                    .status
                     == 502)
-            precondition(CodexSessionStore.shared.threadId(for: "invalid-prefix") == nil)
+            precondition(CodexSessionStore.shared.threadId(for: "invalid-prefix-\(index)") == nil)
         }
         childTurns = sourceTurns
         RunnerManager.shared.compacting = ["source-thread"]
         precondition(
             CodexHandler.fork(request("POST", body: ["newSessionId": "compacting"]), params: params).status == 409)
+        RunnerManager.shared.compacting = []
+        compactOnRead = true
+        precondition(
+            CodexHandler.fork(request("POST", body: ["newSessionId": "compaction-during-read"]), params: params).status
+                == 409)
+        precondition(calls.last?.0 == "thread/read")
+        precondition(CodexHandler.forkReceipts.value(sessionId: "compaction-during-read") == nil)
+        compactOnRead = false
         RunnerManager.shared.compacting = []
         RunnerManager.shared.active = []
         precondition(CodexHandler.archive(request("POST", body: ["archived": false]), params: params).status == 200)

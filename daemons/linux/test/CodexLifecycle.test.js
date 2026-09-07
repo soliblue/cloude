@@ -176,15 +176,17 @@ test('fork carries a saved goal without permitting initial automatic continuatio
 
 test('fork rejects missing, reordered, substituted or extra finished history before saving the target', async () => {
  const finished=[{id:'first',status:'completed'},{id:'second',status:'interrupted'}]
+ let attempt=0
  for(const returned of [[],[finished[1]],[finished[1],finished[0]],[finished[0],{id:'different',status:'completed'}],[...finished,{id:'later',status:'completed'}]]) {
+  const target=`strict-target-${attempt++}`
   codexClient.request=async(method)=>({thread:{id:method==='thread/read'?'strict-source':'strict-child',cwd:directory,status:{type:'idle'},turns:method==='thread/read'?finished:returned}})
-  assert.equal((await fork(request({newSessionId:'strict-target'}),{id:'strict-source'})).status,502)
-  assert.equal(codexSessions.read('strict-target'),null)
-  assert.equal(codexSessions.busy('strict-target'),false)
+  assert.equal((await fork(request({newSessionId:target}),{id:'strict-source'})).status,502)
+  assert.equal(codexSessions.read(target),null)
+  assert.equal(codexSessions.busy(target),false)
  }
  codexClient.request=async(method)=>({thread:{id:method==='thread/read'?'strict-source':'strict-child',cwd:directory,status:{type:method==='thread/read'?'idle':'active'},turns:finished}})
- assert.equal((await fork(request({newSessionId:'strict-target'}),{id:'strict-source'})).status,502)
- assert.equal(codexSessions.read('strict-target'),null)
+ assert.equal((await fork(request({newSessionId:'strict-active'}),{id:'strict-source'})).status,502)
+ assert.equal(codexSessions.read('strict-active'),null)
  codexClient.request=async(method)=>({thread:{id:method==='thread/read'?'strict-source':'strict-child',cwd:directory,status:{type:'idle'},turns:finished}})
  const response=await fork(request({newSessionId:'strict-target'}),{id:'strict-source'})
  assert.equal(response.status,200)

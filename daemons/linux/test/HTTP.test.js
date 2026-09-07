@@ -87,7 +87,7 @@ test('authenticated HTTP drives Codex chat, import, fork, history, models and du
   assert.ok(history.headers.get('ETag'))
   assert.equal((await fetch(`${url}/sessions/import-http/history`, { headers: { ...headers, 'If-None-Match': history.headers.get('ETag') } })).status, 304)
   assert.equal((await fetch(`${url}/sessions/invalid/chat`, { method: 'POST', headers, body: JSON.stringify({ path: 5, prompt: 'hi', provider: 'codex' }) })).status, 400)
-  assert.equal((await fetch(`${url}/sessions/session-http/fork`, { method: 'POST', headers, body: JSON.stringify({ newSessionId: 'fork-session' }) })).status, 409)
+  assert.equal((await fetch(`${url}/sessions/session-http/fork`, { method: 'POST', headers, body: JSON.stringify({ newSessionId: 'fork-session' }) })).status, 200)
   await fetch(`${url}/codex/threads`, { headers })
   assert.equal(calls.findLast((call) => call.method === 'thread/list').params.useStateDbOnly, true)
   for (const search of ['', '   ']) {

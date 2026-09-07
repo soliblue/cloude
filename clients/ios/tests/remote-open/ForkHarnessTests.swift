@@ -5,7 +5,7 @@ struct ForkHarnessTests {
     @MainActor static func run() async throws {
         for scenario in [
             "snapshot", "running", "unsupported", "missing", "mismatch", "active", "revision", "canceled",
-            "import-failed", "import-revision", "removed",
+            "import-failed", "import-revision", "removed", "superseded", "import-superseded",
         ] {
             let container = try ModelContainer(
                 for: Endpoint.self, Session.self, Window.self,
@@ -47,6 +47,16 @@ struct ForkHarnessTests {
             if scenario == "revision" { HTTPClient.beforePost = { _ in endpoint.connectionRevision = UUID() } }
             if scenario == "removed" { HTTPClient.beforePost = { _ in context.delete(source) } }
             if scenario == "import-revision" { ChatActions.beforeImport = { endpoint.connectionRevision = UUID() } }
+            if scenario == "superseded" {
+                HTTPClient.beforePost = { _ in
+                    SessionActions.restoreFork(source, id: UUID(), scope: source.forkScopeKey)
+                }
+            }
+            if scenario == "import-superseded" {
+                ChatActions.beforeImport = {
+                    SessionActions.restoreFork(source, id: UUID(), scope: source.forkScopeKey)
+                }
+            }
             let result: Bool
             if scenario == "canceled" {
                 var release: CheckedContinuation<Void, Never>?
@@ -74,12 +84,13 @@ struct ForkHarnessTests {
                     (ChatActions.importedHistory?["turns"] as? [[String: Any]])?.first?["id"] as? String
                         == "finished-turn")
                 precondition(source.isStreaming == (scenario == "running"), "Parent remains untouched")
+                precondition(source.pendingForkId == nil && windows[0].session?.followsRemote == true)
             } else {
                 precondition(windows.isEmpty, scenario)
                 precondition(sessions.allSatisfy { $0.id == source.id }, scenario)
                 if scenario == "unsupported" { precondition(HTTPClient.postPaths.isEmpty) }
                 if scenario == "import-failed" || scenario == "import-revision" {
-                    precondition(ChatActions.discarded.count == 1)
+                    precondition(ChatActions.discarded.isEmpty)
                 }
             }
         }

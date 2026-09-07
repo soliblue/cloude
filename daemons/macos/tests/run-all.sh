@@ -5,6 +5,7 @@ SCRIPTS=(
   run_claude_policy_tests.sh
   run_codex_plugin_handler_tests.sh
   run_codex_handler_tests.sh
+  run-codex-fork-retry-tests.sh
   run-codex-client-tests.sh
   run-codex-activity-tests.sh
   run-codex-auth-fence-tests.sh

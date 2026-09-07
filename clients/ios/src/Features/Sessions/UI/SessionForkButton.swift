@@ -28,7 +28,22 @@ struct SessionForkButton: View {
         .accessibilityLabel("Start side chat")
         .help("Start a side chat from the last finished turn")
         .alert("Could not start side chat", isPresented: $failed) {
-            Button("OK", role: .cancel) {}
+            if store.unconfirmedRequestId != nil {
+                Button("Start another") {
+                    Task {
+                        failed =
+                            !(await SessionForkService.fork(
+                                session: session, context: context, store: store, startAnother: true))
+                    }
+                }
+            } else {
+                Button("Try again") {
+                    Task {
+                        failed = !(await SessionForkService.fork(session: session, context: context, store: store))
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text(store.error ?? "Could not start side chat.")
         }

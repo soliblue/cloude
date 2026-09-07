@@ -8,6 +8,7 @@ export default class CodexSessions {
     this.directory = directory
     this.mutations = new Set()
     this.steering = new Map()
+    this.forks = new Map()
   }
 
   reserve(sessionId) {
@@ -34,9 +35,35 @@ export default class CodexSessions {
   }
 
   write(sessionId, value) {
-    fs.mkdirSync(this.directory, { recursive: true, mode: 0o700 })
-    fs.writeFileSync(this.file(sessionId, 'tmp'), JSON.stringify(value), { mode: 0o600 })
-    fs.renameSync(this.file(sessionId, 'tmp'), this.file(sessionId, 'json'))
+    this.persist(this.file(sessionId, 'json'), value)
+  }
+
+  persist(file, value, exclusive = false) {
+    const created = fs.mkdirSync(this.directory, { recursive: true, mode: 0o700 })
+    const descriptor = fs.openSync(exclusive ? file : `${file}.tmp`, exclusive ? 'wx' : 'w', 0o600)
+    try {
+      fs.writeFileSync(descriptor, JSON.stringify(value))
+      fs.fsyncSync(descriptor)
+    } finally { fs.closeSync(descriptor) }
+    if (!exclusive) { fs.renameSync(`${file}.tmp`, file) }
+    const directory = fs.openSync(this.directory, 'r')
+    try { fs.fsyncSync(directory) } finally { fs.closeSync(directory) }
+    if (created) {
+      let parent = path.dirname(this.directory)
+      while (true) {
+        const descriptor = fs.openSync(parent, 'r')
+        try { fs.fsyncSync(descriptor) } finally { fs.closeSync(descriptor) }
+        if (parent === path.dirname(created)) { break }
+        parent = path.dirname(parent)
+      }
+    }
+  }
+
+  forkReceipt(sessionId, fingerprint) {
+    const file = this.file(sessionId, 'fork.json')
+    const receipt = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null
+    if (receipt && (receipt.fingerprint !== fingerprint || !['pending', 'completed'].includes(receipt.status))) { throw new Error('This side-chat attempt belongs to a different source or directory, or its saved record is invalid.') }
+    return receipt
   }
 
   reset(sessionId) {

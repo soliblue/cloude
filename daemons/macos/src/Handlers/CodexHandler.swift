@@ -10,6 +10,8 @@ enum CodexHandler {
 
     private static let mutationLock = NSLock()
     private static var pendingSessions: Set<String> = []
+    private static var pendingForks: [String: String] = [:]
+    static var forkReceipts = CodexForkReceiptStore()
     static var transport: (String, [String: Any], @escaping (Result<[String: Any], Error>) -> Void) -> Void = {
         CodexClient.shared.request($0, params: $1, completion: $2)
     }
@@ -169,13 +171,40 @@ enum CodexHandler {
             if !identifier(sessionId, 200) {
                 return HTTPResponse.json(400, ["error": "invalid_session_id"])
             }
-            if !claim(sessionId) { return HTTPResponse.json(409, ["error": "session_conflict"]) }
+            let hash = SHA256.hash(
+                data: try! JSONSerialization.data(withJSONObject: [
+                    (params["id"] ?? "").lowercased(), threadId(params), body["path"] ?? NSNull(),
+                ])
+            ).map { String(format: "%02x", $0) }.joined()
+            mutationLock.lock()
+            if pendingSessions.contains(sessionId.lowercased()) {
+                let matching = pendingForks[sessionId.lowercased()] == hash
+                mutationLock.unlock()
+                return forkError(matching ? "fork_pending" : "fork_conflict", retriable: matching)
+            }
+            pendingSessions.insert(sessionId.lowercased())
+            pendingForks[sessionId.lowercased()] = hash
+            mutationLock.unlock()
             defer { release(sessionId) }
+            if let receipt = forkReceipts.value(sessionId: sessionId) {
+                if receipt["status"] as? String == "unavailable" {
+                    return forkError("fork_storage_unavailable", status: 503)
+                }
+                if receipt["hash"] as? String != hash { return forkError("fork_conflict") }
+                if let response = receipt["response"] as? [String: Any], receipt["status"] as? String == "completed" {
+                    if !forkReceipts.save(sessionId: sessionId, hash: hash, response: response) {
+                        return forkError("fork_storage_unavailable", status: 503)
+                    }
+                    return finishFork(sessionId: sessionId, response: response)
+                }
+                return forkError("fork_outcome_unknown")
+            }
+            if !CodexSessionStore.shared.available { return forkError("fork_storage_unavailable", status: 503) }
             if CodexSessionStore.shared.threadId(for: sessionId) != nil
                 || RunnerManager.shared.isRunning(sessionId: sessionId)
                 || RunnerManager.shared.isCompacting(threadId: threadId(params))
             {
-                return HTTPResponse.json(409, ["error": "session_conflict"])
+                return forkError("fork_conflict")
             }
             var forkParams: [String: Any] = [
                 "threadId": threadId(params), "deferGoalContinuation": true, "excludeTurns": false,
@@ -187,6 +216,7 @@ enum CodexHandler {
                 guard let source = value["thread"] as? [String: Any],
                     source["id"] as? String == threadId(params), let turns = source["turns"] as? [[String: Any]]
                 else { return HTTPResponse.json(409, ["error": "source_thread_changed"]) }
+                if RunnerManager.shared.isCompacting(threadId: threadId(params)) { return forkError("fork_conflict") }
                 let completed = Array(
                     turns.prefix(while: {
                         ["completed", "interrupted", "failed"].contains($0["status"] as? String ?? "")
@@ -200,6 +230,9 @@ enum CodexHandler {
                     return HTTPResponse.json(
                         409, ["error": "Wait for the first turn to finish before starting a side chat."])
                 }
+                if !forkReceipts.save(sessionId: sessionId, hash: hash) {
+                    return forkError("fork_storage_unavailable", status: 503)
+                }
                 switch result("thread/fork", params: forkParams) {
                 case .success(let value):
                     if let thread = value["thread"] as? [String: Any], let id = thread["id"] as? String,
@@ -210,15 +243,56 @@ enum CodexHandler {
                             ["completed", "interrupted", "failed"].contains($0["status"] as? String ?? "")
                         })
                     {
-                        CodexSessionStore.shared.save(sessionId: sessionId, threadId: id, path: cwd)
-                        return HTTPResponse.json(200, ["sessionId": sessionId, "threadId": id, "thread": thread])
+                        let response: [String: Any] = ["sessionId": sessionId, "threadId": id, "thread": thread]
+                        if forkReceipts.save(sessionId: sessionId, hash: hash, response: response) {
+                            return finishFork(sessionId: sessionId, response: response)
+                        }
+                        return forkError("fork_outcome_unknown", status: 502)
                     }
-                    return HTTPResponse.json(502, ["error": "invalid_codex_response"])
-                case .failure(let error): return failure(error)
+                    return forkError("fork_outcome_unknown", status: 502)
+                case .failure: return forkError("fork_outcome_unknown", status: 502)
                 }
             }
         }
         return HTTPResponse.json(400, ["error": "invalid_json_body"])
+    }
+
+    private static func finishFork(sessionId: String, response: [String: Any]) -> HTTPResponse {
+        if let id = response["threadId"] as? String, identifier(id),
+            (response["sessionId"] as? String)?.lowercased() == sessionId.lowercased(),
+            let thread = response["thread"] as? [String: Any], thread["id"] as? String == id,
+            let path = thread["cwd"] as? String, text(path, 4096), let turns = thread["turns"] as? [[String: Any]],
+            !turns.isEmpty, !active(thread),
+            turns.allSatisfy({
+                identifier($0["id"] as? String ?? "")
+                    && ["completed", "interrupted", "failed"].contains($0["status"] as? String ?? "")
+            })
+        {
+            if let existing = CodexSessionStore.shared.threadId(for: sessionId), existing != id {
+                return forkError("fork_conflict")
+            }
+            if CodexSessionStore.shared.threadId(for: sessionId) == nil,
+                RunnerManager.shared.isRunning(sessionId: sessionId)
+            {
+                return forkError("fork_conflict")
+            }
+            if CodexSessionStore.shared.save(sessionId: sessionId, threadId: id, path: path) {
+                return HTTPResponse.json(200, response)
+            }
+        }
+        return forkError("fork_storage_unavailable", status: 503)
+    }
+
+    private static func forkError(_ code: String, retriable: Bool = false, status: Int = 409) -> HTTPResponse {
+        let messages = [
+            "fork_pending": "This side chat is still being created. Retry the same request shortly.",
+            "fork_conflict": "This side-chat request belongs to another source or folder. Start a new side chat.",
+            "fork_outcome_unknown":
+                "The host may have created this side chat, but its result could not be saved. Check remote tasks before starting another.",
+            "fork_storage_unavailable":
+                "The daemon cannot read or save this side-chat request. Check host storage and restart the daemon before retrying.",
+        ]
+        return HTTPResponse.json(status, ["error": messages[code]!, "code": code, "retriable": retriable])
     }
 
     static func importThread(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
@@ -362,6 +436,7 @@ enum CodexHandler {
         mutationLock.lock()
         defer { mutationLock.unlock() }
         pendingSessions.remove(sessionId.lowercased())
+        pendingForks.removeValue(forKey: sessionId.lowercased())
     }
 
     private static func body(_ request: HTTPRequest) -> [String: Any]? {

@@ -59,9 +59,33 @@ export async function fork(request, params) {
   const sessionId = body.newSessionId || randomUUID()
   const source = codexSessions.read(params.id)
   const threadId = source?.threadId || params.id
-  if (codexCompaction.busy(threadId) || runnerManager.runners.has(sessionId.toLowerCase()) || codexSessions.read(sessionId) || !codexSessions.reserve(sessionId)) {
-    return HTTPResponse.json(409, { error: 'session_conflict' })
+  const key = sessionId.toLowerCase()
+  const fingerprint = createHash('sha256').update(JSON.stringify([params.id.toLowerCase(), threadId, body.path ?? null])).digest('hex')
+  let receipt
+  try {
+    receipt = codexSessions.forkReceipt(sessionId, fingerprint)
+  } catch {
+    return HTTPResponse.json(409, { code: 'fork_conflict', error: 'This side-chat attempt belongs to a different source or directory, or its saved record is invalid.', retriable: false })
   }
+  if (codexSessions.forks.has(key)) {
+    return HTTPResponse.json(409, { code: codexSessions.forks.get(key) === fingerprint ? 'fork_pending' : 'fork_conflict', error: codexSessions.forks.get(key) === fingerprint ? 'This side chat is still being created. Retry the same attempt shortly.' : 'This side-chat attempt belongs to a different source or directory.', retriable: codexSessions.forks.get(key) === fingerprint })
+  }
+  if (receipt?.status === 'completed') {
+    if (!codexSessions.reserve(sessionId)) { return HTTPResponse.json(409, { code: 'fork_pending', error: 'The saved side chat is being updated. Retry the same attempt shortly.', retriable: true }) }
+    return Promise.resolve().then(() => {
+      const saved = codexSessions.read(sessionId)
+      if (!validText(receipt.thread?.id) || !validText(receipt.thread?.cwd, 4096) || !Array.isArray(receipt.thread.turns) || !receipt.thread.turns.length || receipt.thread.status?.type === 'active' || receipt.thread.turns.some(turn => !validText(turn?.id) || !['completed', 'interrupted', 'failed'].includes(turn?.status)) || saved && saved.threadId !== receipt.thread.id || !saved && runnerManager.runners.has(key)) { return HTTPResponse.json(409, { code: 'fork_conflict', error: 'The saved side chat no longer matches this attempt. Open it from task history.', retriable: false }) }
+      codexSessions.write(sessionId, { threadId: receipt.thread.id, path: receipt.thread.cwd, provider: 'codex' })
+      return HTTPResponse.json(200, { sessionId, threadId: receipt.thread.id, thread: receipt.thread })
+    }).catch(() => HTTPResponse.json(502, { code: 'fork_storage_error', error: 'The saved side chat could not be restored. Check host storage and retry this attempt.', retriable: true })).finally(() => codexSessions.release(sessionId))
+  }
+  if (receipt) { return HTTPResponse.json(409, { code: 'fork_outcome_unknown', error: 'The host could not confirm whether this side chat was created. Check remote task history before starting a new attempt.', retriable: false }) }
+  if (codexCompaction.busy(threadId) || runnerManager.runners.has(key) || codexSessions.read(sessionId) || !codexSessions.reserve(sessionId)) {
+    return HTTPResponse.json(409, { code: 'fork_conflict', error: 'The source or destination task is busy or already exists. Refresh before starting a side chat.', retriable: false })
+  }
+  codexSessions.forks.set(key, fingerprint)
+  let attempted = false
+  let recorded = false
   return Promise.resolve().then(async () => {
     const snapshot = await codexClient.request('thread/read', { threadId, includeTurns: true })
     if (snapshot.thread?.id !== threadId || !Array.isArray(snapshot.thread.turns) || codexCompaction.busy(threadId)) { return HTTPResponse.json(409, { error: 'The source history changed or is unavailable. Refresh before forking it.' }) }
@@ -71,11 +95,15 @@ export async function fork(request, params) {
       completedTurnIds.push(turn.id)
     }
     if (!completedTurnIds.length) { return HTTPResponse.json(409, { error: 'Wait for the first turn to finish before starting a side chat.' }) }
+    codexSessions.persist(codexSessions.file(sessionId, 'fork.json'), { fingerprint, status: 'pending' }, true)
+    attempted = true
     const result = await codexClient.request('thread/fork', { threadId, lastTurnId: completedTurnIds.at(-1), deferGoalContinuation: true, excludeTurns: false, ...(body.path ? { cwd: body.path } : {}) })
-    if (!validText(result.thread?.id) || result.thread.id === threadId || !validText(result.thread?.cwd, 4096) || result.thread.status?.type === 'active' || !Array.isArray(result.thread?.turns) || result.thread.turns.length !== completedTurnIds.length || result.thread.turns.some((turn, index) => turn.id !== completedTurnIds[index] || !['completed', 'interrupted', 'failed'].includes(turn.status))) { return HTTPResponse.json(502, { error: 'The host returned an invalid fork. Refresh the task list before retrying.' }) }
+    if (!validText(result.thread?.id) || result.thread.id === threadId || !validText(result.thread?.cwd, 4096) || result.thread.status?.type === 'active' || !Array.isArray(result.thread?.turns) || result.thread.turns.length !== completedTurnIds.length || result.thread.turns.some((turn, index) => turn.id !== completedTurnIds[index] || !['completed', 'interrupted', 'failed'].includes(turn.status))) { return HTTPResponse.json(502, { code: 'fork_outcome_unknown', error: 'The host returned incomplete side-chat history. Check remote task history before starting a new attempt.', retriable: false }) }
+    codexSessions.persist(codexSessions.file(sessionId, 'fork.json'), { fingerprint, status: 'completed', thread: result.thread })
+    recorded = true
     codexSessions.write(sessionId, { threadId: result.thread.id, path: result.thread.cwd, provider: 'codex' })
     return HTTPResponse.json(200, { sessionId, threadId: result.thread.id, thread: result.thread })
-  }).catch(() => HTTPResponse.json(502, { error: 'The host could not fork this task. Refresh its task list before retrying.' })).finally(() => codexSessions.release(sessionId))
+  }).catch(() => HTTPResponse.json(502, { code: attempted && !recorded ? 'fork_outcome_unknown' : recorded ? 'fork_storage_error' : 'fork_preflight_failed', error: attempted && !recorded ? 'The host could not confirm whether this side chat was created. Check remote task history before starting a new attempt.' : 'The side-chat attempt could not be saved. Check the connection and host storage, then retry the same attempt.', retriable: !attempted || recorded })).finally(() => { codexSessions.release(sessionId); codexSessions.forks.delete(key) })
 }
 
 export async function steer(request, params) {

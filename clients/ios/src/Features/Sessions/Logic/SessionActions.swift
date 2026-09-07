@@ -71,6 +71,27 @@ enum SessionActions {
     }
 
     @MainActor
+    static func prepareFork(_ session: Session, scope: String) -> UUID {
+        let id = session.pendingForkScope == scope ? session.pendingForkId ?? UUID() : UUID()
+        restoreFork(session, id: id, scope: scope)
+        return id
+    }
+
+    @MainActor
+    static func restoreFork(_ session: Session, id: UUID, scope: String) {
+        session.pendingForkId = id
+        session.pendingForkScope = scope
+    }
+
+    @MainActor
+    static func finishFork(_ session: Session, id: UUID) {
+        if session.pendingForkId == id {
+            session.pendingForkId = nil
+            session.pendingForkScope = nil
+        }
+    }
+
+    @MainActor
     static func fork(
         _ source: Session, id: UUID, path: String, context: ModelContext, copyHistory: Bool = true
     ) -> Session {
@@ -82,6 +103,7 @@ enum SessionActions {
         session.effort = source.effort
         session.permissionMode = source.permissionMode
         session.parentSessionId = source.id
+        session.followsRemote = true
         session.existsOnServer = true
         context.insert(session)
         if copyHistory { ChatActions.copyHistory(from: source.id, to: session.id, context: context) }

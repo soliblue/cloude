@@ -2,7 +2,7 @@ Afto is the new name for Remote Claude.
 
 Control Codex and Claude from your iPhone using your existing subscriptions and your own remote machines. This beta prioritizes Linux and adds live tools, approvals, model and effort selection, side chats, plans, helper-agent navigation, files, Git, and an interactive terminal.
 
-Start a side chat while its parent keeps working. Forks preserve finished history and inline photos, and exclude the in-progress turn. Remote chat browsing now opens correctly with an empty search. Saved previews survive temporary host errors.
+Start a side chat while its parent keeps working. Forks preserve finished history and inline photos, and exclude the in-progress turn. Interrupted side-chat requests recover the same chat after reconnecting or restarting the app. Remote chat browsing now opens correctly with an empty search. Saved previews survive temporary host errors.
 
 New Linux scheduled tasks run in separate chats. Unsent drafts and attachments survive restarts. Saved files and task history stay available offline. Large conversations open at the latest response and load earlier messages without losing your place.
 

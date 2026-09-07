@@ -1,5 +1,4 @@
 import CryptoKit
-import Darwin
 import Foundation
 
 final class CodexSteerReceiptStore {
@@ -63,26 +62,7 @@ final class CodexSteerReceiptStore {
     }
 
     private func persist(_ next: [String: [String: String]]) -> Bool {
-        try? FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(), withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700])
-        if let data = try? JSONEncoder().encode(next), (try? data.write(to: url, options: .atomic)) != nil,
-            (try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)) != nil
-        {
-            let descriptor = Darwin.open(url.path, O_RDONLY)
-            if descriptor >= 0 {
-                let synced = Darwin.fsync(descriptor) == 0
-                Darwin.close(descriptor)
-                if synced {
-                    let directory = Darwin.open(url.deletingLastPathComponent().path, O_RDONLY)
-                    if directory >= 0 {
-                        let syncedDirectory = Darwin.fsync(directory) == 0
-                        Darwin.close(directory)
-                        return syncedDirectory
-                    }
-                }
-            }
-        }
+        if let data = try? JSONEncoder().encode(next) { return CodexPersistence.write(data, to: url) }
         return false
     }
 }

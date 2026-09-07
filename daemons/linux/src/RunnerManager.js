@@ -3,6 +3,7 @@ import { pushDelivery } from './Notifications/PushDelivery.js'
 import { preparePrompt } from './ImageDropbox.js'
 import Runner from './Runner.js'
 import CodexRunner from './Codex/CodexRunner.js'
+import { codexSessions } from './Codex/CodexSessions.js'
 
 class RunnerManager {
   constructor() {
@@ -11,6 +12,14 @@ class RunnerManager {
 
   start({ sessionId, path, prompt, images, existsOnServer, model, effort, permissionMode, provider, threadId, reviewTarget, shellCommand, skills = [], mentions = [], projectId, response, onFinish, notify = true, notificationContext }) {
     const previous = this.runners.get(sessionId.toLowerCase())
+    if (codexSessions.busy(sessionId) || provider === 'codex' && (previous && !previous.hasExited || [...this.runners.values()].some(runner => !runner.hasExited && runner.threadId && runner.threadId === (threadId || codexSessions.read(sessionId)?.threadId)))) {
+      const message = 'This task is being updated or is already running. Wait for it to finish before retrying.'
+      if (response) {
+        response.end(`${JSON.stringify({ type: 'error', message, seq: 0, sessionId })}\n${JSON.stringify({ type: 'exit', code: 1, seq: 1, sessionId })}\n`)
+        return null
+      }
+      throw new Error(message)
+    }
     const runner = new (provider === 'codex' ? CodexRunner : Runner)({
       sessionId,
       threadId,

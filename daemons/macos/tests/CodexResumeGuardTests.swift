@@ -1,8 +1,10 @@
 import Foundation
+import Network
 
 @main
 struct CodexResumeGuardTests {
     static func main() throws {
+        setenv("CLOUDE_CODEX_BIN", CommandLine.arguments[1], 1)
         let root = URL(fileURLWithPath: CommandLine.arguments[2])
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         for kind in ["turn", "review", "shell"] {
@@ -60,6 +62,15 @@ struct CodexResumeGuardTests {
                 precondition(stopped.wait(timeout: .now() + 3) == .success)
             }
         }
+        CodexHandler.mutating = true
+        let connection = NWConnection(host: "127.0.0.1", port: 1, using: .tcp)
+        RunnerManager.shared.start(
+            sessionId: "fork-reserved", path: root.path, prompt: "fixture", images: [], existsOnServer: false,
+            model: nil, effort: nil, permissionMode: nil, provider: "codex", threadId: nil, connection: connection)
+        precondition(!RunnerManager.shared.isRunning(sessionId: "fork-reserved"))
+        precondition(!CodexClient.shared.hasPendingWork)
+        connection.cancel()
+        CodexHandler.mutating = false
         print(
             "Codex imported resume guards: 18 real runner cases reject active snapshots and preflight races without adoption or interruption; own events preserved"
         )
