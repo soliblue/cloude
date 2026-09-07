@@ -76,21 +76,20 @@ struct WindowsSidebar: View {
                                         .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
-                                    .contextMenu {
-                                        Button(
-                                            session.isPinned ? "Unpin" : "Pin",
-                                            systemImage: session.isPinned ? "pin.slash" : "pin"
-                                        ) {
-                                            SessionActions.setPinned(session, !session.isPinned)
-                                        }
-                                        if let window = windows.first(where: { $0.session?.id == session.id }),
-                                            windows.count > 1
-                                        {
-                                            Button("Close tab", systemImage: "xmark") {
-                                                WindowActions.close(window, among: windows, context: context)
-                                            }
-                                        }
-                                    }
+                                    .modifier(
+                                        SessionTaskActionsModifier(
+                                            session: session,
+                                            closeTab: windows.count > 1
+                                                && windows.contains { $0.session?.id == session.id }
+                                                ? {
+                                                    if let window = windows.first(where: {
+                                                        $0.session?.id == session.id
+                                                    }) {
+                                                        WindowActions.close(window, among: windows, context: context)
+                                                    }
+                                                } : nil
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -98,14 +97,19 @@ struct WindowsSidebar: View {
                     .padding(.horizontal, ThemeTokens.Spacing.l)
                 }
                 .scrollDismissesKeyboard(.interactively)
-                VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-                    SettingsViewEndpoints()
-                    DaemonUpdateSettingsRow()
-                    SettingsViewTheme()
+                NavigationLink {
+                    SettingsView()
+                } label: {
+                    SettingsRow(icon: "gearshape", color: ThemeColor.secondary) {
+                        Text("Settings")
+                        Spacer()
+                    }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
+                .foregroundColor(.primary)
                 .padding(.horizontal, ThemeTokens.Spacing.l)
-                .padding(.vertical, ThemeTokens.Spacing.m)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .padding(.vertical, ThemeTokens.Spacing.s)
                 .background(theme.palette.surface.ignoresSafeArea(edges: .bottom))
             }
             .padding(.top, ThemeTokens.Spacing.m)
@@ -113,6 +117,9 @@ struct WindowsSidebar: View {
             .background(theme.palette.background)
             .themedNavChrome()
             .toolbar(.hidden, for: .navigationBar)
+            .onChange(of: windows.first(where: { $0.isFocused })?.session?.id) { _, id in
+                if id != nil && selectedPane == .sidebar { selectedPane = .session }
+            }
         }
     }
 }

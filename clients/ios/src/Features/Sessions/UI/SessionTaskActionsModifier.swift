@@ -1,7 +1,12 @@
+import SwiftData
 import SwiftUI
 
-struct SessionTaskMenu: View {
+struct SessionTaskActionsModifier: ViewModifier {
     let session: Session
+    var closeTab: (() -> Void)? = nil
+    @Environment(\.modelContext) private var context
+    @State private var forkStore = SessionForkStore()
+    @State private var forkFailed = false
     @State private var renaming = false
     @State private var showingGoal = false
     @State private var showingWorktree = false
@@ -15,9 +20,27 @@ struct SessionTaskMenu: View {
     @State private var historyEndpoint: Endpoint?
     @State private var archiveFailed = false
 
-    var body: some View {
-        Menu {
+    func body(content: Content) -> some View {
+        content.contextMenu {
             if session.provider == .codex && session.existsOnServer {
+                if session.isConfigured {
+                    Button(
+                        forkStore.isForking ? "Starting side chat…" : "Start side chat",
+                        systemImage: "arrow.triangle.branch"
+                    ) {
+                        forkStore.isForking = true
+                        Task {
+                            forkFailed =
+                                !(await SessionForkService.fork(session: session, context: context, store: forkStore))
+                        }
+                    }
+                    .disabled(
+                        forkStore.isForking
+                            || ((session.isStreaming || session.remoteIsRunning)
+                                && session.endpoint?.capabilities?.contains("codexActiveFork") != true)
+                    )
+                    .help("Start a side chat from the last finished turn")
+                }
                 if session.endpoint?.capabilities?.contains("codexSections") == true {
                     Button("Move to section", systemImage: "folder") { showingSections = true }
                 }
@@ -69,10 +92,10 @@ struct SessionTaskMenu: View {
                     archiveFailed = !(await SessionService.archive(session: session, archived: !session.isArchived))
                 }
             }.disabled(session.isStreaming)
-        } label: {
-            Image(systemName: "ellipsis.circle")
+            if let closeTab {
+                Button("Close tab", systemImage: "xmark") { closeTab() }
+            }
         }
-        .accessibilityLabel("Chat actions")
         .onReceive(NotificationCenter.default.publisher(for: .notificationPrepareSchedule)) { _ in
             renaming = false
             showingGoal = false
@@ -86,6 +109,7 @@ struct SessionTaskMenu: View {
             showingSchedules = false
             historyEndpoint = nil
             archiveFailed = false
+            forkFailed = false
         }
         .sheet(isPresented: $showingSchedules) { ScheduleListView(session: session).id(session.connectionKey) }
         .sheet(isPresented: $showingSections) {
@@ -108,6 +132,27 @@ struct SessionTaskMenu: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Check your connection and try again.")
+        }
+        .alert("Could not start side chat", isPresented: $forkFailed) {
+            if forkStore.unconfirmedRequestId != nil {
+                Button("Start another") {
+                    Task {
+                        forkFailed =
+                            !(await SessionForkService.fork(
+                                session: session, context: context, store: forkStore, startAnother: true))
+                    }
+                }
+            } else {
+                Button("Try again") {
+                    Task {
+                        forkFailed =
+                            !(await SessionForkService.fork(session: session, context: context, store: forkStore))
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(forkStore.error ?? "Could not start side chat.")
         }
     }
 }
