@@ -28,6 +28,9 @@ SCRIPTS=(
   run-runner-recording-tests.sh
   run-push-delivery-tests.sh
   run-daemon-updater-tests.sh
+  run-http-admission-tests.sh
+  run-transcription-operation-tests.sh
+  run-transcribe-handler-tests.sh
 )
 for script in "${SCRIPTS[@]}"; do
   "$ROOT/$script"

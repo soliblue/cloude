@@ -2,13 +2,21 @@ import Foundation
 import Speech
 
 enum TranscribeHandler {
-    static func transcribe(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
+    static func transcribe(
+        _ request: HTTPRequest, params: [String: String], authorizationTimeout: TimeInterval = 10,
+        recognitionTimeout: TimeInterval = 55
+    ) -> HTTPResponse {
         if let body = try? JSONSerialization.jsonObject(with: request.body) as? [String: Any],
             let audioBase64 = body["audio"] as? String,
             let audioData = Data(base64Encoded: audioBase64), !audioData.isEmpty
         {
-            if authorized(), let recognizer = availableRecognizer() {
-                if let text = recognize(audioData: audioData, recognizer: recognizer) {
+            if authorized(cancellation: request.cancellation, timeout: authorizationTimeout),
+                let recognizer = availableRecognizer()
+            {
+                if let text = recognize(
+                    audioData: audioData, recognizer: recognizer, cancellation: request.cancellation,
+                    timeout: recognitionTimeout)
+                {
                     return HTTPResponse.json(200, ["text": text])
                 }
                 return HTTPResponse.json(500, ["error": "transcription_failed"])
@@ -23,13 +31,17 @@ enum TranscribeHandler {
         return status != .denied && status != .restricted && availableRecognizer() != nil
     }
 
-    private static func authorized() -> Bool {
+    private static func authorized(cancellation: HTTPRequestCancellation, timeout: TimeInterval) -> Bool {
         if SFSpeechRecognizer.authorizationStatus() == .notDetermined {
-            let semaphore = DispatchSemaphore(value: 0)
-            SFSpeechRecognizer.requestAuthorization { _ in semaphore.signal() }
-            semaphore.wait()
+            let operation = TranscriptionOperation<Bool>()
+            cancellation.observe { operation.finish(nil) }
+            defer { cancellation.stopObserving() }
+            if !cancellation.isCancelled {
+                SFSpeechRecognizer.requestAuthorization { operation.finish($0 == .authorized) }
+            }
+            return operation.wait(timeout: timeout) == true && !cancellation.isCancelled
         }
-        return SFSpeechRecognizer.authorizationStatus() == .authorized
+        return SFSpeechRecognizer.authorizationStatus() == .authorized && !cancellation.isCancelled
     }
 
     private static func availableRecognizer() -> SFSpeechRecognizer? {
@@ -37,7 +49,9 @@ enum TranscribeHandler {
         return recognizer?.isAvailable == true ? recognizer : nil
     }
 
-    private static func recognize(audioData: Data, recognizer: SFSpeechRecognizer) -> String? {
+    private static func recognize(
+        audioData: Data, recognizer: SFSpeechRecognizer, cancellation: HTTPRequestCancellation, timeout: TimeInterval
+    ) -> String? {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("cloude-transcribe-\(UUID().uuidString).wav")
         if (try? audioData.write(to: url)) != nil {
@@ -47,22 +61,17 @@ enum TranscribeHandler {
             if recognizer.supportsOnDeviceRecognition {
                 recognitionRequest.requiresOnDeviceRecognition = true
             }
-            let semaphore = DispatchSemaphore(value: 0)
-            var transcription: String?
-            recognizer.recognitionTask(with: recognitionRequest) { result, error in
-                if let result, result.isFinal {
-                    transcription = result.bestTranscription.formattedString
-                    semaphore.signal()
+            let operation = TranscriptionOperation<String>()
+            cancellation.observe { operation.finish(nil) }
+            defer { cancellation.stopObserving() }
+            if !cancellation.isCancelled {
+                let task = recognizer.recognitionTask(with: recognitionRequest) { result, error in
+                    if let result, result.isFinal { operation.finish(result.bestTranscription.formattedString) }
+                    if error != nil { operation.finish(nil) }
                 }
-                if let error {
-                    NSLog("[TranscribeHandler] recognition error: \(error.localizedDescription)")
-                    semaphore.signal()
-                }
+                operation.setCancellation { task.cancel() }
             }
-            if semaphore.wait(timeout: .now() + 55) == .timedOut {
-                NSLog("[TranscribeHandler] recognition timed out")
-            }
-            return transcription?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return operation.wait(timeout: timeout)?.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         return nil
     }

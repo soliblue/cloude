@@ -13,7 +13,7 @@ swiftc "$ROOT/src/DaemonLifecycle.swift" "$ROOT/src/Runner.swift" "$ROOT/src/Cla
   "$ROOT/src/CodexSessionStore.swift" "$ROOT/src/CodexPersistence.swift" "$ROOT/src/RunnerManager.swift" "$ROOT/src/ImageDropbox.swift" \
   "$ROOT/src/Handlers/ChatHandler.swift" "$ROOT/src/Handlers/CodexControlHandler.swift" "$ROOT/tests/CodexControlReviewStub.swift" "$ROOT/src/Handlers/SessionJSONLReplay.swift" \
   "$ROOT/tests/PushDeliveryReviewStub.swift" \
-  "$ROOT/src/Networking/HTTPRequest.swift" "$ROOT/src/Networking/HTTPResponse.swift" \
+  "$ROOT/src/Networking/HTTPRequest.swift" "$ROOT/src/Networking/HTTPRequestCancellation.swift" "$ROOT/src/Networking/HTTPResponse.swift" \
   "$ROOT/src/Routing/RouteMatcher.swift" "$ROOT/src/DaemonCapabilities.swift" "$ROOT/src/Version.swift" \
   "$ROOT/tests/CodexSteerTests.swift" -o "$TEMP/steer-tests"
 CLOUDE_DATA="$TEMP/data" CODEX_HOME="$TEMP/codex" "$TEMP/steer-tests" "$ROOT/tests/fake-codex-steer.py" "$TEMP/codex"

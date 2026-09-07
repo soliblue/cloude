@@ -14,7 +14,8 @@ enum CodexHandler {
 @main
 struct CodexSectionHandlerTests {
     static func request(_ method: String, query: [String: String] = [:], body: Any? = nil) -> HTTPRequest {
-        let head = HTTPRequest.ParsedHead(method: method, path: "/fixture", query: query, headers: [:], headerEnd: 0)
+        let head = HTTPRequest.ParsedHead(
+            method: method, path: "/fixture", query: query, headers: [:], headerEnd: 0, contentLength: 0)
         return HTTPRequest(head: head, body: body.flatMap { try? JSONSerialization.data(withJSONObject: $0) } ?? Data())
     }
 

@@ -4,7 +4,8 @@ import Foundation
 struct CodexPluginHandlerTests {
     static func request(_ method: String = "GET", body: Any = [:], query: [String: String] = [:]) -> HTTPRequest {
         HTTPRequest(
-            head: HTTPRequest.ParsedHead(method: method, path: "/fixture", query: query, headers: [:], headerEnd: 0),
+            head: HTTPRequest.ParsedHead(
+                method: method, path: "/fixture", query: query, headers: [:], headerEnd: 0, contentLength: 0),
             body: (try? JSONSerialization.data(withJSONObject: body)) ?? Data())
     }
 

@@ -7,7 +7,7 @@ struct CodexHandlerTests {
     ) -> HTTPRequest {
         HTTPRequest(
             head: HTTPRequest.ParsedHead(
-                method: method, path: "/fixture", query: query, headers: headers, headerEnd: 0),
+                method: method, path: "/fixture", query: query, headers: headers, headerEnd: 0, contentLength: 0),
             body: try! JSONSerialization.data(withJSONObject: body, options: [.fragmentsAllowed]))
     }
 

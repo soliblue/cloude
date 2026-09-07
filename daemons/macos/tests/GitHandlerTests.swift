@@ -23,7 +23,7 @@ struct GitHandlerTests {
             HTTPRequest(
                 head: HTTPRequest.ParsedHead(
                     method: "GET", path: "/", query: ["path": root.path].merging(query) { _, next in next },
-                    headers: [:], headerEnd: 0),
+                    headers: [:], headerEnd: 0, contentLength: 0),
                 body: try! JSONSerialization.data(withJSONObject: ["path": root.path].merging(body) { _, next in next })
             )
         }
