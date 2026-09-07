@@ -57,6 +57,7 @@ jobs:
           node daemons/linux/scripts/package-release.mjs "$VERSION" "$PWD/cloude-linux-daemon.tar.gz"
 
       - name: Upload artifact
+        if: github.ref_type != 'tag' && github.event.inputs.release_tag == ''
         uses: actions/upload-artifact@v4
         with:
           name: cloude-linux-daemon-archive

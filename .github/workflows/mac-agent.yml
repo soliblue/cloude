@@ -24,6 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Select Xcode
         run: |
@@ -41,7 +43,13 @@ jobs:
           RELEASE_TAG: ${{ github.event.inputs.release_tag }}
         run: |
           TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
-          VERSION="${TAG#macos-daemon-v}"
+          VERSION=0.0.0
+          if [ "$GITHUB_REF_TYPE" = tag ] || [ -n "$RELEASE_TAG" ]; then
+            [[ "$TAG" =~ ^macos-daemon-v[0-9]{1,6}(\.[0-9]{1,6}){2,3}$ ]] || { echo "Invalid macOS release tag"; exit 1; }
+            git rev-parse --verify "refs/tags/$TAG" >/dev/null
+            [ "$(git rev-parse "refs/tags/$TAG^{commit}")" = "$(git rev-parse HEAD)" ] || { echo "Release tag must identify the checked out commit"; exit 1; }
+            VERSION="${TAG#macos-daemon-v}"
+          fi
           sed -i '' "s/static let current = \"dev\"/static let current = \"${VERSION}\"/" daemons/macos/src/Version.swift
           cat daemons/macos/src/Version.swift
 
@@ -69,6 +77,7 @@ jobs:
           ditto -c -k --keepParent "Remote CC Daemon.app" "Remote-CC-Daemon.app.zip"
 
       - name: Upload artifact
+        if: github.ref_type != 'tag' && github.event.inputs.release_tag == ''
         uses: actions/upload-artifact@v4
         with:
           name: Remote-CC-Daemon-dmg
@@ -85,9 +94,16 @@ jobs:
           TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
           TITLE="Afto macOS Daemon ${TAG#macos-daemon-v}"
           NOTES="Remote Codex and Claude agents using existing subscriptions, with durable task streams, files, Git, approvals, and interactive terminals."
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TITLE" --notes "$NOTES"
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --title "$TITLE" --notes "$NOTES"
+          [ "$(gh release view "$TAG" --json isDraft --jq '.isDraft')" = true ] || { echo "Refusing to replace an already published release"; exit 1; }
           gh release upload "$TAG" build/release/Remote-CC-Daemon.dmg --clobber
           gh release upload "$TAG" build/release/Remote-CC-Daemon.app.zip --clobber
+          for ASSET in Remote-CC-Daemon.dmg Remote-CC-Daemon.app.zip; do
+            EXPECTED="sha256:$(shasum -a 256 "build/release/$ASSET" | cut -d ' ' -f1)"
+            ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq ".assets[] | select(.name == \"$ASSET\") | .digest")
+            [ "$ACTUAL" = "$EXPECTED" ] || { echo "Release asset digest is missing or mismatched"; exit 1; }
+          done
+          gh release edit "$TAG" --draft=false
 
       - name: Cleanup
         if: always()
