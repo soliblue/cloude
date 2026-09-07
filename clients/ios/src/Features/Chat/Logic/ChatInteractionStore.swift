@@ -26,9 +26,11 @@ final class ChatInteractionStore {
         revisions[sessionId, default: 0] += 1
     }
 
-    func clear(sessionId: UUID) {
-        agentRequests.removeValue(forKey: sessionId)
-        agentRevisions[sessionId, default: 0] += 1
+    func clear(sessionId: UUID, includingAgents: Bool = true) {
+        if includingAgents {
+            agentRequests.removeValue(forKey: sessionId)
+            agentRevisions[sessionId, default: 0] += 1
+        }
         requests.removeValue(forKey: sessionId)
         revisions[sessionId, default: 0] += 1
     }

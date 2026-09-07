@@ -646,7 +646,9 @@ enum ChatService {
                 message.thinking = snapshot.thinking
                 message.thinkingMs = snapshot.thinkingMs
             }
-            if message.text.isEmpty && !message.hasToolCalls && !message.hasThinking && !isFailed {
+            if message.text.isEmpty && !message.hasToolCalls && !message.hasThinking
+                && message.imagesData.isEmpty && (message.imageSources ?? []).isEmpty && !isFailed
+            {
                 context.delete(message)
             } else {
                 ChatActions.finishStreaming(message, isFailed: isFailed)
@@ -668,9 +670,10 @@ enum ChatService {
         if let session = try? context.fetch(descriptor).first {
             let wasStreaming = session.isStreaming
             SessionActions.setStreaming(false, for: session)
-            SessionActions.setNeedsAttention(false, for: session)
-            ChatInteractionStore.shared.clear(sessionId: sessionId)
-            if wasStreaming && produced { notifyCompletion(session: session, context: context) }
+            ChatInteractionStore.shared.clear(sessionId: sessionId, includingAgents: false)
+            SessionActions.setNeedsAttention(
+                ChatInteractionStore.shared.hasAttention(sessionId: sessionId), for: session)
+            if wasStreaming && produced { notifyCompletion(session: session, context: context, isFailed: isFailed) }
         }
         ChatLiveStream.clear(sessionId: sessionId)
     }
@@ -716,7 +719,7 @@ enum ChatService {
     }
 
     @MainActor
-    private static func notifyCompletion(session: Session, context: ModelContext) {
+    private static func notifyCompletion(session: Session, context: ModelContext, isFailed: Bool = false) {
         let sessionId = session.id
         var messageDescriptor = FetchDescriptor<ChatMessage>(
             predicate: #Predicate<ChatMessage> {
@@ -725,16 +728,18 @@ enum ChatService {
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
         messageDescriptor.fetchLimit = 1
-        let snippet = (try? context.fetch(messageDescriptor).first)?.text ?? ""
-        if snippet.isEmpty { return }
+        let snippet = ((try? context.fetch(messageDescriptor).first)?.text ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let preview =
+            snippet.isEmpty ? (isFailed ? "Task ended with an error" : "Task finished") : String(snippet.prefix(140))
         let windowDescriptor = FetchDescriptor<Window>(
             predicate: #Predicate<Window> { $0.isFocused }
         )
         let focusedId = (try? context.fetch(windowDescriptor).first)?.session?.id
         if UIApplication.shared.applicationState != .active {
-            if focusedId != session.id { session.hasUnread = true }
+            session.hasUnread = true
             ChatNotificationService.postCompletion(
-                sessionId: sessionId, title: session.title, snippet: String(snippet.prefix(140)))
+                sessionId: sessionId, title: session.title, snippet: preview)
             return
         }
         if focusedId == session.id { return }
@@ -744,7 +749,7 @@ enum ChatService {
                 sessionId: sessionId,
                 title: session.title,
                 symbol: session.symbol,
-                snippet: String(snippet.prefix(140))
+                snippet: preview
             )
         )
     }
