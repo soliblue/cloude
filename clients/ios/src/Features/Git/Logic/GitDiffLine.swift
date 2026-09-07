@@ -1,6 +1,6 @@
 import Foundation
 
-struct GitDiffLine: Identifiable {
+nonisolated struct GitDiffLine: Identifiable {
     enum Kind { case added, removed, context, hunk, binary }
     let id = UUID()
     let text: String
@@ -10,7 +10,7 @@ struct GitDiffLine: Identifiable {
     var newLine: Int? = nil
 }
 
-enum GitDiffParser {
+nonisolated enum GitDiffParser {
     struct FileDiff: Identifiable {
         let path: String
         let text: String
@@ -95,19 +95,32 @@ enum GitDiffParser {
         var lines: [GitDiffLine] = []
         var oldNo: Int? = nil
         var newNo: Int? = nil
+        var inHunk = false
         for raw in diff.components(separatedBy: "\n") {
-            if raw.hasPrefix("diff ") || raw.hasPrefix("index ") || raw.hasPrefix("---") || raw.hasPrefix("+++") {
+            if raw.hasPrefix("diff --git ") {
+                inHunk = false
+                oldNo = nil
+                newNo = nil
                 continue
             }
+            if !inHunk && (raw.hasPrefix("index ") || raw.hasPrefix("--- ") || raw.hasPrefix("+++ ")) {
+                continue
+            }
+            if raw.isEmpty { continue }
             if raw.hasPrefix("Binary files") {
                 lines.append(GitDiffLine(text: raw, raw: raw, kind: .binary))
                 continue
             }
             if raw.hasPrefix("@@") {
+                inHunk = true
                 let (o, n) = hunkStarts(raw)
                 oldNo = o
                 newNo = n
                 lines.append(GitDiffLine(text: cleanHunk(raw, newStart: n), raw: raw, kind: .hunk))
+                continue
+            }
+            if raw.hasPrefix("\\ No newline") {
+                lines.append(GitDiffLine(text: raw, raw: raw, kind: .context))
                 continue
             }
             if raw.hasPrefix("+") {
@@ -132,8 +145,9 @@ enum GitDiffParser {
     }
 
     private static func hunkHeader(_ raw: String) -> Substring? {
-        guard let close = raw.range(
-            of: "@@", options: [], range: raw.index(raw.startIndex, offsetBy: 2)..<raw.endIndex)
+        guard
+            let close = raw.range(
+                of: "@@", options: [], range: raw.index(raw.startIndex, offsetBy: 2)..<raw.endIndex)
         else { return nil }
         return raw[raw.index(raw.startIndex, offsetBy: 2)..<close.lowerBound]
     }
@@ -155,7 +169,7 @@ enum GitDiffParser {
     private static func cleanHunk(_ raw: String, newStart: Int) -> String {
         if let close = raw.range(of: "@@", options: [], range: raw.index(raw.startIndex, offsetBy: 2)..<raw.endIndex) {
             let trailing = String(raw[close.upperBound...]).trimmingCharacters(in: .whitespaces)
-            return trailing.isEmpty ? "Line \(newStart)" : "\(trailing) — Line \(newStart)"
+            return trailing.isEmpty ? "Line \(newStart)" : "\(trailing): Line \(newStart)"
         }
         return raw
     }

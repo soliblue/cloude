@@ -24,6 +24,10 @@ enum DaemonUpdater {
     }
 
     private static func checkOnce() async {
+        if !RunnerManager.shared.isIdleForUpdate() {
+            NSLog("[DaemonUpdater] active work, delaying update")
+            return
+        }
         NSLog("[DaemonUpdater] checking releases for repo=\(repo)")
         if let release = await fetchLatestRelease() {
             NSLog("[DaemonUpdater] found latest=\(release.version) current=\(DaemonVersion.current)")
@@ -35,8 +39,16 @@ enum DaemonUpdater {
                         if let appBundle = await unzip(zipURL) {
                             NSLog("[DaemonUpdater] unzipped app at \(appBundle.path)")
                             if verifySignature(appBundle) {
-                                NSLog("[DaemonUpdater] signature verified, swapping and relaunching")
-                                installAndRelaunch(newAppBundle: appBundle)
+                                if RunnerManager.shared.isIdleForUpdate(), DaemonLifecycle.shared.reserveUpdate() {
+                                    if RunnerManager.shared.isIdleForUpdate() {
+                                        NSLog("[DaemonUpdater] signature verified, swapping and relaunching")
+                                        installAndRelaunch(newAppBundle: appBundle)
+                                    } else {
+                                        DaemonLifecycle.shared.releaseUpdate()
+                                    }
+                                } else {
+                                    NSLog("[DaemonUpdater] work started during download, deferring swap")
+                                }
                             } else {
                                 NSLog("[DaemonUpdater] signature verification FAILED, aborting")
                             }
@@ -64,21 +76,25 @@ enum DaemonUpdater {
         if let (data, _) = try? await URLSession.shared.data(for: request),
             let releases = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]
         {
-            for release in releases {
-                if let tag = release["tag_name"] as? String,
-                    tag.hasPrefix(tagPrefix),
-                    let assets = release["assets"] as? [[String: Any]]
-                {
-                    let version = String(tag.dropFirst(tagPrefix.count))
-                    let assetURL =
-                        assets
-                        .first(where: { ($0["name"] as? String) == assetName })?["browser_download_url"]
-                        as? String
-                    return ReleaseInfo(version: version, assetURL: assetURL.flatMap(URL.init))
-                }
-            }
+            return selectRelease(releases)
         }
         return nil
+    }
+
+    static func selectRelease(_ releases: [[String: Any]]) -> ReleaseInfo? {
+        releases.compactMap { release in
+            guard release["draft"] as? Bool != true, release["prerelease"] as? Bool != true,
+                let tag = release["tag_name"] as? String, tag.hasPrefix(tagPrefix)
+            else { return nil }
+            let version = String(tag.dropFirst(tagPrefix.count))
+            guard DaemonVersionCompare.isValid(version) else { return nil }
+            let assetURL =
+                (release["assets"] as? [[String: Any]])?
+                .first(where: { ($0["name"] as? String) == assetName })?["browser_download_url"] as? String
+            let url = assetURL.flatMap(URL.init)
+            guard url?.scheme == "https", url?.host == "github.com" else { return nil }
+            return ReleaseInfo(version: version, assetURL: url)
+        }.max { !DaemonVersionCompare.isNewer($0.version, than: $1.version) }
     }
 
     private static func download(_ url: URL) async -> URL? {
@@ -117,7 +133,11 @@ enum DaemonUpdater {
         return process.terminationStatus == 0
     }
 
-    private static func installAndRelaunch(newAppBundle: URL) {
+    static func installAndRelaunch(
+        newAppBundle: URL,
+        launch: (Process) throws -> Void = { try $0.run() },
+        terminate: @escaping () -> Void = { NSApp.terminate(nil) }
+    ) {
         let currentBundle = Bundle.main.bundleURL
         let pid = ProcessInfo.processInfo.processIdentifier
         let scriptPath = FileManager.default.temporaryDirectory.appendingPathComponent(
@@ -139,17 +159,31 @@ enum DaemonUpdater {
             open "\(currentBundle.path)"
             rm -f "\(scriptPath.path)"
             """
-        try? script.write(to: scriptPath, atomically: true, encoding: .utf8)
-        try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptPath.path)
         let task = Process()
-        task.launchPath = "/bin/bash"
+        task.executableURL = URL(fileURLWithPath: "/bin/bash")
         task.arguments = [scriptPath.path]
-        try? task.run()
-        DispatchQueue.main.async { NSApp.terminate(nil) }
+        switch Result(catching: {
+            try script.write(to: scriptPath, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: scriptPath.path)
+            try launch(task)
+        }) {
+        case .success:
+            DispatchQueue.main.async {
+                if !DaemonLifecycle.shared.commitUpdate(terminate) {
+                    if task.isRunning { task.terminate() }
+                    try? FileManager.default.removeItem(at: scriptPath)
+                    DaemonLifecycle.shared.releaseUpdate()
+                }
+            }
+        case .failure(let error):
+            try? FileManager.default.removeItem(at: scriptPath)
+            DaemonLifecycle.shared.releaseUpdate()
+            NSLog("[DaemonUpdater] update handoff failed: \(error.localizedDescription)")
+        }
     }
 }
 
-private struct ReleaseInfo {
+struct ReleaseInfo {
     let version: String
     let assetURL: URL?
 }

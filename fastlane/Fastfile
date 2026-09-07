@@ -1,4 +1,5 @@
 require "shellwords"
+require "tmpdir"
 
 default_platform(:ios)
 
@@ -81,7 +82,7 @@ end
 
 platform :ios do
   desc "Build and upload iOS app to TestFlight"
-  lane :beta_local do
+  lane :beta_local do |options|
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
@@ -104,30 +105,30 @@ platform :ios do
       targets: ["Cloude"]
     )
 
-    auth_xcargs = ""
-    if ENV["CI"]
-      key_path = File.expand_path("../AuthKey.p8", __dir__)
-      File.write(key_path, ENV["APP_STORE_CONNECT_API_KEY_CONTENT"])
-      auth_xcargs = "-authenticationKeyID #{ENV["APP_STORE_CONNECT_API_KEY_ID"]} -authenticationKeyIssuerID #{ENV["APP_STORE_CONNECT_API_ISSUER_ID"]} -authenticationKeyPath #{Shellwords.escape(key_path)}"
+    Dir.mktmpdir("afto-signing-") do |directory|
+      key_path = File.join(directory, "AuthKey.p8")
+      File.write(key_path, ENV.fetch("APP_STORE_CONNECT_API_KEY_CONTENT"), mode: "w", perm: 0600)
+      auth_xcargs = "-authenticationKeyID #{Shellwords.escape(ENV.fetch("APP_STORE_CONNECT_API_KEY_ID"))} -authenticationKeyIssuerID #{Shellwords.escape(ENV.fetch("APP_STORE_CONNECT_API_ISSUER_ID"))} -authenticationKeyPath #{Shellwords.escape(key_path)}"
+
+      build_app(
+        project: "clients/ios/iOS.xcodeproj",
+        scheme: "Cloude",
+        xcargs: "-skipPackagePluginValidation -allowProvisioningUpdates #{auth_xcargs}",
+        export_method: "app-store",
+        export_options: {
+          signingStyle: "automatic",
+          teamID: "Q9U8224WWM"
+        }
+      )
     end
 
-    build_app(
-      project: "clients/ios/iOS.xcodeproj",
-      scheme: "Cloude",
-      xcargs: "-allowProvisioningUpdates #{auth_xcargs}",
-      export_method: "app-store",
-      export_xcargs: "-allowProvisioningUpdates",
-      export_options: {
-        signingStyle: "automatic",
-        teamID: "Q9U8224WWM"
-      }
-    )
-
-    upload_to_testflight(
-      api_key: api_key,
-      skip_waiting_for_build_processing: true,
-      distribute_external: false
-    )
+    if options[:upload].to_s != "false"
+      upload_to_testflight(
+        api_key: api_key,
+        skip_waiting_for_build_processing: true,
+        distribute_external: false
+      )
+    end
   end
 end
 

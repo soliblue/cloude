@@ -13,13 +13,13 @@ struct GitViewCommitRow: View {
                         .appFont(size: ThemeTokens.Text.m)
                         .lineLimit(1)
                     HStack(spacing: ThemeTokens.Spacing.s) {
-                        Text(commit.sha)
+                        Text(String(commit.sha.prefix(7)))
                             .appFont(size: ThemeTokens.Text.s, design: .monospaced)
                             .foregroundColor(appAccent.color)
                         Text(commit.author)
                             .appFont(size: ThemeTokens.Text.s)
                             .foregroundColor(ThemeColor.secondary)
-                        Text(commit.date, style: .relative)
+                        Text(commit.date, format: .dateTime.month(.abbreviated).day().hour().minute())
                             .appFont(size: ThemeTokens.Text.s)
                             .foregroundColor(ThemeColor.secondary)
                     }

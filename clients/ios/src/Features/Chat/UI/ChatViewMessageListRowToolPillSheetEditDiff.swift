@@ -8,7 +8,7 @@ struct ChatViewMessageListRowToolPillSheetEditDiff: View {
 
     var body: some View {
         ChatViewMessageListRowToolPillSheetSection(title: "Changes", icon: "arrow.left.arrow.right") {
-            VStack(alignment: .leading, spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(removedLines.enumerated()), id: \.offset) { line in
                     ChatViewMessageListRowToolPillSheetEditDiffRow(text: line.element, kind: .removed)
                 }

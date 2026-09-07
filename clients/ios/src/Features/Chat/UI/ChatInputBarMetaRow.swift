@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ChatInputBarMetaRow: View {
     let sessionId: UUID
+    let provider: ChatProvider
     let model: ChatModel?
     let effort: ChatEffort?
     let permissionMode: ChatPermissionMode
@@ -16,7 +17,7 @@ struct ChatInputBarMetaRow: View {
         HStack(spacing: ThemeTokens.Spacing.m) {
             Spacer()
             Menu {
-                ChatInputBarPermissionMenu(sessionId: sessionId, permissionMode: permissionMode)
+                ChatInputBarPermissionMenu(sessionId: sessionId, provider: provider, permissionMode: permissionMode)
             } label: {
                 Image(systemName: permissionMode.symbol)
                     .font(.system(size: ThemeTokens.Icon.m, weight: .medium))
@@ -28,13 +29,19 @@ struct ChatInputBarMetaRow: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Agent mode: \(permissionMode.displayName)")
+            if permissionMode == .plan {
+                Text("Plan").font(.caption.weight(.medium)).foregroundStyle(.secondary)
+            }
             if contextTokens > 0 && contextWindow > 0 {
                 contextRing
             }
             HStack(spacing: ThemeTokens.Spacing.s) {
-                Text(model?.displayName ?? "Auto")
-                    .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                    .foregroundStyle(ThemeColor.secondary)
+                Text(
+                    ChatModelCatalog.shared.displayName(model, sessionId: sessionId, defaultName: provider.displayName)
+                )
+                .appFont(size: ThemeTokens.Text.m, weight: .medium)
+                .foregroundStyle(ThemeColor.secondary)
                 if let effort {
                     ChatInputBarMetaRowEffortBar(fraction: effort.fraction)
                 }
@@ -43,6 +50,8 @@ struct ChatInputBarMetaRow: View {
             .contentShape(Rectangle())
             .overlay {
                 ChatInputBarModelMenuButton(
+                    sessionId: sessionId,
+                    provider: provider,
                     model: model,
                     effort: effort,
                     onModel: { SessionActions.setModel($0, for: sessionId, context: context) },
@@ -73,14 +82,21 @@ struct ChatInputBarMetaRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Context window usage")
+        .accessibilityValue(
+            "\(Int((usedFraction * 100).rounded())) percent used, \(100 - Int((usedFraction * 100).rounded())) percent remaining"
+        )
+        .accessibilityHint("Shows context token counts")
         .popover(isPresented: $showContextDetail) {
-            Text("\(Int(((1 - usedFraction) * 100).rounded()))% left (\(tokensK(contextTokens)) used / \(tokensK(contextWindow)))")
-                .appFont(size: ThemeTokens.Text.m, weight: .medium)
-                .foregroundStyle(ThemeColor.secondary)
-                .monospacedDigit()
-                .padding(.horizontal, ThemeTokens.Spacing.m)
-                .padding(.vertical, ThemeTokens.Spacing.s)
-                .presentationCompactAdaptation(.popover)
+            Text(
+                "\(Int(((1 - usedFraction) * 100).rounded()))% left (\(tokensK(contextTokens)) used / \(tokensK(contextWindow)))"
+            )
+            .appFont(size: ThemeTokens.Text.m, weight: .medium)
+            .foregroundStyle(ThemeColor.secondary)
+            .monospacedDigit()
+            .padding(.horizontal, ThemeTokens.Spacing.m)
+            .padding(.vertical, ThemeTokens.Spacing.s)
+            .presentationCompactAdaptation(.popover)
         }
     }
 

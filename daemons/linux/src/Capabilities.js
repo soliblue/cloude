@@ -1,0 +1,1 @@
+export const DAEMON_CAPABILITIES = ['codex', 'gitMutations', 'gitWorktrees', 'codexPlugins', 'codexCompaction', 'codexReview', 'codexShell', 'codexSections', 'codexTerminal', 'agentSchedules']

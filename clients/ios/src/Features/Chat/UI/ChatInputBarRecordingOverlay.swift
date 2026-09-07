@@ -27,6 +27,7 @@ struct ChatInputBarRecordingOverlay: View {
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Stop recording and transcribe")
             }
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)

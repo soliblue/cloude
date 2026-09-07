@@ -11,7 +11,7 @@ struct FileTreeViewRow: View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
             if node.isDirectory {
                 Button {
-                    toggleFolder()
+                    Task { await FileTreeService.toggle(session: session, node: node, store: store) }
                 } label: {
                     rowLabel
                 }
@@ -23,11 +23,6 @@ struct FileTreeViewRow: View {
                 .buttonStyle(.plain)
             }
 
-            if store.expanded.contains(node.path) {
-                ForEach(store.children[node.path] ?? [], id: \.path) { child in
-                    FileTreeViewRow(session: session, node: child, depth: depth + 1, store: store)
-                }
-            }
         }
     }
 
@@ -38,17 +33,22 @@ struct FileTreeViewRow: View {
                     ? (store.expanded.contains(node.path) ? "chevron.down" : "chevron.right")
                     : "circle.fill"
             )
-            .appFont(size: ThemeTokens.Icon.s)
+            .appFont(size: ThemeTokens.Text.s)
             .foregroundColor(ThemeColor.secondary)
-            .frame(width: ThemeTokens.Icon.m)
+            .frame(width: ThemeTokens.Text.m)
             .opacity(node.isDirectory ? 1 : 0)
             Image(systemName: node.isDirectory ? "folder.fill" : "doc")
-                .appFont(size: ThemeTokens.Icon.m)
+                .appFont(size: ThemeTokens.Text.m)
                 .foregroundColor(node.isDirectory ? ThemeColor.blue : ThemeColor.secondary)
             Text(node.name)
                 .appFont(size: ThemeTokens.Text.m)
                 .lineLimit(1)
                 .foregroundColor(theme.palette.colorScheme == .dark ? .white : .black)
+            if store.failed.contains(node.path) {
+                Image(systemName: "exclamationmark.circle")
+                    .foregroundStyle(.red)
+                    .accessibilityLabel("Unable to open folder. Tap to retry.")
+            }
             if store.loading.contains(node.path) {
                 ProgressView().controlSize(.mini)
             }
@@ -60,22 +60,4 @@ struct FileTreeViewRow: View {
         .contentShape(Rectangle())
     }
 
-    private func toggleFolder() {
-        if store.expanded.contains(node.path) {
-            store.expanded.remove(node.path)
-        } else {
-            store.expanded.insert(node.path)
-            if store.children[node.path] == nil, let endpoint = session.endpoint {
-                Task {
-                    store.loading.insert(node.path)
-                    let listing = await FilesService.list(
-                        endpoint: endpoint, session: session, path: node.path, showHidden: true)
-                    if let listing {
-                        store.children[listing.path] = listing.entries
-                    }
-                    store.loading.remove(node.path)
-                }
-            }
-        }
-    }
 }

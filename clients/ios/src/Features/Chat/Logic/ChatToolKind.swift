@@ -1,6 +1,6 @@
 import Foundation
 
-enum ChatToolKind: Equatable, Sendable {
+nonisolated enum ChatToolKind: Equatable, Sendable {
     case bash
     case read
     case write
@@ -11,20 +11,22 @@ enum ChatToolKind: Equatable, Sendable {
     case todo
     case task
     case skill
+    case image
     case other
 
     init(name: String) {
         switch name {
-        case "Bash": self = .bash
+        case "Bash", "commandExecution", "exec_command", "shell_command": self = .bash
         case "Read": self = .read
         case "Write": self = .write
-        case "Edit", "MultiEdit": self = .edit
+        case "Edit", "MultiEdit", "fileChange", "apply_patch": self = .edit
         case "Glob": self = .glob
         case "Grep": self = .grep
-        case "WebFetch", "WebSearch": self = .web
-        case "TodoWrite", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet": self = .todo
-        case "Task", "Agent": self = .task
+        case "WebFetch", "WebSearch", "webSearch", "web.run": self = .web
+        case "TodoWrite", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "update_plan": self = .todo
+        case "Task", "Agent", "collabAgentToolCall", "subAgentActivity", "spawn_agent": self = .task
         case "Skill": self = .skill
+        case "imageGeneration", "ImageGeneration": self = .image
         default: self = .other
         }
     }
@@ -41,6 +43,7 @@ enum ChatToolKind: Equatable, Sendable {
         case .todo: return "checklist"
         case .task: return "brain"
         case .skill: return "command"
+        case .image: return "photo"
         case .other: return "hammer"
         }
     }

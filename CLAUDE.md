@@ -1,6 +1,6 @@
 > **Status:** we are rebuilding the whole app from scratch. The current tree still has reliability gaps and missing features. The old structure had its own quirks and is frozen at commit `a8f77f6f`, with a worktree copy at `../cloude-a8f77f6` - when something needs historical context (how a feature used to work, why a decision was made), explore that worktree with subagents instead of guessing. The point of the rewrite is a simpler, more predictable architecture so we can actually love the code and make the app as reliable as possible.
 
-We are building Remote CC, an app that controls Claude Code remotely from a phone. A Mac or Linux daemon on the user's machine spawns the CLI process you're running inside; the iOS app talks to it over HTTP. You might be invoked directly through the app or via VS Code on the same machine.
+We are building Afto, a native iPhone app for controlling Codex and Claude Code on your own Linux and Mac hosts. Codex uses the official app-server protocol through the authenticated daemon; Claude remains a separate CLI provider. Inference requires the existing ChatGPT or Claude subscription, with no API-key fallback. Technical bundle and installed service identifiers remain compatible. See `docs/remote-parity.md` for verified capabilities and remaining work.
 
 A user has multiple endpoints (personal laptop, work machine), and each session is an endpoint + path + session id. Multiple sessions stay open at once and the user switches between them; each has chat, files, and git tabs scoped to the session's path. Chat streams live output with image attachments and voice input, anything already on the phone is available offline, and disconnecting mid-stream resumes exactly where it left off.
 
@@ -24,8 +24,8 @@ Codex reads `AGENTS.md`, which symlinks to `CLAUDE.md`. `.codex/skills` points a
 cloude/
   clients/ios/         # SwiftUI iPhone app: chat/files/git tabs, QR pairing, voice input, offline-first SwiftData
   clients/android/     # placeholder, not yet implemented
-  daemons/macos/       # Swift menubar daemon spawning `claude`; HTTP on :8765, owns local Cloudflare tunnel for remote pairing
-  daemons/linux/       # Node port of the macOS daemon: same routes and NDJSON stream envelope, file-backed auth token
+  daemons/macos/       # Swift menubar daemon running Codex app-server and Claude; HTTP on :8765, owns local Cloudflare tunnel for remote pairing
+  daemons/linux/       # Node 22 daemon: Codex app-server, Claude, durable NDJSON replay, file-backed auth token
   provisioning/        # backend at remotecc.soli.blue that mints per-Mac Cloudflare tunnels so iOS can reach a daemon off-LAN
 ```
 

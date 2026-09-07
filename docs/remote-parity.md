@@ -1,0 +1,61 @@
+# Afto remote agent work
+
+Target: a fast native iPhone control surface for Codex and Claude on the user's own hosts. Use existing subscriptions. Never purchase credits, automatically reset limits, or fall back to paid model APIs.
+
+## Integration
+
+Codex uses the official app-server JSON-RPC protocol over local stdio, inside the authenticated host daemon. ChatGPT account authentication is required before inference. Linux connects directly to the phone through the existing daemon transport, with no desktop intermediary. Claude remains a separate provider.
+
+Technical bundle identifiers, pairing links, stored tokens, and installed service names remain compatible. The display name is Afto. App Store Connect accepted the draft en-US name Afto: Codex & Claude Remote and subtitle Control your coding agents on September 7. The app remains in Prepare for Submission; no App Store release was submitted.
+
+## Evidence and remaining work
+
+| Capability | Current evidence | Remaining verification |
+| --- | --- | --- |
+| Subscription-backed Codex | Real local and Medina app-server turns passed, API-key inference rejected | Broader account and expired-login recovery |
+| Model and effort switching | Live catalog renders in new iOS tasks, including provider labels; Luna selection persisted across app relaunch in an imported native task | Selection persistence across hosts |
+| Streaming text, reasoning, tools | Simulator rendered real shell activity, Markdown table and code; latest task-query change rechecked with a real Luna turn, approval, cross-session working/attention state, and completed native goal; Stop remained visible beside an unsent draft, interrupted a real pending approval, and preserved that draft | Long multi-agent runs and unusual tool output |
+| Drafts and literal input | Cold Simulator restart restored unsent text and a 4.1 MB photo, whose preview opened correctly; removing the photo and clearing text stayed cleared after restart. Chat and schedule fields preserve typed double hyphens, ASCII quotes and backslashes. Disk, revision, hydration, cleanup-race and background-expiration tests pass | Physical-device suspension under storage pressure |
+| Streamed plans and generated-image results | Both daemons normalize plan deltas and final snapshots without duplicate raw events; iOS scopes interleaved plans by item ID and rejects replay duplicates. Image result details preserve saved paths and usage failures. A real Luna Plan-mode run produced 37 deltas and one final plan with no duplicated assistant text. Simulator side-chat copied its Plan presentation; Implement plan started a separate default-permission turn while preserving an unsent draft. Deterministic suites pass | Generated-image preview |
+| Side chats | Simulator fork produced a second saved session with copied history | Fork while running and resumed forks |
+| Saved Codex chats | List, import, archive and history endpoints implemented. Simulator imported 1,500 messages, opens the final response after cold launch and cross-session switches, and loads earlier history offline. A 45-second scrolling trace recorded no hangs above 250 ms | Archived restoration and physical-device stress |
+| Approvals and questions | Real Linux read-only command approval completed through Simulator; protocol tests preserve request IDs and answer payloads | More permission types and multi-question runs |
+| Reconnect | Exact durable Linux and native Mac replay passed across daemon restarts; native journal tested with 12,000 events and bounded batches | App suspension and long interruption stress |
+| Remote ChatGPT sign-in | Official device-code RPC wired to iOS and both daemons; Linux fake race tests and iOS tests pass | Real isolated login flow |
+| Worktrees | Simulator created a Linux worktree, preserved the dirty source, and completed a real Luna task in the new path; native retries, concurrency and persisted-base tests pass | More multi-host and branch-switch scenarios |
+| Plugins and apps | Installed plugins, plugin detail, 15 connected apps and six MCP servers rendered in Simulator; Linux live catalog and pagination pass; task-scoped reads recover after daemon restart | Real explicit installation and browser OAuth completion |
+| Interactive terminal | Simulator real Linux shell passed hardware keyboard, exact quoted paste, ANSI colors, resize report, Ctrl-C, closed-screen continuation, cold app restart replay without duplicate output and explicit termination. Actual native HTTP with Codex 0.153.4 passed future output, exact Unicode paste, resize, Ctrl-C, bounded replay gaps and termination with zero model calls. Native live HTTP NDJSON, concurrent starts, control acknowledgments and durable retry tests pass; Linux no-model PTY and deterministic VT/input suites pass | Physical keyboard and long interactive program sessions |
+| Direct commands | Simulator keyboard preserved quotes, backslashes and double hyphens; Linux ran exact command and displayed output with no model call; native shell lifecycle and persistence failure tests pass | Long-running imported command Stop in Simulator |
+| Context compaction | Real Simulator compact reduced context from 23,836 to 4,897 tokens while keeping the visible transcript | Reconnect during compaction |
+| Code review | Real clean-worktree review completed; duplicate report ordering fixed and native/Linux tests pass; UI identifies the host review model | Repeat live check after display fix |
+| Web search | Real Luna search rendered official sources; Simulator tool details showed 12 clickable results | Opening sources and more result shapes |
+| Remote sections | Simulator create, rename, move and delete passed; deletion preserves tasks; child visibility and double-encoded rename IDs fixed; native/Linux pagination tests pass | More cross-device section ordering checks |
+| Helper agents | Real Simulator parent attention banner opened the exact child approval; approval cleared the notice, command completed, and parent completion produced unread state. Remote Stop confirmed interrupted turns. Native/Linux topology tests pass | More multi-level and cross-device agent runs |
+| Notifications | Simulator background and foreground schedule banners delivered; a notification tap after a cold launch opened the correct run history. Registration deduplicates in-flight work, retries failed HTTP responses, and fences changed endpoints/tokens. Route parser and HTTP/2 APNs transport/JWT tests pass | Verified existing Medina provisioning environment has no APNs key; real Apple delivery is not verified. Notification taps also replaced an already-open command sheet correctly; a deleted schedule produced a graceful unavailable screen |
+| Git | Real Simulator stage/commit preserved unstaged files and paged all 86 commits; native Mac/Linux literal paths, staged-only commits and full SHA pagination tested | Branch changes during pagination; transport, path and cancellation fencing covered by tests |
+| Files | Disk-backed iPhone cache; actual Simulator offline file reopen passed; Linux streaming/ranges and native file-tree/CSV/cache tests pass | Large media on physical device |
+| HTML previews | Simulator rendered local HTML and reopened its source and preview offline. Real WebKit tests verify inline styles/data images/anchors and zero external requests, script execution, forms or navigation | Large artifacts and physical-device memory use |
+| Scheduled tasks | Linux durable scheduler with calendar/time-zone and interval timing, exclusive host ownership, no missed-run replay or overlap, fresh Codex tasks, revisioned edits and idempotent Run now. Simulator created/edited a paused schedule, enabled/paused it, launched one Luna run, answered approval and opened the completed native task. Deleting the fixture removed the schedule and preserved its native task. 162 Linux tests and focused iOS schedule suites pass; cold-start notification opened saved schedule/run history and its imported task while the daemon was confirmed paused | Native Mac scheduling not implemented |
+| Voice | Local Whisper and on-device Speech fallback implemented | Real microphone transcription on device |
+| Sidebar | Attention, working, pinned and recent groups with search. Explicit task state, selected traits, search and context-usage labels; Simulator accessibility snapshot verified unread/host/path values and 17 percent context usage | Archive, multi-host unread state and a full VoiceOver session |
+| Native Mac Codex | Shared app-server; real HTTP context/fork/restart replay and terminal integration passed. All 24 native suites pass, including auth-change fencing, durable steering and atomic updater admission | More live approval/agent runs |
+| TestFlight | Final signed build 238 IPA exported locally on September 7 at 02:40 UTC (7,891,320 bytes), signature and production distribution entitlements verified. No iOS source is newer than the archive. All 43 iOS suites passed; final accessibility changes also passed a clean Simulator build and runtime checks. Nothing uploaded yet | Compatible daemon releases, upload and processing before morning |
+
+## Official reference surface
+
+- [App server](https://learn.chatgpt.com/docs/app-server): threads, turns, streamed items, approvals, model catalogs, authentication, goals, skills and plugins.
+- [Remote connections](https://learn.chatgpt.com/docs/remote-connections): host switching, prompts, approvals, output review and notifications. Official phone access currently uses a Mac or Windows host, including SSH workspaces.
+- [Features](https://learn.chatgpt.com/docs/features): projects, long-running work, scheduled tasks, web search, images, browser use, computer use, plugins, artifacts and voice.
+
+Task goals, skill discovery, native project registry, remote history search and subagent thread navigation are implemented with deterministic coverage. Further parity work includes browser control, richer artifact previews, accessibility, and broader performance measurement. Installed Codex 0.153.4 exposes no scheduling RPC; executable Linux schedules use an explicit daemon-owned implementation and fresh subscription-backed Codex tasks. Plugin management and device sign-in are implemented, with remaining checks listed above. Billing, credit purchases and reset redemption are intentionally excluded. Some desktop-specific integrations are not exposed by the public app-server. Do not claim full parity from protocol support alone.
+
+## Validation commands
+
+- Linux: `cd daemons/linux && npm test`
+- iOS suites: `clients/ios/tests/run-all.sh`
+- Native Mac: `daemons/macos/tests/run-all.sh` runs deterministic suites without inference.
+- Real native Codex: `zsh daemons/macos/tests/http_codex_smoke.sh` uses subscription-backed Luna on an isolated port and archives its test threads.
+- Simulator: build the Cloude scheme with normal simulator signing. Disabling signing prevents Keychain token storage and invalidates authenticated end-to-end tests.
+- Provisioning: isolated virtual environment plus `python -m unittest discover -s provisioning/tests` with the provisioning application on PYTHONPATH.
+
+Installer discovery validates version, release status, asset URL and SHA-256. Simulator fetched the verified Linux command and presented the verified 22.1 MB Mac DMG in the share sheet. Setup remains usable at the largest Dynamic Type setting, and changing setup steps resets scroll position.

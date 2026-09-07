@@ -1,24 +1,26 @@
 import Foundation
 import Network
 
-final class Runner {
+class Runner {
     let sessionId: String
     private(set) var hasExited = false
     private let hasStartedBefore: Bool
-    private let model: String?
-    private let effort: String?
-    private let permissionMode: String?
+    let model: String?
+    let effort: String?
+    let permissionMode: String?
     private let queue: DispatchQueue
     var onFinish: (() -> Void)?
     private var process: Process?
     private var stdinPipe: Pipe?
     private var ring: [(seq: Int, data: Data)] = []
+    private var ringBytes = 0
     private var subscribers: [NWConnection] = []
     private var pendingSendBytes: [ObjectIdentifier: Int] = [:]
     private let maxBufferedBytes = 8 * 1024 * 1024
     private var seq = 0
     private let maxRingSize = 1000
     private var lineBuffer = Data()
+    private let completionEventId = UUID().uuidString.lowercased()
 
     init(
         sessionId: String, hasStartedBefore: Bool, model: String?, effort: String?,
@@ -32,16 +34,43 @@ final class Runner {
         self.queue = queue
     }
 
-    func spawn(path: String, prompt: String) {
+    private var preflightCancelled = false
+
+    func spawn(path: String, prompt: String, images: [[String: String]] = []) {
+        let executable = Runner.claudeExecutable()
+        let environment = Runner.spawnEnvironment()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let rejection =
+                ClaudeSubscriptionPolicy.configurationRejection(
+                    cwd: path, home: environment["HOME"] ?? FileManager.default.homeDirectoryForCurrentUser.path)
+                ?? ClaudeSubscriptionPolicy.authenticate(
+                    executable: executable.path, leadingArguments: executable.leadingArguments,
+                    cwd: path, environment: environment)
+            self?.queue.async { [weak self] in
+                if let self, !self.hasExited, !self.preflightCancelled {
+                    if let rejection {
+                        self.emit(["type": "error", "message": rejection])
+                        self.finish(exitCode: 1)
+                    } else {
+                        self.spawnAuthenticated(
+                            path: path, prompt: prompt, executable: executable, environment: environment)
+                    }
+                }
+            }
+        }
+    }
+
+    private func spawnAuthenticated(path: String, prompt: String, executable: Executable, environment: [String: String])
+    {
         let proc = Process()
         let stdout = Pipe()
         let stdin = Pipe()
         let stderr = Pipe()
 
-        let executable = Runner.claudeExecutable()
         proc.executableURL = URL(fileURLWithPath: executable.path)
         var claudeArgs =
             executable.leadingArguments + [
+                "--settings", ClaudeSubscriptionPolicy.settings,
                 "-p",
                 "--output-format", "stream-json",
                 "--verbose",
@@ -74,7 +103,7 @@ final class Runner {
         proc.standardInput = stdin
         proc.standardOutput = stdout
         proc.standardError = stderr
-        proc.environment = Runner.spawnEnvironment()
+        proc.environment = environment
 
         #if DEBUG
         NSLog(
@@ -168,7 +197,7 @@ final class Runner {
             #if DEBUG
             NSLog("[Runner] subscribe_after_exit sessionId=\(sessionId)")
             #endif
-            connection.cancel()
+            connection.send(content: nil, isComplete: true, completion: .contentProcessed { _ in connection.cancel() })
         } else {
             subscribers.append(connection)
             #if DEBUG
@@ -178,6 +207,11 @@ final class Runner {
     }
 
     func abort() {
+        preflightCancelled = true
+        if process == nil, !hasExited {
+            emit(["type": "aborted"])
+            finish(exitCode: 0)
+        }
         if let proc = process, proc.isRunning {
             #if DEBUG
             NSLog("[Runner] abort sessionId=\(sessionId)")
@@ -231,17 +265,22 @@ final class Runner {
         }
     }
 
-    private func emit(_ partial: [String: Any]) {
-        seq += 1
+    @discardableResult
+    func emit(_ partial: [String: Any]) -> Bool {
         var wrapped = partial
-        wrapped["seq"] = seq
+        wrapped["seq"] = seq + 1
         wrapped["sessionId"] = sessionId
         if let payload = try? JSONSerialization.data(withJSONObject: wrapped) {
-            let emittedSeq = seq
+            let emittedSeq = seq + 1
             var chunk = payload
             chunk.append(0x0A)
+            if !record(chunk, seq: emittedSeq) { return false }
+            seq = emittedSeq
             ring.append((emittedSeq, chunk))
-            if ring.count > maxRingSize { ring.removeFirst(ring.count - maxRingSize) }
+            ringBytes += chunk.count
+            while ring.count > maxRingSize || ringBytes > maxBufferedBytes {
+                ringBytes -= ring.removeFirst().data.count
+            }
             #if DEBUG
             NSLog(
                 "[Runner] emit sessionId=\(sessionId) seq=\(emittedSeq) type=\((wrapped["type"] as? String) ?? ((partial["event"] as? [String: Any])?["type"] as? String) ?? "unknown") subscribers=\(subscribers.count) ringSize=\(ring.count)"
@@ -262,7 +301,9 @@ final class Runner {
                     completion: .contentProcessed { [weak self, weak sub] error in
                         #if DEBUG
                         if let error {
-                            NSLog("[Runner] send_failed sessionId=\(self?.sessionId ?? "?") seq=\(emittedSeq) error=\(error)")
+                            NSLog(
+                                "[Runner] send_failed sessionId=\(self?.sessionId ?? "?") seq=\(emittedSeq) error=\(error)"
+                            )
                         }
                         #endif
                         self?.queue.async {
@@ -279,10 +320,14 @@ final class Runner {
                 sub.cancel()
                 removeSubscriber(sub)
             }
+            return true
         }
+        return false
     }
 
-    private func finish(exitCode: Int32) {
+    func record(_ data: Data, seq: Int) -> Bool { true }
+
+    func finish(exitCode: Int32) {
         if hasExited { return }
         hasExited = true
         process?.terminationHandler = nil
@@ -314,8 +359,21 @@ final class Runner {
             "[Runner] finish sessionId=\(sessionId) exitCode=\(exitCode) ringSize=\(ring.count) subscribers=\(subscribers.count)"
         )
         #endif
-        emit(["type": "exit", "code": Int(exitCode)])
-        for sub in subscribers { sub.cancel() }
+        if !emit(["type": "exit", "code": Int(exitCode)]) {
+            hasExited = false
+            return
+        }
+        PushDelivery.shared.enqueueNotification(
+            sessionId: sessionId,
+            title: exitCode == 0 ? "Agent completed" : "Agent needs attention",
+            body: exitCode == 0
+                ? "Your agent finished. Open the task to review the result."
+                : "Your agent stopped with an error. Open the task for details.",
+            kind: exitCode == 0 ? "completed" : "failed",
+            eventId: completionEventId)
+        for sub in subscribers {
+            sub.send(content: nil, isComplete: true, completion: .contentProcessed { _ in sub.cancel() })
+        }
         subscribers.removeAll()
         pendingSendBytes.removeAll()
         process?.standardOutput.flatMap { ($0 as? Pipe) }?.fileHandleForReading.readabilityHandler = nil
@@ -323,27 +381,7 @@ final class Runner {
     }
 
     private static func spawnEnvironment() -> [String: String] {
-        let inherited = ProcessInfo.processInfo.environment
-        var env: [String: String] = [:]
-        for key in ["HOME", "USER", "SHELL", "LANG", "LC_ALL", "TMPDIR", "TERM"] {
-            if let value = inherited[key] { env[key] = value }
-        }
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        var pathParts = (inherited["PATH"] ?? "").split(separator: ":").map(String.init)
-        for extra in [
-            "/opt/homebrew/bin",
-            "/usr/local/bin",
-            "/usr/bin",
-            "\(home)/.local/bin",
-            "\(home)/.npm-global/bin",
-        ] where !pathParts.contains(extra) {
-            pathParts.append(extra)
-        }
-        env["PATH"] = pathParts.joined(separator: ":")
-        env["TERM"] = env["TERM"] ?? "xterm-256color"
-        env["NO_COLOR"] = "1"
-        env["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"] = "1"
-        return env
+        ClaudeSubscriptionPolicy.environment()
     }
 
     private struct Executable {

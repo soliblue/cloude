@@ -14,7 +14,7 @@ struct ChatTypewriterTextRenderer: TextRenderer, Animatable {
         for line in layout {
             for run in line {
                 for slice in run {
-                    let raw = (revealedGlyphs - Double(index)) / fadeWindow
+                    let raw = (revealedGlyphs - Double(index)) / max(1, fadeWindow)
                     let progress = min(1, max(0, raw))
                     let eased = progress * progress * (3 - 2 * progress)
                     var copy = context

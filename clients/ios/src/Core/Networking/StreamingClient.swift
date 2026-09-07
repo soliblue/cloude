@@ -22,15 +22,15 @@ enum StreamingClient {
         endpoint: Endpoint, path: String, method: String, query: [String: String], body: [String: Any]?
     ) -> AsyncThrowingStream<Data, Error> {
         AsyncThrowingStream { continuation in
-            let task = Task {
-                if let url = HTTPClient.url(endpoint: endpoint, path: path, query: query) {
-                    var request = URLRequest(url: url, timeoutInterval: 3600)
-                    request.httpMethod = method
-                    HTTPClient.sign(&request, endpoint: endpoint)
-                    if let body {
-                        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-                    }
+            if let url = HTTPClient.url(endpoint: endpoint, path: path, query: query) {
+                var request = URLRequest(url: url, timeoutInterval: 3600)
+                request.httpMethod = method
+                HTTPClient.sign(&request, endpoint: endpoint)
+                if let body {
+                    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                    request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+                }
+                let task = Task.detached(priority: .userInitiated) { @concurrent [request] in
                     do {
                         let (bytes, response) = try await URLSession.shared.bytes(for: request)
                         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
@@ -61,11 +61,11 @@ enum StreamingClient {
                     } catch {
                         continuation.finish(throwing: StreamingError.preHeaders(error))
                     }
-                } else {
-                    continuation.finish(throwing: StreamingError.preHeaders(URLError(.badURL)))
                 }
+                continuation.onTermination = { _ in task.cancel() }
+            } else {
+                continuation.finish(throwing: StreamingError.preHeaders(URLError(.badURL)))
             }
-            continuation.onTermination = { _ in task.cancel() }
         }
     }
 }

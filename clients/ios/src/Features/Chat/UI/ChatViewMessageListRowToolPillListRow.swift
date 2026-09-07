@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChatViewMessageListRowToolPillListRow: View {
     let toolCall: ChatToolCall
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var onTap: () -> Void
     @State private var shimmerPhase: CGFloat = -1
 
@@ -24,7 +25,7 @@ struct ChatViewMessageListRowToolPillListRow: View {
                 in: Capsule()
             )
             .overlay {
-                if toolCall.state == .pending {
+                if toolCall.state == .pending && !reduceMotion {
                     ChatViewMessageListRowToolPillListRowShimmer(phase: shimmerPhase, tint: tint)
                         .clipShape(Capsule())
                         .transition(.opacity)
@@ -32,8 +33,12 @@ struct ChatViewMessageListRowToolPillListRow: View {
             }
         }
         .buttonStyle(.plain)
-        .onAppear {
-            if toolCall.state == .pending {
+        .accessibilityLabel(toolCall.shortLabel)
+        .accessibilityValue(toolCall.state == .pending ? "Running" : toolCall.state == .failed ? "Failed" : "Completed")
+        .accessibilityHint("Open tool details")
+        .task(id: reduceMotion) {
+            shimmerPhase = -1
+            if toolCall.state == .pending && !reduceMotion {
                 shimmerPhase = -1
                 withAnimation(.easeInOut(duration: 2.13).repeatForever(autoreverses: true)) {
                     shimmerPhase = 1.5

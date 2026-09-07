@@ -30,16 +30,17 @@ export default class HTTPServer {
           .then(() => handle(HTTPRequest.fromNode(request, Buffer.concat(chunks))))
           .then((result) => result.send(response))
           .catch((error) => {
-            console.error(`HTTPServer: handler_failed ${request.method} ${request.url}: ${error.message}`)
+            console.error(`HTTPServer: handler_failed ${request.method} ${request.url}: ${error instanceof SyntaxError ? 'invalid_json' : error.message}`)
             if (response.headersSent) {
               response.destroy()
             } else {
-              HTTPResponse.json(500, { error: 'internal_error' }).send(response)
+              HTTPResponse.json(error instanceof SyntaxError ? 400 : 500, { error: error instanceof SyntaxError ? 'invalid_json' : 'internal_error' }).send(response)
             }
           })
       })
     })
-    this.server.requestTimeout = 0
+    this.server.requestTimeout = 120000
+    this.server.headersTimeout = 15000
     this.server.listen(this.port, this.host, () => {
       console.log(`HTTPServer: listening on ${this.host}:${this.port}`)
     })

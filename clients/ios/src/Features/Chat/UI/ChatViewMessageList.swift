@@ -3,10 +3,17 @@ import SwiftUI
 
 struct ChatViewMessageList: View {
     let session: Session
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Query private var messages: [ChatMessage]
+    @Query private var queuedMessages: [ChatMessage]
+    @Query private var latestUserMessages: [ChatMessage]
+    @Query private var taskCalls: [ChatToolCall]
     @State private var lastAnchoredUserId: UUID?
-    @State private var groupCache = GroupCache()
+    @State private var groupCache = ChatMessageGroupStore()
+    @State private var historyWindow = ChatHistoryWindow()
+    @State private var pendingHistoryAnchor: UUID?
+    @State private var isInitiallyFollowing = true
 
     init(
         session: Session,
@@ -16,14 +23,29 @@ struct ChatViewMessageList: View {
         _folderPickerRequest = folderPickerRequest
         let sessionId = session.id
         _messages = Query(
-            filter: #Predicate<ChatMessage> { $0.sessionId == sessionId },
+            filter: #Predicate<ChatMessage> { $0.sessionId == sessionId && $0.stateRaw != "queued" },
             sort: [SortDescriptor(\.createdAt)]
         )
+        _queuedMessages = Query(
+            filter: #Predicate<ChatMessage> { $0.sessionId == sessionId && $0.stateRaw == "queued" },
+            sort: [SortDescriptor(\.createdAt)])
+        var latestUser = FetchDescriptor<ChatMessage>(
+            predicate: #Predicate<ChatMessage> { $0.sessionId == sessionId && $0.roleRaw == "user" },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+        latestUser.fetchLimit = 1
+        _latestUserMessages = Query(latestUser)
+        _taskCalls = Query(
+            filter: #Predicate<ChatToolCall> {
+                $0.sessionId == sessionId && $0.parentToolUseId == nil
+                    && ($0.name == "TaskCreate" || $0.name == "TaskUpdate" || $0.name == "TodoWrite"
+                        || $0.name == "update_plan")
+            },
+            sort: \ChatToolCall.order)
     }
 
     var body: some View {
         let _ = PerfCounters.bump("ml.body")
-        if messages.isEmpty {
+        if messages.isEmpty && queuedMessages.isEmpty {
             SessionEmptyView(session: session, folderPickerRequest: $folderPickerRequest)
         } else {
             messageList
@@ -31,22 +53,47 @@ struct ChatViewMessageList: View {
     }
 
     private var messageList: some View {
-        let queued = messages.filter { $0.state == .queued }
-        let groups = groupCache.groups(for: messages.filter { $0.state != .queued })
+        let queued = queuedMessages
+        let groups = groupCache.groups(for: messages)
+        let groupIds = groups.map(\.groupId)
+        let startIndex = historyWindow.startIndex(sessionId: session.id, groupIds: groupIds)
+        let taskItems = ChatTaskList.items(from: taskCalls)
+        let taskMessageIds = Set(taskCalls.map(\.messageId))
         return GeometryReader { geo in
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: ThemeTokens.Spacing.m) {
-                        ForEach(groups, id: \.groupId) { group in
+                        if startIndex > 0 {
+                            Button {
+                                var transaction = Transaction()
+                                transaction.disablesAnimations = true
+                                withTransaction(transaction) {
+                                    isInitiallyFollowing = false
+                                    pendingHistoryAnchor = historyWindow.loadEarlier(
+                                        sessionId: session.id, groupIds: groupIds)
+                                }
+                            } label: {
+                                Label("Load earlier messages", systemImage: "arrow.up")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .padding(.horizontal, ThemeTokens.Spacing.m)
+                            .accessibilityHint(
+                                "Shows the previous 50 message groups without changing this conversation")
+                        }
+                        ForEach(groups.dropFirst(startIndex), id: \.groupId) { group in
                             ChatViewMessageListGroup(
                                 session: session,
                                 messages: group.messages,
-                                isLast: group.groupId == groups.last?.groupId
+                                isLast: group.groupId == groups.last?.groupId,
+                                taskItems: taskItems,
+                                taskMessageIds: taskMessageIds
                             )
+                            .id("group-\(group.groupId.uuidString)")
                             .transition(.opacity)
                         }
                         ForEach(queued, id: \.id) { message in
-                            ChatViewMessageListQueuedRow(message: message)
+                            ChatViewMessageListQueuedRow(message: message, provider: session.provider)
                                 .id(message.id)
                                 .transition(.opacity)
                         }
@@ -55,32 +102,64 @@ struct ChatViewMessageList: View {
                     }
                     .padding(.vertical, ThemeTokens.Spacing.m)
                     .animation(
-                        .spring(response: 0.35, dampingFraction: 0.85),
-                        value: groups.count + queued.count)
+                        reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.85),
+                        value: groups.count + queued.count
+                    )
                     .animation(
-                        .spring(response: 0.35, dampingFraction: 0.85), value: lastAnchoredUserId)
+                        reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.85), value: lastAnchoredUserId)
                 }
                 .scrollIndicators(.hidden)
-                .onScrollGeometryChange(for: CGFloat.self) {
-                    $0.contentOffset.y
-                } action: {
-                    old, new in
-                    if PerfCounters.enabled && abs(new - old) > 1 {
+                .defaultScrollAnchor(.bottom, for: .initialOffset)
+                .defaultScrollAnchor(isInitiallyFollowing ? .bottom : nil, for: .sizeChanges)
+                .onScrollPhaseChange { _, phase in
+                    if phase != .idle {
+                        isInitiallyFollowing = false
+                    }
+                }
+                #if DEBUG
+                .onScrollGeometryChange(for: [CGFloat].self) {
+                    [
+                        $0.contentOffset.y, $0.contentSize.height, $0.containerSize.height,
+                        $0.visibleRect.minY, $0.visibleRect.maxY,
+                        $0.contentInsets.top, $0.contentInsets.bottom,
+                    ]
+                } action: { old, new in
+                    if PerfCounters.enabled && zip(old, new).contains(where: { abs($0 - $1) > 1 }) {
                         PerfCounters.event(
-                            "scroll offsetY \(String(format: "%.1f", old)) -> \(String(format: "%.1f", new))"
+                            "scroll geometry offset/content/viewport/visibleMin/visibleMax/insetTop/insetBottom "
+                                + new.map { String(format: "%.1f", $0) }.joined(separator: "/")
                         )
                     }
                 }
-                .onAppear {
-                    proxy.scrollTo("bottom", anchor: .bottom)
+                #endif
+                .onChange(of: groups.count, initial: true) { _, _ in
+                    historyWindow.synchronize(sessionId: session.id, groupIds: groupIds)
+                }
+                .onChange(of: pendingHistoryAnchor) { _, anchor in
+                    if let anchor {
+                        var transaction = Transaction()
+                        transaction.disablesAnimations = true
+                        withTransaction(transaction) {
+                            proxy.scrollTo("group-\(anchor.uuidString)", anchor: .top)
+                            pendingHistoryAnchor = nil
+                        }
+                    }
                 }
                 .onChange(of: lastUserMessageId) { _, id in
                     if let id, id != lastAnchoredUserId {
+                        isInitiallyFollowing = false
                         lastAnchoredUserId = id
                         proxy.scrollTo(id, anchor: .top)
                     }
                 }
             }
+        }
+        .id(session.id)
+        .onChange(of: session.id) { _, _ in
+            pendingHistoryAnchor = nil
+            isInitiallyFollowing = true
+            lastAnchoredUserId = nil
+            historyWindow.synchronize(sessionId: session.id, groupIds: groupIds)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
     }
@@ -90,34 +169,6 @@ struct ChatViewMessageList: View {
     }
 
     private var lastUserMessageId: UUID? {
-        messages.last(where: { $0.role == .user })?.id
-    }
-}
-
-private struct MessageGroup {
-    let groupId: UUID
-    let messages: [ChatMessage]
-}
-
-private final class GroupCache {
-    private var key: [UUID] = []
-    private var cached: [MessageGroup] = []
-
-    func groups(for messages: [ChatMessage]) -> [MessageGroup] {
-        let newKey = messages.map(\.id)
-        if newKey == key { return cached }
-        PerfCounters.bump("ml.grouped")
-        var groups: [[ChatMessage]] = []
-        for message in messages {
-            if var last = groups.last, last.first?.role == message.role {
-                last.append(message)
-                groups[groups.count - 1] = last
-            } else {
-                groups.append([message])
-            }
-        }
-        cached = groups.map { MessageGroup(groupId: $0.first?.id ?? UUID(), messages: $0) }
-        key = newKey
-        return cached
+        latestUserMessages.first?.id
     }
 }

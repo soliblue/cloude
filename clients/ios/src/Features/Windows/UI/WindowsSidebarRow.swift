@@ -6,18 +6,22 @@ struct WindowsSidebarRow: View {
     let isFocused: Bool
     var isStreaming: Bool = false
     var isUnread: Bool = false
+    var needsAttention: Bool = false
     var endpointName: String? = nil
     var path: String? = nil
     @Environment(\.appAccent) private var appAccent
-    @State private var pulse: Bool = false
+
+    @ScaledMetric(relativeTo: .body) private var iconColumnWidth = ThemeTokens.Size.m
 
     var body: some View {
-        let highlight = isStreaming || isUnread
+        let highlight = isStreaming || isUnread || needsAttention
         HStack(spacing: ThemeTokens.Spacing.m) {
             Image(systemName: symbol)
                 .appFont(size: ThemeTokens.Text.l, weight: .medium)
                 .foregroundColor(highlight ? appAccent.color : (isFocused ? .primary : ThemeColor.secondary))
-                .frame(width: ThemeTokens.Size.m)
+                .fixedSize()
+                .frame(minWidth: iconColumnWidth)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
                 Text(title)
                     .appFont(size: ThemeTokens.Text.l, weight: (isFocused || highlight) ? .medium : .regular)
@@ -45,12 +49,27 @@ struct WindowsSidebarRow: View {
                     .foregroundColor(ThemeColor.secondary)
                 }
             }
+            Spacer(minLength: 0)
+            if isStreaming {
+                ProgressView()
+                    .controlSize(.mini)
+                    .accessibilityLabel("Working")
+            } else if isUnread || needsAttention {
+                Circle()
+                    .fill(appAccent.color)
+                    .frame(width: 7, height: 7)
+                    .accessibilityLabel("Unread")
+            }
         }
-        .opacity(isStreaming && pulse ? 0.4 : 1.0)
-        .animation(isStreaming ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .default, value: pulse)
-        .onAppear { if isStreaming { pulse = true } }
-        .onChange(of: isStreaming) { _, streaming in
-            pulse = streaming
-        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(
+            [
+                needsAttention ? "Needs attention" : isStreaming ? "Working" : isUnread ? "Unread" : nil,
+                endpointName, path,
+            ]
+            .compactMap { $0 }.joined(separator: ", ")
+        )
+        .accessibilityAddTraits(isFocused ? .isSelected : [])
     }
 }

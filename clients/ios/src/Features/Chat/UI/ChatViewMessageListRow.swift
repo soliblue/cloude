@@ -57,7 +57,9 @@ struct ChatViewMessageListRow: View {
     }
 
     @ViewBuilder private var content: some View {
-        if message.state == .streaming {
+        if message.planIsComplete != nil {
+            ChatViewMessageListRowPlan(session: session, message: message)
+        } else if message.state == .streaming {
             streaming
         } else {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {

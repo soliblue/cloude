@@ -62,6 +62,7 @@ struct HTTPResponse {
         }
         text += "X-Daemon-Version: \(DaemonVersion.current)\r\n"
         text += "X-Daemon-Platform: \(DaemonVersion.platform)\r\n"
+        text += "X-Daemon-Capabilities: \(DaemonCapabilities.supported.joined(separator: ","))\r\n"
         for (key, value) in extraHeaders {
             text += "\(key): \(value)\r\n"
         }
@@ -78,13 +79,23 @@ struct HTTPResponse {
     private var statusText: String {
         switch status {
         case 200: return "OK"
+        case 202: return "Accepted"
+        case 402: return "Payment Required"
+        case 429: return "Too Many Requests"
+        case 503: return "Service Unavailable"
         case 206: return "Partial Content"
+        case 304: return "Not Modified"
         case 400: return "Bad Request"
         case 401: return "Unauthorized"
         case 403: return "Forbidden"
         case 404: return "Not Found"
+        case 409: return "Conflict"
         case 413: return "Payload Too Large"
+        case 416: return "Range Not Satisfiable"
+        case 422: return "Unprocessable Content"
         case 500: return "Internal Server Error"
+        case 502: return "Bad Gateway"
+        case 504: return "Gateway Timeout"
         default: return "Error"
         }
     }

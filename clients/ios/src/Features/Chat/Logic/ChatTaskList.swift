@@ -2,35 +2,50 @@ import Foundation
 
 enum ChatTaskList {
     static func items(from calls: [ChatToolCall]) -> [ChatTodoItem] {
-        var tasks: [(id: Int, content: String, status: ChatTodoItem.Status)] = []
+        var tasks: [Int: (position: Int, content: String, status: ChatTodoItem.Status)] = [:]
+        var order: [Int?] = []
+        var maximumId: Int? = 0
         for call in calls.sorted(by: { $0.order < $1.order }) {
             let input = call.parsedInput
             switch call.name {
+            case "TodoWrite", "update_plan":
+                tasks.removeAll(keepingCapacity: true)
+                order.removeAll(keepingCapacity: true)
+                for (index, item) in (call.todoItems ?? []).enumerated() {
+                    tasks[index] = (index, item.content, item.status)
+                    order.append(index)
+                }
+                maximumId = order.last.flatMap { $0 } ?? 0
             case "TaskCreate":
+                if maximumId == nil { maximumId = tasks.keys.max() ?? 0 }
                 let id =
                     call.result.flatMap { $0.firstMatch(of: #/#(\d+)/#) }.flatMap { Int($0.1) }
-                    ?? (tasks.map(\.id).max() ?? 0) + 1
-                if !tasks.contains(where: { $0.id == id }) {
-                    tasks.append((id, input["subject"] as? String ?? "", .pending))
+                    ?? (maximumId ?? 0) + 1
+                if tasks[id] == nil {
+                    tasks[id] = (order.count, input["subject"] as? String ?? "", .pending)
+                    order.append(id)
+                    maximumId = max(maximumId ?? 0, id)
                 }
             case "TaskUpdate":
-                let taskId =
-                    input["taskId"] as? String ?? (input["taskId"] as? Int).map { String($0) }
-                if let taskId, let id = Int(taskId),
-                    let index = tasks.firstIndex(where: { $0.id == id })
-                {
-                    if let subject = input["subject"] as? String { tasks[index].content = subject }
-                    if let status = input["status"] as? String {
-                        if status == "deleted" {
-                            tasks.remove(at: index)
-                        } else if let parsed = ChatTodoItem.Status(rawValue: status) {
-                            tasks[index].status = parsed
-                        }
+                let taskId = input["taskId"] as? String ?? (input["taskId"] as? Int).map(String.init)
+                if let taskId, let id = Int(taskId), var task = tasks[id] {
+                    if let subject = input["subject"] as? String { task.content = subject }
+                    if let status = input["status"] as? String, let parsed = ChatTodoItem.Status(rawValue: status) {
+                        task.status = parsed
+                    }
+                    if input["status"] as? String == "deleted" {
+                        tasks.removeValue(forKey: id)
+                        order[task.position] = nil
+                        if maximumId == id { maximumId = nil }
+                    } else {
+                        tasks[id] = task
                     }
                 }
             default: break
             }
         }
-        return tasks.map { ChatTodoItem(content: $0.content, status: $0.status) }
+        return order.compactMap { id in
+            id.flatMap { tasks[$0] }.map { ChatTodoItem(content: $0.content, status: $0.status) }
+        }
     }
 }

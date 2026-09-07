@@ -1,0 +1,4 @@
+[
+  {"id":"image-ok","type":"imageGeneration","status":"completed","result":"opaque-result","savedPath":"/workspace/diagram.png","revisedPrompt":"A system diagram","transparentBackground":true,"failure":null},
+  {"id":"image-limit","type":"imageGeneration","status":"completed","result":"","savedPath":null,"failure":{"type":"usageLimitExceeded","limitId":"image_generation","resetsAt":1788800000}}
+]

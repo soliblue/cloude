@@ -1,6 +1,7 @@
 #!/bin/zsh
 
 set -euo pipefail
+umask 077
 
 ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
 PROVISIONING_DIR="$ROOT_DIR/provisioning"
@@ -19,11 +20,19 @@ set -a
 source "$ROOT_DIR/.env"
 set +a
 
-existing_provisioning_secret="$(ssh "$REMOTE" "test -f '$REMOTE_ENV_DIR/provisioning.env' && sed -n 's/^PROVISIONING_TOKEN_SECRET=//p' '$REMOTE_ENV_DIR/provisioning.env' | head -1 || true")"
-export EXISTING_PROVISIONING_TOKEN_SECRET="$existing_provisioning_secret"
-
 tmp_dir="$(mktemp -d)"
+chmod 700 "$tmp_dir"
 trap 'rm -rf "$tmp_dir"' EXIT
+existing_remote_env="$tmp_dir/existing-provisioning.env"
+: > "$existing_remote_env"
+chmod 600 "$existing_remote_env"
+ssh "$REMOTE" true >/dev/null
+if ssh "$REMOTE" "test -f '$REMOTE_ENV_DIR/provisioning.env'"; then
+  scp "$REMOTE:$REMOTE_ENV_DIR/provisioning.env" "$existing_remote_env" >/dev/null
+  chmod 600 "$existing_remote_env"
+fi
+existing_provisioning_secret="$($LOCAL_PYTHON "$PROVISIONING_DIR/scripts/merge-env.py" --get PROVISIONING_TOKEN_SECRET "$existing_remote_env")"
+export EXISTING_PROVISIONING_TOKEN_SECRET="$existing_provisioning_secret"
 
 "$LOCAL_PYTHON" - "$tmp_dir" "$PROVISIONING_HOSTNAME" "$MAC_TUNNEL_HOST_SUFFIX" "$MAC_TUNNEL_HOST_LABEL_SUFFIX" <<'PY'
 import json
@@ -83,7 +92,7 @@ request("PUT", f"/accounts/{account_id}/cfd_tunnel/{tunnel_id}/configurations", 
 tunnel_token = request("GET", f"/accounts/{account_id}/cfd_tunnel/{tunnel_id}/token")
 provisioning_secret = os.environ.get("PROVISIONING_TOKEN_SECRET") or os.environ.get("EXISTING_PROVISIONING_TOKEN_SECRET") or secrets.token_urlsafe(48)
 
-with open(f"{tmp_dir}/provisioning.env", "w") as file:
+with open(f"{tmp_dir}/generated-provisioning.env", "w") as file:
     file.write(f"CLOUDFLARE_ACCOUNT_ID={account_id}\n")
     file.write(f"CLOUDFLARE_ZONE_ID={zone_id}\n")
     file.write(f"CLOUDFLARE_API_TOKEN={api_token}\n")
@@ -98,6 +107,11 @@ with open(f"{tmp_dir}/provisioning.env", "w") as file:
     file.write(f"TUNNEL_HOST_SUFFIX={mac_suffix}\n")
     file.write(f"TUNNEL_HOST_LABEL_SUFFIX={mac_label_suffix}\n")
     file.write("TUNNEL_ORIGIN_SERVICE=http://localhost:8765\n")
+    for key in ("APNS_KEY_ID", "APNS_TEAM_ID", "APNS_AUTH_KEY_CONTENT", "APNS_TOPIC", "APNS_USE_SANDBOX"):
+        value = os.environ.get(key)
+        if value:
+            encoded = value.replace("\\", "\\\\").replace('"', '\\"')
+            file.write(f'{key}="{encoded}"\n')
 
 with open(f"{tmp_dir}/cloudflared.env", "w") as file:
     file.write(f"TUNNEL_TOKEN={tunnel_token}\n")
@@ -105,6 +119,8 @@ with open(f"{tmp_dir}/cloudflared.env", "w") as file:
 with open(f"{tmp_dir}/summary.json", "w") as file:
     json.dump({"tunnel": tunnel_name, "tunnelId": tunnel_id, "hostname": provisioning_hostname}, file)
 PY
+
+"$LOCAL_PYTHON" "$PROVISIONING_DIR/scripts/merge-env.py" "$existing_remote_env" "$tmp_dir/generated-provisioning.env" "$tmp_dir/provisioning.env"
 
 ssh "$REMOTE" "mkdir -p '$REMOTE_DIR' '$REMOTE_ENV_DIR' '$REMOTE_DATA_DIR'"
 

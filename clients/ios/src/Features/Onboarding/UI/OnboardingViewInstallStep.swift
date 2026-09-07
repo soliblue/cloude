@@ -6,7 +6,7 @@ struct OnboardingViewInstallStep: View {
     @Environment(\.theme) private var theme
     @Environment(\.appAccent) private var appAccent
     @Environment(\.openURL) private var openURL
-    @State private var isLinux = false
+    @State private var isLinux = true
     @State private var installer: InstallerFile?
     @State private var isDownloadingInstaller = false
     @State private var isFetchingLinux = false
@@ -15,27 +15,29 @@ struct OnboardingViewInstallStep: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-            Spacer()
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-                Text("Install the daemon")
+                Text("Connect your agents")
                     .appFont(size: ThemeTokens.Text.xxl, weight: .semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("To control Claude from your phone, you'll need the companion daemon running on your computer.")
-                    .appFont(size: ThemeTokens.Text.xl)
-                    .foregroundColor(ThemeColor.secondary)
-                    .frame(maxWidth: 520, alignment: .leading)
+                Text(
+                    "Use Codex or Claude on your own machine with your existing subscription."
+                )
+                .appFont(size: ThemeTokens.Text.xl)
+                .foregroundColor(ThemeColor.secondary)
+                .frame(maxWidth: 520, alignment: .leading)
             }
             Picker("Platform", selection: $isLinux) {
-                Text("Mac").tag(false)
                 Text("Linux").tag(true)
+                Text("Mac").tag(false)
             }
             .pickerStyle(.segmented)
-            Image("OnboardingInstallIllustration")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, -ThemeTokens.Spacing.l)
-                .accessibilityHidden(true)
+            Text(
+                isLinux
+                    ? "Paste the command into your server's terminal as your normal user with sudo access."
+                    : "Send the installer to your Mac with AirDrop, then open it there."
+            )
+            .appFont(size: ThemeTokens.Text.m)
+            .foregroundStyle(ThemeColor.secondary)
             VStack(spacing: ThemeTokens.Spacing.m) {
                 Button(action: primaryAction) {
                     primaryLabel
@@ -68,7 +70,7 @@ struct OnboardingViewInstallStep: View {
         }
         .alert("Couldn't prepare the installer", isPresented: $isDownloadErrorPresented) {
             Button("Open in Safari") {
-                openURL(OnboardingInstallService.releasePageURL)
+                openURL(OnboardingInstallService.releasePageURL(linux: isLinux))
             }
             Button("OK", role: .cancel) {}
         } message: {
@@ -77,7 +79,7 @@ struct OnboardingViewInstallStep: View {
     }
 
     @ViewBuilder private var primaryLabel: some View {
-        let title = isLinux ? (didCopyCommand ? "Copied" : "Copy install command") : "AirDrop Installer"
+        let title = isLinux ? (didCopyCommand ? "Copied" : "Copy install command") : "Get Mac installer"
         let busy = isDownloadingInstaller || isFetchingLinux
         Text(title)
             .appFont(size: ThemeTokens.Text.xl, weight: .semibold)

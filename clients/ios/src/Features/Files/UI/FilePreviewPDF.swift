@@ -2,12 +2,12 @@ import PDFKit
 import SwiftUI
 
 struct FilePreviewPDF: UIViewRepresentable {
-    let data: Data
+    let url: URL
 
     func makeUIView(context: Context) -> PDFView {
         let view = PDFView()
         view.autoScales = true
-        view.document = PDFDocument(data: data)
+        view.document = PDFDocument(url: url)
         return view
     }
 

@@ -4,6 +4,8 @@ struct ChatViewMessageListGroup: View {
     let session: Session
     let messages: [ChatMessage]
     var isLast: Bool = false
+    let taskItems: [ChatTodoItem]
+    let taskMessageIds: Set<UUID>
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -13,7 +15,7 @@ struct ChatViewMessageListGroup: View {
                 ChatViewMessageListGroupRetryButton(message: retryable)
             }
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-                ForEach(segments) { segment in
+                ForEach(ChatMessageSegment.build(from: messages)) { segment in
                     switch segment {
                     case .message(let message):
                         ChatViewMessageListRow(session: session, message: message)
@@ -35,12 +37,14 @@ struct ChatViewMessageListGroup: View {
                         ChatViewMessageListRowToolPillList(session: session, messageIds: messageIds)
                     }
                 }
-                if let status = statusMessage, let modelId = status.model {
-                    ChatViewMessageListGroupStatusRow(modelId: modelId, costUsd: status.costUsd)
+                if let status = statusMessage {
+                    if let modelId = status.model {
+                        ChatViewMessageListGroupStatusRow(modelId: modelId, costUsd: status.costUsd)
+                    }
                     ChatViewMessageListGroupGitCard(session: session, messageId: status.id)
-                    ChatViewMessageListGroupTaskCard(
-                        session: session, messageIds: messages.map(\.id))
                 }
+                ChatViewMessageListGroupTaskCard(
+                    messageIds: messages.map(\.id), taskItems: taskItems, taskMessageIds: taskMessageIds)
             }
             .padding(.horizontal, ThemeTokens.Spacing.m)
             .padding(.vertical, role == .user ? ThemeTokens.Spacing.s : 0)
@@ -58,7 +62,7 @@ struct ChatViewMessageListGroup: View {
         guard role == .assistant, !(isLast && session.isStreaming),
             messages.allSatisfy({ $0.state != .streaming })
         else { return nil }
-        return messages.last(where: { $0.model != nil && $0.model != "<synthetic>" })
+        return messages.last(where: { $0.model != "<synthetic>" })
     }
 
     private var retryableUserMessage: ChatMessage? {
@@ -76,48 +80,4 @@ struct ChatViewMessageListGroup: View {
         )
     }
 
-    private var segments: [Segment] {
-        var result: [Segment] = []
-        var toolBucket: [UUID] = []
-        for message in messages {
-            let hasContent =
-                !message.imagesData.isEmpty || !message.text.isEmpty || message.hasThinking
-                || message.state == .streaming || message.state == .failed
-                || message.state == .retrying
-            if hasContent {
-                if !toolBucket.isEmpty {
-                    result.append(.tools(toolBucket))
-                    toolBucket = []
-                }
-                let thinkingOnly =
-                    message.hasThinking && message.text.isEmpty && message.imagesData.isEmpty
-                    && message.state != .streaming && message.state != .failed
-                    && message.state != .retrying
-                if thinkingOnly, case .thinking(let run)? = result.last {
-                    result[result.count - 1] = .thinking(run + [message])
-                } else if thinkingOnly {
-                    result.append(.thinking([message]))
-                } else {
-                    result.append(.message(message))
-                }
-            }
-            if message.hasToolCalls { toolBucket.append(message.id) }
-        }
-        if !toolBucket.isEmpty { result.append(.tools(toolBucket)) }
-        return result
-    }
-
-    private enum Segment: Identifiable {
-        case message(ChatMessage)
-        case thinking([ChatMessage])
-        case tools([UUID])
-
-        var id: String {
-            switch self {
-            case .message(let message): return "message-\(message.id.uuidString)"
-            case .thinking(let run): return "thinking-\(run.first?.id.uuidString ?? "")"
-            case .tools(let messageIds): return "tools-\(messageIds.first?.uuidString ?? "")"
-            }
-        }
-    }
 }

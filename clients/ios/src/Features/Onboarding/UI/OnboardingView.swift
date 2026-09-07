@@ -20,10 +20,19 @@ struct OnboardingView: View {
     var body: some View {
         ZStack {
             theme.palette.background.ignoresSafeArea()
-            switch store.step {
-            case .install: OnboardingViewInstallStep(store: store)
-            case .pair: OnboardingViewPairStep(store: store)
-            case .status: OnboardingViewStatusStep(store: store, onFinished: onFinished)
+            GeometryReader { geometry in
+                ScrollView {
+                    Group {
+                        switch store.step {
+                        case .install: OnboardingViewInstallStep(store: store)
+                        case .pair: OnboardingViewPairStep(store: store)
+                        case .status: OnboardingViewStatusStep(store: store, onFinished: onFinished)
+                        }
+                    }
+                    .frame(minHeight: geometry.size.height)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .id(store.step)
             }
             if let onCancel {
                 VStack {
@@ -34,6 +43,8 @@ struct OnboardingView: View {
                                 .font(.system(size: ThemeTokens.Icon.xl))
                                 .foregroundStyle(ThemeColor.secondary)
                         }
+                        .frame(width: 44, height: 44)
+                        .accessibilityLabel("Close setup")
                     }
                     Spacer()
                 }

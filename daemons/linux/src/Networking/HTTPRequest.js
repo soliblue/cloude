@@ -9,6 +9,12 @@ export default class HTTPRequest {
     this.body = body
   }
 
+  json() {
+    const value = JSON.parse(this.body.toString('utf8'))
+    if (value && typeof value === 'object' && !Array.isArray(value)) { return value }
+    throw new SyntaxError('Expected a JSON object')
+  }
+
   static fromNode(request, body) {
     const { path, query } = split(request.url || '/')
     return new HTTPRequest(

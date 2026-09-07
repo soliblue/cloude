@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     tunnel_host_suffix: str = "soli.blue"
     tunnel_host_label_suffix: str = "remotecc"
     tunnel_origin_service: str = "http://localhost:8765"
+    apns_key_id: str = ""
+    apns_team_id: str = ""
+    apns_auth_key_content: str = ""
+    apns_topic: str = "soli.Cloude"
+    apns_use_sandbox: bool = False
 
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 

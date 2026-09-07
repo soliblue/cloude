@@ -3,6 +3,7 @@ import SwiftUI
 struct ChatViewMessageListRowMarkdownInline: View {
     let segments: [ChatMarkdownInlineSegment]
     @Environment(\.fontStep) private var fontStep
+    @ScaledMetric(relativeTo: .body) private var textScale = 1.0
 
     var body: some View {
         Text(build())
@@ -10,7 +11,7 @@ struct ChatViewMessageListRowMarkdownInline: View {
     }
 
     private func build() -> AttributedString {
-        let size = ThemeTokens.Text.m + fontStep
+        let size = (ThemeTokens.Text.m + fontStep) * textScale
         var result = AttributedString()
         for segment in segments {
             switch segment {

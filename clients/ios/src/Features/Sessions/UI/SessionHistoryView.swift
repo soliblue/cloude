@@ -3,6 +3,8 @@ import SwiftUI
 
 struct SessionHistoryView: View {
     @Binding var selectedPane: WindowsPane
+    @State private var showArchived = false
+    @State private var archiveFailed = false
     @Environment(\.modelContext) private var context
     @Environment(\.theme) private var theme
     @Environment(\.dismiss) private var dismiss
@@ -11,14 +13,17 @@ struct SessionHistoryView: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                Toggle("Archived chats", isOn: $showArchived).padding(.vertical, ThemeTokens.Spacing.m)
                 if sessions.isEmpty {
                     ContentUnavailableView(
                         "No history yet", systemImage: "clock",
-                        description: Text("Sessions you open will show up here."))
-                        .padding(.top, ThemeTokens.Spacing.xl)
+                        description: Text("Sessions you open will show up here.")
+                    )
+                    .padding(.top, ThemeTokens.Spacing.xl)
                 }
-                ForEach(Array(sessions.enumerated()), id: \.element.id) { index, session in
+                ForEach(Array(sessions.filter { $0.isArchived == showArchived }.enumerated()), id: \.element.id) {
+                    index, session in
                     if index > 0 { Divider() }
                     Button {
                         open(session)
@@ -34,6 +39,14 @@ struct SessionHistoryView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        Button(session.isArchived ? "Restore" : "Archive", systemImage: "archivebox") {
+                            Task {
+                                archiveFailed =
+                                    !(await SessionService.archive(session: session, archived: !session.isArchived))
+                            }
+                        }.disabled(session.isStreaming)
+                    }
                     .padding(.vertical, ThemeTokens.Spacing.s)
                 }
             }
@@ -44,17 +57,29 @@ struct SessionHistoryView: View {
         .navigationTitle("History")
         .navigationBarTitleDisplayMode(.inline)
         .themedNavChrome()
+        .alert("Could not update this chat", isPresented: $archiveFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Check your connection and try again.")
+        }
     }
 
     private func open(_ session: Session) {
-        withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-            if let window = windows.first(where: { $0.session?.id == session.id }) {
-                WindowActions.activate(window, among: windows)
+        Task {
+            let canOpen = session.isArchived ? await SessionService.archive(session: session, archived: false) : true
+            if canOpen {
+                withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                    if let window = windows.first(where: { $0.session?.id == session.id }) {
+                        WindowActions.activate(window, among: windows)
+                    } else {
+                        WindowActions.open(session, among: windows, context: context)
+                    }
+                    selectedPane = session.tab == .git ? .git : .session
+                }
+                dismiss()
             } else {
-                WindowActions.open(session, among: windows, context: context)
+                archiveFailed = true
             }
-            selectedPane = session.tab == .git ? .git : .session
         }
-        dismiss()
     }
 }

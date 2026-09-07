@@ -10,7 +10,7 @@ struct SessionEmptyViewModelRow: View {
         SessionEmptyViewPickerRow(
             icon: "cpu",
             title: "Model",
-            value: session.model?.displayName ?? "Auto",
+            value: ChatModelCatalog.shared.displayName(session.model, sessionId: session.id),
             options: options
         )
     }
@@ -25,10 +25,10 @@ struct SessionEmptyViewModelRow: View {
                 SessionActions.setModel(nil, for: session.id, context: context)
             }
         )
-        let cases = ChatModel.allCases.map { model in
+        let cases = ChatModelCatalog.shared.models(sessionId: session.id, provider: session.provider).map { model in
             SessionEmptyViewPickerOption(
                 id: model.rawValue,
-                title: model.displayName,
+                title: ChatModelCatalog.shared.displayName(model, sessionId: session.id),
                 isSelected: session.model == model,
                 action: {
                     defaultModel = model.rawValue

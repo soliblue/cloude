@@ -3,37 +3,45 @@ import SwiftUI
 struct FilePreviewSheetContent: View {
     let node: FileNodeDTO
     let type: FilePreviewContentType
-    let data: Data
+    let resource: FilePreviewResource
     let wrap: Bool
 
     var body: some View {
-        switch type {
-        case .image:
-            FilePreviewImage(data: data)
-        case .gif:
-            FilePreviewGIF(data: data)
-        case .video:
-            FilePreviewVideo(data: data, fileName: node.name)
-        case .audio:
-            FilePreviewAudio(data: data)
-        case .pdf:
-            FilePreviewPDF(data: data)
-        case .markdown:
-            FilePreviewMarkdown(data: data)
-        case .json:
-            FilePreviewJSON(data: data)
-        case .csv:
-            FilePreviewCSV(data: data)
-        case .html:
-            FilePreviewHTML(data: data)
-        case .xml:
-            FilePreviewXML(data: data)
-        case .code(let language):
-            FilePreviewCode(data: data, language: language, wrap: wrap)
-        case .text:
-            FilePreviewCode(data: data, language: "plaintext", wrap: wrap)
-        case .binary:
-            FilePreviewBinary(node: node)
+        if resource.isTruncated {
+            if type.isCode || type.hasRenderedView {
+                FilePreviewCode(data: resource.data ?? Data(), language: type.sourceLanguage, wrap: wrap)
+            } else {
+                FilePreviewBinary(node: node)
+            }
+        } else {
+            switch type {
+            case .image:
+                FilePreviewImage(data: resource.data ?? Data())
+            case .gif:
+                FilePreviewGIF(data: resource.data ?? Data())
+            case .video:
+                FilePreviewVideo(url: resource.url)
+            case .audio:
+                FilePreviewAudio(url: resource.url)
+            case .pdf:
+                FilePreviewPDF(url: resource.url)
+            case .markdown:
+                FilePreviewMarkdown(data: resource.data ?? Data())
+            case .json:
+                FilePreviewJSON(data: resource.data ?? Data())
+            case .csv:
+                FilePreviewCSV(data: resource.data ?? Data(), tabSeparated: node.name.lowercased().hasSuffix(".tsv"))
+            case .html:
+                FilePreviewHTML(data: resource.data ?? Data())
+            case .xml:
+                FilePreviewXML(data: resource.data ?? Data())
+            case .code(let language):
+                FilePreviewCode(data: resource.data ?? Data(), language: language, wrap: wrap)
+            case .text:
+                FilePreviewCode(data: resource.data ?? Data(), language: "plaintext", wrap: wrap)
+            case .binary:
+                FilePreviewBinary(node: node)
+            }
         }
     }
 }

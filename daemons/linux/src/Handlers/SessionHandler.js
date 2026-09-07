@@ -1,9 +1,9 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
 import HTTPResponse from '../Networking/HTTPResponse.js'
-import { claudeCommand, spawnEnvironment } from '../Runtime/ClaudeRuntime.js'
+import { codexSessions } from '../Codex/CodexSessions.js'
+import { codexClient } from '../Codex/CodexClient.js'
 
 function parsedBody(request) {
   try {
@@ -48,74 +48,16 @@ function readTranscript(targetPath, sessionId) {
   return ''
 }
 
-function parseJSONBlock(text) {
-  const direct = parsedJSON(text.trim())
-  if (direct) {
-    return direct
-  }
-  const start = text.indexOf('{')
-  const end = text.lastIndexOf('}')
-  if (start !== -1 && end !== -1 && start < end) {
-    return parsedJSON(text.slice(start, end + 1))
-  }
-  return null
-}
-
-function runSonnet(prompt) {
-  const { executable, leadingArguments } = claudeCommand()
-  return new Promise((resolve) => {
-    const child = spawn(executable, [...leadingArguments, '-p', '--model', 'sonnet', '--output-format', 'json'], {
-      env: spawnEnvironment()
-    })
-    let stdout = ''
-    let stderr = ''
-    child.stdout.on('data', (data) => {
-      stdout += data
-    })
-    child.stderr.on('data', (data) => {
-      stderr += data
-    })
-    child.on('error', (error) => {
-      console.error(`[SessionHandler] runSonnet spawn_failed: ${error.message}`)
-      resolve(null)
-    })
-    child.on('close', (code) => {
-      if (code === 0) {
-        resolve(stdout)
-      } else {
-        console.error(`[SessionHandler] runSonnet exit=${code} stderr=${stderr}`)
-        resolve(null)
-      }
-    })
-    child.stdin.on('error', (error) => {
-      console.error(`[SessionHandler] runSonnet stdin: ${error.message}`)
-    })
-    child.stdin.write(prompt)
-    child.stdin.end()
-  })
-}
-
 export async function updateTitle(request, params) {
   const body = parsedBody(request)
+  if (params.id && body?.path && codexSessions.read(params.id)) {
+    const result = await codexClient.request('thread/read', { threadId: codexSessions.read(params.id).threadId, includeTurns: false })
+    return HTTPResponse.json(200, { title: (result.thread.name || result.thread.preview || 'Codex task').split('\n')[0].slice(0, 60), symbol: 'terminal' })
+  }
   if (params.id && body?.path) {
     const transcript = readTranscript(body.path, params.id)
     if (transcript) {
-      const output = await runSonnet(`You are naming a chat window in a mobile app. The user needs to glance at the name and instantly know what this conversation is about.
-
-Conversation:
-${transcript}
-
-Suggest a short conversation title (1-3 words) that describes what's being worked on or discussed. Be specific and descriptive, not generic or catchy. Good examples: "Auth Bug Fix", "Dark Mode", "Rename Logic", "Memory System". Bad examples: "Spark", "New Chat", "Quick Fix".
-
-Also pick an SF Symbol name that best fits the topic. Pick something specific and creative, not generic. Prefer outline versions (e.g. "star" over "star.fill") unless only a .fill variant exists.
-
-Respond with ONLY a JSON object and nothing else: {"title": "Short Title", "symbol": "sf.symbol.name"}`)
-      const outer = output ? parsedJSON(output) : null
-      const parsed = outer?.result ? parseJSONBlock(outer.result) : output ? parseJSONBlock(output) : null
-      if (parsed?.title && parsed?.symbol) {
-        return HTTPResponse.json(200, { title: parsed.title, symbol: parsed.symbol })
-      }
-      return HTTPResponse.json(500, { error: 'generation_failed' })
+      return HTTPResponse.json(200, { title: transcript.split('\n')[0].replace(/^user: /u, '').slice(0, 60), symbol: 'terminal' })
     }
     return HTTPResponse.json(404, { error: 'transcript_not_found' })
   }

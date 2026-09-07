@@ -2,7 +2,7 @@ import Foundation
 import Network
 
 final class HTTPServer {
-    static let port: UInt16 = 8765
+    static let port: UInt16 = UInt16(ProcessInfo.processInfo.environment["CLOUDE_PORT"] ?? "8765") ?? 8765
     private var listener: NWListener?
 
     func start() {
@@ -76,6 +76,11 @@ final class HTTPServer {
     }
 
     private static func dispatch(on connection: NWConnection, request: HTTPRequest) {
+        guard let admission = DaemonLifecycle.shared.begin() else {
+            reject(on: connection, response: HTTPResponse.json(503, ["error": "daemon_updating"]))
+            return
+        }
+        defer { DaemonLifecycle.shared.end(admission) }
         let response = Router.handle(request)
         switch response.body {
         case .streamed(let streamer):

@@ -21,12 +21,14 @@ struct ChatViewMessageListRowMarkdownBlock: View {
         case .horizontalRule:
             ChatViewMessageListRowMarkdownBlockRule()
         case .header(_, _, let content, let segments):
-            if segments.contains(where: \.isSpecial) {
-                ChatViewMessageListRowMarkdownInline(segments: segments)
-            } else {
-                Text(content)
-                    .fixedSize(horizontal: false, vertical: true)
+            Group {
+                if segments.contains(where: \.isSpecial) {
+                    ChatViewMessageListRowMarkdownInline(segments: segments)
+                } else {
+                    Text(content).fixedSize(horizontal: false, vertical: true)
+                }
             }
+            .accessibilityAddTraits(.isHeader)
         }
     }
 }

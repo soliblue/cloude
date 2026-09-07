@@ -24,45 +24,45 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: |
           cd daemons/linux
-          npm install
+          npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Stamp daemon version
+      - name: Run Linux daemon tests
+        run: |
+          cd daemons/linux
+          npm test
+
+      - name: Validate release tag and package verified archive
         env:
           RELEASE_TAG: ${{ github.event.inputs.release_tag }}
         run: |
           TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
-          VERSION="${TAG#linux-daemon-v}"
-          sed -i "s/export const DAEMON_VERSION = 'dev'/export const DAEMON_VERSION = '${VERSION}'/" daemons/linux/src/Version.js
-          cat daemons/linux/src/Version.js
-
-      - name: Create release artifact
-        run: |
-          cd daemons/linux
-          mkdir -p release
-          cp -r src/ release/
-          cp -r scripts/ release/
-          cp index.js release/
-          cp package.json release/
-          cp package-lock.json release/
-          cp install.sh release/
-          cp README.md release/
-          tar -czf cloude-linux-daemon.tar.gz release/
-          mv cloude-linux-daemon.tar.gz ../..
+          VERSION=0.0.0
+          if [ "$GITHUB_REF_TYPE" = tag ] || [ -n "$RELEASE_TAG" ]; then
+            [[ "$TAG" =~ ^linux-daemon-v[0-9]{1,6}(\.[0-9]{1,6}){2,3}$ ]] || { echo "Invalid Linux release tag"; exit 1; }
+            git rev-parse --verify "refs/tags/$TAG" >/dev/null
+            [ "$(git rev-parse "refs/tags/$TAG^{commit}")" = "$(git rev-parse HEAD)" ] || { echo "Release tag must identify the checked out commit"; exit 1; }
+            VERSION="${TAG#linux-daemon-v}"
+          fi
+          node daemons/linux/scripts/package-release.mjs "$VERSION" "$PWD/cloude-linux-daemon.tar.gz"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: cloude-linux-daemon-archive
-          path: cloude-linux-daemon.tar.gz
+          path: |
+            cloude-linux-daemon.tar.gz
+            cloude-linux-daemon.tar.gz.sha256
 
       - name: Publish release asset
         if: github.ref_type == 'tag' || github.event.inputs.release_tag != ''
@@ -71,7 +71,12 @@ jobs:
           RELEASE_TAG: ${{ github.event.inputs.release_tag }}
         run: |
           TAG="${RELEASE_TAG:-${GITHUB_REF_NAME}}"
-          TITLE="Linux Remote CC Daemon $(date +%Y-%m-%d)"
-          NOTES="Daemon for the Remote CC iOS app: control Claude Code remotely from your phone."
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TITLE" --notes "$NOTES"
-          gh release upload "$TAG" cloude-linux-daemon.tar.gz --clobber
+          TITLE="Afto Linux Daemon ${TAG#linux-daemon-v}"
+          NOTES="Remote Codex and Claude agents using existing subscriptions, with durable task streams, files, Git, approvals, and host sections."
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --title "$TITLE" --notes "$NOTES"
+          [ "$(gh release view "$TAG" --json isDraft --jq '.isDraft')" = true ] || { echo "Refusing to replace an already published release"; exit 1; }
+          gh release upload "$TAG" cloude-linux-daemon.tar.gz cloude-linux-daemon.tar.gz.sha256 --clobber
+          EXPECTED="sha256:$(cut -d ' ' -f1 cloude-linux-daemon.tar.gz.sha256)"
+          ACTUAL=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets[] | select(.name == "cloude-linux-daemon.tar.gz") | .digest')
+          [ "$ACTUAL" = "$EXPECTED" ] || { echo "Published archive digest is missing or mismatched"; exit 1; }
+          gh release edit "$TAG" --draft=false

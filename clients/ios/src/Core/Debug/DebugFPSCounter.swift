@@ -9,7 +9,9 @@ final class DebugFPSCounter: ObservableObject {
     private var frames: Int = 0
 
     init() {
-        let link = CADisplayLink(target: self, selector: #selector(tick(_:)))
+        let target = DebugFPSCounterTarget()
+        target.counter = self
+        let link = CADisplayLink(target: target, selector: #selector(DebugFPSCounterTarget.tick(_:)))
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
@@ -26,7 +28,7 @@ final class DebugFPSCounter: ObservableObject {
         }
     }
 
-    @objc private func tick(_ link: CADisplayLink) {
+    func tick(_ link: CADisplayLink) {
         if lastTimestamp != 0 {
             frames += 1
             let delta = link.timestamp - lastTimestamp

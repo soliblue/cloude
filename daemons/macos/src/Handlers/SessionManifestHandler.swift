@@ -2,14 +2,17 @@ import Foundation
 
 enum SessionManifestHandler {
     static func manifest(_ request: HTTPRequest, params: [String: String]) -> HTTPResponse {
+        if request.query["provider"] == "codex" { return CodexHandler.manifest(request) }
         if let path = request.query["path"] {
             let root = (path as NSString).expandingTildeInPath
             let home = NSHomeDirectory()
-            return HTTPResponse.json(200, [
-                "skills": merged([skills(in: "\(root)/.claude"), skills(in: "\(home)/.claude")]),
-                "agents": merged([agents(in: "\(root)/.claude"), agents(in: "\(home)/.claude")]),
-                "transcription": TranscribeHandler.available(),
-            ])
+            return HTTPResponse.json(
+                200,
+                [
+                    "skills": merged([skills(in: "\(root)/.claude"), skills(in: "\(home)/.claude")]),
+                    "agents": merged([agents(in: "\(root)/.claude"), agents(in: "\(home)/.claude")]),
+                    "transcription": TranscribeHandler.available(),
+                ])
         }
         return HTTPResponse.json(400, ["error": "missing_path"])
     }

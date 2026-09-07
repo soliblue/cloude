@@ -3,6 +3,7 @@ const provisioningURL = process.env.CLOUDE_PROVISIONING_URL || 'https://remotecc
 export async function putMac(identity, displayName) {
   const response = await fetch(`${provisioningURL}/macs/${identity.installationId}`, {
     method: 'PUT',
+    signal: AbortSignal.timeout(15000),
     headers: {
       'Content-Type': 'application/json',
       'X-Mac-Secret': identity.secret,
@@ -16,6 +17,7 @@ export async function putMac(identity, displayName) {
 export async function putTunnel(identity) {
   const response = await fetch(`${provisioningURL}/macs/${identity.installationId}/tunnel`, {
     method: 'PUT',
+    signal: AbortSignal.timeout(15000),
     headers: {
       'X-Mac-Secret': identity.secret,
       'User-Agent': 'CloudeLinuxDaemon/1',
@@ -30,6 +32,7 @@ export async function putTunnel(identity) {
 export async function putHeartbeat(identity) {
   const response = await fetch(`${provisioningURL}/macs/${identity.installationId}/heartbeat`, {
     method: 'PUT',
+    signal: AbortSignal.timeout(15000),
     headers: {
       'X-Mac-Secret': identity.secret,
       'User-Agent': 'CloudeLinuxDaemon/1',

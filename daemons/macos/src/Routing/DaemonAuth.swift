@@ -2,6 +2,9 @@ import Foundation
 
 enum DaemonAuth {
     static let token: String = {
+        if let configured = ProcessInfo.processInfo.environment["CLOUDE_AUTH_TOKEN"], !configured.isEmpty {
+            return configured
+        }
         if let existing = KeychainStore.read(account: "authToken") {
             return existing
         }

@@ -2,16 +2,16 @@ import Foundation
 
 enum EndpointService {
     static func probe(
-        host: String, port: Int, authKey: String, retryWindow: TimeInterval = 0
+        host: String, port: Int, authKey: String, retryWindow: TimeInterval = 0, scheme: String? = nil
     ) async -> EndpointProbeResult {
         var components = URLComponents()
-        components.scheme = port == 443 ? "https" : "http"
+        components.scheme = scheme ?? (port == 443 ? "https" : "http")
         components.host = host
         components.port = port
         components.path = "/ping"
         if let url = components.url {
             let deadline = Date.now.addingTimeInterval(retryWindow)
-            while true {
+            while !Task.isCancelled {
                 let remaining = max(0, deadline.timeIntervalSinceNow)
                 let timeout = retryWindow > 0 ? min(1.5, max(0.5, remaining)) : 3
                 var request = URLRequest(url: url, timeoutInterval: timeout)
@@ -29,6 +29,7 @@ enum EndpointService {
                 if retryWindow <= 0 || Date.now >= deadline { return .unreachable }
                 try? await Task.sleep(nanoseconds: 500_000_000)
             }
+            return .unreachable
         }
         return .invalid
     }

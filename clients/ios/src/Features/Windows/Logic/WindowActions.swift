@@ -11,6 +11,19 @@ enum WindowActions {
     }
 
     @MainActor
+    static func removeArchived(among windows: [Window], context: ModelContext) {
+        let remaining = windows.filter { $0.session?.isArchived != true }
+        for window in windows where window.session?.isArchived == true {
+            context.delete(window)
+        }
+        if remaining.isEmpty {
+            spawn(order: 0, focused: true, context: context)
+        } else if !remaining.contains(where: \.isFocused), let first = remaining.first {
+            activate(first, among: remaining)
+        }
+    }
+
+    @MainActor
     static func activate(_ window: Window, among windows: [Window]) {
         windows.forEach { $0.isFocused = ($0.id == window.id) }
         if let session = window.session {
@@ -39,10 +52,14 @@ enum WindowActions {
 
     @MainActor
     static func open(_ session: Session, among windows: [Window], context: ModelContext) {
-        let nextOrder = (windows.map(\.order).max() ?? -1) + 1
-        windows.forEach { $0.isFocused = false }
-        SessionActions.markOpened(session)
-        context.insert(Window(session: session, order: nextOrder, isFocused: true))
+        if let existing = windows.first(where: { $0.session?.id == session.id }) {
+            activate(existing, among: windows)
+        } else {
+            let nextOrder = (windows.map(\.order).max() ?? -1) + 1
+            windows.forEach { $0.isFocused = false }
+            SessionActions.markOpened(session)
+            context.insert(Window(session: session, order: nextOrder, isFocused: true))
+        }
     }
 
     @MainActor

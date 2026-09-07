@@ -5,12 +5,16 @@ struct SettingsRow<Content: View>: View {
     let color: Color
     @ViewBuilder let content: Content
 
+    @ScaledMetric(relativeTo: .body) private var iconColumnWidth = ThemeTokens.Size.m
+
     var body: some View {
         HStack(spacing: ThemeTokens.Spacing.m) {
             Image(systemName: icon)
                 .appFont(size: ThemeTokens.Text.l, weight: .medium)
                 .foregroundColor(color)
-                .frame(width: ThemeTokens.Size.m)
+                .fixedSize()
+                .frame(minWidth: iconColumnWidth)
+                .accessibilityHidden(true)
             content
                 .appFont(size: ThemeTokens.Text.l)
         }

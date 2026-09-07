@@ -16,6 +16,12 @@ final class ChatMessage {
     var costUsd: Double? = nil
     var model: String? = nil
     var hasToolCalls: Bool = false
+    var remoteItemId: String? = nil
+    var planIsComplete: Bool? = nil
+    var planEventSeq: Int? = nil
+    var referencesData: Data? = nil
+    var reviewTargetData: Data? = nil
+    var shellCommand: String? = nil
     var thinking: String = ""
     var thinkingMs: Int = 0
     var thinkingRedacted: Bool = false
@@ -26,7 +32,10 @@ final class ChatMessage {
         role: Role,
         text: String = "",
         images: [Data] = [],
-        state: State = .complete
+        state: State = .complete,
+        references: [ChatReference] = [],
+        reviewTarget: ChatReviewTarget? = nil,
+        shellCommand: String? = nil
     ) {
         self.id = id
         self.sessionId = sessionId
@@ -35,6 +44,17 @@ final class ChatMessage {
         self.stateRaw = state.rawValue
         self.imagesData = images
         self.createdAt = .now
+        self.referencesData = references.isEmpty ? nil : try? JSONEncoder().encode(references)
+        self.reviewTargetData = reviewTarget.flatMap { try? JSONEncoder().encode($0) }
+        self.shellCommand = shellCommand
+    }
+
+    var reviewTarget: ChatReviewTarget? {
+        reviewTargetData.flatMap { try? JSONDecoder().decode(ChatReviewTarget.self, from: $0) }
+    }
+
+    var references: [ChatReference] {
+        referencesData.flatMap { try? JSONDecoder().decode([ChatReference].self, from: $0) } ?? []
     }
 
     var role: Role { Role(rawValue: roleRaw) ?? .assistant }

@@ -8,17 +8,23 @@ struct SessionEmptyViewFolderSheet: View {
 
     var body: some View {
         NavigationStack {
-            FolderPickerView(
-                session: session,
-                endpoint: endpoint,
-                path: "~",
-                title: endpoint.displayName,
-                onPick: { picked in
-                    SessionActions.setEndpoint(endpoint, for: session)
-                    SessionActions.setPath(picked, for: session)
-                    dismiss()
+            Group {
+                if session.provider == .codex && !session.existsOnServer {
+                    SessionProjectPicker(session: session, endpoint: endpoint, onPick: { dismiss() })
+                } else {
+                    FolderPickerView(
+                        session: session,
+                        endpoint: endpoint,
+                        path: "~",
+                        title: endpoint.displayName,
+                        onPick: { picked in
+                            SessionActions.setEndpoint(endpoint, for: session)
+                            SessionActions.setPath(picked, for: session)
+                            dismiss()
+                        }
+                    )
                 }
-            )
+            }
             .themedNavChrome()
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -28,6 +34,7 @@ struct SessionEmptyViewFolderSheet: View {
                         Image(systemName: "xmark")
                             .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     }
+                    .accessibilityLabel("Close project picker")
                 }
             }
         }

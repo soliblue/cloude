@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+import { agentSchedules } from './src/Codex/AgentSchedules.js'
 import HTTPServer from './src/Networking/HTTPServer.js'
+import { pushDelivery } from './src/Notifications/PushDelivery.js'
 import { daemonToken, daemonTokenPath } from './src/Routing/DaemonAuth.js'
 import { startDaemonUpdater } from './src/Updater/DaemonUpdater.js'
 import { startRemoteHeartbeat } from './src/Provisioning/RemoteHeartbeat.js'
@@ -12,3 +14,7 @@ new HTTPServer({ host, port }).start()
 console.log(`DaemonAuth: token loaded from ${daemonTokenPath()}`)
 startDaemonUpdater()
 startRemoteHeartbeat()
+
+pushDelivery.start()
+
+agentSchedules.start()

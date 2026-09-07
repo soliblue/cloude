@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChatViewMessageListRowThinking: View {
     let text: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let durationMs: Int
     var isLive: Bool = false
     var redacted: Bool = false
@@ -19,15 +20,18 @@ struct ChatViewMessageListRowThinking: View {
 
     private var live: some View {
         let label = Text("Thinking").appFont(size: ThemeTokens.Text.s, weight: .medium)
-        return label
+        return
+            label
             .foregroundColor(ThemeColor.secondary)
             .overlay {
-                ChatViewMessageListRowToolPillListRowShimmer(phase: phase, tint: .primary)
-                    .mask(label)
+                if !reduceMotion {
+                    ChatViewMessageListRowToolPillListRowShimmer(phase: phase, tint: .primary).mask(label)
+                }
             }
-            .onAppear {
-                withAnimation(.easeInOut(duration: 1.3).repeatForever(autoreverses: false)) {
-                    phase = 1.1
+            .task(id: reduceMotion) {
+                phase = -0.7
+                if !reduceMotion {
+                    withAnimation(.easeInOut(duration: 1.3).repeatForever(autoreverses: false)) { phase = 1.1 }
                 }
             }
     }
@@ -36,7 +40,7 @@ struct ChatViewMessageListRowThinking: View {
         let canExpand = !redacted && !text.isEmpty
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
             Button {
-                withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) { isExpanded.toggle() }
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: ThemeTokens.Duration.s)) { isExpanded.toggle() }
             } label: {
                 HStack(spacing: ThemeTokens.Spacing.xs) {
                     Image(systemName: redacted ? "lock.fill" : "brain")
@@ -53,6 +57,8 @@ struct ChatViewMessageListRowThinking: View {
             }
             .buttonStyle(.plain)
             .disabled(!canExpand)
+            .accessibilityLabel(redacted ? "Reasoning unavailable" : durationLabel)
+            .accessibilityValue(canExpand ? (isExpanded ? "Expanded" : "Collapsed") : "")
             if isExpanded {
                 Text(text)
                     .appFont(size: ThemeTokens.Text.s)
@@ -65,7 +71,7 @@ struct ChatViewMessageListRowThinking: View {
                             .fill(ThemeColor.secondary.opacity(ThemeTokens.Opacity.s))
                             .frame(width: ThemeTokens.Stroke.l)
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .transition(reduceMotion ? .identity : .opacity.combined(with: .move(edge: .top)))
             }
         }
     }

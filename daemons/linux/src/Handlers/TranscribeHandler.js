@@ -7,63 +7,70 @@ import HTTPResponse from '../Networking/HTTPResponse.js'
 const root = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.url))))
 const pythonPath = path.join(root, 'whisper-env', 'bin', 'python3')
 const scriptPath = path.join(root, 'scripts', 'transcribe.py')
+let active = false
+
+export function isTranscribing() {
+  return active
+}
 
 export function transcriptionReady() {
   return fs.existsSync(pythonPath) && fs.existsSync(scriptPath)
 }
 
-function parsedBody(request) {
+function parsedJSON(data) {
   try {
-    return JSON.parse(request.body.toString('utf8'))
+    return JSON.parse(data.toString('utf8'))
   } catch {
     return null
   }
 }
 
-export function transcribe(request) {
-  const body = parsedBody(request)
+export function transcribe(request, { createProcess = spawn, ready = transcriptionReady, timeout = 55_000 } = {}) {
+  const body = parsedJSON(request.body)
   if (typeof body?.audio !== 'string' || body.audio.length === 0) {
     return HTTPResponse.json(400, { error: 'missing_audio' })
   }
-  if (!transcriptionReady()) {
+  if (body.audio.length > 16 * 1024 * 1024) {
+    return HTTPResponse.json(413, { error: 'audio_too_large' })
+  }
+  if (Buffer.from(body.audio, 'base64').toString('base64') !== body.audio) {
+    return HTTPResponse.json(400, { error: 'invalid_audio' })
+  }
+  if (!ready()) {
     return HTTPResponse.json(503, { error: 'transcription_unavailable' })
   }
+  if (active) {
+    return HTTPResponse.json(429, { error: 'transcription_busy' })
+  }
   return new Promise((resolve) => {
-    const child = spawn(pythonPath, [scriptPath])
-    let out = ''
-    let err = ''
+    const child = createProcess(pythonPath, [scriptPath], { timeout, killSignal: 'SIGKILL' })
+    active = true
+    const chunks = []
+    let size = 0
+    let failed = false
     child.stdout.on('data', (chunk) => {
-      out += chunk
-    })
-    child.stderr.on('data', (chunk) => {
-      err += chunk
-    })
-    child.on('error', (error) => {
-      console.error(`Transcribe: spawn_failed ${error.message}`)
-      resolve(HTTPResponse.json(500, { error: 'transcription_failed' }))
-    })
-    child.on('close', (code) => {
-      if (code === 0) {
-        let parsed = null
-        try {
-          parsed = JSON.parse(out)
-        } catch {
-          parsed = null
-        }
-        if (parsed && typeof parsed.text === 'string') {
-          resolve(HTTPResponse.json(200, { text: parsed.text }))
-        } else {
-          resolve(HTTPResponse.json(500, { error: 'transcription_failed' }))
-        }
+      size += chunk.length
+      if (size <= 1024 * 1024) {
+        chunks.push(chunk)
       } else {
-        console.error(`Transcribe: exit=${code} stderr=${err.slice(0, 200)}`)
-        resolve(HTTPResponse.json(500, { error: 'transcription_failed' }))
+        failed = true
+        child.kill('SIGKILL')
       }
     })
-    child.stdin.on('error', (error) => {
-      console.error(`Transcribe stdin: ${error.message}`)
+    child.stderr.resume()
+    child.on('error', () => { failed = true })
+    child.on('close', (code, signal) => {
+      active = false
+      const parsed = code === 0 && !failed && !signal ? parsedJSON(Buffer.concat(chunks)) : null
+      if (parsed && typeof parsed.text === 'string') {
+        resolve(HTTPResponse.json(200, { text: parsed.text }))
+      } else {
+        resolve(HTTPResponse.json(signal && !failed ? 504 : 500, {
+          error: signal && !failed ? 'transcription_timed_out' : 'transcription_failed'
+        }))
+      }
     })
-    child.stdin.write(body.audio)
-    child.stdin.end()
+    child.stdin.on('error', () => { failed = true })
+    child.stdin.end(body.audio)
   })
 }

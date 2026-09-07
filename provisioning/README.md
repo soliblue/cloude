@@ -47,7 +47,12 @@ PUT  /macs/{macId}
 PUT  /macs/{macId}/tunnel
 DELETE /macs/{macId}/tunnel
 PUT  /macs/{macId}/heartbeat
+PUT  /macs/{macId}/push-devices/{deviceId}
+DELETE /macs/{macId}/push-devices/{deviceId}
+POST /macs/{macId}/notifications (synchronous, retries on non-2xx)
 ```
+
+Push delivery returns `503` until all `APNS_KEY_ID`, `APNS_TEAM_ID`, and `APNS_AUTH_KEY_CONTENT` settings are configured. App Store Connect API credentials do not authorize APNs delivery.
 
 ## Structure
 

@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ChatViewMessageListRowStreamingMarkdown: View {
     let snapshot: ChatLiveSnapshot
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage(StorageKey.typewriterCps) private var cps: Double = TypewriterDefaults.cps
     @AppStorage(StorageKey.typewriterFadeWindow) private var fadeWindow: Double = TypewriterDefaults
         .fadeWindow
-    @State private var frozen: [ChatMarkdownBlock] = []
-    @State private var tailBlocks: [ChatMarkdownBlock] = []
+    @State private var parsed = ChatMarkdownStreamState()
     @State private var tailLength: Int = 0
     @State private var tailId: String = ""
     @State private var revealedGlyphs: Double = 0
@@ -14,17 +14,15 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
     @State private var lastSnapshotId: ObjectIdentifier?
     @State private var lastDeltaCount: Int = 0
     @State private var lastUpdate: Date = .distantPast
-    @State private var tailStartLine: Int = 0
-    @State private var tailStartUTF8: Int = 0
 
     var body: some View {
         let _ = PerfCounters.bump("str.body")
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-            if !frozen.isEmpty {
-                ChatViewMessageListRowStreamingMarkdownFrozen(blocks: frozen)
+            if !parsed.frozen.isEmpty {
+                ChatViewMessageListRowStreamingMarkdownFrozen(blocks: parsed.frozen)
                     .equatable()
             }
-            ForEach(tailBlocks, id: \.id) { block in
+            ForEach(parsed.tail, id: \.id) { block in
                 ChatViewMessageListRowMarkdownBlock(block: block)
             }
             .textRenderer(
@@ -40,7 +38,19 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
             ticker?.cancel()
             ticker = nil
         }
-        .onChange(of: snapshot.deltaCount) { _, _ in updateIncremental() }
+        .onChange(of: reduceMotion) { _, reduced in
+            if reduced {
+                ticker?.cancel()
+                ticker = nil
+                revealedGlyphs = Double(tailLength) + max(1, fadeWindow)
+            } else {
+                startTicker()
+            }
+        }
+        .onChange(of: snapshot.deltaCount) { _, _ in
+            updateIncremental()
+            startTicker()
+        }
     }
 
     private func updateIncremental() {
@@ -52,41 +62,29 @@ struct ChatViewMessageListRowStreamingMarkdown: View {
         lastSnapshotId = snapshotId
         lastDeltaCount = snapshot.deltaCount
         lastUpdate = Date()
-        let blocks: [ChatMarkdownBlock]
-        if appendOnly,
-            let resumed = ChatMarkdownParser.parseResuming(
-                text, tailStartLine: tailStartLine, tailStartUTF8: tailStartUTF8)
-        {
-            blocks = frozen + resumed.blocks
-            tailStartLine = resumed.tailStartLine
-            tailStartUTF8 = resumed.tailStartUTF8
-        } else {
-            let full = ChatMarkdownParser.parseWithTailStart(text)
-            blocks = full.blocks
-            tailStartLine = full.tailStartLine
-            tailStartUTF8 = full.tailStartUTF8
-        }
-        let newTail = Array(blocks.suffix(1))
+        parsed.update(text, appendOnly: appendOnly)
+        let newTail = parsed.tail
         let newTailId = newTail.first?.id ?? ""
         if newTailId != tailId {
             revealedGlyphs = 0
             tailId = newTailId
         }
-        frozen = Array(blocks.dropLast())
-        tailBlocks = newTail
-        tailLength = newTail.first.map(Self.charCount(of:)) ?? 0
-        if isStale { revealedGlyphs = Double(tailLength) }
+        tailLength = newTail.first.map { Self.charCount(of: $0) } ?? 0
+        if isStale || reduceMotion { revealedGlyphs = Double(tailLength) + max(1, fadeWindow) }
     }
 
     private func startTicker() {
-        ticker?.cancel()
-        ticker = Task { @MainActor in
-            let frame: Double = 1.0 / 60.0
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(16))
-                let total = Double(tailLength)
-                if revealedGlyphs >= total { continue }
-                revealedGlyphs = min(total, revealedGlyphs + cps * frame)
+        if !reduceMotion && ticker == nil && revealedGlyphs < Double(tailLength) + max(1, fadeWindow) {
+            ticker = Task { @MainActor in
+                let frame: Double = 1.0 / 60.0
+                while !Task.isCancelled && revealedGlyphs < Double(tailLength) + max(1, fadeWindow) {
+                    try? await Task.sleep(for: .milliseconds(16))
+                    if !Task.isCancelled {
+                        revealedGlyphs = min(
+                            Double(tailLength) + max(1, fadeWindow), revealedGlyphs + max(1, cps) * frame)
+                    }
+                }
+                if !Task.isCancelled { ticker = nil }
             }
         }
     }

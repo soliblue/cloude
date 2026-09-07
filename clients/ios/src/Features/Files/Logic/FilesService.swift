@@ -7,13 +7,24 @@ enum FilesService {
     static func list(
         endpoint: Endpoint, session: Session, path: String, showHidden: Bool = false
     ) async -> FileListingDTO? {
+        let cacheId = endpoint.cacheId
         var query = ["path": path]
         if showHidden { query["showHidden"] = "true" }
-        return await decode(
-            FileListingDTO.self,
-            from: HTTPClient.get(
-                endpoint: endpoint, path: filePath(session), query: query)
-        )
+        let cacheKey = "\(path)/\(showHidden ? "all" : "visible").json"
+        if let (data, response) = await HTTPClient.get(endpoint: endpoint, path: filePath(session), query: query) {
+            if endpoint.cacheId == cacheId, !Task.isCancelled, response.statusCode == 200,
+                let listing = try? decoder.decode(FileListingDTO.self, from: data)
+            {
+                await FileCache.shared.store(data, endpoint: cacheId, path: cacheKey, category: "listings")
+                return listing
+            }
+        } else if !Task.isCancelled, endpoint.cacheId == cacheId,
+            let url = await FileCache.shared.cached(endpoint: cacheId, path: cacheKey, category: "listings"),
+            let data = await FileCache.shared.data(at: url, limit: 16_777_216)
+        {
+            return try? decoder.decode(FileListingDTO.self, from: data)
+        }
+        return nil
     }
 
     @MainActor

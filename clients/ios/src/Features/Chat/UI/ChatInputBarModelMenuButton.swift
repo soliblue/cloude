@@ -2,6 +2,8 @@ import SwiftUI
 import UIKit
 
 struct ChatInputBarModelMenuButton: UIViewRepresentable {
+    let sessionId: UUID
+    let provider: ChatProvider
     let model: ChatModel?
     let effort: ChatEffort?
     let onModel: (ChatModel?) -> Void
@@ -16,19 +18,26 @@ struct ChatInputBarModelMenuButton: UIViewRepresentable {
 
     func updateUIView(_ button: UIButton, context: Context) {
         button.menu = menu
+        button.accessibilityLabel = "Choose model and reasoning effort"
+        button.accessibilityValue =
+            ChatModelCatalog.shared.displayName(model, sessionId: sessionId) + ", "
+            + (effort?.displayName ?? "Default effort")
     }
 
     private var menu: UIMenu {
         let models =
             [UIAction(title: "Auto", state: model == nil ? .on : .off) { _ in onModel(nil) }]
-            + ChatModel.allCases.map { option in
-                UIAction(title: option.displayName, state: model == option ? .on : .off) { _ in
+            + ChatModelCatalog.shared.models(sessionId: sessionId, provider: provider).map { option in
+                UIAction(
+                    title: ChatModelCatalog.shared.displayName(option, sessionId: sessionId),
+                    state: model == option ? .on : .off
+                ) { _ in
                     onModel(option)
                 }
             }
         let efforts =
             [UIAction(title: "Default", state: effort == nil ? .on : .off) { _ in onEffort(nil) }]
-            + ChatEffort.allCases.map { level in
+            + ChatModelCatalog.shared.efforts(sessionId: sessionId, provider: provider, model: model).map { level in
                 UIAction(title: level.displayName, state: effort == level ? .on : .off) { _ in
                     onEffort(level)
                 }
@@ -36,7 +45,9 @@ struct ChatInputBarModelMenuButton: UIViewRepresentable {
         return UIMenu(
             title: "",
             children: [
-                UIMenu(title: "Model", subtitle: model?.displayName ?? "Auto", children: models),
+                UIMenu(
+                    title: "Model", subtitle: ChatModelCatalog.shared.displayName(model, sessionId: sessionId),
+                    children: models),
                 UIMenu(title: "Thinking", subtitle: effort?.displayName ?? "Default", children: efforts),
             ])
     }

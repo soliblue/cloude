@@ -15,7 +15,7 @@ struct OnboardingViewPairStep: View {
         if isUnrecognized {
             return "That QR isn't a pairing code. Try again."
         }
-        return "Point your camera at the QR shown in Remote CC Daemon."
+        return "Scan the pairing QR from your computer or server."
     }
 
     var body: some View {

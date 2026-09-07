@@ -8,16 +8,14 @@ struct FilePreviewCode: View {
 
     var body: some View {
         FilePreviewScrollContainer(axes: wrap ? [.vertical] : [.vertical, .horizontal]) {
-            if let text = String(data: data, encoding: .utf8) {
-                CodeText(text)
+            if data.count > 65_536 {
+                FilePreviewPlainText(data: data)
+            } else {
+                CodeText(String(decoding: data, as: UTF8.self))
                     .highlightLanguage(HighlightLanguageResolver.resolve(language))
                     .appFont(size: ThemeTokens.Text.s, design: .monospaced)
                     .padding(ThemeTokens.Spacing.m)
                     .textSelection(.enabled)
-            } else {
-                Text("Unable to decode")
-                    .appFont(size: ThemeTokens.Text.m)
-                    .foregroundColor(ThemeColor.secondary)
             }
         }
     }

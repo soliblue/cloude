@@ -1,0 +1,4 @@
+[
+  {"method":"item/completed","params":{"threadId":"thread-1","item":{"id":"review-exit","type":"exitedReviewMode","review":"The working tree is clean: there are no staged, unstaged, or untracked changes to review."}}},
+  {"method":"item/completed","params":{"threadId":"thread-1","item":{"id":"review-answer","type":"agentMessage","text":"The working tree is clean: there are no staged, unstaged, or untracked changes to review."}}}
+]

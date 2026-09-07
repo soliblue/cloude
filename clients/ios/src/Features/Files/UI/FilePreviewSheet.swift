@@ -1,3 +1,4 @@
+import QuickLook
 import SwiftUI
 
 struct FilePreviewSheet: View {
@@ -7,8 +8,8 @@ struct FilePreviewSheet: View {
     @Environment(\.theme) private var theme
     @Environment(\.dismiss) private var dismiss
     @AppStorage(StorageKey.wrapCodeLines) private var wrapCodeLines = false
-    @State private var data: Data?
-    @State private var failed = false
+    @State private var store = FilePreviewStore()
+    @State private var fullPreview: URL?
     @State private var showSource = false
 
     var body: some View {
@@ -24,17 +25,41 @@ struct FilePreviewSheet: View {
         let showingCode = showSource || type.isCode
         let actionPlacement: ToolbarItemPlacement = isPushed ? .topBarTrailing : .topBarLeading
         return Group {
-            if let data {
-                if showSource && type.hasRenderedView {
-                    FilePreviewCode(
-                        data: data, language: type.sourceLanguage, wrap: wrapCodeLines)
-                } else {
-                    FilePreviewSheetContent(node: node, type: type, data: data, wrap: wrapCodeLines)
+            if let resource = store.resource {
+                VStack(spacing: 0) {
+                    if resource.isCached || resource.isTruncated {
+                        HStack {
+                            Text(resource.isTruncated ? "Large file preview" : "Saved on this iPhone")
+                            Spacer()
+                            Button("Open full file") { fullPreview = resource.url }
+                        }
+                        .appFont(size: ThemeTokens.Text.s)
+                        .padding(ThemeTokens.Spacing.m)
+                        .background(theme.palette.surface)
+                    }
+                    if case .html = type, !showSource, !resource.isTruncated {
+                        Text("Offline preview. External resources are blocked.")
+                            .appFont(size: ThemeTokens.Text.s)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(ThemeTokens.Spacing.m)
+                            .background(theme.palette.surface)
+                    }
+                    if let data = resource.data, showSource && type.hasRenderedView {
+                        FilePreviewCode(data: data, language: type.sourceLanguage, wrap: wrapCodeLines)
+                    } else {
+                        FilePreviewSheetContent(node: node, type: type, resource: resource, wrap: wrapCodeLines)
+                            .id(resource.id)
+                    }
                 }
-            } else if failed {
-                Text("Unable to load file")
-                    .appFont(size: ThemeTokens.Text.m)
-                    .foregroundColor(ThemeColor.secondary)
+            } else if store.failed {
+                ContentUnavailableView {
+                    Label("Unable to load file", systemImage: "doc.badge.ellipsis")
+                } description: {
+                    Text("Check your connection and that this file still exists.")
+                } actions: {
+                    Button("Try again") { store.attempt += 1 }
+                }
             } else {
                 ProgressView()
             }
@@ -44,6 +69,7 @@ struct FilePreviewSheet: View {
         .navigationTitle(node.name)
         .navigationBarTitleDisplayMode(.inline)
         .themedNavChrome()
+        .quickLookPreview($fullPreview)
         .toolbar {
             ToolbarItem(placement: actionPlacement) {
                 if type.hasRenderedView {
@@ -57,6 +83,7 @@ struct FilePreviewSheet: View {
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
                         .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
                     }
+                    .accessibilityLabel(showSource ? "Show rendered file" : "Show source")
                 }
             }
             ToolbarItem(placement: actionPlacement) {
@@ -71,6 +98,19 @@ struct FilePreviewSheet: View {
                         .appFont(size: ThemeTokens.Text.m, weight: .medium)
                         .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
                     }
+                    .accessibilityLabel(wrapCodeLines ? "Disable line wrapping" : "Wrap long lines")
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if let resource = store.resource {
+                    ShareLink(item: resource.url)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if let resource = store.resource {
+                    Button("Open full file", systemImage: "arrow.up.left.and.arrow.down.right") {
+                        fullPreview = resource.url
+                    }
                 }
             }
             if !isPushed {
@@ -81,19 +121,20 @@ struct FilePreviewSheet: View {
                         Image(systemName: "xmark")
                             .appFont(size: ThemeTokens.Text.m, weight: .medium)
                     }
+                    .accessibilityLabel("Close file")
                 }
             }
         }
-        .task {
-            if let endpoint = session.endpoint {
-                let result = await FilesService.read(endpoint: endpoint, session: session, path: node.path)
-                if let result {
-                    data = result
-                } else {
-                    failed = true
-                }
-            } else {
-                failed = true
+        .task(id: "\(session.connectionKey)|\(node.path)|\(store.attempt)") {
+            fullPreview = nil
+            store.failed = false
+            store.resource = nil
+            let cached = await FilePreviewService.cached(session: session, node: node)
+            if !Task.isCancelled { store.resource = cached }
+            let resource = await FilePreviewService.load(session: session, node: node)
+            if !Task.isCancelled {
+                store.resource = resource
+                store.failed = resource == nil
             }
         }
     }

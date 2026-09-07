@@ -57,40 +57,34 @@ function entry(filePath, stats) {
   return result
 }
 
-function parsedRange(rangeHeader) {
-  const match = /^bytes=(\d+)-(\d*)$/u.exec(rangeHeader)
-  if (match) {
-    return {
-      start: Number.parseInt(match[1], 10),
-      end: match[2] ? Number.parseInt(match[2], 10) : null
+function parsedRange(header, size) {
+  const match = /^bytes=(\d*)-(\d*)$/u.exec(header)
+  if (match && (match[1] || match[2]) && size > 0) {
+    const start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2]))
+    const end = match[1] && match[2] ? Math.min(Number(match[2]), size - 1) : size - 1
+    if (Number.isSafeInteger(start) && Number.isSafeInteger(end) && start <= end && start < size && (match[1] || Number(match[2]) > 0)) {
+      return { start, end }
     }
   }
   return null
 }
 
-export function list(request) {
+export async function list(request) {
   if (request.query.path) {
     const directory = resolved(request.query.path)
     const showHidden = request.query.showHidden === 'true'
-    if (fs.statSync(directory, { throwIfNoEntry: false })?.isDirectory()) {
-      return HTTPResponse.json(200, {
-        path: directory,
-        entries: fs
-          .readdirSync(directory, { withFileTypes: true })
-          .filter((item) => showHidden || !item.name.startsWith('.'))
-          .map((item) => ({
-            fullPath: path.join(directory, item.name),
-            stats: fs.statSync(path.join(directory, item.name), { throwIfNoEntry: false })
-          }))
-          .filter(({ stats }) => stats)
-          .map(({ fullPath, stats }) => entry(fullPath, stats))
-          .sort((left, right) => {
-            if (left.isDirectory !== right.isDirectory) {
-              return left.isDirectory ? -1 : 1
-            }
-            return left.name.localeCompare(right.name)
-          })
-      })
+    if ((await fs.promises.stat(directory).catch(() => null))?.isDirectory()) {
+      const entries = []
+      for (const item of await fs.promises.readdir(directory, { withFileTypes: true })) {
+        if (showHidden || !item.name.startsWith('.')) {
+          const fullPath = path.join(directory, item.name)
+          const stats = await fs.promises.stat(fullPath).catch(() => null)
+          if (stats) { entries.push(entry(fullPath, stats)) }
+        }
+      }
+      entries.sort((left, right) => left.isDirectory !== right.isDirectory
+        ? left.isDirectory ? -1 : 1 : left.name.localeCompare(right.name))
+      return HTTPResponse.json(200, { path: directory, entries })
     }
     return HTTPResponse.json(404, { error: 'not_found' })
   }
@@ -102,47 +96,39 @@ export function read(request) {
     const file = resolved(request.query.path)
     const stats = fs.statSync(file, { throwIfNoEntry: false })
     if (stats?.isFile()) {
-      if (request.headers.range) {
-        const range = parsedRange(request.headers.range)
-        const size = stats.size
-        if (range && range.start <= size - 1) {
-          const end = Math.min(range.end ?? size - 1, size - 1)
-          const buffer = Buffer.alloc(end - range.start + 1)
-          const handle = fs.openSync(file, 'r')
-          try {
-            fs.readSync(handle, buffer, 0, buffer.length, range.start)
-          } finally {
-            fs.closeSync(handle)
-          }
-          return new HTTPResponse(206, buffer, mimeType(file), {
-            'Accept-Ranges': 'bytes',
-            'Content-Range': `bytes ${range.start}-${end}/${size}`
-          })
-        }
-        return HTTPResponse.json(400, { error: 'bad_range' })
+      const range = request.headers.range ? parsedRange(request.headers.range, stats.size) : null
+      if (request.headers.range && !range) {
+        return new HTTPResponse(416, Buffer.alloc(0), mimeType(file), {
+          'Content-Range': `bytes */${stats.size}`, 'Accept-Ranges': 'bytes'
+        })
       }
-      return new HTTPResponse(200, fs.readFileSync(file), mimeType(file))
+      return HTTPResponse.stream(range ? 206 : 200, mimeType(file), {
+        'Accept-Ranges': 'bytes',
+        'Content-Length': String(range ? range.end - range.start + 1 : stats.size),
+        'Last-Modified': stats.mtime.toUTCString(),
+        ...(range ? { 'Content-Range': `bytes ${range.start}-${range.end}/${stats.size}` } : {})
+      }, (response) => {
+        const stream = fs.createReadStream(file, range || {})
+        response.once('close', () => stream.destroy())
+        stream.once('error', () => response.destroy())
+        stream.pipe(response)
+      })
     }
     return HTTPResponse.json(404, { error: 'not_found' })
   }
   return HTTPResponse.json(400, { error: 'missing_path' })
 }
 
-export function search(request) {
+export async function search(request) {
   if (request.query.path && request.query.query) {
     const root = resolved(request.query.path)
     const needle = request.query.query.toLowerCase()
-    if (fs.statSync(root, { throwIfNoEntry: false })?.isDirectory()) {
+    if ((await fs.promises.stat(root).catch(() => null))?.isDirectory()) {
       const hits = []
       const stack = [{ directory: root, depth: 0 }]
       while (stack.length > 0 && hits.length < 100) {
         const { directory, depth } = stack.pop()
-        let items = []
-        try {
-          items = fs.readdirSync(directory, { withFileTypes: true })
-        } catch {
-          continue
-        }
+        const items = await fs.promises.readdir(directory, { withFileTypes: true }).catch(() => [])
         for (const item of items) {
           if (item.name.startsWith('.')) {
             continue
@@ -152,7 +138,7 @@ export function search(request) {
           }
           const fullPath = path.join(directory, item.name)
           if (item.name.toLowerCase().includes(needle)) {
-            const stats = fs.statSync(fullPath, { throwIfNoEntry: false })
+            const stats = await fs.promises.stat(fullPath).catch(() => null)
             if (stats) {
               hits.push(entry(fullPath, stats))
             }

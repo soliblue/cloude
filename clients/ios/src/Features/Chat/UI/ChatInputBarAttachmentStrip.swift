@@ -18,6 +18,7 @@ struct ChatInputBarAttachmentStrip: View {
                                 .appFont(size: ThemeTokens.Icon.s)
                                 .foregroundStyle(.white, .black.opacity(ThemeTokens.Opacity.l))
                         }
+                        .accessibilityLabel("Remove image attachment \(index + 1)")
                         .offset(x: ThemeTokens.Spacing.xs, y: -ThemeTokens.Spacing.xs)
                     }
                 }
@@ -32,6 +33,7 @@ struct ChatInputBarAttachmentStrip: View {
                             ChatAttachmentTextChip(text: text)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Edit pasted text attachment \(index + 1)")
                         Button {
                             if index < pastedTexts.count { pastedTexts.remove(at: index) }
                         } label: {
@@ -39,6 +41,7 @@ struct ChatInputBarAttachmentStrip: View {
                                 .appFont(size: ThemeTokens.Icon.s)
                                 .foregroundStyle(.white, .black.opacity(ThemeTokens.Opacity.l))
                         }
+                        .accessibilityLabel("Remove pasted text attachment \(index + 1)")
                         .offset(x: ThemeTokens.Spacing.xs, y: -ThemeTokens.Spacing.xs)
                     }
                 }

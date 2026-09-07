@@ -15,7 +15,7 @@ struct SessionEmptyViewFolderRow: View {
                 Image(systemName: "folder")
                     .appFont(size: ThemeTokens.Text.l)
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Path")
+                    Text(session.codexProjectName.map { "Project · \($0)" } ?? "Folder")
                         .appFont(size: ThemeTokens.Text.s, weight: .medium)
                         .foregroundColor(ThemeColor.secondary)
                     Text(label)
@@ -40,6 +40,6 @@ struct SessionEmptyViewFolderRow: View {
 
     private var label: String {
         if let path = session.path, !path.isEmpty { return path }
-        return "Choose path"
+        return session.provider == .codex ? "Choose project or folder" : "Choose folder"
     }
 }

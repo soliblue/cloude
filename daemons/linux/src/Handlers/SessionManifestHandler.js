@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import HTTPResponse from '../Networking/HTTPResponse.js'
+import { codexClient } from '../Codex/CodexClient.js'
 import { transcriptionReady } from './TranscribeHandler.js'
 
 function resolved(filePath) {
@@ -135,7 +136,11 @@ function agentsIn(dir) {
   return result
 }
 
-export function manifest(request) {
+export async function manifest(request) {
+  if (request.query.path && request.query.provider === 'codex') {
+    const result = await codexClient.request('skills/list', { cwds: [resolved(request.query.path)], forceReload: false })
+    return HTTPResponse.json(200, { skills: result.data.flatMap((entry) => entry.skills).filter((skill) => skill.enabled).map((skill) => ({ name: skill.name, description: skill.interface?.shortDescription || skill.description, path: skill.path, icon: 'sparkles' })), agents: [], transcription: transcriptionReady() })
+  }
   if (request.query.path) {
     const dirs = claudeDirs(resolved(request.query.path))
     return HTTPResponse.json(200, {

@@ -11,6 +11,10 @@ struct GitView: View {
     @State private var selectedCommit: GitCommitTarget?
     @State private var isLoading = false
     @State private var hasLoaded = false
+    @State private var isCommitPresented = false
+    @State private var isLoadingMore = false
+    @State private var hasMoreCommits = true
+    @State private var historyFailed = false
     @AppStorage(StorageKey.gitViewAsTree) private var viewAsTree = true
     @State private var collapsedStaged: Set<String> = []
     @State private var collapsedUnstaged: Set<String> = []
@@ -42,6 +46,14 @@ struct GitView: View {
             }
             .sheet(item: $selectedCommit) { target in
                 GitCommitDetailView(session: session, sha: target.sha)
+            }
+            .sheet(isPresented: $isCommitPresented) {
+                GitCommitSheet(session: session, fileCount: statuses.first?.changes.filter(\.isStaged).count ?? 0)
+            }
+            .alert("Could not load more history", isPresented: $historyFailed) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Your saved commits are still available. Check your connection and try again.")
             }
     }
 
@@ -79,6 +91,12 @@ struct GitView: View {
             if !staged.isEmpty {
                 Section("Staged") {
                     changeRows(staged, collapsed: $collapsedStaged)
+                    if session.endpoint?.supportsGitMutations == true {
+                        Button("Commit staged changes", systemImage: "checkmark.circle") {
+                            isCommitPresented = true
+                        }
+                        .listRowBackground(theme.palette.background)
+                    }
                 }
             }
             if !unstaged.isEmpty {
@@ -92,6 +110,29 @@ struct GitView: View {
                         GitViewCommitRow(commit: commit) {
                             selectedCommit = GitCommitTarget(sha: commit.sha)
                         }
+                        .listRowBackground(theme.palette.background)
+                    }
+                    if hasMoreCommits && commits.count >= 50 {
+                        Button {
+                            Task {
+                                isLoadingMore = true
+                                if let count = await GitService.loadMore(
+                                    session: session, count: commits.count, context: context)
+                                {
+                                    hasMoreCommits = count == 50
+                                } else {
+                                    historyFailed = true
+                                }
+                                isLoadingMore = false
+                            }
+                        } label: {
+                            HStack {
+                                Text("Load older commits")
+                                Spacer()
+                                if isLoadingMore { ProgressView() }
+                            }
+                        }
+                        .disabled(isLoadingMore)
                         .listRowBackground(theme.palette.background)
                     }
                 }
@@ -132,6 +173,7 @@ struct GitView: View {
         if session.endpoint != nil, session.path != nil {
             isLoading = true
             await GitService.refresh(session: session, context: context)
+            hasMoreCommits = true
             isLoading = false
         }
     }

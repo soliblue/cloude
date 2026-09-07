@@ -1,3 +1,4 @@
+import { DAEMON_CAPABILITIES } from '../Capabilities.js'
 import { DAEMON_VERSION, DAEMON_PLATFORM } from '../Version.js'
 
 export default class HTTPResponse {
@@ -26,6 +27,7 @@ export default class HTTPResponse {
     response.setHeader('Content-Type', this.contentType)
     response.setHeader('X-Daemon-Version', DAEMON_VERSION)
     response.setHeader('X-Daemon-Platform', DAEMON_PLATFORM)
+    response.setHeader('X-Daemon-Capabilities', DAEMON_CAPABILITIES.join(','))
     for (const [key, value] of Object.entries(this.extraHeaders)) {
       response.setHeader(key, value)
     }

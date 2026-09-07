@@ -1,11 +1,12 @@
 import { spawn } from 'node:child_process'
 import { StringDecoder } from 'node:string_decoder'
-import { claudeCommand, spawnEnvironment } from './Runtime/ClaudeRuntime.js'
+import { claudeCommand, spawnEnvironment, requireClaudeSubscription, subscriptionSettings } from './Runtime/ClaudeRuntime.js'
 
 export default class Runner {
   constructor({ sessionId, hasStartedBefore, model, effort, permissionMode, onFinish }) {
     this.sessionId = sessionId
     this.hasExited = false
+    this.cancelled = false
     this.hasStartedBefore = hasStartedBefore
     this.model = model
     this.effort = effort
@@ -13,16 +14,21 @@ export default class Runner {
     this.onFinish = onFinish
     this.process = null
     this.ring = []
+    this.ringBytes = 0
     this.subscribers = new Set()
     this.seq = 0
     this.lineBuffer = ''
     this.decoder = new StringDecoder('utf8')
   }
 
-  spawn(path, prompt) {
+  async spawn(path, prompt) {
+    await requireClaudeSubscription(path)
+    if (this.cancelled) { this.finish(0); return }
     const { executable, leadingArguments } = claudeCommand()
     const argumentsList = [
       ...leadingArguments,
+      '--settings',
+      subscriptionSettings,
       '-p',
       '--output-format',
       'stream-json',
@@ -96,6 +102,7 @@ export default class Runner {
   }
 
   abort() {
+    this.cancelled = true
     if (this.process && this.process.exitCode === null) {
       this.emit({ type: 'aborted' })
       this.process.kill('SIGINT')
@@ -132,20 +139,33 @@ export default class Runner {
     }
   }
 
+  record() { return true }
+
   emit(partial) {
-    this.seq += 1
+    if (this.hasExited && partial.type !== 'exit') { return }
+    const nextSeq = this.seq + 1
     const data = Buffer.from(
-      `${JSON.stringify({ ...partial, seq: this.seq, sessionId: this.sessionId })}\n`
+      `${JSON.stringify({ ...partial, seq: nextSeq, sessionId: this.sessionId })}\n`
     )
+    if (!this.record(data, nextSeq)) { return }
+    this.seq = nextSeq
     this.ring.push({ seq: this.seq, data })
-    if (this.ring.length > 1000) {
-      this.ring.splice(0, this.ring.length - 1000)
+    this.ringBytes += data.length
+    while (this.ring.length > 1 && (this.ring.length > 1000 || this.ringBytes > 8 * 1024 * 1024)) {
+      this.ringBytes -= this.ring.shift().data.length
     }
     for (const subscriber of this.subscribers) {
       subscriber.write(data)
       if (subscriber.writableLength > 8 * 1024 * 1024) {
         subscriber.destroy()
       }
+    }
+  }
+
+  fail(error) {
+    if (!this.hasExited) {
+      this.emit({ type: 'error', message: error.message })
+      this.finish(1)
     }
   }
 
@@ -165,8 +185,10 @@ export default class Runner {
         this.emit({ event: parsed })
       }
     }
-    this.hasExited = true
     this.emit({ type: 'exit', code: exitCode })
+    if (this.hasExited) { return }
+    this.hasExited = true
+    this.exitCode = exitCode
     for (const subscriber of this.subscribers) {
       subscriber.end()
     }

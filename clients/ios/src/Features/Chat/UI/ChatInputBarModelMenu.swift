@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ChatInputBarModelMenu: View {
     let sessionId: UUID
+    let provider: ChatProvider
     let model: ChatModel?
     let effort: ChatEffort?
     @Environment(\.modelContext) private var context
@@ -14,15 +15,19 @@ struct ChatInputBarModelMenu: View {
             } label: {
                 Label("Auto", systemImage: model == nil ? "checkmark" : "")
             }
-            ForEach(ChatModel.allCases, id: \.self) { option in
+            ForEach(ChatModelCatalog.shared.models(sessionId: sessionId, provider: provider), id: \.self) { option in
                 Button {
                     SessionActions.setModel(option, for: sessionId, context: context)
                 } label: {
-                    Label(option.displayName, systemImage: model == option ? "checkmark" : "")
+                    Label(
+                        ChatModelCatalog.shared.displayName(option, sessionId: sessionId),
+                        systemImage: model == option ? "checkmark" : "")
                 }
             }
         } label: {
-            Label("Model: \(model?.displayName ?? "Auto")", systemImage: model?.symbol ?? "cpu")
+            Label(
+                "Model: \(ChatModelCatalog.shared.displayName(model, sessionId: sessionId))",
+                systemImage: model?.symbol ?? "cpu")
         }
         Menu {
             Button {
@@ -30,7 +35,8 @@ struct ChatInputBarModelMenu: View {
             } label: {
                 Label("Default", systemImage: effort == nil ? "checkmark" : "")
             }
-            ForEach(ChatEffort.allCases, id: \.self) { level in
+            ForEach(ChatModelCatalog.shared.efforts(sessionId: sessionId, provider: provider, model: model), id: \.self)
+            { level in
                 Button {
                     SessionActions.setEffort(level, for: sessionId, context: context)
                 } label: {

@@ -9,12 +9,20 @@ nonisolated struct DecodedToolUse: Equatable {
 }
 
 nonisolated enum ChatStreamEvent {
-    case initialized(seq: Int)
+    case usage(seq: Int, contextTokens: Int?, contextWindow: Int?)
+    case sessionMetadata(seq: Int, threadId: String)
+    case request(seq: Int, interaction: ChatInteraction)
+    case requestResolved(seq: Int, requestId: String)
+    case agentAttention(seq: Int, threadId: String, requestId: String, pending: Bool)
+    case initialized(seq: Int, model: String?)
     case assistantTextDelta(seq: Int, text: String)
     case assistantThinkingDelta(seq: Int, text: String)
+    case plan(seq: Int, itemId: String, text: String, delta: Bool, completed: Bool)
     case assistantFinal(
         seq: Int, text: String, thinking: String, thinkingRedacted: Bool,
         toolUses: [DecodedToolUse], model: String?, contextTokens: Int?)
+    case toolOutputDelta(seq: Int, toolUseId: String, text: String)
+    case toolResults(seq: Int, results: [ChatToolResult])
     case toolResult(seq: Int, toolUseId: String, text: String, isError: Bool)
     case result(seq: Int, costUsd: Double?, contextWindow: Int?)
     case aborted(seq: Int)
@@ -26,9 +34,15 @@ nonisolated enum ChatStreamEvent {
 
     var seq: Int {
         switch self {
-        case .initialized(let s), .assistantTextDelta(let s, _), .assistantThinkingDelta(let s, _),
+        case .usage(let s, _, _), .sessionMetadata(let s, _), .request(let s, _), .requestResolved(let s, _),
+            .agentAttention(let s, _, _, _), .initialized(let s, _),
+            .assistantTextDelta(let s, _),
+            .assistantThinkingDelta(let s, _),
+            .plan(let s, _, _, _, _),
             .assistantFinal(let s, _, _, _, _, _, _),
-            .toolResult(let s, _, _, _), .result(let s, _, _), .aborted(let s), .exited(let s, _),
+            .toolResults(let s, _), .toolOutputDelta(let s, _, _), .toolResult(let s, _, _, _), .result(let s, _, _),
+            .aborted(let s),
+            .exited(let s, _),
             .error(let s, _), .compacting(let s), .replay(let s), .unknown(let s):
             return s
         }
@@ -47,6 +61,31 @@ nonisolated enum ChatStreamEvent {
 
     private static func decodeEnvelopeEvent(obj: [String: Any], seq: Int) -> ChatStreamEvent? {
         if let type = obj["type"] as? String {
+            if type == "usage" {
+                return .usage(
+                    seq: seq, contextTokens: obj["contextTokens"] as? Int, contextWindow: obj["contextWindow"] as? Int)
+            }
+            if type == "session", let threadId = obj["threadId"] as? String {
+                return .sessionMetadata(seq: seq, threadId: threadId)
+            }
+            if type == "request", let requestId = obj["requestId"] as? String, let method = obj["method"] as? String {
+                return .request(
+                    seq: seq,
+                    interaction: ChatInteraction(
+                        id: requestId, method: method, paramsJSON: ChatToolCall.prettyJSON(obj["params"] ?? [:])))
+            }
+            if type == "agent_attention", let threadId = obj["threadId"] as? String,
+                let requestId = obj["requestId"] as? String, let pending = obj["pending"] as? Bool,
+                !threadId.isEmpty && !requestId.isEmpty
+            {
+                return .agentAttention(seq: seq, threadId: threadId, requestId: requestId, pending: pending)
+            }
+            if type == "request_resolved", let requestId = obj["requestId"] as? String {
+                return .requestResolved(seq: seq, requestId: requestId)
+            }
+            if type == "tool_output_delta", let id = obj["toolUseId"] as? String, let text = obj["text"] as? String {
+                return .toolOutputDelta(seq: seq, toolUseId: id, text: text)
+            }
             if type == "aborted" { return .aborted(seq: seq) }
             if type == "exit" { return .exited(seq: seq, code: obj["code"] as? Int ?? 0) }
             if type == "error" {
@@ -62,7 +101,13 @@ nonisolated enum ChatStreamEvent {
 
     private static func decodeClaudeEvent(obj: [String: Any], seq: Int) -> ChatStreamEvent? {
         if let event = obj["event"] as? [String: Any], let eventType = event["type"] as? String {
-            if eventType == "system" { return .initialized(seq: seq) }
+            if eventType == "plan", let itemId = event["itemId"] as? String, !itemId.isEmpty,
+                let text = event["text"] as? String, let delta = event["delta"] as? Bool,
+                let completed = event["completed"] as? Bool
+            {
+                return .plan(seq: seq, itemId: itemId, text: text, delta: delta, completed: completed)
+            }
+            if eventType == "system" { return .initialized(seq: seq, model: event["model"] as? String) }
             if eventType == "stream_event" { return decodeStreamEvent(event: event, seq: seq) }
             if eventType == "assistant" { return decodeAssistant(event: event, seq: seq) }
             if eventType == "user" { return decodeToolResult(event: event, seq: seq) }
@@ -89,7 +134,8 @@ nonisolated enum ChatStreamEvent {
                     return .assistantTextDelta(seq: seq, text: text)
                 }
                 if delta["type"] as? String == "thinking_delta" {
-                    return .assistantThinkingDelta(seq: seq, text: delta["thinking"] as? String ?? "")
+                    return .assistantThinkingDelta(
+                        seq: seq, text: delta["thinking"] as? String ?? delta["text"] as? String ?? "")
                 }
             }
         }
@@ -144,15 +190,18 @@ nonisolated enum ChatStreamEvent {
     }
 
     private static func decodeToolResult(event: [String: Any], seq: Int) -> ChatStreamEvent? {
-        if let message = event["message"] as? [String: Any],
-            let content = message["content"] as? [[String: Any]]
-        {
-            for block in content where block["type"] as? String == "tool_result" {
+        if let message = event["message"] as? [String: Any], let content = message["content"] as? [[String: Any]] {
+            let results = content.filter { $0["type"] as? String == "tool_result" }.compactMap {
+                block -> ChatToolResult? in
                 if let id = block["tool_use_id"] as? String {
-                    let isError = block["is_error"] as? Bool ?? false
-                    let text = extractToolResultText(block: block)
-                    return .toolResult(seq: seq, toolUseId: id, text: text, isError: isError)
+                    return ChatToolResult(
+                        id: id, text: extractToolResultText(block: block), isError: block["is_error"] as? Bool ?? false)
                 }
+                return nil
+            }
+            if results.count > 1 { return .toolResults(seq: seq, results: results) }
+            if let result = results.first {
+                return .toolResult(seq: seq, toolUseId: result.id, text: result.text, isError: result.isError)
             }
         }
         return nil

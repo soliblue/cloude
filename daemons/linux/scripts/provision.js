@@ -12,18 +12,17 @@ const displayName = process.env.CLOUDE_DISPLAY_NAME || os.hostname()
 
 const identity = loadOrCreateIdentity()
 
-if (!(await putMac(identity, displayName))) {
-  console.error('Provisioning failed: could not register host')
-  process.exit(1)
+let tunnel = fs.existsSync(tunnelFile) && process.env.CLOUDE_REPROVISION !== '1' ? JSON.parse(fs.readFileSync(tunnelFile, 'utf8')) : null
+if (!tunnel?.hostname || !tunnel?.tunnelToken) {
+  if (!(await putMac(identity, displayName))) {
+    throw new Error('Provisioning failed: could not register host')
+  }
+  tunnel = await putTunnel(identity)
+  if (!tunnel?.hostname || !tunnel?.tunnelToken) {
+    throw new Error('Provisioning failed: backend did not return a tunnel')
+  }
+  fs.writeFileSync(tunnelFile, JSON.stringify(tunnel, null, 2), { mode: 0o600 })
 }
-
-const tunnel = await putTunnel(identity)
-if (!tunnel) {
-  console.error('Provisioning failed: backend did not return a tunnel')
-  process.exit(1)
-}
-
-fs.writeFileSync(tunnelFile, JSON.stringify(tunnel, null, 2), { mode: 0o600 })
 
 const token = daemonToken()
 const params = new URLSearchParams({

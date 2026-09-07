@@ -3,10 +3,15 @@ set -euo pipefail
 
 PHONE_ONLY=false
 TESTFLIGHT_ONLY=false
+ARCHIVE_ONLY=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --phone | --phone-only)
             PHONE_ONLY=true
+            shift
+            ;;
+        --archive-only)
+            ARCHIVE_ONLY=true
             shift
             ;;
         --testflight | --force-testflight)
@@ -20,8 +25,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ "$TESTFLIGHT_ONLY" == true && "$PHONE_ONLY" == true ]]; then
-    echo "❌ --testflight and --phone are mutually exclusive"
+if [[ "$TESTFLIGHT_ONLY" == true && "$PHONE_ONLY" == true || "$ARCHIVE_ONLY" == true && ( "$TESTFLIGHT_ONLY" == true || "$PHONE_ONLY" == true ) ]]; then
+    echo "❌ --testflight, --phone and --archive-only are mutually exclusive"
     exit 1
 fi
 
@@ -31,6 +36,10 @@ APP_PATH="$IOS_BUILD_DIR/Build/Products/Debug-iphoneos/Cloude.app"
 BUNDLE_ID="soli.Cloude"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
+    if [[ "$ARCHIVE_ONLY" == true ]]; then
+        echo "Archive-only requires a Mac with Xcode. Nothing was published."
+        exit 1
+    fi
     if [[ "$PHONE_ONLY" == true ]]; then
         echo "❌ --phone needs a Mac with Xcode; cannot install to a device from $(uname -s)"
         exit 1
@@ -44,6 +53,15 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
     git -C "$REPO_ROOT" push origin "$TAG"
     echo "✅ Pushed $TAG; testflight.yml will build and upload to TestFlight."
     echo "Monitor: https://github.com/soliblue/cloude/actions/workflows/testflight.yml"
+    exit 0
+fi
+
+if [[ "$ARCHIVE_ONLY" == true ]]; then
+    cd "$REPO_ROOT"
+    set -a
+    source .env
+    set +a
+    fastlane ios beta_local upload:false
     exit 0
 fi
 

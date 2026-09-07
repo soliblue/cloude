@@ -26,6 +26,10 @@ struct SessionViewTabs: View {
                             .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(tab == .files ? "Browse project files" : "Review Git changes")
+                    .accessibilityAddTraits(
+                        (tab == .git ? isGitSelected : !isGitSelected && selected == tab) ? .isSelected : []
+                    )
                     .disabled(isDisabled(tab))
                 }
             }

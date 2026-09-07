@@ -6,37 +6,30 @@ enum SessionHandler {
             let body = try? JSONSerialization.jsonObject(with: request.body) as? [String: Any],
             let path = body["path"] as? String
         {
-            let transcript = readTranscript(path: path, sessionId: sessionId)
-            if transcript.isEmpty {
-                return HTTPResponse.json(404, ["error": "transcript_not_found"])
-            }
-            let metaPrompt = """
-                You are naming a chat window in a mobile app. The user needs to glance at the name and instantly know what this conversation is about.
-
-                Conversation:
-                \(transcript)
-
-                Suggest a short conversation title (1-3 words) that describes what's being worked on or discussed. Be specific and descriptive, not generic or catchy. Good examples: "Auth Bug Fix", "Dark Mode", "Rename Logic", "Memory System". Bad examples: "Spark", "New Chat", "Quick Fix".
-
-                Also pick an SF Symbol name that best fits the topic. Pick something specific and creative, not generic. Prefer outline versions (e.g. "star" over "star.fill") unless only a .fill variant exists.
-
-                Respond with ONLY a JSON object and nothing else: {"title": "Short Title", "symbol": "sf.symbol.name"}
-                """
-            let output = runSonnet(prompt: metaPrompt)
-            let outer =
-                output
-                .flatMap { $0.data(using: .utf8) }
-                .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
-            if let output,
-                let parsed =
-                    ((outer?["result"] as? String).flatMap(parseJSONBlock)
-                        ?? parseJSONBlock(output)),
-                let title = parsed["title"] as? String,
-                let symbol = parsed["symbol"] as? String
+            if let threadId = CodexSessionStore.shared.threadId(for: sessionId),
+                let result = CodexHandler.perform(
+                    "thread/read", params: ["threadId": threadId, "includeTurns": false]),
+                let thread = result["thread"] as? [String: Any]
             {
-                return HTTPResponse.json(200, ["title": title, "symbol": symbol])
+                let title = (thread["name"] as? String) ?? (thread["preview"] as? String) ?? "Codex task"
+                return HTTPResponse.json(
+                    200,
+                    [
+                        "title": String(title.split(separator: "\n").first?.prefix(60) ?? "Codex task"),
+                        "symbol": "terminal",
+                    ])
             }
-            return HTTPResponse.json(500, ["error": "generation_failed"])
+            let transcript = readTranscript(path: path, sessionId: sessionId)
+            if !transcript.isEmpty {
+                return HTTPResponse.json(
+                    200,
+                    [
+                        "title": String(
+                            transcript.split(separator: "\n").first?.replacingOccurrences(of: "user: ", with: "")
+                                .prefix(60) ?? "Task"), "symbol": "terminal",
+                    ])
+            }
+            return HTTPResponse.json(404, ["error": "transcript_not_found"])
         }
         return HTTPResponse.json(400, ["error": "missing_params"])
     }
@@ -76,102 +69,4 @@ enum SessionHandler {
         return ""
     }
 
-    private static func runSonnet(prompt: String) -> String? {
-        let proc = Process()
-        let stdin = Pipe()
-        let stdout = Pipe()
-        let stderr = Pipe()
-        let executable = claudeExecutable()
-        proc.executableURL = URL(fileURLWithPath: executable.path)
-        proc.arguments =
-            executable.leadingArguments + [
-                "-p", "--model", "sonnet", "--output-format", "json",
-            ]
-        proc.standardInput = stdin
-        proc.standardOutput = stdout
-        proc.standardError = stderr
-        let inherited = ProcessInfo.processInfo.environment
-        var env: [String: String] = [:]
-        for key in ["HOME", "USER", "SHELL", "LANG", "LC_ALL", "TMPDIR", "TERM"] {
-            if let value = inherited[key] { env[key] = value }
-        }
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        var pathParts = (inherited["PATH"] ?? "").split(separator: ":").map(String.init)
-        for extra in [
-            "/opt/homebrew/bin",
-            "/usr/local/bin",
-            "/usr/bin",
-            "\(home)/.local/bin",
-            "\(home)/.npm-global/bin",
-        ] where !pathParts.contains(extra) {
-            pathParts.append(extra)
-        }
-        env["PATH"] = pathParts.joined(separator: ":")
-        env["TERM"] = env["TERM"] ?? "xterm-256color"
-        env["NO_COLOR"] = "1"
-        env["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"] = "1"
-        proc.environment = env
-        if (try? proc.run()) != nil {
-            stdin.fileHandleForWriting.write(prompt.data(using: .utf8) ?? Data())
-            try? stdin.fileHandleForWriting.close()
-            proc.waitUntilExit()
-            let data = (try? stdout.fileHandleForReading.readToEnd()) ?? Data()
-            let errData = (try? stderr.fileHandleForReading.readToEnd()) ?? Data()
-            if proc.terminationStatus != 0 {
-                let errText = String(data: errData, encoding: .utf8) ?? ""
-                NSLog("[SessionHandler] runSonnet exit=\(proc.terminationStatus) stderr=\(errText)")
-            }
-            return String(data: data, encoding: .utf8)
-        }
-        return nil
-    }
-
-    private struct Executable {
-        let path: String
-        let leadingArguments: [String]
-    }
-
-    private static func claudeExecutable() -> Executable {
-        let fileManager = FileManager.default
-        let home = fileManager.homeDirectoryForCurrentUser.path
-        var directories = (ProcessInfo.processInfo.environment["PATH"] ?? "").split(separator: ":").map(
-            String.init)
-        for extra in [
-            "/opt/homebrew/bin",
-            "/usr/local/bin",
-            "/usr/bin",
-            "\(home)/.local/bin",
-            "\(home)/.npm-global/bin",
-        ] where !directories.contains(extra) {
-            directories.append(extra)
-        }
-        for directory in directories {
-            let candidate = "\(directory)/claude"
-            if fileManager.isExecutableFile(atPath: candidate) {
-                return Executable(path: candidate, leadingArguments: [])
-            }
-        }
-        return Executable(path: "/usr/bin/env", leadingArguments: ["claude"])
-    }
-
-    private static func parseJSONBlock(_ text: String) -> [String: Any]? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let data = trimmed.data(using: .utf8),
-            let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        {
-            return obj
-        }
-        if let start = trimmed.firstIndex(of: "{"),
-            let end = trimmed.lastIndex(of: "}"),
-            start < end
-        {
-            let slice = String(trimmed[start...end])
-            if let data = slice.data(using: .utf8),
-                let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-            {
-                return obj
-            }
-        }
-        return nil
-    }
 }

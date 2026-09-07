@@ -5,7 +5,7 @@ struct ChatViewMessageListRowToolPillSheetBashDiff: View {
 
     var body: some View {
         ChatViewMessageListRowToolPillSheetSection(title: "Diff", icon: "plus.forwardslash.minus") {
-            VStack(alignment: .leading, spacing: 0) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(GitDiffParser.parse(text)) { line in
                     GitDiffSheetLine(line: line, language: "bash")
                 }

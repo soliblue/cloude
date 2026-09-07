@@ -14,28 +14,76 @@ enum SessionActions {
             title: SessionRandom.name(),
             symbol: SessionRandom.symbol()
         )
-        session.model = UserDefaults.standard.string(forKey: StorageKey.defaultChatModel).flatMap(
-            ChatModel.init(rawValue:))
-        session.effort = UserDefaults.standard.string(forKey: StorageKey.defaultChatEffort).flatMap(
-            ChatEffort.init(rawValue:))
+        session.providerRaw = endpoint?.supportsCodex == true ? ChatProvider.codex.rawValue : nil
         context.insert(session)
         return session
     }
 
     @MainActor
-    static func setEndpoint(_ endpoint: Endpoint, for session: Session, clearsPath: Bool = false) {
-        let isSwitching = session.endpoint?.id != endpoint.id
-        session.endpoint = endpoint
-        if clearsPath && isSwitching {
-            session.path = nil
-            session.tab = .chat
-            session.hasGit = true
+    static func importThread(
+        _ thread: SessionRemoteThread, id: UUID, endpoint: Endpoint, context: ModelContext
+    ) -> Session {
+        let session = Session(id: id, endpoint: endpoint, path: thread.cwd, title: thread.title, symbol: "terminal")
+        session.provider = .codex
+        session.codexThreadId = thread.id
+        session.followsRemote = true
+        session.existsOnServer = true
+        context.insert(session)
+        return session
+    }
+
+    @MainActor
+    static func setGoal(_ goal: ChatGoal?, for session: Session) {
+        session.goalData = goal.flatMap { try? JSONEncoder().encode($0) }
+    }
+
+    @MainActor
+    static func setRemoteFollowing(_ value: Bool, for session: Session) {
+        session.followsRemote = value
+        if !value { session.remoteIsRunning = false }
+    }
+
+    @MainActor
+    static func setRemoteRunning(_ value: Bool, for session: Session) {
+        session.remoteIsRunning = value
+    }
+
+    @MainActor
+    static func setRemoteTurnStatus(_ value: String?, for session: Session) {
+        session.remoteTurnStatus = value
+    }
+
+    @MainActor
+    static func refreshRemoteTitle(_ thread: SessionRemoteThread, for session: Session) {
+        if !session.hasCustomTitle, thread.title != "Untitled Codex chat" {
+            session.title = thread.title
         }
     }
 
     @MainActor
-    static func setPath(_ path: String, for session: Session) {
-        session.path = path
+    static func setRemoteHistoryETag(_ value: String?, for session: Session) {
+        session.remoteHistoryETag = value
+    }
+
+    @MainActor
+    static func setCodexThreadId(_ id: String, for session: Session) {
+        session.codexThreadId = id
+    }
+
+    @MainActor
+    static func fork(_ source: Session, id: UUID, context: ModelContext) -> Session {
+        let session = Session(
+            id: id, endpoint: source.endpoint, path: source.path, title: source.title + " · side chat",
+            symbol: "arrow.triangle.branch")
+        session.provider = source.provider
+        session.model = source.model
+        session.effort = source.effort
+        session.permissionMode = source.permissionMode
+        session.parentSessionId = source.id
+        session.existsOnServer = true
+        context.insert(session)
+        ChatActions.copyHistory(from: source.id, to: session.id, context: context)
+        return session
     }
 
     @MainActor
@@ -51,6 +99,12 @@ enum SessionActions {
     @MainActor
     static func setModel(_ model: ChatModel?, for session: Session) {
         session.model = model
+        if let effort = session.effort,
+            !ChatModelCatalog.shared.efforts(sessionId: session.id, provider: session.provider, model: model).contains(
+                effort)
+        {
+            session.effort = nil
+        }
     }
 
     @MainActor
@@ -59,7 +113,7 @@ enum SessionActions {
             predicate: #Predicate<Session> { $0.id == sessionId }
         )
         if let session = try? context.fetch(descriptor).first {
-            session.model = model
+            setModel(model, for: session)
         }
     }
 
@@ -104,6 +158,29 @@ enum SessionActions {
     }
 
     @MainActor
+    static func setNeedsAttention(_ value: Bool, for session: Session) {
+        session.needsAttention = value
+    }
+
+    @MainActor
+    static func setArchived(_ session: Session, _ archived: Bool) {
+        session.isArchived = archived
+    }
+
+    @MainActor
+    static func rename(_ session: Session, title: String) {
+        if !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            session.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+            session.hasCustomTitle = true
+        }
+    }
+
+    @MainActor
+    static func setPinned(_ session: Session, _ pinned: Bool) {
+        session.isPinned = pinned
+    }
+
+    @MainActor
     static func markOpened(_ session: Session) {
         session.lastOpenedAt = .now
         session.hasUnread = false
@@ -126,20 +203,31 @@ enum SessionActions {
 
     @MainActor
     static func setTitleAndSymbol(_ title: String, _ symbol: String, for session: Session) {
-        session.title = title
-        session.symbol = symbol
+        if !session.hasCustomTitle {
+            session.title = title
+            session.symbol = symbol
+        }
     }
 
     @MainActor
-    static func deleteIfEmpty(_ session: Session, context: ModelContext) {
+    @discardableResult
+    static func deleteIfEmpty(_ session: Session, context: ModelContext) -> Task<Void, Never> {
         let sessionId = session.id
-        let descriptor = FetchDescriptor<ChatMessage>(
-            predicate: #Predicate<ChatMessage> { $0.sessionId == sessionId }
-        )
-        let count = (try? context.fetchCount(descriptor)) ?? 0
-        if count == 0 {
-            GitActions.clear(sessionId: sessionId, context: context)
-            context.delete(session)
+        return Task { @MainActor in
+            let loaded = await ChatDraftService.load(sessionId)
+            let descriptor = FetchDescriptor<ChatMessage>(
+                predicate: #Predicate<ChatMessage> { $0.sessionId == sessionId }
+            )
+            let count = (try? context.fetchCount(descriptor)) ?? 0
+            let windows = try? context.fetch(FetchDescriptor<Window>())
+            if loaded && count == 0 && ChatDraftStore.snapshot(for: sessionId).isEmpty,
+                session.modelContext != nil, let windows,
+                !windows.contains(where: { $0.session?.id == sessionId })
+            {
+                GitActions.clear(sessionId: sessionId, context: context)
+                context.delete(session)
+                ChatDraftService.clear(sessionId)
+            }
         }
     }
 }

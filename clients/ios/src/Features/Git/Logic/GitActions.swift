@@ -50,29 +50,37 @@ enum GitActions {
 
     @MainActor
     static func replaceLog(
-        sessionId: UUID, commits: [GitCommitDTO], context: ModelContext
+        sessionId: UUID, commits: [GitCommitDTO], context: ModelContext, append: Bool = false
     ) {
         let descriptor = FetchDescriptor<GitCommit>(
             predicate: #Predicate<GitCommit> { $0.sessionId == sessionId },
             sortBy: [SortDescriptor(\.order)]
         )
         let existing = (try? context.fetch(descriptor)) ?? []
-        if existing.count == commits.count,
-            zip(existing, commits).allSatisfy({ $0.sha == $1.sha })
-        {
-            return
+        let bySHA = Dictionary(existing.map { ($0.sha, $0) }, uniquingKeysWith: { first, _ in first })
+        var ordered: [GitCommit] = append ? existing : []
+        var seen = Set(ordered.map(\.sha))
+        let incoming = Set(commits.map(\.sha))
+        for wire in commits where seen.insert(wire.sha).inserted {
+            if let commit = bySHA[wire.sha] {
+                ordered.append(commit)
+            } else {
+                let commit = GitCommit(
+                    sessionId: sessionId, sha: wire.sha, subject: wire.subject, author: wire.author,
+                    date: Self.isoFormatter.date(from: wire.date) ?? .now, order: ordered.count)
+                context.insert(commit)
+                ordered.append(commit)
+            }
         }
-        for commit in existing { context.delete(commit) }
-        for (index, wire) in commits.enumerated() {
-            let commit = GitCommit(
-                sessionId: sessionId,
-                sha: wire.sha,
-                subject: wire.subject,
-                author: wire.author,
-                date: Self.isoFormatter.date(from: wire.date) ?? .now,
-                order: index
-            )
-            context.insert(commit)
+        if !append, commits.count >= 50,
+            let last = commits.last, let overlap = existing.firstIndex(where: { $0.sha == last.sha })
+        {
+            ordered.append(contentsOf: existing.suffix(from: overlap + 1).filter { !incoming.contains($0.sha) })
+        }
+        let retained = Set(ordered.map(\.sha))
+        for commit in existing where !retained.contains(commit.sha) { context.delete(commit) }
+        for (index, commit) in ordered.enumerated() {
+            if commit.order != index { commit.order = index }
         }
     }
 

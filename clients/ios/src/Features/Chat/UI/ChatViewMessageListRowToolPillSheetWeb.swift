@@ -6,7 +6,14 @@ struct ChatViewMessageListRowToolPillSheetWeb: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-            if let urlString = toolCall.parsedInput["url"] as? String,
+            ForEach(toolCall.webSources) { source in
+                Link(destination: source.url) {
+                    Label(source.title, systemImage: "link")
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            if let urlString = toolCall.parsedInput["url"] as? String, toolCall.webSources.isEmpty,
                 let url = URL(string: urlString)
             {
                 Button {

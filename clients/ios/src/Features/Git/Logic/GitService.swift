@@ -1,7 +1,10 @@
 import Foundation
 import SwiftData
 
-enum GitService {
+@MainActor enum GitService {
+    @concurrent
+    static func parseDiff(_ text: String) async -> [GitDiffLine] { GitDiffParser.parse(text) }
+
     struct DiffResult {
         let text: String
         let truncatedFromLines: Int?
@@ -87,39 +90,61 @@ enum GitService {
         return nil
     }
 
-    @MainActor private static var refreshing: Set<UUID> = []
+    @MainActor private static var refreshTasks: [UUID: Task<Void, Never>] = [:]
     @MainActor private static var pendingRefresh: Set<UUID> = []
+
+    static func loadMore(session: Session, count: Int, context: ModelContext) async -> Int? {
+        if let endpoint = session.endpoint, let path = session.path {
+            let endpointId = endpoint.id
+            let cacheId = endpoint.cacheId
+            if let commits = await log(endpoint: endpoint, session: session, path: path, skip: count),
+                session.endpoint?.id == endpointId, session.endpoint?.cacheId == cacheId, session.path == path,
+                !Task.isCancelled
+            {
+                GitActions.replaceLog(sessionId: session.id, commits: commits, context: context, append: true)
+                return commits.count
+            }
+        }
+        return nil
+    }
 
     @MainActor
     static func refresh(session: Session, context: ModelContext) async {
-        if refreshing.contains(session.id) {
+        if let task = refreshTasks[session.id] {
             pendingRefresh.insert(session.id)
-            return
+            await task.value
+        } else {
+            let sessionId = session.id
+            let task = Task {
+                repeat {
+                    await refreshOnce(session: session, context: context)
+                } while pendingRefresh.remove(sessionId) != nil
+                refreshTasks.removeValue(forKey: sessionId)
+            }
+            refreshTasks[sessionId] = task
+            await task.value
         }
-        refreshing.insert(session.id)
-        repeat {
-            await refreshOnce(session: session, context: context)
-        } while pendingRefresh.remove(session.id) != nil
-        refreshing.remove(session.id)
     }
 
     @MainActor
     private static func refreshOnce(session: Session, context: ModelContext) async {
         if let endpoint = session.endpoint, let path = session.path {
+            let endpointId = endpoint.id
+            let cacheId = endpoint.cacheId
             async let statusResult = status(endpoint: endpoint, session: session, path: path)
             async let logResult = log(endpoint: endpoint, session: session, path: path)
             let (dto, code) = await statusResult
             let commits = await logResult
-            if code == 404 {
-                SessionActions.setHasGit(false, for: session)
-                GitActions.clear(sessionId: session.id, context: context)
-            } else {
-                SessionActions.setHasGit(true, for: session)
-                if let dto {
+            if session.endpoint?.id == endpointId, session.endpoint?.cacheId == cacheId, session.path == path {
+                if code == 404 {
+                    SessionActions.setHasGit(false, for: session)
+                    GitActions.clear(sessionId: session.id, context: context)
+                } else if let dto {
+                    SessionActions.setHasGit(true, for: session)
                     GitActions.upsertStatus(sessionId: session.id, dto: dto, context: context)
-                }
-                if let commits {
-                    GitActions.replaceLog(sessionId: session.id, commits: commits, context: context)
+                    if let commits {
+                        GitActions.replaceLog(sessionId: session.id, commits: commits, context: context)
+                    }
                 }
             }
         }

@@ -3,6 +3,8 @@ import UIKit
 
 struct DaemonUpdateView: View {
     @Environment(\.theme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .body) private var iconFrame = ThemeTokens.Size.m
     @State private var isFetchingMac = false
     @State private var isFetchingLinux = false
     @State private var shareItems: [Any]?
@@ -12,28 +14,28 @@ struct DaemonUpdateView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-                sectionHeader("Mac")
-                actionRow(
-                    icon: "laptopcomputer",
-                    color: ThemeColor.purple,
-                    title: "AirDrop Mac daemon",
-                    subtitle: "Downloads the latest .dmg, then sends it via AirDrop.",
-                    trailingIcon: "paperplane.fill",
-                    trailingTint: ThemeColor.secondary,
-                    isLoading: isFetchingMac,
-                    action: airdropMac
-                )
-
                 sectionHeader("Linux")
                 actionRow(
                     icon: "terminal",
                     color: ThemeColor.rust,
                     title: "Copy install command",
-                    subtitle: "Paste into your Linux machine's terminal to install.",
+                    subtitle: "Run as your normal Linux user with sudo access.",
                     trailingIcon: copiedAt == nil ? "doc.on.doc" : "checkmark",
                     trailingTint: copiedAt == nil ? ThemeColor.secondary : ThemeColor.success,
                     isLoading: isFetchingLinux,
                     action: copyLinuxCommand
+                )
+
+                sectionHeader("Mac")
+                actionRow(
+                    icon: "laptopcomputer",
+                    color: ThemeColor.purple,
+                    title: "Get Mac installer",
+                    subtitle: "Downloads the latest .dmg, then sends it via AirDrop.",
+                    trailingIcon: "paperplane.fill",
+                    trailingTint: ThemeColor.secondary,
+                    isLoading: isFetchingMac,
+                    action: airdropMac
                 )
             }
             .padding(.horizontal, ThemeTokens.Spacing.m)
@@ -60,7 +62,7 @@ struct DaemonUpdateView: View {
     private func airdropMac() {
         isFetchingMac = true
         Task { @MainActor in
-            if let assetURL = await DaemonUpdateService.latestAssetURL(
+            if let assetURL = await DaemonUpdateService.latestAsset(
                 tagPrefix: DaemonUpdate.macTagPrefix, assetName: DaemonUpdate.macAssetName),
                 let local = await DaemonUpdateService.downloadToTemp(
                     assetURL, suggestedName: DaemonUpdate.macAssetName)
@@ -100,7 +102,7 @@ struct DaemonUpdateView: View {
                 Image(systemName: icon)
                     .appFont(size: ThemeTokens.Text.l, weight: .medium)
                     .foregroundColor(color)
-                    .frame(width: ThemeTokens.Size.m)
+                    .frame(width: iconFrame)
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.xs) {
                     Text(title)
                         .appFont(size: ThemeTokens.Text.l, weight: .medium)
@@ -115,8 +117,8 @@ struct DaemonUpdateView: View {
                     .appFont(size: ThemeTokens.Text.l, weight: .medium)
                     .foregroundStyle(trailingTint)
                     .contentTransition(.symbolEffect(.replace))
-                    .symbolEffect(.pulse, options: .repeating, isActive: isLoading)
-                    .frame(width: ThemeTokens.Size.m, height: ThemeTokens.Size.m)
+                    .symbolEffect(.pulse, options: .repeating, isActive: isLoading && !reduceMotion)
+                    .frame(width: iconFrame, height: iconFrame)
             }
             .padding(.vertical, ThemeTokens.Spacing.m)
         }
@@ -129,6 +131,7 @@ struct DaemonUpdateView: View {
             .appFont(size: ThemeTokens.Text.s, weight: .medium)
             .foregroundColor(ThemeColor.secondary)
             .textCase(.uppercase)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 

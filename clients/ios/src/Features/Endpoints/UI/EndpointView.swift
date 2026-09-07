@@ -8,7 +8,9 @@ struct EndpointView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.theme) private var theme
     @State private var host: String
+    @State private var name: String
     @State private var port: Int
+    @State private var useTLS: Bool
     @State private var symbolName: String
     @State private var authKey: String
     @State private var isDeleteConfirmPresented = false
@@ -22,7 +24,9 @@ struct EndpointView: View {
         self.existing = existing
         self.canDelete = canDelete
         _host = State(initialValue: existing?.host ?? "")
+        _name = State(initialValue: existing?.name ?? "")
         _port = State(initialValue: existing?.port ?? 8765)
+        _useTLS = State(initialValue: existing?.transportScheme == "https")
         _symbolName = State(
             initialValue: existing?.symbolName
                 ?? EndpointsSymbolCatalog.symbols.randomElement() ?? Endpoint.defaultSymbol
@@ -34,6 +38,13 @@ struct EndpointView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
+                TextField("Host name, such as Production or Devbox", text: $name)
+                    .appFont(size: ThemeTokens.Text.l, weight: .medium)
+                    .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled()
+                    .padding(ThemeTokens.Spacing.m)
+                    .background(theme.palette.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
                 HStack(spacing: ThemeTokens.Spacing.m) {
                     IconPillButton(symbol: symbolName, tint: ThemeColor.rust) {
                         isSymbolPickerPresented = true
@@ -52,7 +63,7 @@ struct EndpointView: View {
                 }
 
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
-                    Text("Host")
+                    Text("Host or URL")
                         .appFont(size: ThemeTokens.Text.s, weight: .medium)
                         .foregroundColor(ThemeColor.secondary)
                         .textCase(.uppercase)
@@ -62,7 +73,7 @@ struct EndpointView: View {
                             .appFont(size: ThemeTokens.Icon.m)
                             .foregroundColor(ThemeColor.blue)
 
-                        TextField("remote.example.com", text: $host)
+                        TextField("https://remote.example.com", text: $host)
                             .appFont(size: ThemeTokens.Text.m)
                             .textFieldStyle(.plain)
                             .textContentType(.URL)
@@ -96,6 +107,9 @@ struct EndpointView: View {
                     .clipShape(RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
                 }
 
+                Toggle("HTTPS", isOn: $useTLS)
+                    .padding(ThemeTokens.Spacing.m)
+                    .background(theme.palette.surface, in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l))
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.s) {
                     Text("Auth Token")
                         .appFont(size: ThemeTokens.Text.s, weight: .medium)
@@ -163,6 +177,7 @@ struct EndpointView: View {
                         .opacity(isSaveDisabled ? ThemeTokens.Opacity.m : 1)
                 }
                 .disabled(isSaveDisabled)
+                .accessibilityLabel("Save host")
             }
             if existing != nil, canDelete {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -194,7 +209,8 @@ struct EndpointView: View {
     }
 
     private var isSaveDisabled: Bool {
-        isProbing || host.isEmpty || authKey.isEmpty
+        isProbing || EndpointAddress(input: host, port: port, scheme: useTLS ? "https" : "http") == nil
+            || authKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     @ViewBuilder
@@ -207,33 +223,42 @@ struct EndpointView: View {
     }
 
     private func save() async {
+        host = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        authKey = authKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         saveError = nil
         isProbing = true
-        let result = await EndpointService.probe(host: host, port: port, authKey: authKey)
-        isProbing = false
-        switch result {
-        case .reachable:
-            if let existing {
-                EndpointActions.update(
-                    existing, host: host, port: port, symbolName: symbolName, authKey: authKey)
-            } else {
-                EndpointActions.create(
-                    into: context, host: host, port: port, symbolName: symbolName, authKey: authKey)
-            }
-            withAnimation(.easeOut(duration: ThemeTokens.Duration.s)) { didSucceed = true }
-            try? await Task.sleep(nanoseconds: 400_000_000)
-            dismiss()
-        case .unauthorized:
-            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-                saveError = "Mac found · token rejected"
-            }
-        case .unreachable:
-            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-                saveError = "Unreachable · check host and port"
-            }
-        case .invalid:
-            withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
-                saveError = "Invalid response · check host and port"
+        if let address = EndpointAddress(input: host, port: port, scheme: useTLS ? "https" : "http") {
+            let result = await EndpointService.probe(
+                host: address.host, port: address.port, authKey: authKey, scheme: address.scheme)
+            isProbing = false
+            switch result {
+            case .reachable:
+                if let existing {
+                    EndpointActions.update(
+                        existing, host: address.host, port: address.port, name: name, symbolName: symbolName,
+                        authKey: authKey, scheme: address.scheme)
+                } else {
+                    EndpointActions.create(
+                        into: context, host: address.host, port: address.port, name: name, symbolName: symbolName,
+                        authKey: authKey, scheme: address.scheme)
+                }
+                PushNotificationCoordinator.shared.registerAll()
+                withAnimation(.easeOut(duration: ThemeTokens.Duration.s)) { didSucceed = true }
+                try? await Task.sleep(nanoseconds: 400_000_000)
+                dismiss()
+            case .unauthorized:
+                withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                    saveError = "Host found · token rejected"
+                }
+            case .unreachable:
+                withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                    saveError = "Unreachable · check host and port"
+                }
+            case .invalid:
+                withAnimation(.easeInOut(duration: ThemeTokens.Duration.s)) {
+                    saveError = "Invalid response · check host and port"
+                }
             }
         }
     }

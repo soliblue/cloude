@@ -6,6 +6,7 @@ struct OnboardingViewManualSheet: View {
     @Environment(\.theme) private var theme
     @State private var host = ""
     @State private var port = 8765
+    @State private var useTLS = false
     @State private var token = ""
     @State private var name = ""
 
@@ -13,8 +14,8 @@ struct OnboardingViewManualSheet: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: ThemeTokens.Spacing.l) {
-                    field(label: "Host", icon: "server.rack", tint: ThemeColor.blue) {
-                        TextField("192.168.1.20", text: $host)
+                    field(label: "Host or URL", icon: "server.rack", tint: ThemeColor.blue) {
+                        TextField("https://remote.example.com", text: $host)
                             .appFont(size: ThemeTokens.Text.m)
                             .textFieldStyle(.plain)
                             .textContentType(.URL)
@@ -28,6 +29,7 @@ struct OnboardingViewManualSheet: View {
                             .textFieldStyle(.plain)
                             .keyboardType(.numberPad)
                     }
+                    Toggle("HTTPS", isOn: $useTLS)
                     field(label: "Auth Token", icon: "key.fill", tint: ThemeColor.orange) {
                         SecureField("Auth Token", text: $token)
                             .appFont(size: ThemeTokens.Text.m, design: .monospaced)
@@ -36,7 +38,7 @@ struct OnboardingViewManualSheet: View {
                             .autocorrectionDisabled()
                     }
                     field(label: "Name (optional)", icon: "laptopcomputer", tint: ThemeColor.rust) {
-                        TextField("My Mac", text: $name)
+                        TextField("My server", text: $name)
                             .appFont(size: ThemeTokens.Text.m)
                             .textFieldStyle(.plain)
                             .autocorrectionDisabled()
@@ -59,19 +61,26 @@ struct OnboardingViewManualSheet: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        onPayload(
-                            OnboardingPairingPayload(
-                                host: host,
-                                port: port,
-                                token: token,
-                                name: name.isEmpty ? nil : name
+                        if let address = EndpointAddress(input: host, port: port, scheme: useTLS ? "https" : "http") {
+                            onPayload(
+                                OnboardingPairingPayload(
+                                    host: address.host,
+                                    port: address.port,
+                                    token: token.trimmingCharacters(in: .whitespacesAndNewlines),
+                                    name: name.isEmpty ? nil : name,
+                                    scheme: address.scheme
+                                )
                             )
-                        )
+                        }
                     } label: {
                         Image(systemName: "checkmark")
                             .appFont(size: ThemeTokens.Text.m, weight: .semibold)
                     }
-                    .disabled(host.isEmpty || token.isEmpty)
+                    .disabled(
+                        EndpointAddress(input: host, port: port, scheme: useTLS ? "https" : "http") == nil
+                            || token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    )
+                    .accessibilityLabel("Connect host")
                 }
             }
             .preferredColorScheme(theme.palette.colorScheme)

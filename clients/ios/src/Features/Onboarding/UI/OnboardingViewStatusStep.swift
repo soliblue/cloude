@@ -32,13 +32,13 @@ struct OnboardingViewStatusStep: View {
     }
 
     private var hostLabel: String {
-        store.draft?.name ?? store.draft?.host ?? "your Mac"
+        store.draft?.name ?? store.draft?.host ?? "your host"
     }
 
     private var connectSubtitle: String? {
         switch store.probeResult {
         case .unauthorized: return "Token rejected. Generate a new QR and try again."
-        case .unreachable: return "Make sure your phone and Mac are on the same Wi-Fi."
+        case .unreachable: return "Check that your host is online and its tunnel or local network is reachable."
         case .invalid: return "The host responded, but not like the daemon does."
         case .reachable, .none: return nil
         }
@@ -57,17 +57,14 @@ struct OnboardingViewStatusStep: View {
             Spacer()
             VStack(spacing: 0) {
                 stepRow(
-                    title: Text("Connecting to")
-                        + Text(" \(hostLabel)").font(
-                            .system(size: ThemeTokens.Text.l, design: .monospaced).weight(.medium)),
+                    title: Text("Connecting to \(hostLabel)"),
                     subtitle: connectSubtitle,
                     state: connectState
                 )
                 Divider()
                     .padding(.leading, ThemeTokens.Size.m + ThemeTokens.Spacing.m * 2)
                 stepRow(
-                    title: Text("Storing token in")
-                        + Text(" Keychain").font(.system(size: ThemeTokens.Text.l, design: .monospaced).weight(.medium)),
+                    title: Text("Securing your connection"),
                     subtitle: nil,
                     state: saveState
                 )

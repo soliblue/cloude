@@ -21,7 +21,7 @@ struct ChatViewMessageListRowToolPillList: View {
     var body: some View {
         if !toolCalls.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: ThemeTokens.Spacing.s) {
+                LazyHStack(spacing: ThemeTokens.Spacing.s) {
                     ForEach(toolCalls) { toolCall in
                         ChatViewMessageListRowToolPillListRow(toolCall: toolCall) {
                             selected = toolCall

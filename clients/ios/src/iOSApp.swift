@@ -4,9 +4,11 @@ import UserNotifications
 
 @main
 struct IOSApp: App {
+    @UIApplicationDelegateAdaptor(PushAppDelegate.self) private var pushAppDelegate
     @AppStorage(StorageKey.appTheme) private var selectedTheme: Theme = .majorelle
     @AppStorage(StorageKey.appAccent) private var selectedAccent: AppAccent = .clay
     @AppStorage(StorageKey.fontSizeStep) private var fontSizeStep = 0
+    @Environment(\.scenePhase) private var scenePhase
     let container: ModelContainer
     let filePreviewPresenter = FilePreviewPresenter()
 
@@ -14,6 +16,7 @@ struct IOSApp: App {
         container = Self.makeContainer()
         EndpointActions.seedDev(context: container.mainContext)
         WindowActions.ensureOne(context: container.mainContext)
+        PushNotificationCoordinator.shared.configure(context: container.mainContext)
         DaemonVersionObserver.shared.modelContext = container.mainContext
         UNUserNotificationCenter.current().delegate = ChatNotificationDelegate.shared
         AppLogger.bootstrapInfo("app launched")
@@ -28,7 +31,18 @@ struct IOSApp: App {
                 .environment(\.filePreviewPresenter, filePreviewPresenter)
                 .tint(selectedAccent.color)
                 .onOpenURL { DeepLinkRouter.handle($0, container: container) }
-                .onAppear { KeyboardDismissGesture.shared.install() }
+                .onAppear {
+                    KeyboardDismissGesture.shared.install()
+                    PushNotificationCoordinator.shared.registerAll()
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        PushNotificationCoordinator.shared.requestAuthorization()
+                        PushNotificationCoordinator.shared.registerAll()
+                    } else {
+                        ChatDraftService.flushForBackground()
+                    }
+                }
         }
         .modelContainer(container)
     }

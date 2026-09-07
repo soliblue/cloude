@@ -3,6 +3,7 @@ import UIKit
 
 struct ChatViewMessageListRowSelectTextSheet: View {
     let text: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
     @State private var copied = false
@@ -22,6 +23,7 @@ struct ChatViewMessageListRowSelectTextSheet: View {
                                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
                                 .foregroundColor(ThemeColor.secondary)
                         }
+                        .accessibilityLabel("Close text selection")
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
@@ -35,34 +37,13 @@ struct ChatViewMessageListRowSelectTextSheet: View {
                                 .appFont(size: ThemeTokens.Text.m, weight: .medium)
                                 .frame(width: ThemeTokens.Text.m, height: ThemeTokens.Text.m)
                                 .foregroundColor(copied ? ThemeColor.success : ThemeColor.secondary)
-                                .contentTransition(.symbolEffect(.replace))
+                                .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
                         }
+                        .accessibilityLabel(copied ? "Text copied" : "Copy all text")
                     }
                 }
                 .themedNavChrome()
         }
         .presentationBackground(theme.palette.background)
-    }
-}
-
-struct ChatViewMessageListRowSelectTextSheetContent: UIViewRepresentable {
-    let text: String
-
-    func makeUIView(context: Context) -> UITextView {
-        let view = UITextView()
-        view.isEditable = false
-        view.isSelectable = true
-        view.isScrollEnabled = true
-        view.backgroundColor = .clear
-        view.font = .preferredFont(forTextStyle: .body)
-        view.textColor = .label
-        view.textContainerInset = .zero
-        view.textContainer.lineFragmentPadding = 0
-        return view
-    }
-
-    func updateUIView(_ view: UITextView, context: Context) {
-        view.text = text
-        view.invalidateIntrinsicContentSize()
     }
 }

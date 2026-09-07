@@ -41,12 +41,13 @@ extension View {
 
 private struct AppFont: ViewModifier {
     @Environment(\.fontStep) private var step
+    @ScaledMetric(relativeTo: .body) private var scale = 1.0
     let size: CGFloat
     let weight: Font.Weight
     let design: Font.Design
 
     func body(content: Content) -> some View {
-        content.font(.system(size: size + step, weight: weight, design: design))
+        content.font(.system(size: (size + step) * scale, weight: weight, design: design))
     }
 }
 

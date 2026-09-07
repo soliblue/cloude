@@ -8,6 +8,8 @@ struct SessionsMenuButton: View {
 
     var body: some View {
         IconPillButton(symbol: "line.3.horizontal", action: action)
+            .accessibilityLabel("Open chats and remote machines")
+            .accessibilityValue(unreadCount > 0 ? "\(unreadCount) unread chats" : "")
             .overlay(alignment: .topTrailing) {
                 if unreadCount > 0 {
                     Text("\(unreadCount)")

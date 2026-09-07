@@ -6,12 +6,12 @@ struct SessionEmptyView: View {
     @Binding var folderPickerRequest: SessionFolderPickerRequest?
     @Environment(\.theme) private var theme
     @State private var folderSheetEndpoint: Endpoint?
+    @State private var historyEndpoint: Endpoint?
 
     var body: some View {
         ScrollView {
             VStack(spacing: ThemeTokens.Spacing.l) {
                 SessionEmptyViewHero()
-                    .frame(maxHeight: ThemeTokens.Size.xl)
                 VStack(spacing: 0) {
                     SessionEmptyViewEndpointRow(
                         session: session,
@@ -23,6 +23,8 @@ struct SessionEmptyView: View {
                         folderSheetEndpoint: $folderSheetEndpoint
                     )
                     Divider()
+                    SessionEmptyViewProviderRow(session: session)
+                    Divider()
                     SessionEmptyViewModelRow(session: session)
                     Divider()
                     SessionEmptyViewEffortRow(session: session)
@@ -31,6 +33,13 @@ struct SessionEmptyView: View {
                     .regular.tint(theme.palette.background).interactive(),
                     in: RoundedRectangle(cornerRadius: ThemeTokens.Radius.l)
                 )
+                if session.provider == .codex { SessionModelStatusView(session: session) }
+                if let endpoint = session.endpoint, endpoint.supportsCodex == true {
+                    Button("Open remote Codex chats", systemImage: "clock.arrow.circlepath") {
+                        historyEndpoint = endpoint
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
             .padding(ThemeTokens.Spacing.m)
             .frame(maxWidth: .infinity, alignment: .top)
@@ -39,7 +48,11 @@ struct SessionEmptyView: View {
         .scrollIndicators(.hidden)
         .dismissesKeyboardOnTap()
         .sheet(item: $folderSheetEndpoint) { endpoint in
-            SessionEmptyViewFolderSheet(session: session, endpoint: endpoint)
+            SessionEmptyViewFolderSheet(session: session, endpoint: endpoint).id(session.connectionKey)
+        }
+        .sheet(item: $historyEndpoint) { endpoint in
+            SessionRemoteHistoryView(endpoint: endpoint).id(
+                "\(endpoint.id)|\(endpoint.connectionRevision?.uuidString ?? "")")
         }
         .onAppear {
             handle(folderPickerRequest)

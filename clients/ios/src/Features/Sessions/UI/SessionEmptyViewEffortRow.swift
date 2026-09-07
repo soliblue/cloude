@@ -25,7 +25,9 @@ struct SessionEmptyViewEffortRow: View {
                 SessionActions.setEffort(nil, for: session.id, context: context)
             }
         )
-        let cases = ChatEffort.allCases.map { level in
+        let cases = ChatModelCatalog.shared.efforts(
+            sessionId: session.id, provider: session.provider, model: session.model
+        ).map { level in
             SessionEmptyViewPickerOption(
                 id: level.rawValue,
                 title: level.displayName,

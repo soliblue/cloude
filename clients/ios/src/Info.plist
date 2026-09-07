@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Remote</string>
+	<string>Afto</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -16,17 +16,20 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>cloude</string>
+				<string>afto</string>
 			</array>
 		</dict>
 	</array>
 <key>NSMicrophoneUsageDescription</key>
-	<string>Cloude uses the microphone for voice-to-text input</string>
+	<string>Afto uses the microphone for voice-to-text input</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Afto transcribes voice input on your device so you can send instructions to your agents.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Cloude needs photo access to attach screenshots to your conversations</string>
+	<string>Afto needs photo access to attach screenshots to your conversations</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Cloude uses the camera to scan the pairing QR on your Mac</string>
+	<string>Afto uses the camera to scan the pairing QR for your computer or server</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Cloude connects to Remote CC Daemon on your Mac over your local network</string>
+	<string>Afto connects to your agent daemon on a Mac or Linux server</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

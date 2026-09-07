@@ -25,6 +25,12 @@ struct SessionView: View {
         .sheet(isPresented: $isFilesSheetPresented) {
             FileTreeSheet(session: session)
         }
+        .task(id: "models|\(session.connectionKey)|\(session.providerRaw ?? "")") {
+            await ChatModelService.refresh(session: session)
+            if session.provider == .codex, let endpoint = session.endpoint {
+                await ChatAccountService.refresh(endpoint: endpoint)
+            }
+        }
         .task(id: gitRefreshKey) {
             if session.isConfigured {
                 await GitService.refresh(session: session, context: context)
@@ -32,11 +38,9 @@ struct SessionView: View {
         }
         .safeAreaInset(edge: .top) {
             SessionViewHeader(
+                session: session,
                 selectedTab: selectedTab,
                 isGitSelected: false,
-                sessionId: session.id,
-                isConfigured: session.isConfigured,
-                hasGit: session.hasGit,
                 openSidebar: openSidebar,
                 selectTab: { tab in
                     if tab == .git {
@@ -64,8 +68,8 @@ struct SessionView: View {
     }
 
     private var gitRefreshKey: String {
-        if let endpoint = session.endpoint, let path = session.path, !path.isEmpty {
-            return "\(endpoint.id.uuidString)|\(path)|\(session.lastSeq)"
+        if session.isConfigured {
+            return "\(session.connectionKey)|\(session.lastSeq)"
         }
         return ""
     }

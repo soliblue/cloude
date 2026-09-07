@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AFT0TERM0000000000000001 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = AFT0TERM0000000000000002 /* SwiftTerm */; };
 		C2HL000000000000007FD3E4 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C2HL000000000000017FD3E4 /* HighlightSwift */; };
 		C2MD000000000000007FD3E4 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2MD000000000000017FD3E4 /* MarkdownUI */; };
 /* End PBXBuildFile section */
@@ -44,6 +45,7 @@
 			files = (
 				C2HL000000000000007FD3E4 /* HighlightSwift in Frameworks */,
 				C2MD000000000000007FD3E4 /* MarkdownUI in Frameworks */,
+				AFT0TERM0000000000000001 /* SwiftTerm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +99,7 @@
 			packageProductDependencies = (
 				C2HL000000000000017FD3E4 /* HighlightSwift */,
 				C2MD000000000000017FD3E4 /* MarkdownUI */,
+				AFT0TERM0000000000000002 /* SwiftTerm */,
 			);
 			productName = Cloude;
 			productReference = C2B3BBA02F2619AE007FD3E4 /* Cloude.app */;
@@ -129,6 +132,7 @@
 			packageReferences = (
 				C2HL000000000000027FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
 				C2MD000000000000027FD3E4 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
+				AFT0TERM0000000000000003 /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C2B3BBA12F2619AE007FD3E4 /* Products */;
@@ -289,14 +293,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = src/Cloude.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 180;
+				CURRENT_PROJECT_VERSION = 238;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = src/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Remote CC";
+				INFOPLIST_KEY_CFBundleDisplayName = Afto;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -329,14 +334,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = src/Cloude.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 180;
+				CURRENT_PROJECT_VERSION = 238;
 				DEVELOPMENT_TEAM = Q9U8224WWM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = src/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Remote CC";
+				INFOPLIST_KEY_CFBundleDisplayName = Afto;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -388,6 +394,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AFT0TERM0000000000000003 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.20.0;
+			};
+		};
 		C2HL000000000000027FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/appstefan/HighlightSwift.git";
@@ -407,6 +421,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AFT0TERM0000000000000002 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AFT0TERM0000000000000003 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
 		C2HL000000000000017FD3E4 /* HighlightSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C2HL000000000000027FD3E4 /* XCRemoteSwiftPackageReference "HighlightSwift" */;

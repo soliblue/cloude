@@ -4,17 +4,14 @@ import WebKit
 struct FilePreviewHTML: UIViewRepresentable {
     let data: Data
 
+    func makeCoordinator() -> FilePreviewHTMLController { FilePreviewHTMLController() }
+
     func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
-        let prefs = WKWebpagePreferences()
-        prefs.allowsContentJavaScript = false
-        config.defaultWebpagePreferences = prefs
-        let view = WKWebView(frame: .zero, configuration: config)
-        if let html = String(data: data, encoding: .utf8) {
-            view.loadHTMLString(html, baseURL: nil)
-        }
-        return view
+        context.coordinator.view.accessibilityLabel = "Offline HTML preview"
+        return context.coordinator.view
     }
 
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
+    func updateUIView(_ uiView: WKWebView, context: Context) { context.coordinator.load(data) }
+
+    static func dismantleUIView(_ uiView: WKWebView, coordinator: FilePreviewHTMLController) { coordinator.stop() }
 }

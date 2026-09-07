@@ -4,6 +4,7 @@ import UIKit
 struct ChatViewMessageListRowMarkdownBlockCode: View {
     let code: String
     let language: String?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage(StorageKey.wrapCodeLines) private var defaultWrap = true
     @Environment(\.theme) private var theme
     @State private var wrapOverride: Bool?
@@ -39,8 +40,10 @@ struct ChatViewMessageListRowMarkdownBlockCode: View {
                 .appFont(size: ThemeTokens.Text.s)
                 .frame(width: ThemeTokens.Text.s, height: ThemeTokens.Text.s)
                 .foregroundStyle(ThemeColor.secondary)
-                .contentTransition(.symbolEffect(.replace))
+                .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
             }
+            .accessibilityLabel(wrap ? "Disable code wrapping" : "Wrap code lines")
+            .accessibilityValue(wrap ? "Wrapping on" : "Wrapping off")
             Divider().frame(height: ThemeTokens.Text.s)
             Button {
                 UIPasteboard.general.string = code
@@ -53,8 +56,9 @@ struct ChatViewMessageListRowMarkdownBlockCode: View {
                     .appFont(size: ThemeTokens.Text.s)
                     .frame(width: ThemeTokens.Text.s, height: ThemeTokens.Text.s)
                     .foregroundStyle(copied ? ThemeColor.success : ThemeColor.secondary)
-                    .contentTransition(.symbolEffect(.replace))
+                    .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
             }
+            .accessibilityLabel(copied ? "Code copied" : "Copy code")
         }
         .padding(.horizontal, ThemeTokens.Spacing.m)
         .padding(.vertical, ThemeTokens.Spacing.s)
@@ -64,15 +68,17 @@ struct ChatViewMessageListRowMarkdownBlockCode: View {
         if wrap {
             HStack(alignment: .top, spacing: 0) {
                 Text(ChatMarkdownSyntaxHighlighter.highlight(code, language: language))
+                    .textSelection(.enabled)
                     .appFont(size: ThemeTokens.Text.s, design: .monospaced)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(ThemeTokens.Spacing.m)
             }
         } else {
-            ScrollView(.horizontal, showsIndicators: false) {
+            ScrollView(.horizontal, showsIndicators: true) {
                 HStack(alignment: .top, spacing: 0) {
                     Text(ChatMarkdownSyntaxHighlighter.highlight(code, language: language))
+                        .textSelection(.enabled)
                         .appFont(size: ThemeTokens.Text.s, design: .monospaced)
                         .fixedSize(horizontal: true, vertical: false)
                         .padding(ThemeTokens.Spacing.m)

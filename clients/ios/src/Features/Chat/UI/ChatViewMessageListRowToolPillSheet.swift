@@ -4,6 +4,7 @@ import SwiftUI
 
 struct ChatViewMessageListRowToolPillSheet: View {
     let session: Session
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let toolCall: ChatToolCall
     @Environment(\.dismiss) private var dismiss
     @Environment(\.filePreviewPresenter) private var presenter
@@ -47,6 +48,7 @@ struct ChatViewMessageListRowToolPillSheet: View {
                             .appFont(size: ThemeTokens.Text.m, weight: .medium)
                             .foregroundColor(ThemeColor.secondary)
                     }
+                    .accessibilityLabel("Close tool details")
                 }
             }
             .themedNavChrome()
@@ -71,14 +73,15 @@ struct ChatViewMessageListRowToolPillSheet: View {
         .background(tint.opacity(ThemeTokens.Opacity.s))
         .clipShape(Capsule())
         .overlay {
-            if toolCall.state == .pending {
+            if toolCall.state == .pending && !reduceMotion {
                 ChatViewMessageListRowToolPillListRowShimmer(phase: shimmerPhase, tint: tint)
                     .clipShape(Capsule())
                     .transition(.opacity)
             }
         }
-        .onAppear {
-            if toolCall.state == .pending {
+        .task(id: reduceMotion) {
+            shimmerPhase = -1
+            if toolCall.state == .pending && !reduceMotion {
                 withAnimation(.easeInOut(duration: 2.13).repeatForever(autoreverses: true)) {
                     shimmerPhase = 1.5
                 }
@@ -93,7 +96,9 @@ struct ChatViewMessageListRowToolPillSheet: View {
 
     @ViewBuilder
     private var primaryContent: some View {
-        if let todos = toolCall.todoItems {
+        if !toolCall.fileChanges.isEmpty {
+            ChatViewMessageListRowToolPillSheetFileChanges(session: session, toolCall: toolCall)
+        } else if let todos = toolCall.todoItems {
             ChatViewMessageListRowToolPillSheetTodoList(items: todos)
         } else if !toolCall.editPairs.isEmpty {
             if let path = toolCall.filePath {
@@ -128,8 +133,10 @@ struct ChatViewMessageListRowToolPillSheet: View {
                 ChatViewMessageListRowToolPillSheetGlob(toolCall: toolCall)
             case .web:
                 ChatViewMessageListRowToolPillSheetWeb(toolCall: toolCall)
+            case .image:
+                ChatImageGenerationView(session: session, toolCall: toolCall)
             case .task:
-                ChatViewMessageListRowToolPillSheetAgent(toolCall: toolCall)
+                ChatViewMessageListRowToolPillSheetAgent(session: session, toolCall: toolCall)
             default:
                 inputSection
             }
@@ -192,8 +199,8 @@ struct ChatViewMessageListRowToolPillSheet: View {
     }
 
     private var handlesOutputInline: Bool {
-        toolCall.kind == .read || toolCall.kind == .task || toolCall.todoItems != nil
-            || toolCall.showsDiff
+        toolCall.kind == .read || toolCall.kind == .task || toolCall.kind == .image || toolCall.todoItems != nil
+            || toolCall.showsDiff || !toolCall.fileChanges.isEmpty
     }
 
     private var language: String {

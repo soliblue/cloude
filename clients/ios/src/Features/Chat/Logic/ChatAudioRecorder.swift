@@ -6,20 +6,41 @@ import Foundation
 final class ChatAudioRecorder {
     private(set) var isRecording = false
     var level: CGFloat = 0
+    private var permission: CheckedContinuation<Bool, Never>?
+    private var permissionGeneration: UUID?
     private var recorder: AVAudioRecorder?
     private var meterTimer: Timer?
     private let url = FileManager.default.temporaryDirectory.appendingPathComponent(
-        "cloude-recording.wav")
+        "afto-recording-\(UUID().uuidString).wav")
 
     func requestPermission() async -> Bool {
-        await withCheckedContinuation { continuation in
-            AVAudioApplication.requestRecordPermission { granted in
-                continuation.resume(returning: granted)
+        if let permissionGeneration { finishPermission(false, generation: permissionGeneration) }
+        let generation = UUID()
+        permissionGeneration = generation
+        return await withTaskCancellationHandler {
+            if Task.isCancelled { return false }
+            return await withCheckedContinuation { continuation in
+                permission = continuation
+                AVAudioApplication.requestRecordPermission { [weak self] granted in
+                    Task { @MainActor [weak self] in self?.finishPermission(granted, generation: generation) }
+                }
             }
+        } onCancel: {
+            Task { @MainActor in self.finishPermission(false, generation: generation) }
+        }
+    }
+
+    private func finishPermission(_ allowed: Bool, generation: UUID) {
+        if permissionGeneration == generation {
+            permissionGeneration = nil
+            let continuation = permission
+            permission = nil
+            continuation?.resume(returning: allowed)
         }
     }
 
     func start() {
+        if isRecording { return }
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playAndRecord, mode: .default)
         try? session.setActive(true)
@@ -36,12 +57,13 @@ final class ChatAudioRecorder {
         if recorder?.record() == true {
             isRecording = true
             meterTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
-                Task { @MainActor in self?.updateLevel() }
+                Task { @MainActor [weak self] in self?.updateLevel() }
             }
         }
     }
 
     func stop() -> Data? {
+        defer { try? FileManager.default.removeItem(at: url) }
         meterTimer?.invalidate()
         meterTimer = nil
         recorder?.stop()

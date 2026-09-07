@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import health, macs
+from app.api import health, macs, push
 from app.core.config import settings
 from app.db.schema import init_db
 
@@ -16,6 +16,8 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router)
     app.include_router(macs.router)
+    app.include_router(push.router)
+    app.include_router(push.notifications_router)
     return app
 
 

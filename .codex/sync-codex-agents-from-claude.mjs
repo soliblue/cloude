@@ -220,5 +220,5 @@ function toTomlArray(values) {
 }
 
 function toTomlMultilineString(value) {
-  return `"""\n${value.replaceAll('"""', '\\"\\"\\"')}\n"""`
+  return `"""\n${value.replaceAll('\\', '\\\\').replaceAll('"""', '\\"\\"\\"')}\n"""`
 }

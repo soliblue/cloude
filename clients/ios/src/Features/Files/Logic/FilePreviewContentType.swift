@@ -52,7 +52,7 @@ enum FilePreviewContentType {
     private static func detect(ext: String, mimeType: String?) -> FilePreviewContentType {
         switch ext {
         case "gif": return .gif
-        case "png", "jpg", "jpeg", "webp", "heic", "heif", "bmp", "tiff", "svg":
+        case "png", "jpg", "jpeg", "webp", "heic", "heif", "bmp", "tiff":
             return .image
         case "mp4", "mov", "m4v", "avi", "webm", "mkv":
             return .video
@@ -62,7 +62,7 @@ enum FilePreviewContentType {
         case "md", "markdown": return .markdown
         case "json": return .json
         case "csv", "tsv": return .csv
-        case "html", "htm": return .html
+        case "html", "htm", "svg": return .html
         case "yaml", "yml": return .code(language: "yaml")
         case "swift": return .code(language: "swift")
         case "py": return .code(language: "python")

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChatViewMessageListGroupRetryButton: View {
     let message: ChatMessage
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.modelContext) private var modelContext
     @State private var isVisuallyRetrying = false
     @State private var retryStartedAt: Date?
@@ -13,9 +14,10 @@ struct ChatViewMessageListGroupRetryButton: View {
             icon
                 .font(.system(size: ThemeTokens.Icon.l))
                 .foregroundColor(isVisuallyRetrying ? ThemeColor.gray : ThemeColor.danger)
-                .contentTransition(.symbolEffect(.replace))
+                .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace))
                 .frame(width: ThemeTokens.Icon.l, height: ThemeTokens.Icon.l)
         }
+        .accessibilityLabel(message.shellCommand == nil ? "Retry message" : "Run command again")
         .buttonStyle(.plain)
         .disabled(isVisuallyRetrying)
         .onAppear { isVisuallyRetrying = message.state == .retrying }
@@ -37,7 +39,7 @@ struct ChatViewMessageListGroupRetryButton: View {
     @ViewBuilder private var icon: some View {
         if isVisuallyRetrying {
             Image(systemName: "arrow.clockwise")
-                .symbolEffect(.rotate, options: .repeat(.continuous))
+                .symbolEffect(.rotate, options: .repeat(.continuous), isActive: !reduceMotion)
         } else {
             Image(systemName: "exclamationmark.circle.fill")
         }

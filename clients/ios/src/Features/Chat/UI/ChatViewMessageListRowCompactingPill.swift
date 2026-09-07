@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ChatViewMessageListRowCompactingPill: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isSpinning = false
 
     var body: some View {
@@ -8,9 +9,9 @@ struct ChatViewMessageListRowCompactingPill: View {
         HStack(spacing: ThemeTokens.Spacing.xs) {
             Image(systemName: "arrow.triangle.2.circlepath")
                 .appFont(size: ThemeTokens.Text.s)
-                .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                .rotationEffect(.degrees(isSpinning && !reduceMotion ? 360 : 0))
                 .animation(
-                    .linear(duration: 1.5).repeatForever(autoreverses: false),
+                    reduceMotion ? nil : .linear(duration: 1.5).repeatForever(autoreverses: false),
                     value: isSpinning
                 )
             Text("Compacting")
@@ -23,6 +24,7 @@ struct ChatViewMessageListRowCompactingPill: View {
             .regular.tint(tint.opacity(ThemeTokens.Opacity.m)).interactive(),
             in: Capsule()
         )
-        .onAppear { isSpinning = true }
+        .onAppear { isSpinning = !reduceMotion }
+        .onChange(of: reduceMotion) { _, reduced in isSpinning = !reduced }
     }
 }

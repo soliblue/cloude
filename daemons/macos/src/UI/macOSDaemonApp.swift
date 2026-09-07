@@ -9,6 +9,7 @@ struct MacOSDaemonApp: App {
         SleepPreventionService.shared.applyStoredPreference()
         server = HTTPServer()
         server.start()
+        PushDelivery.shared.start()
         if !UserDefaults.standard.bool(forKey: FolderAccessProbeService.grantedKey) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 FolderAccessProbeService.shared.request()

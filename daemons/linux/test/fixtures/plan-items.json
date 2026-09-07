@@ -1,0 +1,8 @@
+[
+  {"method":"item/started","params":{"threadId":"thread-1","turnId":"turn-1","item":{"type":"plan","id":"plan-a","text":""}}},
+  {"method":"item/plan/delta","params":{"threadId":"thread-1","turnId":"turn-1","itemId":"plan-a","delta":"Inspect first, then change everything."}},
+  {"method":"item/started","params":{"threadId":"thread-1","turnId":"turn-1","item":{"type":"plan","id":"plan-b","text":"Alternative approach"}}},
+  {"method":"item/plan/delta","params":{"threadId":"thread-1","turnId":"turn-1","itemId":"plan-b","delta":" with an isolated test."}},
+  {"method":"item/completed","params":{"threadId":"thread-1","turnId":"turn-1","item":{"type":"plan","id":"plan-a","text":"Inspect the parser and change only the failing branch."}}},
+  {"method":"item/completed","params":{"threadId":"thread-1","turnId":"turn-1","item":{"type":"plan","id":"plan-b","text":"Add one regression test before editing."}}}
+]

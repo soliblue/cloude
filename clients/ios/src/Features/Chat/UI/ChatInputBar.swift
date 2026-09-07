@@ -4,6 +4,7 @@ import SwiftUI
 struct ChatInputBar: View, Equatable {
     let sessionId: UUID
     let isStreaming: Bool
+    let provider: ChatProvider
     let model: ChatModel?
     let effort: ChatEffort?
     let permissionMode: ChatPermissionMode
@@ -17,15 +18,18 @@ struct ChatInputBar: View, Equatable {
     @State private var suggestions: [ChatInputSuggestion] = []
     @State private var fileSearchTask: Task<Void, Never>?
     @State private var recorder = ChatAudioRecorder()
-    @State private var isTranscribing = false
+    @State private var voice = ChatVoiceStore()
+    @State private var isOnScreen = false
+    @Environment(\.scenePhase) private var scenePhase
     @State private var traceId = String(UUID().uuidString.prefix(6))
-    @FocusState private var focused: Bool
+    @State private var focused = false
     @Environment(\.appAccent) private var appAccent
     @Environment(\.modelContext) private var context
 
     static func == (lhs: ChatInputBar, rhs: ChatInputBar) -> Bool {
         lhs.sessionId == rhs.sessionId
             && lhs.isStreaming == rhs.isStreaming
+            && lhs.provider == rhs.provider
             && lhs.model == rhs.model
             && lhs.effort == rhs.effort
             && lhs.permissionMode == rhs.permissionMode
@@ -37,6 +41,7 @@ struct ChatInputBar: View, Equatable {
     init(
         sessionId: UUID,
         isStreaming: Bool,
+        provider: ChatProvider = .claude,
         model: ChatModel?,
         effort: ChatEffort?,
         permissionMode: ChatPermissionMode = .bypassPermissions,
@@ -46,6 +51,7 @@ struct ChatInputBar: View, Equatable {
     ) {
         self.sessionId = sessionId
         self.isStreaming = isStreaming
+        self.provider = provider
         self.model = model
         self.effort = effort
         self.permissionMode = permissionMode
@@ -71,21 +77,22 @@ struct ChatInputBar: View, Equatable {
                     focused = true
                 }
             }
-            if recorder.isRecording || isTranscribing {
+            if recorder.isRecording || voice.isTranscribing {
                 ChatInputBarRecordingOverlay(
-                    level: recorder.level, isTranscribing: isTranscribing, onStop: stopRecording)
+                    level: recorder.level, isTranscribing: voice.isTranscribing, onStop: stopRecording)
             } else {
                 VStack(spacing: 0) {
                     HStack(alignment: .center, spacing: 0) {
                         if !focused {
                             ChatInputBarAttachmentPicker(sessionId: sessionId, images: $images)
                         }
-                        TextField("Message", text: $draft, axis: .vertical)
-                            .appFont(size: ThemeTokens.Text.m)
-                            .lineLimit(1...6)
-                            .focused($focused)
-                            .padding(.horizontal, ThemeTokens.Spacing.m)
-                            .padding(.vertical, ThemeTokens.Spacing.m)
+                        LiteralTextField(
+                            title: "Message", text: $draft,
+                            focused: Binding(get: { focused }, set: { focused = $0 }),
+                            lines: 1...6, fontSize: ThemeTokens.Text.m
+                        )
+                        .padding(.horizontal, ThemeTokens.Spacing.m)
+                        .padding(.vertical, ThemeTokens.Spacing.m)
                         if !focused {
                             trailingButton
                         }
@@ -95,6 +102,7 @@ struct ChatInputBar: View, Equatable {
                             ChatInputBarAttachmentPicker(sessionId: sessionId, images: $images)
                             ChatInputBarMetaRow(
                                 sessionId: sessionId,
+                                provider: provider,
                                 model: model,
                                 effort: effort,
                                 permissionMode: permissionMode,
@@ -116,16 +124,44 @@ struct ChatInputBar: View, Equatable {
         .padding(.bottom, ThemeTokens.Spacing.s)
         .animation(.easeOut(duration: ThemeTokens.Duration.s), value: focused)
         .onAppear {
+            isOnScreen = true
+            voice.isVisible = scenePhase == .active
             AppLogger.uiInfo(
                 "chatInput appear trace=\(traceId) session=\(sessionId.uuidString) enabled=\(enabled)"
             )
-            draft = ChatDraftStore.text(for: sessionId)
+            if draft != ChatDraftStore.text(for: sessionId) {
+                bypassPasteDetection = true
+                draft = ChatDraftStore.text(for: sessionId)
+            }
             images = ChatDraftStore.images(for: sessionId)
             pastedTexts = ChatDraftStore.pastedTexts(for: sessionId)
         }
+        .task(id: sessionId) {
+            let initialText = draft
+            let initialImages = images
+            let initialPastes = pastedTexts
+            await ChatDraftService.load(sessionId)
+            if !Task.isCancelled {
+                if draft == initialText && draft != ChatDraftStore.text(for: sessionId) {
+                    bypassPasteDetection = true
+                    draft = ChatDraftStore.text(for: sessionId)
+                }
+                if images == initialImages { images = ChatDraftStore.images(for: sessionId) }
+                if pastedTexts == initialPastes { pastedTexts = ChatDraftStore.pastedTexts(for: sessionId) }
+            }
+        }
         .onDisappear {
             AppLogger.uiInfo("chatInput disappear trace=\(traceId) session=\(sessionId.uuidString)")
-            if recorder.isRecording { stopRecording() }
+            isOnScreen = false
+            ChatVoiceService.cancel(recorder: recorder, store: voice, onError: presentInputError)
+            ChatDraftService.flushForBackground()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                voice.isVisible = isOnScreen
+            } else if phase == .background {
+                ChatVoiceService.cancel(recorder: recorder, store: voice, onError: presentInputError)
+            }
         }
         .onChange(of: draft) { oldValue, value in
             let bypass = bypassPasteDetection
@@ -134,15 +170,15 @@ struct ChatInputBar: View, Equatable {
                 pastedTexts.append(paste.text)
                 draft = paste.remaining
             } else {
-                ChatDraftStore.setText(value, for: sessionId)
+                ChatDraftService.setText(value, for: sessionId)
                 recomputeSuggestions()
             }
         }
         .onChange(of: images) { _, value in
-            ChatDraftStore.setImages(value, for: sessionId)
+            ChatDraftService.setImages(value, for: sessionId)
         }
         .onChange(of: pastedTexts) { _, value in
-            ChatDraftStore.setPastedTexts(value, for: sessionId)
+            ChatDraftService.setPastedTexts(value, for: sessionId)
         }
         .onChange(of: focused) { oldValue, newValue in
             AppLogger.uiInfo(
@@ -153,20 +189,9 @@ struct ChatInputBar: View, Equatable {
 
     @ViewBuilder
     private var trailingButton: some View {
+        if isStreaming && canSend { stopButton }
         if isStreaming && !canSend {
-            Button {
-                ChatService.abort(sessionId: sessionId, context: context)
-            } label: {
-                Image(systemName: "stop.circle.fill")
-                    .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.white, appAccent.color)
-                    .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
-                    .padding(.vertical, ThemeTokens.Spacing.s)
-                    .padding(.horizontal, ThemeTokens.Spacing.m)
-                    .contentShape(Circle())
-            }
-            .buttonStyle(.plain)
+            stopButton
         } else if canRecord {
             Image(systemName: "mic.fill")
                 .appFont(size: ThemeTokens.Text.l, weight: .medium)
@@ -176,6 +201,9 @@ struct ChatInputBar: View, Equatable {
                 .padding(.horizontal, ThemeTokens.Spacing.m)
                 .contentShape(Circle())
                 .gesture(recordGesture)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("Record voice instruction")
+                .accessibilityAction { startRecording() }
         } else {
             Menu {
                 sendMenu
@@ -195,13 +223,32 @@ struct ChatInputBar: View, Equatable {
                 send()
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isStreaming ? "Queue message for agent" : "Send message to agent")
+            .accessibilityHint("Double tap to send. Open the menu to choose model and reasoning effort.")
             .disabled(!enabled)
         }
     }
 
+    private var stopButton: some View {
+        Button {
+            ChatService.abort(sessionId: sessionId, context: context)
+        } label: {
+            Image(systemName: "stop.circle.fill")
+                .font(.system(size: ThemeTokens.Icon.xl, weight: .bold))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, appAccent.color)
+                .frame(width: ThemeTokens.Icon.xl, height: ThemeTokens.Icon.xl)
+                .padding(.vertical, ThemeTokens.Spacing.s)
+                .padding(.horizontal, ThemeTokens.Spacing.m)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Stop active agent turn")
+    }
+
     @ViewBuilder
     private var sendMenu: some View {
-        ChatInputBarModelMenu(sessionId: sessionId, model: model, effort: effort)
+        ChatInputBarModelMenu(sessionId: sessionId, provider: provider, model: model, effort: effort)
     }
 
     private func send() {
@@ -211,21 +258,39 @@ struct ChatInputBar: View, Equatable {
             let prompt = (pastedTexts + [trimmed]).filter { !$0.isEmpty }
                 .joined(separator: "\n\n")
             if ChatService.send(
-                sessionId: sessionId, prompt: prompt, images: pendingImages, context: context)
+                sessionId: sessionId, prompt: prompt, images: pendingImages,
+                references: ChatDraftStore.references(for: sessionId).filter {
+                    prompt.contains($0.path) || prompt.contains("/" + $0.name)
+                }, context: context)
             {
                 focused = false
                 draft = ""
                 images = []
                 pastedTexts = []
                 suggestions = []
-                ChatDraftStore.setText("", for: sessionId)
-                ChatDraftStore.setImages([], for: sessionId)
-                ChatDraftStore.setPastedTexts([], for: sessionId)
+                ChatDraftService.clear(sessionId)
             }
         }
     }
 
     private func applySuggestion(_ suggestion: ChatInputSuggestion) {
+        if provider == .codex {
+            if suggestion.kind == .skill,
+                let skill = SessionManifestStore.shared.skills(for: sessionId).first(where: {
+                    $0.name == suggestion.title
+                }), let path = skill.path
+            {
+                ChatDraftService.addReference(
+                    ChatReference(name: skill.name, path: path, kind: "skill"), for: sessionId)
+            }
+            if suggestion.kind == .file {
+                ChatDraftService.addReference(
+                    ChatReference(
+                        name: suggestion.title,
+                        path: suggestion.insertText.trimmingCharacters(in: .whitespacesAndNewlines), kind: "mention"),
+                    for: sessionId)
+            }
+        }
         draft = ChatInputAutocomplete.apply(suggestion, to: draft)
         suggestions = []
         focused = true
@@ -280,8 +345,8 @@ struct ChatInputBar: View, Equatable {
 
     private var canRecord: Bool {
         enabled && draft.isEmpty && images.isEmpty && pastedTexts.isEmpty
-            && SessionManifestStore.shared.transcriptionReady(for: sessionId)
-            && !recorder.isRecording && !isTranscribing
+            && (SessionManifestStore.shared.transcriptionReady(for: sessionId) || ChatLocalTranscription.available)
+            && !recorder.isRecording && !voice.isTranscribing && !voice.isRequestingPermission
     }
 
     private var recordGesture: some Gesture {
@@ -295,49 +360,19 @@ struct ChatInputBar: View, Equatable {
     }
 
     private func startRecording() {
-        Task {
-            if await recorder.requestPermission() {
-                recorder.start()
-                if !recorder.isRecording {
-                    presentInputError("Couldn't start recording", "Check microphone access.")
-                }
-            } else {
-                presentInputError(
-                    "Microphone access needed", "Enable it in Settings to use voice input.")
-            }
-        }
+        ChatVoiceService.start(recorder: recorder, store: voice, onError: presentInputError)
     }
 
     private func stopRecording() {
-        guard let data = recorder.stop(), !data.isEmpty else {
-            presentInputError("Nothing recorded", "No audio was captured, try again.")
-            isTranscribing = false
-            return
-        }
-        let descriptor = FetchDescriptor<Session>(
-            predicate: #Predicate<Session> { $0.id == sessionId })
-        guard let session = try? context.fetch(descriptor).first, let endpoint = session.endpoint
-        else {
-            presentInputError("Not connected", "Connect this session's endpoint to transcribe.")
-            isTranscribing = false
-            return
-        }
-        isTranscribing = true
-        Task {
-            let text = await ChatTranscriptionService.transcribe(
-                endpoint: endpoint, sessionId: sessionId, audio: data)
-            if let text, !text.isEmpty {
+        let descriptor = FetchDescriptor<Session>(predicate: #Predicate { $0.id == sessionId })
+        ChatVoiceService.stop(
+            recorder: recorder, store: voice, session: try? context.fetch(descriptor).first,
+            onText: { text in
+                let combined = draft.isEmpty ? text : draft + " " + text
+                ChatDraftService.setText(combined, for: sessionId)
                 bypassPasteDetection = true
-                draft = draft.isEmpty ? text : draft + " " + text
-                let stored = ChatDraftStore.text(for: sessionId)
-                ChatDraftStore.setText(stored.isEmpty ? text : stored + " " + text, for: sessionId)
-            } else if text == nil {
-                presentInputError("Transcription failed", "Couldn't reach the transcription service.")
-            } else {
-                presentInputError("No speech detected", "That clip didn't contain any words.")
-            }
-            isTranscribing = false
-        }
+                draft = combined
+            }, onError: presentInputError)
     }
 
     private func presentInputError(_ title: String, _ message: String) {

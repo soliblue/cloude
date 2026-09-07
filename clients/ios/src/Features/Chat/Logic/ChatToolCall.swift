@@ -15,7 +15,9 @@ final class ChatToolCall {
     var stateRaw: String
     var order: Int
     var parentToolUseId: String?
-    @Transient private var cachedInput: [String: Any]?
+    @Transient var cachedInput: [String: Any]?
+    @Transient var cachedResultText: String?
+    @Transient var cachedResultValue: Any?
 
     init(
         id: String,
@@ -52,6 +54,7 @@ final class ChatToolCall {
         return kind.symbol
     }
     var displayName: String {
+        if kind == .image { return "Image generation" }
         if kind == .task, let subagent = parsedInput["subagent_type"] as? String, !subagent.isEmpty {
             return subagent
         }
@@ -63,7 +66,18 @@ final class ChatToolCall {
     }
 
     var shortLabel: String {
+        if kind == .image {
+            return state == .pending ? "Generating image" : state == .failed ? "Image failed" : "Generated image"
+        }
+        if kind == .task {
+            let label = ChatAgentActivity.label(parsedInput.merging(parsedResult) { _, result in result })
+            return label.count > 32 ? String(label.prefix(32)) + "…" : label
+        }
         if kind == .skill { return displayName }
+        if kind == .edit, !fileChanges.isEmpty {
+            return fileChanges.count == 1
+                ? (fileChanges[0].path as NSString).lastPathComponent : "\(fileChanges.count) files"
+        }
         let trimmed = inputSummary.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return name }
         switch kind {
@@ -79,12 +93,42 @@ final class ChatToolCall {
     }
 
     nonisolated static func summarize(name: String, input: [String: Any]) -> String {
+        if ChatToolKind(name: name) == .image { return "Image generation" }
+        if ChatToolKind(name: name) == .task { return ChatAgentActivity.label(input) }
         let keys = ["command", "file_path", "path", "pattern", "query", "url", "description"]
         for key in keys {
             if let value = input[key] as? String, !value.isEmpty { return value }
         }
         if let first = input.first, let string = first.value as? String { return string }
         return name
+    }
+
+    var webSources: [ChatWebSource] {
+        var seen: Set<String> = []
+        return (ChatWebSource.collect(parsedInput) + ChatWebSource.collect(parsedResult)).filter {
+            seen.insert($0.id).inserted
+        }
+    }
+
+    var parsedResult: [String: Any] {
+        decodedResult as? [String: Any] ?? [:]
+    }
+
+    var decodedResult: Any? {
+        if cachedResultText != result {
+            cachedResultText = result
+            cachedResultValue = result.flatMap { try? JSONSerialization.jsonObject(with: Data($0.utf8)) }
+        }
+        return cachedResultValue
+    }
+
+    var fileChanges: [ChatFileChange] {
+        (decodedResult as? [[String: Any]] ?? parsedResult["changes"] as? [[String: Any]]
+            ?? parsedInput["changes"] as? [[String: Any]] ?? []).compactMap(ChatFileChange.init)
+    }
+
+    var agentActivities: [ChatAgentActivity] {
+        ChatAgentActivity.collect(input: parsedInput, result: parsedResult)
     }
 
     var filePath: String? {
@@ -101,10 +145,12 @@ final class ChatToolCall {
 
     var todoItems: [ChatTodoItem]? {
         if case .todo = kind {} else { return nil }
-        let list = (parsedInput["todos"] as? [[String: Any]]) ?? (parsedInput["items"] as? [[String: Any]])
+        let list =
+            (parsedInput["todos"] as? [[String: Any]]) ?? (parsedInput["items"] as? [[String: Any]])
+            ?? (parsedInput["plan"] as? [[String: Any]])
         return list?.map {
             ChatTodoItem(
-                content: $0["content"] as? String ?? "",
+                content: $0["content"] as? String ?? $0["step"] as? String ?? "",
                 status: ChatTodoItem.Status(rawValue: $0["status"] as? String ?? "pending") ?? .pending
             )
         }

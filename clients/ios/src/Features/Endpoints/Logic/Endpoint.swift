@@ -16,13 +16,23 @@ final class Endpoint {
     var lastCheckReachable: Bool?
     var daemonVersion: String?
     var daemonPlatform: String?
+    var supportsCodex: Bool? = nil
+    var schemeRaw: String? = nil
+    var capabilities: [String]? = nil
+    var connectionRevision: UUID? = nil
+
+    var cacheId: UUID { connectionRevision ?? id }
+
+    var supportsGitMutations: Bool { capabilities?.contains("gitMutations") == true }
+    var supportsGitWorktrees: Bool { capabilities?.contains("gitWorktrees") == true }
 
     init(
         id: UUID = UUID(),
         host: String = "",
         port: Int = 8765,
         name: String? = nil,
-        symbolName: String = Endpoint.defaultSymbol
+        symbolName: String = Endpoint.defaultSymbol,
+        scheme: String? = nil
     ) {
         self.id = id
         self.host = host
@@ -30,6 +40,7 @@ final class Endpoint {
         self.name = name
         self.symbolName = symbolName
         self.createdAt = .now
+        self.schemeRaw = scheme
     }
 
     var displayName: String {
@@ -45,4 +56,6 @@ final class Endpoint {
     var addressLabel: String {
         host.isEmpty ? "No host" : "\(host):\(port)"
     }
+
+    var transportScheme: String { schemeRaw ?? (port == 443 ? "https" : "http") }
 }

@@ -6,6 +6,10 @@ struct GitDiffSheet: View {
     let target: GitDiffTarget
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
+    @Environment(\.modelContext) private var context
+    @State private var isUpdatingIndex = false
+    @State private var operationError: String?
+    @State private var loadFailed = false
     @State private var lines: [GitDiffLine] = []
     @State private var truncatedFromLines: Int?
     @State private var isLoading = true
@@ -37,12 +41,47 @@ struct GitDiffSheet: View {
             .background(theme.palette.background)
             .overlay {
                 if isLoading { ProgressView() }
+                if loadFailed && lines.isEmpty && !isLoading {
+                    ContentUnavailableView {
+                        Label("Diff unavailable", systemImage: "wifi.exclamationmark")
+                    } description: {
+                        Text("Check your server connection and try again.")
+                    } actions: {
+                        Button("Try again") { Task { await load(isFull: false) } }
+                            .buttonStyle(.bordered)
+                    }
+                }
             }
             .searchable(text: $search, prompt: "Search diff")
             .navigationTitle(target.path)
             .navigationBarTitleDisplayMode(.inline)
             .themedNavChrome()
             .toolbar {
+                if session.endpoint?.supportsGitMutations == true {
+                    ToolbarItem(placement: .bottomBar) {
+                        Button {
+                            Task {
+                                isUpdatingIndex = true
+                                operationError = await GitMutationService.perform(
+                                    target.isStaged ? "unstage" : "stage", session: session,
+                                    files: [target.path], context: context)
+                                isUpdatingIndex = false
+                                if operationError == nil { dismiss() }
+                            }
+                        } label: {
+                            if isUpdatingIndex {
+                                ProgressView()
+                            } else {
+                                Label(
+                                    target.isStaged ? "Unstage file" : "Stage file",
+                                    systemImage: target.isStaged ? "minus.circle" : "plus.circle"
+                                )
+                                .labelStyle(.titleAndIcon)
+                            }
+                        }
+                        .disabled(isUpdatingIndex)
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         dismiss()
@@ -62,6 +101,14 @@ struct GitDiffSheet: View {
                 }
             }
             .task { await load(isFull: false) }
+            .alert(
+                "Git request failed",
+                isPresented: Binding(get: { operationError != nil }, set: { if !$0 { operationError = nil } })
+            ) {
+                Button("OK") { operationError = nil }
+            } message: {
+                Text(operationError ?? "")
+            }
         }
         .presentationBackground(theme.palette.background)
         .preferredColorScheme(theme.palette.colorScheme)
@@ -89,16 +136,24 @@ struct GitDiffSheet: View {
     }
 
     private func load(isFull: Bool) async {
-        if isFull { isFullLoading = true }
+        if isFull { isFullLoading = true } else { isLoading = true }
+        loadFailed = false
         if let endpoint = session.endpoint, let path = session.path {
             let result = await GitService.diff(
                 endpoint: endpoint, session: session, path: path,
                 file: target.path, isStaged: target.isStaged, isFull: isFull
             )
             if let result {
-                lines = GitDiffParser.parse(result.text)
+                lines = await GitService.parseDiff(result.text)
                 truncatedFromLines = isFull ? nil : result.truncatedFromLines
+            } else {
+                loadFailed = true
+                if isFull {
+                    operationError = "The full diff could not be loaded. Check your server connection and try again."
+                }
             }
+        } else {
+            loadFailed = true
         }
         isLoading = false
         isFullLoading = false

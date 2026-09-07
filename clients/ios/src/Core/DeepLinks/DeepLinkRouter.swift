@@ -4,8 +4,8 @@ import SwiftData
 enum DeepLinkRouter {
     @MainActor
     static func handle(_ url: URL, container: ModelContainer) {
-        if url.scheme == "cloude", let host = url.host {
-            AppLogger.bootstrapInfo("deeplink url=\(url.absoluteString)")
+        if ["cloude", "afto"].contains(url.scheme ?? ""), let host = url.host {
+            AppLogger.bootstrapInfo("deeplink host=\(host) path=\(url.path)")
             let path = url.path
             let context = container.mainContext
             switch host {
@@ -49,6 +49,10 @@ enum DeepLinkRouter {
     private static func handleSession(path: String, url: URL, context: ModelContext) {
         if let session = focusedSession(context: context) {
             switch path {
+            case "/provider":
+                if let value = url.queryValue("value"), let provider = ChatProvider(rawValue: value) {
+                    SessionActions.setProvider(provider, for: session)
+                }
             case "/endpoint":
                 if let idString = url.queryValue("id"), let id = UUID(uuidString: idString),
                     let endpoint = fetchEndpoint(id: id, context: context)

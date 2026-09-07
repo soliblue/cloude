@@ -33,7 +33,7 @@ final class OnboardingStore {
                 host: draft.host,
                 port: draft.port,
                 authKey: draft.token,
-                retryWindow: 6
+                retryWindow: 6, scheme: draft.scheme
             )
             isProbing = false
             probeResult = result
@@ -50,7 +50,7 @@ final class OnboardingStore {
                         port: port,
                         name: draft.name,
                         symbolName: existing.symbolName,
-                        authKey: draft.token
+                        authKey: draft.token, scheme: draft.scheme
                     )
                     return existing
                 }
@@ -60,7 +60,7 @@ final class OnboardingStore {
                     port: port,
                     name: draft.name,
                     symbolName: Endpoint.defaultSymbol,
-                    authKey: draft.token
+                    authKey: draft.token, scheme: draft.scheme
                 )
             }
         }

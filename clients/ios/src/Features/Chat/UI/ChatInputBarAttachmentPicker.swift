@@ -15,6 +15,7 @@ struct ChatInputBarAttachmentPicker: View {
                 .padding(ThemeTokens.Spacing.m)
                 .contentShape(Capsule())
         }
+        .accessibilityLabel("Attach images")
         .onChange(of: selections) { _, items in
             Task {
                 var loaded: [Data] = []
@@ -31,7 +32,8 @@ struct ChatInputBarAttachmentPicker: View {
                         SessionToastStore.shared.present(
                             SessionToast(
                                 sessionId: sessionId,
-                                title: failed == 1 ? "An image couldn't be added"
+                                title: failed == 1
+                                    ? "An image couldn't be added"
                                     : "\(failed) images couldn't be added",
                                 symbol: "exclamationmark.triangle.fill",
                                 snippet: "They may be in an unsupported format."))
